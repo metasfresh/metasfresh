@@ -23,6 +23,7 @@
 package de.metas.handlingunits;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.gs1.GTIN;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.pricing.PriceListVersionId;
@@ -85,6 +86,23 @@ public interface IHUPIItemProductQuery
 	boolean isAllowAnyProduct();
 
 	void setAllowAnyProduct(final boolean allowAnyProduct);
+
+	/**
+	 * Match only those {@link I_M_HU_PI_Item_Product}s whose GTIN, TU-EAN ({@code EAN_TU}) or {@code UPC}
+	 * equals this value. {@code null} means no barcode filter.
+	 */
+	void setGtin(@Nullable GTIN gtin);
+
+	@Nullable
+	GTIN getGtin();
+
+	/**
+	 * When {@code true}, match only rows whose {@code M_Product_ID} points to an <em>active</em> product
+	 * (a product-consolidation run may deactivate a product while leaving its PIIP rows active).
+	 */
+	void setOnlyActiveProduct(final boolean onlyActiveProduct);
+
+	boolean isOnlyActiveProduct();
 
 	boolean isAllowInfiniteCapacity();
 

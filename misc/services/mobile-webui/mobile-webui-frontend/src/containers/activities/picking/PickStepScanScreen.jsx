@@ -38,9 +38,11 @@ const PickStepScanScreen = () => {
   // auto-invokes the inline GRAI capture after qty entry (non-skippable) and reports the captured codes
   // (setGrais/graiCodes) on the same onResult — so the whole pick goes out as ONE atomic event. When it
   // is not required the flow is unchanged.
-  const { graiScanEnabled, isTargetsLoading } = useAvailablePickingTargets({
+  const { graiScanEnabled, existingLuGrais, isTargetsLoading } = useAvailablePickingTargets({
     wfProcessId,
     lineId,
+    stepId,
+    altStepId,
     type: PickingTargetType.TU,
   });
 
@@ -109,6 +111,7 @@ const PickStepScanScreen = () => {
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
       graiScanEnabled={isInlineGraiCaptureEnabled}
+      existingLuGrais={existingLuGrais}
       //
       getConfirmationPromptForQty={isShowPromptWhenOverPicking ? getConfirmationPromptForQty : undefined}
       onResult={onResult}

@@ -406,6 +406,11 @@ test.describe('Modes', () => {
         await allure.story('Barcode scanning modes');
         await allure.severity('critical');
 
+        // Must run BEFORE login so the getUserMedia stub is installed before the app's first camera
+        // request. Stabilises this camera-toggle test against a flaky panel teardown — mechanism in
+        // BarcodeScannerComponent.stubCameraStream.
+        await BarcodeScannerComponent.stubCameraStream();
+
         const masterdata = await createLoginMasterdata({
             extraSysconfigs: modeSysconfigs({
                 hardwareEnabled: 'Y',
@@ -454,7 +459,7 @@ test.describe('Modes', () => {
         await ApplicationsListScreen.startApplication('huManager');
         await HUManagerScreen.waitForScreen();
 
-        // Boots in hardware mode: off-screen scan input present, device camera absent.
+        // Boots in hardware mode: off-screen scan input present, camera mode not active.
         await BarcodeScannerComponent.expectAttached({});
         await BarcodeScannerComponent.expectCameraModeInactive();
 

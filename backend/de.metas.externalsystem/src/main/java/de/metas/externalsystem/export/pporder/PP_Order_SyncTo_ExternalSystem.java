@@ -23,7 +23,7 @@
 package de.metas.externalsystem.export.pporder;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 
 public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemConfigRepository externalSystemConfigRepository = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 
 	@Nullable
 	@Override
@@ -50,7 +50,7 @@ public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess impleme
 	{
 		if (getExternalSystemParam().equals(parameter.getColumnName()))
 		{
-			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepo.getActiveByType(getExternalSystemType())
+			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepository.getActiveByType(getExternalSystemType())
 					.stream()
 					.collect(ImmutableList.toImmutableList());
 
@@ -75,7 +75,7 @@ public abstract class PP_Order_SyncTo_ExternalSystem extends JavaProcess impleme
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
+		if (!externalSystemConfigRepository.isAnyConfigActive(getExternalSystemType()))
 		{
 			return ProcessPreconditionsResolution.reject();
 		}

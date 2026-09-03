@@ -22,20 +22,26 @@
 
 package de.metas.cucumber.stepdefs.pporder;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
+import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.X_PP_Cost_Collector;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -210,5 +216,60 @@ public class PP_Cost_Collector_StepDef
 				assertThat(costCollector.getPP_Order_BOMLine_ID()).isEqualTo(bomLine.getPP_Order_BOMLine_ID());
 			}
 		}
+	}
+
+	/**
+	 * Asserts that all ActivityControl cost collectors of the given PP_Order post gracefully with no accounting facts.
+	 *
+	 * <p>Closing a manufacturing order reports its not-yet-started routing activities, which creates one
+	 * ActivityControl cost collector per activity (see {@code closeAllActivities}). When the activity's resource
+	 * carries no cost product - e.g. the "no resource" placeholder - there is no activity cost to book, so each
+	 * such cost collector must still post successfully ({@code Posted='Y'}) and produce zero Fact_Acct rows
+	 * instead of failing the posting pipeline.
+	 *
+	 * @param timeoutSec maximum seconds to wait for the cost collectors to appear and to become posted
+	 * @param ppOrderIdentifier identifier of the parent production order (must be closed beforehand)
+	 */
+	@And("^after not more than (.*)s, all ActivityControl PP_Cost_Collector for PP_Order (.*) are posted with no Fact_Acct$")
+	public void activityControlCostCollectors_arePostedWithNoFacts(
+			final int timeoutSec,
+			@NonNull final String ppOrderIdentifier) throws InterruptedException
+	{
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		assertThat(ppOrder).isNotNull();
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> !queryCompletedActivityControlCostCollectors(ppOrder).isEmpty());
+
+		final List<I_PP_Cost_Collector> activityControlCostCollectors = queryCompletedActivityControlCostCollectors(ppOrder);
+		assertThat(activityControlCostCollectors).as("ActivityControl cost collectors for the closed PP_Order").isNotEmpty();
+
+		final ImmutableSet<TableRecordReference> recordRefs = activityControlCostCollectors.stream()
+				.map(TableRecordReference::of)
+				.collect(ImmutableSet.toImmutableSet());
+
+		// Posting must succeed for every ActivityControl cost collector.
+		AccountingCucumberHelper.waitUtilPosted(recordRefs);
+
+		// A no-cost ActivityControl cost collector must post zero Fact_Acct rows (graceful no-op).
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			final int factAcctCount = queryBL.createQueryBuilder(I_Fact_Acct.class)
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+					.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+					.create()
+					.count();
+			assertThat(factAcctCount).as("Fact_Acct rows for ActivityControl cost collector " + recordRef.getRecord_ID()).isZero();
+		}
+	}
+
+	@NonNull
+	private List<I_PP_Cost_Collector> queryCompletedActivityControlCostCollectors(@NonNull final I_PP_Order ppOrder)
+	{
+		return queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_CostCollectorType, X_PP_Cost_Collector.COSTCOLLECTORTYPE_ActivityControl)
+				.addEqualsFilter(COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
+				.create()
+				.list(I_PP_Cost_Collector.class);
 	}
 }

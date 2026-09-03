@@ -10,11 +10,11 @@ import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerCo
 import { generateEAN13 } from '../../utils/ean13';
 
 // Serial No Picking — enforce serial-number scan when packing serial-no products.
-// serialProduct=true  → IsSerialNoPicked=Y AND has the "Serial" attribute set (supports SerialNo)
-//                       → mobile picking prompts to scan a serial and persists it on the picked HU.
-// serialProduct=false → misconfig: IsSerialNoPicked=Y but NO SerialNo-capable attribute set
-//                       → no prompt, no error (settled config-gap behaviour) → picks directly.
-const createMasterdata = async ({ serialProduct, orderQty = 1 }) => {
+// The IsSerialNoPicked=Y checkbox ALONE drives the prompt: mobile picking prompts to scan a serial
+// and persists it on the picked HU. The product's own attribute set is irrelevant — the picked HU's
+// ability to store the SerialNo comes from the PI wiring (M_HU_PI_Attribute on the virtual PI),
+// not from the product attribute set. So a serial-no product needs no `attributeSetName`.
+const createMasterdata = async ({ orderQty = 1 } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -42,7 +42,6 @@ const createMasterdata = async ({ serialProduct, orderQty = 1 }) => {
                     price: 1,
                     gtin: generateEAN13().ean13,
                     isSerialNoPicked: true,
-                    ...(serialProduct ? { attributeSetName: 'Serial' } : {}),
                 },
             },
             packingInstructions: { "LU_CU": { cu: true, lu: "LU", qtyTUsPerLU: 1 } },
@@ -77,7 +76,7 @@ test('Serial-no product: scan one serial per picked unit (N of N), deduped, pers
     allure.story('Serial number scan when picking');
     allure.severity('critical');
 
-    const masterdata = await createMasterdata({ serialProduct: true, orderQty: 3 });
+    const masterdata = await createMasterdata({ orderQty: 3 });
     const { pickingJobId } = await startPickingJob(masterdata);
     const ts = Date.now();
     const [s1, s2, s3] = [`SN-${ts}-1`, `SN-${ts}-2`, `SN-${ts}-3`];
@@ -147,26 +146,68 @@ test('Serial-no product: scan one serial per picked unit (N of N), deduped, pers
     });
 });
 
-test('Misconfigured serial-no product (no SerialNo attribute set): no prompt, picks directly', async ({ page: _page }) => {
+test('Serial-no product with NO attribute set: checkbox alone still prompts, serial captured and persisted', async ({ page: _page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
     allure.story('Serial number scan when picking');
     allure.severity('normal');
 
-    const masterdata = await createMasterdata({ serialProduct: false });
-    await startPickingJob(masterdata);
+    // The product carries IsSerialNoPicked=Y but has NO attribute set (createMasterdata sets no `attributeSetName`).
+    // New contract: the checkbox alone enables serial-no picking — the prompt STILL appears and the scanned serial
+    // is persisted on the picked HU. The product attribute set is irrelevant; storage comes from the PI wiring.
+    const masterdata = await createMasterdata({ orderQty: 1 });
+    const { pickingJobId } = await startPickingJob(masterdata);
+    const serial = `SN-${Date.now()}`;
 
-    await test.step("Pick — qty dialog shows no serial control, pick succeeds with no error", async () => {
+    await test.step("Pick qty 1 — serial control IS shown, gated until one serial scanned, then persisted", async () => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '0 Stk', color: 'red' });
-        // dialog still opens for the job-default attributes (BestBeforeDate/LotNo) — but NO serial control,
-        // and confirm is not gated by a serial (config gap → silent no-prompt).
+
         await BarcodeScannerComponent.type(masterdata.products.P1.gtin);
         await GetQuantityDialog.waitForDialog();
-        await GetQuantityDialog.expectSerialNoNotVisible();
+
+        // checkbox-alone enables the serial prompt → control visible, confirm gated until 1 serial scanned
+        await GetQuantityDialog.expectSerialNoScanButtonVisible();
+        await GetQuantityDialog.expectSerialNoCount({ scanned: 0, total: 1 });
+        await GetQuantityDialog.expectDoneDisabled();
+
+        await GetQuantityDialog.scanSerialNos([serial]);
+        await GetQuantityDialog.expectSerialNoCount({ scanned: 1, total: 1 });
+        await GetQuantityDialog.expectSerialNoChipCount(1);
         await GetQuantityDialog.expectDoneEnabled();
         await GetQuantityDialog.clickDone();
+
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '1 Stk', waitForColor: 'green' });
+
+        // the picked HU carries the scanned serial — proving storage works without a product attribute set
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }] }
+                    }
+                }
+            },
+            hus: {
+                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
+                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { SerialNo: serial } },
+            }
+        });
+    });
+
+    // completion persists the serial through to the shipped HU — the serial is not lost at shipment time.
+    await PickingJobScreen.complete();
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: true, shipmentLineId: 'shipmentLine1' }] }
+                }
+            }
+        },
+        hus: {
+            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { SerialNo: serial } },
+        }
     });
 });

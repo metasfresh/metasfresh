@@ -65,6 +65,12 @@ public class LoginUserCommand
 		user.setFirstname(firstname);
 		user.setLastname(lastname);
 		user.setEMail(login + "@metasfresh.com");
+		// SMTP user/password are required for the WebUI Email dialog to open: MailService.findMailbox
+		// merges the sending user's email config into the mailbox, and SMTPConfig.mergeFrom asserts a
+		// non-empty username regardless of the mailbox's IsSmtpAuthorization. Without these the dialog
+		// (createEmail) fails with MailboxNotFoundException / "username is set".
+		user.setEMailUser(login + "@metasfresh.com");
+		user.setEMailUserPW(login);
 		user.setAD_Language(request.getLanguage());
 		user.setIsSystemUser(true);
 		user.setLogin(login);

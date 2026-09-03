@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
 import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
@@ -83,6 +84,7 @@ public class PP_Product_Planning_StepDef
 	@NonNull private final M_Maturing_Configuration_StepDefData maturingConfigurationTable;
 	@NonNull private final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable;
 	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 
 	private static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
 
@@ -92,7 +94,10 @@ public class PP_Product_Planning_StepDef
 	 * Key columns: {@code M_Product_ID}, {@code IsCreatePlan} (controls auto-enqueue of C_Order generation),
 	 * {@code IsDocComplete} (controls whether the auto-generated C_Order is completed), {@code IsPurchased},
 	 * {@code IsManufactured}, {@code IsAttributeDependant}, {@code PP_Product_BOMVersions_ID},
-	 * {@code DD_NetworkDistribution_ID}, {@code M_Warehouse_ID}, {@code S_Resource_ID}.
+	 * {@code DD_NetworkDistribution_ID}, {@code M_Warehouse_ID}, {@code S_Resource_ID},
+	 * {@code OPT.C_Manufacturing_Aggregation_ID.Identifier} (a {@code C_Aggregation} for table
+	 * {@code PP_Order_Candidate}; when set, {@code PPOrderCandidateAggregationFactory} uses it instead of the
+	 * default header aggregation key when grouping candidates into a {@code PP_Order}).
 	 */
 	@Given("metasfresh contains PP_Product_Plannings")
 	public void createOrUpdate(@NonNull final DataTable dataTable)
@@ -206,6 +211,11 @@ public class PP_Product_Planning_StepDef
 				.map(I_M_Maturing_Configuration_Line::getM_Maturing_Configuration_Line_ID)
 				.map(MaturingConfigLineId::ofRepoId)
 				.ifPresent(builder::maturingConfigLineId);
+
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_C_Manufacturing_Aggregation_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> builder.manufacturingAggregationId(aggregationId.getRepoId()));
 
 		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
 

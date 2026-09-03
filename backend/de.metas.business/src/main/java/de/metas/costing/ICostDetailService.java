@@ -1,5 +1,6 @@
 package de.metas.costing;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.product.ProductId;
@@ -9,6 +10,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -38,6 +40,11 @@ public interface ICostDetailService
 	CostDetail updateDateAcct(@NonNull CostDetail costDetail, @NonNull Instant newDateAcct);
 
 	boolean hasCostDetailsForProductId(ProductId productId);
+
+	ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
+			@NonNull AcctSchemaId acctSchemaId,
+			@NonNull CostElementId costElementId,
+			@NonNull Set<ProductId> productIds);
 
 	List<CostDetail> getExistingCostDetails(CostDetailCreateRequest request);
 
@@ -73,5 +80,13 @@ public interface ICostDetailService
 
 	Stream<CostDetail> stream(@NonNull CostDetailQuery query);
 
+	/** @return true if at least one cost detail matches the query */
+	boolean hasCostDetails(@NonNull CostDetailQuery query);
+
 	Optional<CostDetail> firstOnly(@NonNull CostDetailQuery query);
+
+	/** @see ICostDetailRepository#getFirstChangingCostsDetailAfter(CostSegmentAndElement, Instant) */
+	Optional<CostDetail> getFirstChangingCostsDetailAfter(
+			@NonNull CostSegmentAndElement costSegmentAndElement,
+			@NonNull Instant asOfDate);
 }

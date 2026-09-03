@@ -6,7 +6,6 @@ on:
     paths-ignore:
       - '**/README.md'
       - '.mergify.yml'
-      - '.testspace.yml'
   workflow_dispatch:
 
 permissions:
@@ -32,7 +31,6 @@ jobs:
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
       branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
       is-local: ${{ steps.detect-local.outputs.is-local }}
-      skip-testspace: ${{ steps.skip-checks.outputs.skip-testspace }}
       skip-publish-reports: ${{ steps.skip-checks.outputs.skip-publish-reports }}
     steps:
       - name: Detect local execution
@@ -47,15 +45,7 @@ jobs:
           fi
       - name: Determine skip flags
         id: skip-checks
-        env:
-          SKIP_TESTSPACE_VAR: ${{ vars.SKIP_TESTSPACE }}
         run: |
-          # Skip testspace for tmp-mergify/ branches or when SKIP_TESTSPACE var is set
-          if [[ "${{ github.ref_name }}" == tmp-mergify/* ]] || [[ "$SKIP_TESTSPACE_VAR" == "true" ]]; then
-            echo "skip-testspace=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip-testspace=false" >> $GITHUB_OUTPUT
-          fi
           # Skip publish-reports for tmp-mergify/ branches only
           if [[ "${{ github.ref_name }}" == tmp-mergify/* ]]; then
             echo "skip-publish-reports=true" >> $GITHUB_OUTPUT
@@ -63,11 +53,6 @@ jobs:
             echo "skip-publish-reports=false" >> $GITHUB_OUTPUT
           fi
       - uses: actions/checkout@v6
-      - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true' && steps.skip-checks.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: sanitize-ref-name
         id: sanitize
         env:
@@ -144,17 +129,7 @@ jobs:
           echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
-          echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
           echo '* Allure test reports: https://test-reports.metasfresh.com/branches/${{ steps.sanitize-branch-gh-pages.outputs.value }}/builds/${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}/allure/' >> $GITHUB_STEP_SUMMARY
-      - name: testspace push build infos
-        if: env.ACT != 'true' && steps.skip-checks.outputs.skip-testspace != 'true'
-        continue-on-error: true  # Testspace may not have a space for this branch (e.g. merge-queue branches)
-        run: |
-          touch github_run.txt
-          echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
-          echo pipeline $PIPELINE_VERSION >> github_run.txt
-          echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt
-          testspace github_run.txt
 
   # Fast migration CLI build - runs in parallel with java job
   # This enables db-images to start ~10 minutes earlier
@@ -529,11 +504,6 @@ jobs:
     needs: [ init, frontend ]
     steps:
       - uses: actions/checkout@v6
-      - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         run: |
           docker buildx build \
@@ -545,12 +515,6 @@ jobs:
       - name: extract results
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
-      - name: publish results to testspace
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        continue-on-error: true  # Testspace may not have a space for this branch
-        run: |
-          find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace
-          testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
       - name: upload jest junit results
         uses: actions/upload-artifact@v6
         if: always()
@@ -1329,11 +1293,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: install-envsubst
         if: env.ACT == 'true'
         run: |
@@ -1394,14 +1353,6 @@ jobs:
         run: |
           docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
           docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
-      - name: push-results to testspace
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        continue-on-error: true  # Testspace may not have a space for this branch
-        run: |
-          find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace
-          testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code
-          testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code
-          testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code
       - name: upload backend junit results
         uses: actions/upload-artifact@v6
         if: always()
@@ -1473,7 +1424,13 @@ jobs:
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
-          if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/backend/junit.log && exit 1; fi      # print backend log and exit if backend failed
+          if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then \
+            echo "----- ArchUnit violation detail (grepped from the full backend log; the tail below can miss it) -----"; \
+            grep -n -A 300 "ArchUnit found new architecture violations" junit/backend/junit.log || echo "(no ArchUnit violation block in backend log)"; \
+            echo "----- last 1000 lines of backend junit.log -----"; \
+            tail -1000 junit/backend/junit.log; \
+            exit 1; \
+          fi      # print ArchUnit detail + backend log and exit if backend failed
           if [ $(cat junit/camel/junit.exit-code) != 0 ] || [ $(cat junit/camel/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/camel/junit.log && exit 1; fi            # print camel log and exit if camel failed
       - uses: actions/upload-artifact@v6
         if: failure()
@@ -1581,11 +1538,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -1611,14 +1563,6 @@ jobs:
           docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
-      - name: push-results to testspace
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        continue-on-error: true  # Testspace may not have a space for this branch
-        run: |
-          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"
-          testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
       - name: Extract Cucumber Allure results
         if: always()
         run: |
@@ -1939,11 +1883,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run test
         working-directory: docker-builds/e2e-tests/
         env:
@@ -1957,17 +1896,6 @@ jobs:
           docker compose --profile mobile logs --no-log-prefix db rabbitmq search app mobile > infra.log 2>&1 || true
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker compose --profile mobile down
-      - name: push-results to testspace
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        continue-on-error: true  # Testspace may not have a space for this branch
-        working-directory: docker-builds/e2e-tests/
-        run: |
-          # Move test-results temporarily to avoid Testspace uploading large attachment files
-          mv test-results-mobile test-results-temp || true
-          testspace "[mobile/playwright]playwright-report-mobile/junit/results.xml"
-          # Move back for artifact upload
-          mv test-results-temp test-results-mobile || true
-
       # ===== ALLURE REPORT GENERATION =====
       - name: Generate Allure Report for Mobile
         uses: ./.github/actions/generate-allure-report
@@ -2055,11 +1983,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run test
         working-directory: docker-builds/e2e-tests/
         env:
@@ -2074,17 +1997,6 @@ jobs:
           docker compose --profile frontend logs --no-log-prefix db rabbitmq search app webapi webui > infra.log 2>&1 || true
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
           docker compose --profile frontend down
-      - name: push-results to testspace
-        if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
-        continue-on-error: true  # Testspace may not have a space for this branch
-        working-directory: docker-builds/e2e-tests/
-        run: |
-          # Move test-results temporarily to avoid Testspace uploading large attachment files
-          mv test-results-frontend test-results-temp || true
-          testspace "[frontend/playwright-${{ matrix.shard_label }}]playwright-report-frontend/junit/results.xml"
-          # Move back for artifact upload
-          mv test-results-temp test-results-frontend || true
-
       - name: Upload Allure results
         uses: actions/upload-artifact@v6
         if: always()

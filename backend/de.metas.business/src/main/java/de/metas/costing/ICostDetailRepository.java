@@ -1,12 +1,14 @@
 package de.metas.costing;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -43,6 +45,9 @@ public interface ICostDetailRepository
 
 	Stream<CostDetail> stream(CostDetailQuery query);
 
+	/** @return true if at least one cost detail matches the query */
+	boolean hasCostDetails(CostDetailQuery query);
+
 	ImmutableList<CostDetail> list(@NonNull CostDetailQuery query);
 
 	default ImmutableList<CostDetail> listByDocumentRef(@NonNull final CostingDocumentRef documentRef)
@@ -65,4 +70,29 @@ public interface ICostDetailRepository
 	}
 
 	boolean hasCostDetailsByProductId(ProductId productId);
+
+	/**
+	 * @return the earliest changing-costs {@code M_CostDetail} of the given segment+element dated strictly AFTER
+	 * {@code asOfDate}, ordered by {@code DateAcct, M_CostDetail_ID}. Its {@code Prev_*} columns hold the state the cost
+	 * element was in immediately before that movement — i.e. the state as of {@code asOfDate}.
+	 * <p>
+	 * Deliberately the same algorithm as the SQL function {@code getCurrentCostInfo}
+	 * ({@code de.metas.acct.base/.../ddl/functions/getCurrentCost.sql}), so a point-in-time valuation read done in SQL and
+	 * one done here agree by construction.
+	 */
+	Optional<CostDetail> getFirstChangingCostsDetailAfter(
+			@NonNull CostSegmentAndElement costSegmentAndElement,
+			@NonNull Instant asOfDate);
+
+	/**
+	 * @return the subset of {@code productIds} for which a completed {@code M_CostRevaluation} line has already written a
+	 * cost detail on this {@code (acctSchemaId, costElementId)} — i.e. carries an {@code M_CostDetail} with
+	 * {@code M_CostRevaluationLine_ID} set. This is a broad, source-agnostic signal: it fires for ANY completed
+	 * cost-revaluation line on that element/product, regardless of {@code RevaluationSource} — NOT only a prior
+	 * {@code CopyFromCostElement} switch.
+	 */
+	ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
+			@NonNull AcctSchemaId acctSchemaId,
+			@NonNull CostElementId costElementId,
+			@NonNull Set<ProductId> productIds);
 }

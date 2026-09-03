@@ -12,14 +12,13 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUPIGraiRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobGraiTargetService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -33,15 +32,18 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.handlingunits.picking.job.carrieradvise.CarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobGraiTargetService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.PickingJobUnpickProductResolver;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.service.external.carrieradvise.PickingJobCarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
@@ -67,6 +69,9 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -85,6 +90,7 @@ import de.metas.picking.model.I_M_Picking_Config_V2;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.test.MetasfreshSnapshotFunction;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -100,6 +106,7 @@ import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -110,9 +117,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import de.metas.inout.ShipmentScheduleId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.compiere.model.I_C_Workplace;
+import org.compiere.model.I_Carrier_Service;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.mockito.Mockito;
@@ -123,6 +131,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -189,7 +198,7 @@ public class PickingJobTestHelper
 				DummyDocumentLocationBL.newInstanceForUnitTesting()
 		);
 
-		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
+		final PickingJobRepository pickingJobRepository = PickingJobRepository.newInstanceForUnitTesting();
 		final HUQRCodesService huQRCodeService = HUQRCodesService.newInstanceForUnitTesting();
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		this.configService = MobileUIPickingUserProfileService.newInstanceForUnitTesting();
@@ -249,6 +258,7 @@ public class PickingJobTestHelper
 				configService,
 				pickingJobScheduleService,
 				huService,
+				PickingJobCarrierAdviseConsistencyService.newInstanceForUnitTesting(Mockito.mock(CarrierAdviseConsistencyService.class)),
 				new PickingJobGraiTargetService(huService),
 				new PickingJobUnpickProductResolver(huService, productService),
 				new PickingShelfLifeCheck(productService, bpartnerService)
@@ -316,6 +326,55 @@ public class PickingJobTestHelper
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
+	/**
+	 * Creates a new {@code M_Warehouse_PickingGroup} and assigns the given warehouse to it
+	 * (sets {@code M_Warehouse.M_Warehouse_PickingGroup_ID}). Test-only helper, additive: does not
+	 * touch any warehouse that isn't explicitly passed in.
+	 */
+	public int createPickingGroupWithWarehouse(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse_PickingGroup pickingGroup = newInstance(I_M_Warehouse_PickingGroup.class);
+		pickingGroup.setName("pickingGroup");
+		saveRecord(pickingGroup);
+
+		assignWarehouseToPickingGroup(warehouseId, pickingGroup.getM_Warehouse_PickingGroup_ID());
+
+		return pickingGroup.getM_Warehouse_PickingGroup_ID();
+	}
+
+	/** Assigns (or re-assigns) the given warehouse to the given (already existing) picking group. */
+	public void assignWarehouseToPickingGroup(@NonNull final WarehouseId warehouseId, final int pickingGroupId)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.load(warehouseId, I_M_Warehouse.class);
+		warehouse.setM_Warehouse_PickingGroup_ID(pickingGroupId);
+		saveRecord(warehouse);
+	}
+
+	/**
+	 * Creates a SECOND warehouse (+ its own locator), independent from the workplace's own
+	 * {@link #shipFromLocatorId}. Use together with {@link #createPickingGroupWithWarehouse(WarehouseId)}/
+	 * {@link #assignWarehouseToPickingGroup(WarehouseId, int)} to set up a "same picking group, different
+	 * warehouse" scenario.
+	 */
+	public LocatorId createWarehouseAndLocator(@NonNull final String warehouseName, @NonNull final String locatorValue)
+	{
+		final WarehouseId warehouseId = createWarehouseId(warehouseName);
+		return createLocatorId(warehouseId, locatorValue);
+	}
+
+	/**
+	 * Sets {@code C_Workplace.PickFrom_Locator_ID} on the (already created) {@link #workplace}. Test-only helper,
+	 * additive: mirrors how the workplace is created (via {@link WorkplaceCreateRequest#getPickFromLocatorId()}),
+	 * but applied after the fact so a test can opt in to a narrower pick-from locator without changing the
+	 * constructor's default workplace setup.
+	 */
+	public void setWorkplacePickFromLocator(@NonNull final LocatorId locatorId)
+	{
+		final I_C_Workplace record = InterfaceWrapperHelper.load(workplace.getId(), I_C_Workplace.class);
+		record.setPickFrom_Locator_ID(locatorId.getRepoId());
+		saveRecord(record);
+	}
+
 	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
 		configService.update(updater);
@@ -351,6 +410,10 @@ public class PickingJobTestHelper
 			@NonNull final String qtyToDeliver,
 			@Nullable final Instant date,
 			@Nullable final UserId lockedBy,
+			@Nullable final CarrierProductId carrierProductId,
+			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
+			@Nullable final Set<CarrierServiceId> carrierServices,
+			@Nullable final String carrierAdvisingStatus,
 			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
@@ -366,12 +429,40 @@ public class PickingJobTestHelper
 		shipmentSchedule.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(huPIItemProductId));
 		shipmentSchedule.setQtyOrdered(qtyToDeliverBD);
 		shipmentSchedule.setQtyToDeliver(qtyToDeliverBD);
+		if (carrierProductId != null)
+		{
+			shipmentSchedule.setCarrier_Product_ID(carrierProductId.getRepoId());
+		}
+		if (carrierGoodsTypeId != null)
+		{
+			shipmentSchedule.setCarrier_Goods_Type_ID(carrierGoodsTypeId.getRepoId());
+		}
+		shipmentSchedule.setCarrier_Advising_Status(carrierAdvisingStatus);
 		shipmentSchedule.setC_Order_ID(orderAndLineId.getOrderRepoId());
 		shipmentSchedule.setC_OrderLine_ID(orderAndLineId.getOrderLineRepoId());
 		shipmentSchedule.setDeliveryDate(Timestamp.from(dateEffective));
 		shipmentSchedule.setPreparationDate(Timestamp.from(dateEffective));
 		save(shipmentSchedule);
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+
+		// seed the schedule carrier-services junction so the create command can copy it onto the picking-job line
+		if (carrierServices != null)
+		{
+			for (final CarrierServiceId carrierServiceId : carrierServices)
+			{
+				// the schedule repo collects ids by following the FK to Carrier_Service, so the master record must exist
+				final I_Carrier_Service carrierService =
+						InterfaceWrapperHelper.newInstanceOutOfTrx(I_Carrier_Service.class);
+				carrierService.setCarrier_Service_ID(carrierServiceId.getRepoId());
+				save(carrierService);
+
+				final org.compiere.model.I_M_ShipmentSchedule_Carrier_Service assignment =
+						InterfaceWrapperHelper.newInstance(org.compiere.model.I_M_ShipmentSchedule_Carrier_Service.class);
+				assignment.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
+				assignment.setCarrier_Service_ID(carrierServiceId.getRepoId());
+				save(assignment);
+			}
+		}
 
 		if (assignToWorkplace)
 		{
@@ -442,7 +533,13 @@ public class PickingJobTestHelper
 
 	public HuId createVHU(@NonNull final ProductId productId, @NonNull final String qtyStr)
 	{
-		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty(qtyStr, productId));
+		return createVHU(productId, qtyStr, shipFromLocatorId);
+	}
+
+	/** Same as {@link #createVHU(ProductId, String)} but places the HU at the given target locator (e.g. a different warehouse's locator). */
+	public HuId createVHU(@NonNull final ProductId productId, @NonNull final String qtyStr, @NonNull final LocatorId targetLocatorId)
+	{
+		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty(qtyStr, productId), targetLocatorId);
 	}
 
 	public Quantity qty(@NonNull final String qtyStr, @NonNull final ProductId productId)
@@ -451,6 +548,16 @@ public class PickingJobTestHelper
 	}
 
 	public HuId createHU(final HuPackingInstructionsId huPackingInstructionsId, final ProductId productId, final Quantity qty)
+	{
+		return createHU(huPackingInstructionsId, productId, qty, shipFromLocatorId);
+	}
+
+	/** Same as {@link #createHU(HuPackingInstructionsId, ProductId, Quantity)} but places the HU at the given target locator. */
+	public HuId createHU(
+			final HuPackingInstructionsId huPackingInstructionsId,
+			final ProductId productId,
+			final Quantity qty,
+			@NonNull final LocatorId targetLocatorId)
 	{
 		final IHUProducerAllocationDestination destination;
 		HULoader.builder()
@@ -462,7 +569,7 @@ public class PickingJobTestHelper
 				.destination(destination = HUProducerDestination.of(huPackingInstructionsId)
 						.setMaxHUsToCreate(1) // we want one HU
 						.setHUStatus(X_M_HU.HUSTATUS_Active)
-						.setLocatorId(shipFromLocatorId))
+						.setLocatorId(targetLocatorId))
 				.load(AllocationUtils.builder()
 						.setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
 						.setProduct(productId)

@@ -30,7 +30,7 @@ public interface I_C_Order
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -39,7 +39,7 @@ public interface I_C_Order
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -375,6 +375,56 @@ public interface I_C_Order
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Carrier Material Assignment.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Goods_Type_ID (int Carrier_Goods_Type_ID);
+
+	/**
+	 * Get Carrier Material Assignment.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Goods_Type_ID();
+
+	@Nullable org.compiere.model.I_Carrier_Goods_Type getCarrier_Goods_Type();
+
+	void setCarrier_Goods_Type(@Nullable org.compiere.model.I_Carrier_Goods_Type Carrier_Goods_Type);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_Carrier_Goods_Type> COLUMN_Carrier_Goods_Type_ID = new ModelColumn<>(I_C_Order.class, "Carrier_Goods_Type_ID", org.compiere.model.I_Carrier_Goods_Type.class);
+	String COLUMNNAME_Carrier_Goods_Type_ID = "Carrier_Goods_Type_ID";
+
+	/**
+	 * Set Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Product_ID (int Carrier_Product_ID);
+
+	/**
+	 * Get Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Product_ID();
+
+	@Nullable org.compiere.model.I_Carrier_Product getCarrier_Product();
+
+	void setCarrier_Product(@Nullable org.compiere.model.I_Carrier_Product Carrier_Product);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_Carrier_Product> COLUMN_Carrier_Product_ID = new ModelColumn<>(I_C_Order.class, "Carrier_Product_ID", org.compiere.model.I_Carrier_Product.class);
+	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
 
 	/**
 	 * Set Async Batch.
@@ -966,6 +1016,56 @@ public interface I_C_Order
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
+
+	/**
+	 * Get Promotion Code 2.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode2_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
+
+	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
+
+	/**
+	 * Set Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PromotionCode_ID (int C_PromotionCode_ID);
+
+	/**
+	 * Get Promotion Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PromotionCode_ID();
+
+	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
+
+	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
+	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
 
 	/**
 	 * Set Copy/Create.
@@ -2092,6 +2192,27 @@ public interface I_C_Order
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (boolean IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	boolean isPreAdviceRequired();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_Order.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
+
+	/**
 	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
@@ -2768,6 +2889,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Print Totals.
+	 * Whether the totals section is included in the generated document.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -2777,6 +2899,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Print Totals.
+	 * Whether the totals section is included in the generated document.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -2853,54 +2976,31 @@ public interface I_C_Order
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Promotion Code.
+	 * Set Process Status.
+	 * Process State of the Order: Green: "Completed", Yellow: "In Progress", Red: "Not Started"
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Color
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
-	void setC_PromotionCode_ID (int C_PromotionCode_ID);
+	@Deprecated
+	void setProcessStatusColor_ID (int ProcessStatusColor_ID);
 
 	/**
-	 * Get Promotion Code.
+	 * Get Process Status.
+	 * Process State of the Order: Green: "Completed", Yellow: "In Progress", Red: "Not Started"
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Color
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
-	int getC_PromotionCode_ID();
+	@Deprecated
+	int getProcessStatusColor_ID();
 
-	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode();
-
-	void setC_PromotionCode(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode);
-
-	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode_ID", org.compiere.model.I_C_PromotionCode.class);
-	String COLUMNNAME_C_PromotionCode_ID = "C_PromotionCode_ID";
-
-	/**
-	 * Set Promotion Code 2.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_PromotionCode2_ID (int C_PromotionCode2_ID);
-
-	/**
-	 * Get Promotion Code 2.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_PromotionCode2_ID();
-
-	@Nullable org.compiere.model.I_C_PromotionCode getC_PromotionCode2();
-
-	void setC_PromotionCode2(@Nullable org.compiere.model.I_C_PromotionCode C_PromotionCode2);
-
-	ModelColumn<I_C_Order, org.compiere.model.I_C_PromotionCode> COLUMN_C_PromotionCode2_ID = new ModelColumn<>(I_C_Order.class, "C_PromotionCode2_ID", org.compiere.model.I_C_PromotionCode.class);
-	String COLUMNNAME_C_PromotionCode2_ID = "C_PromotionCode2_ID";
+	ModelColumn<I_C_Order, Object> COLUMN_ProcessStatusColor_ID = new ModelColumn<>(I_C_Order.class, "ProcessStatusColor_ID", null);
+	String COLUMNNAME_ProcessStatusColor_ID = "ProcessStatusColor_ID";
 
 	/**
 	 * Set Qty without Trading Unit.

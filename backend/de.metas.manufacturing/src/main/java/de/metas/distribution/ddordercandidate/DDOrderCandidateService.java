@@ -36,6 +36,9 @@ public class DDOrderCandidateService
 	public static final String SYSCONFIG_DDOrderAggregation_header_bySalesOrderId = "DDOrderAggregation.header.bySalesOrderId";
 	public static final String SYSCONFIG_DDOrderAggregation_header_byPPOrderRef = "DDOrderAggregation.header.byPPOrderRef";
 	public static final String SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId = "DDOrderAggregation.line.bySalesOrderLineId";
+	public static final String SYSCONFIG_DDOrderAggregation_header_byProductId = "DDOrderAggregation.header.byProductId";
+	public static final String SYSCONFIG_DDOrderAggregation_header_byLocatorFrom = "DDOrderAggregation.header.byLocatorFrom";
+	public static final String SYSCONFIG_DDOrderAggregation_header_byLocatorTo = "DDOrderAggregation.header.byLocatorTo";
 
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
@@ -125,6 +128,9 @@ public class DDOrderCandidateService
 				.aggregateBySalesOrderId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_bySalesOrderId, true))
 				.aggregateByPPOrderRef(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byPPOrderRef, true))
 				.aggregateBySalesOrderLineId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId, true))
+				.aggregateByProductId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byProductId, false))
+				.aggregateByLocatorFrom(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byLocatorFrom, false))
+				.aggregateByLocatorTo(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byLocatorTo, false))
 				.build();
 	}
 

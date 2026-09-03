@@ -25,6 +25,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -146,7 +147,8 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	@Override
 	public Iterator<?> retrieveModelsWithMissingCandidates(
 			final Properties ctx,
-			final String trxName)
+			final String trxName,
+			@NonNull final QueryLimit limit)
 	{
 		final int daysInAdvance = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		final Timestamp eventDateMaximum = TimeUtil.addDays(SystemTime.asTimestamp(), daysInAdvance);
@@ -160,6 +162,9 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.create();
 
 		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
+		// The query limit is pushed down here (not only enforced by the caller's processing budget) so that
+		// OPTION_GuaranteedIteratorRequired below only ever materializes a selection of up to `limit` rows instead of
+		// the whole missing-schedule backlog on every batch run.
 		return queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
@@ -174,6 +179,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 						itemProductQuery)
 				.addOnlyContextClient(ctx)
 				.orderBy().addColumn(I_C_SubscriptionProgress.COLUMNNAME_C_SubscriptionProgress_ID).endOrderBy()
+				.setLimit(limit)
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)

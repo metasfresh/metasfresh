@@ -40,6 +40,37 @@ public class JsonPackingInstructionsRequest
 	 */
 	boolean graiMapping;
 
+	/**
+	 * Optional fixed override for the generated GRAI's {@code (companyPrefix, assetType)} pair — e.g. to build
+	 * a Migros returnable-asset GRAI ({@code companyPrefix=7613204, assetType=00307}, see
+	 * {@code de.metas.handlingunits.grai.DummyGRAITemplate}) mapped to this TU for the PO-reference-gate E2E
+	 * scenarios. Only used when {@link #graiMapping} is {@code true}; when {@code null} a random pair is
+	 * generated (the pre-existing behaviour). Set both or neither.
+	 */
+	@Nullable String graiCompanyPrefix;
+	@Nullable String graiAssetType;
+
+	/**
+	 * Sets {@code M_HU_PI_Item_Product.IsDefaultForProduct} on the created CU-TU allocation — the
+	 * "Standard-Packvorschrift" that gets auto-defaulted onto document lines for this product.
+	 * <p>
+	 * TU requests only — a {@code cu} request creates no CU-TU allocation, so this has no effect there.
+	 */
+	boolean isDefaultForProduct;
+
+	/**
+	 * Points the product's existing product price(s) on the current price list version at the created
+	 * CU-TU allocation, i.e. makes the packing instruction one that a price references. Requires the same
+	 * request to give that product a price.
+	 * <p>
+	 * The link is expressed here rather than on the product request because products are created before
+	 * packing instructions ({@code CreateMasterdataCommand}), so at price-creation time the packing
+	 * instruction does not exist yet.
+	 * <p>
+	 * TU requests only — a {@code cu} request creates no CU-TU allocation, so this has no effect there.
+	 */
+	boolean referencedByProductPrice;
+
 	public Identifier getTuNotNull() {return Check.assumeNotNull(tu, "tu must be set");}
 
 	public Identifier getProductNotNull() {return Check.assumeNotNull(product, "product must be set");}

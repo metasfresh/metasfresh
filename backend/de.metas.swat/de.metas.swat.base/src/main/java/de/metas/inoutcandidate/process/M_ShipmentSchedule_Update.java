@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.process;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidResult;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -24,12 +25,13 @@ public final class M_ShipmentSchedule_Update extends JavaProcess
 			invalidSchedulesRepo.invalidateAll(getCtx());
 		}
 
-		final int result = shipmentScheduleUpdater.updateShipmentSchedules(ShipmentScheduleUpdateInvalidRequest.builder()
+		final ShipmentScheduleUpdateInvalidResult result = shipmentScheduleUpdater.updateShipmentSchedules(ShipmentScheduleUpdateInvalidRequest.builder()
 				.ctx(getCtx())
 				.selectionId(getPinstanceId())
 				.createMissingShipmentSchedules(true)
+				// maxToProcess intentionally left at its NO_LIMIT default: this manual process stays single-shot
 				.build());
 
-		return "Updated " + result + " shipment schedule entries";
+		return "Updated " + result.getUpdatedCount() + " shipment schedule entries";
 	}
 }

@@ -283,6 +283,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	@Nullable
 	I_M_HU_PI retrieveDefaultLUOrNull(Properties ctx, int adOrgId);
 
+	void save(@NonNull I_M_HU huPi);
+
 	/**
 	 * @return packing material or null
 	 */

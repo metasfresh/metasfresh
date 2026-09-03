@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.invalidation.segments;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,5 +37,58 @@ public class ImmutableShipmentScheduleSegmentTest
 		assertThat(segment.getBpartnerIds()).isEmpty();
 		assertThat(segment.getLocatorIds()).isEmpty();
 		assertThat(segment.getProductIds()).isEmpty();
+	}
+
+	@Test
+	public void warehouseIdBuilder_carriesWarehouseIdentity_notEnumeratedLocators()
+	{
+		final int warehouseRepoId = 100;
+
+		final ImmutableShipmentScheduleSegment segment = new ShipmentScheduleSegmentBuilder()
+				.productId(1)
+				.bpartnerId(2)
+				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
+				.build();
+
+		// the segment must carry the WAREHOUSE identity (as repo-id, mirroring locatorIds/productIds Set<Integer>) ...
+		assertThat(segment.getWarehouseIds()).containsExactly(warehouseRepoId);
+		// ... and must NOT have enumerated the warehouse's locators
+		assertThat(segment.getLocatorIds()).isEmpty();
+		assertThat(segment.isAnyWarehouse()).isFalse();
+	}
+
+	@Test
+	public void twoSegmentsFromSameWarehouseProductBPartner_areEqual()
+	{
+		final int warehouseRepoId = 100;
+
+		final ImmutableShipmentScheduleSegment segment1 = new ShipmentScheduleSegmentBuilder()
+				.productId(1)
+				.bpartnerId(2)
+				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
+				.build();
+
+		final ImmutableShipmentScheduleSegment segment2 = new ShipmentScheduleSegmentBuilder()
+				.productId(1)
+				.bpartnerId(2)
+				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
+				.build();
+
+		assertThat(segment1).isEqualTo(segment2);
+	}
+
+	@Test
+	public void locatorIdBuilder_keepsSingleLocator_withNoWarehouseIdentity()
+	{
+		final int locatorRepoId = 555;
+
+		final ImmutableShipmentScheduleSegment segment = new ShipmentScheduleSegmentBuilder()
+				.productId(1)
+				.bpartnerId(2)
+				.locatorId(locatorRepoId)
+				.build();
+
+		assertThat(segment.getLocatorIds()).contains(locatorRepoId);
+		assertThat(segment.getWarehouseIds()).isEmpty();
 	}
 }

@@ -41,7 +41,7 @@ public class PickingJobSlotService implements PickingSlotListener
 		Adempiere.assertUnitTestMode();
 		return new PickingJobSlotService(
 				PickingSlotService.newInstanceForUnitTesting(),
-				new PickingJobRepository()
+				PickingJobRepository.newInstanceForUnitTesting()
 		);
 	}
 

@@ -460,8 +460,8 @@ describe.skip('MasterWindowContainer', () => {
       await waitFor(async() => {
         wrapper.update();
         expect(wrapper.html()).toContain('2,888.60');
-      }, { timeout: 8000, interval: 500 });  
-    });     
+      }, { timeout: 8000, interval: 500 });
+    });
 
   }, 20000);
 });

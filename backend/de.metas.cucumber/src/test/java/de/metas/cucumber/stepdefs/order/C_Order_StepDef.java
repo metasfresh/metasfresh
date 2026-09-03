@@ -237,6 +237,9 @@ public class C_Order_StepDef
 	 *       delivery date (per-line {@code M_Packageable_V.DeliveryDate}) is reached before it may be shipped</li>
 	 *   <li>{@code IsFixedPreparationDate} (optional) — when {@code true}, holds each order line until its own
 	 *       preparation date (per-line {@code M_Packageable_V.PreparationDate}) is reached before it may be picked</li>
+	 *   <li>{@code HandOver_Location_ID} (optional) — identifier referencing the delivery/hand-over {@code C_BPartner_Location} (also sets {@code IsUseHandOver_Location})</li>
+	 *   <li>{@code PriorityRule} (optional) — priority rule code (1=Urgent, 3=High, 5=Medium, 7=Low, 9=Minor);
+	 *       defaults to the AD column default (5, Medium) when omitted</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_Orders:")
@@ -288,6 +291,14 @@ public class C_Order_StepDef
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_Location_ID)
 				.map(bpartnerLocationTable::getId)
 				.ifPresent(id -> order.setDropShip_Location_ID(id.getRepoId()));
+
+		// handover (delivery) location — distinct from the bill/ship location
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_HandOver_Location_ID)
+				.map(bpartnerLocationTable::getId)
+				.ifPresent(id -> {
+					order.setHandOver_Location_ID(id.getRepoId());
+					order.setIsUseHandOver_Location(true);
+				});
 
 		final OrgId orgId = tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_Org_ID)
 				.map(orgTable::getId)
@@ -448,6 +459,9 @@ public class C_Order_StepDef
 				.map(shipperTable::extractIdFromRecord)
 				.map(ShipperId::getRepoId)
 				.ifPresent(order::setM_Shipper_ID);
+
+		tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_PriorityRule)
+				.ifPresent(order::setPriorityRule);
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_Project_ID)
 				.map(projectTable::get)
 				.map(projectTable::extractIdFromRecord)
@@ -457,6 +471,9 @@ public class C_Order_StepDef
 		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode_ID)
 				.map(promotionCodeTable::get)
 				.ifPresent(promoCode -> order.setC_PromotionCode_ID(promoCode.getC_PromotionCode_ID()));
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsPreAdviceRequired)
+				.ifPresent(order::setIsPreAdviceRequired);
+
 		tableRow.getAsOptionalIdentifier(I_C_Order.COLUMNNAME_C_PromotionCode2_ID)
 				.map(promotionCodeTable::get)
 				.ifPresent(promoCode -> order.setC_PromotionCode2_ID(promoCode.getC_PromotionCode_ID()));
@@ -530,6 +547,30 @@ public class C_Order_StepDef
 		assertThat(expectedException)
 				.as("Order action %s is not possible for order %s", action, orderIdentifier)
 				.isNotNull();
+	}
+
+	/**
+	 * Asserts that completing the given order is REFUSED, and that it is refused for the expected reason:
+	 * the thrown {@link AdempiereException} must carry the given error code.
+	 * <p>
+	 * Unlike {@link #order_action_not_possible(String, String)}, which only asserts that <i>some</i> exception
+	 * was thrown, this step pins WHY the completion failed — without the error code the assertion would also
+	 * pass if the order happened to fail for an unrelated reason.
+	 * <p>
+	 * Parameters:<br>
+	 *   <b>orderIdentifier</b> — identifier of a {@code C_Order} created earlier in the scenario<br>
+	 *   <b>errorCode</b> — the expected {@code AD_Message.ErrorCode}
+	 *
+	 * <pre>{@code
+	 * Then the order identified by blockedOrder cannot be completed because of error code M_Product_BBSStatus_ActionBlocked
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) cannot be completed because of error code (.*)$")
+	public void order_cannot_be_completed_because_of_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String errorCode)
+	{
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
 	public void completeOrder(final I_C_Order order)
@@ -606,6 +647,17 @@ public class C_Order_StepDef
 
 	}
 
+	/**
+	 * Asserts that purchase order(s) are created.
+	 *
+	 * <p><strong>Columns:</strong>
+	 * <ul>
+	 * <li>{@code Link_Order_ID.Identifier} (required) — identifies the SO; PO is found by Link_Order_ID
+	 * <li>{@code OPT.C_BPartner_ID} (optional) — filters the matched PO by vendor (disambiguates when multiple POs share the same Link_Order_ID)
+	 * <li>{@code OPT.DocStatus} (optional) — filters the matched PO by DocStatus (used when SO is re-completed and multiple POs share Link_Order_ID with different statuses, e.g. VO for old PO, CO for new one)
+	 * <li>{@code IsSOTrx} (required) — asserts whether the PO is a sales order
+	 * </ul>
+	 */
 	@Then("the order is created:")
 	public void thePurchaseOrderIsCreated(@NonNull final DataTable dataTable)
 	{
@@ -630,6 +682,16 @@ public class C_Order_StepDef
 				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerRepoId);
 			}
 
+			// Optional disambiguation by DocStatus — needed when SO is re-completed (e.g. after
+			// reactivation) and multiple POs share the same Link_Order_ID with different DocStatus
+			// values (e.g. VO for the old PO, CO for the new one). Backward compatible: callers
+			// that omit the column get the original firstOnly behaviour (no DocStatus filter).
+			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocStatus);
+			if (EmptyUtil.isNotBlank(docStatus))
+			{
+				poQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_DocStatus, docStatus);
+			}
+
 			final I_C_Order purchaseOrder = poQueryBuilder.create().firstOnly(I_C_Order.class);
 
 			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
@@ -644,7 +706,6 @@ public class C_Order_StepDef
 			final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, COLUMNNAME_DocSubType);
 			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
 
-			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocStatus);
 			if (docStatus != null)
 			{
 				assertThat(purchaseOrder.getDocStatus()).isEqualTo(docStatus);
@@ -753,6 +814,31 @@ public class C_Order_StepDef
 				.forEach(this::validateOrder);
 	}
 
+	/**
+	 * Updates fields of a {@code C_Order} previously registered under an identifier.
+	 *
+	 * <p>Required column:
+	 * <ul>
+	 *   <li>{@code C_Order_ID} – identifier of the order to update</li>
+	 * </ul>
+	 * Optional field columns (each applied only when present):
+	 * <ul>
+	 *   <li>{@code DocBaseType} + {@code DocSubType} – both together select a new C_DocType / C_DocTypeTarget</li>
+	 *   <li>{@code PaymentRule}</li>
+	 *   <li>{@code PreparationDate}</li>
+	 *   <li>{@code LC_Date}</li>
+	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
+	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
+	 *       repeated local runs</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * When update order
+	 *   | C_Order_ID | POReference    |
+	 *   | o_1        | PO_1234_@Date@ |
+	 * </pre>
+	 */
 	@And("update order")
 	public void update_order(@NonNull final DataTable dataTable)
 	{
@@ -788,6 +874,9 @@ public class C_Order_StepDef
 				.ifPresent(expected -> order.setPreparationDate(Timestamp.from(expected)));
 		tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_LC_Date)
 				.ifPresent(expected -> order.setLC_Date(Timestamp.from(expected)));
+		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
+		tableRow.getAsOptionalName(COLUMNNAME_POReference)
+				.ifPresent(order::setPOReference);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
@@ -803,6 +892,39 @@ public class C_Order_StepDef
 		}
 	}
 
+	/**
+	 * Validates a single {@link I_C_Order} row against expected values.
+	 * Called per row by {@link #validate_created_order(DataTable)}.
+	 *
+	 * <p>Supported DataTable columns (all optional unless noted):</p>
+	 * <ul>
+	 *   <li>{@code C_Order_ID} — required identifier; must have been registered in {@link C_Order_StepDefData}</li>
+	 *   <li>{@code C_BPartner_ID} — optional identifier; resolved via {@link de.metas.cucumber.stepdefs.C_BPartner_StepDefData}</li>
+	 *   <li>{@code C_BPartner_Location_ID} — optional identifier; resolved via C_BPartner_Location_StepDefData</li>
+	 *   <li>{@code DateOrdered} — optional date (yyyy-MM-dd)</li>
+	 *   <li>{@code DocBaseType} — optional string; matched against the order's document type</li>
+	 *   <li>{@code currencyCode} — optional ISO-4217 currency code</li>
+	 *   <li>{@code DeliveryRule} — optional string</li>
+	 *   <li>{@code DeliveryViaRule} — optional string</li>
+	 *   <li>{@code processed} — optional boolean</li>
+	 *   <li>{@code DocStatus} — optional string</li>
+	 *   <li>{@code poReference} — optional string</li>
+	 *   <li>{@code InvoiceRule} — optional string</li>
+	 *   <li>{@code PaymentRule} — optional string</li>
+	 *   <li>{@code OPT.M_Warehouse_ID.Identifier} — optional identifier; resolved via {@link de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData};
+	 *       when absent the warehouse is not validated</li>
+	 *   <li>(plus further optional columns: AD_User_ID, Bill_BPartner_ID, Bill_Location_ID, Bill_User_ID, EMail,
+	 *       ExternalId, ExternalSystem, AD_InputDataSource_ID, IsDropShip, DropShip_*, IsUseHandOver_Location,
+	 *       HandOver_*, C_Incoterms, IncotermLocation, C_PromotionCode_ID, C_PromotionCode2_ID, C_Project_ID, LC_Date)</li>
+	 * </ul>
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the created orders:
+	 *   | C_Order_ID   | C_BPartner_ID | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.M_Warehouse_ID.Identifier |
+	 *   | order_S30235 | bp_S30235     | 2021-04-16  | SOO         | EUR          | F            | S               | S30235_01   | true      | CO        | pickingWH                     |
+	 * </pre>
+	 */
 	private void validateOrder(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
@@ -1036,6 +1158,13 @@ public class C_Order_StepDef
 				.ifPresent(description -> softly.assertThat(order.getDescription())
 						.as("Description for Identifier=%s", identifierStr)
 						.isEqualTo(description));
+
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseIdentifier -> warehouseTable.getIdOptional(warehouseIdentifier)
+						.orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class)))
+				.ifPresent(warehouseId -> softly.assertThat(order.getM_Warehouse_ID())
+						.as("M_Warehouse_ID for Identifier=%s", identifierStr)
+						.isEqualTo(warehouseId.getRepoId()));
 
 		softly.assertAll();
 	}

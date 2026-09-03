@@ -79,6 +79,14 @@ const translations = {
       appName: 'Picking',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Workplace/workstation is currently unavailable',
+        retry: 'Retry',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
@@ -129,6 +137,7 @@ const translations = {
       unPickBtn: 'Unpack',
       target: 'To pack',
       picked: 'Packed',
+      available: 'Available',
       switchToManualInput: 'Manually',
       switchToQrCodeInput: 'Scan',
       scanSerialNo: 'Scan Serial No',
@@ -167,6 +176,8 @@ const translations = {
         multipleScanned: 'Multiple GRAIs detected. Move reader closer to a single crate and scan again.',
         count: '%(scanned)s / %(total)s GRAIs scanned',
         countExtra: '(%(extra)s extra)',
+        countSkipped: '(%(count)s skipped — already on this loading unit)',
+        skippedNotice: '%(count)s crate(s) already on this loading unit were skipped',
         save: {
           buttonCaption: 'Save',
         },
@@ -192,19 +203,23 @@ const translations = {
         skippedProducts: 'Skipped products',
       },
       rlzConfirmDeclined: 'Pick skipped — shelf life too short',
+      adviseCarrier: 'Carrier Advise',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
       target: 'To Move',
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
-      scanProduct: 'Scan Product',
+      scanHUBarcodePlaceholder: 'Scan HU barcode',
+      scanProductGtinPlaceholder: 'Scan product (GTIN)',
       scanDropToLocator: 'Scan drop to Locator',
       switchPickFromLocator: 'Locator empty',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
+      cannotPickFromSelectedHU: 'Cannot pick from the selected HU: %(reason)s. Please scan the HU to pick from.',
       qrcode: {
         differentProduct: 'The scanned QR Product does not match',
+        productCodeWhereHUExpected: 'This is an article barcode (GTIN), not an HU barcode. Please scan the HU first.',
       },
       printMaterialInTransitReport: 'In Transit Report',
     },

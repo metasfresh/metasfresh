@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -77,7 +77,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.QueryLimit;
@@ -526,6 +525,15 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
 				.findFirst()
 				.orElse(null);
+	}
+
+	@Override
+	@NonNull
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactiveNotNull(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return Check.assumeNotNull(
+				getBPartnerLocationByIdEvenInactive(bpartnerLocationId),
+				"BPartner location not found: {}", bpartnerLocationId);
 	}
 
 	@Override
@@ -2067,5 +2075,20 @@ public class BPartnerDAO implements IBPartnerDAO
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		if (bpLocation == null) {return null;}
 		return ShipperId.ofRepoIdOrNull(bpLocation.getM_Shipper_ID());
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_BPartner> retrieveFactorerBPartnersForOrg(@NonNull final OrgId orgId)
+	{
+		// No IsActive filter — the DB partial unique index only enforces uniqueness among active rows,
+		// so a deactivated old factorer left alongside a new one yields two matches; we want to report
+		// that as ambiguity, not misdiagnose it as "no factorer configured" (mirrors CiiMapper.resolveFactorerIban).
+		return queryBL
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsFactorer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.list(I_C_BPartner.class);
 	}
 }
