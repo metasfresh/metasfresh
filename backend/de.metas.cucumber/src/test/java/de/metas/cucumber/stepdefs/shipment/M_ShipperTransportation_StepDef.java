@@ -47,21 +47,31 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Map;
+import java.util.Properties;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -478,6 +488,91 @@ public class M_ShipperTransportation_StepDef
 		final I_M_ShipperTransportation transportOrder = deliveryInstructionTable.get(orderIdentifier);
 		transportOrder.setDocAction(IDocument.ACTION_Complete);
 		documentBL.processEx(transportOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	/**
+	 * Evaluates the M_ShipperTransportation_ID picker of the given AddTo process (Task Q18's direction filter) -
+	 * the SAME persisted {@code AD_Val_Rule.Code} the WebUI process-parameter picker evaluates, substituted
+	 * through the real {@link Env#parseContext} context mechanism (never a re-implemented query) - and asserts
+	 * which named transport orders it does/doesn't offer. Pass {@code "no order"} for {@code orderIdentifierOrNoOrder}
+	 * to assert the "no order in context" fallback (must offer everything, unchanged).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — the transport order, from "metasfresh contains Transport Order"<br>
+	 *   <b>Offered</b> — {@code true}/{@code false}, whether the picker must offer it<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the M_ShipperTransportation_ID picker on M_ReceiptSchedule_AddTo_M_ShipperTransportation, for order order_PO_Wrong, offers:
+	 *   | Identifier             | Offered |
+	 *   | outgoingTransportOrder | false   |
+	 *   | incomingTransportOrder | true    |
+	 * </pre>
+	 */
+	@Then("^the M_ShipperTransportation_ID picker on (.*), for order (.*), offers:$")
+	public void picker_offers_for_order(
+			@NonNull final String processValue,
+			@NonNull final String orderIdentifierOrNoOrder,
+			@NonNull final DataTable dataTable)
+	{
+		final Integer orderRepoId = "no order".equals(orderIdentifierOrNoOrder)
+				? null
+				: orderTable.get(orderIdentifierOrNoOrder).getC_Order_ID();
+
+		final ImmutableSet<Integer> offeredIds = evaluatePickerOfferedIds(processValue, orderRepoId);
+
+		final SoftAssertions softly = new SoftAssertions();
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String identifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
+			final boolean expectedOffered = DataTableUtil.extractBooleanForColumnName(row, "Offered");
+			final int transportOrderId = deliveryInstructionTable.get(identifier).getM_ShipperTransportation_ID();
+
+			softly.assertThat(offeredIds.contains(transportOrderId))
+					.as("picker on %s offers %s (M_ShipperTransportation_ID=%s) for order context %s",
+							processValue, identifier, transportOrderId, orderIdentifierOrNoOrder)
+					.isEqualTo(expectedOffered);
+		}
+		softly.assertAll();
+	}
+
+	private ImmutableSet<Integer> evaluatePickerOfferedIds(@NonNull final String processValue, @Nullable final Integer orderRepoId)
+	{
+		final I_AD_Process process = queryBL.createQueryBuilder(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Process.COLUMNNAME_Value, processValue)
+				.create()
+				.firstOnlyNotNull(I_AD_Process.class);
+
+		final I_AD_Process_Para para = queryBL.createQueryBuilder(I_AD_Process_Para.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_AD_Process_ID, process.getAD_Process_ID())
+				.addEqualsFilter(I_AD_Process_Para.COLUMNNAME_ColumnName, I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
+				.create()
+				.firstOnlyNotNull(I_AD_Process_Para.class);
+
+		assertThat(para.getAD_Val_Rule_ID())
+				.as("the M_ShipperTransportation_ID parameter of %s is narrowed by a value rule", processValue)
+				.isNotZero();
+
+		final I_AD_Val_Rule valRule = load(para.getAD_Val_Rule_ID(), I_AD_Val_Rule.class);
+
+		// scratch WindowNo, private to this evaluation - a copy of the shared ctx so we never leak the
+		// C_Order_ID we set here into any other scenario's context
+		final Properties ctx = new Properties(Env.getCtx());
+		final int windowNo = 999999;
+		if (orderRepoId != null)
+		{
+			Env.setContext(ctx, windowNo, I_C_Order.COLUMNNAME_C_Order_ID, orderRepoId);
+		}
+		final String whereClause = Env.parseContext(ctx, windowNo, valRule.getCode(), true);
+		assertThat(whereClause).as("substituted %s WHERE clause must not be blank", valRule.getName()).isNotBlank();
+
+		return ImmutableSet.copyOf(
+				queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
+						.filter(TypedSqlQueryFilter.of(whereClause))
+						.create()
+						.listIds());
 	}
 
 }
