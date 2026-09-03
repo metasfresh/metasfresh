@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1685322803L;
+	private static final long serialVersionUID = -903883409L;
 
     /** Standard Constructor */
     public X_M_ShipperTransportation (final Properties ctx, final int M_ShipperTransportation_ID, @Nullable final String trxName)
@@ -213,6 +213,29 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public java.sql.Timestamp getDateToBeFetched() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateToBeFetched);
+	}
+
+	/** 
+	 * DeliveredState AD_Reference_ID=542137
+	 * Reference name: DeliveredState
+	 */
+	public static final int DELIVEREDSTATE_AD_Reference_ID=542137;
+	/** Not delivered = NotDelivered */
+	public static final String DELIVEREDSTATE_NotDelivered = "NotDelivered";
+	/** Partly delivered = PartlyDelivered */
+	public static final String DELIVEREDSTATE_PartlyDelivered = "PartlyDelivered";
+	/** Fully delivered = FullyDelivered */
+	public static final String DELIVEREDSTATE_FullyDelivered = "FullyDelivered";
+	@Override
+	public void setDeliveredState (final java.lang.String DeliveredState)
+	{
+		set_Value (COLUMNNAME_DeliveredState, DeliveredState);
+	}
+
+	@Override
+	public java.lang.String getDeliveredState() 
+	{
+		return get_ValueAsString(COLUMNNAME_DeliveredState);
 	}
 
 	@Override

@@ -161,6 +161,36 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 	public DeliveryPlanningList withoutShipper() {return filter(DeliveryPlanning::isWithoutShipper);}
 
+	/**
+	 * The three-state delivered indicator of the delivery instruction this selection is the active allocations
+	 * of (spec &sect; 5.7): {@code NotDelivered} when none of them is, {@code FullyDelivered} when every one is,
+	 * {@code PartlyDelivered} otherwise - the normal intermediate state of a consolidated instruction, not an
+	 * edge case. An empty selection (an instruction with no active allocation) answers {@code NotDelivered},
+	 * vacuously - the same "no allocation's planning is delivered" condition a non-empty all-open selection
+	 * answers.
+	 * <p>
+	 * The ONE place this is computed (rule 6, Task Q9): every write point that can change which plannings are
+	 * delivered, or which plannings are actively allocated to the instruction, loads this list and calls this
+	 * method, rather than re-deriving the three states inline - so a stored {@code DeliveredState} column
+	 * cannot drift from this definition by having a second copy of it.
+	 */
+	public DeliveryInstructionDeliveredState getDeliveredState()
+	{
+		if (isEmpty())
+		{
+			return DeliveryInstructionDeliveredState.NotDelivered;
+		}
+
+		final boolean allDelivered = list.stream().allMatch(DeliveryPlanning::isDelivered);
+		if (allDelivered)
+		{
+			return DeliveryInstructionDeliveredState.FullyDelivered;
+		}
+
+		final boolean anyDelivered = list.stream().anyMatch(DeliveryPlanning::isDelivered);
+		return anyDelivered ? DeliveryInstructionDeliveredState.PartlyDelivered : DeliveryInstructionDeliveredState.NotDelivered;
+	}
+
 	private DeliveryPlanningList filter(@NonNull final Predicate<DeliveryPlanning> predicate)
 	{
 		return list.stream().filter(predicate).collect(collect());

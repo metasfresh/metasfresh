@@ -365,6 +365,29 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_DateToBeFetched = "DateToBeFetched";
 
 	/**
+	 * Set Delivered state.
+	 * Indicates whether none, some, or all of the delivery instruction's allocated plannings are already delivered.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveredState (java.lang.String DeliveredState);
+
+	/**
+	 * Get Delivered state.
+	 * Indicates whether none, some, or all of the delivery instruction's allocated plannings are already delivered.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDeliveredState();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DeliveredState = new ModelColumn<>(I_M_ShipperTransportation.class, "DeliveredState", null);
+	String COLUMNNAME_DeliveredState = "DeliveredState";
+
+	/**
 	 * Set Delivery Time.
 	 *
 	 * <br>Type: String

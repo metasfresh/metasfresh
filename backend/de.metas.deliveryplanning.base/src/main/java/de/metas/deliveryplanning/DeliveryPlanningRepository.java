@@ -682,6 +682,14 @@ public class DeliveryPlanningRepository
 		{
 			allocIds.add(createAllocation(deliveryInstructionRecord, request));
 		}
+
+		// DeliveredState (Task Q9): ONCE per batch call, not once per request - every request here targets the
+		// SAME instruction (the method's single deliveryInstructionRecord parameter), so recomputing inside the
+		// loop above would cost one query round trip per row for a result that only the LAST iteration's answer
+		// survives. Combine's 3-planning case measured this: per-row would have tripled combine's getByIds calls
+		// (2 -> 5); once here keeps it at the pre-existing 2 (see DeliveryPlanningBatchLoadingTest).
+		recomputeDeliveredState(ShipperTransportationId.ofRepoId(deliveryInstructionRecord.getM_ShipperTransportation_ID()));
+
 		return allocIds.build();
 	}
 
@@ -702,6 +710,9 @@ public class DeliveryPlanningRepository
 		// IsAllocated is kept in step by the M_Delivery_Planning_Alloc @ModelChange interceptor (AFTER_NEW),
 		// triggered by the saveRecord above - not by an inline call here, so a future write path that inserts
 		// an alloc row without going through this method still keeps the mirror correct.
+
+		// DeliveredState (Task Q9) is recomputed once per BATCH by the caller (createAllocations), not here per
+		// row - see that method's note on why.
 
 		return DeliveryPlanningAllocId.ofRepoId(allocRecord.getM_Delivery_Planning_Alloc_ID());
 	}
@@ -857,6 +868,7 @@ public class DeliveryPlanningRepository
 
 		final ImmutableList.Builder<I_M_ShippingPackage> deactivatedShippingPackages = ImmutableList.builder();
 		final ImmutableSet.Builder<DeliveryPlanningId> deallocatedPlanningIds = ImmutableSet.builder();
+		final ImmutableSet.Builder<ShipperTransportationId> touchedDeliveryInstructionIds = ImmutableSet.builder();
 		for (final I_M_Delivery_Planning_Alloc allocRecord : allocRecords)
 		{
 			final I_M_ShippingPackage shippingPackageRecord = shippingPackages.get(ShippingPackageId.ofRepoId(allocRecord.getM_ShippingPackage_ID()));
@@ -869,6 +881,7 @@ public class DeliveryPlanningRepository
 			saveRecord(allocRecord);
 
 			deallocatedPlanningIds.add(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
+			touchedDeliveryInstructionIds.add(ShipperTransportationId.ofRepoId(allocRecord.getM_ShipperTransportation_ID()));
 		}
 
 		final ImmutableSet<DeliveryPlanningId> deallocatedPlanningIdsSet = deallocatedPlanningIds.build();
@@ -876,6 +889,14 @@ public class DeliveryPlanningRepository
 		// IsAllocated is kept in step by the M_Delivery_Planning_Alloc @ModelChange interceptor (AFTER_CHANGE
 		// on IsActive), triggered by the allocRecord.setIsActive(false) + saveRecord above - not by an inline
 		// call here, so a future deactivation path (a bulk fix, an import routine) still keeps the mirror correct.
+
+		// DeliveredState (Task Q9): recompute each touched instruction ONCE, deduplicated across allocations -
+		// both deactivateAllocations overloads route through this method, and the bulk-by-planning-ids one can
+		// span several instructions in one call.
+		for (final ShipperTransportationId deliveryInstructionId : touchedDeliveryInstructionIds.build())
+		{
+			recomputeDeliveredState(deliveryInstructionId);
+		}
 
 		return DeactivatedAllocations.builder()
 				.shippingPackages(deactivatedShippingPackages.build())
@@ -1017,6 +1038,75 @@ public class DeliveryPlanningRepository
 				.stream()
 				.map(DeliveryPlanningAlloc::getDeliveryInstructionId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * Recomputes {@code M_ShipperTransportation.DeliveredState} for every delivery instruction the given planning
+	 * is currently ACTIVELY allocated to (spec &sect; 5.7, Task Q9) - the entry point
+	 * {@code interceptor/M_InOut#afterComplete}/{@code #afterReverseCorrect} routes through after a receipt or
+	 * shipment completes or is reversed, since that is the write that can change ONE planning's
+	 * {@code IsDelivered} and therefore every instruction it sits on.
+	 */
+	public void recomputeDeliveredStateForAllocatedInstructions(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		for (final ShipperTransportationId deliveryInstructionId : getAllocatedInstructionIdsOf(deliveryPlanningId))
+		{
+			recomputeDeliveredState(deliveryInstructionId);
+		}
+	}
+
+	/**
+	 * Recomputes and stores {@code M_ShipperTransportation.DeliveredState} for ONE delivery instruction, from
+	 * {@link DeliveryPlanningList#getDeliveredState()} over its currently ACTIVE allocations - the single
+	 * derivation every write point that can change which plannings are delivered, or which plannings are
+	 * actively allocated to the instruction, routes through (rule 6, Task Q9): {@link #createAllocation},
+	 * {@link #deactivateAllocationRecords} and {@link #recomputeDeliveredStateForAllocatedInstructions}. An
+	 * instruction with no active allocation is {@code NotDelivered} - the same vacuous case the ADD COLUMN
+	 * DEFAULT already gives a freshly-created instruction, so this is never a special case, only the general one.
+	 */
+	public void recomputeDeliveredState(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		final ImmutableList<DeliveryPlanningAlloc> allocations = getAllocationsOfInstruction(deliveryInstructionId);
+
+		final DeliveryInstructionDeliveredState deliveredState;
+		if (allocations.isEmpty())
+		{
+			deliveredState = DeliveryInstructionDeliveredState.NotDelivered;
+		}
+		else
+		{
+			final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = allocations.stream()
+					.map(DeliveryPlanningAlloc::getDeliveryPlanningId)
+					.collect(ImmutableSet.toImmutableSet());
+
+			final DeliveryPlanningList plannings = getByIds(allocatedPlanningIds).stream()
+					.map(DeliveryPlanningRepository::toDeliveredStatePlanning)
+					.collect(DeliveryPlanningList.collect());
+
+			deliveredState = plannings.getDeliveredState();
+		}
+
+		final I_M_ShipperTransportation deliveryInstructionRecord = load(deliveryInstructionId, I_M_ShipperTransportation.class);
+		deliveryInstructionRecord.setDeliveredState(deliveredState.getCode());
+		saveRecord(deliveryInstructionRecord);
+	}
+
+	/**
+	 * The minimal {@link DeliveryPlanning} {@link #recomputeDeliveredState} needs: just enough for
+	 * {@link DeliveryPlanning#isDelivered()} - unlike {@link #toPoolPlanning}, which carries the quantity pool's
+	 * fields instead and is used by an unrelated caller.
+	 */
+	private static DeliveryPlanning toDeliveredStatePlanning(@NonNull final I_M_Delivery_Planning record)
+	{
+		return DeliveryPlanning.builder()
+				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				// isDelivered() below never reads transportDirection - it exists only to satisfy the shared
+				// value object's @NonNull contract, so a blank/unset column (a real persisted row always has
+				// one; this covers a caller whose fixture record does not) falls back rather than throwing.
+				.transportDirection(TransportDirection.ofNullableCode(record.getTransportDirection(), TransportDirection.Outgoing))
+				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
+				.build();
 	}
 
 	private static DeliveryPlanningAlloc toDeliveryPlanningAlloc(@NonNull final I_M_Delivery_Planning_Alloc allocRecord)

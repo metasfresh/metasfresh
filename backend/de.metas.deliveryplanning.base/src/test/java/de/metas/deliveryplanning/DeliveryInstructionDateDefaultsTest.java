@@ -92,13 +92,25 @@ class DeliveryInstructionDateDefaultsTest
 		return record;
 	}
 
+	/**
+	 * A real, persisted row - not a fabricated id - because {@code createAllocations} (Task Q9) now reads the
+	 * planning back to recompute the instruction's {@code DeliveredState}, so a request naming an id with no
+	 * backing row fails there instead of silently "succeeding" as it used to.
+	 */
+	private static DeliveryPlanningId createDeliveryPlanning()
+	{
+		final org.compiere.model.I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(org.compiere.model.I_M_Delivery_Planning.class);
+		InterfaceWrapperHelper.save(record);
+		return DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
+	}
+
 	private static DeliveryPlanningAllocCreateRequest allocRequest(
 			@Nullable final Timestamp etd,
 			@Nullable final Timestamp eta,
 			@Nullable final String loadingTime)
 	{
 		return DeliveryPlanningAllocCreateRequest.builder()
-				.deliveryPlanningId(DeliveryPlanningId.ofRepoId(1))
+				.deliveryPlanningId(createDeliveryPlanning())
 				.productId(ProductId.ofRepoId(540010))
 				.qtyLoaded(Quantity.of(BigDecimal.TEN, uom()))
 				.qtyDischarged(Quantity.of(BigDecimal.ONE, uom()))

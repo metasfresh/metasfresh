@@ -25,6 +25,7 @@ package de.metas.deliveryplanning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.inout.InOutId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -98,6 +99,13 @@ public class DeliveryPlanning
 	@Nullable Quantity actualDischargeQty;
 
 	/**
+	 * The receipt or shipment this planning is linked to - {@code M_Delivery_Planning.M_InOut_ID}, stamped and
+	 * un-stamped by {@code interceptor/M_InOut}. {@code null} for a planning loaded by a caller that never asks
+	 * {@link #isDelivered()} about it, same convention as the quantity fields above.
+	 */
+	@Nullable InOutId inOutId;
+
+	/**
 	 * This planning's ACTIVE allocations, one per delivery instruction it sits on. A list rather than a single id
 	 * because multi-leg transport puts one planning on several instructions; no consumer may assume at most one.
 	 */
@@ -121,4 +129,11 @@ public class DeliveryPlanning
 	}
 
 	public boolean isWithoutShipper() {return shipperId == null;}
+
+	/**
+	 * From {@code M_InOut_ID} being set - the same definition {@code M_Delivery_Planning.IsDelivered}'s
+	 * {@code ColumnSQL} evaluates in SQL (5821150), so the two layers cannot diverge. On an incoming planning
+	 * "delivered" means received.
+	 */
+	public boolean isDelivered() {return inOutId != null;}
 }

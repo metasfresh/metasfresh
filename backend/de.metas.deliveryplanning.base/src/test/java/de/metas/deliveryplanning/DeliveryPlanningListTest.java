@@ -25,6 +25,7 @@ package de.metas.deliveryplanning;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
 import de.metas.deliveryplanning.DeliveryPlanningList.PoolEnd;
+import de.metas.inout.InOutId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -669,6 +670,81 @@ class DeliveryPlanningListTest
 
 			assertThat(list.openPlanQty(target, PoolEnd.LOAD).toBigDecimal())
 					.isEqualByComparingTo(BigDecimal.valueOf(-5));
+		}
+	}
+
+	/**
+	 * The three-state instruction indicator (spec &sect; 5.7, Task Q9), pure in-memory over
+	 * {@link DeliveryPlanning#isDelivered()} - the cucumber scenario
+	 * ({@code deliveryInstructionDeliveredState.feature}) covers the write-point wiring (the interceptor and
+	 * repository call sites actually recomputing and persisting this on a real instruction); this pins the
+	 * derivation itself, edge cases included.
+	 */
+	@Nested
+	@DisplayName("getDeliveredState")
+	class GetDeliveredState
+	{
+		private DeliveryPlanning delivered()
+		{
+			return planning().inOutId(InOutId.ofRepoId(900001)).build();
+		}
+
+		private DeliveryPlanning notDelivered()
+		{
+			return planning().build();
+		}
+
+		@Test
+		@DisplayName("an empty selection (no active allocation) is NotDelivered - vacuously, same condition as an all-open one")
+		void emptySelectionIsNotDelivered()
+		{
+			assertThat(DeliveryPlanningList.EMPTY.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.NotDelivered);
+		}
+
+		@Test
+		@DisplayName("no allocation's planning is delivered")
+		void noneDelivered()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(notDelivered(), notDelivered());
+
+			assertThat(list.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.NotDelivered);
+		}
+
+		@Test
+		@DisplayName("some are delivered, some are not - the normal intermediate state, not an edge case")
+		void someDelivered()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(delivered(), notDelivered());
+
+			assertThat(list.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.PartlyDelivered);
+		}
+
+		@Test
+		@DisplayName("every allocation's planning is delivered")
+		void allDelivered()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(delivered(), delivered());
+
+			assertThat(list.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.FullyDelivered);
+		}
+
+		@Test
+		@DisplayName("a single delivered row is trivially FullyDelivered, never PartlyDelivered")
+		void singleDeliveredRow()
+		{
+			assertThat(DeliveryPlanningList.of(delivered()).getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.FullyDelivered);
+		}
+
+		@Test
+		@DisplayName("reversal: a FullyDelivered instruction whose one allocation loses its receipt/shipment link falls back to PartlyDelivered, never NotDelivered")
+		void reversalOfOneOfTwoFallsBackToPartlyDelivered()
+		{
+			final DeliveryPlanningList fully = DeliveryPlanningList.of(delivered(), delivered());
+			assertThat(fully.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.FullyDelivered);
+
+			// same two allocations, one now reversed (M_InOut_ID cleared) - exactly what afterReverseCorrect does
+			final DeliveryPlanningList afterReversal = DeliveryPlanningList.of(delivered(), notDelivered());
+			assertThat(afterReversal.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.PartlyDelivered);
 		}
 	}
 

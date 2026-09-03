@@ -156,6 +156,13 @@ public class M_ShipperTransportation_StepDef
 				softly.assertThat(deliveryInstruction.getDocStatus()).as(I_M_ShipperTransportation.COLUMNNAME_DocStatus).isEqualTo(docStatus);
 			}
 
+			// DeliveredState (Task Q9): the three-state delivered indicator, e.g. "NotDelivered" / "PartlyDelivered" / "FullyDelivered".
+			final String deliveredState = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_DeliveredState);
+			if (Check.isNotBlank(deliveredState))
+			{
+				softly.assertThat(deliveryInstruction.getDeliveredState()).as(I_M_ShipperTransportation.COLUMNNAME_DeliveredState).isEqualTo(deliveredState);
+			}
+
 			softly.assertAll();
 		}
 	}

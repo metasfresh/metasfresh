@@ -234,7 +234,7 @@ class DeliveryPlanningBatchLoadingTest
 	// ------------------------------------------------------------------ tests
 
 	@Test
-	@DisplayName("combine reads the selection in two batch loads - the only single-row load is the one seed header")
+	@DisplayName("combine reads the selection in four batch loads - the only single-row load is the one seed header")
 	void combineBatchLoadsTheSelection()
 	{
 		createDeliveryInstructionDocType();
@@ -245,9 +245,12 @@ class DeliveryPlanningBatchLoadingTest
 		// a draft, which is the default: a combined instruction is assembled over days
 		final ShipperTransportationId deliveryInstructionId = deliveryPlanningService.combine(selection, false);
 
-		// one batch for the allocation requests of the plannings behind the seed, one for the ReleaseNo stamping -
+		// one batch for the allocation requests of the plannings behind the seed, one for the ReleaseNo stamping,
+		// plus TWO for DeliveredState (Task Q9): createAllocations recomputes ONCE per call, and combine makes
+		// two calls here - the seed's (inside generateDeliveryInstruction) and the other two plannings' - not
+		// once per planning (that would have been 3, one per row; batched per call it is 2) -
 		// plus the single-row load of the ONE seed planning the header is built from
-		assertBatchLoadedExactly(2, 1);
+		assertBatchLoadedExactly(4, 1);
 
 		// the batch did not cost the outcome: all three are on the one instruction and carry their own ReleaseNo
 		final I_M_ShipperTransportation deliveryInstruction = InterfaceWrapperHelper.load(deliveryInstructionId, I_M_ShipperTransportation.class);
@@ -274,7 +277,7 @@ class DeliveryPlanningBatchLoadingTest
 	}
 
 	@Test
-	@DisplayName("add-to reads the selection in two batch loads - never one planning at a time")
+	@DisplayName("add-to reads the selection in three batch loads - never one planning at a time")
 	void addToBatchLoadsTheSelection()
 	{
 		final ImmutableList<I_M_Delivery_Planning> records = ImmutableList.of(deliveryPlanning(), deliveryPlanning(), deliveryPlanning());
@@ -283,8 +286,9 @@ class DeliveryPlanningBatchLoadingTest
 
 		deliveryPlanningService.addTo(selection, ShipperTransportationId.ofRepoId(target.getM_ShipperTransportation_ID()));
 
-		// one for the allocation requests, one for the ReleaseNo stamping
-		assertBatchLoadedExactly(2);
+		// one for the allocation requests, one for the ReleaseNo stamping, one for DeliveredState (Task Q9) -
+		// createAllocations recomputes ONCE per call, for the whole selection, not once per planning
+		assertBatchLoadedExactly(3);
 
 		// the batch did not cost the outcome: every planning is on the target and carries its own ReleaseNo
 		for (final I_M_Delivery_Planning record : records)
