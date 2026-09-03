@@ -14,9 +14,17 @@ const HU_A_PIECES = 2;
 const HU_A_WEIGHT = '68.400'; // three decimals: that is how the attribute is stored and compared
 const HU_B_PIECES = 1;
 const HU_B_WEIGHT = '34.200';
+// a third HU holding more than the line still needs, so its step gets capped to the remainder
+const HU_C_PIECES = 2;
+const HU_C_WEIGHT = '69.000';
+// giving up one of its two pieces takes half of its weight with it
+const HU_C_PIECES_LEFT = HU_C_PIECES - 1;
+const HU_C_WEIGHT_LEFT = '34.500';
 
-// 105 kg is what all three pieces nominally weigh, so each HU is consumed whole by its own step
-const LINE_DEMAND_KG = (HU_A_PIECES + HU_B_PIECES) * NOMINAL_KG_PER_PIECE;
+// The line needs what HU_A and HU_B nominally weigh plus one piece more, so those two are consumed
+// whole while HU_C - which holds two pieces - can only give up part of itself
+const LINE_DEMAND_KG = (HU_A_PIECES + HU_B_PIECES + 1) * NOMINAL_KG_PER_PIECE;
+const REMAINDER_KG = NOMINAL_KG_PER_PIECE;
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -39,6 +47,7 @@ const createMasterdata = async () => {
             handlingUnits: {
                 "HU_A": { product: 'COMP_CW', warehouse: 'wh', qty: HU_A_PIECES, weightNet: Number(HU_A_WEIGHT) },
                 "HU_B": { product: 'COMP_CW', warehouse: 'wh', qty: HU_B_PIECES, weightNet: Number(HU_B_WEIGHT) },
+                "HU_C": { product: 'COMP_CW', warehouse: 'wh', qty: HU_C_PIECES, weightNet: Number(HU_C_WEIGHT) },
             },
             manufacturingOrders: {
                 "PP1": {
@@ -82,6 +91,7 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
                 hus: {
                     'HU_A': { huStatus: 'A', storages: { 'COMP_CW': `${HU_A_PIECES} PCE` }, attributes: { 'WeightNet': HU_A_WEIGHT } },
                     'HU_B': { huStatus: 'A', storages: { 'COMP_CW': `${HU_B_PIECES} PCE` }, attributes: { 'WeightNet': HU_B_WEIGHT } },
+                    'HU_C': { huStatus: 'A', storages: { 'COMP_CW': `${HU_C_PIECES} PCE` }, attributes: { 'WeightNet': HU_C_WEIGHT } },
                 },
             });
         });
@@ -103,15 +113,19 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
             });
         });
 
-        await test.step('Final: both HUs are consumed and each kept its own weight', async () => {
+        await test.step('Both whole HUs consumed, each having kept its own weight', async () => {
             await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_B.qrCode });
-            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: `${LINE_DEMAND_KG} kg` });
+            await ManufacturingJobScreen.expectIssueButton({
+                index: 1,
+                qtyIssued: `${(HU_A_PIECES + HU_B_PIECES) * NOMINAL_KG_PER_PIECE} kg`,
+            });
 
             await Backend.expect({
-                title: 'final weights',
+                title: 'weights after both whole HUs',
                 hus: {
                     'HU_A': { huStatus: 'D', attributes: { 'WeightNet': HU_A_WEIGHT } },
                     'HU_B': { huStatus: 'D', attributes: { 'WeightNet': HU_B_WEIGHT } },
+                    'HU_C': { huStatus: 'A', storages: { 'COMP_CW': `${HU_C_PIECES} PCE` }, attributes: { 'WeightNet': HU_C_WEIGHT } },
                 },
                 manufacturings: {
                     'PP1': {
@@ -119,6 +133,24 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
                             { attributes: { 'WeightNet': HU_A_WEIGHT } },
                             { attributes: { 'WeightNet': HU_B_WEIGHT } },
                         ],
+                    },
+                },
+            });
+        });
+
+        // The line needs one more piece than HU_C's step was planned for, so that step is capped to the
+        // remainder and becomes a partial issue: HU_C gives up part of itself and stays on stock.
+        await test.step('Final: the capped step takes only part of the third HU, which survives', async () => {
+            await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_C.qrCode });
+            await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: `${LINE_DEMAND_KG} kg` });
+
+            await Backend.expect({
+                title: 'the partially issued HU is still on stock, with less quantity and less weight',
+                hus: {
+                    'HU_C': {
+                        huStatus: 'A',
+                        storages: { 'COMP_CW': `${HU_C_PIECES_LEFT} PCE` },
+                        attributes: { 'WeightNet': HU_C_WEIGHT_LEFT },
                     },
                 },
             });

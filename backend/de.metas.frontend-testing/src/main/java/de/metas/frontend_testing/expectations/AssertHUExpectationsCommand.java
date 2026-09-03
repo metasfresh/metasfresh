@@ -204,7 +204,6 @@ class AssertHUExpectationsCommand
 		return services.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(matcherStr));
 	}
 
-
 	private void assertTUs(@NonNull final List<JsonHUExpectation> expectations, @NonNull final HuId luId)
 	{
 		final ArrayList<I_M_HU> tus = new ArrayList<>(services.getIncludedHUs(luId));

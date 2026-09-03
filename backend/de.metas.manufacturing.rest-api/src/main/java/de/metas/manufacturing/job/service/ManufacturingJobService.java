@@ -665,8 +665,7 @@ public class ManufacturingJobService
 		for (final RawMaterialsIssueStep step : line.getSteps())
 		{
 			// A step consuming a whole HU is denominated in that HU's stocking UOM, which the line's
-			// remaining quantity is not, so neither the comparison nor the capping can use the two as
-			// they come.
+			// remaining quantity is not, so the comparison below has to convert before it can compare.
 			final Quantity stepQtyToIssue = step.getQtyToIssue();
 			final Quantity stepQtyToIssueInLineUom = uomConversionBL.convertQuantityTo(stepQtyToIssue, productId, qtyLeftToBeIssued.getUomId());
 
@@ -681,12 +680,11 @@ public class ManufacturingJobService
 			}
 			else
 			{
-				// capping the step keeps it in its own UOM, so a whole-HU step is not silently
-				// re-denominated into the line's
-				final Quantity cappedQtyInStepUom = uomConversionBL.convertQuantityTo(qtyLeftToBeIssued, productId, stepQtyToIssue.getUomId());
-
-				ppOrderIssueScheduleService.updateQtyToIssue(step.getId(), cappedQtyInStepUom);
-				updatedStepsListBuilder.add(step.withQtyToIssue(cappedQtyInStepUom));
+				// What is left no longer covers this HU, so the step stops being a whole-HU consume and
+				// becomes a partial issue. It therefore takes the line's UOM: a partial issue reduces the
+				// HU's quantity and weight and leaves it standing, where consuming it whole destroys it.
+				ppOrderIssueScheduleService.updateQtyToIssue(step.getId(), qtyLeftToBeIssued);
+				updatedStepsListBuilder.add(step.withQtyToIssue(qtyLeftToBeIssued));
 				qtyLeftToBeIssued = qtyLeftToBeIssued.toZero();
 			}
 		}
