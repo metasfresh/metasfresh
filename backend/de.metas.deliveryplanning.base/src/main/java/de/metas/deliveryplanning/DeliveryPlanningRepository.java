@@ -1079,6 +1079,15 @@ public class DeliveryPlanningRepository
 	 * calls this once per row inside its loop (one {@code saveRecord} per allocation fires the interceptor
 	 * once), so voiding an instruction that carries N plannings costs N {@code UPDATE}s here - see that
 	 * method's own note on why this round does not turn that into a transaction-scoped batch.
+	 * <p>
+	 * {@code updateDirectly} is a raw SQL {@code UPDATE} - it fires no {@code CacheMgt} reset and no
+	 * interceptor - so the explicit {@link CacheMgt#reset(String, int)} below is required: this method exists
+	 * precisely to cover allocation writers that touch only {@code M_Delivery_Planning_Alloc} (e.g. a future
+	 * bulk fix or import routine looping {@code InterfaceWrapperHelper.save} over allocation rows without
+	 * saving the planning record itself). Without the reset, a cached {@code I_M_Delivery_Planning} row - an
+	 * operator's Lieferplanung window already holding it open, say - would keep showing the pre-change
+	 * {@code IsAllocated} until an unrelated write on that same row happened to invalidate it, which is exactly
+	 * the staleness this column could never have before it was a live {@code ColumnSQL} (5821150).
 	 */
 	public void refreshIsAllocated(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -1086,6 +1095,8 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
 				.create()
 				.updateDirectly(new IsAllocatedFromAllocTableUpdater());
+
+		CacheMgt.get().reset(I_M_Delivery_Planning.Table_Name, deliveryPlanningId.getRepoId());
 	}
 
 	/**
