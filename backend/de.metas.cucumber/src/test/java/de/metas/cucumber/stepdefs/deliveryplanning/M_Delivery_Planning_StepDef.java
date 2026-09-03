@@ -36,6 +36,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.deliveryplanning.DeliveryPlanningCancelResult;
@@ -99,6 +100,7 @@ public class M_Delivery_Planning_StepDef
 	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
+	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final DeliveryPlanningRejectionHelper rejectionHelper;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -372,6 +374,22 @@ public class M_Delivery_Planning_StepDef
 					.ifPresent(orderStatus -> softly.assertThat(deliveryPlanning.getOrderStatus())
 							.as(I_M_Delivery_Planning.COLUMNNAME_OrderStatus)
 							.isEqualTo(DataTableUtil.nullToken2Null(orderStatus)));
+
+			// The receipt/shipment back-link the M_InOut TIMING_AFTER_COMPLETE interceptor writes. Asserting it
+			// is the only way a scenario notices that the interceptor did not run at all - the raw
+			// M_InOut.M_Delivery_Planning_ID is set by the generate process itself and looks fine either way.
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID)
+					.ifPresent(id -> {
+						if (id.isNullPlaceholder())
+						{
+							softly.assertThat(deliveryPlanning.getM_InOut_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID).isEqualTo(0);
+						}
+						else
+						{
+							final org.compiere.model.I_M_InOut inout = id.lookupNotNullIn(inOutTable);
+							softly.assertThat(deliveryPlanning.getM_InOut_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID).isEqualTo(inout.getM_InOut_ID());
+						}
+					});
 
 			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID)
 					.ifPresent(id -> {
