@@ -390,6 +390,37 @@ class DeliveryPlanningCloseSemanticsTest
 	}
 
 	@Test
+	@DisplayName("Q10: closing a planning that is ALREADY Processed (delivered, then reopened) exercises the skip branch - Processed stays true, never toggled")
+	void close_alreadyProcessedFromDelivery_exercisesSkipBranch()
+	{
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		markDelivered(planning);
+
+		// closed once, then reopened while still delivered: leaves IsClosed=false, Processed=true - the ONLY
+		// reachable state in which a SECOND close finds isProcessed() already true, i.e. the ONLY state that
+		// exercises closeSelectedDeliveryPlannings' skip branch. Every other test in this class starts each
+		// close from an unprocessed planning, so only the "set" branch ever ran before this test existed.
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning reopened = reload(planning);
+		assertInvariantHolds(reopened);
+		assertThat(reopened.isClosed()).isFalse();
+		assertThat(reopened.isProcessed()).as("delivered, so still Processed going into the second close").isTrue();
+
+		// The skip branch's own save() still runs unconditionally (IsClosed itself is changing false->true),
+		// so an "Updated timestamp changed" or "save call count" check would pass regardless of whether the
+		// guarded setProcessed(true) executed - it is not an observable proxy for the skip, and a mock built
+		// solely to intercept that one setter call would test the mock, not the behaviour. The state assertion
+		// below IS discriminating, though: a regression that inverted the guard (e.g. skip-when-true became
+		// clear-when-true) would flip Processed to false here, and the invariant assertion would fail too.
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning closedAgain = reload(planning);
+		assertInvariantHolds(closedAgain);
+		assertThat(closedAgain.isClosed()).isTrue();
+		assertThat(closedAgain.isProcessed()).as("already Processed before this close - the skip branch must leave it true, not toggle it").isTrue();
+	}
+
+	@Test
 	@DisplayName("Q10: a planning delivered WHILE closed stays Processed on reopen too - IsClosed dominates until it is lifted")
 	void reopen_deliveredWhileClosed_keepsProcessed()
 	{
