@@ -1,7 +1,7 @@
-DROP VIEW IF EXISTS M_ShipperTransportation_Delivery_Instructions_V
+DROP VIEW IF EXISTS M_ShipperTransportation_Delivery_Instructions_V$new
 ;
 
-CREATE OR REPLACE VIEW M_ShipperTransportation_Delivery_Instructions_V
+CREATE OR REPLACE VIEW M_ShipperTransportation_Delivery_Instructions_V$new
 AS
 SELECT di.documentno,
        di.m_shippertransportation_id,
@@ -32,4 +32,15 @@ FROM M_ShipperTransportation di
               ON dpa.m_shippertransportation_id = di.m_shippertransportation_id AND dpa.isactive = 'Y'
          JOIN M_ShippingPackage sp ON sp.m_shippingpackage_id = dpa.m_shippingpackage_id
          JOIN M_Delivery_Planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id
+;
+
+SELECT db_alter_view(
+               'm_shippertransportation_delivery_instructions_v',
+               (SELECT view_definition
+                FROM information_schema.views
+                WHERE lower(views.table_name) = lower('m_shippertransportation_delivery_instructions_v$new'))
+           )
+;
+
+DROP VIEW IF EXISTS m_shippertransportation_delivery_instructions_v$new
 ;

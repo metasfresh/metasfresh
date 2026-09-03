@@ -582,6 +582,18 @@ public class DeliveryPlanningService
 		deliveryPlanningRepository.recomputeOpenQuantitiesForOrderLine(orderLineId);
 	}
 
+	/**
+	 * Pushes a quantity change on ONE planning out to the delivery instruction line(s) that mirror it, so an
+	 * already-open Lieferanweisungen document refreshes its Versandpaket row with no manual reload
+	 * (Task Q14, TC11). See {@link DeliveryInstructionLineCacheInvalidation} for why the generic
+	 * {@code AD_SQLColumn_SourceTableColumn} invalidation cannot reach that row.
+	 */
+	public void invalidateDeliveryInstructionLinesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryPlanningRepository.invalidateDeliveryInstructionLinesFor(
+				DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
+	}
+
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
 	{
 		deliveryPlanningRepository.deleteForReceiptSchedule(receiptScheduleId);

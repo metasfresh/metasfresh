@@ -45,6 +45,25 @@ export const INVOICE_CANDIDATE_WINDOW_ID = 540983;
  */
 export const TRANSPORT_ORDER_WINDOW_ID = 540020;
 
+/**
+ * Delivery Planning window (Lieferplanung)
+ * Table: M_Delivery_Planning
+ * Window ID: 541632, tab 546674 (tabLevel 0)
+ * Description: One row per order line to be moved; owns the four quantity figures
+ * (PlannedLoadedQuantity, PlannedDischargeQuantity, ActualLoadQty, ActualDischargeQuantity) that the
+ * delivery instruction's Versandpaket line mirrors.
+ */
+export const DELIVERY_PLANNING_WINDOW_ID = 541632;
+
+/**
+ * Delivery Instruction window (Lieferanweisungen)
+ * Table: M_ShipperTransportation
+ * Window ID: 541657, root tab 546732; included tab 546736 "Versandpaket" (M_ShippingPackage) carries
+ * the mirrored quantity figures.
+ * Note: window 540020 "Transport Auftrag" is the OTHER window over the same table.
+ */
+export const DELIVERY_INSTRUCTION_WINDOW_ID = 541657;
+
 // ============================================================================
 // MASTER DATA WINDOWS
 // ============================================================================

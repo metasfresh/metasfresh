@@ -27,6 +27,8 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
@@ -63,6 +65,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
@@ -1069,6 +1072,34 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
 				.create()
 				.updateDirectly(new IsAllocatedFromAllocTableUpdater());
+	}
+
+	/**
+	 * Makes every delivery instruction the given planning is ACTIVELY allocated to refresh its
+	 * {@code M_ShippingPackage} line in an already-open WebUI document (Task Q14, TC11) - the four quantity
+	 * figures on that line are a {@code ColumnSQL} read-through of this planning, so a change here changes what
+	 * the line must show.
+	 * <p>
+	 * The reason a hand-written invalidation is needed at all, and why the request is rooted at the INSTRUCTION
+	 * rather than at the package, is spelled out on {@link DeliveryInstructionLineCacheInvalidation}. Broadcast
+	 * on transaction commit (not immediately), the same way {@code de.metas.acct.interceptor.GL_JournalLine}
+	 * pushes a line change up to its {@code GL_Journal} document: the frontend must re-read committed data.
+	 * <p>
+	 * Cost: one {@code SELECT} over {@code M_Delivery_Planning_Alloc} per quantity-changing save of a planning,
+	 * and nothing at all for a planning that is on no instruction (the overwhelmingly common case while a
+	 * planning is still being planned) - {@code requestForAllocationsOrNull} returns {@code null} and no
+	 * broadcast is sent.
+	 */
+	public void invalidateDeliveryInstructionLinesFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		final CacheInvalidateMultiRequest request = DeliveryInstructionLineCacheInvalidation.requestForAllocationsOrNull(
+				getAllocationsByPlanningId(ImmutableList.of(deliveryPlanningId)).values());
+		if (request == null)
+		{
+			return;
+		}
+
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, request);
 	}
 
 	/**

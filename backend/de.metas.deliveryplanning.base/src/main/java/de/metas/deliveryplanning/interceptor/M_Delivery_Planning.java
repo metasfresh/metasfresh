@@ -120,6 +120,12 @@ public class M_Delivery_Planning
 	public void onQuantityChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		deliveryPlanningService.recomputeOpenQuantitiesForOrderLine(deliveryPlanning);
+
+		// Task Q14 (TC11): the delivery instruction's Versandpaket line is a read-through of these four
+		// figures, so this is also the moment an OPEN Lieferanweisungen document has to be told to re-read
+		// that row. The AD_SQLColumn_SourceTableColumn rows the columns carry cannot do it - they invalidate
+		// the model cache, not the document; see DeliveryInstructionLineCacheInvalidation.
+		deliveryPlanningService.invalidateDeliveryInstructionLinesFor(deliveryPlanning);
 	}
 
 	/**

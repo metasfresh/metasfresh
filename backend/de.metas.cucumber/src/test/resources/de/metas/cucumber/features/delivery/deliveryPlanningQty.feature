@@ -1270,13 +1270,9 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
       | planningSyncQty        | 6                     | 7                        | 8             | 9                        |
 
-    # re-loads the package (StepDefData identifier tables hold a Java reference from before the edit above -
-    # a cucumber-harness artifact, not the production path, which the DB always answers fresh); the
-    # production side of "no manual reload" is TC11's Playwright assertion plus the WEBUI_ViewInvalidateOnChange
-    # row this task adds for the instruction window
-    Then the M_ShipperTransportation identified by deliveryInstructionSyncQty holds exactly the following active M_Delivery_Planning_Alloc:
-      | M_Delivery_Planning_ID | M_ShippingPackage_ID   |
-      | planningSyncQty        | shippingPackageSyncQty |
-    And validate M_Shipping_Package:
+    # nothing between the edit above and the assertion below: no re-load step, no propagation step. The
+    # step-def re-reads the package from the database itself (M_ShippingPackage_StepDef#reloadFromDatabase),
+    # which the derived columns require - so this asserts the mirror, not a cucumber-harness reload.
+    Then validate M_Shipping_Package:
       | M_ShippingPackage_ID   | ActualLoadQty | ActualDischargeQuantity | PlannedLoadedQuantity | PlannedDischargeQuantity |
       | shippingPackageSyncQty | 8             | 9                       | 6                     | 7                        |
