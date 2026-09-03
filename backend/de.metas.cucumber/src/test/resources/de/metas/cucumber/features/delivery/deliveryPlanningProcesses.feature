@@ -74,7 +74,7 @@ Feature: Delivery planning processes interaction
       | shippingPackageAdd              | packageAdd              | deliveryInstructionAdd                |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageAdd              | packageAdd              | deliveryInstructionAdd                | customerLocation                  | 5             | customer                     | product                     | orderLineAdd                  |
+      | shippingPackageAdd              | packageAdd              | deliveryInstructionAdd                | customerLocation                  | 0             | customer                     | product                     | orderLineAdd                  |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID | M_Shipper_ID | ETA        | M_ShipperTransportation_ID | PlannedLoadedQuantity |
       | deliveryPlanningAdd_1  | 5          | 5            | Outgoing           | orderAdd   | orderLineAdd   | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-25 | deliveryInstructionAdd     | 5                     |
@@ -157,7 +157,7 @@ Feature: Delivery planning processes interaction
       | shippingPackage                 | package                 | deliveryInstruction                   |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackage                 | package                 | deliveryInstruction                   | customerLocation                  | 2             | customer                     | product                     | orderLine                     |
+      | shippingPackage                 | package                 | deliveryInstruction                   | customerLocation                  | 0             | customer                     | product                     | orderLine                     |
 
     When M_Delivery_Planning identified by deliveryPlanning_2 is canceled
 

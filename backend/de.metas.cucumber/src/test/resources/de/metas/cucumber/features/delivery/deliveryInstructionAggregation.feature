@@ -86,9 +86,9 @@ Feature: Several delivery plannings on one delivery instruction
       | planningCombine_3      | shippingPackageCombine_3 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID     | ActualLoadQty |
-      | shippingPackageCombine_1 | 4             |
-      | shippingPackageCombine_2 | 3             |
-      | shippingPackageCombine_3 | 3             |
+      | shippingPackageCombine_1 | 0             |
+      | shippingPackageCombine_2 | 0             |
+      | shippingPackageCombine_3 | 0             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningCombine_1      | 10         | 10           | Outgoing           | deliveryInstructionCombine |
@@ -197,8 +197,8 @@ Feature: Several delivery plannings on one delivery instruction
       | planningAdd_2          | shippingPackageAdd_2 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID | ActualLoadQty |
-      | shippingPackageAdd_1 | 4             |
-      | shippingPackageAdd_2 | 2             |
+      | shippingPackageAdd_1 | 0             |
+      | shippingPackageAdd_2 | 0             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningAdd_3          | 10         | 10           | Outgoing           | null                       |
@@ -216,9 +216,9 @@ Feature: Several delivery plannings on one delivery instruction
       | planningAdd_3          | shippingPackageAdd_3 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID | ActualLoadQty |
-      | shippingPackageAdd_1 | 4             |
-      | shippingPackageAdd_2 | 2             |
-      | shippingPackageAdd_3 | 2             |
+      | shippingPackageAdd_1 | 0             |
+      | shippingPackageAdd_2 | 0             |
+      | shippingPackageAdd_3 | 0             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID |
       | planningAdd_3          | 10         | 10           | Outgoing           | deliveryInstructionAdd_A   |
@@ -235,15 +235,15 @@ Feature: Several delivery plannings on one delivery instruction
       | planningAdd_3          | shippingPackageAdd_3 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID | ActualLoadQty |
-      | shippingPackageAdd_1 | 4             |
-      | shippingPackageAdd_2 | 2             |
-      | shippingPackageAdd_3 | 2             |
+      | shippingPackageAdd_1 | 0             |
+      | shippingPackageAdd_2 | 0             |
+      | shippingPackageAdd_3 | 0             |
     And the M_ShipperTransportation identified by deliveryInstructionAdd_B holds exactly the following active M_Delivery_Planning_Alloc:
       | M_Delivery_Planning_ID | M_ShippingPackage_ID |
       | planningAdd_4          | shippingPackageAdd_4 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID | ActualLoadQty |
-      | shippingPackageAdd_4 | 2             |
+      | shippingPackageAdd_4 | 0             |
 
   @Id:S31608_TC4
   Scenario: Neither Add, Move nor Remove touches a delivery planning on a completed delivery instruction
@@ -383,15 +383,15 @@ Feature: Several delivery plannings on one delivery instruction
       | planningMove_1         | shippingPackageMove_1 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID  | ActualLoadQty |
-      | shippingPackageMove_1 | 5             |
+      | shippingPackageMove_1 | 0             |
     And the M_ShipperTransportation identified by deliveryInstructionMove_B holds exactly the following active M_Delivery_Planning_Alloc:
       | M_Delivery_Planning_ID | M_ShippingPackage_ID  |
       | planningMove_3         | shippingPackageMove_3 |
       | planningMove_2         | shippingPackageMove_2 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID  | ActualLoadQty |
-      | shippingPackageMove_3 | 6             |
-      | shippingPackageMove_2 | 5             |
+      | shippingPackageMove_3 | 0             |
+      | shippingPackageMove_2 | 0             |
 
     # the source allocation and its shipping package are RELEASED - deactivated, not erased
     And validate M_Delivery_Planning_Alloc:
@@ -636,15 +636,15 @@ Feature: Several delivery plannings on one delivery instruction
       | planningView_2         | shippingPackageView_2 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID  | ActualLoadQty |
-      | shippingPackageView_1 | 7             |
-      | shippingPackageView_2 | 3             |
+      | shippingPackageView_1 | 0             |
+      | shippingPackageView_2 | 0             |
 
     # two plannings, two consignment rows - not the 2 x 2 an uncorrelated package join returns,
     # and each row carries its OWN planning's article and quantities
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_Delivery_Planning_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | ActualLoadQty | ActualDischargeQuantity |
-      | planningView_1         | product      | 7             | 7                       |
-      | planningView_2         | product2     | 3             | 3                       |
+      | planningView_1         | product      | 0             | 0                        |
+      | planningView_2         | product2     | 0             | 0                        |
 
     # the sibling view over the same allocations owes the same one-row-per-planning identity
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_ShipperTransportation_Delivery_Instructions_V:

@@ -124,7 +124,7 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
       | planningAdded_1        | shippingPackageAdded_1 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID   | ActualLoadQty |
-      | shippingPackageAdded_1 | 4             |
+      | shippingPackageAdded_1 | 0             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
       | planningAdded_2        | 12         | 12           | Outgoing           | false    | null                       |
@@ -175,8 +175,8 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
       | planningFinal_2        | shippingPackageFinal_2 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID   | ActualLoadQty |
-      | shippingPackageFinal_1 | 5             |
-      | shippingPackageFinal_2 | 5             |
+      | shippingPackageFinal_1 | 0             |
+      | shippingPackageFinal_2 | 0             |
     # the flag moved; the allocation, the instruction reference and the release number did not
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | M_ShipperTransportation_ID |
@@ -411,7 +411,7 @@ Feature: A closed delivery planning is finished and nothing processes it any fur
       | planningSkip_2         | shippingPackageSkip_2 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID  | ActualLoadQty |
-      | shippingPackageSkip_2 | 5             |
+      | shippingPackageSkip_2 | 0             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | OrderStatus | M_ShipperTransportation_ID |
       | planningSkip_1         | 10         | 10           | Outgoing           | true     | Canceled    | null                       |

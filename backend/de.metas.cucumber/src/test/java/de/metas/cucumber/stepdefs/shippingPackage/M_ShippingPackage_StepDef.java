@@ -129,6 +129,12 @@ public class M_ShippingPackage_StepDef
 	 * @cucumber.columns
 	 *   <b>M_ShippingPackage_ID</b> — (required, identifier-ref) the package to assert<br>
 	 *   <b>ActualLoadQty</b> — (required) expected loaded quantity<br>
+	 *   <b>ActualDischargeQuantity</b> — (optional) expected discharged quantity - Task Q14, mirrored from
+	 *   the planning<br>
+	 *   <b>PlannedLoadedQuantity</b> — (optional) expected planned load quantity - Task Q14, mirrored from
+	 *   the planning<br>
+	 *   <b>PlannedDischargeQuantity</b> — (optional) expected planned discharge quantity - Task Q14, mirrored
+	 *   from the planning<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (optional, identifier-ref) expected delivery instruction<br>
 	 *   <b>M_Package_ID</b> — (optional, identifier-ref) expected package<br>
 	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) expected delivery address<br>
@@ -157,6 +163,23 @@ public class M_ShippingPackage_StepDef
 			softly.assertThat(shippingPackage.getActualLoadQty())
 					.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_ActualLoadQty, shippingPackageIdentifier)
 					.isEqualTo(row.getAsBigDecimal(I_M_ShippingPackage.COLUMNNAME_ActualLoadQty));
+
+			// Task Q14: all four quantity figures are derived from the planning - assert the other three when
+			// the row carries them, same pattern as ActualLoadQty above.
+			row.getAsOptionalBigDecimal(I_M_ShippingPackage.COLUMNNAME_ActualDischargeQuantity)
+					.ifPresent(expected -> softly.assertThat(shippingPackage.getActualDischargeQuantity())
+							.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_ActualDischargeQuantity, shippingPackageIdentifier)
+							.isEqualTo(expected));
+
+			row.getAsOptionalBigDecimal(I_M_ShippingPackage.COLUMNNAME_PlannedLoadedQuantity)
+					.ifPresent(expected -> softly.assertThat(shippingPackage.getPlannedLoadedQuantity())
+							.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_PlannedLoadedQuantity, shippingPackageIdentifier)
+							.isEqualTo(expected));
+
+			row.getAsOptionalBigDecimal(I_M_ShippingPackage.COLUMNNAME_PlannedDischargeQuantity)
+					.ifPresent(expected -> softly.assertThat(shippingPackage.getPlannedDischargeQuantity())
+							.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_PlannedDischargeQuantity, shippingPackageIdentifier)
+							.isEqualTo(expected));
 
 			row.getAsOptionalIdentifier(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID)
 					.filter(StepDefDataIdentifier::isNotNullPlaceholder)

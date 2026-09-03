@@ -84,9 +84,9 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | planningLife_3         | shippingPackageLife_3 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID  | ActualLoadQty |
-      | shippingPackageLife_1 | 4             |
-      | shippingPackageLife_2 | 3             |
-      | shippingPackageLife_3 | 3             |
+      | shippingPackageLife_1 | 0             |
+      | shippingPackageLife_2 | 0             |
+      | shippingPackageLife_3 | 0             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID | IsAllocated |
       | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    | true        |
@@ -111,9 +111,9 @@ Feature: The document lifecycle of a delivery instruction and its delivery plann
       | planningLife_3         | shippingPackageLife_3 |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID  | ActualLoadQty |
-      | shippingPackageLife_1 | 4             |
-      | shippingPackageLife_2 | 3             |
-      | shippingPackageLife_3 | 3             |
+      | shippingPackageLife_1 | 0             |
+      | shippingPackageLife_2 | 0             |
+      | shippingPackageLife_3 | 0             |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | M_ShipperTransportation_ID | IsAllocated |
       | planningLife_1         | 10         | 10           | Outgoing           | deliveryInstructionLife    | true        |

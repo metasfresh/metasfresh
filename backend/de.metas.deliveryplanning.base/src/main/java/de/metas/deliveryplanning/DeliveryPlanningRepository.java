@@ -934,8 +934,11 @@ public class DeliveryPlanningRepository
 		shippingPackageRecord.setIsToBeFetched(request.isToBeFetched());
 		shippingPackageRecord.setM_Product_ID(request.getProductId().getRepoId());
 
-		shippingPackageRecord.setActualDischargeQuantity(request.getQtyDischarged().toBigDecimal());
-		shippingPackageRecord.setActualLoadQty(request.getQtyLoaded().toBigDecimal());
+		// Task Q14: the four quantity figures (planned load, planned discharge, actual load, actual
+		// discharge) are derived (ColumnSQL) from the planning through the M_Delivery_Planning_Alloc
+		// allocation - nothing to write here. They used to be copied from request.getQtyLoaded()/
+		// getQtyDischarged() (themselves the planning's PLANNED figures), which froze the package's
+		// "actual" at the planned value forever; the mirror replaces that copy, not a second derivation.
 		shippingPackageRecord.setBatch(request.getBatchNo());
 		shippingPackageRecord.setC_UOM_ID(request.getQtyLoaded().getUomId().getRepoId());
 

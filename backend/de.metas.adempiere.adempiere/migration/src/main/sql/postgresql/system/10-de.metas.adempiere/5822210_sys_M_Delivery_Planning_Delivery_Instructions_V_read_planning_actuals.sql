@@ -1,10 +1,13 @@
+-- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_Delivery_Planning_Delivery_Instructions_V.sql
 --
--- IMPORTANT: when changing the structure of this view, please also check/adjust AD_ViewSource definitions.
---
+-- Task Q14 (delivery planning quantities): M_ShippingPackage.ActualLoadQty/ActualDischargeQuantity become
+-- derived (mirrored from the planning through the allocation) rather than physical columns written at
+-- generation time. This view previously read the package's own actualloadqty/actualdischargequantity -
+-- read the planning (dp, already joined) directly instead, so it keeps working once those two package
+-- columns stop being physical.
 
 DROP VIEW IF EXISTS M_Delivery_Planning_Delivery_Instructions_V$new
 ;
-
 
 CREATE OR REPLACE VIEW M_Delivery_Planning_Delivery_Instructions_V$new
 AS

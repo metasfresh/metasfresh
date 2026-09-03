@@ -22,8 +22,10 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setActualDischargeQuantity (BigDecimal ActualDischargeQuantity);
 
 	/**
@@ -31,8 +33,10 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	BigDecimal getActualDischargeQuantity();
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_ActualDischargeQuantity = new ModelColumn<>(I_M_ShippingPackage.class, "ActualDischargeQuantity", null);
@@ -43,8 +47,10 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setActualLoadQty (BigDecimal ActualLoadQty);
 
 	/**
@@ -52,8 +58,10 @@ public interface I_M_ShippingPackage
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	BigDecimal getActualLoadQty();
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_ActualLoadQty = new ModelColumn<>(I_M_ShippingPackage.class, "ActualLoadQty", null);
@@ -184,7 +192,7 @@ public interface I_M_ShippingPackage
 	/**
 	 * Set Orderline.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -193,7 +201,7 @@ public interface I_M_ShippingPackage
 	/**
 	 * Get Orderline.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -487,7 +495,7 @@ public interface I_M_ShippingPackage
 
 	/**
 	 * Set Weight.
-	 * Weight of a package
+	 * Weight of a package calculation can be changed via system config "de.metas.shipping.WeightSourceTypes"
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -497,7 +505,7 @@ public interface I_M_ShippingPackage
 
 	/**
 	 * Get Weight.
-	 * Weight of a package
+	 * Weight of a package calculation can be changed via system config "de.metas.shipping.WeightSourceTypes"
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -507,6 +515,56 @@ public interface I_M_ShippingPackage
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_PackageWeight = new ModelColumn<>(I_M_ShippingPackage.class, "PackageWeight", null);
 	String COLUMNNAME_PackageWeight = "PackageWeight";
+
+	/**
+	 * Set Plan Delivered Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setPlannedDischargeQuantity (@Nullable BigDecimal PlannedDischargeQuantity);
+
+	/**
+	 * Get Plan Delivered Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getPlannedDischargeQuantity();
+
+	ModelColumn<I_M_ShippingPackage, Object> COLUMN_PlannedDischargeQuantity = new ModelColumn<>(I_M_ShippingPackage.class, "PlannedDischargeQuantity", null);
+	String COLUMNNAME_PlannedDischargeQuantity = "PlannedDischargeQuantity";
+
+	/**
+	 * Set Plan Load Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setPlannedLoadedQuantity (@Nullable BigDecimal PlannedLoadedQuantity);
+
+	/**
+	 * Get Plan Load Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getPlannedLoadedQuantity();
+
+	ModelColumn<I_M_ShippingPackage, Object> COLUMN_PlannedLoadedQuantity = new ModelColumn<>(I_M_ShippingPackage.class, "PlannedLoadedQuantity", null);
+	String COLUMNNAME_PlannedLoadedQuantity = "PlannedLoadedQuantity";
 
 	/**
 	 * Set Processed.
@@ -626,6 +684,88 @@ public interface I_M_ShippingPackage
 
 	ModelColumn<I_M_ShippingPackage, Object> COLUMN_QtyTU = new ModelColumn<>(I_M_ShippingPackage.class, "QtyTU", null);
 	String COLUMNNAME_QtyTU = "QtyTU";
+
+	/**
+	 * Set Produktnummer.
+	 * Comma-separated list of all distinct article numbers (product value) of the underlying document: the shipment lines if this package references a shipment, otherwise the order lines.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTransportProductNos (@Nullable java.lang.String TransportProductNos);
+
+	/**
+	 * Get Produktnummer.
+	 * Comma-separated list of all distinct article numbers (product value) of the underlying document: the shipment lines if this package references a shipment, otherwise the order lines.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getTransportProductNos();
+
+	ModelColumn<I_M_ShippingPackage, Object> COLUMN_TransportProductNos = new ModelColumn<>(I_M_ShippingPackage.class, "TransportProductNos", null);
+	String COLUMNNAME_TransportProductNos = "TransportProductNos";
+
+	/**
+	 * Set Menge.
+	 * Total quantity (sum of entered qty) of the underlying document, filled only when it contains exactly one distinct product. Left empty when more than one product is present, since a single quantity would be ambiguous.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTransportQtys (@Nullable BigDecimal TransportQtys);
+
+	/**
+	 * Get Menge.
+	 * Total quantity (sum of entered qty) of the underlying document, filled only when it contains exactly one distinct product. Left empty when more than one product is present, since a single quantity would be ambiguous.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getTransportQtys();
+
+	ModelColumn<I_M_ShippingPackage, Object> COLUMN_TransportQtys = new ModelColumn<>(I_M_ShippingPackage.class, "TransportQtys", null);
+	String COLUMNNAME_TransportQtys = "TransportQtys";
+
+	/**
+	 * Set Maßeinheit.
+	 * Unit of measure for the value shown in Qty. Filled only when the underlying document contains exactly one distinct product;
+ empty otherwise.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTransportUOM_ID (int TransportUOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Unit of measure for the value shown in Qty. Filled only when the underlying document contains exactly one distinct product;
+ empty otherwise.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getTransportUOM_ID();
+
+	String COLUMNNAME_TransportUOM_ID = "TransportUOM_ID";
 
 	/**
 	 * Get Updated.

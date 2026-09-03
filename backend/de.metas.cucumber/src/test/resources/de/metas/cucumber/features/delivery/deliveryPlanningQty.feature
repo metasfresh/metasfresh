@@ -1226,3 +1226,57 @@ Feature: Delivery planning quantities
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | Processed |
       | deliveryPlanningQ11D   | 8          | 8            | Dropship            | 8                     | 8             | 0                       | false     |
+
+  @Id:S31789_TC_Q14_ShippingPackageMirrorsPlanningQuantities
+  Scenario: Editing all four planning quantities syncs the delivery instruction line, with no propagation step
+
+    # The instruction line has no logic of its own - all four figures (planned load, planned discharge,
+    # actual load, actual discharge) are a straight read-through of the planning via the allocation
+    # (ColumnSQL, Task Q14). So editing the planning directly - no generate, no receipt/shipment
+    # completion, no explicit "sync" step of any kind - must be the only thing this scenario does before
+    # the line already shows the new figures.
+    Given metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderSyncQty | true    | customer                 | 2023-02-03  | 2023-02-20T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineSyncQty | orderSyncQty           | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderSyncQty is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID   |
+      | planningSyncQty        | orderLineSyncQty |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | planningSyncQty        | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 0                       |
+
+    When generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+      | deliveryInstructionSyncQty | planningSyncQty        | true       |
+
+    Then the M_ShipperTransportation identified by deliveryInstructionSyncQty holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID | M_ShippingPackage_ID   |
+      | planningSyncQty        | shippingPackageSyncQty |
+    # generation leaves the package mirroring the planning's CURRENT figures - unchanged from before this
+    # task, since createShippingPackage no longer copies anything; there is simply nothing else to show yet
+    And validate M_Shipping_Package:
+      | M_ShippingPackage_ID   | ActualLoadQty | ActualDischargeQuantity | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | shippingPackageSyncQty | 0             | 0                       | 10                    | 10                       |
+
+    # edit all four planning figures directly - no generate, no receipt/shipment completion in this
+    # scenario, and no dedicated "propagate to package" step exists: the mirror is the only mechanism
+    When update M_Delivery_Planning:
+      | M_Delivery_Planning_ID | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | planningSyncQty        | 6                     | 7                        | 8             | 9                        |
+
+    # re-loads the package (StepDefData identifier tables hold a Java reference from before the edit above -
+    # a cucumber-harness artifact, not the production path, which the DB always answers fresh); the
+    # production side of "no manual reload" is TC11's Playwright assertion plus the WEBUI_ViewInvalidateOnChange
+    # row this task adds for the instruction window
+    Then the M_ShipperTransportation identified by deliveryInstructionSyncQty holds exactly the following active M_Delivery_Planning_Alloc:
+      | M_Delivery_Planning_ID | M_ShippingPackage_ID   |
+      | planningSyncQty        | shippingPackageSyncQty |
+    And validate M_Shipping_Package:
+      | M_ShippingPackage_ID   | ActualLoadQty | ActualDischargeQuantity | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | shippingPackageSyncQty | 8             | 9                       | 6                     | 7                        |
