@@ -28,6 +28,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.event.IEventBusFactory;
 import de.metas.product.ProductId;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -62,6 +63,9 @@ class DeliveryInstructionDateSyncDownTest
 	private static final int PRODUCT_ID = 540010;
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
@@ -71,9 +75,16 @@ class DeliveryInstructionDateSyncDownTest
 		AdempiereTestHelper.get().init();
 
 		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionRepository,
+				deliveryInstructionService,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
@@ -123,7 +134,7 @@ class DeliveryInstructionDateSyncDownTest
 	private DeliveryPlanningId allocate(@NonNull final I_M_ShipperTransportation instruction, @NonNull final I_M_Delivery_Planning planning)
 	{
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(planning.getM_Delivery_Planning_ID());
-		deliveryPlanningRepository.createAllocations(
+		deliveryInstructionService.createAllocations(
 				ShipperTransportationId.ofRepoId(instruction.getM_ShipperTransportation_ID()),
 				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(deliveryPlanningId)

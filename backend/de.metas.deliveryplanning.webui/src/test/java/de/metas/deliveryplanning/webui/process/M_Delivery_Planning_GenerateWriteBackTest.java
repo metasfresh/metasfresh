@@ -23,6 +23,9 @@
 package de.metas.deliveryplanning.webui.process;
 
 import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.deliveryplanning.DeliveryInstructionRepository;
+import de.metas.deliveryplanning.DeliveryInstructionService;
+import de.metas.deliveryplanning.DeliveryPlanningAllocRepository;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
@@ -35,6 +38,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.uom.UomId;
@@ -74,6 +78,9 @@ import static org.mockito.Mockito.when;
 class M_Delivery_Planning_GenerateWriteBackTest
 {
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 
 	@BeforeEach
 	void setUp()
@@ -82,10 +89,17 @@ class M_Delivery_Planning_GenerateWriteBackTest
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
 		deliveryPlanningRepository = new DeliveryPlanningRepository(mock(DimensionService.class));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 
 		final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(
 				mock(ShipperRepository.class),
 				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionRepository,
+				deliveryInstructionService,
 				mock(DeliveryStatusColorPaletteService.class),
 				mock(DimensionService.class),
 				mock(MeansOfTransportationService.class),

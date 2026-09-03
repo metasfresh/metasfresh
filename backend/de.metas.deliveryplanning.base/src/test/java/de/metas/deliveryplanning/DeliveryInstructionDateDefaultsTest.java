@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.UomId;
@@ -58,12 +59,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DeliveryInstructionDateDefaultsTest
 {
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
 		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 	}
 
 	private static Timestamp day(final int dayOfMonth)
@@ -204,7 +212,7 @@ class DeliveryInstructionDateDefaultsTest
 		final DeliveryPlanningAllocCreateRequest request = allocRequest(day(3), day(7), "08:00");
 		final DeliveryInstructionDates resolvedDates = resolve(instruction, request);
 
-		deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(request), resolvedDates);
+		deliveryInstructionService.createAllocations(instructionId, ImmutableList.of(request), resolvedDates);
 
 		final I_M_ShipperTransportation reloaded = InterfaceWrapperHelper.load(instructionId, I_M_ShipperTransportation.class);
 		assertThat(reloaded.getETD())
@@ -227,7 +235,7 @@ class DeliveryInstructionDateDefaultsTest
 		final DeliveryPlanningAllocCreateRequest request = allocRequest(null, null, null);
 		final DeliveryInstructionDates resolvedDates = resolve(instruction, request);
 
-		deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(request), resolvedDates);
+		deliveryInstructionService.createAllocations(instructionId, ImmutableList.of(request), resolvedDates);
 
 		final I_M_ShipperTransportation reloaded = InterfaceWrapperHelper.load(instructionId, I_M_ShipperTransportation.class);
 		assertThat(reloaded.getETD()).isNull();

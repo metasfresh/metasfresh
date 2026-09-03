@@ -62,7 +62,7 @@ import java.util.Collection;
  * <p>
  * Kept as a pure mapping (allocations in, request out) so the routable shape is asserted by a plain unit test -
  * see {@code DeliveryInstructionLineCacheInvalidationTest}. Firing it is
- * {@link DeliveryPlanningRepository#invalidateDeliveryInstructionLinesFor(DeliveryPlanningId)}.
+ * {@link DeliveryInstructionService#invalidateDeliveryInstructionLinesFor(DeliveryPlanningId)}.
  */
 @UtilityClass
 public final class DeliveryInstructionLineCacheInvalidation

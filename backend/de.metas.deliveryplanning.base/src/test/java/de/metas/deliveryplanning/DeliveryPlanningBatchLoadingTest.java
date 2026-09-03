@@ -30,6 +30,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.notification.INotificationBL;
 import de.metas.product.ProductId;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -83,6 +84,9 @@ class DeliveryPlanningBatchLoadingTest
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
@@ -99,9 +103,16 @@ class DeliveryPlanningBatchLoadingTest
 		Services.registerService(INotificationBL.class, Mockito.mock(INotificationBL.class));
 
 		deliveryPlanningRepository = Mockito.spy(new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionRepository,
+				deliveryInstructionService,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
@@ -388,7 +399,7 @@ class DeliveryPlanningBatchLoadingTest
 		final I_M_ShipperTransportation completed = draftDeliveryInstruction("COMPLETED-5");
 		completed.setDocStatus(DocStatus.Completed.getCode());
 		InterfaceWrapperHelper.save(completed);
-		deliveryPlanningRepository.createAllocations(
+		deliveryInstructionService.createAllocations(
 				ShipperTransportationId.ofRepoId(completed.getM_ShipperTransportation_ID()),
 				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(idOf(records.get(1)))

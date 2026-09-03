@@ -1,5 +1,6 @@
 package de.metas.deliveryplanning.interceptor;
 
+import de.metas.deliveryplanning.DeliveryInstructionService;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
@@ -17,13 +18,16 @@ public class M_InOut
 {
 	private final DeliveryPlanningService deliveryPlanningService;
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
+	private final DeliveryInstructionService deliveryInstructionService;
 
 	public M_InOut(
 			@NonNull final DeliveryPlanningService deliveryPlanningService,
-			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository)
+			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
+			@NonNull final DeliveryInstructionService deliveryInstructionService)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
+		this.deliveryInstructionService = deliveryInstructionService;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -50,7 +54,7 @@ public class M_InOut
 
 			// DeliveredState recompute wiring (Task Q9): the planning's IsDelivered just changed (M_InOut_ID
 			// was set above), so every delivery instruction it is actively allocated to must be recomputed.
-			deliveryPlanningRepository.recomputeDeliveredStateForAllocatedInstructions(deliveryPlanningId);
+			deliveryInstructionService.recomputeDeliveredStateForAllocatedInstructions(deliveryPlanningId);
 		}
 	}
 
@@ -92,7 +96,7 @@ public class M_InOut
 			// DeliveredState recompute wiring (Task Q9): the reversal case a stored implementation would get
 			// wrong (spec 5.7) if this call were missing - the planning's IsDelivered just went back to false,
 			// so an instruction previously FullyDelivered must fall back to PartlyDelivered (or NotDelivered).
-			deliveryPlanningRepository.recomputeDeliveredStateForAllocatedInstructions(deliveryPlanningId);
+			deliveryInstructionService.recomputeDeliveredStateForAllocatedInstructions(deliveryPlanningId);
 		}
 	}
 

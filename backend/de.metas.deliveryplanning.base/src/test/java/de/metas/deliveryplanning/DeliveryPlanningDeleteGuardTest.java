@@ -28,6 +28,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -68,6 +69,9 @@ class DeliveryPlanningDeleteGuardTest
 	private static final int PRODUCT_ID = 540010;
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private I_C_UOM uom;
 
 	@BeforeEach
@@ -76,9 +80,16 @@ class DeliveryPlanningDeleteGuardTest
 		AdempiereTestHelper.get().init();
 
 		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionRepository,
+				deliveryInstructionService,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
@@ -116,7 +127,7 @@ class DeliveryPlanningDeleteGuardTest
 	{
 		final DeliveryPlanningId id = DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
 
-		deliveryPlanningRepository.createAllocations(
+		deliveryInstructionService.createAllocations(
 				deliveryInstructionId,
 				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(id)
@@ -126,7 +137,7 @@ class DeliveryPlanningDeleteGuardTest
 								.build())
 						.build()));
 
-		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
+		deliveryInstructionService.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
 	}
 
 	private static String keyOf(@NonNull final AdMessageKey adMessageKey)
@@ -167,7 +178,7 @@ class DeliveryPlanningDeleteGuardTest
 		final DeliveryPlanningId planningId = DeliveryPlanningId.ofRepoId(allocated.getM_Delivery_Planning_ID());
 		// exactly what DeliveryPlanningService.removeFrom does, both halves of it: the allocation is retired
 		// AND the planning loses its release number
-		deliveryPlanningRepository.deactivateAllocations(ImmutableList.of(planningId), REMOVED_AT);
+		deliveryInstructionService.deactivateAllocations(ImmutableList.of(planningId), REMOVED_AT);
 		deliveryPlanningRepository.clearInstructionReference(ImmutableList.of(planningId));
 
 		InterfaceWrapperHelper.delete(InterfaceWrapperHelper.load(planningId, I_M_Delivery_Planning.class));

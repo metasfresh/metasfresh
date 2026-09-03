@@ -27,6 +27,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -71,6 +72,9 @@ class DeliveryPlanningMoveAndRemovalTest
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
@@ -80,9 +84,16 @@ class DeliveryPlanningMoveAndRemovalTest
 		AdempiereTestHelper.get().init();
 
 		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionRepository,
+				deliveryInstructionService,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
@@ -133,7 +144,7 @@ class DeliveryPlanningMoveAndRemovalTest
 				.map(DeliveryPlanningMoveAndRemovalTest::idOf)
 				.collect(ImmutableList.toImmutableList());
 
-		deliveryPlanningRepository.createAllocations(
+		deliveryInstructionService.createAllocations(
 				deliveryInstructionId,
 				ids.stream()
 						.map(id -> DeliveryPlanningAllocCreateRequest.builder()
@@ -145,7 +156,7 @@ class DeliveryPlanningMoveAndRemovalTest
 								.build())
 						.collect(ImmutableList.toImmutableList()));
 
-		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ids, deliveryInstructionId);
+		deliveryInstructionService.updateDeliveryPlanningsFromInstruction(ids, deliveryInstructionId);
 	}
 
 	/** Like {@link #allocateTo}, but stamps the given order line onto the planning's shipping package. */
@@ -156,7 +167,7 @@ class DeliveryPlanningMoveAndRemovalTest
 	{
 		final DeliveryPlanningId id = idOf(record);
 
-		deliveryPlanningRepository.createAllocations(
+		deliveryInstructionService.createAllocations(
 				deliveryInstructionId,
 				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(id)
@@ -167,7 +178,7 @@ class DeliveryPlanningMoveAndRemovalTest
 								.build())
 						.build()));
 
-		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
+		deliveryInstructionService.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
 	}
 
 	private static void setETD(@NonNull final ShipperTransportationId deliveryInstructionId, @NonNull final Timestamp etd)
@@ -395,7 +406,7 @@ class DeliveryPlanningMoveAndRemovalTest
 		assertThatThrownBy(() -> deliveryPlanningService.addTo(selectionOf(allocated, notAllocated), target))
 				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove.toAD_Message());
 
-		assertThat(deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(notAllocated))).isEmpty())
+		assertThat(deliveryPlanningAllocRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(notAllocated))).isEmpty())
 				.as("all-or-nothing: the unallocated row was not put on the target either")
 				.isTrue();
 		assertNoOrphanedShippingPackages();
@@ -454,7 +465,7 @@ class DeliveryPlanningMoveAndRemovalTest
 		assertThat(InterfaceWrapperHelper.load(leavingAllocationId, I_M_Delivery_Planning_Alloc.class).isActive())
 				.as("the removed planning's own allocation row survives, deactivated")
 				.isFalse();
-		assertThat(deliveryPlanningRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(leaving))).isEmpty())
+		assertThat(deliveryPlanningAllocRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(leaving))).isEmpty())
 				.as("the retired allocation must not leak into an active-filtered lookup")
 				.isTrue();
 

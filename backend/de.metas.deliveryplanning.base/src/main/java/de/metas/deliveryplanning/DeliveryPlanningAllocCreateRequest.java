@@ -39,12 +39,12 @@ import java.sql.Timestamp;
  * <ul>
  * <li>{@link #deliveryPlanningId} is the only field {@code M_Delivery_Planning_Alloc} itself owns -
  * {@code M_ShippingPackage_ID} and {@code M_ShipperTransportation_ID} are derived inside
- * {@link DeliveryPlanningRepository#createAllocation}, never supplied here.</li>
- * <li>{@link #shippingPackage} is what {@link DeliveryPlanningRepository#createShippingPackage} needs to build the
+ * {@link DeliveryInstructionService}, never supplied here.</li>
+ * <li>{@link #shippingPackage} is what {@link DeliveryInstructionRepository#createShippingPackage} needs to build the
  * allocation's {@code M_ShippingPackage}.</li>
  * <li>{@link #headerDateCandidate} is what this planning offers the delivery instruction header's fill-if-empty
  * date defaulting - consumed by {@link DeliveryPlanningService#resolveInstructionDatesForAllocation}, never by
- * {@link DeliveryPlanningRepository#createAllocation} itself.</li>
+ * {@link DeliveryInstructionService} itself.</li>
  * </ul>
  * Fields the instruction already holds (forwarder, its business partner and location, the shipping date) are read
  * off the instruction, not repeated here.
@@ -62,7 +62,7 @@ public class DeliveryPlanningAllocCreateRequest
 	@NonNull HeaderDateCandidate headerDateCandidate = HeaderDateCandidate.none();
 
 	/**
-	 * What {@link DeliveryPlanningRepository#createShippingPackage} writes onto the created
+	 * What {@link DeliveryInstructionRepository#createShippingPackage} writes onto the created
 	 * {@code M_ShippingPackage}. Note there is no quantity here: the package's four quantity figures are derived
 	 * (Task Q14, {@code ColumnSQL}) from the planning through the allocation, so all that survives from the
 	 * planning's own quantity is the unit it is expressed in.
@@ -88,7 +88,7 @@ public class DeliveryPlanningAllocCreateRequest
 	/**
 	 * The planning's own {@code ETD}/{@code ETA}/{@code LoadingTime}/{@code DeliveryTime}, offered as a candidate
 	 * value for the instruction header's fill-if-empty defaulting. A request whose header is filled some other way
-	 * (e.g. {@link DeliveryPlanningRepository#generateDeliveryInstruction}, which sets the header directly from its
+	 * (e.g. {@link DeliveryInstructionService#generateDeliveryInstruction}, which sets the header directly from its
 	 * own {@code DeliveryInstructionCreateRequest} before ever building this type) contributes {@link #none()}.
 	 */
 	@Value

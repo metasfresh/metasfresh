@@ -207,6 +207,9 @@ public class DeliveryPlanningService
 
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
+	@NonNull private final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	@NonNull private final DeliveryInstructionRepository deliveryInstructionRepository;
+	@NonNull private final DeliveryInstructionService deliveryInstructionService;
 	@NonNull private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final MeansOfTransportationService meansOfTransportationService;
@@ -291,7 +294,7 @@ public class DeliveryPlanningService
 	 * Refuses to delete a planning that an ACTIVE {@code M_Delivery_Planning_Alloc} still points at -
 	 * unconditionally, regardless of who is deleting it. Asked of the allocation table rather than of
 	 * {@code ReleaseNo}, which only mirrors it; see
-	 * {@link DeliveryPlanningRepository#hasActiveAllocation(DeliveryPlanningId)}.
+	 * {@link DeliveryPlanningAllocRepository#hasActiveAllocation(DeliveryPlanningId)}.
 	 * <p>
 	 * The allocation's shipping package is mandatory-FKed to a still-live instruction, so letting the delete through
 	 * would strand that instruction's cargo. A RETIRED allocation is the opposite case and must NOT be refused; it
@@ -299,7 +302,7 @@ public class DeliveryPlanningService
 	 */
 	public void assertNotCurrentlyAllocated(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
-		if (deliveryPlanningRepository.hasActiveAllocation(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID())))
+		if (deliveryPlanningAllocRepository.hasActiveAllocation(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID())))
 		{
 			throw new AdempiereException(MSG_M_Delivery_Planning_AlreadyReferenced);
 		}
@@ -313,7 +316,7 @@ public class DeliveryPlanningService
 	 */
 	public void deleteAllocationsFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		deliveryPlanningRepository.deleteAllocationsFor(ImmutableList.of(deliveryPlanningId));
+		deliveryPlanningAllocRepository.deleteAllocationsFor(ImmutableList.of(deliveryPlanningId));
 	}
 
 	/**
@@ -337,9 +340,9 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		deliveryPlanningRepository.getInstructionIdByShippingPackageId(shippingPackageId)
+		deliveryPlanningAllocRepository.getInstructionIdByShippingPackageId(shippingPackageId)
 				.ifPresent(deliveryInstructionId -> {
-					final String documentNo = deliveryPlanningRepository.getInstructionById(deliveryInstructionId).getDocumentNo();
+					final String documentNo = deliveryInstructionRepository.getById(deliveryInstructionId).getDocumentNo();
 					throw new AdempiereException(TranslatableStrings.adMessage(MSG_M_ShippingPackage_Allocated, documentNo));
 				});
 	}
@@ -433,7 +436,7 @@ public class DeliveryPlanningService
 		// and the new plannings share only what the order line still has uncommitted overall. Q3's divide (target
 		// gets a share too, from its own current figure) is the single exception to that rule, reserved for the
 		// unallocated case.
-		final boolean targetIsAllocated = deliveryPlanningRepository.hasActiveAllocation(deliveryPlanningId);
+		final boolean targetIsAllocated = deliveryPlanningAllocRepository.hasActiveAllocation(deliveryPlanningId);
 
 		final Quantity openQty = getOpenQty(deliveryPlanningId, targetIsAllocated);
 
@@ -529,7 +532,7 @@ public class DeliveryPlanningService
 	 * <p>
 	 * {@code targetIsAllocated} is handed in rather than queried here so the caller - which already needs the same
 	 * fact to decide whether to rewrite the target's own figure - pays for {@link
-	 * DeliveryPlanningRepository#hasActiveAllocation} once, not twice.
+	 * DeliveryPlanningAllocRepository#hasActiveAllocation} once, not twice.
 	 */
 	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
 	{
@@ -591,7 +594,7 @@ public class DeliveryPlanningService
 	 */
 	public void invalidateDeliveryInstructionLinesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
-		deliveryPlanningRepository.invalidateDeliveryInstructionLinesFor(
+		deliveryInstructionService.invalidateDeliveryInstructionLinesFor(
 				DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
 	}
 
@@ -670,7 +673,7 @@ public class DeliveryPlanningService
 
 		final DeliveryPlanningId deliveryPlanningId = deliveryInstructionRequest.getDeliveryPlanningId();
 
-		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(deliveryInstructionRequest);
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionService.generateDeliveryInstruction(deliveryInstructionRequest);
 
 		if (complete)
 		{
@@ -712,7 +715,7 @@ public class DeliveryPlanningService
 
 		return toDeliveryPlanningList(
 				deliveryPlanningRecords,
-				deliveryPlanningRepository.getAllocationsByPlanningId(
+				deliveryPlanningAllocRepository.getAllocationsByPlanningId(
 						deliveryPlanningRecords.stream()
 								.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 								.collect(ImmutableSet.toImmutableSet())));
@@ -728,7 +731,7 @@ public class DeliveryPlanningService
 	 */
 	private DeliveryPlanningList getAllocatedTo(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableList<DeliveryPlanningAlloc> allocations = deliveryPlanningRepository.getAllocationsOfInstruction(deliveryInstructionId);
+		final ImmutableList<DeliveryPlanningAlloc> allocations = deliveryPlanningAllocRepository.getAllocationsOfInstruction(deliveryInstructionId);
 		if (allocations.isEmpty())
 		{
 			return DeliveryPlanningList.EMPTY;
@@ -1175,10 +1178,10 @@ public class DeliveryPlanningService
 	 */
 	public Optional<ITranslatableString> getCompleteRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
-			final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.getInstructionById(deliveryInstructionId);
+			final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionRepository.getById(deliveryInstructionId);
 			if (shipperTransportationDocSubTypeGuard.isDeliveryInstruction(deliveryInstruction))
 			{
 				return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_EmptyDeliveryInstruction));
@@ -1204,7 +1207,7 @@ public class DeliveryPlanningService
 	public Optional<ITranslatableString> getReActivateRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		return closedAllocatedPlanningsRejection(
-				deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId),
+				deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId),
 				MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings);
 	}
 
@@ -1224,7 +1227,7 @@ public class DeliveryPlanningService
 	public Optional<ITranslatableString> getVoidRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		return closedAllocatedPlanningsRejection(
-				deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId),
+				deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId),
 				MSG_M_Delivery_Planning_VoidClosedAllocatedPlannings);
 	}
 
@@ -1287,7 +1290,7 @@ public class DeliveryPlanningService
 		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.getIdsInAllocationOrder();
 
 		// the header, plus the seed planning's allocation and shipping package
-		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionService.generateDeliveryInstruction(
 				createDeliveryInstructionRequest(deliveryPlanningIds.get(0)));
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
 
@@ -1299,7 +1302,7 @@ public class DeliveryPlanningService
 			// the seed header ALREADY resolved (generateDeliveryInstruction just built it), so the record this
 			// method holds is reused rather than reloaded to resolve the further plannings' dates against it
 			final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(deliveryInstruction, furtherAllocations);
-			deliveryPlanningRepository.createAllocations(deliveryInstruction, furtherAllocations, resolvedDates);
+			deliveryInstructionService.createAllocations(deliveryInstruction, furtherAllocations, resolvedDates);
 		}
 
 		if (complete)
@@ -1481,7 +1484,7 @@ public class DeliveryPlanningService
 			return Optional.empty();
 		}
 
-		if (!deliveryPlanningRepository.getDeliveryInstructionDocStatus(targetDeliveryInstructionId).isDrafted())
+		if (!deliveryInstructionRepository.getDocStatus(targetDeliveryInstructionId).isDrafted())
 		{
 			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_TargetInstructionNotDraft));
 		}
@@ -1560,7 +1563,7 @@ public class DeliveryPlanningService
 				.flatMap(Collection::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryPlanningRepository.getDeliveryInstructionDocStatuses(deliveryInstructionIds);
+		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryInstructionRepository.getDocStatuses(deliveryInstructionIds);
 
 		return selectedDeliveryPlannings.stream()
 				.filter(DeliveryPlanning::isAllocated)
@@ -1665,7 +1668,7 @@ public class DeliveryPlanningService
 			// the source allocation and its package are DEACTIVATED, not deleted, so the record of what was once
 			// planned survives - the target's insert still finds no ACTIVE row to collide with on either partial
 			// unique index, since both are declared WHERE IsActive='Y'
-			final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
+			final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryInstructionService.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
 			resetDatesFromOrderAndSchedule(deactivatedIds);
 		}
 
@@ -1673,12 +1676,12 @@ public class DeliveryPlanningService
 		// instruction's, which the sync-down would still have on these rows before the reset ran
 		final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = createAllocCreateRequests(deliveryPlanningIds);
 
-		final I_M_ShipperTransportation targetInstruction = deliveryPlanningRepository.getInstructionById(targetDeliveryInstructionId);
+		final I_M_ShipperTransportation targetInstruction = deliveryInstructionRepository.getById(targetDeliveryInstructionId);
 		final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(targetInstruction, allocations);
-		deliveryPlanningRepository.createAllocations(targetInstruction, allocations, resolvedDates);
+		deliveryInstructionService.createAllocations(targetInstruction, allocations, resolvedDates);
 
 		// stamped from the target: on a move the old release number named a document the cargo has left
-		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
+		deliveryInstructionService.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
 	}
 
 	/**
@@ -1706,7 +1709,7 @@ public class DeliveryPlanningService
 		// No trxManager wrapper - same reason as in addTo: the only caller,
 		// M_Delivery_Planning_RemoveFromDeliveryInstruction.doIt(), is a JavaProcess without @RunOutOfTrx and
 		// therefore already runs inside a transaction.
-		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
+		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryInstructionService.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
 		resetDatesFromOrderAndSchedule(deactivatedIds);
 		deliveryPlanningRepository.clearInstructionReference(deliveryPlanningIds);
 	}
@@ -1715,17 +1718,17 @@ public class DeliveryPlanningService
 	 * Unlinks every planning currently allocated to the instruction (deactivating the allocations), resets their
 	 * dates and invalidates their invoice candidates - the same batch load
 	 * {@link #invalidateInvoiceCandidatesFor(ShipperTransportationId)} uses, but reading the affected ids from
-	 * {@link DeliveryPlanningRepository#unlinkDeliveryPlannings}'s OWN return value rather than a second, separate
+	 * {@link DeliveryInstructionService#unlinkDeliveryPlannings}'s OWN return value rather than a second, separate
 	 * query: the same pattern the other two retirement paths (remove-from and the source half of a move)
 	 * already follow - deactivate once, use what it reports it deactivated. Re-deriving the ids from
-	 * {@link DeliveryPlanningRepository#getAllocatedPlanningIds(ShipperTransportationId)} AFTER the deactivation
+	 * {@link DeliveryPlanningAllocRepository#getAllocatedPlanningIds(ShipperTransportationId)} AFTER the deactivation
 	 * would come back empty, which is exactly why the invalidation below is deferred to after-commit against the
 	 * ids captured HERE rather than re-resolved inside that deferred closure.
 	 */
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds =
-				deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId, SystemTime.asInstant()).getDeallocatedPlanningIds();
+				deliveryInstructionService.unlinkDeliveryPlannings(deliveryInstructionId, SystemTime.asInstant());
 		resetDatesFromOrderAndSchedule(allocatedPlanningIds);
 
 		if (!allocatedPlanningIds.isEmpty())
@@ -1748,7 +1751,7 @@ public class DeliveryPlanningService
 	public void syncDatesToAllocatedPlannings(@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
 			return;
@@ -1763,7 +1766,7 @@ public class DeliveryPlanningService
 	 * field is still empty. Every field is guarded individually so a value the planner entered before the add
 	 * survives.
 	 * <p>
-	 * A pure function: it reads and decides, {@link DeliveryPlanningRepository#createAllocations} writes.
+	 * A pure function: it reads and decides, {@link DeliveryInstructionService#createAllocations} writes.
 	 * {@code ATD}/{@code ATA} are then derived from the FILLED {@code ETD}/{@code ETA} rather than from the
 	 * planning, so a planner-set departure propagates into the actual. {@code BLDate} belongs to the
 	 * transport-order flow and is not touched.
@@ -1956,7 +1959,7 @@ public class DeliveryPlanningService
 
 	private void voidLinkedDeliveryInstructions(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final Iterator<I_M_ShipperTransportation> deliveryInstructionsIterator = deliveryPlanningRepository.retrieveForDeliveryPlanning(deliveryPlanningId);
+		final Iterator<I_M_ShipperTransportation> deliveryInstructionsIterator = deliveryInstructionService.retrieveForDeliveryPlanning(deliveryPlanningId);
 		while (deliveryInstructionsIterator.hasNext())
 		{
 			final I_M_ShipperTransportation deliveryInstructionRecord = deliveryInstructionsIterator.next();
@@ -1978,7 +1981,7 @@ public class DeliveryPlanningService
 	 * would otherwise be released along with the open one's.
 	 * <p>
 	 * An open planning still allocated to a delivery instruction when this runs (D8/D19 - the same
-	 * committed-cargo rule the split applies, via {@link DeliveryPlanningRepository#hasActiveAllocation}) is
+	 * committed-cargo rule the split applies, via {@link DeliveryPlanningAllocRepository#hasActiveAllocation}) is
 	 * fully cancelled the same as any other row - voided, closed, cancelled order status - but its
 	 * {@code PlannedLoadedQuantity}/{@code PlannedDischargeQuantity} are left untouched and it is named in
 	 * {@link DeliveryPlanningCancelResult#getSkippedAllocatedIds()} instead of being silently rewritten.
@@ -2005,7 +2008,7 @@ public class DeliveryPlanningService
 				.collect(ImmutableList.toImmutableList());
 
 		// snapshot, taken before the loop below voids anything - see the Javadoc above
-		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningRepository
+		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningAllocRepository
 				.getAllocationsByPlanningId(selectedDeliveryPlanningIds)
 				.keySet();
 
@@ -2111,7 +2114,7 @@ public class DeliveryPlanningService
 
 	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
+		return deliveryInstructionService.hasCompleteDeliveryInstruction(deliveryPlanningId);
 	}
 
 	public boolean isExistsBlockedPartnerDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -2154,7 +2157,7 @@ public class DeliveryPlanningService
 	 */
 	public void invalidateInvoiceCandidatesFor(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
 			return;

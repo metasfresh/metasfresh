@@ -29,6 +29,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -73,6 +74,9 @@ class DeliveryPlanningCompletionCascadeTest
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
@@ -82,9 +86,16 @@ class DeliveryPlanningCompletionCascadeTest
 		AdempiereTestHelper.get().init();
 
 		deliveryPlanningRepository = Mockito.spy(new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionRepository,
+				deliveryInstructionService,
 				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
@@ -149,7 +160,7 @@ class DeliveryPlanningCompletionCascadeTest
 
 	private void allocate(@NonNull final ShipperTransportationId deliveryInstructionId, @NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
+		deliveryInstructionService.createAllocations(deliveryInstructionId, ImmutableList.of(
 				DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(deliveryPlanningId)
 						.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
@@ -212,7 +223,7 @@ class DeliveryPlanningCompletionCascadeTest
 	{
 		final ShipperTransportationId deliveryInstructionId = createDeliveryInstructionWithDocType();
 		allocate(deliveryInstructionId, createDeliveryPlanning(false));
-		deliveryPlanningRepository.deactivateAllocations(deliveryInstructionId, REMOVED_AT);
+		deliveryInstructionService.deactivateAllocations(deliveryInstructionId, REMOVED_AT);
 
 		final Optional<ITranslatableString> reason = deliveryPlanningService.getCompleteRejectionReason(deliveryInstructionId);
 
