@@ -278,21 +278,41 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
               // PostgREST not reachable (CI) — fall through to the WebAPI view scan below.
             }
 
-            // CI fallback: unfiltered view (no filter fields exist on this tab), matched by the
-            // product this spec created for itself — unique on a fresh CI database.
+            // CI fallback: unfiltered view (no filter fields exist on this tab), ordered NEWEST
+            // FIRST via the WebUI's ?orderBy= param (verified live: "-M_Delivery_Planning_ID" is
+            // accepted and reverses the view's default ascending order) and paged all the way
+            // through if needed — never a single fixed-size page scan. Matched by THIS test's own
+            // C_OrderLine_ID (a planning is 1:1 with the order line that generated it — confirmed
+            // live that the grid row carries a C_OrderLine_ID field), the same scoping the
+            // PostgREST branch above uses, instead of the looser "unique product" match. Newest-
+            // first means the match is found on the first page in practice; the loop is the
+            // deterministic backstop against a database that has grown past one page (this stack's
+            // own delivery-planning view already holds 1357 rows, well past the old 500-row page).
             const view = await postJson(`${REST}/documentView/${DELIVERY_PLANNING_WINDOW_ID}`, {
               windowId: String(DELIVERY_PLANNING_WINDOW_ID),
               viewType: 'grid',
             });
-            const rows = await (
-              await page.request.get(
-                `${REST}/documentView/${DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}?firstRow=0&pageLength=500`
-              )
-            ).json();
-            const ownRow = (rows.result || []).find(
-              (row) => String(row.fieldsByName?.M_Product_ID?.value?.key) === String(productId)
-            );
-            deliveryPlanningId = ownRow && ownRow.id;
+            const PAGE_LENGTH = 500;
+            for (let firstRow = 0; ; firstRow += PAGE_LENGTH) {
+              const rowsPage = await (
+                await page.request.get(
+                  `${REST}/documentView/${DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
+                    `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-M_Delivery_Planning_ID`
+                )
+              ).json();
+              const rows = rowsPage.result || [];
+              const ownRow = rows.find(
+                (row) => String(row.fieldsByName?.C_OrderLine_ID?.value?.key) === String(orderLineId)
+              );
+              if (ownRow) {
+                deliveryPlanningId = ownRow.id;
+                break;
+              }
+              if (rows.length < PAGE_LENGTH) {
+                deliveryPlanningId = null; // exhausted every page, not found (yet) — expect.poll retries
+                break;
+              }
+            }
             return deliveryPlanningId || null;
           },
           {
@@ -397,26 +417,41 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
     });
 
     // THE assertion of this spec. No page.reload() above it, deliberately.
-    await test.step('The open Versandpaket row shows the new figure with NO manual reload', async () => {
-      await expect
-        .poll(async () => cellNumber(await plannedLoadCell.textContent()), {
-          message:
-            'the already-open delivery instruction must pick the planning new planned load up on its own ' +
-            '(no F5) — a stale value here means the invalidation never reached AD_Tab 546736',
-          timeout: 30000,
-          intervals: [1000],
-        })
-        .toBe(EDITED_PLANNED_LOAD_QTY);
+    //
+    // Its rejection is captured here — NOT swallowed, rethrown below once the control step has had
+    // its turn. Without this, expect.poll's timeout throws straight out of the step and aborts the
+    // test before the control step below ever starts, so the control could only ever run when the
+    // main assertion already PASSED — i.e. exactly when its answer is useless. This isolation makes
+    // the control answer "is the stored data wrong, or only the refresh" available on the one run
+    // that actually needs it, while the assertion itself, and the test's final pass/fail, are
+    // unchanged: a broken refresh still fails the test (see the rethrow after the control step).
+    let noReloadError;
+    await test
+      .step('The open Versandpaket row shows the new figure with NO manual reload', async () => {
+        await expect
+          .poll(async () => cellNumber(await plannedLoadCell.textContent()), {
+            message:
+              'the already-open delivery instruction must pick the planning new planned load up on its own ' +
+              '(no F5) — a stale value here means the invalidation never reached AD_Tab 546736',
+            timeout: 30000,
+            intervals: [1000],
+          })
+          .toBe(EDITED_PLANNED_LOAD_QTY);
 
-      allure.attachment(
-        'Versandpaket row after the planning was edited elsewhere',
-        await page.screenshot({ fullPage: true }),
-        'image/png'
-      );
-    });
+        allure.attachment(
+          'Versandpaket row after the planning was edited elsewhere',
+          await page.screenshot({ fullPage: true }),
+          'image/png'
+        );
+      })
+      .catch((error) => {
+        noReloadError = error;
+      });
 
-    // Control: separates "the tab did not refresh" from "the column is not derived at all". If THIS
-    // one fails too, the defect is in the derivation, not in the invalidation.
+    // Control: separates "the tab did not refresh" from "the column is not derived at all". Runs
+    // UNCONDITIONALLY, including right after the assertion above just failed — that is exactly the
+    // case this control exists to diagnose. If THIS one fails too, the defect is in the derivation,
+    // not in the invalidation.
     await test.step('Control: an explicit reload shows the same new figure', async () => {
       await page.reload({ timeout: 120000 });
       await page
@@ -433,5 +468,12 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
         'the derived column itself is correct — so a failure above is the refresh path'
       ).toBe(EDITED_PLANNED_LOAD_QTY);
     });
+
+    // Re-surface the no-reload failure now that the control has had its chance to run and report.
+    // This does not weaken or replace the assertion above — the test still fails with exactly the
+    // same error it would have without this isolation.
+    if (noReloadError) {
+      throw noReloadError;
+    }
   });
 });
