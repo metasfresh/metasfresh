@@ -777,17 +777,18 @@ public class DeliveryPlanningRepository
 	{
 		return DeliveryPlanningAllocCreateRequest.builder()
 				.deliveryPlanningId(request.getDeliveryPlanningId())
-				.productId(request.getProductId())
-				.qtyLoaded(request.getQtyLoaded())
-				.qtyDischarged(request.getQtyDischarged())
-				.batchNo(request.getBatchNo())
-				.orderLineId(request.getOrderLineId())
-				.orderId(request.getOrderId())
-				.toBeFetched(request.isToBeFetched())
-				.etd(TimeUtil.asTimestamp(request.getLoadingDate()))
-				.eta(TimeUtil.asTimestamp(request.getDeliveryDate()))
-				.loadingTime(request.getLoadingTime())
-				.deliveryTime(request.getDeliveryTime())
+				.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+						.productId(request.getProductId())
+						.uomId(request.getQtyLoaded().getUomId())
+						.batchNo(request.getBatchNo())
+						.orderLineId(request.getOrderLineId())
+						.orderId(request.getOrderId())
+						.toBeFetched(request.isToBeFetched())
+						.build())
+				// the header's ETD/ETA/LoadingTime/DeliveryTime are already set above, directly from this same
+				// request, before generateDeliveryInstruction calls createAllocations with resolvedDates=null -
+				// so this single-request list has nothing left to contribute to the fill-if-empty defaulting
+				.headerDateCandidate(DeliveryPlanningAllocCreateRequest.HeaderDateCandidate.none())
 				.build();
 	}
 
@@ -935,6 +936,8 @@ public class DeliveryPlanningRepository
 			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
 			@NonNull final DeliveryPlanningAllocCreateRequest request)
 	{
+		final DeliveryPlanningAllocCreateRequest.ShippingPackageData packageData = request.getShippingPackage();
+
 		final int shipperBPartnerId = deliveryInstructionRecord.getShipper_BPartner_ID();
 		final int shipperLocationId = deliveryInstructionRecord.getShipper_Location_ID();
 
@@ -948,22 +951,22 @@ public class DeliveryPlanningRepository
 		final I_M_ShippingPackage shippingPackageRecord = newInstance(I_M_ShippingPackage.class);
 		shippingPackageRecord.setM_ShipperTransportation_ID(deliveryInstructionRecord.getM_ShipperTransportation_ID());
 		shippingPackageRecord.setM_Package_ID(mpackage.getM_Package_ID());
-		shippingPackageRecord.setIsToBeFetched(request.isToBeFetched());
-		shippingPackageRecord.setM_Product_ID(request.getProductId().getRepoId());
+		shippingPackageRecord.setIsToBeFetched(packageData.isToBeFetched());
+		shippingPackageRecord.setM_Product_ID(packageData.getProductId().getRepoId());
 
 		// Task Q14: the four quantity figures (planned load, planned discharge, actual load, actual
 		// discharge) are derived (ColumnSQL) from the planning through the M_Delivery_Planning_Alloc
 		// allocation - nothing to write here. They used to be copied from request.getQtyLoaded()/
 		// getQtyDischarged() (themselves the planning's PLANNED figures), which froze the package's
 		// "actual" at the planned value forever; the mirror replaces that copy, not a second derivation.
-		shippingPackageRecord.setBatch(request.getBatchNo());
-		shippingPackageRecord.setC_UOM_ID(request.getQtyLoaded().getUomId().getRepoId());
+		shippingPackageRecord.setBatch(packageData.getBatchNo());
+		shippingPackageRecord.setC_UOM_ID(packageData.getUomId().getRepoId());
 
 		shippingPackageRecord.setC_BPartner_ID(shipperBPartnerId);
 		shippingPackageRecord.setC_BPartner_Location_ID(shipperLocationId);
 
-		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
-		shippingPackageRecord.setC_Order_ID(OrderId.toRepoId(request.getOrderId()));
+		shippingPackageRecord.setC_OrderLine_ID(OrderLineId.toRepoId(packageData.getOrderLineId()));
+		shippingPackageRecord.setC_Order_ID(OrderId.toRepoId(packageData.getOrderId()));
 
 		saveRecord(shippingPackageRecord);
 

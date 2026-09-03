@@ -30,11 +30,11 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.notification.INotificationBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -392,9 +392,10 @@ class DeliveryPlanningBatchLoadingTest
 				ShipperTransportationId.ofRepoId(completed.getM_ShipperTransportation_ID()),
 				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(idOf(records.get(1)))
-						.productId(ProductId.ofRepoId(PRODUCT_ID))
-						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+						.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+								.productId(ProductId.ofRepoId(PRODUCT_ID))
+								.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+								.build())
 						.build()));
 		final int allocationsBefore = allocationsInCreationOrder().size();
 

@@ -75,6 +75,7 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
@@ -1342,18 +1343,21 @@ public class DeliveryPlanningService
 
 		return DeliveryPlanningAllocCreateRequest.builder()
 				.deliveryPlanningId(deliveryPlanningId)
-				.productId(productId)
-				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
-				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
-				.batchNo(deliveryPlanningRecord.getBatch())
-				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
-				.orderId(OrderId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Order_ID()))
-				.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).isIncomingOrDropship())
+				.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+						.productId(productId)
+						.uomId(UomId.ofRepoId(uomToUse.getC_UOM_ID()))
+						.batchNo(deliveryPlanningRecord.getBatch())
+						.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
+						.orderId(OrderId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Order_ID()))
+						.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).isIncomingOrDropship())
+						.build())
 				// the planning's own dates, so the instruction's fill-if-empty defaulting needs no second load
-				.etd(deliveryPlanningRecord.getETD())
-				.eta(deliveryPlanningRecord.getETA())
-				.loadingTime(deliveryPlanningRecord.getLoadingTime())
-				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
+				.headerDateCandidate(DeliveryPlanningAllocCreateRequest.HeaderDateCandidate.builder()
+						.etd(deliveryPlanningRecord.getETD())
+						.eta(deliveryPlanningRecord.getETA())
+						.loadingTime(deliveryPlanningRecord.getLoadingTime())
+						.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
+						.build())
 				.build();
 	}
 
@@ -1777,21 +1781,22 @@ public class DeliveryPlanningService
 
 		for (final DeliveryPlanningAllocCreateRequest request : requests)
 		{
-			if (etd == null && request.getEtd() != null)
+			final DeliveryPlanningAllocCreateRequest.HeaderDateCandidate candidate = request.getHeaderDateCandidate();
+			if (etd == null && candidate.getEtd() != null)
 			{
-				etd = request.getEtd();
+				etd = candidate.getEtd();
 			}
-			if (eta == null && request.getEta() != null)
+			if (eta == null && candidate.getEta() != null)
 			{
-				eta = request.getEta();
+				eta = candidate.getEta();
 			}
-			if (Check.isBlank(loadingTime) && !Check.isBlank(request.getLoadingTime()))
+			if (Check.isBlank(loadingTime) && !Check.isBlank(candidate.getLoadingTime()))
 			{
-				loadingTime = request.getLoadingTime();
+				loadingTime = candidate.getLoadingTime();
 			}
-			if (Check.isBlank(deliveryTime) && !Check.isBlank(request.getDeliveryTime()))
+			if (Check.isBlank(deliveryTime) && !Check.isBlank(candidate.getDeliveryTime()))
 			{
-				deliveryTime = request.getDeliveryTime();
+				deliveryTime = candidate.getDeliveryTime();
 			}
 		}
 

@@ -29,11 +29,11 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import java.time.Instant;
 import lombok.NonNull;
@@ -50,7 +50,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -153,9 +152,10 @@ class DeliveryPlanningCompletionCascadeTest
 		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
 				DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(deliveryPlanningId)
-						.productId(ProductId.ofRepoId(540010))
-						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+						.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+								.productId(ProductId.ofRepoId(540010))
+								.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+								.build())
 						.build()));
 	}
 

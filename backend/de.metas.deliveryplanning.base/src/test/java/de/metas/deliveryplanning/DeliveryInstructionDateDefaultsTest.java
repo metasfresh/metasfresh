@@ -26,9 +26,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.UomId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -40,7 +40,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -112,12 +111,15 @@ class DeliveryInstructionDateDefaultsTest
 	{
 		return DeliveryPlanningAllocCreateRequest.builder()
 				.deliveryPlanningId(createDeliveryPlanning())
-				.productId(ProductId.ofRepoId(540010))
-				.qtyLoaded(Quantity.of(BigDecimal.TEN, uom()))
-				.qtyDischarged(Quantity.of(BigDecimal.ONE, uom()))
-				.etd(etd)
-				.eta(eta)
-				.loadingTime(loadingTime)
+				.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+						.productId(ProductId.ofRepoId(540010))
+						.uomId(UomId.ofRepoId(uom().getC_UOM_ID()))
+						.build())
+				.headerDateCandidate(DeliveryPlanningAllocCreateRequest.HeaderDateCandidate.builder()
+						.etd(etd)
+						.eta(eta)
+						.loadingTime(loadingTime)
+						.build())
 				.build();
 	}
 

@@ -26,9 +26,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.UomId;
 import java.time.Instant;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,7 +41,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 
@@ -98,9 +97,10 @@ class DeliveryPlanningInstructionLookupTest
 	{
 		return DeliveryPlanningAllocCreateRequest.builder()
 				.deliveryPlanningId(deliveryPlanningId)
-				.productId(ProductId.ofRepoId(540010))
-				.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-				.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+				.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+						.productId(ProductId.ofRepoId(540010))
+						.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+						.build())
 				.build();
 	}
 

@@ -29,10 +29,10 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -47,7 +47,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -113,9 +112,10 @@ class DeliveryPlanningAllocLifecycleTest
 	{
 		return DeliveryPlanningAllocCreateRequest.builder()
 				.deliveryPlanningId(deliveryPlanningId)
-				.productId(ProductId.ofRepoId(540010))
-				.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-				.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+				.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+						.productId(ProductId.ofRepoId(540010))
+						.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+						.build())
 				.build();
 	}
 
@@ -167,10 +167,11 @@ class DeliveryPlanningAllocLifecycleTest
 		deliveryPlanningRepository.createAllocations(deliveryInstructionId, ImmutableList.of(
 				DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(withOrderPlanningId)
-						.productId(ProductId.ofRepoId(540010))
-						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
-						.orderId(orderId)
+						.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+								.productId(ProductId.ofRepoId(540010))
+								.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+								.orderId(orderId)
+								.build())
 						.build(),
 				allocRequestFor(withoutOrderPlanningId)));
 
