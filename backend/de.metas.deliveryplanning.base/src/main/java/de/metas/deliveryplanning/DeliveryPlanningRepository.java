@@ -322,11 +322,20 @@ public class DeliveryPlanningRepository
 	 * A shipment is the only document a strictly {@link TransportDirection#Outgoing} planning ever gets, so
 	 * nobody else ever reports the customer's unload: completion books the SAME booked quantity onto BOTH
 	 * ends (the "arrives as shipped unless told otherwise" assumption) - {@link #hasOwnShipment} is exactly
-	 * that condition. A Dropship shipment writes only its own end (discharge): the paired receipt already
-	 * reports the real load. A receipt writes only its own end, which the direction table INVERTS for
-	 * Dropship versus Incoming: an Incoming receipt occupies discharge, a Dropship receipt occupies load -
-	 * "receipt writes discharge, shipment writes load" is wrong for the shared dropship case, which is why
-	 * this branches on the concrete direction rather than on {@code isReceipt} alone.
+	 * that condition.
+	 * <p>
+	 * A receipt ALWAYS writes discharge, {@link TransportDirection#Dropship} included: today a Dropship
+	 * planning is created and driven exactly like {@link TransportDirection#Incoming} (only
+	 * {@code GenerateIncomingDeliveryPlanningCommand} creates it, seeding {@code ActualLoadQty} from the
+	 * planned load the same way, and {@code PoolEnd.forDirection} groups it with Incoming) - it IS the
+	 * purchase leg until the consolidated planning lands. {@code ActualLoadQty} is Task Q7c's derived
+	 * placeholder for the never-reported vendor load and must never be touched by a receipt's completion,
+	 * for either direction.
+	 * <p>
+	 * The Dropship-shipment branch below is forward-looking and unreachable today: no generate process ever
+	 * creates a Dropship planning's OWN shipment ({@code GenerateOutgoingDeliveryPlanningCommand} hardcodes
+	 * {@link TransportDirection#Outgoing}) - it is kept for the future consolidated shape, not as a live
+	 * symmetric pair with the receipt branch above.
 	 *
 	 * @param isReceipt {@code true} for a receipt (a purchase-side {@code M_InOut}), {@code false} for a shipment
 	 */
@@ -341,21 +350,14 @@ public class DeliveryPlanningRepository
 
 		if (isReceipt)
 		{
-			if (direction.isDropship())
-			{
-				record.setActualLoadQty(bookedQty);
-			}
-			else
-			{
-				record.setActualDischargeQuantity(bookedQty);
-			}
+			record.setActualDischargeQuantity(bookedQty);
 		}
 		else if (hasOwnShipment(direction))
 		{
 			record.setActualLoadQty(bookedQty);
 			record.setActualDischargeQuantity(bookedQty);
 		}
-		else // Dropship shipment
+		else // Dropship shipment - forward-looking, unreachable today; see the Javadoc above
 		{
 			record.setActualDischargeQuantity(bookedQty);
 		}
@@ -373,7 +375,8 @@ public class DeliveryPlanningRepository
 	 * empty, and clears {@code Processed} unless the planning is closed - the mirror of ReOpen's rule
 	 * (Task Q10), so the invariant {@code Processed == (IsClosed || IsDelivered)} keeps holding here too.
 	 * Without this, a reversed receipt/shipment would leave the planning permanently {@code Processed} with
-	 * no route back except Close-then-ReOpen.
+	 * no route back except Close-then-ReOpen. Direction handling mirrors {@link #recordActualQtyOnComplete}
+	 * exactly - see its Javadoc for why a receipt always clears discharge, Dropship included.
 	 *
 	 * @param isReceipt {@code true} for a receipt, {@code false} for a shipment - same meaning as {@link
 	 * 		#recordActualQtyOnComplete}
@@ -385,21 +388,14 @@ public class DeliveryPlanningRepository
 
 		if (isReceipt)
 		{
-			if (direction.isDropship())
-			{
-				record.setActualLoadQty(BigDecimal.ZERO);
-			}
-			else
-			{
-				record.setActualDischargeQuantity(BigDecimal.ZERO);
-			}
+			record.setActualDischargeQuantity(BigDecimal.ZERO);
 		}
 		else if (hasOwnShipment(direction))
 		{
 			record.setActualLoadQty(BigDecimal.ZERO);
 			record.setActualDischargeQuantity(BigDecimal.ZERO);
 		}
-		else // Dropship shipment
+		else // Dropship shipment - forward-looking, unreachable today; see recordActualQtyOnComplete's Javadoc
 		{
 			record.setActualDischargeQuantity(BigDecimal.ZERO);
 		}
