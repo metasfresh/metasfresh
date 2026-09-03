@@ -321,4 +321,89 @@ class DeliveryPlanningCloseSemanticsTest
 				deliveryPlanningService.getBySelection(selectionOf(first, second))))
 				.isEmpty();
 	}
+
+	// ------------------------------------------------------------------ Task Q10: Processed follows closed-or-delivered
+
+	/**
+	 * A planning is "delivered" the same way E3's {@code IsDelivered} virtual column defines it - an
+	 * {@code M_InOut_ID} is set - without going through the real receipt/shipment flow (that interceptor is
+	 * Task Q11's territory, deliberately untouched here).
+	 */
+	private static void markDelivered(@NonNull final I_M_Delivery_Planning record)
+	{
+		record.setM_InOut_ID(999999);
+		InterfaceWrapperHelper.save(record);
+	}
+
+	/**
+	 * The invariant Task Q10 exists to enforce: {@code Processed == (IsClosed || IsDelivered)}. Reads
+	 * {@code M_InOut_ID} directly rather than the generated {@code isDelivered()} getter - that getter proxies a
+	 * DB-side virtual column ({@code CASE WHEN M_InOut_ID IS NOT NULL}), which the POJO in-memory test
+	 * infrastructure this test class uses does not evaluate, so it would misreport "delivered" as false here even
+	 * with {@code M_InOut_ID} set. Reading the column the virtual one is defined from is equally correct and is
+	 * what production the invariant statement means - see the plan's Global Constraints on this choice.
+	 */
+	private static void assertInvariantHolds(@NonNull final I_M_Delivery_Planning record)
+	{
+		final boolean isDelivered = record.getM_InOut_ID() > 0;
+		assertThat(record.isProcessed())
+				.as("invariant Processed == (IsClosed || IsDelivered) for M_Delivery_Planning_ID=%s (IsClosed=%s, IsDelivered=%s)",
+						record.getM_Delivery_Planning_ID(), record.isClosed(), isDelivered)
+				.isEqualTo(record.isClosed() || isDelivered);
+	}
+
+	@Test
+	@DisplayName("Q10: closing a delivered planning sets Processed, and reopening it KEEPS Processed set")
+	void reopen_closedAndDelivered_keepsProcessedSet()
+	{
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		markDelivered(planning);
+
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning closed = reload(planning);
+		assertInvariantHolds(closed);
+		assertThat(closed.isProcessed()).as("close always sets Processed").isTrue();
+
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning reopened = reload(planning);
+		assertInvariantHolds(reopened);
+		assertThat(reopened.isClosed()).isFalse();
+		assertThat(reopened.isProcessed()).as("a delivered planning keeps Processed after reopen").isTrue();
+	}
+
+	@Test
+	@DisplayName("Q10: closing an undelivered planning sets Processed, and reopening it CLEARS Processed")
+	void reopen_closedButNotDelivered_clearsProcessed()
+	{
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning closed = reload(planning);
+		assertInvariantHolds(closed);
+		assertThat(closed.isProcessed()).as("close always sets Processed").isTrue();
+
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning reopened = reload(planning);
+		assertInvariantHolds(reopened);
+		assertThat(reopened.isClosed()).isFalse();
+		assertThat(reopened.isProcessed()).as("an undelivered planning clears Processed after reopen").isFalse();
+	}
+
+	@Test
+	@DisplayName("Q10: a planning delivered WHILE closed stays Processed on reopen too - IsClosed dominates until it is lifted")
+	void reopen_deliveredWhileClosed_keepsProcessed()
+	{
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		assertInvariantHolds(reload(planning));
+
+		// delivered AFTER close - simulates a document booked against an already-closed planning
+		markDelivered(reload(planning));
+		assertInvariantHolds(reload(planning));
+
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning reopened = reload(planning);
+		assertInvariantHolds(reopened);
+		assertThat(reopened.isProcessed()).as("delivered before reopen, so Processed must survive it").isTrue();
+	}
 }

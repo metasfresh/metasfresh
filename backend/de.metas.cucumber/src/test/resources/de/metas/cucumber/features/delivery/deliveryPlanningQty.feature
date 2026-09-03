@@ -819,3 +819,109 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | QtyTotalOpenPlanned |
       | deliveryPlanningDelete2_1 | 30         | 30           | Outgoing            | 10                    | 0             | 10                   |
       | deliveryPlanningDelete2_2 | 30         | 30           | Outgoing            | 10                    | 0             | 10                   |
+
+  @Id:S31789_TC_Q10_DeliveredKeepsProcessed
+  Scenario: Reopening a closed AND delivered planning keeps Processed set - the invariant Processed == (IsClosed or IsDelivered) survives the reopen
+
+    Given metasfresh contains M_PricingSystems
+      | Identifier       | OPT.IsActive |
+      | pricingSystemQ10 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier    | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_Q10 | pricingSystemQ10               | DE                    | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier           | M_PriceList_ID.Identifier |
+      | priceListVersion_Q10 | priceList_Q10              |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_Q10              | product                 | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier        | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendorQ10         | Y        | N          | pricingSystemQ10               |
+      | warehouseBPQ10    |          |            |                                |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier           | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
+      | vendorLocationQ10    | 1234564396499 | vendorQ10                | true                | true                |
+      | warehouseLocationQ10 | 1203522892499 | warehouseBPQ10           | true                | true                |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendorQ10                | product                 |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value             | Name              | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQ10               | warehouseValueQ10 | warehouseNameQ10  | warehouseBPQ10                | warehouseLocationQ10                   |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value            | M_Warehouse_ID.Identifier |
+      | locatorQ10               | locatorValueQ10  | warehouseQ10               |
+    And metasfresh contains C_Orders:
+      | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderQ10Delivered  | false   | vendorQ10                 | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQ10                      | warehouseQ10                    | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQ10Delivered | orderQ10Delivered      | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderQ10Delivered is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID  | C_OrderLine_ID        |
+      | deliveryPlanningQ10Deld | orderLineQ10Delivered |
+
+    # deliver it FIRST, via the real receipt flow - stamped M_Delivery_Planning_ID, then completed, the same
+    # shape the production generate-receipt process creates, so interceptor/M_InOut#afterComplete sets
+    # M_InOut_ID, which is exactly what E3's IsDelivered virtual column reads.
+    And metasfresh contains M_InOut:
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
+      | receiptQ10Deld         | vendorQ10                 | vendorLocationQ10                  | false   | F            | S               | I               | warehouseQ10                | 2023-02-05   | V+           | 5            | MMR             | MR             |
+    And update M_InOut:
+      | M_InOut_ID.Identifier | M_Delivery_Planning_ID.Identifier |
+      | receiptQ10Deld         | deliveryPlanningQ10Deld           |
+    And metasfresh contains M_InOutLine
+      | M_InOut_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
+      | receiptQ10Deld         | 10         | 10          | PCE     | product                      | locatorQ10                   |
+
+    When the material receipt identified by receiptQ10Deld is completed
+
+    # now delivered - close it, which always sets Processed regardless of delivered state
+    And M_Delivery_Planning identified by deliveryPlanningQ10Deld is closed
+
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed |
+      | deliveryPlanningQ10Deld | 10         | 10           | Incoming            | true     | true      |
+
+    When M_Delivery_Planning identified by deliveryPlanningQ10Deld is opened
+
+    # THE INVARIANT: Processed == (IsClosed || IsDelivered). IsClosed just went back to false, but the
+    # planning is delivered, so Processed MUST stay true - the defect Task Q10 fixes is reopen clearing this
+    # unconditionally, which would wrongly unlock a delivered planning.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed |
+      | deliveryPlanningQ10Deld | 10         | 10           | Incoming            | false    | true      |
+
+  @Id:S31789_TC_Q10_UndeliveredClearsProcessed
+  Scenario: Reopening a closed, UNDELIVERED planning clears Processed
+
+    Given metasfresh contains C_Orders:
+      | Identifier          | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQ10Undelivered | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier              | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQ10Undelivered | orderQ10Undelivered    | product                 | 10         | shipper_DHL                 |
+
+    When the order identified by orderQ10Undelivered is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | C_OrderLine_ID          |
+      | deliveryPlanningQ10Undeld | orderLineQ10Undelivered |
+
+    And M_Delivery_Planning identified by deliveryPlanningQ10Undeld is closed
+
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed |
+      | deliveryPlanningQ10Undeld | 10         | 10           | Outgoing            | true     | true      |
+
+    When M_Delivery_Planning identified by deliveryPlanningQ10Undeld is opened
+
+    # THE INVARIANT: never delivered, so lifting IsClosed must clear Processed too - the mirror of the
+    # scenario above.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed |
+      | deliveryPlanningQ10Undeld | 10         | 10           | Outgoing            | false    | false     |

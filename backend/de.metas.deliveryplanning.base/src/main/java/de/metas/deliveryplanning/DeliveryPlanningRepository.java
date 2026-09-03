@@ -514,7 +514,12 @@ public class DeliveryPlanningRepository
 		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
 		{
 			deliveryPlanningRecord.setIsClosed(true);
-			deliveryPlanningRecord.setProcessed(true);
+			if (!deliveryPlanningRecord.isProcessed())
+			{
+				// skip the redundant write when it is already set (e.g. a delivered planning) - no-op change-log
+				// row avoided, and the invariant (Processed == IsClosed || IsDelivered) holds either way
+				deliveryPlanningRecord.setProcessed(true);
+			}
 			save(deliveryPlanningRecord);
 		}
 	}
@@ -522,6 +527,14 @@ public class DeliveryPlanningRepository
 	/**
 	 * The counterpart of {@link #closeSelectedDeliveryPlannings}, all-or-nothing in the same way: a planning that
 	 * is still open is refused by name, before anything is written.
+	 * <p>
+	 * {@code Processed} is cleared only when the planning is NOT delivered (Task Q10): a delivered planning stays
+	 * {@code Processed} through a reopen, so the invariant {@code Processed == (IsClosed || IsDelivered)} keeps
+	 * holding - reopening only ever lifts the {@code IsClosed} half of that OR, it never overrides the
+	 * {@code IsDelivered} half. Reads {@code M_InOut_ID} directly rather than the generated (virtual-column)
+	 * {@code isDelivered()} getter - the two are equally correct (E3 defines {@code IsDelivered} as exactly this
+	 * check) and this form is unit-testable without a real DB, since a virtual column only evaluates against
+	 * Postgres.
 	 *
 	 * @param stillOpenMessage what to raise for a still-open row - the caller passes the message
 	 * 		{@code M_Delivery_Planning_ReOpen}'s precondition uses to keep the button off a mixed selection, so both
@@ -546,7 +559,10 @@ public class DeliveryPlanningRepository
 		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
 		{
 			deliveryPlanningRecord.setIsClosed(false);
-			deliveryPlanningRecord.setProcessed(false);
+			if (deliveryPlanningRecord.getM_InOut_ID() <= 0)
+			{
+				deliveryPlanningRecord.setProcessed(false);
+			}
 			save(deliveryPlanningRecord);
 		}
 	}
