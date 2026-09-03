@@ -6,6 +6,7 @@ import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.inout.InOutId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_InOut;
@@ -14,21 +15,12 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_M_InOut.class)
 @Component
+@RequiredArgsConstructor
 public class M_InOut
 {
-	private final DeliveryPlanningService deliveryPlanningService;
-	private final DeliveryPlanningRepository deliveryPlanningRepository;
-	private final DeliveryInstructionService deliveryInstructionService;
-
-	public M_InOut(
-			@NonNull final DeliveryPlanningService deliveryPlanningService,
-			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
-			@NonNull final DeliveryInstructionService deliveryInstructionService)
-	{
-		this.deliveryPlanningService = deliveryPlanningService;
-		this.deliveryPlanningRepository = deliveryPlanningRepository;
-		this.deliveryInstructionService = deliveryInstructionService;
-	}
+	@NonNull private final DeliveryPlanningService deliveryPlanningService;
+	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
+	@NonNull private final DeliveryInstructionService deliveryInstructionService;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(final I_M_InOut inout)

@@ -114,10 +114,10 @@ public class GenerateIncomingDeliveryPlanningCommand
 				// M_Delivery_Planning's AFTER_NEW interceptor (onNew) recomputes it to exactly that anyway; on a
 				// planning with no C_OrderLine_ID it does NOT (DeliveryPlanningService#recomputeOpenQuantities-
 				// ForOrderLine returns early - there is no line to sum over), so this seed is the final value
-				// there and has to be right on its own. A prior revision subtracted the receipt schedule's
-				// QtyMoved, which would have made that order-line-less path disagree with every order-line-bearing
-				// one for the same data: a receipt booked before the planning existed belongs to no planning, so
-				// it is not part of this figure.
+				// there and has to be right on its own. The receipt schedule's QtyMoved is deliberately NOT
+				// subtracted: a receipt booked before this planning existed belongs to no planning, so it is
+				// not part of this figure, and subtracting it would make the order-line-less path disagree
+				// with every order-line-bearing one for the same data.
 				.qtyTotalOpen(qtyOrdered)
 				// D22/Task Q7c: nothing ever reports the vendor's load, so for an inbound (or dropship, per
 				// order.isDropShip() below) planning the actual load starts equal to the planned load - never

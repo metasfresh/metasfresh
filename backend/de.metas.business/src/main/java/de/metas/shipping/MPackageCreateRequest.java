@@ -34,8 +34,7 @@ import java.sql.Timestamp;
  * What {@link MPackageRepository#create(MPackageCreateRequest)} writes onto a new {@code M_Package}.
  * <p>
  * Every field is optional because {@code M_Package} carries no mandatory reference of its own: the caller that
- * knows a value passes it, and a caller that does not leaves the column empty - which is what the previous
- * in-line {@code newInstance(I_M_Package.class)} did too.
+ * knows a value passes it, and a caller that does not leaves the column empty.
  */
 @Value
 @Builder

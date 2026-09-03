@@ -52,7 +52,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Repository Tables: M_Delivery_Planning_Alloc
+ * Repository Tables: M_Delivery_Planning_Alloc, M_Delivery_Planning (IsAllocated mirror only - see below)
  * Repository Cluster: DeliveryPlanningAllocRepository (sole owner of M_Delivery_Planning_Alloc),
  * DeliveryPlanningRepository (M_Delivery_Planning), DeliveryInstructionRepository (M_ShipperTransportation and
  * its M_ShippingPackage lines), MPackageRepository (M_Package). An allocation names records of all three of the

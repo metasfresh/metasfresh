@@ -36,6 +36,7 @@ import de.metas.shipping.model.ShippingPackageId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -69,16 +70,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * instruction as that row is written - persistence rather than a delivery-planning decision.
  */
 @Repository
+@RequiredArgsConstructor
 public class DeliveryInstructionRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final DimensionService dimensionService;
-
-	public DeliveryInstructionRepository(@NonNull final DimensionService dimensionService)
-	{
-		this.dimensionService = dimensionService;
-	}
+	@NonNull private final DimensionService dimensionService;
 
 	public I_M_ShipperTransportation getById(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
@@ -243,10 +240,9 @@ public class DeliveryInstructionRepository
 		shippingPackageRecord.setM_Product_ID(packageData.getProductId().getRepoId());
 
 		// Task Q14: the four quantity figures (planned load, planned discharge, actual load, actual
-		// discharge) are derived (ColumnSQL) from the planning through the M_Delivery_Planning_Alloc
-		// allocation - nothing to write here. They used to be copied from request.getQtyLoaded()/
-		// getQtyDischarged() (themselves the planning's PLANNED figures), which froze the package's
-		// "actual" at the planned value forever; the mirror replaces that copy, not a second derivation.
+		// discharge) are a ColumnSQL read-through of the planning, reached through the
+		// M_Delivery_Planning_Alloc allocation - so there is nothing to write here, and a written copy
+		// would freeze the package's "actual" at whatever the planning said at creation time.
 		shippingPackageRecord.setBatch(packageData.getBatchNo());
 		shippingPackageRecord.setC_UOM_ID(packageData.getUomId().getRepoId());
 
