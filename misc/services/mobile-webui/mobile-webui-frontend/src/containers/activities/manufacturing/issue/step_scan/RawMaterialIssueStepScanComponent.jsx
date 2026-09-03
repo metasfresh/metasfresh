@@ -13,8 +13,6 @@ import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
 import { getActivityById, getStepByIdFromActivity } from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
-import { parseQRCodeString } from '../../../../../utils/qrCode/hu';
-import { ATTR_weightNet } from '../../../../../utils/qrCode/common';
 import { useBooleanSetting } from '../../../../../reducers/settings';
 import { useMobileNavigation } from '../../../../../hooks/useMobileNavigation';
 import {
@@ -145,13 +143,13 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     const stepId = resolvedBarcodeData.stepId;
     const isWeightable = !!resolvedBarcodeData.isWeightable;
     const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
-    // The quantity doubles as the HU's weight only while the step asks for kg. A step denominated in
-    // the HU's own stocking UOM is a piece count, and sending that as a weight makes the server
-    // re-weigh the HU to it - so in that case the HU's own captured net weight is sent instead.
+    // The quantity doubles as the HU's weight only while the step asks for kg, which is the case when
+    // part of an HU is issued: the HU survives and its qty and weight are reduced. A step denominated
+    // in the HU's own stocking UOM consumes the HU whole and destroys it, so there is no weight to
+    // correct - and sending the piece count as one makes the server inventory the HU's whole content
+    // in kg, which fails on the mismatched UOMs.
     const isQtyEnteredAsWeight = resolvedBarcodeData.uom === 'kg';
-    const huWeightNetCaptured = parseQRCodeString(resolvedBarcodeData.scannedBarcode, true)?.[ATTR_weightNet] ?? null;
-    const huWeightGrossBeforeIssue =
-      isWeightable && isIssueWholeHU ? (isQtyEnteredAsWeight ? qty : huWeightNetCaptured) : null;
+    const huWeightGrossBeforeIssue = isWeightable && isIssueWholeHU && isQtyEnteredAsWeight ? qty : null;
 
     return dispatch(
       postManufacturingIssueEventThunk({

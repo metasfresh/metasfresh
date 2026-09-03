@@ -86,14 +86,15 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
             });
         });
 
-        await test.step('In progress: the first HU is issued, the second is untouched', async () => {
+        // Issuing a whole HU consumes its content and destroys the HU, so its end status is Destroyed
+        await test.step('In progress: the first HU is consumed, the second is untouched', async () => {
             await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_A.qrCode });
             await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: `${HU_A_PIECES * NOMINAL_KG_PER_PIECE} kg` });
 
             await Backend.expect({
                 title: 'weights with one HU issued',
                 hus: {
-                    'HU_A': { huStatus: 'I', attributes: { 'WeightNet': HU_A_WEIGHT } },
+                    'HU_A': { huStatus: 'D', attributes: { 'WeightNet': HU_A_WEIGHT } },
                     'HU_B': { huStatus: 'A', storages: { 'COMP_CW': `${HU_B_PIECES} PCE` }, attributes: { 'WeightNet': HU_B_WEIGHT } },
                 },
                 manufacturings: {
@@ -102,15 +103,15 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
             });
         });
 
-        await test.step('Final: both HUs are issued and each kept its own weight', async () => {
+        await test.step('Final: both HUs are consumed and each kept its own weight', async () => {
             await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_B.qrCode });
             await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: `${LINE_DEMAND_KG} kg` });
 
             await Backend.expect({
                 title: 'final weights',
                 hus: {
-                    'HU_A': { huStatus: 'I', attributes: { 'WeightNet': HU_A_WEIGHT } },
-                    'HU_B': { huStatus: 'I', attributes: { 'WeightNet': HU_B_WEIGHT } },
+                    'HU_A': { huStatus: 'D', attributes: { 'WeightNet': HU_A_WEIGHT } },
+                    'HU_B': { huStatus: 'D', attributes: { 'WeightNet': HU_B_WEIGHT } },
                 },
                 manufacturings: {
                     'PP1': {
