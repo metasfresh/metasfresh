@@ -87,39 +87,23 @@ Feature: The delivery instruction's three-state delivered indicator
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DeliveredState |
       | deliveryInstructionState               | shipper_forward         | vendor                          | warehouseLocation                  | NotDelivered        |
 
-    # A receipt manually linked to planningState_1 BEFORE completion - the same shape the production
-    # generate-receipt process creates (M_Delivery_Planning_ID stamped, then completed), which is what
-    # makes interceptor/M_InOut#afterComplete find the FK set.
-    And metasfresh contains M_InOut:
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
-      | receiptState_1        | vendor                   | vendorLocation                     | false   | F            | S               | I               | warehouseState             | 2023-02-05   | V+           | 5            | MMR             | MR             |
-    And update M_InOut:
-      | M_InOut_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | receiptState_1        | planningState_1                   |
-    And metasfresh contains M_InOutLine
-      | M_InOut_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
-      | receiptState_1        | 10         | 10          | PCE     | product                      | locatorState                 |
-
-    # STATE 2: one of two allocated plannings is delivered - the receipt-completed write point
-    # (interceptor/M_InOut#afterComplete) fires and recomputes the instruction.
-    When the material receipt identified by receiptState_1 is completed
+    # STATE 2: one of two allocated plannings is delivered - driven through the PRODUCTION
+    # generate-receipt process, which generates the receipt and completes it in one call. Only because the
+    # planning link is on the draft at that moment does interceptor/M_InOut#afterComplete fire and recompute
+    # the instruction.
+    When the delivery planning identified by planningState_1 generates a receipt:
+      | ReceiptDate | Qty | OPT.M_InOut_ID  |
+      | 2023-02-05  | 10  | receiptState_1  |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DeliveredState |
       | deliveryInstructionState               | shipper_forward         | vendor                          | warehouseLocation                  | PartlyDelivered     |
 
-    And metasfresh contains M_InOut:
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
-      | receiptState_2        | vendor                   | vendorLocation                     | false   | F            | S               | I               | warehouseState             | 2023-02-06   | V+           | 5            | MMR             | MR             |
-    And update M_InOut:
-      | M_InOut_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | receiptState_2        | planningState_2                   |
-    And metasfresh contains M_InOutLine
-      | M_InOut_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Product_ID.Identifier | OPT.M_Locator_ID.Identifier |
-      | receiptState_2        | 10         | 10          | PCE     | product                      | locatorState                 |
-
-    # STATE 3: both allocated plannings are delivered.
-    When the material receipt identified by receiptState_2 is completed
+    # STATE 3: both allocated plannings are delivered - again through the production generate-receipt
+    # process, this time for the second planning.
+    When the delivery planning identified by planningState_2 generates a receipt:
+      | ReceiptDate | Qty | OPT.M_InOut_ID  |
+      | 2023-02-06  | 10  | receiptState_2  |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DeliveredState |
