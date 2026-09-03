@@ -5,7 +5,6 @@ import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
-import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
 
 // The component is stocked in pieces but consumed by weight: the BOM line is in kg while the HU's
 // storage is in Stk. The HU also weighs less than its nominal 2 x 35 kg, as a real cheese pallet does.
@@ -76,11 +75,7 @@ test.describe('Manufacturing issue of a whole catch-weight HU across UOMs', () =
         await ManufacturingJobsListScreen.waitForScreen();
         await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
-        await test.step('Issue the whole HU', async () => {
-            await ManufacturingJobScreen.clickIssueButton({ index: 1 });
-            await RawMaterialIssueLineScreen.scanQRCode({ qrCode: masterdata.handlingUnits.HU_CW.qrCode });
-            await RawMaterialIssueLineScreen.goBack();
-        });
+        await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_CW.qrCode });
 
         await Backend.expect({
             title: 'the whole HU was issued, carrying its captured weight',
