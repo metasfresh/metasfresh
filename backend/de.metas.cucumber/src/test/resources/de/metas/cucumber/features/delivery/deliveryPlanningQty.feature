@@ -390,6 +390,45 @@ Feature: Delivery planning quantities
       | deliveryPlanningFull_1 | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 0                       |
       | deliveryPlanningFull_2 | 10         | 10           | Outgoing            | 0                     | 0                        | 0             | 0                       |
 
+  @Id:S31789_TC_Q5_FullyAllocatedMultiple
+  Scenario: Splitting a fully allocated delivery planning into MORE THAN ONE new planning still creates them, all carrying 0
+  # The natural counterpart of "Create additional delivery plannings" in deliveryPlanningProcesses.feature,
+  # which pre-edits PlannedLoadedQuantity down to 3 before splitting so its 3/1/1 expectations still hold under
+  # the committed-cargo rule. Here nothing is pre-edited: the target stays fully allocated (own effective ==
+  # QtyOrdered), so the pool is 0 and BOTH new plannings carry 0 - the shape the system produces on its own
+  # when more than one additional planning is requested of an allocated target.
+
+    Given metasfresh contains C_Orders:
+      | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyFullMult | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier           | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyFullMult | orderQtyFullMult       | product                 | 5          | shipper_DHL                 |
+
+    When the order identified by orderQtyFullMult is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | C_OrderLine_ID       |
+      | deliveryPlanningFullMult_1 | orderLineQtyFullMult |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity |
+      | deliveryPlanningFullMult_1 | 5          | 5            | Outgoing            | 5                     | 5                        |
+
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID     | IsComplete |
+      | deliveryInstructionFullMult | deliveryPlanningFullMult_1 | false      |
+
+    When generate 2 additional M_Delivery_Planning records for: deliveryPlanningFullMult_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                                              | C_OrderLine_ID       |
+      | deliveryPlanningFullMult_1,deliveryPlanningFullMult_2,deliveryPlanningFullMult_3 | orderLineQtyFullMult |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningFullMult_1 | 5          | 5            | Outgoing            | 5                     | 5                        | 0             | 0                       |
+      | deliveryPlanningFullMult_2 | 5          | 5            | Outgoing            | 0                     | 0                        | 0             | 0                       |
+      | deliveryPlanningFullMult_3 | 5          | 5            | Outgoing            | 0                     | 0                        | 0             | 0                       |
+
   @Id:S31789_TC12
   Scenario: TC12 - Splitting a planning with both an allocation and a partial receipt leaves the received figure, the allocated portion and the original's planned figure unchanged
 
