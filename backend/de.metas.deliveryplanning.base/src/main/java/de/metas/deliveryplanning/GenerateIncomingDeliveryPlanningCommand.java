@@ -84,8 +84,6 @@ public class GenerateIncomingDeliveryPlanningCommand
 
 		final Quantity qtyOrdered = Quantity.of(receiptScheduleQtysBL.getQtyOrdered(receiptSchedule), uom);
 
-		final Quantity qtyMoved = Quantity.of(receiptScheduleQtysBL.getQtyMoved(receiptSchedule), uom);
-
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(receiptSchedule.getM_AttributeSetInstance_ID());
 
 		final CountryId originCountryId = getOriginCountryId(asiId);
@@ -110,7 +108,13 @@ public class GenerateIncomingDeliveryPlanningCommand
 				.partnerId(BPartnerId.ofRepoId(receiptSchedule.getC_BPartner_ID()))
 				.bPartnerLocationId(destinationBPLocationId)
 				.qtyOrdered(qtyOrdered)
-				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
+				// Placeholder only: M_Delivery_Planning's own AFTER_NEW interceptor (onNew) unconditionally
+				// recomputes QtyTotalOpen (and QtyTotalOpenPlanned) from QtyOrdered minus every planning's own
+				// actual figure right after this row is inserted, so whatever is passed here never survives
+				// past creation. A prior revision subtracted the receipt schedule's QtyMoved here, which - being
+				// dead - never actually accounted for a schedule already partly received before its planning
+				// existed either; qtyOrdered is passed as the honest "nothing subtracted yet" seed.
+				.qtyTotalOpen(qtyOrdered)
 				// D22/Task Q7c: nothing ever reports the vendor's load, so for an inbound (or dropship, per
 				// order.isDropShip() below) planning the actual load starts equal to the planned load - never
 				// zero. The interceptor in interceptor/M_Delivery_Planning.java keeps it in step afterwards.
