@@ -1052,11 +1052,17 @@ default filter independently hides the assigned line, so the grid holds 1 row be
 after). The soft half has its own coverage: the "fully-assigned board row" and mixed-tuple-with-stock
 tests.
 
-It is backed by an UPPER BOUND that survives that same ambiguity: the jump may never return more rows
-than the board row itself covers (OrderLineCount = 1 here). That bound holds on both sides of the change
-while still failing loudly -- at 2 rows -- if the where-clause's trailing term were dropped and the
-unstocked sibling reappeared. Without it the containment check alone would be close to vacuous in the
-post-change state, where the array it inspects is empty.
+It is accompanied by an UPPER BOUND -- the jump may never return more rows than the board row itself
+covers (OrderLineCount = 1 here) -- which guards a DIFFERENT bug class: duplication / join fan-out in
+the relation, which the containment check cannot see because every duplicated row still carries a
+legitimate qty.
+
+The two are not interchangeable, and the containment check is the one that matters here. Simulating the
+regression on a running stack (dropping the where-clause's trailing term, then re-running this test)
+showed the leak surfacing as EXACTLY ONE row -- the IsAssigned auto-filter removes the assigned line in
+the same fetch -- so the observed array was \`[4]\`: containment fired, the bound (1 <= 1) did not. Do
+not conclude from the bound's presence that the containment assertion is redundant; it is the only
+assertion in this file that catches an unstocked sibling leaking past the where-clause.
 
 Neither assertion is vacuous: the test first asserts that BOTH schedules genuinely exist (each
 carrier-resolved and reachable in Traffic Management's own view before the assignment), that the board
@@ -1130,11 +1136,14 @@ row covers exactly one of them, and that the jump still opens Traffic Management
       returnedQtys,
       'the unassigned line has no stock, so the board does not show it -- the jump\'s where-clause must not return it either'
     ).not.toContain(unassignedQty);
-    // Upper bound, deliberately not an exact count -- see the description for why this test stays
-    // agnostic about the IsAssigned default filter. The jump can never show more schedules than the
-    // board row it was launched from claims to hold, so a leaked unstocked sibling fails here too, on
-    // the count, and not only on the containment check above (which inspects an empty array once the
-    // default filter has also removed the assigned line).
+    // A SEPARATE bug class, not a second line of defence for the check above -- do not treat the
+    // containment assertion as redundant because this one exists. Verified by simulating the
+    // regression on a running stack (dropping the where-clause's trailing term, then re-running this
+    // test): the leak surfaces as EXACTLY ONE row, because the IsAssigned auto-filter removes the
+    // assigned line in the same fetch. The observed result array was `[4]` -- the containment check
+    // fired; this bound (1 <= 1) did not. What the bound does catch is a row count the board itself
+    // cannot justify: duplication / join fan-out in the relation, which containment cannot see
+    // because every returned row would still carry a legitimate qty.
     expect(
       targetView.result.length,
       'the jump must never return more rows than the board row covers (OrderLineCount)'
