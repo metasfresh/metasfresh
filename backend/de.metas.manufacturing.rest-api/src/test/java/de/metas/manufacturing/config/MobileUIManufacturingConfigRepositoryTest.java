@@ -171,13 +171,16 @@ class MobileUIManufacturingConfigRepositoryTest
 		}
 
 		@Test
-		void noActiveChildRows_fallsBackToDefault_lotNumberAndBestBeforeDate()
+		void presentGlobalRowWithNoActiveChildRows_yieldsEmptyList_notDefault()
 		{
+			// A MobileUI_MFG_Config row EXISTS (even with no active child rows), so its active editable-attribute
+			// list is AUTHORITATIVE: an empty list means "nothing editable" and must NOT be silently re-enabled to
+			// the Lot/Best-before DEFAULT. The DEFAULT fallback applies only when NO global row exists at all
+			// (covered by noConfigAtAll_defaultsToLotNumberAndBestBeforeDate above).
 			createGlobalConfig(ReceiveUnitType.CU);
 
 			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
-			assertThat(config.getEditableAttributeCodesInOrder())
-					.containsExactly(AttributeConstants.ATTR_LotNumber, AttributeConstants.ATTR_BestBeforeDate);
+			assertThat(config.getEditableAttributeCodesInOrder()).isEmpty();
 		}
 
 		@Test

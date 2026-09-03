@@ -62,12 +62,24 @@ public class MobileUIManufacturingConfigRepository
 	@NonNull
 	public MobileUIManufacturingConfig getConfig(@Nullable final UserId userId, @NonNull final ClientId clientId)
 	{
-		return MobileUIManufacturingConfig.merge(
-						userId != null ? getUserConfig(userId) : null,
-						getGlobalConfig(clientId),
-						DEFAULT_CONFIG
-				)
+		final MobileUIManufacturingConfig userConfig = userId != null ? getUserConfig(userId) : null;
+		final MobileUIManufacturingConfig globalConfig = getGlobalConfig(clientId);
+
+		final MobileUIManufacturingConfig merged = MobileUIManufacturingConfig.merge(userConfig, globalConfig, DEFAULT_CONFIG)
 				.orElse(DEFAULT_CONFIG);
+
+		// Row-existence gate for the editable-attribute list (the only emptiness-sensitive field): when a
+		// MobileUI_MFG_Config row EXISTS, its active list is authoritative even when empty - an explicit
+		// "nothing editable" opt-out must be respected, not silently re-enabled to the Lot/Best-before DEFAULT.
+		// Only when NO global row exists do we fall back to the DEFAULT list. Per-user editable lists do not
+		// exist in v1 (global-only), so global-row existence is the gate.
+		if (globalConfig != null)
+		{
+			return merged.toBuilder()
+					.editableAttributeCodesInOrder(globalConfig.getEditableAttributeCodesInOrder())
+					.build();
+		}
+		return merged;
 	}
 
 	private MobileUIManufacturingConfig getUserConfig(@NonNull final UserId userId)
