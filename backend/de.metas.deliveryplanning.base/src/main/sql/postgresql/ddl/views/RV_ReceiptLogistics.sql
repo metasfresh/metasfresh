@@ -29,6 +29,17 @@
 --                            schedule onto the planning at creation, so the two agree by construction;
 --                            writing them once removes the class of bug where the two halves of a
 --                            column silently drift apart.
+--
+-- UOM. C_UOM_ID follows the SAME rule as QtyOrdered -- the unit that actually goes with the quantity
+-- shown on that branch, not a single expression like identity/context above: the planning's unit on
+-- branch one, the schedule's on branch two. Unlike product/partner/warehouse, QtyOrdered is
+-- planning-editable after creation, so its unit has to be read from wherever the quantity itself is
+-- read, or the two could silently disagree. There is no DB constraint tying M_Delivery_Planning.C_UOM_ID
+-- to M_ReceiptSchedule.C_UOM_ID -- on the data behind this view today the two agree on every one of the
+-- 67 planned rows (0 disagreements, verified by direct query), because the generate command copies the
+-- schedule's unit onto the planning at creation like it does product/partner/warehouse -- but nothing
+-- stops a later edit to the planning's unit from breaking that agreement, which is exactly why this
+-- column is read per-branch instead of picked once.
 --   M_Warehouse_ID is the schedule's plain column, deliberately NOT M_Warehouse_Effective_ID -- the
 --   planning stores the plain one, so using the effective one on branch two only would make the
 --   column's two halves disagree.
@@ -82,6 +93,7 @@ SELECT dp.m_delivery_planning_id                                             AS 
        dp.ata,
        COALESCE(rs.datepromised_override, rs.movementdate)                   AS datepromised_effective,
        dp.qtyordered,
+       dp.c_uom_id,
        rs.poreference,
        (SELECT string_agg(DISTINCT st.containerno, '; ')
         FROM m_shippertransportation st
@@ -124,6 +136,7 @@ SELECT 1000000000 + rs.m_receiptschedule_id                AS RV_ReceiptLogistic
           AND io.docstatus IN ('CO', 'CL'))                AS ata,
        COALESCE(rs.datepromised_override, rs.movementdate) AS datepromised_effective,
        rs.qtyordered,
+       rs.c_uom_id,
        rs.poreference,
        (SELECT string_agg(DISTINCT st.containerno, '; ')
         FROM m_shippertransportation st

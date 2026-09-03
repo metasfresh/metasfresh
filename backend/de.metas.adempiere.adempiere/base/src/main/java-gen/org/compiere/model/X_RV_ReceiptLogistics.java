@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV_ReceiptLogistics, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2143167265L;
+	private static final long serialVersionUID = -1092813033L;
 
     /** Standard Constructor */
     public X_RV_ReceiptLogistics (final Properties ctx, final int RV_ReceiptLogistics_ID, @Nullable final String trxName)
@@ -99,6 +99,21 @@ public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV
 	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override
