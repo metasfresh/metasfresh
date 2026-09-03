@@ -34,6 +34,7 @@ import de.metas.document.references.related_documents.RelatedDocumentsCandidateG
 import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -57,6 +58,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.UserMessagePresentation;
 import org.adempiere.model.GenericPO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -98,6 +100,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	@NonNull private final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory;
 	@NonNull private final IViewsRepository viewsRepo;
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public RelationTypeInOverlayProcess()
 	{
@@ -166,7 +169,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		final List<TableRecordReference> sourceRecordRefs = getSelectedSourceRecordRefs();
 		if (sourceRecordRefs.isEmpty())
 		{
-			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND).setUserMessagePresentation(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
 		}
 
 		final ViewId viewId = sourceRecordRefs.size() == 1
@@ -192,7 +195,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		{
 			addLog("Cannot resolve related documents for {}: {}", recordRef, ex.getLocalizedMessage());
 			log.warn("Cannot resolve related documents for {}", recordRef, ex);
-			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND).setUserMessagePresentation(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
 		}
 
 		// Get the specific provider for this relation type and retrieve related documents
@@ -200,7 +203,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 		if (relatedDocumentGroups.isEmpty())
 		{
-			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND).setUserMessagePresentation(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
 		}
 		else if (relatedDocumentGroups.size() > 1)
 		{
@@ -281,7 +284,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		// Note: whereClauses is only ever appended to after targetWindowId has been set, so non-empty implies non-null window
 		if (whereClauses.isEmpty())
 		{
-			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND).setUserMessagePresentation(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
 		}
 
 		final String combinedWhereClause = String.join(" OR ", whereClauses);
@@ -399,7 +402,37 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 				.setUseAutoFilters(true)
 				.build();
 
-		return viewsRepo.createView(request);
+		try
+		{
+			return viewsRepo.createView(request);
+		}
+		catch (final AdempiereException ex)
+		{
+			// SqlViewFactory#extractReferencedDocumentFilter throws the very same MSG_NO_RELATED_DOCS_FOUND when it
+			// cannot resolve a document-reference filter for srcDocument; surface it as an acknowledgeable dialog too,
+			// same as the in-class "no related documents" checks. Any other exception from createView propagates as-is.
+			if (isNoRelatedDocsFoundError(ex))
+			{
+				throw ex.setUserMessagePresentation(UserMessagePresentation.ACKNOWLEDGE_DIALOG);
+			}
+			throw ex;
+		}
+	}
+
+	/**
+	 * Recognises the exception {@link de.metas.ui.web.view.SqlViewFactory} throws when it cannot derive a
+	 * related-documents filter, so it can be re-presented as an acknowledgeable message rather than a raw error.
+	 * <p>
+	 * The comparison mirrors {@link AdempiereException#AdempiereException(AdMessageKey)}, which derives its error code as
+	 * {@code coalesce(msgBL.getErrorCode(key), key.toAD_Message())} — matching only the second branch would silently stop
+	 * recognising the error the day someone sets an {@code ErrorCode} on the AD_Message.
+	 */
+	private boolean isNoRelatedDocsFoundError(@NonNull final AdempiereException ex)
+	{
+		final String expectedErrorCode = CoalesceUtil.coalesce(
+				msgBL.getErrorCode(MSG_NO_RELATED_DOCS_FOUND),
+				MSG_NO_RELATED_DOCS_FOUND.toAD_Message());
+		return expectedErrorCode.equals(ex.getErrorCode());
 	}
 
 	@NonNull
