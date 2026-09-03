@@ -105,7 +105,6 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
             });
         });
 
-        // Issuing a whole HU consumes its content and destroys the HU, so its end status is Destroyed
         // Receiving finished goods auto-issues the received-only component and, on the way, recomputes the
         // steps of every line - including this one, whose steps are denominated in pieces. That recompute
         // used to throw on the mismatched units before the operator could issue anything else.
@@ -119,6 +118,7 @@ test.describe('Manufacturing issue of whole catch-weight HUs across UOMs', () =>
             await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: '0 kg' });
         });
 
+        // Issuing a whole HU consumes its content and destroys the HU, so its end status is Destroyed
         await test.step('In progress: the first HU is consumed, the second is untouched', async () => {
             await ManufacturingJobScreen.issueRawProduct({ index: 1, qrCode: masterdata.handlingUnits.HU_A.qrCode });
             await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyIssued: `${HU_A_PIECES * NOMINAL_KG_PER_PIECE} kg` });
