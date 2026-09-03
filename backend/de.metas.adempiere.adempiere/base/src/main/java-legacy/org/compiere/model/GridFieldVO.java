@@ -848,7 +848,7 @@ public class GridFieldVO implements Serializable
 	 * Help
 	 */
 	@Getter private String help = "";
-	private Map<String, String> helpTrls = null; // lazy
+	@Getter private Map<String, String> helpTrls = null; // lazy
 	/**
 	 * Mandatory Logic
 	 */

@@ -73,6 +73,44 @@ input {
     text-decoration: underline;
     cursor: pointer;
   }
+
+  &.field-tooltip-trigger {
+    position: relative;
+    overflow: visible;
+
+    .field-tooltip-popup {
+      display: none;
+      position: absolute;
+      left: 0;
+      top: 100%;
+      z-index: 1000;
+      min-width: 200px;
+      max-width: 360px;
+      padding: 8px 10px;
+      background: #333;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: normal;
+      line-height: 1.4;
+      white-space: normal;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      pointer-events: none;
+    }
+
+    &:hover .field-tooltip-popup {
+      display: block;
+    }
+
+    .field-tooltip-description {
+      font-weight: 600;
+    }
+
+    .field-tooltip-help {
+      margin-top: 4px;
+      opacity: 0.85;
+    }
+  }
 }
 
 .form-group {
