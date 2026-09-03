@@ -8,17 +8,46 @@ import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/Manufa
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
 // Lot + Best-Before editability on the mobile Produktion receive dialog is ON by default,
-// so the dialog offers both inputs without any config override (empty mobileConfig).
+// so the dialog offers both inputs without any config override (empty mobileConfig) - this spec
+// deliberately exercises that DEFAULT-ON path and adds NO editableAttributes list.
+//
+// Product attribute set: MaterialReceiptActivityHandler resolves the applicable attribute set from the
+// product's CATEGORY (IProductBL#getAttributeSetId(I_M_Product) - "take it from the product category,
+// never from the product itself"), NOT from M_Product.M_AttributeSet_ID. So for Lot-Nummer /
+// HU_BestBeforeDate to be resolvable on the produced HU, this spec creates its OWN per-run product
+// category ('mfgCat') whose attribute set ('mfgAttrSet') carries both as INSTANCE attributes, and points
+// every product at that category - independent of the preloaded standard category, so it works on the
+// vanilla CI DB (fresh-fixture rule) as well as any local dump. (Earlier this spec relied on the seeded
+// Lot/Best-before links on the standard category's set, which differs on CI's vanilla DB - inert there.)
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
             mobileConfig: {},
+            // Per-run product category + its attribute set - products below reference it by key, and the
+            // attributes below link into 'mfgAttrSet' by name.
+            productCategories: { 'mfgCat': { attributeSetName: 'mfgAttrSet' } },
+            attributes: {
+                // Upserts (by Value) the two pre-existing standard attributes and links them into the
+                // per-run attribute set as instance attributes - so the products' category resolves a set
+                // that carries Lot / Best-before, independent of the seeded standard category.
+                'lotNumberAttr': {
+                    value: 'Lot-Nummer',
+                    isInstanceAttribute: true,
+                    attributeSetNames: ['mfgAttrSet'],
+                },
+                'bestBeforeDateAttr': {
+                    value: 'HU_BestBeforeDate',
+                    isInstanceAttribute: true,
+                    attributeSetNames: ['mfgAttrSet'],
+                },
+            },
             warehouses: { 'wh': {} },
             products: {
-                'COMP1': {},
+                'COMP1': { productCategory: 'mfgCat' },
                 'BOM': {
+                    productCategory: 'mfgCat',
                     bom: { lines: [{ product: 'COMP1', qty: 1 }] },
                 },
             },

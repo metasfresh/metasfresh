@@ -10,6 +10,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -132,18 +133,10 @@ public class CreateAttributeCommand
 
 	private void linkToAttributeSet(@NonNull final I_M_Attribute attributeRecord, @NonNull final String attributeSetName)
 	{
-		final I_M_AttributeSet attributeSet = queryBL.createQueryBuilder(I_M_AttributeSet.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, attributeSetName)
-				.create()
-				.firstOnly(I_M_AttributeSet.class);
-		if (attributeSet == null)
-		{
-			throw new AdempiereException("M_AttributeSet with name `" + attributeSetName + "` not found");
-		}
+		final int attributeSetId = resolveAttributeSetId(attributeSetName);
 
 		final I_M_AttributeUse existing = queryBL.createQueryBuilder(I_M_AttributeUse.class)
-				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSet.getM_AttributeSet_ID())
+				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSetId)
 				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_Attribute_ID, attributeRecord.getM_Attribute_ID())
 				.create()
 				.firstOnly(I_M_AttributeUse.class);
@@ -158,15 +151,42 @@ public class CreateAttributeCommand
 		}
 
 		final int nextSeqNo = queryBL.createQueryBuilder(I_M_AttributeUse.class)
-				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSet.getM_AttributeSet_ID())
+				.addEqualsFilter(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID, attributeSetId)
 				.create()
 				.maxInt(I_M_AttributeUse.COLUMNNAME_SeqNo) + 10;
 
 		final I_M_AttributeUse attributeUse = InterfaceWrapperHelper.newInstance(I_M_AttributeUse.class);
-		attributeUse.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
+		attributeUse.setM_AttributeSet_ID(attributeSetId);
 		attributeUse.setM_Attribute_ID(attributeRecord.getM_Attribute_ID());
 		attributeUse.setSeqNo(nextSeqNo);
 		InterfaceWrapperHelper.saveRecord(attributeUse);
+	}
+
+	/**
+	 * Resolves the target {@code M_AttributeSet} id for {@code attributeSetName}. A per-run set created via the
+	 * {@code productCategories} section ({@code CreateProductCategoryCommand}, which runs before {@code attributes})
+	 * is registered in the context under its request name - prefer it, so the link lands in the SAME fresh per-run
+	 * set rather than sharing one set by literal Name across specs/runs. Otherwise fall back to a pre-existing set
+	 * looked up by literal {@code Name} (e.g. a seeded {@code 'Convenience Salate'}), throwing if absent.
+	 */
+	private int resolveAttributeSetId(@NonNull final String attributeSetName)
+	{
+		final AttributeSetId perRunId = context.getOptionalId(Identifier.ofString(attributeSetName), AttributeSetId.class).orElse(null);
+		if (perRunId != null)
+		{
+			return perRunId.getRepoId();
+		}
+
+		final I_M_AttributeSet attributeSet = queryBL.createQueryBuilder(I_M_AttributeSet.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, attributeSetName)
+				.create()
+				.firstOnly(I_M_AttributeSet.class);
+		if (attributeSet == null)
+		{
+			throw new AdempiereException("M_AttributeSet with name `" + attributeSetName + "` not found");
+		}
+		return attributeSet.getM_AttributeSet_ID();
 	}
 
 	/**

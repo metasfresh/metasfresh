@@ -16,6 +16,7 @@ import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfi
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
+import de.metas.frontend_testing.masterdata.product.JsonProductCategoryRequest;
 import de.metas.frontend_testing.masterdata.uom.JsonUOMRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
@@ -69,6 +70,17 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonUOMRequest> uoms;
 	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest> vatIdChecks;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
+
+	/**
+	 * Creates a per-run {@code M_Product_Category} and (optionally) an {@code M_AttributeSet} as its attribute set.
+	 * Applied BEFORE {@code attributes} and {@code products}, so an {@code attributes} entry can link into the
+	 * category's set by name and a product can point at the category
+	 * ({@link de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest#getProductCategory()}). This
+	 * is how a spec gets an attribute offered on the mobile mfg receive dialog, which resolves the applicable
+	 * attribute set from the product's CATEGORY, not from {@code M_Product.M_AttributeSet_ID}. See
+	 * {@link de.metas.frontend_testing.masterdata.product.CreateProductCategoryCommand}.
+	 */
+	@Nullable Map<String, JsonProductCategoryRequest> productCategories;
 
 	/**
 	 * Creates (or upserts, by {@code Value}) an {@code M_Attribute} - a LIST-type one included, with its allowed

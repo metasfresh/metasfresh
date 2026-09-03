@@ -13,20 +13,18 @@ import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog
 // LIST attribute: configure + select + produced HU carries it (a not-configured attribute is not shown;
 // a co-product line offers the same configured attribute too; field order follows the config's order).
 //
-// Product attribute set: every product created by this masterdata command lands in the SAME fixed
-// "Standard" product category (de.metas.frontend_testing.masterdata.MasterdataContext.PRODUCT_CATEGORY_STANDARD_ID),
-// and MaterialReceiptActivityHandler resolves the applicable attribute set from that CATEGORY
-// (IProductBL#getAttributeSetId(I_M_Product) - "take it from the product category, never from the
-// product itself"), NOT from M_Product.M_AttributeSet_ID (the `attributeSetName` request field - that
-// one only feeds IProductBL#getMasterDataSchemaAttributeSetId, a different consumer). So every attribute
-// this spec needs offered must be linked into THAT category's attribute set ("Convenience Salate"),
-// not into an arbitrary named set.
+// Product attribute set: MaterialReceiptActivityHandler resolves the applicable attribute set from the
+// product's CATEGORY (IProductBL#getAttributeSetId(I_M_Product) - "take it from the product category,
+// never from the product itself"), NOT from M_Product.M_AttributeSet_ID (the `attributeSetName` request
+// field - that one only feeds IProductBL#getMasterDataSchemaAttributeSetId, a different consumer). So this
+// spec creates its OWN per-run product category ('mfgCat') whose attribute set ('mfgAttrSet') carries the
+// attributes, and points every product at that category - independent of the preloaded standard category,
+// so it works on the vanilla CI DB (fresh-fixture rule) as well as any local dump.
 //
 // mobileConfig.manufacturing.editableAttributes is a GLOBAL, REPLACE-on-write list (no per-test scoping) -
 // every attribute a test product may need across the WHOLE suite must be included here, or a spec that
 // relies on the seeded Lot-Nummer/HU_BestBeforeDate default (e.g. receiving_editable_attributes.spec.js)
 // breaks when it runs after this one (e2e/mobile-webui/CLAUDE.md "sticky mobileConfig fields").
-const STANDARD_TEST_ATTRIBUTE_SET_NAME = 'Convenience Salate';
 
 // One shared masterdata builder for every test in this file (e2e/CLAUDE.md "shared createMasterdata" rule).
 const createMasterdata = async () => {
@@ -34,6 +32,9 @@ const createMasterdata = async () => {
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
+            // Per-run product category + its attribute set - products below reference it by key, and the
+            // attributes below link into 'mfgAttrSet' by name.
+            productCategories: { 'mfgCat': { attributeSetName: 'mfgAttrSet' } },
             mobileConfig: {
                 manufacturing: {
                     // Ordered list of M_Attribute.Value codes (NOT the `attributes` map keys below).
@@ -56,7 +57,7 @@ const createMasterdata = async () => {
                         { value: 'M', name: 'Medium' },
                         { value: 'L', name: 'Large' },
                     ],
-                    attributeSetNames: [STANDARD_TEST_ATTRIBUTE_SET_NAME],
+                    attributeSetNames: ['mfgAttrSet'],
                 },
                 // Present on the attribute set and instance-level, but never added to the mfg config's
                 // editableAttributes above - proves a not-configured attribute is not shown.
@@ -65,7 +66,7 @@ const createMasterdata = async () => {
                     name: 'Not Configured Attr',
                     attributeValueType: 'STRING',
                     isInstanceAttribute: true,
-                    attributeSetNames: [STANDARD_TEST_ATTRIBUTE_SET_NAME],
+                    attributeSetNames: ['mfgAttrSet'],
                 },
                 // Upserts (by Value) the two pre-existing standard attributes and (re-)links them into the
                 // shared test attribute set - see the file-level comment. Without this, any spec run AFTER
@@ -73,26 +74,32 @@ const createMasterdata = async () => {
                 'lotNumberAttr': {
                     value: 'Lot-Nummer',
                     isInstanceAttribute: true,
-                    attributeSetNames: [STANDARD_TEST_ATTRIBUTE_SET_NAME],
+                    attributeSetNames: ['mfgAttrSet'],
                 },
                 'bestBeforeDateAttr': {
                     value: 'HU_BestBeforeDate',
                     isInstanceAttribute: true,
-                    attributeSetNames: [STANDARD_TEST_ATTRIBUTE_SET_NAME],
+                    attributeSetNames: ['mfgAttrSet'],
                 },
             },
             warehouses: { 'wh': {} },
             products: {
-                'COMP1': {},
+                // Every product resolves its editable attributes from its product CATEGORY's attribute set
+                // (MaterialReceiptActivityHandler -> ProductBL.getAttributeSetId reads M_Product_Category.M_AttributeSet_ID),
+                // so each must point at the per-run 'mfgCat' category whose set is 'mfgAttrSet' (the set the
+                // attributes above are linked into) - NOT the hardcoded STANDARD category.
+                'COMP1': { productCategory: 'mfgCat' },
                 // Referenced by BOM_WITH_BYPRODUCT's bom line below - must be created before it
                 // (createProducts processes products in the given map order).
-                'BY_PRODUCT': {},
+                'BY_PRODUCT': { productCategory: 'mfgCat' },
                 'BOM': {
+                    productCategory: 'mfgCat',
                     bom: { lines: [{ product: 'COMP1', qty: 1 }] },
                 },
                 // A second finished good with a by-product line, used only by the co-product test below -
                 // kept separate from BOM/PP1 so that test's completion is never gated on a by-product receipt.
                 'BOM_WITH_BYPRODUCT': {
+                    productCategory: 'mfgCat',
                     bom: {
                         lines: [
                             { product: 'COMP1', qty: 1 },
@@ -217,7 +224,8 @@ test('A co-product receive line also offers the configured attribute', async ({ 
     await MaterialReceiptLineScreen.goBack();
 
     // The by-product line (index 2, per the by-products convention - see receiving_by_products.spec.js)
-    // offers the same configured attribute, because BY_PRODUCT also carries the 'Serial' attribute set.
+    // offers the same configured attribute, because BY_PRODUCT is in the same 'mfgCat' category and so
+    // resolves the same 'mfgAttrSet' attribute set.
     await ManufacturingJobScreen.clickReceiveButton({ index: 2 });
     await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.BY_PRODUCT_PI.luPIItemTestId });
 
