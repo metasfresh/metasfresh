@@ -55,6 +55,13 @@ public interface IOrderLineBL extends ISingletonService
 
 	List<I_C_OrderLine> getByOrderIds(final Set<OrderId> orderIds);
 
+	/**
+	 * Bulk counterpart of {@link #getOrderLineById(OrderLineId)}: the order lines with the given ids, in one round trip.
+	 * Ids without a matching record are simply absent from the result.
+	 */
+	@NonNull
+	List<I_C_OrderLine> getByIds(@NonNull Set<OrderLineId> orderLineIds);
+
 	I_C_OrderLine getOrderLineById(@NonNull OrderLineId orderLineId);
 
 	I_C_OrderLine getOrderLineById(@NonNull OrderAndLineId orderLineId);

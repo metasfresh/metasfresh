@@ -25,6 +25,12 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@Override
+	public void save(@NonNull final I_M_ShipperTransportation shipperTransportationRecord)
+	{
+		shipperTransportationDAO.save(shipperTransportationRecord);
+	}
+
+	@Override
 	public I_M_ShippingPackage createShippingPackage(final ShipperTransportationId shipperTransportationId, final I_M_Package mpackage)
 	{
 		final I_M_ShippingPackage shippingPackage = InterfaceWrapperHelper.newInstance(I_M_ShippingPackage.class, mpackage);

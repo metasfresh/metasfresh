@@ -54,22 +54,34 @@ public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implem
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
+				() -> DeliveryPlanningProcessHelper.checkSingleSelection(context),
+				() -> checkNotClosed(context),
+				() -> checkNoBlockedPartner(context));
+	}
 
-		if (context.isMoreThanOneSelected())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-
+	private ProcessPreconditionsResolution checkNotClosed(@NonNull final IProcessPreconditionsContext context)
+	{
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(context.getSingleSelectedRecordId());
 
 		if (deliveryPlanningService.isClosed(deliveryPlanningId))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
+			// reject, not rejectWithInternalReason: every sibling closed-guard in this module - Close, Combine,
+			// Add, Move, Remove, GenerateShortageOverage - leaves its button visible and disabled with the reason
+			// in the tooltip, so the planner reads why. The message names the one planning it is about, the
+			// condition being singular here (a single-selection action).
+			return ProcessPreconditionsResolution.reject(
+					DeliveryPlanningService.MSG_M_Delivery_Planning_Closed,
+					deliveryPlanningId.getRepoId());
 		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	private ProcessPreconditionsResolution checkNoBlockedPartner(@NonNull final IProcessPreconditionsContext context)
+	{
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(context.getSingleSelectedRecordId());
 
 		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.hasBlockedBPartner(deliveryPlanningId);
 

@@ -1,4 +1,6 @@
 @from:cucumber
+@allure.label.epic:E0360_Transport_Extralogistik
+@allure.label.feature:F29060_Delivery_Instruction
 @ghActions:run_on_executor5
 Feature: Generate delivery instructions from delivery plannings
 
@@ -49,15 +51,15 @@ Feature: Generate delivery instructions from delivery plannings
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule | orderLineDI_SO            | N             |
     And after not more than 30s, load created M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifiers | C_OrderLine_ID.Identifier |
-      | deliveryPlanningDI_SO              | orderLineDI_SO            |
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanningDI_SO  | orderLineDI_SO |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | QtyOrdered | QtyTotalOpen | M_Delivery_Planning_Type | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.ETA | OPT.PlannedLoadedQuantity |
-      | deliveryPlanningDI_SO             | 10         | 10           | Outgoing                 | orderDI_SO                | orderLineDI_SO                | customer                     | product                     | customerLocation                      | shipper_DHL                 | 2023-02-10              | 10                        |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | M_Product_ID | C_BPartner_Location_ID | M_Shipper_ID | ETA        | PlannedLoadedQuantity |
+      | deliveryPlanningDI_SO  | 10         | 10           | Outgoing           | orderDI_SO | orderLineDI_SO | customer      | product      | customerLocation       | shipper_DHL  | 2023-02-10 | 10                    |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
-      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstruction_SO                | deliveryPlanningDI_SO             |
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+      | deliveryInstruction_SO     | deliveryPlanningDI_SO  | true       |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.ETA | OPT.DocStatus |
@@ -76,8 +78,8 @@ Feature: Generate delivery instructions from delivery plannings
       | shippingPackageDI               | packageDI               | deliveryInstruction_SO                | customerLocation                  | 10            | customer                     | product                     | orderLineDI_SO                |
 
     When regenerate M_ShipperTransportation for M_Delivery_Planning:
-      | M_ShipperTransportation_ID.Identifier | M_Delivery_Planning_ID.Identifier |
-      | deliveryInstructionRegenerated_SO     | deliveryPlanningDI_SO             |
+      | M_ShipperTransportation_ID        | M_Delivery_Planning_ID |
+      | deliveryInstructionRegenerated_SO | deliveryPlanningDI_SO  |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.C_BPartner_Location_Delivery_ID.Identifier | OPT.C_BPartner_Location_Loading_ID.Identifier | OPT.ETA | OPT.DocStatus |

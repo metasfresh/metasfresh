@@ -26,11 +26,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
-import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -130,13 +130,13 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		final I_M_ShipperTransportation shipperTransportation = newInstance(I_M_ShipperTransportation.class);
 
 		shipperTransportation.setAD_Org_ID(request.getOrgId().getRepoId());
+		shipperTransportation.setTransportDirection(request.getTransportDirection().getCode());
 		shipperTransportation.setM_Shipper_ID(request.getShipperId().getRepoId());
 		shipperTransportation.setPickupTimeFrom(TimeUtil.asTimestamp(request.getPickupTimeFrom()));
 		shipperTransportation.setPickupTimeTo(TimeUtil.asTimestamp(request.getPickupTimeTo()));
 		shipperTransportation.setShipper_BPartner_ID(request.getShipperBPartnerAndLocationId().getBpartnerId().getRepoId());
 		shipperTransportation.setShipper_Location_ID(request.getShipperBPartnerAndLocationId().getRepoId());
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(request.getShipDate()));
-		shipperTransportation.setIsSOTrx(SOTrx.toBoolean(request.getIsSOTrx()));
 		shipperTransportation.setAssignAnonymouslyPickedHUs(request.isAssignAnonymouslyPickedHUs());
 
 		saveRecord(shipperTransportation);
@@ -226,6 +226,12 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, processed);
 		}
 
+		final TransportDirection transportDirection = query.getTransportDirection();
+		if (transportDirection != null)
+		{
+			builder.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_TransportDirection, transportDirection);
+		}
+
 		return builder.create();
 	}
 
@@ -237,6 +243,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.shipperBPartnerAndLocationId(request.getShipperBPartnerAndLocationId())
 				.shipDate(request.getShipDate())
 				.orgId(request.getOrgId())
+				.transportDirection(request.getTransportDirection())
 				.build())
 				.orElseGet(() -> create(request));
 	}
