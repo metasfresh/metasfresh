@@ -107,12 +107,17 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = extractScheduleId2ExternalInfo(parameters);
 
+		// 0 for every caller but the delivery-planning generate-shipment process; see
+		// GenerateShipmentsRequest#getDeliveryPlanningId() for why it travels with the request.
+		final int deliveryPlanningId = parameters.getParameterAsInt(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, 0);
+
 		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
 				.setCreatePackingLines(isCreatePackingLines)
 				.computeShipmentDate(calculateShippingDateRule)
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
+				.setDeliveryPlanningId(deliveryPlanningId)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs that are linked to multiple shipments: you will not see them in Aggregation POS because they are already assigned, but you're not able to create a shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)

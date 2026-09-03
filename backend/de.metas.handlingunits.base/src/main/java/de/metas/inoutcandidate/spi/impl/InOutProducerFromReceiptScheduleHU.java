@@ -132,6 +132,13 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	private final ISnapshotProducer<I_M_HU> huSnapshotProducer;
 
+	/**
+	 * {@code M_Delivery_Planning_ID} to stamp onto each created receipt header, or {@code 0} for none.
+	 *
+	 * @see CreateReceiptsParameters#getDeliveryPlanningId()
+	 */
+	private final int deliveryPlanningId;
+
 	public InOutProducerFromReceiptScheduleHU(
 			final CreateReceiptsParameters parameters,
 			final InOutGenerateResult result)
@@ -141,6 +148,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				parameters.getMovementDateRule(),
 				parameters.getExternalInfoByReceiptScheduleId());
 
+		this.deliveryPlanningId = parameters.getDeliveryPlanningId();
 		this.selectedHUIds = parameters.getSelectedHuIds();
 		Check.assume(selectedHUIds == null || !selectedHUIds.isEmpty(), "selectedHUIds shall be null or not empty: {}", selectedHUIds);
 
@@ -160,6 +168,22 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	private IHUContext getHUContext()
 	{
 		return _huContext;
+	}
+
+	/**
+	 * Puts the caller-supplied {@code M_Delivery_Planning_ID} onto the draft header, so that it is already
+	 * there when this producer completes the receipt and {@code de.metas.deliveryplanning}'s
+	 * {@code TIMING_AFTER_COMPLETE} interceptor runs.
+	 */
+	@Override
+	protected void customizeNewReceiptHeader(
+			final de.metas.inout.model.I_M_InOut receiptHeader,
+			final de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule)
+	{
+		if (deliveryPlanningId > 0)
+		{
+			receiptHeader.setM_Delivery_Planning_ID(deliveryPlanningId);
+		}
 	}
 
 	@Override

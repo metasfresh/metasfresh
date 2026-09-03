@@ -377,10 +377,13 @@ class DeliveryPlanningGenerateProcessesHelper
 		final StockQtyAndUOMQty qtyToShip = StockQtyAndUOMQtys.ofQtyInStockUOM(request.getQtyToShipBD(), productId);
 
 		//
-		// Generate the shipment via the standard ShipmentService (unchanged shared shipment chain), then set
-		// M_Delivery_Planning_ID + the B2B receipt<->shipment link AFTER generation. Nothing in shipment
-		// generation reads M_Delivery_Planning_ID; it is only a back-link + a report source, so a
-		// post-generation stamp is behaviorally faithful.
+		// Generate the shipment via the standard ShipmentService. M_Delivery_Planning_ID travels WITH the
+		// request (GenerateShipmentsRequest#deliveryPlanningId) so the shipment carries it while still a
+		// draft: the shipment is completed inside the generation workpackage, and interceptor/M_InOut
+		// #afterComplete - which derives the planning's delivered state, its actual quantities, its
+		// Processed flag and the shipment back-link - only fires when the FK is already set at that moment.
+		// Only the B2B receipt<->shipment link is still done after generation; nothing reads it during
+		// generation.
 		//
 		// A caller-supplied partial qty must be shipped, so we use the qtysToDeliverOverride-capable
 		// ShipmentService.generateShipments(...) path with waitForShipments=true (synchronous: the async batch
@@ -405,6 +408,7 @@ class DeliveryPlanningGenerateProcessesHelper
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.isCompleteShipment(Boolean.TRUE)
 				.waitForShipments(true)
+				.deliveryPlanningId(deliveryPlanningId.getRepoId())
 				.build());
 
 		final Set<InOutId> shipmentIds = shipmentService.retrieveInOutIdsByScheduleIds(ImmutableSet.of(shipmentScheduleId));
@@ -414,38 +418,35 @@ class DeliveryPlanningGenerateProcessesHelper
 					.setParameter("shipmentScheduleId", shipmentScheduleId);
 		}
 
-		linkShipmentsToDeliveryPlanning(shipmentIds, deliveryPlanningId, b2bReceiptId);
+		linkB2BReceiptToShipments(shipmentIds, b2bReceiptId);
 	}
 
 	/**
-	 * Post-generation linkage. Stamps {@code M_Delivery_Planning_ID} on each generated shipment and, for the
-	 * B2B flow, sets the bidirectional receipt<->shipment link ({@code B2B_InOut_ID} on both sides) — done here
-	 * (after generation) so the shared shipment chain stays untouched.
+	 * Sets the bidirectional B2B receipt&lt;-&gt;shipment link ({@code B2B_InOut_ID} on both sides) after
+	 * generation. Unlike {@code M_Delivery_Planning_ID} — which has to be on the draft before completion and
+	 * therefore travels with {@link GenerateShipmentsRequest} — nothing reads {@code B2B_InOut_ID} during
+	 * generation or on completion, so setting it here is faithful.
 	 */
-	private void linkShipmentsToDeliveryPlanning(
+	private void linkB2BReceiptToShipments(
 			@NonNull final Set<InOutId> shipmentIds,
-			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@javax.annotation.Nullable final InOutId b2bReceiptId)
 	{
-		final I_M_InOut b2bReceipt = b2bReceiptId != null ? inOutDAO.getById(b2bReceiptId, I_M_InOut.class) : null;
+		if (b2bReceiptId == null)
+		{
+			return;
+		}
+
+		final I_M_InOut b2bReceipt = inOutDAO.getById(b2bReceiptId, I_M_InOut.class);
 
 		for (final InOutId shipmentId : shipmentIds)
 		{
 			final I_M_InOut shipment = inOutDAO.getById(shipmentId, I_M_InOut.class);
-			shipment.setM_Delivery_Planning_ID(deliveryPlanningId.getRepoId());
-
-			if (b2bReceipt != null)
-			{
-				shipment.setB2B_InOut_ID(b2bReceipt.getM_InOut_ID());
-			}
+			shipment.setB2B_InOut_ID(b2bReceipt.getM_InOut_ID());
 			InterfaceWrapperHelper.save(shipment);
 
-			if (b2bReceipt != null)
-			{
-				// back-link the receipt to the (single) B2B shipment, mirroring the coupled generation path
-				b2bReceipt.setB2B_InOut_ID(shipment.getM_InOut_ID());
-				InterfaceWrapperHelper.save(b2bReceipt);
-			}
+			// back-link the receipt to the (single) B2B shipment, mirroring the coupled generation path
+			b2bReceipt.setB2B_InOut_ID(shipment.getM_InOut_ID());
+			InterfaceWrapperHelper.save(b2bReceipt);
 		}
 	}
 
@@ -506,6 +507,11 @@ class DeliveryPlanningGenerateProcessesHelper
 		}
 		final HuId vhuId = HuId.ofRepoId(vhu.getM_HU_ID());
 
+		// M_Delivery_Planning_ID travels WITH the request (CreateReceiptsParameters#deliveryPlanningId) so the
+		// receipt carries it while still a draft: processReceiptSchedules(...) COMPLETES the receipt before it
+		// returns, and interceptor/M_InOut#afterComplete - which derives the planning's delivered state, its
+		// actual discharge quantity, its Processed flag and the receipt back-link - only fires when the FK is
+		// already set at that moment.
 		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(
 				IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
 						.commitEachReceiptIndividually(false)
@@ -515,16 +521,11 @@ class DeliveryPlanningGenerateProcessesHelper
 						.printReceiptLabels(true)
 						.receiptSchedules(ImmutableList.of(receiptSchedule))
 						.selectedHuIds(ImmutableSet.of(vhuId))
+						.deliveryPlanningId(deliveryPlanningId.getRepoId())
 						.build());
 
-		//
-		// Post-generation linkage: the created receipt is obtained synchronously from the generate result
-		// (receipt generation is not async), so M_Delivery_Planning_ID is stamped here rather than threaded
-		// into the shared receipt chain.
 		final I_M_InOut receipt = result.getSingleInOut(I_M_InOut.class);
 		final InOutId receiptId = InOutId.ofRepoId(receipt.getM_InOut_ID());
-		receipt.setM_Delivery_Planning_ID(deliveryPlanningId.getRepoId());
-		InterfaceWrapperHelper.save(receipt);
 
 		return DeliveryPlanningGenerateReceiptResult.builder()
 				.receiptId(receiptId)

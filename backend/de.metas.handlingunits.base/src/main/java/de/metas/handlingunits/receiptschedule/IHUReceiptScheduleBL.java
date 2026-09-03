@@ -111,6 +111,22 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		@NonNull ReceiptMovementDateRule movementDateRule;
 
 		@Nullable Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
+
+		/**
+		 * {@code M_Delivery_Planning_ID} to stamp onto every receipt header this call creates, or {@code 0}
+		 * for none (the default, i.e. for every caller that is not the delivery-planning generate-receipt
+		 * process).
+		 * <p>
+		 * It has to travel with the request rather than being set on the finished receipt, because the
+		 * receipt is <b>completed</b> before this call returns: an {@code M_Delivery_Planning_ID} written
+		 * afterwards is invisible to the document's {@code TIMING_AFTER_COMPLETE} interceptor, which is what
+		 * derives the planning's delivered state, its actual quantity, its {@code Processed} flag and the
+		 * receipt back-link from the completion.
+		 * <p>
+		 * A plain repo id, because {@code DeliveryPlanningId} lives in {@code de.metas.deliveryplanning.base},
+		 * which depends on this module.
+		 */
+		int deliveryPlanningId;
 	}
 
 	/**

@@ -72,6 +72,22 @@ public class GenerateShipmentsRequest
 	 */
 	@Builder.Default boolean waitForShipments = true;
 
+	/**
+	 * {@code M_Delivery_Planning_ID} to stamp onto every shipment header created for this request, or
+	 * {@code 0} for none (the default, i.e. every caller that is not the delivery-planning
+	 * generate-shipment process).
+	 * <p>
+	 * It has to travel with the request rather than being set on the finished shipment, because the
+	 * shipment is <b>completed</b> inside the generation workpackage: an {@code M_Delivery_Planning_ID}
+	 * written afterwards is invisible to the document's {@code TIMING_AFTER_COMPLETE} interceptor, which is
+	 * what derives the planning's delivered state, its actual quantities, its {@code Processed} flag and the
+	 * shipment back-link from the completion.
+	 * <p>
+	 * A plain repo id, because {@code DeliveryPlanningId} lives in {@code de.metas.deliveryplanning.base},
+	 * which depends on this module.
+	 */
+	int deliveryPlanningId;
+
 	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, String> result = ImmutableMap.builder();
