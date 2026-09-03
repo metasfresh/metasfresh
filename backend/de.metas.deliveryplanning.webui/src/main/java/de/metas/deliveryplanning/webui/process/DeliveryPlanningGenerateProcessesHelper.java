@@ -95,7 +95,14 @@ import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_P
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered;
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_SalesOrderFullyDelivered;
 
-final class DeliveryPlanningGenerateProcessesHelper
+/**
+ * Package-private and deliberately NOT final: the same-package generate processes hold it in a
+ * package-visible {@code helper} field that their unit tests replace with a stub, so that only the
+ * process' own {@code doIt()} logic is exercised and not the heavy production generation chain
+ * (async batch + {@code ShipmentService} + real HU allocation). Subclassing outside this package is
+ * impossible anyway, package-private being the actual encapsulation boundary here.
+ */
+class DeliveryPlanningGenerateProcessesHelper
 {
 	public static DeliveryPlanningGenerateProcessesHelper newInstance()
 	{

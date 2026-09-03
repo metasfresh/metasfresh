@@ -1,4 +1,0 @@
-# Needed to mock the package-private, final DeliveryPlanningGenerateProcessesHelper class in
-# M_Delivery_Planning_GenerateShipmentWriteBackTest / M_Delivery_Planning_GenerateReceiptWriteBackTest.
-# Mirrors backend/de.metas.deliveryplanning.base/src/test/resources/mockito-extensions/org.mockito.plugins.MockMaker
-mock-maker-inline
