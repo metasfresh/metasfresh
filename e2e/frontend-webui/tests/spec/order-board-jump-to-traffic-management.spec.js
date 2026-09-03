@@ -981,13 +981,41 @@ clearing is precisely the one the default filter had hidden.
     // active -- and, failing that, whenever the group holds exactly one filter, which is the case here
     // (Traffic Management's included-filter group contains only `default`).
     await filterButton.click();
+
+    // Clearing the filter makes the frontend re-fetch the overlay's grid; catch that GET so the rows it
+    // returns can be inspected by field. The rendered grid cannot answer this on its own -- C_Workplace_ID
+    // carries IsDisplayed='N' on this tab (AD_Field, verified against the running stack), so it is in the
+    // view JSON but never in the DOM. Same intercept shape as clickJumpAndCaptureTargetView().
+    const clearedViewResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'GET' &&
+        new RegExp(`/documentView/${TRAFFIC_MANAGEMENT_WINDOW_ID}/[^/?]+\\?firstRow=`).test(response.url()),
+      { timeout: 30000 }
+    );
     await overlay.locator('.filter-clear').click();
+    const clearedViewId = decodeURIComponent(
+      (await clearedViewResponsePromise).url().match(/\/documentView\/\d+\/([^/?]+)\?firstRow=/)[1]
+    );
 
     // With the filter gone, the assigned sibling comes back: the where-clause alone admits both rows.
     await expect(
       overlayRows,
       'clearing the IsAssigned filter must bring the assigned sibling back -- the restriction is a removable default, not a hard rule'
     ).toHaveCount(2, { timeout: 20000 });
+
+    // ...and the row that came back must be the ASSIGNED sibling specifically -- a bare count of 2 would
+    // also be satisfied by some unrelated row leaking in, which is exactly what the count cannot tell apart.
+    const clearedView = await fetchViewRows(page, TRAFFIC_MANAGEMENT_WINDOW_ID, clearedViewId);
+    const reappearedRow = clearedView.result.find((r) => Number(r.fieldsByName?.QtyOrdered?.value) === assignedQty);
+    expect(reappearedRow, 'the row that reappears after clearing must be the assigned line').toBeTruthy();
+    expect(
+      reappearedRow.fieldsByName?.IsAssigned?.value,
+      'the row that reappears must be the one the default filter had been hiding -- i.e. an ASSIGNED one'
+    ).toBe(true);
+    expect(
+      reappearedRow.fieldsByName?.C_Workplace_ID?.value?.key,
+      'the reappeared assigned row must carry the workplace it was assigned to'
+    ).toBeTruthy();
   });
 
   test('mixed-tuple board row without stock: the unstocked, unassigned sibling never comes through the jump', async ({ page }) => {
@@ -1016,14 +1044,21 @@ target row would itself have counted towards that aggregate. Drop that trailing 
 sibling is returned by the jump even though the board does not show it. Only this test seeds an
 unassigned schedule with zero stock, so only this test can catch that.
 
-The assertion is therefore about the SIBLING'S ABSENCE, not about the grid's size. That is on purpose:
-the where-clause half is unchanged by the IsUseAutoFilters change, so this test must be -- and stays --
-green both before and after it, which is exactly what pins the two halves apart. (The IsAssigned default
-filter does independently hide the assigned line, so the grid does end up empty once that filter is
-applied; asserting the count here would fold the soft half back into this test and lose that separation.
-The soft half has its own coverage: the "fully-assigned board row" and mixed-tuple-with-stock tests.)
+The primary assertion is therefore about the SIBLING'S ABSENCE, not about an exact grid size. That is on
+purpose: the where-clause half is unchanged by the IsUseAutoFilters change, so this test must be -- and
+stays -- green both before and after it, which is exactly what pins the two halves apart. Pinning the
+count to an exact number would fold the soft half back in and lose that separation (the IsAssigned
+default filter independently hides the assigned line, so the grid holds 1 row before the change and 0
+after). The soft half has its own coverage: the "fully-assigned board row" and mixed-tuple-with-stock
+tests.
 
-The absence is not vacuous: the test first asserts that BOTH schedules genuinely exist (each
+It is backed by an UPPER BOUND that survives that same ambiguity: the jump may never return more rows
+than the board row itself covers (OrderLineCount = 1 here). That bound holds on both sides of the change
+while still failing loudly -- at 2 rows -- if the where-clause's trailing term were dropped and the
+unstocked sibling reappeared. Without it the containment check alone would be close to vacuous in the
+post-change state, where the array it inspects is empty.
+
+Neither assertion is vacuous: the test first asserts that BOTH schedules genuinely exist (each
 carrier-resolved and reachable in Traffic Management's own view before the assignment), that the board
 row covers exactly one of them, and that the jump still opens Traffic Management cleanly.
     `);
@@ -1073,8 +1108,9 @@ row covers exactly one of them, and that the jump still opens Traffic Management
     await waitForScheduleCarrierResolvedByQty(page, productId, unassignedQty);
 
     const { rowId, row } = await waitForBoardRow(page, productId);
+    const expectedOrderLineCount = row.fieldsByName.OrderLineCount.value;
     expect(
-      row.fieldsByName.OrderLineCount.value,
+      expectedOrderLineCount,
       'only the assigned line must count towards the board row\'s OrderLineCount -- the unstocked sibling is not on the board'
     ).toBe(1);
 
@@ -1094,6 +1130,15 @@ row covers exactly one of them, and that the jump still opens Traffic Management
       returnedQtys,
       'the unassigned line has no stock, so the board does not show it -- the jump\'s where-clause must not return it either'
     ).not.toContain(unassignedQty);
+    // Upper bound, deliberately not an exact count -- see the description for why this test stays
+    // agnostic about the IsAssigned default filter. The jump can never show more schedules than the
+    // board row it was launched from claims to hold, so a leaked unstocked sibling fails here too, on
+    // the count, and not only on the containment check above (which inspects an empty array once the
+    // default filter has also removed the assigned line).
+    expect(
+      targetView.result.length,
+      'the jump must never return more rows than the board row covers (OrderLineCount)'
+    ).toBeLessThanOrEqual(expectedOrderLineCount);
   });
 
   test('Traffic Management opened from the menu still applies its default not-assigned filter', async ({ page }) => {
