@@ -158,17 +158,9 @@ class RelationTypeInOverlayProcessTest
 		@Test
 		void throws_whenNoRelatedDocumentsFound()
 		{
-			// This is also the sanctioned JUnit-only proof (metasfresh-test-integrity "a layer that provably
-			// cannot REACH the change is a regression check, never coverage of it") of the single-selection
-			// half of the Auftrags-Board -> Traffic Management jump's "no related documents" guarantee:
-			// M_Picking_OrderBoard_Overview_v is built directly on m_picking_job_schedule_view and groups by
-			// the SAME key (m_product_id, c_uom_id, deliverydate::date, c_country_id, ad_client_id,
-			// ad_org_id) that the jump's related-documents lookup uses, so a board row that is still
-			// selectable in the UI always has at least one resolvable schedule -- the empty-groups branch
-			// this test exercises can never fire from a live selection through the WebUI/REST. Do not
-			// "upgrade" this to an e2e for that caller; see
-			// order-board-jump-to-traffic-management.spec.js's last test for the reachable half of the same
-			// promise (a valid selection must open cleanly).
+			// Also the sanctioned JUnit-only proof of the single-selection "no related documents" branch
+			// for the Auftrags-Board -> Traffic Management jump; see order-board-jump-to-traffic-management.spec.js
+			// for why a live UI selection cannot reach it and for the reachable-half coverage.
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
 			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
 
@@ -462,11 +454,8 @@ class RelationTypeInOverlayProcessTest
 		@Test
 		void throws_whenNoRelatedDocsForAnySelectedRow()
 		{
-			// This is also the sanctioned JUnit-only proof of the COMBINED-selection half of the same
-			// Auftrags-Board -> Traffic Management jump guarantee documented on
-			// DoIt#throws_whenNoRelatedDocumentsFound above (single-selection half) -- see that comment for
-			// the structural reason a live multi-row board selection can never actually resolve to an empty
-			// where-clauses union through the WebUI/REST, so this branch is unreachable there too.
+			// Also the sanctioned JUnit-only proof of the combined-selection half of the same
+			// Auftrags-Board -> Traffic Management jump guarantee; see order-board-jump-to-traffic-management.spec.js.
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
 
 			final TableRecordReference ref1 = TableRecordReference.of("C_OrderLine", 1);

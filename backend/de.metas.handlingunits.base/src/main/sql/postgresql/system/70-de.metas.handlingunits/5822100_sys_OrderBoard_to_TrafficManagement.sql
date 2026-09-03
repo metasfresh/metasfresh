@@ -6,9 +6,13 @@
 -- The relation matches the board row's own grouping key back onto the schedule view via an EXISTS
 -- back-join to the board view itself (M_Product_ID, C_UOM_ID, AD_Client_ID, AD_Org_ID, the
 -- delivery-date truncated to a date, and the delivery country via C_BPartner_Location ->
--- C_Location). Joining back to the board view -- rather than restating its grouping/filter columns
--- -- means the jump can never drift from what the board itself considers "this row's schedules",
--- including the board's own `isassigned='Y' OR qtyonhand>0` restriction.
+-- C_Location). The EXISTS only constrains that a board aggregate row with this id and this grouping
+-- tuple exists -- it says nothing about the *target* schedule row being matched. The board view's
+-- own `isassigned='Y' OR qtyonhand>0` restriction governs which schedule rows form that aggregate,
+-- not which target rows share its tuple, so the same test is repeated as a trailing AND on the
+-- target row below; without it, a target row sharing the tuple but failing that test (e.g. an
+-- unassigned, no-stock schedule alongside an assigned one for the same product/UOM/date/country)
+-- would still be returned, even though it is invisible on the board.
 --
 -- A plain @DeliveryDate@ context variable was considered and rejected: POZoomSource (the context a
 -- relation-type where-clause evaluates against) exports only Integer and String source-column
@@ -81,7 +85,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 -- board row's own integer id (the only context value POZoomSource makes available).
 INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,Updated,UpdatedBy,WhereClause)
 VALUES (0,590664,0,542136,542514,541929,TO_TIMESTAMP('2026-09-03 15:00:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','N',TO_TIMESTAMP('2026-09-03 15:00:03','YYYY-MM-DD HH24:MI:SS'),100,
-'EXISTS (SELECT 1 FROM M_Picking_OrderBoard_Overview_v b JOIN C_BPartner_Location bl ON bl.C_BPartner_Location_ID = M_Picking_Job_Schedule_view.C_BPartner_Location_ID JOIN C_Location l ON l.C_Location_ID = bl.C_Location_ID WHERE b.M_Picking_OrderBoard_Overview_v_ID = @M_Picking_OrderBoard_Overview_v_ID/-1@ AND b.M_Product_ID = M_Picking_Job_Schedule_view.M_Product_ID AND b.C_UOM_ID = M_Picking_Job_Schedule_view.C_UOM_ID AND b.AD_Client_ID = M_Picking_Job_Schedule_view.AD_Client_ID AND b.AD_Org_ID = M_Picking_Job_Schedule_view.AD_Org_ID AND b.DeliveryDate = CAST(M_Picking_Job_Schedule_view.DeliveryDate AS date) AND b.C_Country_ID = l.C_Country_ID)')
+'EXISTS (SELECT 1 FROM M_Picking_OrderBoard_Overview_v b JOIN C_BPartner_Location bl ON bl.C_BPartner_Location_ID = M_Picking_Job_Schedule_view.C_BPartner_Location_ID JOIN C_Location l ON l.C_Location_ID = bl.C_Location_ID WHERE b.M_Picking_OrderBoard_Overview_v_ID = @M_Picking_OrderBoard_Overview_v_ID/-1@ AND b.M_Product_ID = M_Picking_Job_Schedule_view.M_Product_ID AND b.C_UOM_ID = M_Picking_Job_Schedule_view.C_UOM_ID AND b.AD_Client_ID = M_Picking_Job_Schedule_view.AD_Client_ID AND b.AD_Org_ID = M_Picking_Job_Schedule_view.AD_Org_ID AND b.DeliveryDate = CAST(M_Picking_Job_Schedule_view.DeliveryDate AS date) AND b.C_Country_ID = l.C_Country_ID) AND (M_Picking_Job_Schedule_view.IsAssigned = ''Y'' OR M_Picking_Job_Schedule_view.QtyOnHand > 0)')
 ;
 
 -- The directed relation itself: board overview row (542135) -> Traffic Management (542136).
@@ -98,7 +102,7 @@ VALUES (0,0,540506 /*From ID Server*/,TO_TIMESTAMP('2026-09-03 15:00:04','YYYY-M
 -- AD_Process has no AD_Element_ID -- Name/Description/Help are self-owned; the base row and its
 -- AD_Process_Trl rows are set directly and in sync below. This process gets no AD_Menu entry.
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_RelationType_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseAutoFilters,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value)
-VALUES ('3',0,0,585657 /*From ID Server*/,540506,'Y','de.metas.ui.web.view.process.RelationTypeInOverlayProcess','N',TO_TIMESTAMP('2026-09-03 15:00:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','N','N','N','N','Y','N','N','N','N','N','N','Y',0,'Sprung zu Traffic Management','json','N','N','xls','RelationTypeInOverlay',TO_TIMESTAMP('2026-09-03 15:00:05','YYYY-MM-DD HH24:MI:SS'),100,'M_Picking_OrderBoard_Overview_v_to_TrafficManagement')
+VALUES ('3',0,0,585657 /*From ID Server*/,540506,'Y','de.metas.ui.web.view.process.RelationTypeInOverlayProcess','N',TO_TIMESTAMP('2026-09-03 15:00:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','N','N','N','N','N','N','N','N','N','N','N','Y',0,'Sprung zu Traffic Management','json','N','N','xls','RelationTypeInOverlay',TO_TIMESTAMP('2026-09-03 15:00:05','YYYY-MM-DD HH24:MI:SS'),100,'M_Picking_OrderBoard_Overview_v_to_TrafficManagement')
 ;
 
 INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)

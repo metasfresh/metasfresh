@@ -110,6 +110,33 @@ async function waitForBoardRow(page, productId, opts) {
 }
 
 /**
+ * Distinguish two Traffic Management schedule rows for the SAME product by their QtyOrdered.
+ * Needed when one board row aggregates more than one schedule for one product (the mixed-tuple
+ * case: an assigned line and an unassigned, unstocked sibling line for the same product/UOM/date/
+ * country) and each schedule must be resolved individually -- e.g. to assign only ONE of the two
+ * same-product lines to a workplace. QtyOrdered is present in fieldsByName even though
+ * IsDisplayed='N' on this tab (verified against the running stack, AD_Field 752539) -- the JSON view
+ * payload is not limited to rendered fields; see waitForBoardRow()'s use of M_Product_ID (also
+ * IsDisplayed='N' on this tab, AD_Field 752536) for the same pattern already relied on above.
+ */
+const byProductAndQty = (productId, qty) => (r) =>
+  byProduct(productId)(r) && Number(r.fieldsByName?.QtyOrdered?.value) === qty;
+
+/**
+ * Poll Traffic Management until the schedule for `productId` carrying exactly `qty` has its carrier
+ * resolved -- see waitForScheduleCarrierResolved() below for why this wait is needed; this variant
+ * disambiguates by QtyOrdered when more than one schedule row exists for the same product.
+ */
+async function waitForScheduleCarrierResolvedByQty(page, productId, qty, opts) {
+  return waitForViewRow(
+    page,
+    TRAFFIC_MANAGEMENT_WINDOW_ID,
+    (r) => byProductAndQty(productId, qty)(r) && !!r.fieldsByName?.Carrier_Product_ID?.value?.key,
+    opts
+  );
+}
+
+/**
  * Create a NEW board view scoped to exactly `rowIds`, via the generic `filterOnlyIds` mechanism
  * (JSONCreateViewRequest.filterOnlyIds -> SqlViewFactory: a server-side sticky `keyColumn IN (...)`
  * filter -- de.metas.ui.web.base SqlViewFactory.java "if (!request.getFilterOnlyIds().isEmpty())";
@@ -716,6 +743,120 @@ is (and remains) valid.
         'every row opened by the jump must carry the selected board row\'s product'
       ).toBe(String(productId));
     }
+  });
+
+  test('mixed-tuple board row: an unassigned, unstocked sibling schedule must not leak through the jump', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00245: Traffic Management');
+    allure.tag('F00245');
+    allure.story('The jump excludes target rows the board itself would not include');
+    allure.severity('critical');
+    allure.description(`
+### Scenario
+1. Seed ONE sales order with TWO lines for the SAME product/UOM/delivery-date/country tuple (so both
+   schedules fall under one Auftrags-Board row): one line gets assigned to a workplace, the other gets
+   NO workplace and NO on-hand stock.
+2. The unassigned, unstocked line fails the board's own \`isassigned='Y' OR qtyonhand>0\` inclusion
+   test, so it does not count towards the board row's OrderLineCount -- but it DOES share the exact
+   grouping tuple the jump's EXISTS back-join matches on.
+3. Select that board row and run the jump.
+4. Expected: the target grid holds EXACTLY the assigned line's schedule -- row count equal to the
+   board row's OrderLineCount (1), never 2 -- and the unassigned/unstocked sibling is absent.
+
+### Why this is the defect this suite was missing
+The jump's WhereClause is an EXISTS back-join to \`M_Picking_OrderBoard_Overview_v\` on the grouping
+tuple, plus a trailing \`AND (IsAssigned='Y' OR QtyOnHand>0)\` on the TARGET row. The EXISTS alone only
+proves "a board aggregate row with this id and this tuple exists" -- it says nothing about whether the
+specific target row would itself have counted towards that aggregate. Without the trailing AND, a
+target row sharing the tuple but failing the board's own inclusion test is still returned, so the jump
+can list more schedules than the board row it was launched from claims to hold (OrderLineCount).
+None of the other five tests in this file seeds two schedules under one tuple with different
+IsAssigned/QtyOnHand outcomes, so none of them can catch a regression here.
+    `);
+    test.setTimeout(120000);
+
+    const datePromised = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const assignedQty = 5;
+    const unassignedQty = 3;
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: 'de_DE', firstname: 'orderboard', lastname: 'jump6' } },
+        bpartners: { bp: { isVendor: false, isCustomer: true, isSoPriceList: true, name: 'OrderBoardJump-MixedTuple-Partner' } },
+        warehouses: { wh: {} },
+        workplaces: { wp1: { warehouse: 'wh' } },
+        // See the "fully-assigned board row" test above for why a shipper with a local (no-gateway)
+        // carrier advise is required before any line can carry a workplace -- and, on this stack, before
+        // ANY line (assigned or not) even appears in M_Picking_Job_Schedule_view at all
+        // (RequireCarrierProductSet='Y').
+        shippers: { ship1: { name: 'NoGwCarrier', isApiCarrierAdvise: true } },
+        // ONE product for BOTH lines -- this is what makes them share the board's grouping tuple
+        // (M_Product_ID, C_UOM_ID, DeliveryDate::date, C_Country_ID, AD_Client_ID, AD_Org_ID).
+        products: { p6: { name: 'OrderBoardJump-MixedTuple-Product', prices: [{ price: 10 }] } },
+        // Deliberately NO handlingUnits here -- the unassigned line must have qtyonhand=0. Both lines
+        // are seeded WITHOUT a workplace (see the "fully-assigned board row" test above for why the
+        // workplace shortcut races the async carrier advise for a multi-line order); only the first
+        // line is assigned afterwards, via the real "Schedule" UI action.
+        salesOrders: {
+          so6: {
+            bpartner: 'bp',
+            warehouse: 'wh',
+            shipper: 'ship1',
+            datePromised,
+            lines: [
+              { product: 'p6', qty: assignedQty },   // assigned afterwards -> IsAssigned='Y', counts on the board
+              { product: 'p6', qty: unassignedQty }, // stays unassigned, no stock -> invisible to the board
+            ],
+          },
+        },
+      },
+    });
+    allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+    const productId = masterdata.products.p6.id;
+    const workplaceName = masterdata.workplaces.wp1.name;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await expectDashboardVisible(page);
+
+    // Resolve and assign ONLY the assignedQty line's schedule -- the unassignedQty sibling is left
+    // exactly as seeded (no workplace, no stock).
+    const assignedScheduleRow = await waitForScheduleCarrierResolvedByQty(page, productId, assignedQty);
+    await assignWorkplaceViaScheduleAction(
+      page, assignedScheduleRow.viewId, assignedScheduleRow.rowId, workplaceName, { pageNumber: assignedScheduleRow.pageNumber }
+    );
+    // Sanity: the unassigned sibling's own schedule must genuinely exist (carrier-resolved, so it is not
+    // simply "not created yet") -- otherwise "the sibling is absent from the jump" would be trivially true
+    // because there is no sibling to leak in the first place.
+    await waitForScheduleCarrierResolvedByQty(page, productId, unassignedQty);
+
+    const { viewId, rowId, row, pageNumber } = await waitForBoardRow(page, productId);
+    const expectedOrderLineCount = row.fieldsByName.OrderLineCount.value;
+    expect(expectedOrderLineCount, 'only the assigned line must count towards the board row\'s OrderLineCount').toBe(1);
+
+    await selectBoardRow(page, viewId, rowId, { pageNumber });
+    const dropdown = await openQuickActionsDropdown(page);
+    const entry = dropdown.getByTestId(JUMP_ACTION_TESTID);
+
+    await expect(entry, `${JUMP_ACTION_TESTID} must be offered for a valid single-row selection`).toBeVisible({ timeout: 10000 });
+    await expect(entry, `${JUMP_ACTION_TESTID} must not be disabled for a valid single-row selection`).not.toHaveClass(/quick-actions-item-disabled/);
+
+    const { windowId: targetWindowId, viewId: targetViewId } = await clickJumpAndCaptureTargetView(page, entry);
+    expect(targetWindowId, 'the jump must open a window other than the board itself').not.toBe(String(ORDER_BOARD_WINDOW_ID));
+
+    const targetView = await fetchViewRows(page, targetWindowId, targetViewId);
+    expect(
+      targetView.result.length,
+      'the jump must return exactly the board row\'s OrderLineCount -- not the unassigned, unstocked sibling too'
+    ).toBe(expectedOrderLineCount);
+
+    const [onlyRow] = targetView.result;
+    expect(String(onlyRow.fieldsByName?.M_Product_ID?.value?.key), 'the single returned row must carry the seeded product').toBe(String(productId));
+    expect(
+      Number(onlyRow.fieldsByName?.QtyOrdered?.value),
+      'the single returned row must be the ASSIGNED line, not the unassigned/unstocked sibling'
+    ).toBe(assignedQty);
+    expect(onlyRow.fieldsByName?.C_Workplace_ID?.value?.key, 'the single returned row must carry the assigned workplace').toBeTruthy();
   });
 
   test('Traffic Management opened from the menu still applies its default not-assigned filter', async ({ page }) => {
