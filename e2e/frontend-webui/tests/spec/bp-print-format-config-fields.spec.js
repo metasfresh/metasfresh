@@ -42,13 +42,10 @@ const PRINT_FORMAT_TAB = 'AD_Tab-540653'; // C_BP_PrintFormat included tab of wi
 // translated name (e.g. "Yes" / "Ja") when off (the CI/production default). Only the key is
 // stable across BOTH, so selecting by it is the correct, config-independent approach.
 //
-// The ATTRIBUTE carrying that key differs by branch, so match both — this spec lives on
-// every branch of the propagation chain and a single-contract selector is green on one and
-// deterministically red on the others:
-//   - new_dawn_uat renders data-testid=`option-${key}` (SelectionDropdown.renderOption,
-//     renamed by a5351b4fb3d / pull/22098, which migrated the specs existing at the time);
-//   - intensive_care_hotfix / _release still render data-test-id=`${key}${caption}`.
-// Same dual-contract approach as PaymentPage.js, which keeps a legacy data-test-id fallback.
+// SelectionDropdown renders that key under a different ATTRIBUTE per branch line —
+// `data-testid` = `option-${key}` on one, `data-test-id` = `${key}${caption}` on the other —
+// so match both: this spec lives on every branch of the propagation chain, and a
+// single-contract selector is green on one and deterministically red on the rest.
 const YES_OPTION_BY_KEY =
   '.input-dropdown-list .input-dropdown-list-option[data-testid="option-Y"], ' +
   '.input-dropdown-list .input-dropdown-list-option[data-test-id^="Y"]';
