@@ -1113,6 +1113,105 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
       | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 7                     | 0             | 0                       | false    | false     | null       |
 
+  @Id:S31789_TC_Q11_ConsolidatedShipmentBooksOnlyItsOwnLine
+  Scenario: A consolidated shipment books only THIS planning's own line onto it, never the whole document
+
+    # A shipment schedule whose partner allows consolidation (C_BPartner.AllowConsolidateInOut - 'Y' by
+    # default) is put onto an ALREADY-DRAFTED shipment of the same org / partner / partner-location /
+    # warehouse / consolidation period instead of onto a fresh one, and the delivery-planning back-link is
+    # stamped on THAT header (InOutProducerFromShipmentScheduleWithHU#getCreateShipmentHeader). So the
+    # document the generate-shipment process completes routinely carries OTHER schedules' lines, and
+    # completion must book only the line that belongs to THIS planning.
+    #
+    # Here: order Q11C_Other's 12 PCE are drafted first (IsCompleteShipments=false leaves the shipment open),
+    # then delivery planning Q11C ships 7 PCE of the SAME product - the same product is what makes the
+    # difference visible, since resolveBookedQty filters by product. Both land on one document of 19 PCE.
+    # Q11C's actual is 7, not 19, and its QtyTotalOpen is 3, not -9.
+
+    # Both orders carry DeliveryRule=Force, so what gets shipped is decided by the order/process quantity
+    # rather than by warehouse availability - the subject here is which LINES a completion books, not how
+    # much of them is available. Their own warehouse keeps their shipments out of any other scenario's
+    # consolidation window.
+    Given metasfresh contains M_Products:
+      | Identifier  | Name        |
+      | productQ11C | ProductQ11C |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_SO               | productQ11C             | 10.0     | PCE               | Normal                        |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value              | Name              |
+      | warehouseQ11C             | warehouseValueQ11C | warehouseNameQ11C |
+    And metasfresh contains M_Locator:
+      | M_Locator_ID.Identifier | Value            | M_Warehouse_ID.Identifier |
+      | locatorQ11C             | locatorValueQ11C | warehouseQ11C             |
+
+    # The OTHER order, on the same customer / ship-to location / warehouse. Both orders promise 2023-02-05,
+    # which is the date both shipments end up carrying (a shipment generated with IsShipToday=false is dated
+    # to its schedule's delivery date) - the day-granular consolidation period matches on exactly that. Its
+    # shipment is left DRAFTED (IsCompleteShipments=false), so it is still open for the planning's line to be
+    # consolidated onto.
+    Given metasfresh contains C_Orders:
+      | Identifier      | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DeliveryRule |
+      | orderQ11C_Other | true    | customer                 | 2023-02-03  | 2023-02-05T00:00:00Z | customerLocation                      | warehouseQ11C                 | F                |
+    And metasfresh contains C_OrderLines:
+      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQ11C_Other | orderQ11C_Other       | productQ11C             | 12         | shipper_DHL                 |
+
+    When the order identified by orderQ11C_Other is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | C_OrderLine_ID      |
+      | deliveryPlanningQ11C_Other | orderLineQ11C_Other |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | schedQ11C_Other | orderLineQ11C_Other       | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | schedQ11C_Other                  | D            | false               | false       |
+    # One alias for one document on purpose: this drafted shipment is the very one the planning's line is
+    # consolidated onto below, and every later assertion is made against THIS record.
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | DocStatus |
+      | schedQ11C_Other                  | shipmentQ11C          | DR        |
+
+    # The planning's own order, same customer / location / warehouse.
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DeliveryRule |
+      | orderQ11C  | true    | customer                 | 2023-02-03  | 2023-02-05T00:00:00Z | customerLocation                      | warehouseQ11C                 | F                |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQ11C | orderQ11C             | productQ11C             | 10         | shipper_DHL                 |
+
+    When the order identified by orderQ11C is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID |
+      | deliveryPlanningQ11C   | orderLineQ11C  |
+
+    When the delivery planning identified by deliveryPlanningQ11C generates a shipment:
+      | DeliveryDate | Qty |
+      | 2023-02-05   | 7   |
+
+    # The document really is consolidated: the pre-existing draft now carries BOTH lines, 19 PCE of the same
+    # product, and both are completed. Had the producer created a fresh header instead, the first row here
+    # would find no line on it and this scenario would be asserting nothing.
+    Then validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | C_OrderLine_ID.Identifier | movementqty | processed |
+      | shipmentLineQ11C_Own      | shipmentQ11C          | orderLineQ11C             | 7           | true      |
+      | shipmentLineQ11C_Other    | shipmentQ11C          | orderLineQ11C_Other       | 12          | true      |
+
+    # THE assertion: 7 (this planning's own line), not 19 (the document). QtyTotalOpen follows it: 10 - 7 = 3,
+    # not 10 - 19 = -9.
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID   |
+      | deliveryPlanningQ11C   | 10         | 3            | Outgoing            | 7                     | 7             | 7                       | false    | true      | shipmentQ11C |
+
+    # The other planning is untouched: the completed document carries THIS planning's back-link, so nothing
+    # was booked onto it - it must certainly not have picked up the document's quantity either.
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
+      | deliveryPlanningQ11C_Other | 12         | 12           | Outgoing            | 12                    | 0             | 0                       | false    | false     | null       |
+
   @Id:S31789_TC_Q11_IncomingCompletionWritesDischargeOnly
   Scenario: Completing a receipt writes only the discharge end - the load end stays the Task Q7c mirror of the plan
 

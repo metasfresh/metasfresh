@@ -76,6 +76,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_Delivery_Planning_Alloc;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.X_M_Delivery_Planning;
@@ -420,20 +421,52 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The receipt-or-shipment's own product line(s), summed into the planning's UOM - what {@link
-	 * #recordActualQtyOnComplete} writes onto the end(s) it occupies. {@link IInOutBL#getMovementQty} (not
-	 * the raw column) keeps a return's negated sign.
+	 * The lines of the receipt or shipment that belong to THIS planning, summed into the planning's UOM - what
+	 * {@link #recordActualQtyOnComplete} writes onto the end(s) it occupies. {@link IInOutBL#getMovementQty}
+	 * (not the raw column) keeps a return's negated sign.
+	 * <p>
+	 * <b>The document is NOT the planning.</b> A shipment schedule whose partner allows consolidation
+	 * ({@code C_BPartner.AllowConsolidateInOut}, the default) is put onto an already-drafted shipment of the same
+	 * org / partner / partner-location / warehouse / consolidation period rather than onto a fresh one - see
+	 * {@code InOutProducerFromShipmentScheduleWithHU#getCreateShipmentHeader}. Summing the whole document would
+	 * then book the OTHER schedules' lines onto this planning as its own actual quantity (and drive
+	 * {@code QtyTotalOpen} negative). So the sum is scoped to the lines this planning's own shipment/receipt
+	 * schedule produced.
+	 * <p>
+	 * <b>Scoped by {@code C_OrderLine_ID}</b>, because that is the only attribution a line carries at the moment
+	 * this runs. Both producers copy their schedule's order line onto every line they create, before the document
+	 * is completed ({@code ShipmentLineBuilder#createShipmentLine}, {@code InOutProducer#updateReceiptLine}),
+	 * and a schedule is 1:1 with its order line - so "the lines of this planning's schedule" and "the lines of
+	 * this planning's order line" are the same set. The schedule-to-line allocation tables
+	 * ({@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID}, written by {@code ShipmentScheduleWithHU#setM_InOut})
+	 * are NOT usable here: they are written AFTER {@code processEx(ACTION_Complete)}, i.e. after this
+	 * {@code TIMING_AFTER_COMPLETE} handler has already run, so they would still be empty and every planning
+	 * would book zero.
+	 * <p>
+	 * A planning without an order line cannot be scoped this way; it also cannot reach a generate process
+	 * ({@code DeliveryPlanningGenerateProcessesHelper#checkEligibleToCreateReceipt}/{@code ...Shipment} reject a
+	 * planning that is not order based), so such a document was stamped by hand and is not a consolidation
+	 * target - the unscoped sum stays the best available answer there rather than a throw in the middle of a
+	 * document's completion.
 	 */
 	private Quantity resolveBookedQty(@NonNull final I_M_InOut inout, @NonNull final I_M_Delivery_Planning planningRecord)
 	{
 		final ProductId productId = ProductId.ofRepoId(planningRecord.getM_Product_ID());
 		final I_C_UOM uom = uomDAO.getById(planningRecord.getC_UOM_ID());
+		final OrderLineId planningOrderLineId = OrderLineId.ofRepoIdOrNull(planningRecord.getC_OrderLine_ID());
 
 		return inOutDAO.retrieveLines(inout).stream()
 				.filter(line -> line.getM_Product_ID() == productId.getRepoId())
+				.filter(line -> belongsToPlanning(line, planningOrderLineId))
 				.map(inOutBL::getMovementQty)
 				.map(qty -> uomConversionBL.convertQuantityTo(qty, productId, uom))
 				.reduce(Quantity.zero(uom), Quantity::add);
+	}
+
+	/** @see #resolveBookedQty for why the order line is the attribution used here, and why a planning without one is not scoped. */
+	private static boolean belongsToPlanning(@NonNull final I_M_InOutLine line, @Nullable final OrderLineId planningOrderLineId)
+	{
+		return planningOrderLineId == null || line.getC_OrderLine_ID() == planningOrderLineId.getRepoId();
 	}
 
 	public <T> T getShipmentOrReceiptInfo(
