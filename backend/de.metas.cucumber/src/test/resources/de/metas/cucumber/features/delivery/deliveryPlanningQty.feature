@@ -716,3 +716,106 @@ Feature: Delivery planning quantities
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionCancelQty           | shipper_DHL              | customer                        | customerLocation                | VO             |
+
+  @Id:S31789_TC_Q8_DeleteRecomputesSurvivor
+  Scenario: Deleting a planning off a line with a survivor recomputes the survivor's live open quantities, not a stale copy
+
+    Given metasfresh contains C_Orders:
+      | Identifier      | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyDelete1 | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyDelete1 | orderQtyDelete1        | product                 | 16         | shipper_DHL                 |
+
+    When the order identified by orderQtyDelete1 is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID   | C_OrderLine_ID      |
+      | deliveryPlanningDelete1_1 | orderLineQtyDelete1 |
+
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningDelete1_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                | C_OrderLine_ID      |
+      | deliveryPlanningDelete1_1,deliveryPlanningDelete1_2   | orderLineQtyDelete1 |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | QtyTotalOpenPlanned |
+      | deliveryPlanningDelete1_1 | 16         | 16           | Outgoing            | 8                     | 0                    |
+      | deliveryPlanningDelete1_2 | 16         | 16           | Outgoing            | 8                     | 0                    |
+
+    # The planning ABOUT TO BE DELETED carries the actual, so its removal must visibly move the SURVIVOR's
+    # totals - a stale-copy bug would leave deliveryPlanningDelete1_1 showing 13/0 forever.
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | ActualLoadQty |
+      | deliveryPlanningDelete1_2 | 3             |
+
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | ActualLoadQty | QtyTotalOpenPlanned |
+      | deliveryPlanningDelete1_1 | 16         | 13           | Outgoing            | 0             | 0                    |
+      | deliveryPlanningDelete1_2 | 16         | 13           | Outgoing            | 3             | 0                    |
+
+    # Manual user-action delete (path 1 of the inventory: the direct/UI delete a planner triggers from the
+    # window) - succeeds because a survivor remains (deliveryPlanningDelete1_1).
+    When delete M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | ErrorCode |
+      | deliveryPlanningDelete1_2 |           |
+
+    # Task Q8 fix round: QtyTotalOpen/QtyTotalOpenPlanned on the SURVIVOR now reflect the line with the
+    # deleted planning's claim gone - both climb back up (16/8), not left frozen at the pre-delete 13/0.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | QtyTotalOpenPlanned |
+      | deliveryPlanningDelete1_1 | 16         | 16           | Outgoing            | 8                     | 0             | 8                    |
+
+  @Id:S31789_TC_Q8_DeleteNonUiRecomputesSurvivors
+  Scenario: A non-UI-action delete (the shape a receipt/shipment-schedule cascade takes) recomputes the line's survivors the same way
+
+    Given metasfresh contains C_Orders:
+      | Identifier      | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
+      | orderQtyDelete2 | true    | customer                 | 2023-02-03  | 2023-02-25T00:00:00Z | customerLocation                      |
+    And metasfresh contains C_OrderLines:
+      | Identifier          | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtyDelete2 | orderQtyDelete2        | product                 | 30         | shipper_DHL                 |
+
+    When the order identified by orderQtyDelete2 is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | C_OrderLine_ID      |
+      | deliveryPlanningDelete2_1 | orderLineQtyDelete2 |
+
+    When generate 2 additional M_Delivery_Planning records for: deliveryPlanningDelete2_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                                              | C_OrderLine_ID      |
+      | deliveryPlanningDelete2_1,deliveryPlanningDelete2_2,deliveryPlanningDelete2_3 | orderLineQtyDelete2 |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | QtyTotalOpenPlanned |
+      | deliveryPlanningDelete2_1 | 30         | 30           | Outgoing            | 10                    | 0                    |
+      | deliveryPlanningDelete2_2 | 30         | 30           | Outgoing            | 10                    | 0                    |
+      | deliveryPlanningDelete2_3 | 30         | 30           | Outgoing            | 10                    | 0                    |
+
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | ActualLoadQty |
+      | deliveryPlanningDelete2_3 | 5             |
+
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | ActualLoadQty | QtyTotalOpenPlanned |
+      | deliveryPlanningDelete2_1 | 30         | 25           | Outgoing            | 0             | 0                    |
+      | deliveryPlanningDelete2_2 | 30         | 25           | Outgoing            | 0             | 0                    |
+      | deliveryPlanningDelete2_3 | 30         | 25           | Outgoing            | 5             | 0                    |
+
+    # Non-UI-action delete (OPT.IsUIAction=false) - the programmatic shape M_ReceiptSchedule/M_ShipmentSchedule
+    # deletion takes (DeliveryPlanningRepository#deleteForReceiptSchedule / #deleteForShipmentSchedule), which
+    # is NOT routed through the "at least one planning per order line" guard. Deletes the planning carrying
+    # the actual, leaving two survivors that never had one.
+    When delete M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | OPT.IsUIAction | ErrorCode |
+      | deliveryPlanningDelete2_3 | false          |           |
+
+    # Both survivors climb from 25 to 30 (their actual sum drops from 5 to 0) and from 0 to 10 planned-open
+    # (the deleted planning's 10 planned no longer counts) - the SAME recompute the UI-delete scenario above
+    # exercises, since AFTER_DELETE fires identically regardless of which of the three inventoried paths
+    # triggered it.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | QtyTotalOpenPlanned |
+      | deliveryPlanningDelete2_1 | 30         | 30           | Outgoing            | 10                    | 0             | 10                   |
+      | deliveryPlanningDelete2_2 | 30         | 30           | Outgoing            | 10                    | 0             | 10                   |

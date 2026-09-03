@@ -23,6 +23,7 @@
 package de.metas.deliveryplanning.interceptor;
 
 import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.shipping.TransportDirection;
 import lombok.NonNull;
@@ -117,6 +118,47 @@ public class M_Delivery_Planning
 			I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty,
 			I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity })
 	public void onQuantityChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryPlanningService.recomputeOpenQuantitiesForOrderLine(deliveryPlanning);
+	}
+
+	/**
+	 * Keeps {@code QtyTotalOpen} and {@code QtyTotalOpenPlanned} live (Task Q8, fix round) on a deleted
+	 * planning's SURVIVING siblings - without this, a delete leaves every remaining planning of the line
+	 * showing a stale total (the deleted row's own contribution never drops out) until some unrelated later
+	 * write happens to refresh it: the same frozen-figure defect this plan exists to remove, reached by a
+	 * different path, and worse - it under-reports open quantity with no signal to the operator, and a later
+	 * split then distributes too little.
+	 * <p>
+	 * Three write paths reach this one hook, all going through the ordinary per-row PO delete lifecycle (never
+	 * {@code deleteDirectly()}, confirmed against the local DB: every FK off {@code M_Delivery_Planning} is
+	 * {@code ON DELETE NO ACTION}, so there is no DB-cascade path that could remove a row without firing this
+	 * interceptor): a single planning deleted directly (this class's own {@code onDelete} above, which already
+	 * refuses the case with no survivor - {@code MSG_M_Delivery_Planning_AtLeastOnePerOrderLine} - so THIS
+	 * hook's line always has at least one row left when that path is the trigger); and the two bulk deletes,
+	 * {@link DeliveryPlanningRepository#deleteForReceiptSchedule} / {@code #deleteForShipmentSchedule}, which
+	 * are not routed through that same "at least one" guard and can legitimately empty a line entirely (every
+	 * planning of a schedule sharing it, all removed together) - {@link
+	 * DeliveryPlanningRepository#recomputeOpenQuantitiesForOrderLine} already no-ops on an empty line, so
+	 * that case costs one query and nothing else.
+	 * <p>
+	 * {@code AFTER_DELETE}, not {@code BEFORE}: on {@code BEFORE_DELETE} this row still exists in the DB and
+	 * the recompute's query would count its own soon-to-be-gone claim, needing a manual self-exclusion (the
+	 * split's own {@code excludePlanningId} shape); on {@code AFTER_DELETE} the row is already gone from the
+	 * table, so the same plain re-query {@link #onNew}/{@link #onQuantityChanged} already use naturally
+	 * returns only the survivors - no exclusion parameter needed, one shape for all three "the line's
+	 * membership or figures changed" triggers. The deleted record's own {@code C_OrderLine_ID} is still read
+	 * off THIS in-memory Java object (its row is gone from the DB, not from this object), same as {@code
+	 * M_Delivery_Planning_Alloc}'s own {@code TYPE_AFTER_DELETE} hook reads its FK the same way.
+	 * <p>
+	 * Cost: one {@code SELECT} plus one {@code UPDATE} per surviving planning of the line - the same shape as
+	 * {@link #onNew}/{@link #onQuantityChanged} above, not a new pattern. A bulk schedule-cascade delete that
+	 * removes K plannings off one line in a single call fires this hook K times, each against whatever
+	 * currently remains, so the total cost is bounded by (a small, per-order-line count of plannings)² in the
+	 * worst case - the whole-line-wiped case - never by anything outside this one order line.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void onDeleted(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		deliveryPlanningService.recomputeOpenQuantitiesForOrderLine(deliveryPlanning);
 	}
