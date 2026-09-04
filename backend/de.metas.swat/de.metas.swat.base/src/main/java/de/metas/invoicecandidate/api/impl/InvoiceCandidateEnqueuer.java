@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
@@ -58,6 +59,8 @@ import org.slf4j.MDC.MDCCloseable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import javax.annotation.Nullable;
+
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -170,6 +173,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		final int workpackageQueueSizeBeforeEnqueueing = workpackageAggregator.getQueueSize();
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
+		final ImmutableList.Builder<String> skipReasons = ImmutableList.builder();
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecksum = new ICNetAmtToInvoiceChecker();
 
 		//
@@ -190,8 +194,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				}
 
 				// Check if invoice candidate is eligible for enqueueing
-				if (!isEligibleForEnqueueing(icRecord))
+				final String skipReason = getSkipReasonOrNull(icRecord);
+				if (skipReason != null)
 				{
+					skipReasons.add(skipReason);
 					continue;
 				}
 
@@ -230,11 +236,21 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		// Make sure all workpackages are marked as ready for processing
 		workpackageAggregator.closeAllGroups();
 
+		final ImmutableList<String> skipReasonsCollected = skipReasons.build();
+
 		//
-		// If no workpackages were created, display error message that no selection was made (07666)
+		// If no workpackages were created, display error message that no selection was made (07666),
+		// naming the skip reasons when we have them.
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
-			throw new AdempiereException("@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
+			final String noCandidatesMsg = "@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@";
+			if (skipReasonsCollected.isEmpty())
+			{
+				throw new AdempiereException(noCandidatesMsg);
+			}
+			// No markAsUserValidationError() needed: AdempiereException(String) sets it for any '@'-wrapped message.
+			throw new AdempiereException(noCandidatesMsg + " "
+					+ InvoiceCandidateEnqueueResult.buildSkippedSummary(getCtx(), skipReasonsCollected, skipReasonsCollected.size()));
 		}
 
 		//
@@ -244,13 +260,15 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				workpackageAggregator.getGroupsCount(),
 				workpackageQueueSizeBeforeEnqueueing,
 				totalNetAmtToInvoiceChecksum.getValue(),
+				skipReasonsCollected,
 				icLock);
 	}
 
 	/**
-	 * @return true if invoice candidate is eligible for enqueueing
+	 * @return the translated reason this invoice candidate is NOT enqueued, or {@code null} if it is eligible.
 	 */
-	private boolean isEligibleForEnqueueing(final I_C_Invoice_Candidate ic)
+	@Nullable
+	private String getSkipReasonOrNull(final I_C_Invoice_Candidate ic)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -260,16 +278,17 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.addLog(msg);
-			return false;
+			return msg;
 		}
 
 		//
 		// Check other reasons no to enqueue this ic: Processed, IsError, DateToInvoice.
 		// NOTE: having this line in the middle because we will display only one skip reason and SKIPPED_QTY_TO_INVOICE is usually less informative if the IC was already processed
-		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, getInvoicingParams().isIgnoreInvoiceSchedule(), getInvoicingParams().isInvoiceManualRule()))
+		final String skipReason = invoiceCandBL.getInvoicingSkipReasonOrNull(ic, getInvoicingParams().isIgnoreInvoiceSchedule(), getInvoicingParams().isInvoiceManualRule());
+		if (skipReason != null)
 		{
-			// NOTE: we are not logging any reason because the method already logged the reason if any.
-			return false;
+			// NOTE: not logging here -- the method above already logged the reason.
+			return skipReason;
 		}
 
 		//
@@ -279,10 +298,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		{
 			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.addLog(msg);
-			return false;
+			return msg;
 		}
 
-		return true;
+		return null; // eligible
 	}
 
 	private void updateSelectionBeforeEnqueueing(@NonNull final PInstanceId selectionId)
