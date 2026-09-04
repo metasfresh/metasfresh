@@ -30,25 +30,25 @@ INSERT INTO AD_Process (AD_Process_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,Cr
                         IsBetaFunctionality,IsServerProcess,CopyFromProcess,IsOneInstanceOnly,LockWaitTimeout,
                         RefreshAllAfterExecution,AllowProcessRerun,IsUseBPartnerLanguage,IsApplySecuritySettings,
                         IsTranslateExcelHeaders,IsNotifyUserAfterExecution,PostgRestResponseFormat,IsFormatExcelFile,
-                        CSVFieldDelimiter,IsUpdateExportDate,IsLogWarning,IsPreventConcurrentExecution,CSVFieldQuote,
+                        CSVFieldDelimiter,IsUpdateExportDate,IsLogWarning,CSVFieldQuote,
                         IsIncludeCSVHeaderRow,IsPdfA3Output)
 VALUES
  (585658 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-04 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-04 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,
   'WEBUI_RV_ReceiptLogistics_ReceiveHUs_UsingDefaults','HUs annehmen Voreinst.',3,'D','N','N',
   'de.metas.ui.web.receiptlogistics.process.WEBUI_RV_ReceiptLogistics_ReceiveHUs_UsingDefaults','Java','N',
-  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','N','"','Y','N'),
+  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','"','Y','N'),
  (585659 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-04 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-04 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,
   'WEBUI_RV_ReceiptLogistics_ReceiveHUs_UsingConfig','HUs annehmen',3,'D','N','N',
   'de.metas.ui.web.receiptlogistics.process.WEBUI_RV_ReceiptLogistics_ReceiveHUs_UsingConfig','Java','N',
-  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','N','"','Y','N'),
+  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','"','Y','N'),
  (585660 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-04 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-04 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,
   'WEBUI_RV_ReceiptLogistics_ReceiveCUs','CUs annehmen',3,'D','N','N',
   'de.metas.ui.web.receiptlogistics.process.WEBUI_RV_ReceiptLogistics_ReceiveCUs','Java','N',
-  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','N','"','Y','N'),
+  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','"','Y','N'),
  (585661 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-04 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-04 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,
   'WEBUI_RV_ReceiptLogistics_ReceiveCUs_WithParam','CUs annehmen mit Menge',3,'D','N','N',
   'de.metas.ui.web.receiptlogistics.process.WEBUI_RV_ReceiptLogistics_ReceiveCUs_WithParam','Java','N',
-  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','N','"','Y','N')
+  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','"','Y','N')
 ;
 
 -- seed AD_Process_Trl for every active system or base language, copying the German base name

@@ -42,29 +42,29 @@ INSERT INTO AD_Process (AD_Process_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,Cr
                         IsBetaFunctionality,IsServerProcess,CopyFromProcess,IsOneInstanceOnly,LockWaitTimeout,
                         RefreshAllAfterExecution,AllowProcessRerun,IsUseBPartnerLanguage,IsApplySecuritySettings,
                         IsTranslateExcelHeaders,IsNotifyUserAfterExecution,PostgRestResponseFormat,IsFormatExcelFile,
-                        CSVFieldDelimiter,IsUpdateExportDate,IsLogWarning,IsPreventConcurrentExecution,CSVFieldQuote,
+                        CSVFieldDelimiter,IsUpdateExportDate,IsLogWarning,CSVFieldQuote,
                         IsIncludeCSVHeaderRow,IsPdfA3Output)
 VALUES
  (585662 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,
   'WEBUI_RV_ReceiptLogistics_SelectHUsToReverse','Korrektur',3,'D','N','N',
   'de.metas.ui.web.receiptlogistics.process.WEBUI_RV_ReceiptLogistics_SelectHUsToReverse','Java','N',
-  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','N','"','Y','N'),
+  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','"','Y','N'),
  (585663 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,
   'WEBUI_RV_ReceiptLogistics_CreateEmptiesReturnsToVendor','Leergut Ausgabe',3,'D','N','N',
   'de.metas.ui.web.receiptlogistics.process.WEBUI_RV_ReceiptLogistics_CreateEmptiesReturnsToVendor','Java','N',
-  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','N','"','Y','N'),
+  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','"','Y','N'),
  (585664 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,
   'WEBUI_RV_ReceiptLogistics_CreateEmptiesReturnsFromCustomer','Leergut Rücknahme',3,'D','N','N',
   'de.metas.ui.web.receiptlogistics.process.WEBUI_RV_ReceiptLogistics_CreateEmptiesReturnsFromCustomer','Java','N',
-  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','N','"','Y','N'),
+  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','"','Y','N'),
  (585665 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,
   'WEBUI_RV_ReceiptLogistics_AttachPhoto','Foto',3,'D','N','N',
   'de.metas.ui.web.receiptlogistics.process.WEBUI_RV_ReceiptLogistics_AttachPhoto','Java','Y',
-  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','N','"','Y','N'),
+  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','"','Y','N'),
  (585666 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-04 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,
   'WEBUI_RV_ReceiptLogistics_RunMaterialReceiptJasper','Drucken Produktanlieferung',3,'D','N','N',
   'de.metas.ui.web.receiptlogistics.process.WEBUI_RV_ReceiptLogistics_RunMaterialReceiptJasper','Java','N',
-  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','N','"','Y','N')
+  'N','N','N','N',0,'N','N','Y','N','Y','N','json','Y','','N','N','"','Y','N')
 ;
 
 -- seed AD_Process_Trl for every active system or base language, copying the German base name
