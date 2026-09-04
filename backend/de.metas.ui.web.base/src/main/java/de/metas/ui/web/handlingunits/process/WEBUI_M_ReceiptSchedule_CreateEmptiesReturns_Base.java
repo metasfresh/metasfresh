@@ -52,7 +52,7 @@ import org.compiere.model.I_M_InOut;
 	}
 
 	// package-visible, non-final so a same-package unit test can substitute it; shared with the
-	// receipt-logistics window's adapter, which must create the very same empties document.
+	// receipt-disposition delivery-planning window's adapter, which must create the very same empties document.
 	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
 
 	private final String _returnMovementType;

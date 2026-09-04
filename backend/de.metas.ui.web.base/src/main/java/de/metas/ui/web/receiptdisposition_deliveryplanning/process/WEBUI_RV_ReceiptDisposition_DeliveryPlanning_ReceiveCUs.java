@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /**
- * "CUs annehmen" on the receipt-logistics window: receive the selected row's remaining quantity as bare units.
+ * "CUs annehmen" on the receipt-disposition delivery-planning window: receive the selected row's remaining quantity as bare units.
  * <p>
  * The counterpart of {@code WEBUI_M_ReceiptSchedule_ReceiveCUs} - same quantity rule, same VHU - but it reads
  * its receipt schedule off the grid ROW rather than out of a record reference, which is what lets it also see
@@ -94,8 +94,11 @@ public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs extends Rec
 	}
 
 	/**
-	 * {@code null} - this action receives whatever the schedule still has outstanding. The variant that asks the
-	 * operator overrides it.
+	 * {@code null} - this action states no quantity of its own, so the receive resolves it by the one rule
+	 * {@link #getQtyToReceive()} also reports: where the row's delivery planning imposes a share, that share
+	 * capped at what the schedule still has outstanding; otherwise (an unplanned row, or a planning that
+	 * carries no discharge figure yet) the schedule's remainder. The variant that asks the operator
+	 * overrides it.
 	 */
 	@Nullable
 	protected BigDecimal getQtyToReceiveOverrideOrNull()

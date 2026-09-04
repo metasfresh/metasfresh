@@ -1,4 +1,4 @@
--- The receipt-logistics window's five PASS-THROUGH actions (REQUIREMENTS 3.4, AC7):
+-- The receipt-disposition delivery-planning window's five PASS-THROUGH actions (REQUIREMENTS 3.4, AC7):
 -- "Korrektur", "Leergut Ausgabe", "Leergut Rücknahme", "Foto" and "Drucken Produktanlieferung".
 --
 -- They do exactly what window 541954's actions of the same name do, to the same record - the row's receipt

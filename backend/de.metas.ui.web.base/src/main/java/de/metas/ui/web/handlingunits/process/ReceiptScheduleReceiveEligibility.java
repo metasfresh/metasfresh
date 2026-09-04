@@ -34,7 +34,7 @@ import lombok.experimental.UtilityClass;
  * same actions cannot grow a second, drifting one.
  * <p>
  * Extracted unchanged from {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_Base}, whose package-private class made the
- * rule unreachable from the receipt-logistics window's actions even though the method itself was public.
+ * rule unreachable from the receipt-disposition delivery-planning window's actions even though the method itself was public.
  */
 @UtilityClass
 public class ReceiptScheduleReceiveEligibility

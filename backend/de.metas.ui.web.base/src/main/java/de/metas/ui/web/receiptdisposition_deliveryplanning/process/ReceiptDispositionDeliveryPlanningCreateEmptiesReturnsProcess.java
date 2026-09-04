@@ -31,7 +31,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 
 /**
- * "Leergut Ausgabe" / "Leergut Rücknahme" on the receipt-logistics window: creates the empties document and opens
+ * "Leergut Ausgabe" / "Leergut Rücknahme" on the receipt-disposition delivery-planning window: creates the empties document and opens
  * it, exactly as {@code WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base} does on window 541954.
  * <p>
  * The one shape worth naming: this action is offered with NOTHING selected as well, and then creates an empty

@@ -29,7 +29,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * The two source ids ONE receipt-logistics row stands for: the receipt schedule it is always about, and the
+ * The two source ids ONE receipt-disposition delivery-planning row stands for: the receipt schedule it is always about, and the
  * delivery planning that plans it - when one exists.
  * <p>
  * The nullable half IS the window's two branches. {@code RV_ReceiptDisposition_DeliveryPlanning} unions a <b>planned</b> row (an

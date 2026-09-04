@@ -1,5 +1,5 @@
 -- AD metadata for the C_UOM_ID column added to RV_ReceiptDisposition_DeliveryPlanning by 5822480: the AD_Column, its
--- AD_Field on the receipt-logistics tab (549491), and the AD_UI_Element that places it right next to
+-- AD_Field on the receipt-disposition delivery-planning tab (549491), and the AD_UI_Element that places it right next to
 -- QtyOrdered -- in the same "main" element group (555764), directly after QtyOrdered on both the form
 -- (SeqNo 75, between QtyOrdered's 70 and Lager's 80) and the grid (SeqNoGrid 55, between QtyOrdered's
 -- 50 and Lager's 60). Reuses the existing AD_Element 215 (C_UOM_ID / "Maßeinheit"), the same element

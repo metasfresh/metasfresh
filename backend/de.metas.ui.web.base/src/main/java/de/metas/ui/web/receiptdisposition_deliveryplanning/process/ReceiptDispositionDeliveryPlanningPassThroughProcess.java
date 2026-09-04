@@ -25,7 +25,7 @@ package de.metas.ui.web.receiptdisposition_deliveryplanning.process;
 import de.metas.ui.web.handlingunits.process.ReceiptScheduleActions;
 
 /**
- * What the receipt-logistics window's PASS-THROUGH actions share - "Korrektur", "Leergut Ausgabe", "Leergut
+ * What the receipt-disposition delivery-planning window's PASS-THROUGH actions share - "Korrektur", "Leergut Ausgabe", "Leergut
  * Rücknahme", "Foto" and "Drucken Produktanlieferung".
  * <p>
  * They are pass-through in the precise sense that they do exactly what the receipt-schedule window's action of

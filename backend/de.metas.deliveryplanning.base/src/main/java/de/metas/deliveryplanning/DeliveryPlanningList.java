@@ -170,7 +170,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 	/**
 	 * Whether ANY planning in this selection is already processed - the shared precondition of every receive
-	 * action started from the receipt-logistics window.
+	 * action started from the receipt-disposition delivery-planning window.
 	 * <p>
 	 * ONE predicate rather than {@code anyClosed() || anyDelivered()}, because Task Q10's invariant
 	 * {@code Processed == (IsClosed || IsDelivered)} makes them the same question: a closed planning was called

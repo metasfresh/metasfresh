@@ -49,7 +49,7 @@ import javax.annotation.Nullable;
  *     <li><b>absent</b> - the plain receipt against the schedule, exactly as the receipt-schedule window
  *     produces it. Nothing is stamped, nothing is derived.</li>
  * </ul>
- * That is why the receipt-logistics window, whose grid unions planned and unplanned rows, can serve both row
+ * That is why the receipt-disposition delivery-planning window, whose grid unions planned and unplanned rows, can serve both row
  * types with a single action: the row decides whether the id is there, not the action.
  */
 @Value

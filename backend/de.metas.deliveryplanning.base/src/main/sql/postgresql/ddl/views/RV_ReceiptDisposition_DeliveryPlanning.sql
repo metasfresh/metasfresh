@@ -1,5 +1,5 @@
 --
--- RV_ReceiptDisposition_DeliveryPlanning -- the single inbound list behind the receipt-logistics window.
+-- RV_ReceiptDisposition_DeliveryPlanning -- the single inbound list behind the receipt-disposition delivery-planning window.
 --
 -- The dispatcher planning inbound receipts today has to read two lists: the delivery plannings
 -- (what somebody already planned) and the receipt schedules nobody has planned yet. This view is

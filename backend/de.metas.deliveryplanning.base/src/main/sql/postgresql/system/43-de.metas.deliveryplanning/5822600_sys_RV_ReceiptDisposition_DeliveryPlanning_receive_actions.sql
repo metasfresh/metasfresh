@@ -1,4 +1,4 @@
--- The receipt-logistics window's four SINGLE-ROW receive actions (REQUIREMENTS 3.4, AC7 / AC7a / AC7b / AC8).
+-- The receipt-disposition delivery-planning window's four SINGLE-ROW receive actions (REQUIREMENTS 3.4, AC7 / AC7a / AC7b / AC8).
 --
 -- They are NEW AD_Process rows over NEW classes rather than the receipt-schedule window's existing four,
 -- and the reason is mechanical rather than stylistic: for a view row the platform resolves the process'

@@ -48,7 +48,7 @@ public class WEBUI_M_ReceiptSchedule_SelectHUsToReverse extends ReceiptScheduleB
 	}
 
 	// package-visible, non-final so a same-package unit test can substitute it; shared with the
-	// receipt-logistics window's adapter, which must offer the very same HUs.
+	// receipt-disposition delivery-planning window's adapter, which must offer the very same HUs.
 	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
 
 	@Override

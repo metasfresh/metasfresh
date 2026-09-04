@@ -64,7 +64,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * The shared base every receipt-logistics action sits on, on its two jobs.
+ * The shared base every receipt-disposition delivery-planning action sits on, on its two jobs.
  * <p>
  * <b>Turning a selected row back into its source records.</b> {@code RV_ReceiptDisposition_DeliveryPlanning} unions a PLANNED
  * branch (an active {@code Incoming} planning carrying a receipt schedule) with an UNPLANNED one (a receipt
@@ -79,7 +79,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 {
-	/** The receipt-logistics window itself ("Wareneingangslogistik"), so a reader is not misled about what is under test. */
+	/** The receipt-disposition delivery-planning window itself ("Wareneingangsdisposition inkl. Lieferplanung"), so a reader is not misled about what is under test. */
 	private static final WindowId WINDOW_ID = WindowId.of(542190);
 
 	private static int nextId = 1;

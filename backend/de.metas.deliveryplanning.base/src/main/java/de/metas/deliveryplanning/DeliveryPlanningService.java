@@ -1172,7 +1172,7 @@ public class DeliveryPlanningService
 
 	/**
 	 * Why the given selection may not RECEIVE, or empty when it may. The ONE definition of the precondition every
-	 * receive action started from the receipt-logistics window shares - the actions call this, they never restate
+	 * receive action started from the receipt-disposition delivery-planning window shares - the actions call this, they never restate
 	 * the rule.
 	 * <p>
 	 * ALL-or-nothing, like {@link #getCloseRejectionReason(DeliveryPlanningList)} and every sibling

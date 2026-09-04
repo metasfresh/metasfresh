@@ -1,5 +1,5 @@
 -- AD metadata for the IsPlanned column added to RV_ReceiptDisposition_DeliveryPlanning by 5822570: a new AD_Element (no
--- existing element for this concept -- checked), the AD_Column, its AD_Field on the receipt-logistics
+-- existing element for this concept -- checked), the AD_Column, its AD_Field on the receipt-disposition delivery-planning
 -- tab (549491), and the AD_UI_Element that places it as the FIRST field of the "main" element group
 -- (555764) -- leading M_Delivery_Planning_ID (SeqNo 10) on the form and C_BPartner_ID (SeqNoGrid 30)
 -- on the grid -- so the row type is legible at a glance instead of only by the blank

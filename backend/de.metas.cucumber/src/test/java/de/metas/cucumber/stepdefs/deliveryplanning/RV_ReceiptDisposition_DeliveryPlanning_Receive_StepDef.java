@@ -49,7 +49,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Receives a receipt-logistics grid row, the way the window's "CUs annehmen" / "CUs annehmen mit Menge" actions
+ * Receives a receipt-disposition delivery-planning grid row, the way the window's "CUs annehmen" / "CUs annehmen mit Menge" actions
  * do, and asserts what the produced receipt is linked to.
  * <p>
  * <b>Why the BL and not the WebUI process.</b> {@code de.metas.cucumber} deliberately excludes
@@ -83,12 +83,12 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 	 * @cucumber.depends StepDefData: RV_ReceiptDisposition_DeliveryPlanning_StepDefData, M_InOut_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * When the receipt-logistics row identified by rowPlanned_RL is received:
+	 * When the receipt-disposition delivery-planning row identified by rowPlanned_RL is received:
 	 *   | OPT.Qty | OPT.M_InOut_ID |
 	 *   | 5       | receipt_1      |
 	 * </pre>
 	 */
-	@When("^the receipt-logistics row identified by (.*) is received:$")
+	@When("^the receipt-disposition delivery-planning row identified by (.*) is received:$")
 	public void receiveRow(@NonNull final String rowIdentifier, @NonNull final DataTable dataTable)
 	{
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
@@ -125,13 +125,13 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 	 * @cucumber.depends StepDefData: RV_ReceiptDisposition_DeliveryPlanning_StepDefData, M_InOut_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * When the receipt-logistics rows identified by row_1, row_2, row_3 are received together:
+	 * When the receipt-disposition delivery-planning rows identified by row_1, row_2, row_3 are received together:
 	 *   | M_InOut_ID |
 	 *   | receipt_1  |
 	 *   | receipt_2  |
 	 * </pre>
 	 */
-	@When("^the receipt-logistics rows identified by (.*) are received together:$")
+	@When("^the receipt-disposition delivery-planning rows identified by (.*) are received together:$")
 	public void receiveRowsTogether(@NonNull final String rowIdentifiers, @NonNull final DataTable dataTable)
 	{
 		final ImmutableList<ReceiptScheduleAndDeliveryPlanningId> sourceIds = Stream.of(rowIdentifiers.split(","))

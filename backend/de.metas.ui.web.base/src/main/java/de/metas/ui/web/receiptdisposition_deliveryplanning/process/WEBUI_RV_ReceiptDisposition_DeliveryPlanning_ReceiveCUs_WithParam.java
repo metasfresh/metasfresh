@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Profile;
 import java.math.BigDecimal;
 
 /**
- * "CUs annehmen mit Menge" on the receipt-logistics window: the operator types how much arrived.
+ * "CUs annehmen mit Menge" on the receipt-disposition delivery-planning window: the operator types how much arrived.
  * <p>
  * Differs from its parent in the quantity only, so an exhausted line still offers it - the counterpart of
  * {@code WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam}'s {@code setAllowNoQuantityAvailable(true)}.

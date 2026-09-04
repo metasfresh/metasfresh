@@ -56,7 +56,7 @@ public class WEBUI_M_ReceiptSchedule_RunMaterialReceiptJasper extends ReceiptSch
 	}
 
 	// package-visible, non-final so a same-package unit test can substitute it; shared with the
-	// receipt-logistics window's adapter, which must print the very same report.
+	// receipt-disposition delivery-planning window's adapter, which must print the very same report.
 	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
 
 	@Override

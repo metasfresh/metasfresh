@@ -1,6 +1,6 @@
 -- Source DDL: backend/de.metas.deliveryplanning.base/src/main/sql/postgresql/ddl/views/RV_ReceiptDisposition_DeliveryPlanning.sql
 --
--- The single inbound list behind the receipt-logistics window. A dispatcher planning inbound
+-- The single inbound list behind the receipt-disposition delivery-planning window. A dispatcher planning inbound
 -- receipts currently reads two lists -- the delivery plannings somebody already made, and the
 -- receipt schedules nobody has planned yet. This view is those two lists unioned, so the window
 -- can show one.

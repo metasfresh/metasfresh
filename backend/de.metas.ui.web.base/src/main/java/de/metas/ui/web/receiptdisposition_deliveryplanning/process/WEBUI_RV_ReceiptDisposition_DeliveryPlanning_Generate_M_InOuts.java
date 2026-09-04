@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Profile;
 import java.util.List;
 
 /**
- * "Wareneingangsdispo zu Wareneingang" on the receipt-logistics window: receive the WHOLE selection in one
+ * "Wareneingangsdispo zu Wareneingang" on the receipt-disposition delivery-planning window: receive the WHOLE selection in one
  * gesture - planned rows, unplanned rows, or a mixture.
  * <p>
  * The heavy action of the set, and deliberately NOT a quick action (`WEBUI_ViewQuickAction='N'`, mirroring

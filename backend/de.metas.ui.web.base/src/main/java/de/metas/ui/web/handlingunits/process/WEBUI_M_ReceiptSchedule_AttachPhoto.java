@@ -52,7 +52,7 @@ public class WEBUI_M_ReceiptSchedule_AttachPhoto extends ReceiptScheduleBasedPro
 	private int p_AD_Image_ID;
 
 	// package-visible, non-final so a same-package unit test can substitute it; the action's body itself is
-	// shared with the receipt-logistics window's adapter, which must attach the very same photo.
+	// shared with the receipt-disposition delivery-planning window's adapter, which must attach the very same photo.
 	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
 
 	@Override

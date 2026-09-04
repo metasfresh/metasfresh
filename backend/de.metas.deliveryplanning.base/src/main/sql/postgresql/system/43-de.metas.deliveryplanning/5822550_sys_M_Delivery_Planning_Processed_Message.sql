@@ -1,5 +1,5 @@
 -- AD_Message 545828 (From ID Server): the rejection every RECEIVE action started from the
--- receipt-logistics window shares - refused because a selected row's delivery planning is already
+-- receipt-disposition delivery-planning window shares - refused because a selected row's delivery planning is already
 -- Processed.
 --
 -- Deliberately NOT AD_Message 545812 ("Lieferplanung geschlossen"): Processed is true for a CLOSED

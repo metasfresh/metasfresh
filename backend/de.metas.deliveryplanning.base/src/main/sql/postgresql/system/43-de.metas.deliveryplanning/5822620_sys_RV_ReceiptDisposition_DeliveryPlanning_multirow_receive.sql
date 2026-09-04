@@ -1,4 +1,4 @@
--- The receipt-logistics window's MULTI-ROW receive (REQUIREMENTS 3.4, AC8 / TC9):
+-- The receipt-disposition delivery-planning window's MULTI-ROW receive (REQUIREMENTS 3.4, AC8 / TC9):
 -- "Wareneingangsdispo zu Wareneingang" - receive the whole selection in one gesture, planned rows, unplanned
 -- rows, or a mixture.
 --

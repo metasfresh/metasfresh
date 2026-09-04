@@ -1,6 +1,6 @@
 -- Source DDL: backend/de.metas.deliveryplanning.base/src/main/sql/postgresql/ddl/views/RV_ReceiptDisposition_DeliveryPlanning.sql
 --
--- A dispatcher scanning the receipt-logistics grid could so far only tell a delivery-planning row from
+-- A dispatcher scanning the receipt-disposition delivery-planning grid could so far only tell a delivery-planning row from
 -- a receipt-schedule row by the blank M_Delivery_Planning_ID cell -- add an explicit IsPlanned column,
 -- 'Y' on branch one (planned), 'N' on branch two (unplanned). See the updated view header comment for
 -- why a plain per-branch literal, not a derived expression.

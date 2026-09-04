@@ -36,7 +36,7 @@ import java.math.RoundingMode;
 
 /**
  * The receipt schedule's LU/TU packing configuration, as the "receive HUs" actions read and default it - the ONE
- * definition, so the receipt-logistics window's actions receive into exactly the packing the receipt-schedule
+ * definition, so the receipt-disposition delivery-planning window's actions receive into exactly the packing the receipt-schedule
  * window's do.
  * <p>
  * Extracted unchanged from {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_Base} and

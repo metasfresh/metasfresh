@@ -42,7 +42,7 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * What the WebUI actually does with the receipt-logistics window's reachability flags (AD_Table_Process rows on
+ * What the WebUI actually does with the receipt-disposition delivery-planning window's reachability flags (AD_Table_Process rows on
  * AD_Table 542644, migration {@code 5822600_sys_RV_ReceiptDisposition_DeliveryPlanning_receive_actions.sql} and
  * {@code 5822620_sys_RV_ReceiptDisposition_DeliveryPlanning_multirow_receive.sql}) once a row's actual preconditions are known.
  * <p>

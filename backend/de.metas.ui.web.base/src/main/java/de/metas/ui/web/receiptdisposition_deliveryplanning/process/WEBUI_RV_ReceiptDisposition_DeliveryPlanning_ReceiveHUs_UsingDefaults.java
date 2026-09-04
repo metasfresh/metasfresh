@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Profile;
 import javax.annotation.Nullable;
 
 /**
- * "HUs annehmen Voreinst." on the receipt-logistics window - the one-click primary path, and the window's
+ * "HUs annehmen Voreinst." on the receipt-disposition delivery-planning window - the one-click primary path, and the window's
  * default quick action.
  * <p>
  * Rejects on the same two conditions as {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults} and shows the

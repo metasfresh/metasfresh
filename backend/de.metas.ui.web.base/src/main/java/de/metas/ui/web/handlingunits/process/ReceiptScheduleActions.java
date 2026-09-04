@@ -57,7 +57,7 @@ import java.util.Properties;
 /**
  * What a receipt-schedule action DOES, separated from which window it was started on.
  * <p>
- * The receipt-logistics window carries the receipt-schedule window's action set (REQUIREMENTS 3.4), but it
+ * The receipt-disposition delivery-planning window carries the receipt-schedule window's action set (REQUIREMENTS 3.4), but it
  * cannot point its {@code AD_Table_Process} rows at the {@code WEBUI_M_ReceiptSchedule_*} classes: for a view
  * row the platform resolves a process' record through {@code IView#getTableRecordReferenceOrNull}, which on this
  * window yields {@code RV_ReceiptDisposition_DeliveryPlanning}, while every one of those classes asks for its record as

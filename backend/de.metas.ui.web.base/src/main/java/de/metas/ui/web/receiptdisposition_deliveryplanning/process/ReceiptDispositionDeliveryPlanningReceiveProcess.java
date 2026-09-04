@@ -33,7 +33,7 @@ import org.compiere.SpringContextHolder;
 
 
 /**
- * What the receipt-logistics window's four single-row receive actions share: ONE receive, whether the selected
+ * What the receipt-disposition delivery-planning window's four single-row receive actions share: ONE receive, whether the selected
  * row is planned or not.
  * <p>
  * <b>The row decides, not the action.</b> A planned row hands the action a delivery planning id, an unplanned one

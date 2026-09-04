@@ -654,7 +654,7 @@ public interface I_RV_ReceiptDisposition_DeliveryPlanning
 	String COLUMNNAME_QtyToMove = "QtyToMove";
 
 	/**
-	 * Set Receipt Logistics.
+	 * Set Receipt Disposition including Delivery Planning.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -663,7 +663,7 @@ public interface I_RV_ReceiptDisposition_DeliveryPlanning
 	void setRV_ReceiptDisposition_DeliveryPlanning_ID (int RV_ReceiptDisposition_DeliveryPlanning_ID);
 
 	/**
-	 * Get Receipt Logistics.
+	 * Get Receipt Disposition including Delivery Planning.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false

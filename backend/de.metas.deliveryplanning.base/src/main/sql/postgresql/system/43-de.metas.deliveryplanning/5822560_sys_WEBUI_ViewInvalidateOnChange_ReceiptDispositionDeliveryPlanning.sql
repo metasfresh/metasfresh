@@ -1,4 +1,4 @@
--- Wire up grid invalidation for the receipt-logistics window (AD_Window 542190, backed by the view
+-- Wire up grid invalidation for the receipt-disposition delivery-planning window (AD_Window 542190, backed by the view
 -- RV_ReceiptDisposition_DeliveryPlanning). The window is a plain grid over a view, so an edit to either source table --
 -- M_Delivery_Planning (branch one, "planned" rows) or M_ReceiptSchedule (both branches) -- must
 -- invalidate any open view of this window, or the WebUI keeps serving cached rows until the user

@@ -121,7 +121,7 @@ class DeliveryPlanningGenerateProcessesHelper
 	private final ISysConfigBL sysConfigBL;
 
 	/**
-	 * The ONE receive path - shared with the receipt-logistics window's actions, which receive the very same
+	 * The ONE receive path - shared with the receipt-disposition delivery-planning window's actions, which receive the very same
 	 * schedules from a grid that unions planned and unplanned rows. See
 	 * {@link CreateReceiptFromReceiptScheduleRequest} for why the planning id must travel inside the request.
 	 */

@@ -11,9 +11,9 @@ import { PURCHASE_ORDER_WINDOW_ID, RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_
 const PURCHASE_ORDER_LINE_TAB_ID = 'AD_Tab-293';
 
 /**
- * AD_Process.Value of the receipt-logistics window's default quick action and its fallback — the two
+ * AD_Process.Value of the receipt-disposition delivery-planning window's default quick action and its fallback — the two
  * captions {@code data-testid="quick-action-button"} can show. Both live on the same AD_Table_Process
- * row set that puts the receive actions on the receipt-logistics grid.
+ * row set that puts the receive actions on the receipt-disposition delivery-planning grid.
  */
 const HUS_VOREINST_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveHUs_UsingDefaults';
 
@@ -21,7 +21,7 @@ const HUS_VOREINST_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPlanning
 const MULTI_ROW_RECEIVE_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPlanning_Generate_M_InOuts';
 
 /**
- * The receipt-logistics window's quick-action default and its fallback, and the multi-row receive being
+ * The receipt-disposition delivery-planning window's quick-action default and its fallback, and the multi-row receive being
  * reachable only from the action menu.
  *
  * Two receipt-schedule rows, same purchase order, differing only in ONE thing: whether the product has a
@@ -41,16 +41,16 @@ const MULTI_ROW_RECEIVE_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPla
  * orthogonal axis and irrelevant to which quick action a row offers, which is governed by the packing
  * instruction alone.
  */
-test.describe('Receipt logistics — quick-action default and its fallback', () => {
+test.describe('Receipt-disposition delivery-planning — quick-action default and its fallback', () => {
   test('a row with a packing instruction defaults to "HUs annehmen Voreinst.", a row without one falls back to "CUs annehmen", and the multi-row receive stays menu-only', async ({
     page,
   }) => {
     allure.epic('E0360: Transport (Extralogistik)');
     allure.tag('F29050: Delivery Planning');
-    allure.story('Receipt-logistics quick-action default with its fallback');
+    allure.story('Receipt-disposition delivery-planning quick-action default with its fallback');
     allure.severity('critical');
     allure.description(`
-## Receipt logistics — quick-action default and its fallback
+## Receipt-disposition delivery-planning — quick-action default and its fallback
 
 1. Creates one purchase order with two lines against the SAME vendor — one product carries a packing
    instruction (an \`M_HU_PI_Item_Product\`), the other does not — and completes it, producing two
@@ -71,7 +71,7 @@ test.describe('Receipt logistics — quick-action default and its fallback', () 
         login: { user: { language: 'de_DE' } },
         bpartners: {
           VENDOR: {
-            name: `Receipt logistics quick-action vendor ${Date.now()}`,
+            name: `RL quick-action vendor ${Date.now()}`,
             isVendor: true,
             isCustomer: false,
           },
@@ -153,7 +153,7 @@ test.describe('Receipt logistics — quick-action default and its fallback', () 
       ]);
     });
 
-    // === Login the browser session and open the receipt-logistics window ===
+    // === Login the browser session and open the receipt-disposition delivery-planning window ===
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();

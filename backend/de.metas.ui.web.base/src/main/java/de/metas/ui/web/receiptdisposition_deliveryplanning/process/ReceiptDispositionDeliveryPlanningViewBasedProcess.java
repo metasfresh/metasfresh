@@ -46,7 +46,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
- * What every action started from the receipt-logistics window shares: how a selected grid row is turned back
+ * What every action started from the receipt-disposition delivery-planning window shares: how a selected grid row is turned back
  * into the records it stands for, and the ONE precondition all of them refuse on.
  * <p>
  * {@code RV_ReceiptDisposition_DeliveryPlanning} is a UNION of two branches - a <b>planned</b> row (an active {@code Incoming}

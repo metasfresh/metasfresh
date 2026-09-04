@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Profile;
 import java.util.List;
 
 /**
- * "Korrektur" on the receipt-logistics window: offers the selected row's already-received HUs for reversal,
+ * "Korrektur" on the receipt-disposition delivery-planning window: offers the selected row's already-received HUs for reversal,
  * exactly as {@code WEBUI_M_ReceiptSchedule_SelectHUsToReverse} does on window 541954 - the same three
  * refusals (closed schedule, packing material, nothing received) asked of the ONE shared definition.
  * <p>

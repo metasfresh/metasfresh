@@ -1,4 +1,4 @@
--- Task W6b: set the receipt-logistics window's selection filters, now that every filtered column
+-- Task W6b: set the receipt-disposition delivery-planning window's selection filters, now that every filtered column
 -- exists on the view (5822440..5822670). The mechanism is AD_Column.IsSelectionColumn +
 -- SelectionColumnSeqNo (never a bespoke filter descriptor), matching Task W2's own convention.
 --

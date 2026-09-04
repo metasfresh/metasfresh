@@ -47,7 +47,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * The "receive HUs" half of the receipt-logistics window's receive actions: goods arrive in a packing (TUs, and
+ * The "receive HUs" half of the receipt-disposition delivery-planning window's receive actions: goods arrive in a packing (TUs, and
  * usually LUs), not as bare units.
  * <p>
  * Mirrors {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_Base} step for step - the same generator, the same LU/TU

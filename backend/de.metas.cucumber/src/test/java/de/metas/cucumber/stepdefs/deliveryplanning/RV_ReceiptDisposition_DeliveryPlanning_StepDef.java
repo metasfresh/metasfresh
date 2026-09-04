@@ -57,7 +57,7 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Asserts what the receipt-logistics window would list for one purchase order.
+ * Asserts what the receipt-disposition delivery-planning window would list for one purchase order.
  * <p>
  * {@code RV_ReceiptDisposition_DeliveryPlanning} is a UNION of two branches and the whole point of the window is which of them a
  * given order lands on: a <b>planned</b> row (one active {@code Incoming} delivery planning carrying a receipt
@@ -84,7 +84,7 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
-	 * The rows the receipt-logistics window lists for one order: the given ones and nothing else.
+	 * The rows the receipt-disposition delivery-planning window lists for one order: the given ones and nothing else.
 	 * <p>
 	 * Waits for the expected number of rows first, because the delivery planning behind a planned row is
 	 * generated asynchronously after the order completes; a timeout here means the row never appeared.
@@ -141,7 +141,7 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 	}
 
 	/**
-	 * The receipt-logistics window lists NOTHING for this order.
+	 * The receipt-disposition delivery-planning window lists NOTHING for this order.
 	 * <p>
 	 * Asserts immediately and deliberately: an order whose planning must not surface has to be driven far enough
 	 * that the planning EXISTS before this step runs (see {@code load created M_Delivery_Planning}), or the step

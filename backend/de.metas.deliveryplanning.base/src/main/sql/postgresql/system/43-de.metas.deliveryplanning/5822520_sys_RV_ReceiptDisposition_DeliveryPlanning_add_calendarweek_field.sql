@@ -1,5 +1,5 @@
 -- AD metadata for the CalendarWeek column added to RV_ReceiptDisposition_DeliveryPlanning by 5822510: the AD_Column, its
--- AD_Field on the receipt-logistics tab (549491), and the AD_UI_Element that places it right next to
+-- AD_Field on the receipt-disposition delivery-planning tab (549491), and the AD_UI_Element that places it right next to
 -- ETA -- in the "dates" element group (555765), between ETA (SeqNo 10 / SeqNoGrid 10) and
 -- DatePromised_Effective (SeqNo 20 / SeqNoGrid 20) on both the form and the grid. Reuses the existing
 -- AD_Element 583880 (CalendarWeek / "KW"), the same element M_ReceiptSchedule.CalendarWeek already

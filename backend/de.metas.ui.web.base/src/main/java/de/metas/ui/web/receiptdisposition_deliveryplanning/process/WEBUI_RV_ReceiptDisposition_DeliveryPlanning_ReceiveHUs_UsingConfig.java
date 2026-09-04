@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Profile;
 import java.math.BigDecimal;
 
 /**
- * "HUs annehmen" on the receipt-logistics window: the operator states the packing - which TU, how many CUs per
+ * "HUs annehmen" on the receipt-disposition delivery-planning window: the operator states the packing - which TU, how many CUs per
  * TU, how many TUs, and optionally which LU and how many.
  * <p>
  * Parameters, defaults and validation are those of {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig}, so

@@ -2,7 +2,7 @@
 @allure.label.epic:E0360_Transport_Extralogistik
 @allure.label.feature:F29050_Delivery_Planning
 @ghActions:run_on_executor5
-Feature: The receipt-logistics window lists what is arriving, planned or not
+Feature: The receipt-disposition delivery-planning window lists what is arriving, planned or not
 
   A procurement dispatcher planning inbound receipts has to read two lists today: the delivery plannings
   somebody already made, and the receipt schedules nobody has planned yet. RV_ReceiptDisposition_DeliveryPlanning is those two
@@ -294,7 +294,7 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID    | OPT.IsPlanned |
       | rowRcvUnplanned_RL     | null                   | scheduleRcvUnplanned_RL | false         |
 
-    When the receipt-logistics row identified by rowRcvUnplanned_RL is received:
+    When the receipt-disposition delivery-planning row identified by rowRcvUnplanned_RL is received:
       | OPT.Qty | OPT.M_InOut_ID       |
       | 7       | receiptUnplanned_RL  |
 
@@ -345,7 +345,7 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity | IsClosed | Processed |
       | planningRcvPlanned_RL  | 5          | 5            | Incoming           | 0                       | false    | false     |
 
-    When the receipt-logistics row identified by rowRcvPlanned_RL is received:
+    When the receipt-disposition delivery-planning row identified by rowRcvPlanned_RL is received:
       | OPT.Qty | OPT.M_InOut_ID     |
       | 5       | receiptPlanned_RL  |
 
@@ -402,7 +402,7 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | rowMultiB1_RL          | null                   | scheduleMultiB1_RL   | false         |
 
     # Three rows in, TWO receipts out: the two rows of order A share one, order B's cannot join them.
-    When the receipt-logistics rows identified by rowMultiA1_RL, rowMultiA2_RL, rowMultiB1_RL are received together:
+    When the receipt-disposition delivery-planning rows identified by rowMultiA1_RL, rowMultiA2_RL, rowMultiB1_RL are received together:
       | M_InOut_ID       |
       | receiptMultiA_RL |
       | receiptMultiB_RL |
@@ -461,7 +461,7 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | rowPlanTwo1_RL         | planningPlanTwo1_RL    | schedulePlanTwo1_RL  | true          |
       | rowPlanTwo2_RL         | planningPlanTwo2_RL    | schedulePlanTwo2_RL  | true          |
 
-    When the receipt-logistics rows identified by rowPlanTwo1_RL, rowPlanTwo2_RL are received together:
+    When the receipt-disposition delivery-planning rows identified by rowPlanTwo1_RL, rowPlanTwo2_RL are received together:
       | M_InOut_ID          |
       | receiptPlanTwo1_RL  |
       | receiptPlanTwo2_RL  |
@@ -518,7 +518,7 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | rowMixedPlan_RL        | planningMixed_RL       | scheduleMixedPlan_RL  | true          |
       | rowMixedPlain_RL       | null                   | scheduleMixedPlain_RL | false         |
 
-    When the receipt-logistics rows identified by rowMixedPlan_RL, rowMixedPlain_RL are received together:
+    When the receipt-disposition delivery-planning rows identified by rowMixedPlan_RL, rowMixedPlain_RL are received together:
       | M_InOut_ID           |
       | receiptMixedPlan_RL  |
       | receiptMixedPlain_RL |
@@ -582,7 +582,7 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | rowSplit1_RL           | planningSplit1_RL      | scheduleSplit_RL     | true          |
       | rowSplit2_RL           | planningSplit2_RL      | scheduleSplit_RL     | true          |
 
-    When the receipt-logistics rows identified by rowSplit1_RL, rowSplit2_RL are received together:
+    When the receipt-disposition delivery-planning rows identified by rowSplit1_RL, rowSplit2_RL are received together:
       | M_InOut_ID        |
       | receiptSplit1_RL  |
       | receiptSplit2_RL  |
@@ -661,7 +661,7 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | rowSolo2_RL            | planningSolo2_RL       | scheduleSplitSolo_RL | true          |
 
     # The FIRST row alone, quantity not stated: it must take its planning's 5, never the schedule's 10.
-    When the receipt-logistics row identified by rowSolo1_RL is received:
+    When the receipt-disposition delivery-planning row identified by rowSolo1_RL is received:
       | OPT.M_InOut_ID  |
       | receiptSolo1_RL |
 
@@ -685,7 +685,7 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | planningSolo2_RL       | 10         | 5            | 5                        | 0                       | Incoming           | null            | false    | false     |
 
     # THE point of the scenario: the sibling still receives, and gets its own 5.
-    When the receipt-logistics row identified by rowSolo2_RL is received:
+    When the receipt-disposition delivery-planning row identified by rowSolo2_RL is received:
       | OPT.M_InOut_ID  |
       | receiptSolo2_RL |
 
@@ -744,7 +744,7 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | rowProcUnplanned_RL    | null                    | scheduleProcUnplanned_RL | false         | false         |
 
     # Receiving the planned row in full marks the PLANNING processed - the schedule underneath stays open.
-    When the receipt-logistics row identified by rowProcPlanned_RL is received:
+    When the receipt-disposition delivery-planning row identified by rowProcPlanned_RL is received:
       | OPT.Qty | OPT.M_InOut_ID       |
       | 5       | receiptProcPlanned_RL |
 

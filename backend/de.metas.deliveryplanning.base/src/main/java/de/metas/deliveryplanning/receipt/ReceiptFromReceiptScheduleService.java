@@ -98,7 +98,7 @@ import java.util.function.Supplier;
  * and for a bare receipt schedule alike.
  * <p>
  * It exists because there are two windows that receive the same goods: the delivery-planning window, whose
- * generate-receipt process has always carried the planning id, and the receipt-logistics window, whose grid
+ * generate-receipt process has always carried the planning id, and the receipt-disposition delivery-planning window, whose grid
  * unions planned and unplanned rows and therefore has to do <b>both</b> from one action. Written twice, the
  * planning id is a thing one of the two copies forgets - which is exactly what the HU-editor path does today,
  * producing a receipt whose {@code M_Delivery_Planning_ID} is never set. Written once, here, the id is simply a
@@ -106,7 +106,7 @@ import java.util.function.Supplier;
  * <p>
  * Why it lives in {@code de.metas.deliveryplanning.base}: it is the only module that both sees
  * {@link DeliveryPlanningId} (so the request can be typed rather than passing a bare repo id) and is visible
- * from every caller - the delivery-planning generate process, the receipt-logistics window's actions, and the
+ * from every caller - the delivery-planning generate process, the receipt-disposition delivery-planning window's actions, and the
  * cucumber test classpath.
  */
 @Service
@@ -130,7 +130,7 @@ public class ReceiptFromReceiptScheduleService
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	/**
-	 * The WHOLE of a "receive CUs" action, for either row type of the receipt-logistics grid: one planning VHU
+	 * The WHOLE of a "receive CUs" action, for either row type of the receipt-disposition delivery-planning grid: one planning VHU
 	 * carrying {@code qtyToReceiveOverride} (or, when none is given, the row's own quantity as
 	 * {@link #getQtyToReceive} resolves it - the planning's share on a planned row, the schedule's remainder on
 	 * an unplanned one), the receipt booked against it, and - on a planned row - the planning's quantity rules
@@ -170,7 +170,7 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * The WHOLE of the receipt-logistics window's MULTI-ROW receive: a selection that may hold planned rows,
+	 * The WHOLE of the receipt-disposition delivery-planning window's MULTI-ROW receive: a selection that may hold planned rows,
 	 * unplanned rows, or both, received in one gesture.
 	 * <p>
 	 * <b>Routing is per ROW, on the nullable planning id</b> - the same discriminator the single-row actions
