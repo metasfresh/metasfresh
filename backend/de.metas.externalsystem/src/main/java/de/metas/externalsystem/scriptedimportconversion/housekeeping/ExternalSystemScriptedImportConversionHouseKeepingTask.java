@@ -28,7 +28,7 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.scriptedimportconversion.ScriptedImportConversionCommand;
+import de.metas.externalsystem.scriptedimportconversion.ScriptedImportConversionIntent;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -37,6 +37,7 @@ import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -45,17 +46,15 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
 
 @Component
+@RequiredArgsConstructor
 public class ExternalSystemScriptedImportConversionHouseKeepingTask implements IStartupHouseKeepingTask
 {
 	private static final Logger logger = LogManager.getLogger(ExternalSystemScriptedImportConversionHouseKeepingTask.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final ExternalSystemConfigRepo externalSystemConfigDAO;
 
-	public ExternalSystemScriptedImportConversionHouseKeepingTask(@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO)
-	{
-		this.externalSystemConfigDAO = externalSystemConfigDAO;
-	}
+	@NonNull
+	private final ExternalSystemConfigRepo externalSystemConfigDAO;
 
 	@Override
 	public void executeTask()
@@ -72,15 +71,18 @@ public class ExternalSystemScriptedImportConversionHouseKeepingTask implements I
 
 		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(ExternalSystemType.ScriptedImportConversion);
 
-		parentConfigList
-				.stream()
-				.peek(config -> Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " for ScriptedImportConversion config " + config.getChildConfig().getId()))
-				.forEach((config -> ProcessInfo.builder()
-						.setAD_Process_ID(processId)
-						.setAD_User_ID(UserId.METASFRESH.getRepoId())
-						.addParameter(PARAM_EXTERNAL_REQUEST, ScriptedImportConversionCommand.EnableRestAPI.getValue())
-						.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
-						.buildAndPrepareExecution()
-						.executeSync()));
+		for (final ExternalSystemParentConfig config : parentConfigList)
+		{
+			// Fire the Start intent per child; the process derives the concrete command (REST vs SFTP
+			// enable) from the child's own endpoint transport.
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " (Start) for ScriptedImportConversion config " + config.getChildConfig().getId());
+			ProcessInfo.builder()
+					.setAD_Process_ID(processId)
+					.setAD_User_ID(UserId.METASFRESH.getRepoId())
+					.addParameter(PARAM_EXTERNAL_REQUEST, ScriptedImportConversionIntent.Start.getCode())
+					.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
+					.buildAndPrepareExecution()
+					.executeSync();
+		}
 	}
 }

@@ -1,7 +1,5 @@
 package de.metas.edi.model;
 
-import java.math.BigDecimal;
-
 /*
  * #%L
  * de.metas.edi
@@ -26,36 +24,6 @@ import java.math.BigDecimal;
 
 public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartner
 {
-	// @formatter:off
-	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
-	boolean isEdiDesadvRecipient();
-	void setIsEdiDesadvRecipient(boolean IsEdiDesadvRecipient);
-	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_IsEdiInvoicRecipient = "IsEdiInvoicRecipient";
-	boolean isEdiInvoicRecipient();
-	void setIsEdiInvoicRecipient(boolean IsEdiInvoicRecipient);
-	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_EdiDesadvRecipientGLN = "EdiDesadvRecipientGLN";
-	String getEdiDesadvRecipientGLN();
-	void setEdiDesadvRecipientGLN(String EdiDesadvRecipientGLN);
-	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_EdiInvoicRecipientGLN = "EdiInvoicRecipientGLN";
-	String getEdiInvoicRecipientGLN();
-	void setEdiInvoicRecipientGLN(String EdiInvoicRecipientGLN);
-	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_EdiDESADVDefaultItemCapacity = "EdiDESADVDefaultItemCapacity";
-	BigDecimal getEdiDESADVDefaultItemCapacity();
-	void setEdiDESADVDefaultItemCapacity(BigDecimal EdiDESADVDefaultItemCapacity);
-	// @formatter:on
-
 	/**
 	 * EDISendingMode AD_Reference_ID=542047
 	 * Reference name: EDISendingMode
@@ -69,28 +37,4 @@ public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartn
 	 * ExternalSystem = E
 	 */
 	String EDISendingMode_ExternalSystem = "E";
-
-	// @formatter:off
-	String COLUMNNAME_EdiDESADVSendingMode = "EdiDESADVSendingMode";
-	String getEdiDESADVSendingMode();
-	void setEdiDESADVSendingMode(String EdiDESADVSendingMode);
-	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_EdiINVOICSendingMode = "EdiINVOICSendingMode";
-	String getEdiINVOICSendingMode();
-	void setEdiINVOICSendingMode(String EdiINVOICSendingMode);
-	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_EdiDESADV_ExternalSystem_Config_ID = "EdiDESADV_ExternalSystem_Config_ID";
-	int getEdiDESADV_ExternalSystem_Config_ID();
-	void setEdiDESADV_ExternalSystem_Config_ID(int EdiDESADV_ExternalSystem_Config_ID);
-	// @formatter:on
-
-	// @formatter:off
-	String COLUMNNAME_EdiINVOIC_ExternalSystem_Config_ID = "EdiINVOIC_ExternalSystem_Config_ID";
-	int getEdiINVOIC_ExternalSystem_Config_ID();
-	void setEdiINVOIC_ExternalSystem_Config_ID(int EdiINVOIC_ExternalSystem_Config_ID);
-	// @formatter:on
 }

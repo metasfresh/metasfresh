@@ -812,13 +812,15 @@ public class InOutBL implements IInOutBL
 
 	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
 	{
-		final BPartnerLocationId dropShipLocationId = getEffectiveDropshipBPartnerLocationId(inout);
+		final BPartnerLocationId dropShipLocationId = getEffectiveDropshipLocationId(inout);
 		final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(dropShipLocationId);
 
 		return deliveryAddressShipperId.orElseGet(() -> bpartnerDAO.getShipperId(getEffectiveDropshipPartnerId(inout)));
 	}
 
-	private BPartnerLocationId getEffectiveDropshipBPartnerLocationId(@NonNull final I_M_InOut inout)
+	@Override
+	@NonNull
+	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_M_InOut inout)
 	{
 		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),

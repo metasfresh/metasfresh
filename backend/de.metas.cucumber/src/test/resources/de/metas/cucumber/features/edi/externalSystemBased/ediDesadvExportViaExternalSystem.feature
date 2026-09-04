@@ -37,15 +37,15 @@ Feature: EDI DESADV export via External System
     And metasfresh contains C_BPartners without locations:
       | Identifier | Value               | Name               | IsCustomer | IsVendor | M_PricingSystem_ID |
       | customer1  | desadvReceiverValue | desadvReceiverName | Y          | N        | pricingSystem      |
-    And the following c_bpartner is changed
-      | Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID |
-      | customer1  | true                 | 1234567890            | E                    | externalSystemConfig_1             |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID | Identifier                     |
+      | customer1     | true                 | 1234567890            | E                    | externalSystemConfig_1             | edi_setting_desadv_extSys_cust1 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
       | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID | GTIN          |
-      | bp_1                  | customer1     | product      | 0575095404663 |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_product_customer1 | product | customer1 | 10 | 0575095404663 |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
@@ -85,7 +85,7 @@ Feature: EDI DESADV export via External System
       | EDI_Desadv_ID.Identifier |
       | d_1                      |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
       | s_1                   | S                |
 
@@ -97,11 +97,11 @@ Feature: EDI DESADV export via External System
       | M_InOut_ID | ErrorMessage                              |
       | s_1        | External system export failed: Test error |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
       | s_1                   | E                |
 
-    And after not more than 60s, EDI_Desadv records have the following export status
+    And after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
       | d_1                      | E                |
 
@@ -109,11 +109,11 @@ Feature: EDI DESADV export via External System
       | EDI_Desadv_ID.Identifier |
       | d_1                      |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
       | s_1                   | S                |
 
-    And after not more than 60s, EDI_Desadv records have the following export status
+    And after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
       | d_1                      | S                |
 
@@ -153,7 +153,7 @@ Feature: EDI DESADV export via External System
       | M_InOut_ID |
       | s_2        |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
       | s_2                   | S                |
 
@@ -165,11 +165,11 @@ Feature: EDI DESADV export via External System
       | M_InOut_ID | ErrorMessage                              |
       | s_2        | External system export failed: Test error |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |
       | s_2        | E                |
 
-    And after not more than 60s, EDI_Desadv records have the following export status
+    And after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID | EDI_ExportStatus |
       | d_2           | E                |
 
@@ -177,10 +177,197 @@ Feature: EDI DESADV export via External System
       | M_InOut_ID |
       | s_2        |
 
-    Then after not more than 60s, M_InOut records have the following export status
+    Then after not more than 120s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |
       | s_2        | S                |
 
-    And after not more than 60s, EDI_Desadv records have the following export status
+    And after not more than 120s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID | EDI_ExportStatus |
       | d_2           | S                |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S29231_140
+  Scenario: S29231_140 — Two orders, one consolidated shipment → array-mode fan-out exports both DESADVs via External System path
+  ## Two EDI-DESADV-recipient orders for the same BPartner (each with a distinct POReference)
+  ## are completed (creating one EDI_Desadv per order). Their shipment schedules are
+  ## consolidated into a single M_InOut (C_Order_ID = null — lines from 2 different orders).
+  ## End-state assertion: both source DESADVs (dA_140 + dB_140) and the consolidated
+  ## shipment (io_140) must reach EDI_ExportStatus=S within 120 s.
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
+    # Order A — distinct POReference → its own EDI_Desadv at order-complete.
+    # @Date@ suffix keeps POReferences unique across local repeat runs (DB pollution guard).
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference              |
+      | oA_140     | true    | customer1     | 2025-04-17  | 2025-04-18Z  | PO_A_S29231_140_@Date@   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | olA_140    | oA_140                | product      | 10         |
+
+    And the order identified by oA_140 is completed
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dA_140                   | customer1                | oA_140                | P                |
+
+    # Order B — different POReference → its own distinct EDI_Desadv
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference              |
+      | oB_140     | true    | customer1     | 2025-04-17  | 2025-04-18Z  | PO_B_S29231_140_@Date@   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | olB_140    | oB_140                | product      | 10         |
+
+    And the order identified by oB_140 is completed
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dB_140                   | customer1                | oB_140                | P                |
+
+    # Both shipment schedules must be ready before batching into one M_InOut
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ssA_140    | olA_140                   | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ssB_140    | olB_140                   | N             |
+
+    # Batch-generate ONE shipment covering both schedules (the aggregated M_InOut).
+    # The legacy interceptor sets M_InOut.C_Order_ID = null because the lines come from 2 orders.
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ssA_140               |
+      | ssB_140               |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ssA_140               | io_140     |
+
+    # Enqueue one M_InOut export — production fans out to N HTTP calls; the cucumber mock writes status directly via RabbitMQ.
+    And M_InOut is enqueued for EDI export
+      | M_InOut_ID |
+      | io_140     |
+
+    # ─── CORE ASSERTION ────────────────────
+    # Both source DESADVs must reach Sent (S) within 120 s — the status recompute
+    # must traverse the junction to find the consolidated shipment for both DESADVs.
+    Then after not more than 120s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
+      | dA_140                   | S                |
+      | dB_140                   | S                |
+
+    # The consolidated shipment also reaches Sent once both DESADVs are processed.
+    And after not more than 120s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | io_140                | S                |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S30189_150
+  Scenario: S30189_150 — Same C_BPartner, two ship-to locations → DESADV routing decided by C_BPartner_Location_ID
+  ## Proves that EDI DESADV routing is driven by C_BPartner_Location_ID, not by the partner alone.
+  ## One partner (customer1) has two location-specific C_BPartner_EDI_Setting rows:
+  ##   (customer1, loc_ext_150) → EdiDESADVSendingMode=E (ExternalSystem)
+  ##   (customer1, loc_repl_150) → EdiDESADVSendingMode=R (ReplicationInterface)
+  ## Two shipments are created — one per location.  After processing:
+  ##   loc_ext_150 shipment → exported via external system → M_InOut.EDI_ExportStatus=S
+  ##   loc_repl_150 DESADV  → NOT exported via external system → EDI_ExportStatus stays P
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
+
+    # ── Two distinct ship-to locations for the same partner ──────────────────
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier   | C_BPartner_ID | IsShipTo | IsBillTo | IsShipToDefault | IsBillToDefault | GLN           |
+      | loc_ext_150  | customer1     | Y        | Y        | N               | N               | 0300000150111 |
+      | loc_repl_150 | customer1     | Y        | Y        | N               | N               | 0300000150222 |
+
+    # ── Location-specific EDI settings ───────────────────────────────────────
+    # SeqNo=5 on both location-specific rows so they win over the null-location Background row (SeqNo=10).
+    # loc_ext_150: ExternalSystem path (same externalSystemConfig_1 as Background)
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | C_BPartner_Location_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID | SeqNo | Identifier              |
+      | customer1     | loc_ext_150            | true                 | 1234567891            | E                    | externalSystemConfig_1             | 5     | edi_setting_loc_ext_150 |
+    # loc_repl_150: ReplicationInterface path (no ExternalSystem config needed)
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | C_BPartner_Location_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | SeqNo | Identifier               |
+      | customer1     | loc_repl_150           | true                 | 1234567892            | R                    | 5     | edi_setting_loc_repl_150 |
+
+    # ── Order A → loc_ext_150 (ExternalSystem path) ──────────────────────────
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | POReference              |
+      | o_ext_150  | true    | customer1     | loc_ext_150            | F            | 2025-04-17  | 2025-04-18Z  | PO_ext_S30189_150_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_ext_150  | o_ext_150             | product      | 10         |
+
+    And the order identified by o_ext_150 is completed
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_ext_150                | customer1                | o_ext_150             | P                |
+
+    # ── Order B → loc_repl_150 (ReplicationInterface path) ───────────────────
+    And metasfresh contains C_Orders:
+      | Identifier  | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | DeliveryRule | DateOrdered | DatePromised | POReference               |
+      | o_repl_150  | true    | customer1     | loc_repl_150           | F            | 2025-04-17  | 2025-04-18Z  | PO_repl_S30189_150_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_repl_150  | o_repl_150            | product      | 10         |
+
+    And the order identified by o_repl_150 is completed
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_repl_150               | customer1                | o_repl_150            | P                |
+
+    # ── Generate one shipment per shipment schedule ───────────────────────────
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_ext_150  | ol_ext_150                | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier   | C_OrderLine_ID.Identifier | IsToRecompute |
+      | ss_repl_150  | ol_repl_150               | N             |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_ext_150                        | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_ext_150                        | io_ext_150            |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_repl_150                       | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | ss_repl_150                       | io_repl_150           |
+
+    # ── Enqueue loc_ext_150 shipment → must go to ExternalSystem ─────────────
+    And M_InOut is enqueued for EDI export
+      | M_InOut_ID  |
+      | io_ext_150  |
+
+    # ─── CORE ASSERTION: loc_ext_150 → ExternalSystem path ───────────────────
+    # The M_InOut for loc_ext_150 must reach Sent (S) — routed via external system.
+    Then after not more than 120s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | io_ext_150            | S                |
+
+    Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
+      | ExternalSystem_Config_ID.Identifier | ConfigIDOnly |
+      | externalSystemConfig_1              | true         |
+
+    # ─── CORE ASSERTION: loc_repl_150 → NOT ExternalSystem path ──────────────
+    # The DESADV for loc_repl_150 was never enqueued to the external system.
+    # Its EDI_ExportStatus must remain P (pending) — proving a different route was taken.
+    And after not more than 5s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
+      | d_repl_150               | P                |

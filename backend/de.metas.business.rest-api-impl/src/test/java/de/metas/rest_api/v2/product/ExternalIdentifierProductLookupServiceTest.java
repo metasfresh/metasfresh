@@ -426,6 +426,31 @@ public class ExternalIdentifierProductLookupServiceTest
 	}
 
 	@Test
+	void lookupProductByGTIN_excludes_bpartnerProduct_with_inactive_product()
+	{
+		// given — C_BPartner_Product is active but points to an inactive product (post-consolidation orphan).
+		// A product-consolidation run (F5001.1) may deactivate M_Product while leaving its
+		// C_BPartner_Product rows active; only rows whose M_Product_ID points to an active product are valid matches.
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setValue("consolidated-away-bpp-product");
+		product.setIsActive(false); // Product is inactive — the C_BPartner_Product row below stays active
+		InterfaceWrapperHelper.save(product);
+
+		final I_C_BPartner_Product bpartnerProduct = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
+		bpartnerProduct.setM_Product_ID(product.getM_Product_ID());
+		bpartnerProduct.setGTIN("99005678");
+		bpartnerProduct.setIsActive(true); // the join row itself is active — only the product is inactive
+		InterfaceWrapperHelper.save(bpartnerProduct);
+
+		// when
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-99005678");
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
+
+		// then — stale C_BPartner_Product pointing to inactive product must be excluded
+		assertThat(result).isEmpty();
+	}
+
+	@Test
 	void lookupProductByGTIN_prioritizes_HU_PI_Item_Product_over_M_Product()
 	{
 		// given

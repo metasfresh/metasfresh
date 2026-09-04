@@ -24,6 +24,7 @@ package de.metas.order;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
@@ -115,6 +116,9 @@ public interface IOrderBL extends ISingletonService
 
 	@Nullable
 	BPartnerId getEffectiveDropshipPartnerIdOrNull(@NonNull I_C_Order orderRecord);
+
+	@NonNull
+	BPartnerLocationId getEffectiveDropshipLocationId(@NonNull I_C_Order orderRecord);
 
 	/**
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.

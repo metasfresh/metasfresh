@@ -1,0 +1,9 @@
+{
+  "externalSystemConfigType": "ScriptedImportConversion",
+  "externalSystemChildConfigValue": "childValue",
+  "serviceValue": "defaultSftpPollingScriptedImportConversion",
+  "jsonStatusRequest": {
+    "status": "Active",
+    "adPInstanceId": 123
+  }
+}

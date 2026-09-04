@@ -84,6 +84,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_TaxCategory;
@@ -142,6 +143,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
 	@NonNull private final TestContext restTestContext;
 	@NonNull private final C_Project_StepDefData projectTable;
+	@NonNull private final C_Order_CompensationGroup_StepDefData compGroupTable;
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
@@ -151,6 +153,20 @@ public class C_OrderLine_StepDef
 				.forEach(this::createOrderLine);
 	}
 
+	/**
+	 * Creates one {@link I_C_OrderLine} from a {@code metasfresh contains C_OrderLines:} DataTable row.
+	 * <p>
+	 * Besides the product/qty/pricing columns handled inline, this supports the optional column
+	 * {@code C_Order_CompensationGroup_ID} — an identifier resolved via
+	 * {@link C_Order_CompensationGroup_StepDefData}; when present the line's
+	 * {@code C_Order_CompensationGroup_ID} FK is set, linking it into that group so the DESADV
+	 * compensation-group merge ({@code get_desadv_packs_json_fn}) can collapse its sub-articles.
+	 * <pre>
+	 * Given metasfresh contains C_OrderLines:
+	 *   | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_Order_CompensationGroup_ID |
+	 *   | ol_main    | o_cg       | mainProduct  | 10         | cg_1                         |
+	 * </pre>
+	 */
 	public void createOrderLine(final DataTableRow tableRow)
 	{
 		final de.metas.handlingunits.model.I_C_OrderLine orderLine = newInstance(de.metas.handlingunits.model.I_C_OrderLine.class);
@@ -242,6 +258,12 @@ public class C_OrderLine_StepDef
 
 		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
 				.ifPresent(orderLine::setExternalId);
+
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
+				.ifPresent(compGroupIdentifier -> {
+					final I_C_Order_CompensationGroup compGroup = compGroupTable.get(compGroupIdentifier);
+					orderLine.setC_Order_CompensationGroup_ID(compGroup.getC_Order_CompensationGroup_ID());
+				});
 
 		saveRecord(orderLine);
 

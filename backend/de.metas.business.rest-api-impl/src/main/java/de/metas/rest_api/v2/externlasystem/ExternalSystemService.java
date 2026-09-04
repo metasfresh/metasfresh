@@ -43,8 +43,9 @@ import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystem;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemErrorContext;
+import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
+import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemProcesses;
@@ -75,6 +76,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -107,6 +109,7 @@ public class ExternalSystemService
 	@NonNull private final JsonExternalSystemRetriever jsonRetriever;
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	@NonNull private final List<IExternalSystemInvocationErrorListener> externalSystemInvocationErrorListeners;
+	@NonNull private final List<IExternalSystemInvocationSuccessListener> externalSystemInvocationSuccessListeners;
 
 	@VisibleForTesting
 	public static ExternalSystemService newInstanceForUnitTesting()
@@ -120,6 +123,7 @@ public class ExternalSystemService
 				ExternalServices.newInstanceForUnitTesting(),
 				new JsonExternalSystemRetriever(),
 				new ExternalSystemRepository(),
+				Collections.emptyList(),
 				Collections.emptyList()));
 	}
 
@@ -181,7 +185,7 @@ public class ExternalSystemService
 				.findFirst()
 				.ifPresent(error -> {
 					final String errorMessage = buildAggregatedErrorMessage(jsonError);
-					final ExternalSystemErrorContext errorContext = ExternalSystemErrorContext.ofCodeOrUnknown(error.getErrorContext());
+					final ExternalSystemInvocationContext errorContext = ExternalSystemInvocationContext.ofCodeOrUnknown(error.getErrorContext());
 					notifyExternalSystemErrorListeners(pInstanceId, errorContext, errorMessage);
 				});
 
@@ -220,7 +224,7 @@ public class ExternalSystemService
 
 	private void notifyExternalSystemErrorListeners(
 			@NonNull final PInstanceId pInstanceId,
-			@NonNull final ExternalSystemErrorContext errorContext,
+			@NonNull final ExternalSystemInvocationContext errorContext,
 			@NonNull final String errorMessage)
 	{
 		try
@@ -238,7 +242,7 @@ public class ExternalSystemService
 				}
 				catch (final Exception e)
 				{
-					logger.error("Error listener {} threw exception while handling error for PInstance {}",
+					logger.warn("Error listener {} threw exception while handling error for PInstance {}",
 							listener.getClass().getSimpleName(), pInstanceId, e);
 				}
 			}
@@ -246,6 +250,42 @@ public class ExternalSystemService
 		catch (final Exception e)
 		{
 			logger.error("Failed to notify error listeners for PInstance {}", pInstanceId, e);
+		}
+	}
+
+	public void handleExportSuccess(@NonNull final PInstanceId pInstanceId, final int httpResponseCode)
+	{
+		notifyExternalSystemSuccessListeners(pInstanceId, ExternalSystemInvocationContext.UNKNOWN, HttpStatus.valueOf(httpResponseCode));
+	}
+
+	private void notifyExternalSystemSuccessListeners(
+			@NonNull final PInstanceId pInstanceId,
+			@NonNull final ExternalSystemInvocationContext context,
+			@NonNull final HttpStatus httpStatus)
+	{
+		try
+		{
+			for (final IExternalSystemInvocationSuccessListener listener : externalSystemInvocationSuccessListeners)
+			{
+				if (!listener.applies(context))
+				{
+					continue;
+				}
+
+				try
+				{
+					listener.onInvocationSuccess(pInstanceId, context, httpStatus);
+				}
+				catch (final Exception e)
+				{
+					logger.warn("Success listener {} threw exception while handling success for PInstance {}",
+							listener.getClass().getSimpleName(), pInstanceId, e);
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			logger.error("Failed to notify success listeners for PInstance {}", pInstanceId, e);
 		}
 	}
 
