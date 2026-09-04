@@ -61,6 +61,7 @@ import org.eevolution.api.PPOrderId;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -593,16 +594,21 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	}
 
 	/**
-	 * Un-joined product names, in encounter order. The caller decides the separator — see
-	 * {@link #getProductNamesJoined(String)}.
+	 * Un-joined product names, in sales-order line order (see the sort below). The caller decides the
+	 * separator — see {@link #getProductNamesJoined(String)}.
 	 */
 	@NonNull
 	public ImmutableList<ITranslatableString> getProductNameParts()
 	{
-		// distinct by ProductId (never by displayed text, so two distinct products sharing a name both appear);
-		// filter preserves encounter order, so the names read in line order.
+		// distinct by ProductId (never by displayed text, so two distinct products sharing a name both appear).
+		// Order by the sales-order line (C_OrderLine.Line, carried on each line as orderLineSeqNo — already loaded,
+		// no query here), tie-broken by the picking-job-line id: a stable, meaningful caption order that matches the
+		// order the picker reads off the sales document. Sorting happens HERE (caption-only) so PickingJob.lines'
+		// own order is left untouched for the workflow logic that iterates it.
 		return lines.stream()
 				.filter(StreamUtils.distinctByKey(PickingJobLine::getProductId))
+				.sorted(Comparator.comparingInt(PickingJobLine::getOrderLineSeqNo)
+						.thenComparingInt(line -> line.getId().getRepoId()))
 				.map(line -> line.getProductValueAndName().getName())
 				.collect(ImmutableList.toImmutableList());
 	}
