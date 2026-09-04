@@ -174,6 +174,16 @@ public class M_PriceList_StepDef
 		priceList.setIsSOPriceList(soTrx.toBoolean());
 		priceList.setC_Country_ID(country != null ? country.getC_Country_ID() : -1);
 
+		// Layering chain: link this list onto the list it falls back to (its base). getPriceListVersionsUpToBase
+		// walks BasePriceList_ID to reach the base list, so special/base price resolution can be exercised.
+		final StepDefDataIdentifier baseListIdentifier = row.getAsOptionalIdentifier("BasePriceList_ID")
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.orElse(null);
+		if (baseListIdentifier != null)
+		{
+			priceList.setBasePriceList_ID(baseListIdentifier.lookupNotNullIn(priceListTable).getM_PriceList_ID());
+		}
+
 		row.getAsOptionalString("Description").ifPresent(priceList::setDescription);
 
 		saveRecord(priceList);

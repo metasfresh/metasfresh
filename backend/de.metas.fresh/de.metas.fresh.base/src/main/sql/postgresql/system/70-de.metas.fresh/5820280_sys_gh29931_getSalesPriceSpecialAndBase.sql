@@ -78,10 +78,12 @@ WITH
                        CROSS JOIN LATERAL
                   unnest(public.getPriceListVersionsUpToBase(r.M_PriceList_ID, p_Date))
                   WITH ORDINALITY AS u(M_PriceList_Version_ID, seq)),
-    -- Every rung of the chain that actually prices this article. Invalid, attribute-set-instance
+    -- Every rung of the chain that actually prices this article, tagged with whether that rung is
+    -- the TRUE base list (its M_PriceList has no BasePriceList_ID). Invalid, attribute-set-instance
     -- (ASI) specific and packaging (HU/PI) specific prices are excluded, matching the canonical
     -- ProductPriceQuery / get_Product_Price resolution.
     priced AS (SELECT c.seq,
+                      (pl.BasePriceList_ID IS NULL)  AS is_base_list,
                       pp.PriceStd,
                       pp.C_UOM_ID,
                       plv.Name                       AS PLVName,
@@ -89,30 +91,29 @@ WITH
                       pp.M_ProductPrice_ID
                FROM chain c
                         JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = c.M_PriceList_Version_ID
+                        JOIN M_PriceList         pl  ON pl.M_PriceList_ID = plv.M_PriceList_ID
                         JOIN M_ProductPrice pp ON pp.M_PriceList_Version_ID = c.M_PriceList_Version_ID
                WHERE pp.M_Product_ID = p_M_Product_ID
                  AND pp.IsActive = 'Y'
                  AND pp.IsInvalidPrice <> 'Y'
                  AND pp.IsAttributeDependant = 'N'
                  AND pp.M_HU_PI_Item_Product_ID IS NULL),
-    -- Base = the most GENERAL price that exists for this article: the deepest priced rung.
-    -- Deepest PRICED, not "the list whose BasePriceList_ID IS NULL" -- so a chain whose base
-    -- list does not price the article still yields the next-most-general price instead of
-    -- nothing, and a chain that could not be walked to the bottom degrades to what it reached.
+    -- Base = the standard price: the price on the TRUE base list of the chain (BasePriceList_ID
+    -- IS NULL). It always reflects the base list -- NULL when the base list does not price this
+    -- article, never an override that merely sits deeper. Prevents a customer-specific override
+    -- from being reported as the base/standard price.
     base AS (SELECT pr.PriceStd, pr.C_UOM_ID, pr.PLVName
              FROM priced pr
-             ORDER BY pr.seq DESC,
-                      pr.seqno_sort ASC,
+             WHERE pr.is_base_list
+             ORDER BY pr.seqno_sort ASC,
                       pr.M_ProductPrice_ID ASC
              LIMIT 1),
-    -- Special = the price the customer actually gets: the nearest priced rung -- and only when
-    -- that is a DIFFERENT rung than the base above. Same rung means there is exactly one price
-    -- to show, i.e. no customer-specific arrangement for this article, and Special stays NULL.
-    -- No is_override flag: "has a special price" is a property of where this article's prices
-    -- were found, not of how the customer's price list happens to be wired.
+    -- Special = the customer-specific price: the nearest priced OVERRIDE rung (any non-base list
+    -- layered on top of the base). NULL when the article is priced only on the base list -- there
+    -- is then no customer-specific arrangement and only Base is shown.
     special AS (SELECT pr.PriceStd, pr.C_UOM_ID, pr.PLVName
                 FROM priced pr
-                WHERE pr.seq < (SELECT MAX(p2.seq) FROM priced p2)
+                WHERE NOT pr.is_base_list
                 ORDER BY pr.seq ASC,
                          pr.seqno_sort ASC,
                          pr.M_ProductPrice_ID ASC
@@ -132,5 +133,5 @@ $$
 ;
 
 COMMENT ON FUNCTION report.getSalesPriceSpecialAndBase(timestamp with time zone, numeric, numeric)
-    IS 'Resolves, for a business-partner location and product on a given date, both the price the customer actually gets (the nearest rung of the price-list layering chain that prices the article) and the most general price for that article (the deepest priced rung). Special is NULL when both land on the same rung, i.e. when there is no customer-specific arrangement for this article. Either may be NULL when the article is not priced at all. Chain resolution is delegated to public.getPriceListVersionsUpToBase so the report prices articles the same way pricing does. Used by report.getCustomerDeliveryPriceOverview.'
+    IS 'Resolves, for a business-partner location and product on a given date, the customer-specific special price (the nearest override rung of the price-list layering chain that prices the article -- any non-base list) and the standard base-list price (the price on the true base list, BasePriceList_ID IS NULL). Special is NULL when the article is priced only on the base list (no customer-specific arrangement); Base is NULL when the base list does not price the article. Chain resolution is delegated to public.getPriceListVersionsUpToBase so the report prices articles the same way pricing does. Used by report.getCustomerDeliveryPriceOverview.'
 ;
