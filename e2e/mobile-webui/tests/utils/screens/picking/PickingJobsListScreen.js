@@ -96,10 +96,10 @@ export const PickingJobsListScreen = {
             return await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
                 for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
                     await locateJobButtons({ documentNo }).tap();
-                    const arrived = await jobScreenElement()
+                    const hasArrived = await jobScreenElement()
                         .waitFor({ state: 'attached', timeout: JOB_START_ARRIVAL_TIMEOUT })
                         .then(() => true, () => false);
-                    if (arrived || attempt === JOB_START_TAP_ATTEMPTS) {
+                    if (hasArrived || attempt === JOB_START_TAP_ATTEMPTS) {
                         break;
                     }
                     if ((await recoverToLauncherList({ applicationId: 'picking' })) === 'unknown') {
@@ -201,10 +201,10 @@ const tapLauncherUntilJobScreen = async ({ index, qtyToDeliver, customerLocation
         const target = await resolveLauncherTapTarget({ index, qtyToDeliver, customerLocationId, settleTimeout });
         await target.tap();
 
-        const arrived = await jobScreenElement()
+        const hasArrived = await jobScreenElement()
             .waitFor({ state: 'attached', timeout: JOB_START_ARRIVAL_TIMEOUT })
             .then(() => true, () => false);
-        if (arrived || attempt === JOB_START_TAP_ATTEMPTS) {
+        if (hasArrived || attempt === JOB_START_TAP_ATTEMPTS) {
             break;
         }
 
