@@ -51,11 +51,10 @@ public class DeliveryPlanningAutoCreateGateTest
 		final DeliveryPlanningAllocRepository allocRepo = new DeliveryPlanningAllocRepository();
 		final DeliveryInstructionRepository instructionRepo = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
 		final DeliveryInstructionService instructionService = new DeliveryInstructionService(repo, allocRepo, instructionRepo, new MPackageRepository());
-		final DeliveryStatusColorPaletteService colorPaletteService = Mockito.mock(DeliveryStatusColorPaletteService.class);
 		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
 		final MeansOfTransportationService meansOfTransportationService = Mockito.mock(MeansOfTransportationService.class);
 		final ShipperTransportationDocSubTypeGuard shipperTransportationDocSubTypeGuard = new ShipperTransportationDocSubTypeGuard();
-		return new DeliveryPlanningService(shipperRepository, repo, allocRepo, instructionService, colorPaletteService, dimensionService, meansOfTransportationService, shipperTransportationDocSubTypeGuard);
+		return new DeliveryPlanningService(shipperRepository, repo, allocRepo, instructionService, dimensionService, meansOfTransportationService, shipperTransportationDocSubTypeGuard);
 	}
 
 	// ------------------------------------------------------------------ tests

@@ -52,20 +52,17 @@ public class GenerateOutgoingDeliveryPlanningCommand
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
 	@NonNull private final I_M_ShipmentSchedule shipmentSchedule;
-	@NonNull private final DeliveryStatusColorPalette colorPalette;
 	@NonNull private final DimensionService dimensionService;
 
 	@Builder
 	private GenerateOutgoingDeliveryPlanningCommand(
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final DeliveryStatusColorPalette colorPalette,
 			@NonNull final DimensionService dimensionService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 
 		this.shipmentSchedule = shipmentSchedule;
-		this.colorPalette = colorPalette;
 		this.dimensionService = dimensionService;
 	}
 
@@ -99,7 +96,6 @@ public class GenerateOutgoingDeliveryPlanningCommand
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(shipmentSchedule.getAD_Client_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
-				.deliveryStatusColorId(colorPalette.getNotDeliveredColorId())
 				.transportDirection(TransportDirection.Outgoing)
 				.orderId(orderId)
 				.orderLineId(orderLineId)

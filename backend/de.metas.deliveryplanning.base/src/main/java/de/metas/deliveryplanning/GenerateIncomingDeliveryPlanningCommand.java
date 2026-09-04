@@ -52,20 +52,17 @@ public class GenerateIncomingDeliveryPlanningCommand
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
 	@NonNull private final I_M_ReceiptSchedule receiptSchedule;
-	@NonNull private final DeliveryStatusColorPalette colorPalette;
 	@NonNull private final DimensionService dimensionService;
 
 	@Builder
 	private GenerateIncomingDeliveryPlanningCommand(
 			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
-			@NonNull final DeliveryStatusColorPalette colorPalette,
 			@NonNull final DimensionService dimensionService)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 
 		this.receiptSchedule = receiptSchedule;
-		this.colorPalette = colorPalette;
 		this.dimensionService = dimensionService;
 	}
 
@@ -99,7 +96,6 @@ public class GenerateIncomingDeliveryPlanningCommand
 				.orgId(OrgId.ofRepoId(receiptSchedule.getAD_Org_ID()))
 				.clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
 				.receiptScheduleId(ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID()))
-				.deliveryStatusColorId(colorPalette.getNotDeliveredColorId())
 				.transportDirection(TransportDirection.Incoming)
 				.orderId(orderId)
 				.orderLineId(orderLineId)

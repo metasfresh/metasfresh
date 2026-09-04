@@ -18,7 +18,7 @@ public interface I_M_Delivery_Planning
 
 
 	/**
-	 * Set Act Delivered Qty.
+	 * Set Actual Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -27,7 +27,7 @@ public interface I_M_Delivery_Planning
 	void setActualDischargeQuantity (BigDecimal ActualDischargeQuantity);
 
 	/**
-	 * Get Act Delivered Qty.
+	 * Get Actual Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -39,7 +39,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualDischargeQuantity = "ActualDischargeQuantity";
 
 	/**
-	 * Set Act Load Qty.
+	 * Set Actual Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -48,7 +48,7 @@ public interface I_M_Delivery_Planning
 	void setActualLoadQty (BigDecimal ActualLoadQty);
 
 	/**
-	 * Get Act Load Qty.
+	 * Get Actual Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -386,8 +386,10 @@ public interface I_M_Delivery_Planning
 	 *
 	 * <br>Type: Color
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setDeliveryStatus_Color_ID (int DeliveryStatus_Color_ID);
 
 	/**
@@ -395,7 +397,7 @@ public interface I_M_Delivery_Planning
 	 *
 	 * <br>Type: Color
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
 	 */
 	int getDeliveryStatus_Color_ID();
 
@@ -847,7 +849,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_OrderStatus = "OrderStatus";
 
 	/**
-	 * Set Origin Country.
+	 * Set Country Of Origin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -858,7 +860,7 @@ public interface I_M_Delivery_Planning
 	void setOriginCountry (@Nullable java.lang.String OriginCountry);
 
 	/**
-	 * Get Origin Country.
+	 * Get Country Of Origin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -872,7 +874,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_OriginCountry = "OriginCountry";
 
 	/**
-	 * Set Plan Delivered Qty.
+	 * Set Planned Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -881,7 +883,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedDischargeQuantity (BigDecimal PlannedDischargeQuantity);
 
 	/**
-	 * Get Plan Delivered Qty.
+	 * Get Planned Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -893,7 +895,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_PlannedDischargeQuantity = "PlannedDischargeQuantity";
 
 	/**
-	 * Set Plan Load Qty.
+	 * Set Planned Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -902,7 +904,7 @@ public interface I_M_Delivery_Planning
 	void setPlannedLoadedQuantity (BigDecimal PlannedLoadedQuantity);
 
 	/**
-	 * Get Plan Load Qty.
+	 * Get Planned Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true

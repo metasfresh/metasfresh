@@ -93,7 +93,6 @@ class DeliveryPlanningMoveAndRemovalTest
 				deliveryPlanningRepository,
 				deliveryPlanningAllocRepository,
 				deliveryInstructionService,
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());

@@ -27,7 +27,6 @@ import de.metas.deliveryplanning.DeliveryInstructionService;
 import de.metas.deliveryplanning.DeliveryPlanningAllocRepository;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
 import de.metas.deliveryplanning.MeansOfTransportationService;
 import de.metas.document.dimension.DimensionService;
 import de.metas.process.IProcessPreconditionsContext;
@@ -75,7 +74,6 @@ class M_DeliveryPlanning_CreateAdditionalLinesClosedGuardTest
 				deliveryPlanningRepository,
 				deliveryPlanningAllocRepository,
 				deliveryInstructionService,
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());

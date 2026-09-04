@@ -217,7 +217,6 @@ public class DeliveryPlanningService
 	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
 	@NonNull private final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
 	@NonNull private final DeliveryInstructionService deliveryInstructionService;
-	@NonNull private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final MeansOfTransportationService meansOfTransportationService;
 
@@ -253,17 +252,11 @@ public class DeliveryPlanningService
 				.orElse(false); // inactive or missing shipper → skip
 	}
 
-	private DeliveryStatusColorPalette getColorPalette()
-	{
-		return deliveryStatusColorPaletteService.get();
-	}
-
 	public void generateIncomingDeliveryPlanning(final I_M_ReceiptSchedule receiptScheduleRecord)
 	{
 		GenerateIncomingDeliveryPlanningCommand.builder()
 				.deliveryPlanningRepository(deliveryPlanningRepository)
 				.receiptSchedule(receiptScheduleRecord)
-				.colorPalette(getColorPalette())
 				.dimensionService(dimensionService)
 				.build()
 				.execute();
@@ -274,7 +267,6 @@ public class DeliveryPlanningService
 		GenerateOutgoingDeliveryPlanningCommand.builder()
 				.deliveryPlanningRepository(deliveryPlanningRepository)
 				.shipmentSchedule(shipmentScheduleRecord)
-				.colorPalette(getColorPalette())
 				.dimensionService(dimensionService)
 				.build()
 				.execute();
@@ -2127,13 +2119,7 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Consumer<DeliveryPlanningReceiptInfo> updater)
 	{
-		final DeliveryStatusColorPalette colorPalette = getColorPalette();
-		deliveryPlanningRepository.updateReceiptInfoById(
-				deliveryPlanningId,
-				receiptInfo -> {
-					updater.accept(receiptInfo);
-					receiptInfo.updateReceivedStatusColor(colorPalette);
-				});
+		deliveryPlanningRepository.updateReceiptInfoById(deliveryPlanningId, updater);
 	}
 
 	public Optional<DeliveryPlanningShipmentInfo> getShipmentInfoIfOutgoingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -2151,13 +2137,7 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Consumer<DeliveryPlanningShipmentInfo> updater)
 	{
-		final DeliveryStatusColorPalette colorPalette = getColorPalette();
-		deliveryPlanningRepository.updateShipmentInfoById(
-				deliveryPlanningId,
-				shipmentInfo -> {
-					updater.accept(shipmentInfo);
-					shipmentInfo.updateShippedStatusColor(colorPalette);
-				});
+		deliveryPlanningRepository.updateShipmentInfoById(deliveryPlanningId, updater);
 	}
 
 	public <T> T getShipmentOrReceiptInfo(

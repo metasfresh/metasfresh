@@ -30,7 +30,6 @@ import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
 import de.metas.deliveryplanning.MeansOfTransportationService;
 import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.document.dimension.DimensionService;
@@ -101,7 +100,6 @@ class ReceiptLogisticsViewBasedProcessTest
 				deliveryPlanningRepository,
 				deliveryPlanningAllocRepository,
 				deliveryInstructionService,
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());

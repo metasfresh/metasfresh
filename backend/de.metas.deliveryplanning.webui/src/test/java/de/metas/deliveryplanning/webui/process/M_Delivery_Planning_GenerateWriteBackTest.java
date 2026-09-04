@@ -28,7 +28,6 @@ import de.metas.deliveryplanning.DeliveryInstructionService;
 import de.metas.deliveryplanning.DeliveryPlanningAllocRepository;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
 import de.metas.deliveryplanning.MeansOfTransportationService;
 import de.metas.document.dimension.DimensionService;
 import de.metas.handlingunits.HuId;
@@ -100,7 +99,6 @@ class M_Delivery_Planning_GenerateWriteBackTest
 				deliveryPlanningRepository,
 				deliveryPlanningAllocRepository,
 				deliveryInstructionService,
-				mock(DeliveryStatusColorPaletteService.class),
 				mock(DimensionService.class),
 				mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());

@@ -51,7 +51,6 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -241,7 +240,6 @@ public class DeliveryPlanningRepository
 				.dropship(transportDirection.isDropship())
 				//
 				.receiptId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
-				.receivedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
 				//
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.build();
@@ -251,7 +249,6 @@ public class DeliveryPlanningRepository
 	{
 		assertHasReceipt(record);
 		record.setM_InOut_ID(InOutId.toRepoId(from.getReceiptId()));
-		record.setDeliveryStatus_Color_ID(ColorId.toRepoId(from.getReceivedStatusColorId()));
 	}
 
 	public void updateReceiptInfoById(
@@ -284,7 +281,6 @@ public class DeliveryPlanningRepository
 				.customerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
 				//
 				.shipmentId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
-				.shippedStatusColorId(ColorId.ofRepoIdOrNull(record.getDeliveryStatus_Color_ID()))
 				//
 				.build();
 	}
@@ -293,7 +289,6 @@ public class DeliveryPlanningRepository
 	{
 		assertHasOwnShipment(record);
 		record.setM_InOut_ID(InOutId.toRepoId(from.getShipmentId()));
-		record.setDeliveryStatus_Color_ID(ColorId.toRepoId(from.getShippedStatusColorId()));
 	}
 
 	public void updateShipmentInfoById(
@@ -498,7 +493,6 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 		deliveryPlanningRecord.setM_ReceiptSchedule_ID(ReceiptScheduleId.toRepoId(request.getReceiptScheduleId()));
 		deliveryPlanningRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
-		deliveryPlanningRecord.setDeliveryStatus_Color_ID(ColorId.toRepoId(request.getDeliveryStatusColorId()));
 		deliveryPlanningRecord.setC_Order_ID(OrderId.toRepoId(request.getOrderId()));
 		deliveryPlanningRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 		deliveryPlanningRecord.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
