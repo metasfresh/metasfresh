@@ -323,6 +323,29 @@ public interface I_RV_ReceiptLogistics
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Planned.
+	 * Indicates whether the row is backed by a delivery planning (planned) or only by a receipt schedule with no delivery planning (unplanned).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPlanned (boolean IsPlanned);
+
+	/**
+	 * Get Planned.
+	 * Indicates whether the row is backed by a delivery planning (planned) or only by a receipt schedule with no delivery planning (unplanned).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isPlanned();
+
+	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_IsPlanned = new ModelColumn<>(I_RV_ReceiptLogistics.class, "IsPlanned", null);
+	String COLUMNNAME_IsPlanned = "IsPlanned";
+
+	/**
 	 * Set Delivery Planning.
 	 *
 	 * <br>Type: Search

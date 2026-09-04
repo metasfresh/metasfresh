@@ -103,6 +103,8 @@ public class RV_ReceiptLogistics_StepDef
 	 *   <b>OPT.M_Product_ID</b> — (optional, identifier-ref) expected product<br>
 	 *   <b>OPT.M_Warehouse_ID</b> — (optional, identifier-ref) expected warehouse<br>
 	 *   <b>OPT.POReference</b> — (optional) expected {@code POReference}<br>
+	 *   <b>OPT.IsPlanned</b> — (optional) expected {@code IsPlanned} - true for a row backed by a delivery
+	 *   planning, false for a row backed only by a receipt schedule<br>
 	 * @cucumber.depends StepDefData: RV_ReceiptLogistics_StepDefData, C_Order_StepDefData,
 	 * M_Delivery_Planning_StepDefData, M_ReceiptSchedule_StepDefData, C_BPartner_StepDefData,
 	 * M_Product_StepDefData, M_Warehouse_StepDefData
@@ -229,6 +231,11 @@ public class RV_ReceiptLogistics_StepDef
 				.ifPresent(poReference -> softly.assertThat(actual.getPOReference())
 						.as(I_RV_ReceiptLogistics.COLUMNNAME_POReference)
 						.isEqualTo(poReference));
+
+		expected.getAsOptionalBoolean(I_RV_ReceiptLogistics.COLUMNNAME_IsPlanned)
+				.ifPresent(isPlanned -> softly.assertThat(actual.isPlanned())
+						.as(I_RV_ReceiptLogistics.COLUMNNAME_IsPlanned)
+						.isEqualTo(isPlanned));
 
 		expected.getAsOptionalIdentifier(I_RV_ReceiptLogistics.COLUMNNAME_C_BPartner_ID)
 				.filter(StepDefDataIdentifier::isNotNullPlaceholder)

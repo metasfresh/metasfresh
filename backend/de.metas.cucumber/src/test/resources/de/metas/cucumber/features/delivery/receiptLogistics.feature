@@ -235,3 +235,35 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
     And after not more than 60s, the C_Order identified by orderWeekUnplanned_RL has exactly the following rows in RV_ReceiptLogistics:
       | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID     | OPT.ETA    | OPT.CalendarWeek |
       | rowWeekUnplanned_RL    | null                   | scheduleWeekUnplanned_RL | 2023-01-01 | 52               |
+
+  @Id:S31789_TC6
+  Scenario: The planned flag is set on a planning-backed row and unset on a schedule-only row
+
+    Given metasfresh contains C_Orders:
+      | Identifier            | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderFlagPlanned_RL   | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
+      | orderFlagUnplanned_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier                | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineFlagPlanned_RL   | orderFlagPlanned_RL   | product_RL              | 5          | shipperPlanning_RL          |
+      | orderLineFlagUnplanned_RL | orderFlagUnplanned_RL | product_RL              | 5          | shipperPlain_RL              |
+
+    When the order identified by orderFlagPlanned_RL is completed
+    And the order identified by orderFlagUnplanned_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleFlagPlanned_RL          | orderFlagPlanned_RL   | orderLineFlagPlanned_RL   | vendor_RL                | vendorLocation_RL                 | product_RL              | 5          | warehouse_RL              |
+      | scheduleFlagUnplanned_RL        | orderFlagUnplanned_RL | orderLineFlagUnplanned_RL | vendor_RL                | vendorLocation_RL                 | product_RL              | 5          | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID           |
+      | planningFlagPlanned_RL | orderLineFlagPlanned_RL  |
+
+    # The flag is what a dispatcher reads to tell the two row types apart at a glance - it must agree with
+    # the branch the row actually came from (a planning for the planned row, a bare schedule for the other).
+    Then after not more than 60s, the C_Order identified by orderFlagPlanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID  | OPT.IsPlanned |
+      | rowFlagPlanned_RL      | planningFlagPlanned_RL | scheduleFlagPlanned_RL | true          |
+    And after not more than 60s, the C_Order identified by orderFlagUnplanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID    | OPT.IsPlanned |
+      | rowFlagUnplanned_RL    | null                   | scheduleFlagUnplanned_RL | false         |

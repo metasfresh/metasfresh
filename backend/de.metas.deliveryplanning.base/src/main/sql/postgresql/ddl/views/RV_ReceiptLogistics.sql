@@ -82,6 +82,12 @@
 -- consequence, so it is not read as a bug: branch two excludes a schedule that has ANY active
 -- planning, so a schedule whose only active planning is a Dropship one appears on NEITHER branch.
 --
+-- ISPLANNED. A plain literal per branch, not a derived expression -- the two branches are already the
+-- exact complement that decides it (see KEY above), so branch one is always 'Y' and branch two is
+-- always 'N'. Distinguishes a delivery-planning row from a receipt-schedule row for legibility and
+-- filtering only; it carries no statement about whether the row is currently actionable -- that stays
+-- with the receipt process's own preconditions.
+--
 
 DROP VIEW IF EXISTS RV_ReceiptLogistics$new
 ;
@@ -92,6 +98,7 @@ AS
 SELECT dp.m_delivery_planning_id                                             AS RV_ReceiptLogistics_ID,
        rs.m_receiptschedule_id,
        dp.m_delivery_planning_id,
+       'Y'::char(1)                                                          AS isplanned,
        rs.m_product_id,
        rs.c_bpartner_id,
        rs.m_warehouse_id,
@@ -132,6 +139,7 @@ UNION ALL
 SELECT 1000000000 + rs.m_receiptschedule_id                AS RV_ReceiptLogistics_ID,
        rs.m_receiptschedule_id,
        NULL::numeric(10)                                   AS m_delivery_planning_id,
+       'N'::char(1)                                         AS isplanned,
        rs.m_product_id,
        rs.c_bpartner_id,
        rs.m_warehouse_id,
