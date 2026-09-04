@@ -18,7 +18,7 @@ public interface I_M_ShippingPackage
 
 
 	/**
-	 * Set Act Delivered Qty.
+	 * Set Actual Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -29,7 +29,7 @@ public interface I_M_ShippingPackage
 	void setActualDischargeQuantity (BigDecimal ActualDischargeQuantity);
 
 	/**
-	 * Get Act Delivered Qty.
+	 * Get Actual Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -41,7 +41,7 @@ public interface I_M_ShippingPackage
 	String COLUMNNAME_ActualDischargeQuantity = "ActualDischargeQuantity";
 
 	/**
-	 * Set Act Load Qty.
+	 * Set Actual Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -52,7 +52,7 @@ public interface I_M_ShippingPackage
 	void setActualLoadQty (BigDecimal ActualLoadQty);
 
 	/**
-	 * Get Act Load Qty.
+	 * Get Actual Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -513,7 +513,7 @@ public interface I_M_ShippingPackage
 	String COLUMNNAME_PackageWeight = "PackageWeight";
 
 	/**
-	 * Set Plan Delivered Qty.
+	 * Set Planned Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -524,7 +524,7 @@ public interface I_M_ShippingPackage
 	void setPlannedDischargeQuantity (@Nullable BigDecimal PlannedDischargeQuantity);
 
 	/**
-	 * Get Plan Delivered Qty.
+	 * Get Planned Discharge Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -536,7 +536,7 @@ public interface I_M_ShippingPackage
 	String COLUMNNAME_PlannedDischargeQuantity = "PlannedDischargeQuantity";
 
 	/**
-	 * Set Plan Load Qty.
+	 * Set Planned Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -547,7 +547,7 @@ public interface I_M_ShippingPackage
 	void setPlannedLoadedQuantity (@Nullable BigDecimal PlannedLoadedQuantity);
 
 	/**
-	 * Get Plan Load Qty.
+	 * Get Planned Load Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
