@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.handlingunits.process;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
@@ -79,6 +80,7 @@ public class ReceiptScheduleActions
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+	private final DocumentCollection documentsRepo = SpringContextHolder.instance.getBean(DocumentCollection.class);
 
 	// ---------------------------------------------------------------------------------------------
 	// "Foto"
@@ -207,8 +209,6 @@ public class ReceiptScheduleActions
 			@NonNull final String returnMovementType,
 			@NonNull final AdWindowId targetWindowId)
 	{
-		final DocumentCollection documentsRepo = SpringContextHolder.instance.getBean(DocumentCollection.class);
-
 		final DocumentPath documentPath = DocumentPath.builder()
 				.setDocumentType(WindowId.of(targetWindowId))
 				.setDocumentId(DocumentId.NEW_ID_STRING)
@@ -218,7 +218,7 @@ public class ReceiptScheduleActions
 		final DocumentId documentId = documentsRepo.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
 			huEmptiesService.newReturnsInOutProducer(ctx)
 					.setMovementType(returnMovementType)
-					.setMovementDate(de.metas.common.util.time.SystemTime.asDayTimestamp())
+					.setMovementDate(SystemTime.asDayTimestamp())
 					.fillReturnsInOutHeader(InterfaceWrapperHelper.create(document, I_M_InOut.class));
 			return document.getDocumentId();
 		});

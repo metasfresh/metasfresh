@@ -69,6 +69,9 @@ public class RV_ReceiptLogistics_Receive_StepDef
 	@NonNull private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
 
+	@NonNull private final ReceiptFromReceiptScheduleService receiptFromReceiptScheduleService =
+			SpringContextHolder.instance.getBean(ReceiptFromReceiptScheduleService.class);
+
 	/**
 	 * Receives the given grid row - planned or unplanned - through the shared receive path.
 	 *
@@ -99,9 +102,8 @@ public class RV_ReceiptLogistics_Receive_StepDef
 
 		final BigDecimal qtyOverride = row.getAsOptionalBigDecimal("Qty").orElse(null);
 
-		final CreateReceiptFromReceiptScheduleResult result = SpringContextHolder.instance
-				.getBean(ReceiptFromReceiptScheduleService.class)
-				.receiveCUs(sourceIds, qtyOverride);
+		final CreateReceiptFromReceiptScheduleResult result =
+				receiptFromReceiptScheduleService.receiveCUs(sourceIds, qtyOverride);
 
 		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID)
 				.ifPresent(identifier -> inOutTable.putOrReplace(
@@ -142,9 +144,7 @@ public class RV_ReceiptLogistics_Receive_StepDef
 						DeliveryPlanningId.ofRepoIdOrNull(viewRow.getM_Delivery_Planning_ID())))
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList<InOutId> receiptIds = SpringContextHolder.instance
-				.getBean(ReceiptFromReceiptScheduleService.class)
-				.receiveRows(sourceIds);
+		final ImmutableList<InOutId> receiptIds = receiptFromReceiptScheduleService.receiveRows(sourceIds);
 
 		final ImmutableList<DataTableRow> expectedReceipts = DataTableRows.of(dataTable).stream()
 				.collect(ImmutableList.toImmutableList());

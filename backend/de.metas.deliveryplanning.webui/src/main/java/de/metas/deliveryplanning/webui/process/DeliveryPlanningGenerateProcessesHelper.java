@@ -11,7 +11,6 @@ import de.metas.deliveryplanning.DeliveryPlanningShipmentInfo;
 import de.metas.deliveryplanning.receipt.CreateReceiptFromReceiptScheduleRequest;
 import de.metas.deliveryplanning.receipt.CreateReceiptFromReceiptScheduleResult;
 import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
-import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -135,11 +134,7 @@ class DeliveryPlanningGenerateProcessesHelper
 
 	private final HashMap<OrderAndLineId, Optional<DeliveryPlanningShipmentInfo>> shipmentInfosByPurchaseOrderLineId = new HashMap<>();
 
-	/** cached lot-number drawn once from the doc-type sequence for this generate run */
-	private Optional<String> lotNumberFromSeq = Optional.empty();
-
 	private static final AdMessageKey MSG_ERROR_GOODS_ISSUE_QUANTITY = AdMessageKey.of("GoodsIssueQuantityParameterError");
-	private static final AdMessageKey MESSAGE_ClearanceStatusInfo_Receipt = AdMessageKey.of("ClearanceStatusInfo.Receipt");
 	private static final String SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS = "de.metas.deliveryplanning.webui.process.PreventReceiptIfMissingDeliveryInstructions";
 
 	@Builder
