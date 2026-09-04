@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.util.Optionals;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
@@ -446,7 +447,15 @@ public class PP_Order_StepDef
 					assertThat(ppOrderBOMLineAttributesKeys).isEqualTo(expectedAttributesKeys);
 				});
 
-		row.getAsOptionalIdentifier().ifPresent(identifier -> ppOrderBomLineTable.putOrReplace(identifier, ppOrderBOMLine));
+		// Most tables declare the row's identifier as PP_Order_BOMLine_ID.Identifier, which the no-arg
+		// getAsOptionalIdentifier() does not see - it only matches a column literally named Identifier. Those
+		// rows therefore registered nothing, and the omission stayed invisible for as long as no scenario read
+		// a BOM line back out of the table. Five tables in the suite do use the bare Identifier column, so both
+		// spellings are honoured here.
+		Optionals.firstPresentOfSuppliers(
+						() -> row.getAsOptionalIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID),
+						row::getAsOptionalIdentifier)
+				.ifPresent(identifier -> ppOrderBomLineTable.putOrReplace(identifier, ppOrderBOMLine));
 	}
 
 	private IQuery<I_PP_Order_BOMLine> toPPOrderBOMLineQuery(final @NonNull DataTableRow row)
