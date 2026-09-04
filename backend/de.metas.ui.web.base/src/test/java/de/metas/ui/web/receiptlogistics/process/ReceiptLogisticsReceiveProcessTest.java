@@ -120,14 +120,23 @@ class ReceiptLogisticsReceiveProcessTest
 	}
 
 	@Test
-	@DisplayName("\"CUs annehmen\" states no quantity, so the schedule's own remaining quantity is received")
+	@DisplayName("\"CUs annehmen\" states no quantity, so the ROW's own quantity rule decides - not the caller")
 	void plainVariantStatesNoQuantity()
 	{
 		new WEBUI_RV_ReceiptLogistics_ReceiveCUs()
 				.receive(ReceiptScheduleAndDeliveryPlanningId.of(RECEIPT_SCHEDULE_ID, DELIVERY_PLANNING_ID));
 
+		// The corrected contract. This row is PLANNED, and "no override" must NOT mean "the receipt schedule's
+		// whole remaining quantity": a split copies M_ReceiptSchedule_ID onto every new planning, so that
+		// remainder is the whole order line's and the first planning received would consume it, leaving its
+		// siblings unable to receive. Passing null hands the decision to
+		// ReceiptFromReceiptScheduleService#getQtyToReceive, the ONE rule the multi-row receive already used -
+		// the planning's own share here, the schedule's remainder only on an unplanned row. What correct code
+		// produces at THIS layer is therefore still null; asserting a number here would move the rule into the
+		// adapter and give the window a second definition of it. The resolution itself is pinned end-to-end by
+		// cucumber S31789_TC9e (one row of a split planning received alone; its sibling still receives).
 		assertThat(capturedQtyOverride())
-				.as("null means: whatever the receipt schedule still has outstanding")
+				.as("null means: let the shared receive resolve the row's own quantity")
 				.isNull();
 	}
 }

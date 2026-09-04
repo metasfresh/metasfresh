@@ -615,6 +615,99 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | planningSplit1_RL      | 10         | 0            | 5                        | 5                       | Incoming           | receiptSplit1_RL | false    | true      |
       | planningSplit2_RL      | 10         | 0            | 5                        | 5                       | Incoming           | receiptSplit2_RL | false    | true      |
 
+  @Id:S31789_TC9e
+  Scenario: One row of a SPLIT planning received ALONE takes only its own share, so its sibling can still receive
+
+    # H1's shape, and the one every other scenario misses. TC9d receives both split rows in ONE gesture; this
+    # one receives them ONE AT A TIME, which is what the window's single-row "CUs annehmen" button does. A split
+    # copies M_ReceiptSchedule_ID onto both plannings, so the SCHEDULE's remaining quantity is the whole ORDER
+    # LINE's - 10 - while each PLANNING's own share is 5. A single-row receive that read the schedule would
+    # consume all 10 on the first row and leave the sibling with a row that looks receivable and is not: no
+    # receipt, no delivered state, and no way to get one from this window. The quantity is deliberately NOT
+    # stated in the step (no OPT.Qty), because a stated quantity is the operator's own and would hide the
+    # divergence - what is under test is what the receive DERIVES for a planned row. Every other single-row
+    # scenario uses an UNSPLIT planning, where the planning's share and the schedule's remainder coincide, so
+    # none of them can tell the two rules apart.
+    Given metasfresh contains C_Orders:
+      | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderSplitSolo_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC9E      |
+    And metasfresh contains C_OrderLines:
+      | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineSplitSolo_RL | orderSplitSolo_RL     | product_RL              | 10         | shipperPlanning_RL          |
+
+    When the order identified by orderSplitSolo_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleSplitSolo_RL            | orderSplitSolo_RL     | orderLineSplitSolo_RL     | vendor_RL                | vendorLocation_RL                 | product_RL              | 10         | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID        |
+      | planningSolo1_RL       | orderLineSplitSolo_RL |
+
+    # The split: the order line's 10 is distributed over the two plannings, 5 each.
+    When generate 1 additional M_Delivery_Planning records for: planningSolo1_RL
+    Then after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID            | C_OrderLine_ID        |
+      | planningSolo1_RL,planningSolo2_RL | orderLineSplitSolo_RL |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | TransportDirection | Processed |
+      | planningSolo1_RL       | 10         | 10           | 5                        | Incoming           | false     |
+      | planningSolo2_RL       | 10         | 10           | 5                        | Incoming           | false     |
+
+    # Both rows carry the SAME receipt schedule - 10 outstanding on it, 5 planned per row.
+    And after not more than 60s, the C_Order identified by orderSplitSolo_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned |
+      | rowSolo1_RL            | planningSolo1_RL       | scheduleSplitSolo_RL | true          |
+      | rowSolo2_RL            | planningSolo2_RL       | scheduleSplitSolo_RL | true          |
+
+    # The FIRST row alone, quantity not stated: it must take its planning's 5, never the schedule's 10.
+    When the receipt-logistics row identified by rowSolo1_RL is received:
+      | OPT.M_InOut_ID  |
+      | receiptSolo1_RL |
+
+    Then validate M_In_Out status
+      | M_InOut_ID      | DocStatus |
+      | receiptSolo1_RL | CO        |
+    And validate the delivery planning link of M_InOut:
+      | M_InOut_ID      | M_Delivery_Planning_ID |
+      | receiptSolo1_RL | planningSolo1_RL       |
+    And validate the created material receipt lines
+      | M_InOut_ID      | C_OrderLine_ID        | MovementQty |
+      | receiptSolo1_RL | orderLineSplitSolo_RL | 5           |
+
+    # Half the line consumed, half still outstanding - and that remainder is what keeps the sibling receivable.
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved |
+      | scheduleSplitSolo_RL            | orderSplitSolo_RL     | orderLineSplitSolo_RL     | vendor_RL                | vendorLocation_RL                 | product_RL              | 10         | warehouse_RL              | 5            |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | M_InOut_ID      | IsClosed | Processed |
+      | planningSolo1_RL       | 10         | 5            | 5                        | 5                       | Incoming           | receiptSolo1_RL | false    | true      |
+      | planningSolo2_RL       | 10         | 5            | 5                        | 0                       | Incoming           | null            | false    | false     |
+
+    # THE point of the scenario: the sibling still receives, and gets its own 5.
+    When the receipt-logistics row identified by rowSolo2_RL is received:
+      | OPT.M_InOut_ID  |
+      | receiptSolo2_RL |
+
+    Then validate M_In_Out status
+      | M_InOut_ID      | DocStatus |
+      | receiptSolo2_RL | CO        |
+    And validate the delivery planning link of M_InOut:
+      | M_InOut_ID      | M_Delivery_Planning_ID |
+      | receiptSolo2_RL | planningSolo2_RL       |
+    And validate the created material receipt lines
+      | M_InOut_ID      | C_OrderLine_ID        | MovementQty |
+      | receiptSolo2_RL | orderLineSplitSolo_RL | 5           |
+
+    # The order line is consumed exactly once across the two separate single-row receives.
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved |
+      | scheduleSplitSolo_RL            | orderSplitSolo_RL     | orderLineSplitSolo_RL     | vendor_RL                | vendorLocation_RL                 | product_RL              | 10         | warehouse_RL              | 10           |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | M_InOut_ID      | IsClosed | Processed |
+      | planningSolo1_RL       | 10         | 0            | 5                        | 5                       | Incoming           | receiptSolo1_RL | false    | true      |
+      | planningSolo2_RL       | 10         | 0            | 5                        | 5                       | Incoming           | receiptSolo2_RL | false    | true      |
+
   @Id:S31789_TC10
   Scenario: Processed is read from the row's own source - the planning on a planned row, the schedule on an unplanned one
 
