@@ -74,6 +74,7 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
             name: `RL quick-action vendor ${Date.now()}`,
             isVendor: true,
             isCustomer: false,
+            isSoPriceList: false, // Purchase price list — see receipt.spec.js / partial-receipt.spec.js
           },
         },
         products: {
