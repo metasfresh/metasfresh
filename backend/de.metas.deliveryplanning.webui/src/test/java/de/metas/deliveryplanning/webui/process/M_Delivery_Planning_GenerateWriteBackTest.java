@@ -44,6 +44,7 @@ import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -107,6 +108,9 @@ class M_Delivery_Planning_GenerateWriteBackTest
 		SpringContextHolder.registerJUnitBean(DeliveryPlanningService.class, deliveryPlanningService);
 		SpringContextHolder.registerJUnitBean(DeliveryPlanningRepository.class, deliveryPlanningRepository);
 		SpringContextHolder.registerJUnitBean(ShipmentService.class, mock(ShipmentService.class));
+		// The helper now delegates the receipt itself to the shared receive path; newInstance() therefore
+		// resolves it, although these tests replace the whole helper with a stub before anything runs.
+		SpringContextHolder.registerJUnitBean(ReceiptFromReceiptScheduleService.class, mock(ReceiptFromReceiptScheduleService.class));
 		SpringContextHolder.registerJUnitBean(
 				PurchaseOrderToShipperTransportationRepository.class,
 				mock(PurchaseOrderToShipperTransportationRepository.class));

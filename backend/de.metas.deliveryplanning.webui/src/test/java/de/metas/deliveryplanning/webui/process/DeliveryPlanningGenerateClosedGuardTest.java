@@ -38,6 +38,7 @@ import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -82,6 +83,9 @@ class DeliveryPlanningGenerateClosedGuardTest
 
 		SpringContextHolder.registerJUnitBean(DeliveryPlanningService.class, deliveryPlanningService);
 		SpringContextHolder.registerJUnitBean(ShipmentService.class, Mockito.mock(ShipmentService.class));
+		// The helper now delegates the receipt itself to the shared receive path; newInstance() therefore
+		// resolves it, although these tests replace the whole helper with a stub before anything runs.
+		SpringContextHolder.registerJUnitBean(ReceiptFromReceiptScheduleService.class, Mockito.mock(ReceiptFromReceiptScheduleService.class));
 		SpringContextHolder.registerJUnitBean(
 				PurchaseOrderToShipperTransportationRepository.class,
 				Mockito.mock(PurchaseOrderToShipperTransportationRepository.class));
