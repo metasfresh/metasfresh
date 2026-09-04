@@ -21,6 +21,8 @@ import de.metas.product.ProductLifeCycleAction;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
+import org.adempiere.exceptions.AdempiereException;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.Services;
@@ -102,5 +104,22 @@ public class C_PurchaseCandidate
 				.orElse(ZERO);
 		salesOrderLineRecord.setProfitPercent(value);
 		saveRecord(salesOrderLineRecord);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	public void rejectLegacyUnknownSourceOnNew(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
+	{
+		// 'Unknown' is a backfill-only marker for pre-Source-column candidates. A new one carrying it
+		// would be excluded from both the sales-order interceptor and dispo auto-ordering, so a genuine
+		// purchase demand would never be ordered.
+		// Source has no column default and no callout, so any legitimate creation path has already set it
+		// by BEFORE_NEW; a missing/invalid code is a programming error and ofCode fails loud.
+		if (PurchaseCandidateSource.ofCode(purchaseCandidateRecord.getSource()).isUnknown())
+		{
+			throw new AdempiereException("Source=" + PurchaseCandidateSource.Unknown
+					+ " is reserved for legacy backfilled candidates and must not be set on new records")
+					.appendParametersToMessage()
+					.setParameter("C_PurchaseCandidate", purchaseCandidateRecord);
+		}
 	}
 }
