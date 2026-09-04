@@ -128,6 +128,7 @@ public final class ProcessInfo implements Serializable
 		adProcessId = builder.getAD_Process_ID();
 		adRelationTypeId = builder.getAD_RelationType_ID();
 		openTarget = builder.getOpenTarget();
+		useAutoFilters = builder.isUseAutoFilters();
 		pinstanceId = builder.getPInstanceId();
 
 		clientId = builder.getAdClientId();
@@ -198,6 +199,7 @@ public final class ProcessInfo implements Serializable
 	@Getter private final AdProcessId adProcessId;
 	@Getter @Nullable private final RelationTypeId adRelationTypeId;
 	@Getter @Nullable private final ProcessOpenTarget openTarget;
+	@Getter private final boolean useAutoFilters;
 	private final int adTableId;
 	private final int recordId;
 	@Getter private final Set<TableRecordReference> selectedIncludedRecords;
@@ -808,6 +810,7 @@ public final class ProcessInfo implements Serializable
 
 		@Nullable private RelationTypeId adRelationTypeId;
 		@Nullable private ProcessOpenTarget openTarget;
+		@Nullable private Boolean useAutoFilters;
 
 		private ProcessInfoBuilder()
 		{
@@ -1158,6 +1161,27 @@ public final class ProcessInfo implements Serializable
 			return ProcessOpenTarget.ofNullableCode(process.getOpenTarget());
 		}
 
+		/**
+		 * Whether opening the target view (e.g. a relation-type overlay jump) shall also apply the target window's
+		 * own default filters ({@code AD_Process.IsUseAutoFilters}). When there is no {@code AD_Process} behind this
+		 * {@code ProcessInfo} (a programmatically-built one), this returns {@code true} — today's behaviour; only an
+		 * explicit {@code 'N'} on the AD_Process row turns filters off.
+		 */
+		public boolean isUseAutoFilters()
+		{
+			if (useAutoFilters != null)
+			{
+				return useAutoFilters;
+			}
+
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return true;
+			}
+			return process.isUseAutoFilters();
+		}
+
 		public ProcessInfoBuilder setAD_Process(final org.compiere.model.I_AD_Process adProcess)
 		{
 			this._adProcess = InterfaceWrapperHelper.create(adProcess, I_AD_Process.class);
@@ -1165,6 +1189,7 @@ public final class ProcessInfo implements Serializable
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
 			setAdRelationTypeId(RelationTypeId.ofRepoIdOrNull(_adProcess.getAD_RelationType_ID()));
 			setOpenTarget(ProcessOpenTarget.ofNullableCode(_adProcess.getOpenTarget()));
+			setUseAutoFilters(_adProcess.isUseAutoFilters());
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
 			setLogWarning(adProcess.isLogWarning());
 			return this;
@@ -1179,6 +1204,12 @@ public final class ProcessInfo implements Serializable
 		public ProcessInfoBuilder setOpenTarget(@Nullable final ProcessOpenTarget openTarget)
 		{
 			this.openTarget = openTarget;
+			return this;
+		}
+
+		public ProcessInfoBuilder setUseAutoFilters(@Nullable final Boolean useAutoFilters)
+		{
+			this.useAutoFilters = useAutoFilters;
 			return this;
 		}
 

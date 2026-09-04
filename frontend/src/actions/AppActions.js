@@ -96,6 +96,20 @@ export function deleteNotification(key) {
   };
 }
 
+export function showAcknowledgeDialog(title, text) {
+  return {
+    type: types.SHOW_ACKNOWLEDGE_DIALOG,
+    title,
+    text,
+  };
+}
+
+export function hideAcknowledgeDialog() {
+  return {
+    type: types.HIDE_ACKNOWLEDGE_DIALOG,
+  };
+}
+
 export function clearNotifications() {
   return (dispatch, getState) => {
     const { appHandler } = getState();

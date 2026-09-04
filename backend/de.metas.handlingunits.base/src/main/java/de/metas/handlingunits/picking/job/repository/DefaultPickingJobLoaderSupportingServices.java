@@ -68,6 +68,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final HashMap<PickingSlotId, PickingSlotIdAndCaption> pickingSlotIdAndCaptionsCache = new HashMap<>();
 	private final HashMap<ProductId, ProductInfo> productInfoCache = new HashMap<>();
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
+	private final HashMap<OrderAndLineId, Integer> salesOrderLineSeqNosCache = new HashMap<>();
 
 	@Override
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return profileService.getPickingJobOptions(customerId);}
@@ -183,9 +184,15 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public void warmUpSalesOrderLineSeqNosCache(@NonNull final Set<OrderAndLineId> orderAndLineIds)
+	{
+		CollectionUtils.getAllOrLoad(salesOrderLineSeqNosCache, orderAndLineIds, orderService::getSalesOrderLineSeqNos);
+	}
+
+	@Override
 	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
 	{
-		return orderService.getSalesOrderLineSeqNo(orderAndLineId);
+		return salesOrderLineSeqNosCache.computeIfAbsent(orderAndLineId, orderService::getSalesOrderLineSeqNo);
 	}
 
 	//
