@@ -614,3 +614,71 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | M_InOut_ID       | IsClosed | Processed |
       | planningSplit1_RL      | 10         | 0            | 5                        | 5                       | Incoming           | receiptSplit1_RL | false    | true      |
       | planningSplit2_RL      | 10         | 0            | 5                        | 5                       | Incoming           | receiptSplit2_RL | false    | true      |
+
+  @Id:S31789_TC10
+  Scenario: Processed is read from the row's own source - the planning on a planned row, the schedule on an unplanned one
+
+    # Processed is the shared blocker on both row types, but each row reads it from its OWN source: the
+    # planning's own Processed on a planned row, the receipt schedule's own Processed on an unplanned row.
+    # If the planned row read the schedule's flag instead, it would stay false here even after the planning
+    # is fully received - the schedule is never touched by receiving, only by closing it.
+    Given metasfresh contains C_Orders:
+      | Identifier                 | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderProcPlanned_RL        | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC10A     |
+      | orderProcUnplanned_RL      | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC10B     |
+    And metasfresh contains C_OrderLines:
+      | Identifier                 | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineProcPlanned_RL    | orderProcPlanned_RL    | product_RL              | 5          | shipperPlanning_RL          |
+      | orderLineProcUnplanned_RL  | orderProcUnplanned_RL  | product_RL              | 5          | shipperPlain_RL              |
+
+    When the order identified by orderProcPlanned_RL is completed
+    And the order identified by orderProcUnplanned_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleProcPlanned_RL          | orderProcPlanned_RL    | orderLineProcPlanned_RL   | vendor_RL                | vendorLocation_RL                 | product_RL               | 5          | warehouse_RL               |
+      | scheduleProcUnplanned_RL        | orderProcUnplanned_RL  | orderLineProcUnplanned_RL | vendor_RL                | vendorLocation_RL                 | product_RL               | 5          | warehouse_RL               |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID           |
+      | planningProcPlanned_RL | orderLineProcPlanned_RL  |
+
+    # Neither side is processed yet.
+    And after not more than 60s, the C_Order identified by orderProcPlanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID   | OPT.IsPlanned | OPT.Processed |
+      | rowProcPlanned_RL      | planningProcPlanned_RL | scheduleProcPlanned_RL | true          | false         |
+    And after not more than 60s, the C_Order identified by orderProcUnplanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID     | OPT.IsPlanned | OPT.Processed |
+      | rowProcUnplanned_RL    | null                    | scheduleProcUnplanned_RL | false         | false         |
+
+    # Receiving the planned row in full marks the PLANNING processed - the schedule underneath stays open.
+    When the receipt-logistics row identified by rowProcPlanned_RL is received:
+      | OPT.Qty | OPT.M_InOut_ID       |
+      | 5       | receiptProcPlanned_RL |
+
+    And validate M_In_Out status
+      | M_InOut_ID             | DocStatus |
+      | receiptProcPlanned_RL  | CO        |
+
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | Processed |
+      | planningProcPlanned_RL | 5          | 0            | Incoming            | true      |
+
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
+      | scheduleProcPlanned_RL          | orderProcPlanned_RL    | orderLineProcPlanned_RL   | vendor_RL                | vendorLocation_RL                 | product_RL               | 5          | warehouse_RL               | 5            | false         |
+
+    # The row's Processed follows the PLANNING, which is now true, even though its own schedule is still false.
+    Then after not more than 60s, the C_Order identified by orderProcPlanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID   | OPT.Processed |
+      | rowProcPlanned_RL      | planningProcPlanned_RL | scheduleProcPlanned_RL | true          |
+
+    # Closing the unplanned row's schedule marks the SCHEDULE processed - there is no planning to read instead.
+    And the M_ReceiptSchedule identified by scheduleProcUnplanned_RL is closed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier  | C_OrderLine_ID.Identifier  | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.Processed | IsClosed |
+      | scheduleProcUnplanned_RL        | orderProcUnplanned_RL  | orderLineProcUnplanned_RL  | vendor_RL                | vendorLocation_RL                 | product_RL               | 5          | warehouse_RL               | true          | true     |
+
+    And after not more than 60s, the C_Order identified by orderProcUnplanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID     | OPT.Processed |
+      | rowProcUnplanned_RL    | null                    | scheduleProcUnplanned_RL | true          |

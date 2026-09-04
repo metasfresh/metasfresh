@@ -88,6 +88,13 @@
 -- filtering only; it carries no statement about whether the row is currently actionable -- that stays
 -- with the receipt process's own preconditions.
 --
+-- PROCESSED. Sourced per branch, identity/context style, same reasoning as QtyToMove /
+-- IsConfirmedBySupplier above -- the planning's own Processed on branch one (dp.processed), the
+-- schedule's own Processed on branch two (rs.processed). Both tables already carry a real, stored
+-- Processed column. This is the shared blocker on both row types: it is set 'Y' for a planning once
+-- it is fully received (delivered), and for a schedule once it is closed -- never a derived
+-- expression, never read across branches.
+--
 -- SHIPPER. M_Shipper_ID reads from the already-JOINed C_Order alias (o.m_shipper_id), on BOTH
 -- branches -- one expression, no CASE, the same identity/context rule as product/partner/warehouse
 -- above. It does NOT read M_ReceiptSchedule.M_Shipper_ID (AD_Column 593496): that column is
@@ -178,6 +185,7 @@ SELECT dp.m_delivery_planning_id                                             AS 
         FROM m_shippertransportation st
                  JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
         WHERE sp.c_order_id = rs.c_order_id)                                 AS iswenotice,
+       dp.processed,
        dp.ad_client_id,
        dp.ad_org_id,
        dp.isactive,
@@ -240,6 +248,7 @@ SELECT 1000000000 + rs.m_receiptschedule_id                AS RV_ReceiptLogistic
         FROM m_shippertransportation st
                  JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
         WHERE sp.c_order_id = rs.c_order_id)                AS iswenotice,
+       rs.processed,
        rs.ad_client_id,
        rs.ad_org_id,
        rs.isactive,

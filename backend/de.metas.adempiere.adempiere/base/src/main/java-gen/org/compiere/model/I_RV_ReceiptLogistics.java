@@ -589,6 +589,27 @@ public interface I_RV_ReceiptLogistics
 	String COLUMNNAME_POReference = "POReference";
 
 	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_Processed = new ModelColumn<>(I_RV_ReceiptLogistics.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
 	 * Set Qty Ordered.
 	 * Qty Ordered
 	 *

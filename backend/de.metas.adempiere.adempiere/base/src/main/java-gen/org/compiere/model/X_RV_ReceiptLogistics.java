@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV_ReceiptLogistics, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 441150739L;
+	private static final long serialVersionUID = 1095324738L;
 
     /** Standard Constructor */
     public X_RV_ReceiptLogistics (final Properties ctx, final int RV_ReceiptLogistics_ID, @Nullable final String trxName)
@@ -322,6 +322,18 @@ public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV
 	public java.lang.String getPOReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_ValueNoCheck (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override
