@@ -4,7 +4,18 @@ FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
 FROM maven:3.8.4-jdk-8
 
-RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
+# security.debian.org is CDN-fronted; a single edge node can serve a stale 404 for one .deb while every
+# other node serves it (2026-09-04: node 146.75.122.132 returned 404 for locales_2.31-13+deb11u14 on
+# three consecutive runs, failing this image build each time — nothing to retry against, same node).
+# deb.debian.org mirrors the same debian-security suite under a different host, i.e. a different CDN
+# cache key: fall back to it when the primary install fails instead of failing the whole cucumber build.
+RUN apt-get update \
+    && ( apt-get install -y locales \
+         || { echo "locales install from security.debian.org failed; retrying via deb.debian.org mirror"; \
+              sed -i 's|http://security.debian.org/debian-security|http://deb.debian.org/debian-security|' /etc/apt/sources.list; \
+              apt-get update && apt-get install -y locales; } ) \
+    && rm -rf /var/lib/apt/lists/* \
+    && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
