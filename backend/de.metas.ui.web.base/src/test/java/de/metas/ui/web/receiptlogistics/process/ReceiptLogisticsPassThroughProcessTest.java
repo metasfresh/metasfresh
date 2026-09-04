@@ -37,6 +37,7 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.DocumentCollection;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -91,6 +92,11 @@ class ReceiptLogisticsPassThroughProcessTest
 		// back into a record; its production implementation drags in a slice of the shipping graph.
 		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.class,
 				Mockito.mock(PurchaseOrderToShipperTransportationRepository.class));
+
+		// Same reason, one level down: the process' own ReceiptScheduleActions field is constructed with it, and
+		// that class resolves the document collection in a FIELD (service-injection.md §2). Every test here
+		// replaces the actions object with a mock afterwards, so nothing in this class ever touches the real one.
+		SpringContextHolder.registerJUnitBean(DocumentCollection.class, Mockito.mock(DocumentCollection.class));
 
 		createReceiptScheduleRecord(RECEIPT_SCHEDULE_REPO_ID);
 		createReceiptScheduleRecord(OTHER_RECEIPT_SCHEDULE_REPO_ID);
