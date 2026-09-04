@@ -72,6 +72,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.LotNoContext;
@@ -85,7 +86,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -164,6 +167,146 @@ public class ReceiptFromReceiptScheduleService
 		return result;
 	}
 
+	/**
+	 * The WHOLE of the receipt-logistics window's MULTI-ROW receive: a selection that may hold planned rows,
+	 * unplanned rows, or both, received in one gesture.
+	 * <p>
+	 * <b>Routing is per ROW, on the nullable planning id</b> - the same discriminator the single-row actions
+	 * use, which is what lets one action serve a grid that unions two row types, mixed selection included.
+	 * Nothing extra is built for the mixed case; it is what per-row routing already produces.
+	 * <p>
+	 * <b>Grouping, and why it is what it is.</b> Rows are grouped by their delivery planning FIRST - every
+	 * unplanned row in one group, each planning in its own - and each group is then handed to
+	 * {@link #generateReceipts} as a single call, which splits it into receipts by
+	 * {@code InOutProducer#isNewReceiptRequired}: header aggregation key plus an unchanged {@code C_Order_ID}.
+	 * The outer grouping is not a preference: {@code CreateReceiptsParameters#deliveryPlanningId} stamps every
+	 * receipt header the call creates, and a receipt header holds ONE planning, so two plannings cannot share a
+	 * header. Within each group the aggregation rule is reused rather than reinvented, so a row produces the same
+	 * receipt shape whichever half of the view it came from.
+	 * <p>
+	 * <b>Groups are processed in order and each sees the previous one's effect.</b> That is what keeps the split
+	 * case honest: a split copies {@code M_ReceiptSchedule_ID} onto every new planning, so several rows can point
+	 * at ONE schedule and one order line. Receiving them together must not receive that line twice, so every row's
+	 * quantity is computed from the schedule's LIVE remaining quantity at the moment its group is built (see
+	 * {@link #getQtyToReceiveForRow}), and a row with nothing left simply contributes nothing instead of failing
+	 * the batch.
+	 *
+	 * @return the receipts created, in creation order; empty when the whole selection had nothing left to receive.
+	 */
+	public ImmutableList<InOutId> receiveRows(@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> rows)
+	{
+		final ImmutableList.Builder<InOutId> receiptIds = ImmutableList.builder();
+
+		for (final List<ReceiptScheduleAndDeliveryPlanningId> group : groupByDeliveryPlanning(rows))
+		{
+			receiptIds.addAll(receiveOneGroup(group));
+		}
+
+		return receiptIds.build();
+	}
+
+	/**
+	 * The selection split into the groups that may share a receipt header: one group per delivery planning, plus
+	 * ONE group holding every unplanned row. Order of first appearance is kept, so a selection produces the same
+	 * receipts every time it is received - and the split case in particular resolves deterministically.
+	 */
+	private static ImmutableList<List<ReceiptScheduleAndDeliveryPlanningId>> groupByDeliveryPlanning(
+			@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> rows)
+	{
+		final LinkedHashMap<Optional<DeliveryPlanningId>, List<ReceiptScheduleAndDeliveryPlanningId>> groups = new LinkedHashMap<>();
+
+		for (final ReceiptScheduleAndDeliveryPlanningId row : rows)
+		{
+			groups.computeIfAbsent(Optional.ofNullable(row.getDeliveryPlanningId()), k -> new ArrayList<>()).add(row);
+		}
+
+		return ImmutableList.copyOf(groups.values());
+	}
+
+	/**
+	 * One group - i.e. one delivery planning, or all the unplanned rows - received as ONE call, so its schedules
+	 * are grouped into receipts by the producer's own rule.
+	 */
+	private ImmutableList<InOutId> receiveOneGroup(@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> group)
+	{
+		final DeliveryPlanningId deliveryPlanningId = group.get(0).getDeliveryPlanningId();
+
+		final ImmutableList.Builder<I_M_ReceiptSchedule> receiptSchedules = ImmutableList.builder();
+		final ImmutableSet.Builder<HuId> huIdsToReceive = ImmutableSet.builder();
+		Quantity qtyReceivedTotal = null;
+
+		for (final ReceiptScheduleAndDeliveryPlanningId row : group)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(row.getReceiptScheduleId());
+			// The previous group may just have received against this very schedule - the split case, where several
+			// plannings share one. Without this the second row would draw the quantity the first one already took.
+			InterfaceWrapperHelper.refresh(receiptSchedule);
+
+			final Quantity qtyToReceive = getQtyToReceiveForRow(receiptSchedule, row.getDeliveryPlanningId());
+			final HuId vhuId = createPlanningVHU(receiptSchedule, qtyToReceive);
+			if (vhuId == null)
+			{
+				// Nothing left on this schedule: skip the row rather than failing the whole selection - the
+				// batch behaviour a dispatcher receiving a screenful of rows needs.
+				continue;
+			}
+
+			receiptSchedules.add(receiptSchedule);
+			huIdsToReceive.add(vhuId);
+			qtyReceivedTotal = qtyReceivedTotal == null ? qtyToReceive : qtyReceivedTotal.add(qtyToReceive);
+		}
+
+		final ImmutableSet<HuId> huIds = huIdsToReceive.build();
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final InOutGenerateResult result = generateReceipts(
+				receiptSchedules.build(), huIds, deliveryPlanningId, ReceiptMovementDateRule.CURRENT_DATE);
+
+		applyPlanningQuantityRules(deliveryPlanningId, Check.assumeNotNull(qtyReceivedTotal, "qtyReceivedTotal is set"));
+
+		return result.getInOuts().stream()
+				.map(receipt -> InOutId.ofRepoId(receipt.getM_InOut_ID()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * How much ONE row of a multi-row receive contributes.
+	 * <p>
+	 * <b>Unplanned row</b> - the schedule's own remaining quantity, exactly as the single-row "CUs annehmen"
+	 * receives it: nobody has planned this schedule, so there is no other figure to respect.
+	 * <p>
+	 * <b>Planned row</b> - the PLANNING's own planned discharge quantity, capped at what the schedule still has
+	 * left. This is what "the planning's quantity rules apply" means here, and the cap is what a shared schedule
+	 * makes necessary. A planning that carries no discharge figure yet (zero - the value a freshly generated
+	 * planning has, before anyone split or edited it) falls back to the schedule's remainder, which is precisely
+	 * what the single-row receive does for such a row, so one row received alone and the same row received in a
+	 * batch produce the same receipt.
+	 * <p>
+	 * A receipt occupies the DISCHARGE end, which is why the discharge figure is the one read (spec direction
+	 * rule: "receipt based unload, ship based load").
+	 */
+	private Quantity getQtyToReceiveForRow(
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		final Quantity scheduleRemainder = getDefaultQtyToReceive(receiptSchedule);
+		if (deliveryPlanningId == null)
+		{
+			return scheduleRemainder;
+		}
+
+		final BigDecimal plannedDischargeQty = deliveryPlanningService.getPlannedDischargeQuantity(deliveryPlanningId);
+		if (plannedDischargeQty == null || plannedDischargeQty.signum() <= 0)
+		{
+			return scheduleRemainder;
+		}
+
+		return Quantitys.of(plannedDischargeQty, UomId.ofRepoId(receiptSchedule.getC_UOM_ID())).min(scheduleRemainder);
+	}
+
 	/** The schedule's own remaining quantity to move - what "receive CUs" offers when the operator states nothing. */
 	public Quantity getDefaultQtyToReceive(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
@@ -205,17 +348,11 @@ public class ReceiptFromReceiptScheduleService
 	{
 		final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(request.getReceiptScheduleId());
 
-		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(
-				IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
-						.commitEachReceiptIndividually(false)
-						.movementDateRule(request.getMovementDateRule())
-						.ctx(Env.getCtx())
-						.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
-						.printReceiptLabels(true)
-						.receiptSchedules(ImmutableList.of(receiptSchedule))
-						.selectedHuIds(request.getHuIdsToReceive())
-						.deliveryPlanningId(DeliveryPlanningId.toRepoId(request.getDeliveryPlanningId()))
-						.build());
+		final InOutGenerateResult result = generateReceipts(
+				ImmutableList.of(receiptSchedule),
+				request.getHuIdsToReceive(),
+				request.getDeliveryPlanningId(),
+				request.getMovementDateRule());
 
 		final I_M_InOut receipt = result.getSingleInOut(I_M_InOut.class);
 
@@ -224,6 +361,38 @@ public class ReceiptFromReceiptScheduleService
 				.receivedHuIds(request.getHuIdsToReceive())
 				.productId(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()))
 				.build();
+	}
+
+	/**
+	 * The ONE call into the HU-aware receipt generation, for one schedule or many.
+	 * <p>
+	 * Handing SEVERAL schedules to a single call is what produces grouped receipts:
+	 * {@code InOutProducer#isNewReceiptRequired} starts a new receipt only when the header aggregation key
+	 * changes or the {@code C_Order_ID} does, so schedules that agree on both end up as lines of ONE receipt.
+	 * That grouping is not re-implemented here - it is reused, which is the point: one gesture must not yield
+	 * differently-grouped receipts depending on which half of the union view a row came from.
+	 * <p>
+	 * {@code deliveryPlanningId} is stamped on EVERY receipt header this call creates, which is why the
+	 * multi-row receive groups its rows by planning first: a receipt header holds one planning, so two plannings
+	 * cannot share one header. See {@link #receiveRows}.
+	 */
+	private InOutGenerateResult generateReceipts(
+			@NonNull final List<I_M_ReceiptSchedule> receiptSchedules,
+			@NonNull final ImmutableSet<HuId> huIdsToReceive,
+			@Nullable final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final ReceiptMovementDateRule movementDateRule)
+	{
+		return huReceiptScheduleBL.processReceiptSchedules(
+				IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
+						.commitEachReceiptIndividually(false)
+						.movementDateRule(movementDateRule)
+						.ctx(Env.getCtx())
+						.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
+						.printReceiptLabels(true)
+						.receiptSchedules(receiptSchedules)
+						.selectedHuIds(huIdsToReceive)
+						.deliveryPlanningId(DeliveryPlanningId.toRepoId(deliveryPlanningId))
+						.build());
 	}
 
 	/**

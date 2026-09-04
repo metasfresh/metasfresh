@@ -617,6 +617,26 @@ public class DeliveryPlanningService
 	}
 
 	/**
+	 * This planning's OWN planned discharge quantity - what it plans to receive, as opposed to what its receipt
+	 * schedule still has outstanding. The two differ exactly where it matters: a split copies
+	 * {@code M_ReceiptSchedule_ID} onto every new planning, so N plannings share ONE schedule and the schedule's
+	 * remaining quantity is the whole line's, not any single planning's. A receive that read the schedule for a
+	 * planned row would therefore let the first planning consume the whole line and starve its siblings.
+	 * <p>
+	 * A bare {@link BigDecimal} rather than a {@link Quantity}, matching what
+	 * {@code M_Delivery_Planning_GenerateReceipt} already passes: the figure is interpreted in the RECEIPT
+	 * SCHEDULE's UOM by whoever receives it, and inventing a conversion here would be a second convention.
+	 * <p>
+	 * Zero for a planning nobody has given a discharge figure yet - the value a freshly generated planning
+	 * carries ({@code plannedDischargeQty} is {@code Quantity.zero} at creation). The caller decides what to do
+	 * with that; it is not an error.
+	 */
+	public BigDecimal getPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.getById(deliveryPlanningId).getPlannedDischargeQuantity();
+	}
+
+	/**
 	 * Write-back for the generate-shipment process: the load-side sibling of
 	 * {@link #setPlannedDischargeQuantity} - a shipment reads/occupies the load end.
 	 */

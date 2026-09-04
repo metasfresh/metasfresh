@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.deliveryplanning;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -30,6 +31,7 @@ import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.deliveryplanning.receipt.CreateReceiptFromReceiptScheduleResult;
 import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
+import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
@@ -42,6 +44,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_RV_ReceiptLogistics;
 
 import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -104,6 +107,57 @@ public class RV_ReceiptLogistics_Receive_StepDef
 				.ifPresent(identifier -> inOutTable.putOrReplace(
 						identifier,
 						InterfaceWrapperHelper.load(result.getReceiptId(), I_M_InOut.class)));
+	}
+
+	/**
+	 * Receives SEVERAL grid rows in one gesture, the way the window's "Wareneingangsdispo zu Wareneingang"
+	 * action does, and binds the receipts it produced - in creation order - to the identifiers in the data table.
+	 * <p>
+	 * <b>The data table IS the grouping assertion.</b> One line per receipt the gesture must produce: two rows
+	 * that belong on one receipt yield ONE line, two rows that cannot share a header yield two. The step fails
+	 * when the count differs, so a change that merged or split receipts differently cannot pass unnoticed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) alias for one produced receipt, in creation order<br>
+	 * @cucumber.depends StepDefData: RV_ReceiptLogistics_StepDefData, M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the receipt-logistics rows identified by row_1, row_2, row_3 are received together:
+	 *   | M_InOut_ID |
+	 *   | receipt_1  |
+	 *   | receipt_2  |
+	 * </pre>
+	 */
+	@When("^the receipt-logistics rows identified by (.*) are received together:$")
+	public void receiveRowsTogether(@NonNull final String rowIdentifiers, @NonNull final DataTable dataTable)
+	{
+		final ImmutableList<ReceiptScheduleAndDeliveryPlanningId> sourceIds = Stream.of(rowIdentifiers.split(","))
+				.map(String::trim)
+				.map(receiptLogisticsTable::get)
+				// Exactly the pair the window's process extracts from each selected row, in the order the grid
+				// hands them over: the schedule is always there, the planning only on the planned branch.
+				.map(viewRow -> ReceiptScheduleAndDeliveryPlanningId.of(
+						ReceiptScheduleId.ofRepoId(viewRow.getM_ReceiptSchedule_ID()),
+						DeliveryPlanningId.ofRepoIdOrNull(viewRow.getM_Delivery_Planning_ID())))
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableList<InOutId> receiptIds = SpringContextHolder.instance
+				.getBean(ReceiptFromReceiptScheduleService.class)
+				.receiveRows(sourceIds);
+
+		final ImmutableList<DataTableRow> expectedReceipts = DataTableRows.of(dataTable).stream()
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(receiptIds)
+				.as("receipts produced by receiving %s together - one per expected data table row", rowIdentifiers)
+				.hasSize(expectedReceipts.size());
+
+		for (int i = 0; i < expectedReceipts.size(); i++)
+		{
+			expectedReceipts.get(i).getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID)
+					.putOrReplace(inOutTable, InterfaceWrapperHelper.load(receiptIds.get(i), I_M_InOut.class));
+		}
 	}
 
 	/**
