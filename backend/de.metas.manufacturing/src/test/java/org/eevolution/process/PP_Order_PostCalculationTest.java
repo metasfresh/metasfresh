@@ -81,6 +81,9 @@ class PP_Order_PostCalculationTest
 		// the process resolves it in a field initializer; doIt() is not under test here
 		costDifferenceDistributor = Mockito.mock(PPOrderCostDifferenceDistributor.class);
 		SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, costDifferenceDistributor);
+		// the zero-inbound-cost guard is a separate condition; default it to "something was issued" so each
+		// test below exercises only the condition it names
+		Mockito.when(costDifferenceDistributor.hasInboundCosts(Mockito.any())).thenReturn(true);
 	}
 
 	@Test
@@ -95,6 +98,20 @@ class PP_Order_PostCalculationTest
 	void notOffered_whenTheOrderHasNoCostsToDischarge()
 	{
 		givenOrderHasCosts(false);
+
+		assertThat(checkPreconditions(ppOrder(DocStatus.Completed)).isRejected()).isTrue();
+	}
+
+	/**
+	 * A completed order whose total inbound cost is zero received value out of nothing issued. What it carries
+	 * is not a cost difference, so the action must be refused rather than silently offered - running it would
+	 * remove the entire manufactured value from stock and close the order.
+	 */
+	@Test
+	void notOffered_whenNothingWasIssued()
+	{
+		givenOrderHasCosts(true);
+		Mockito.when(costDifferenceDistributor.hasInboundCosts(Mockito.any())).thenReturn(false);
 
 		assertThat(checkPreconditions(ppOrder(DocStatus.Completed)).isRejected()).isTrue();
 	}

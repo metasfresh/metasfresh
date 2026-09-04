@@ -24,6 +24,7 @@ package org.eevolution.process;
 
 import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -42,6 +43,9 @@ import javax.annotation.Nullable;
  */
 public class PP_Order_PostCalculation extends JavaProcess implements IProcessPrecondition
 {
+	/** Shown instead of the action when the order received value with no component ever issued. */
+	private static final AdMessageKey MSG_NoComponentIssued = AdMessageKey.of("org.eevolution.process.PP_Order_PostCalculation.NoComponentIssued");
+
 	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor = SpringContextHolder.instance.getBean(PPOrderCostDifferenceDistributor.class);
 
 	@Override
@@ -52,22 +56,34 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
 
-		final I_PP_Order ppOrder = context.getSelectedModel(I_PP_Order.class);
-		return ProcessPreconditionsResolution.acceptIf(isEligible(ppOrder));
+		return isEligible(context.getSelectedModel(I_PP_Order.class));
 	}
 
-	private boolean isEligible(@Nullable final I_PP_Order ppOrder)
+	private ProcessPreconditionsResolution isEligible(@Nullable final I_PP_Order ppOrder)
 	{
 		if (ppOrder == null)
 		{
-			return false;
+			return ProcessPreconditionsResolution.reject();
 		}
 
 		// Distributing closes the order, so this withdraws the action once the residual is discharged. After a
 		// PP_Order_UnClose it is offered again, correctly: a run without further activity finds nothing to discharge.
 		// Completed and Closed are distinct statuses, so isCompleted() alone already excludes a closed order.
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
-		return docStatus.isCompleted() && costDifferenceDistributor.hasOrderCosts(ppOrder);
+		if (!docStatus.isCompleted() || !costDifferenceDistributor.hasOrderCosts(ppOrder))
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+
+		// Refused WITH a reason rather than silently hidden: the order does show a difference, so a controller
+		// who cannot find the action needs to be told that what it shows is an un-issued receipt, not a cost
+		// difference.
+		if (!costDifferenceDistributor.hasInboundCosts(ppOrder))
+		{
+			return ProcessPreconditionsResolution.reject(MSG_NoComponentIssued);
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override

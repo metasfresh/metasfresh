@@ -300,6 +300,32 @@ public final class PPOrderCosts
 		return mainProductCost.getResidualCost();
 	}
 
+	/**
+	 * Whether anything was actually issued into the order, for the given accounting schema and cost element:
+	 * the accumulated amounts of the INBOUND rows (material issues and resource utilization) sum to non-zero.
+	 * <p>
+	 * When they sum to zero the order received value out of no input cost at all, so
+	 * {@code updatePostCalculationAmountsForCostElement} leaves the main product's post-calculation amount at
+	 * zero and the residual degenerates into minus the whole receipt. That is not a cost difference and must
+	 * not be dispositioned as one.
+	 * <p>
+	 * Inbound-ness is read from {@link PPOrderCost#isInboundCost()} rather than by listing transaction types,
+	 * so it stays aligned with {@code PPOrderCostTrxType}'s own outbound flag.
+	 */
+	public boolean hasInboundCosts(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId)
+	{
+		return costs.values().stream()
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.filter(PPOrderCost::isInboundCost)
+				.map(PPOrderCost::getAccumulatedAmount)
+				.reduce(CostAmount::add)
+				.map(totalInboundAmount -> !totalInboundAmount.isZero())
+				.orElse(false);
+	}
+
 	/** @return the single main-product cost row for the given schema and cost element, or {@code null}. */
 	@Nullable
 	public PPOrderCost getMainProductCostOrNull(

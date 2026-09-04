@@ -108,6 +108,27 @@ public class PPOrderCostDifferenceDistributor
 		return COSTING_METHODS_WITH_ORDER_COSTS.contains(acctSchema.getCosting().getCostingMethod());
 	}
 
+	/**
+	 * Whether anything was actually issued into this order. A completed order whose total inbound cost is zero
+	 * received value out of nothing issued, so its whole receipt shows up as a "difference" that is not one -
+	 * discharging it would strip the entire manufactured value out of stock and close the order.
+	 * <p>
+	 * Resolved from the accounting schema and its material cost element the same way
+	 * {@link #distribute(PPOrderId)} resolves the residual, so the guard and the amount that would post cannot
+	 * disagree.
+	 */
+	public boolean hasInboundCosts(@NonNull final I_PP_Order order)
+	{
+		final AcctSchema acctSchema = acctSchemasRepo.getByClientAndOrg(
+				ClientId.ofRepoId(order.getAD_Client_ID()),
+				OrgId.ofRepoId(order.getAD_Org_ID()));
+
+		final CostElementId materialCostElementId = getMaterialCostElementId(acctSchema.getCosting().getCostingMethod());
+
+		return ppOrderCostsService.getByOrderId(PPOrderId.ofRepoId(order.getPP_Order_ID()))
+				.hasInboundCosts(acctSchema.getId(), materialCostElementId);
+	}
+
 	public void distribute(@NonNull final PPOrderId orderId)
 	{
 		final I_PP_Order order = ppOrdersRepo.getById(orderId);
@@ -120,6 +141,14 @@ public class PPOrderCostDifferenceDistributor
 
 		final CostAmount residual = getResidualCostForOrderOrNull(orderId, acctSchemaId);
 		if (residual == null || residual.isZero())
+		{
+			return;
+		}
+
+		// Same refusal as the process precondition, repeated here so an API caller cannot bypass it: with no
+		// inbound cost the "residual" is just the whole receipt, and discharging it would remove the entire
+		// manufactured value from stock and close the order.
+		if (!hasInboundCosts(order))
 		{
 			return;
 		}
