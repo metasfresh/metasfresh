@@ -128,3 +128,25 @@ Feature: Closing a receipt disposition closes the purchase invoice candidate onl
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyDelivered | QtyToInvoice | IsDeliveryClosed | Processed |
       | invoiceCand_2                     | 40           | 40           | true             | false     |
+
+    # An open candidate is worth nothing unless it still invoices: run "Create Invoices" for it.
+    When run the invoicing process for invoice candidates:
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCand_2                     |
+
+    Then after not more than 120s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_2               | invoiceCand_2                     |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | processed | DocStatus |
+      | invoice_2               | bpartner_1               | l_1                               | true      | CO        |
+
+    # The invoice covers the 40 PCE received, not the 100 ordered: 40 PCE * 10.00 EUR.
+    And validate invoice lines for invoice_2:
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceActual | OPT.LineNetAmt |
+      | invoiceLine_2               | product                 | 40          | true      | 10              | 400            |
+
+    # Only now is the candidate done: its delivered part is invoiced, nothing is left to invoice.
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyInvoiced | QtyToInvoice | Processed |
+      | invoiceCand_2                     | 40          | 0            | true      |
