@@ -104,6 +104,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.util.TimeUtil.asTimestamp;
 
+/**
+ * Repository Tables: M_ShipmentSchedule (query owner), M_ShipmentSchedule_QtyPicked (read, {@link #loadByPackageIds}),
+ * M_ShipmentSchedule_Recompute (sub-query filter only), M_PackageLine (read, {@link #loadByPackageIds}),
+ * M_Locator (read, {@link #streamFromSegment}), C_Order (sub-query filter only)
+ * Repository Cluster: ShipmentScheduleRepository
+ */
 @Repository
 @RequiredArgsConstructor
 public class ShipmentScheduleRepository
@@ -572,6 +578,15 @@ public class ShipmentScheduleRepository
 	public ImmutableSet<ShipmentScheduleId> getIdsByQuery(@NonNull final ShipmentScheduleQuery query)
 	{
 		return toSqlQuery(query).create().idsAsSet(ShipmentScheduleId::ofRepoId);
+	}
+
+	/**
+	 * @return {@code true} if at least one shipment schedule matches the given query. Uses {@link IQuery#anyMatch()},
+	 * which does not fail when multiple records match, so it is safe to use as a plain existence probe.
+	 */
+	public boolean existsByQuery(@NonNull final ShipmentScheduleQuery query)
+	{
+		return toSqlQuery(query).create().anyMatch();
 	}
 
 	/** Dedup key for {@link #loadByPackageIds} — a (package, schedule) pair with value equality (avoids a string key). */
