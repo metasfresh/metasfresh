@@ -15,6 +15,15 @@
 
   .message {
     width: 90%;
+    // The dialog card itself never scrolled - only its inner qty/catch-weight table
+    // (.table-container, get-qty-dialog.scss) has its own fixed-height (70vh) scroll region.
+    // With `html{overflow:hidden}` (app-shell pattern, no page-level scroll) that left NO escape
+    // once optional content pushed the total past 100vh - e.g. 2+ configured editable attributes
+    // (EditableAttributesSection) rendered below the qty table pushed the Done/Cancel buttons
+    // fully off-screen and unreachable. Letting the whole card scroll when it overflows is a
+    // strict improvement: a dialog that already fits shows no scrollbar and is unaffected.
+    max-height: 100vh;
+    overflow-y: auto;
 
     .message-body {
       border-width: 0 !important;

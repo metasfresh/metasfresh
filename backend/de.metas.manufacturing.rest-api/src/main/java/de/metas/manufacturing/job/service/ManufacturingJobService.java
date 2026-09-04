@@ -13,6 +13,7 @@ import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
@@ -110,6 +111,7 @@ public class ManufacturingJobService
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
@@ -532,6 +534,7 @@ public class ManufacturingJobService
 				.productionDate(TimeUtil.asLocalDate(StringUtils.trimBlankToNull(receiveFrom.getProductionDate())))
 				.lotNo(receiveFrom.getLotNo())
 				.catchWeight(extractTargetCatchWeight(receiveFrom).orElse(null))
+				.attributes(receiveFrom.getAttributesAsMap())
 				.barcode(receiveFrom.getBarcode())
 				.receiveUnitType(receiveUnitType)
 				.tuPIItemProductIdForTUMode(receiveLine.getTuPIItemProductId())
@@ -544,6 +547,7 @@ public class ManufacturingJobService
 				.trxManager(trxManager)
 				.handlingUnitsBL(handlingUnitsBL)
 				.huStatusBL(huStatusBL)
+				.huAttributesBL(huAttributesBL)
 				.ppOrderBL(ppOrderBL)
 				.ppOrderBOMBL(ppOrderBOMBL)
 				.uomConversionBL(uomConversionBL)

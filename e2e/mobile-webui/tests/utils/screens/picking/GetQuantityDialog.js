@@ -64,6 +64,56 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
     }),
 
+    // ---------------------------------------------------------------------------------------------
+    // Generic editable-attributes section (EditableAttributesSection). Used by the mfg receive dialog,
+    // where Lot / Best-before / any configured attribute render as attr-<code>-field inside
+    // editable-attributes-section - NOT via the picking-only dedicated lotNo/bestBeforeDate rows above.
+    // <code> is the raw M_Attribute code (e.g. 'Lot-Nummer', 'HU_BestBeforeDate').
+    // ---------------------------------------------------------------------------------------------
+    expectEditableAttributeVisible: async (code) => await test.step(`${NAME} - Expect editable attribute '${code}' visible`, async () => {
+        await expect(page.getByTestId(`attr-${code}-field`)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectEditableAttributeNotVisible: async (code) => await test.step(`${NAME} - Expect editable attribute '${code}' not visible`, async () => {
+        await expect(page.getByTestId(`attr-${code}-field`)).not.toBeVisible();
+    }),
+
+    typeEditableAttribute: async (code, value) => await test.step(`${NAME} - Type editable attribute '${code}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${code}-field`);
+        await clickAndType(field, value);
+    }),
+
+    // Date-type editable attribute (renders the DateInput component). Same DD.MM.YYYY display-format
+    // contract as the dedicated best-before field; fill() sets the whole value in one event.
+    typeEditableAttributeDate: async (code, value) => await test.step(`${NAME} - Type editable date attribute '${code}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${code}-field`);
+        await field.tap();
+        await field.fill(value);
+    }),
+
+    // LIST-type editable attribute (renders a native <select>). `value` is the M_AttributeValue.Value code.
+    selectEditableAttribute: async (code, value) => await test.step(`${NAME} - Select editable attribute '${code}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${code}-field`);
+        await field.selectOption(value);
+    }),
+
+    expectEditableAttributesSectionVisible: async () => await test.step(`${NAME} - Expect editable-attributes section visible`, async () => {
+        await expect(page.getByTestId('editable-attributes-section')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectEditableAttributesSectionNotVisible: async () => await test.step(`${NAME} - Expect editable-attributes section not visible`, async () => {
+        await expect(page.getByTestId('editable-attributes-section')).toHaveCount(0);
+    }),
+
+    // Asserts the rendered order of the editable-attributes section's rows (attr-<code>-row) equals the
+    // given attribute-code order — proves SeqNo (config order), not e.g. alphabetical, drives field order.
+    expectEditableAttributesOrder: async (codesInOrder) => await test.step(`${NAME} - Expect editable attributes in order '${codesInOrder.join(', ')}'`, async () => {
+        const rows = page.locator('[data-testid="editable-attributes-section"] [data-testid$="-row"]');
+        const actualTestIds = await rows.evaluateAll((elements) => elements.map((el) => el.getAttribute('data-testid')));
+        const actualCodes = actualTestIds.map((testId) => testId.replace(/^attr-/, '').replace(/-row$/, ''));
+        expect(actualCodes).toEqual(codesInOrder);
+    }),
+
     expectSerialNoScanButtonVisible: async () => await test.step(`${NAME} - Expect SerialNo scan button visible`, async () => {
         await expect(page.getByTestId('serialNo-scan-button')).toBeVisible();
     }),

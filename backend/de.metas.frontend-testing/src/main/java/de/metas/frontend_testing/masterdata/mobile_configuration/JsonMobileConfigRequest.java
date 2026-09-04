@@ -13,6 +13,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -133,5 +134,13 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean isSkipFinishedGoodsReceiveTargetStep;
 		@Nullable Boolean isCaptureCatchWeightAtReceipt;
 		@Nullable Boolean isAllowReceiveWithoutPackingItem;
+
+		/**
+		 * Ordered list of {@code M_Attribute.Value} codes to configure as the mfg editable-attribute list
+		 * (global-only, v1 - see {@code de.metas.manufacturing.config.MobileUIManufacturingConfig#getEditableAttributeCodesInOrder()}).
+		 * When present (an empty list included), REPLACES the current global list; {@code null} leaves it untouched.
+		 * Each attribute must already exist (e.g. via the {@code attributes} masterdata section).
+		 */
+		@Nullable List<AttributeCode> editableAttributes;
 	}
 }

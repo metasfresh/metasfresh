@@ -734,6 +734,52 @@ public class PP_Order_StepDef
 		huTable.putOrReplace(tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID), manufacturedHu);
 	}
 
+	/**
+	 * Same lookup as {@code load manufactured HU for PP_Order:} above, but for a receive line that produced MORE
+	 * THAN ONE top-level HU in one call (e.g. a TU-only receive whose quantity spans several TUs) - registers
+	 * every produced HU, ordered by {@code M_HU_ID}, against the comma-separated {@code M_HU_ID} identifier list.
+	 *
+	 * @cucumber.columns
+	 *   <b>PP_Order_ID</b> - (required, identifier-ref) the manufacturing order<br>
+	 *   <b>M_HU_ID</b> - (required, identifier-ref, comma-separated) one identifier per produced HU, in
+	 *   {@code M_HU_ID} order
+	 * @cucumber.example
+	 * <pre>
+	 * And load manufactured HUs for PP_Order:
+	 *   | PP_Order_ID        | M_HU_ID                     |
+	 *   | manufacturingOrder | Produced_TU_1,Produced_TU_2 |
+	 * </pre>
+	 */
+	@And("load manufactured HUs for PP_Order:")
+	public void loadManufacturedHUsList(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::loadManufacturedHusRow);
+	}
+
+	private void loadManufacturedHusRow(@NonNull final DataTableRow tableRow)
+	{
+		final I_PP_Order ppOrder = tableRow.getAsOptionalIdentifier(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID)
+				.map(ppOrderTable::get)
+				.orElseThrow(() -> new AdempiereException("No PP_Order found for identifier " + tableRow.getAsString(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID)));
+
+		final List<I_M_HU> manufacturedHus = queryBL.createQueryBuilder(I_PP_Order_Qty.class)
+				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_BOMLine_ID, null)
+				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
+				.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_M_Product_ID, ppOrder.getM_Product_ID())
+				.orderBy(I_PP_Order_Qty.COLUMN_M_HU_ID)
+				.andCollect(I_PP_Order_Qty.COLUMN_M_HU_ID)
+				.create()
+				.list();
+
+		final List<StepDefDataIdentifier> huIdentifiers = tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID).toCommaSeparatedList();
+		assertThat(manufacturedHus).as("manufactured HUs for PP_Order " + ppOrder).hasSameSizeAs(huIdentifiers);
+
+		for (int i = 0; i < huIdentifiers.size(); i++)
+		{
+			huTable.putOrReplace(huIdentifiers.get(i), manufacturedHus.get(i));
+		}
+	}
+
 	@And("^the PP_Order (.*) is voided$")
 	public void voidPPOrder(@NonNull final String ppOrderIdentifier)
 	{

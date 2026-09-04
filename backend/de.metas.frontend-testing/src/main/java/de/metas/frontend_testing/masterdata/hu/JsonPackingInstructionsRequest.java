@@ -6,9 +6,11 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Value
 @Builder
@@ -70,6 +72,23 @@ public class JsonPackingInstructionsRequest
 	 * TU requests only — a {@code cu} request creates no CU-TU allocation, so this has no effect there.
 	 */
 	boolean referencedByProductPrice;
+
+	/**
+	 * {@code M_Attribute.Value} codes to declare as a writable {@code M_HU_PI_Attribute} slot on the
+	 * created TU's {@code M_HU_PI_Version} (mirrors the cucumber step {@code metasfresh contains
+	 * M_HU_PI_Attribute:} / {@code M_HU_PI_Attribute_StepDef}). Required for a generic (non-Lot/
+	 * Best-before/Production, non-GRAI) attribute submitted at a mobile receive to actually be
+	 * stamped onto the produced HU: the apply path's {@code hasAttribute} guard
+	 * ({@code ReceiveGoodsCommand#setSubmittedAttributesForReceivedHUs} /
+	 * {@code IHUAttributesBL#updateHUAttributeRecursive}) is gated by the HU's OWN
+	 * {@code M_HU_PI_Version}'s {@code M_HU_PI_Attribute} rows, NOT by the product's
+	 * {@code M_AttributeSet} membership (that membership only gates what the mobile UI *offers* -
+	 * see {@code MaterialReceiptActivityHandler}'s {@code editableAttributes} intersection).
+	 * <p>
+	 * TU requests only - a {@code cu} request has no {@code M_HU_PI_Version} of its own (uses the
+	 * system VIRTUAL PI), so this has no effect there.
+	 */
+	@Nullable List<AttributeCode> attributes;
 
 	public Identifier getTuNotNull() {return Check.assumeNotNull(tu, "tu must be set");}
 

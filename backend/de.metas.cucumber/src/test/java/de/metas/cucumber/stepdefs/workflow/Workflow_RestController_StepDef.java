@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
@@ -41,6 +42,8 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonTUReceivingTarget;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.order.OrderId;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
@@ -57,15 +60,19 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_Order;
 import org.eevolution.model.I_PP_Order;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,6 +94,7 @@ public class Workflow_RestController_StepDef
 	private final JsonWFHQRCode_StepDefData qrCodeTable;
 	private final JsonWFLineManufacturingMaterialReceipt_StepDefData materialReceiptLineTable;
 	private final JsonWFManufacturingReceivingTargetValues_StepDefData receivingTargetValuesTable;
+	private final M_Attribute_StepDefData attributeTable;
 	private final TestContext testContext;
 
 	@And("update duration for AD_Workflow nodes")
@@ -195,10 +203,51 @@ public class Workflow_RestController_StepDef
 		}
 	}
 
+	/**
+	 * Builds a {@link JsonManufacturingOrderEvent} from a DataTable and stores it as the context request payload
+	 * for a subsequent POST to {@code api/v2/manufacturing/event}.
+	 * <p>
+	 * Required columns (all events): {@code Event} ({@code IssueTo} or {@code ReceiveFrom}),
+	 * {@code WorkflowProcess} / {@code WorkflowActivity} (identifiers resolved via the workflow-process /
+	 * -activity tables). These, and every other column below, are read from the <b>first row only</b>.
+	 * <p>
+	 * {@code Event=IssueTo} — required: {@code WorkflowStep}, {@code WorkflowStepQRCode} (identifiers).
+	 * <p>
+	 * {@code Event=ReceiveFrom} — required: {@code WorkflowLine}, {@code WorkflowReceivingTargetValues}
+	 * (identifiers). Optional: {@code ReceiveTo} ({@code TU} receives straight into top-level TUs; default
+	 * aggregates to an LU), {@code CatchWeight} (e.g. {@code 0.5 KGM}), {@code BestBeforeDate},
+	 * {@code ProductionDate}, {@code LotNo} (the deprecated dedicated fields — a mobile caller instead submits
+	 * these through the generic map below).
+	 * <p>
+	 * Generic editable attributes ({@code Attribute} + {@code AttributeValue}, identifier resolved via
+	 * {@link de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData}) are, unlike the columns above, read
+	 * from <b>every</b> row that carries an {@code Attribute} cell — one row per attribute — so a single event
+	 * can submit several attribute values at once, exactly as the real mobile frontend submits its whole
+	 * attributes section with one receive. A present {@code Attribute} with an absent/blank {@code AttributeValue}
+	 * submits a null map value for that code (proving an empty submission is not stamped, vs. no attribute
+	 * submitted at all).
+	 * <p>
+	 * Example (single attribute):
+	 * <pre>
+	 * And create JsonManufacturingOrderEvent and store it in context as request payload:
+	 *   | Event       | ReceiveTo | Attribute       | AttributeValue | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+	 *   | ReceiveFrom | TU        | genericDateAttr | 2025-04-15     | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+	 * </pre>
+	 * Example (several attributes in one event — extra rows only need the {@code Attribute}/{@code AttributeValue}
+	 * cells, the rest are blank so they don't shadow row 1's values):
+	 * <pre>
+	 * And create JsonManufacturingOrderEvent and store it in context as request payload:
+	 *   | Event       | ReceiveTo | Attribute       | AttributeValue | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+	 *   | ReceiveFrom | TU        | genericAttr     | 12.5           | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+	 *   |             |           | genericDateAttr | 2025-04-15     |                             |                               |                                   |                                           |
+	 *   |             |           | genericStringAttr | Fragile      |                             |                               |                                   |                                           |
+	 * </pre>
+	 */
 	@And("create JsonManufacturingOrderEvent and store it in context as request payload:")
 	public void manufacturing_event_request_payload(@NonNull final DataTable dataTable)
 	{
-		final DataTableRow row = DataTableRow.singleRow(dataTable);
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+		final DataTableRow row = rows.get(0);
 
 		final String event = row.getAsString("Event");
 		final WFProcessId workflowProcess = row.getAsIdentifier("WorkflowProcess").lookupNotNullIn(workflowProcessTable);
@@ -228,28 +277,76 @@ public class Workflow_RestController_StepDef
 			final Quantity catchWeight = row.getAsOptionalQuantity("CatchWeight", uomDAO::getByX12DE355)
 					.orElse(null);
 
+			// ReceiveTo=TU receives straight into (possibly several) top-level TUs, without an LU wrapper -
+			// used to prove a generic attribute value lands on EVERY produced HU of the line.
+			final boolean receiveToTUOnly = row.getAsOptionalString("ReceiveTo").map("TU"::equalsIgnoreCase).orElse(false);
+
+			final JsonManufacturingOrderEvent.ReceiveFrom.ReceiveFromBuilder receiveFromBuilder = JsonManufacturingOrderEvent.ReceiveFrom.builder()
+					.lineId(workflowLine.getId())
+					.qtyReceived(workflowLine.getQtyToReceive())
+					.bestBeforeDate(row.getAsOptionalString("BestBeforeDate").orElse(null))
+					.productionDate(row.getAsOptionalString("ProductionDate").orElse(null))
+					.catchWeight(catchWeight != null ? catchWeight.toBigDecimal() : null)
+					.catchWeightUomSymbol(catchWeight != null ? catchWeight.getUOMSymbol() : null)
+					.lotNo(row.getAsOptionalString("LotNo").orElse(null))
+					.attributes(extractGenericAttributes(rows));
+
+			if (receiveToTUOnly)
+			{
+				receiveFromBuilder.aggregateToTU(JsonTUReceivingTarget.builder()
+						.newTU(JsonNewTUTarget.builder()
+									   .caption(receivingTargetValues.getTuCaption())
+									   .tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
+									   .build())
+						.build());
+			}
+			else
+			{
+				receiveFromBuilder.aggregateToLU(JsonLUReceivingTarget.builder()
+						.newLU(JsonNewLUTarget.builder()
+									   .luCaption(receivingTargetValues.getLuCaption())
+									   .tuCaption(receivingTargetValues.getTuCaption())
+									   .luPIItemId(HuPackingInstructionsItemId.ofRepoId(receivingTargetValues.getLuPIItemId()))
+									   .tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
+									   .build())
+						.build());
+			}
+
 			manufacturingOrderEventBuilder
 					.wfProcessId(workflowProcess.getAsString())
 					.wfActivityId(workflowActivity.getAsString())
-					.receiveFrom(JsonManufacturingOrderEvent.ReceiveFrom.builder()
-										 .lineId(workflowLine.getId())
-										 .qtyReceived(workflowLine.getQtyToReceive())
-										 .aggregateToLU(JsonLUReceivingTarget.builder()
-																.newLU(JsonNewLUTarget.builder()
-																			   .luCaption(receivingTargetValues.getLuCaption())
-																			   .tuCaption(receivingTargetValues.getTuCaption())
-																			   .luPIItemId(HuPackingInstructionsItemId.ofRepoId(receivingTargetValues.getLuPIItemId()))
-																			   .tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
-																			   .build())
-																.build())
-										 .bestBeforeDate(row.getAsOptionalString("BestBeforeDate").orElse(null))
-										 .catchWeight(catchWeight != null ? catchWeight.toBigDecimal() : null)
-										 .catchWeightUomSymbol(catchWeight != null ? catchWeight.getUOMSymbol() : null)
-										 .lotNo(row.getAsOptionalString("LotNo").orElse(null))
-										 .build());
+					.receiveFrom(receiveFromBuilder.build());
 		}
 
 		testContext.setRequestPayload(manufacturingOrderEventBuilder.build());
+	}
+
+	/**
+	 * Builds the generic editable-attribute value list from every row carrying an optional {@code Attribute}
+	 * (identifier, resolved via {@link M_Attribute_StepDefData}) + {@code AttributeValue} column - one row per
+	 * attribute, so a single event can submit several attribute values at once (see the multi-attribute example
+	 * on {@link #manufacturing_event_request_payload}). A blank/absent {@code AttributeValue} on a row that DOES
+	 * carry an {@code Attribute} still produces a list entry with a {@code null} value - this is how scenarios
+	 * prove that an empty submitted value is not stamped, as opposed to no attribute being submitted at all.
+	 * Rows with no {@code Attribute} cell (e.g. a first row that only carries the event's common columns) are
+	 * skipped. Returns {@code null} (not an empty list) when no row carries an {@code Attribute}.
+	 */
+	@Nullable
+	private List<JsonManufacturingOrderEvent.Attribute> extractGenericAttributes(@NonNull final List<DataTableRow> rows)
+	{
+		final List<JsonManufacturingOrderEvent.Attribute> attributes = rows.stream()
+				.filter(attributeRow -> attributeRow.getAsOptionalIdentifier("Attribute").isPresent())
+				.map(attributeRow -> {
+					final Attribute attribute = attributeRow.getAsOptionalIdentifier("Attribute")
+							.get() // present - already filtered above
+							.lookupNotNullIn(attributeTable);
+					return JsonManufacturingOrderEvent.Attribute.builder()
+							.code(attribute.getAttributeCode())
+							.value(attributeRow.getAsOptionalString("AttributeValue").orElse(null))
+							.build();
+				})
+				.collect(Collectors.toList());
+		return attributes.isEmpty() ? null : attributes;
 	}
 
 	private void updateADWorkflowNodes(@NonNull final DataTableRow row)

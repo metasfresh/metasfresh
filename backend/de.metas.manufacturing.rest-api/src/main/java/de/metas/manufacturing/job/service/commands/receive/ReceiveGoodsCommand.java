@@ -11,6 +11,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
@@ -45,7 +47,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
@@ -57,7 +62,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class ReceiveGoodsCommand
@@ -71,6 +78,7 @@ public class ReceiveGoodsCommand
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
 	@NonNull private final IHUStatusBL huStatusBL;
+	@NonNull private final IHUAttributesBL huAttributesBL;
 	@NonNull private final IUOMConversionBL uomConversionBL;
 	@NonNull private final IHUPPOrderBL ppOrderBL;
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
@@ -88,6 +96,14 @@ public class ReceiveGoodsCommand
 	@Nullable private final LocalDate productionDate;
 	@Nullable private final String lotNo;
 	@Nullable private final Quantity catchWeight;
+	/**
+	 * Generic editable-attribute values submitted with the receive event, with Lot/Best-before/Production date
+	 * already REMOVED (in the constructor) - those are producer-managed and routed to the
+	 * {@link IPPOrderReceiptHUProducer} setters via {@link #createHUProducer()} so the auto-lot gate and
+	 * creation-time timing stay untouched. Whatever remains here is applied post-creation onto every produced
+	 * HU's attribute storage, guarded by {@code hasAttribute} (see {@link #setSubmittedAttributesForReceivedHUs()}).
+	 */
+	@NonNull private final Map<AttributeCode, String> attributes;
 	@Nullable private final ScannedCode barcode;
 	/** Unit type for receiving goods (CU or TU). Determines how quantities are interpreted and displayed. */
 	@NonNull private final ReceiveUnitType receiveUnitType;
@@ -108,6 +124,7 @@ public class ReceiveGoodsCommand
 			@NonNull final ITrxManager trxManager,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IHUStatusBL huStatusBL,
+			@NonNull final IHUAttributesBL huAttributesBL,
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull final IHUPPOrderBL ppOrderBL,
 			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
@@ -123,6 +140,7 @@ public class ReceiveGoodsCommand
 			@Nullable final LocalDate productionDate,
 			@Nullable final String lotNo,
 			@Nullable final Quantity catchWeight,
+			@Nullable final Map<AttributeCode, String> attributes,
 			@Nullable final ScannedCode barcode,
 			@Nullable final ReceiveUnitType receiveUnitType,
 			@Nullable final HUPIItemProductId tuPIItemProductIdForTUMode)
@@ -130,6 +148,7 @@ public class ReceiveGoodsCommand
 		this.trxManager = trxManager;
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.huStatusBL = huStatusBL;
+		this.huAttributesBL = huAttributesBL;
 		this.uomConversionBL = uomConversionBL;
 		this.ppOrderBL = ppOrderBL;
 		this.ppOrderBOMBL = ppOrderBOMBL;
@@ -140,10 +159,26 @@ public class ReceiveGoodsCommand
 		this.receivingTarget = receivingTarget;
 		this.qtyToReceiveBD = qtyToReceiveBD;
 		this.date = date;
-		this.bestBeforeDate = bestBeforeDate;
-		this.productionDate = productionDate;
-		this.lotNo = StringUtils.trimBlankToNull(lotNo);
 		this.catchWeight = catchWeight;
+
+		// Lot / Best-before / Production date are producer-managed: the mobile frontend submits them through
+		// the generic `attributes` map, but they MUST reach the IPPOrderReceiptHUProducer setters (see
+		// createHUProducer) to keep the auto-lot gate (blank Lot -> sequence fires; typed Lot -> suppressed)
+		// and creation-time timing. So extract them from the map here (a non-blank map value wins over the
+		// deprecated dedicated ReceiveFrom field) and REMOVE them - that removal is the runtime-enforced
+		// exclusion stopping setSubmittedAttributesForReceivedHUs from re-stamping them post-creation, which
+		// would otherwise let the producer see a blank Lot and wrongly consume the sequence.
+		// NOTE: plain mutable HashMap - a submitted-but-empty attribute value is a null map value (see
+		// JsonManufacturingOrderEvent.ReceiveFrom#getAttributesAsMap), and ImmutableMap forbids null values.
+		final Map<AttributeCode, String> submittedAttributes = attributes != null ? new HashMap<>(attributes) : new HashMap<>();
+		final String lotNoFromAttributes = StringUtils.trimBlankToNull(submittedAttributes.remove(AttributeConstants.ATTR_LotNumber));
+		final String bestBeforeDateFromAttributes = StringUtils.trimBlankToNull(submittedAttributes.remove(AttributeConstants.ATTR_BestBeforeDate));
+		final String productionDateFromAttributes = StringUtils.trimBlankToNull(submittedAttributes.remove(AttributeConstants.ProductionDate));
+
+		this.lotNo = lotNoFromAttributes != null ? lotNoFromAttributes : StringUtils.trimBlankToNull(lotNo);
+		this.bestBeforeDate = bestBeforeDateFromAttributes != null ? TimeUtil.asLocalDate(bestBeforeDateFromAttributes) : bestBeforeDate;
+		this.productionDate = productionDateFromAttributes != null ? TimeUtil.asLocalDate(productionDateFromAttributes) : productionDate;
+		this.attributes = submittedAttributes;
 		this.barcode = barcode;
 		this.receiveUnitType = receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
 		this.tuPIItemProductIdForTUMode = tuPIItemProductIdForTUMode;
@@ -192,6 +227,7 @@ public class ReceiveGoodsCommand
 
 		saveReceivingTargetForLaterUse(receivingTarget);
 		setCatchWeightForReceivedHUs();
+		setSubmittedAttributesForReceivedHUs();
 
 		return line.withQtyReceived(getTotalQtyReceived())
 				.withReceivingTarget(receivingTarget);
@@ -530,6 +566,45 @@ public class ReceiveGoodsCommand
 				catchWeight);
 
 		weightUpdater.updatePackToHUs(receivedHUs);
+	}
+
+	/**
+	 * Applies the submitted generic editable-attribute values (Lot/Best-before/Production date already removed
+	 * from the map in the constructor - those go through {@link #createHUProducer()}'s setters) onto every HU of each produced top-level HU's hierarchy
+	 * (LU -&gt; TU -&gt; CU), via {@link IHUAttributesBL#updateHUAttributeRecursive(HuId, HUAttributeUpdateRequest)}
+	 * - the same recursive-walk API {@code AbstractPPOrderReceiptHUProducer#updateReceivedHUs} uses. This matters
+	 * because on the default receive target (aggregate-to-LU), {@link #receivedHUs} holds only the newly-created
+	 * LU wrapper, which carries no product/attribute storage of its own; the recursive walk reaches down to the
+	 * material-carrying TU/CU where the attribute actually lives. A blank/empty value is skipped (v1 does not set
+	 * anything for an empty entry, and nothing is enforced as mandatory). An attribute not present on a given HU's
+	 * storage (not part of that HU's own {@code M_HU_PI_Version}'s {@code M_HU_PI_Attribute} rows) is silently
+	 * skipped too - {@code updateHUAttributeRecursive} applies the same {@code hasAttribute} guard per HU node.
+	 */
+	private void setSubmittedAttributesForReceivedHUs()
+	{
+		if (attributes.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_M_HU hu : receivedHUs)
+		{
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+
+			for (final Map.Entry<AttributeCode, String> attributeToSet : attributes.entrySet())
+			{
+				final String value = StringUtils.trimBlankToNull(attributeToSet.getValue());
+				if (value == null)
+				{
+					continue;
+				}
+
+				huAttributesBL.updateHUAttributeRecursive(huId, HUAttributeUpdateRequest.builder()
+						.attributeCode(attributeToSet.getKey())
+						.attributeValue(value)
+						.build());
+			}
+		}
 	}
 
 	@NonNull

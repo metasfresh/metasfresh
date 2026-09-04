@@ -1,6 +1,7 @@
 package de.metas.inventory.mobileui.rest_api.json;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.attribute.json.JsonAttribute;
 import de.metas.handlingunits.inventory.InventoryLineHUId;
 import de.metas.product.ProductId;
 import lombok.Builder;

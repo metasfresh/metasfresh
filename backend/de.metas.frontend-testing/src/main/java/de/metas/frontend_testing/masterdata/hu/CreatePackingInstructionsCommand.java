@@ -21,6 +21,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_GRAI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
+import de.metas.javaclasses.JavaClassId;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
@@ -30,6 +32,7 @@ import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -45,6 +48,7 @@ import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -53,6 +57,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class CreatePackingInstructionsCommand
 {
 	private static final Logger logger = LogManager.getLogger(CreatePackingInstructionsCommand.class);
+
+	/** Same {@code HU_TansferStrategy_JavaClass_ID} the cucumber {@code M_HU_PI_Attribute_StepDef} uses. */
+	private static final JavaClassId COPY_TRANSFER_STRATEGY_ID = JavaClassId.ofRepoId(540027);
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -82,6 +89,7 @@ public class CreatePackingInstructionsCommand
 			tu = createPI(request.getTuNotNull(), HuUnitType.TU);
 			final HuPackingInstructionsItemId tuPIItemId = createPIItem_Material(tu);
 			tuPIItemProductTestId = createPIItemProduct(tuPIItemId);
+			assignCustomAttributes(tu);
 		}
 
 		//
@@ -227,6 +235,54 @@ public class CreatePackingInstructionsCommand
 				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, graiAttributeId)
 				.create()
 				.firstOnlyOrNull(I_M_HU_PI_Attribute.class);
+	}
+
+	/**
+	 * Declares a writable {@code M_HU_PI_Attribute} slot on the given TU packing-instruction version for every
+	 * attribute code in {@link JsonPackingInstructionsRequest#getAttributes()}, so HUs materialised from this PI
+	 * carry that attribute in their own storage - see {@link JsonPackingInstructionsRequest#getAttributes()}'s
+	 * Javadoc for why this is needed (the apply-side {@code hasAttribute} guard reads the HU's OWN PI version,
+	 * not the product's {@code M_AttributeSet}). Mirrors the cucumber step {@code M_HU_PI_Attribute_StepDef}.
+	 * <p>
+	 * Idempotent per attribute: an already-present slot is left untouched.
+	 */
+	private void assignCustomAttributes(@NonNull final PIResult tu)
+	{
+		final List<AttributeCode> attributeCodes = request.getAttributes();
+		if (attributeCodes == null || attributeCodes.isEmpty())
+		{
+			return;
+		}
+
+		final HuPackingInstructionsVersionId pivId = tu.getPivId();
+		for (final AttributeCode attributeCode : attributeCodes)
+		{
+			final AttributeId attributeId = attributeDAO.getAttributeIdByCode(attributeCode);
+
+			final boolean alreadyPresent = queryBL.createQueryBuilder(I_M_HU_PI_Attribute.class)
+					.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, pivId)
+					.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
+					.create()
+					.anyMatch();
+			if (alreadyPresent)
+			{
+				logger.info("HU-attribute slot for {} already present on M_HU_PI_Version_ID={}", attributeCode, pivId);
+				continue;
+			}
+
+			final I_M_HU_PI_Attribute piAttribute = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Attribute.class);
+			piAttribute.setM_HU_PI_Version_ID(pivId.getRepoId());
+			piAttribute.setM_Attribute_ID(attributeId.getRepoId());
+			piAttribute.setHU_TansferStrategy_JavaClass_ID(COPY_TRANSFER_STRATEGY_ID.getRepoId());
+			piAttribute.setIsActive(true);
+			piAttribute.setIsDisplayed(true);
+			piAttribute.setIsOnlyIfInProductAttributeSet(false);
+			piAttribute.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation);
+			piAttribute.setUseInASI(true);
+			saveRecord(piAttribute);
+
+			logger.info("Declared HU-attribute slot ({}) on M_HU_PI_Version_ID={}", attributeCode, pivId);
+		}
 	}
 
 	/**
