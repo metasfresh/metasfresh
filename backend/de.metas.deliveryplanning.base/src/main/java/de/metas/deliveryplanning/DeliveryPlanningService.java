@@ -130,6 +130,14 @@ public class DeliveryPlanningService
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_CancelAllocated = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.CancelAllocated");
 
+	/**
+	 * Rejects a receive action on an already-processed planning - one that was closed, or that already carries
+	 * its single receipt or shipment. Deliberately NOT {@link #MSG_M_Delivery_Planning_Closed}: that one says
+	 * "closed", which is a false statement about a delivered planning, and the two states are indistinguishable
+	 * through {@code Processed} anyway (Task Q10's invariant), so the wording has to cover both.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_Processed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Processed");
+
 	/** The mirror of {@link #MSG_M_Delivery_Planning_Closed}: rejects RE-OPENING a planning that is still open. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Open = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Open");
 
@@ -785,6 +793,7 @@ public class DeliveryPlanningService
 				.deliveryLocationId(extractShipToLocationIdOrNull(record, transportDirection, addresses))
 				.etd(TimeUtil.asInstant(record.getETD()))
 				.closed(record.isClosed())
+				.processed(record.isProcessed())
 				.allocations(allocationsByPlanningId.get(deliveryPlanningId))
 				.build();
 	}
@@ -1135,6 +1144,39 @@ public class DeliveryPlanningService
 			return Optional.of(TranslatableStrings.adMessage(
 					MSG_M_Delivery_Planning_Closed,
 					toIdList(selectedDeliveryPlannings.closedOnes())));
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * The given plannings as the in-memory list the receive actions' shared precondition is answered against -
+	 * one round trip for the whole selection.
+	 */
+	public DeliveryPlanningList getProcessedStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		return deliveryPlanningRepository.getProcessedStatePlannings(deliveryPlanningIds);
+	}
+
+	/**
+	 * Why the given selection may not RECEIVE, or empty when it may. The ONE definition of the precondition every
+	 * receive action started from the receipt-logistics window shares - the actions call this, they never restate
+	 * the rule.
+	 * <p>
+	 * ALL-or-nothing, like {@link #getCloseRejectionReason(DeliveryPlanningList)} and every sibling
+	 * selection-shaped action: a single processed row refuses the whole selection rather than being skipped, so
+	 * the planner is never handed a partial result they did not ask for. It names every offending row, so they
+	 * can deselect exactly those in one go.
+	 * <p>
+	 * One predicate covers both refusals - see {@link DeliveryPlanningList#anyProcessed()}.
+	 */
+	public Optional<ITranslatableString> getReceiveRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
+	{
+		if (selectedDeliveryPlannings.anyProcessed())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_Processed,
+					toIdList(selectedDeliveryPlannings.processedOnes())));
 		}
 
 		return Optional.empty();

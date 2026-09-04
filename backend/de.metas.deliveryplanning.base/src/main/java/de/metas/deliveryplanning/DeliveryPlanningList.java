@@ -168,6 +168,28 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 */
 	public DeliveryPlanningList openOnes() {return filter(deliveryPlanning -> !deliveryPlanning.isClosed());}
 
+	/**
+	 * Whether ANY planning in this selection is already processed - the shared precondition of every receive
+	 * action started from the receipt-logistics window.
+	 * <p>
+	 * ONE predicate rather than {@code anyClosed() || anyDelivered()}, because Task Q10's invariant
+	 * {@code Processed == (IsClosed || IsDelivered)} makes them the same question: a closed planning was called
+	 * off, a delivered one already carries the single receipt or shipment a planning may have, and neither may
+	 * receive again.
+	 * <p>
+	 * Affordable over a whole selection precisely because {@code Processed} is a STORED column (see
+	 * {@link DeliveryPlanning#isProcessed()}): it is read with the row. Deliberately NOT the shape of
+	 * {@link #anyAllocated()}, whose {@code IsAllocated} is a lazy-loading virtual column today and therefore
+	 * costs one query per row.
+	 */
+	public boolean anyProcessed() {return list.stream().anyMatch(DeliveryPlanning::isProcessed);}
+
+	/**
+	 * WHICH rows {@link #anyProcessed()} is true of - so a rejection can name every one of them at once and the
+	 * planner can deselect exactly those, instead of retrying row by row.
+	 */
+	public DeliveryPlanningList processedOnes() {return filter(DeliveryPlanning::isProcessed);}
+
 	public boolean anyAllocated() {return list.stream().anyMatch(DeliveryPlanning::isAllocated);}
 
 	public DeliveryPlanningList allocatedOnes() {return filter(DeliveryPlanning::isAllocated);}

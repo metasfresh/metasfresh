@@ -610,6 +610,7 @@ public class DeliveryPlanningRepository
 				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.transportDirection(extractTransportDirection(record))
+				.processed(record.isProcessed())
 				.qtyOrdered(Quantitys.of(record.getQtyOrdered(), uomId))
 				.plannedLoadedQty(Quantitys.of(record.getPlannedLoadedQuantity(), uomId))
 				.actualLoadedQty(Quantitys.of(record.getActualLoadQty(), uomId))
@@ -824,6 +825,46 @@ public class DeliveryPlanningRepository
 				// value object's @NonNull contract, so a blank/unset column (a real persisted row always has
 				// one; this covers a caller whose fixture record does not) falls back rather than throwing.
 				.transportDirection(TransportDirection.ofNullableCode(record.getTransportDirection(), TransportDirection.Outgoing))
+				.processed(record.isProcessed())
+				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
+				.build();
+	}
+
+	/**
+	 * The given plannings, carrying just enough for {@link DeliveryPlanning#isProcessed()} - what the receive
+	 * actions' shared precondition ({@link DeliveryPlanningList#anyProcessed()}) is answered against. ONE round
+	 * trip, via {@link #getByIds(Collection)}.
+	 * <p>
+	 * Distinct from {@link #getDeliveredStatePlannings} even though {@code Processed} implies delivered-or-closed:
+	 * that one answers an INSTRUCTION's three-state delivered indicator and must therefore read
+	 * {@code M_InOut_ID} per planning, while this one only has to decide whether a selected row may still receive.
+	 * Both are kept, rather than merged into a "loads a bit of everything" mapper, so each caller's cost stays
+	 * visible at its call site.
+	 */
+	public DeliveryPlanningList getProcessedStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		return getByIds(deliveryPlanningIds).stream()
+				.map(DeliveryPlanningRepository::toProcessedStatePlanning)
+				.collect(DeliveryPlanningList.collect());
+	}
+
+	/**
+	 * The minimal {@link DeliveryPlanning} {@link #getProcessedStatePlannings} needs. It carries {@code closed}
+	 * and {@code inOutId} beside {@code processed} although the guard reads only the latter: they are the two
+	 * halves of Task Q10's invariant {@code Processed == (IsClosed || IsDelivered)}, they are free (the record is
+	 * already in hand), and carrying them keeps the value object from asserting {@code processed} while silently
+	 * claiming to be neither closed nor delivered.
+	 */
+	private static DeliveryPlanning toProcessedStatePlanning(@NonNull final I_M_Delivery_Planning record)
+	{
+		return DeliveryPlanning.builder()
+				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				// same reason as toDeliveredStatePlanning: the guard never reads the direction, this only
+				// satisfies the shared value object's @NonNull contract
+				.transportDirection(TransportDirection.ofNullableCode(record.getTransportDirection(), TransportDirection.Outgoing))
+				.closed(record.isClosed())
+				.processed(record.isProcessed())
 				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.build();
 	}

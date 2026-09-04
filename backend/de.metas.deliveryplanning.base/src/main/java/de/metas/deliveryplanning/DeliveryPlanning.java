@@ -80,6 +80,23 @@ public class DeliveryPlanning
 	boolean closed;
 
 	/**
+	 * {@code M_Delivery_Planning.Processed}, read straight off the stored column - never re-derived here. Task
+	 * Q10 maintains the invariant {@code Processed == (IsClosed || IsDelivered)} at every write point, so this
+	 * ONE flag answers both questions a receive action has to ask before it produces anything: has this planning
+	 * been called off (closed), and does it already carry its single receipt or shipment (delivered). That is why
+	 * {@link DeliveryPlanningList#anyProcessed()} - and not a pair of predicates - is the shared precondition.
+	 * <p>
+	 * A stored column, so asking it over a whole selection costs nothing per row. Contrast {@link #isAllocated()},
+	 * which reads the {@link #allocations} the caller had to load.
+	 * <p>
+	 * UNLIKE the {@code @Nullable} fields above, this is a primitive whose unset value ({@code false}) is the
+	 * PERMISSIVE answer for a guard - "not processed, go ahead". So every mapper that builds a
+	 * {@link DeliveryPlanning} from an {@code M_Delivery_Planning} record must set it, even one that carries
+	 * nothing else about the planning's state; leaving it out would silently wave a processed planning through.
+	 */
+	boolean processed;
+
+	/**
 	 * The order line's ordered quantity, replicated onto every planning of that line - {@code null} for a
 	 * planning loaded by a caller that never asks {@link DeliveryPlanningList#openPlanQty} about it (e.g. the
 	 * aggregation preconditions), which is why this is not {@code @NonNull}.
