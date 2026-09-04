@@ -804,7 +804,8 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	 * API = API
 	 */
 	public static final String SOURCE_API = "API";
-
+	/** Unknown = UNK */
+	public static final String SOURCE_Unknown = "UNK";
 	@Override
 	public void setSource(final @Nullable String Source)
 	{
