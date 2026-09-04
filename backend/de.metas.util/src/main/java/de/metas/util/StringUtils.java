@@ -221,7 +221,7 @@ public final class StringUtils
 				result = string.substring(0, maxLength);
 				break;
 			default:
-				Check.errorIf(true, "Unexpected parameter TruncateAt={}; lenght={}; string={}", side, maxLength, string);
+				Check.errorIf(true, "Unexpected parameter TruncateAt={}; length={}; string={}", side, maxLength, string);
 				result = ""; // won't be reached;
 		}
 

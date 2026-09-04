@@ -125,7 +125,7 @@ public interface IWorkPackageQueue
 	/**
 	 * Indicates that all queue elements have been added to the given <code>workPackge</code>.
 	 *
-	 * @param callback callback to be called after workpackage gets processed (sucessful or not).
+	 * @param callback callback to be called after workpackage gets processed (successful or not).
 	 */
 	void markReadyForProcessing(I_C_Queue_WorkPackage workPackage, IQueueProcessorListener callback);
 
