@@ -19,20 +19,19 @@ Feature: report.getSalesPriceSpecialAndBase resolves the special and base price 
       | Identifier            |
       | customerPricingSystem |
     # override list (assigned, SO) -> base list (fallback, non-SO)
+    # Generic (country-less) price lists so root resolution matches the customer regardless of location country.
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | BasePriceList_ID.Identifier |
-      | baseList     | customerPricingSystem         | DE                    | EUR                 | false |                             |
-      | overrideList | customerPricingSystem         | DE                    | EUR                 | true  | baseList                    |
+      | Identifier   | M_PricingSystem_ID.Identifier | C_Currency.ISO_Code | SOTrx | BasePriceList_ID.Identifier |
+      | baseList     | customerPricingSystem         | EUR                 | false |                             |
+      | overrideList | customerPricingSystem         | EUR                 | true  | baseList                    |
     And metasfresh contains M_PriceList_Versions
       | Identifier          | M_PriceList_ID.Identifier | ValidFrom  |
       | baseListVersion     | baseList                  | 2022-05-01 |
       | overrideListVersion | overrideList              | 2022-05-01 |
+    # The bpartner's default location is named customerLocation via C_BPartner_Location_ID.
     And metasfresh contains C_BPartners:
-      | Identifier | M_PricingSystem_ID.Identifier |
-      | customer   | customerPricingSystem         |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier       | C_BPartner_ID.Identifier | C_Country_ID |
-      | customerLocation | customer                 | DE           |
+      | Identifier | M_PricingSystem_ID.Identifier | C_BPartner_Location_ID.Identifier |
+      | customer   | customerPricingSystem         | customerLocation                  |
 
   Scenario: article priced on both lists shows the base price and the customer special price
     Given metasfresh contains M_Products:
@@ -77,21 +76,18 @@ Feature: report.getSalesPriceSpecialAndBase resolves the special and base price 
       | Identifier             |
       | layeredPricingSystem   |
     And metasfresh contains M_PriceLists
-      | Identifier       | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | BasePriceList_ID.Identifier |
-      | trueBaseList     | layeredPricingSystem          | DE                    | EUR                 | false |                             |
-      | middleList       | layeredPricingSystem          | DE                    | EUR                 | false | trueBaseList                |
-      | assignedList     | layeredPricingSystem          | DE                    | EUR                 | true  | middleList                  |
+      | Identifier   | M_PricingSystem_ID.Identifier | C_Currency.ISO_Code | SOTrx | BasePriceList_ID.Identifier |
+      | trueBaseList | layeredPricingSystem          | EUR                 | false |                             |
+      | middleList   | layeredPricingSystem          | EUR                 | false | trueBaseList                |
+      | assignedList | layeredPricingSystem          | EUR                 | true  | middleList                  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier          | M_PriceList_ID.Identifier | ValidFrom  |
-      | trueBaseVersion     | trueBaseList              | 2022-05-01 |
-      | middleVersion       | middleList                | 2022-05-01 |
-      | assignedVersion     | assignedList              | 2022-05-01 |
+      | Identifier      | M_PriceList_ID.Identifier | ValidFrom  |
+      | trueBaseVersion | trueBaseList              | 2022-05-01 |
+      | middleVersion   | middleList                | 2022-05-01 |
+      | assignedVersion | assignedList              | 2022-05-01 |
     And metasfresh contains C_BPartners:
-      | Identifier      | M_PricingSystem_ID.Identifier |
-      | layeredCustomer | layeredPricingSystem          |
-    And metasfresh contains C_BPartner_Locations:
-      | Identifier              | C_BPartner_ID.Identifier | C_Country_ID |
-      | layeredCustomerLocation | layeredCustomer          | DE           |
+      | Identifier      | M_PricingSystem_ID.Identifier | C_BPartner_Location_ID.Identifier |
+      | layeredCustomer | layeredPricingSystem          | layeredCustomerLocation           |
     And metasfresh contains M_Products:
       | Identifier     |
       | layeredProduct |
