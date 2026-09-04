@@ -107,6 +107,13 @@ public class WEBUI_RV_ReceiptLogistics_ReceiveHUs_UsingConfig extends ReceiptLog
 		return _defaultLUTUConfiguration;
 	}
 
+	/** {@code true} - the operator types QtyLU / QtyTU / QtyCUsPerTU, so the packing is booked as stated. */
+	@Override
+	protected boolean isQtyToReceiveOperatorStated()
+	{
+		return true;
+	}
+
 	@Override
 	protected boolean isUpdateReceiptScheduleDefaultConfiguration()
 	{

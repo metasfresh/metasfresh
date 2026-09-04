@@ -131,8 +131,10 @@ public class ReceiptFromReceiptScheduleService
 
 	/**
 	 * The WHOLE of a "receive CUs" action, for either row type of the receipt-logistics grid: one planning VHU
-	 * carrying {@code qtyToReceiveOverride} (or the schedule's own remaining quantity when none is given), the
-	 * receipt booked against it, and - on a planned row - the planning's quantity rules applied.
+	 * carrying {@code qtyToReceiveOverride} (or, when none is given, the row's own quantity as
+	 * {@link #getQtyToReceive} resolves it - the planning's share on a planned row, the schedule's remainder on
+	 * an unplanned one), the receipt booked against it, and - on a planned row - the planning's quantity rules
+	 * applied.
 	 * <p>
 	 * It lives here rather than in the action so that the action is a thin adapter over behaviour that can be
 	 * driven, and asserted, without a WebUI view: {@code de.metas.cucumber} deliberately excludes
@@ -146,7 +148,7 @@ public class ReceiptFromReceiptScheduleService
 		final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(sourceIds.getReceiptScheduleId());
 		final Quantity qtyToReceive = qtyToReceiveOverride != null
 				? Quantitys.of(qtyToReceiveOverride, UomId.ofRepoId(receiptSchedule.getC_UOM_ID()))
-				: getDefaultQtyToReceive(receiptSchedule);
+				: getQtyToReceive(receiptSchedule, sourceIds.getDeliveryPlanningId());
 
 		final HuId vhuId = createPlanningVHU(receiptSchedule, qtyToReceive);
 		if (vhuId == null)
@@ -188,7 +190,7 @@ public class ReceiptFromReceiptScheduleService
 	 * case honest: a split copies {@code M_ReceiptSchedule_ID} onto every new planning, so several rows can point
 	 * at ONE schedule and one order line. Receiving them together must not receive that line twice, so every row's
 	 * quantity is computed from the schedule's LIVE remaining quantity at the moment its group is built (see
-	 * {@link #getQtyToReceiveForRow}), and a row with nothing left simply contributes nothing instead of failing
+	 * {@link #getQtyToReceive}), and a row with nothing left simply contributes nothing instead of failing
 	 * the batch.
 	 *
 	 * @return the receipts created, in creation order; empty when the whole selection had nothing left to receive.
@@ -242,7 +244,7 @@ public class ReceiptFromReceiptScheduleService
 			// plannings share one. Without this the second row would draw the quantity the first one already took.
 			InterfaceWrapperHelper.refresh(receiptSchedule);
 
-			final Quantity qtyToReceive = getQtyToReceiveForRow(receiptSchedule, row.getDeliveryPlanningId());
+			final Quantity qtyToReceive = getQtyToReceive(receiptSchedule, row.getDeliveryPlanningId());
 			final HuId vhuId = createPlanningVHU(receiptSchedule, qtyToReceive);
 			if (vhuId == null)
 			{
@@ -273,41 +275,73 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * How much ONE row of a multi-row receive contributes.
+	 * How much ONE row contributes when nobody states a quantity - the ONE rule, for a single-row receive and a
+	 * multi-row one alike.
 	 * <p>
-	 * <b>Unplanned row</b> - the schedule's own remaining quantity, exactly as the single-row "CUs annehmen"
-	 * receives it: nobody has planned this schedule, so there is no other figure to respect.
+	 * <b>Unplanned row</b> - the schedule's own remaining quantity: nobody has planned this schedule, so there is
+	 * no other figure to respect.
 	 * <p>
-	 * <b>Planned row</b> - the PLANNING's own planned discharge quantity, capped at what the schedule still has
-	 * left. This is what "the planning's quantity rules apply" means here, and the cap is what a shared schedule
-	 * makes necessary. A planning that carries no discharge figure yet (zero - the value a freshly generated
-	 * planning has, before anyone split or edited it) falls back to the schedule's remainder, which is precisely
-	 * what the single-row receive does for such a row, so one row received alone and the same row received in a
-	 * batch produce the same receipt.
+	 * <b>Planned row</b> - the PLANNING's own share ({@link #getPlannedShareToReceive}), capped at what the
+	 * schedule still has left. This is what "the planning's quantity rules apply" means here, and the cap is what
+	 * a shared schedule makes necessary.
+	 * <p>
+	 * <b>Why both paths MUST ask this and not the schedule.</b> A split copies {@code M_ReceiptSchedule_ID} onto
+	 * every new planning, so N plannings share ONE schedule and the schedule's remaining quantity is the whole
+	 * order line's. A receive that read the schedule for a planned row would let the first planning consume the
+	 * entire line and starve its siblings - they would show as receivable and refuse with "nothing to receive",
+	 * with no receipt, no delivered state and no way to get one from this window (see
+	 * {@link DeliveryPlanningService#getPlannedDischargeQuantity}). Two entry points resolving this differently is
+	 * the same defect wearing one button's clothes, so there is one method and both call it.
 	 * <p>
 	 * A receipt occupies the DISCHARGE end, which is why the discharge figure is the one read (spec direction
 	 * rule: "receipt based unload, ship based load").
 	 */
-	private Quantity getQtyToReceiveForRow(
+	public Quantity getQtyToReceive(
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
 			@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		final Quantity scheduleRemainder = getDefaultQtyToReceive(receiptSchedule);
+
+		return getPlannedShareToReceive(receiptSchedule, deliveryPlanningId)
+				.map(plannedShare -> plannedShare.min(scheduleRemainder))
+				.orElse(scheduleRemainder);
+	}
+
+	/**
+	 * The share the ROW itself imposes, or empty when it imposes none.
+	 * <p>
+	 * Empty for an <b>unplanned</b> row - it has no planning to read - and for a planning that carries no
+	 * discharge figure yet (zero: the value a freshly generated planning has, before anyone split or edited it),
+	 * which is not an error but "the planning has not said". Callers then fall back to whatever they would have
+	 * received anyway, so a freshly generated planning receives exactly what an unplanned row does and one row
+	 * received alone yields the same receipt as the same row received in a batch.
+	 * <p>
+	 * Kept apart from {@link #getQtyToReceive} because the two callers need different fallbacks: a CU receive
+	 * falls back to the schedule's remainder, an HU receive to the packing's own total (which legitimately rounds
+	 * up over the remainder, as the receipt-schedule window's does). Only the SHARE is shared.
+	 */
+	public Optional<Quantity> getPlannedShareToReceive(
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
 		if (deliveryPlanningId == null)
 		{
-			return scheduleRemainder;
+			return Optional.empty();
 		}
 
 		final BigDecimal plannedDischargeQty = deliveryPlanningService.getPlannedDischargeQuantity(deliveryPlanningId);
 		if (plannedDischargeQty == null || plannedDischargeQty.signum() <= 0)
 		{
-			return scheduleRemainder;
+			return Optional.empty();
 		}
 
-		return Quantitys.of(plannedDischargeQty, UomId.ofRepoId(receiptSchedule.getC_UOM_ID())).min(scheduleRemainder);
+		return Optional.of(Quantitys.of(plannedDischargeQty, UomId.ofRepoId(receiptSchedule.getC_UOM_ID())));
 	}
 
-	/** The schedule's own remaining quantity to move - what "receive CUs" offers when the operator states nothing. */
+	/**
+	 * The schedule's own remaining quantity to move - the whole ORDER LINE's remainder, which is why it is only
+	 * ever the FALLBACK of {@link #getQtyToReceive} and never the answer for a planned row.
+	 */
 	public Quantity getDefaultQtyToReceive(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final StockQtyAndUOMQty qtyToMove = receiptScheduleBL.getQtyToMove(receiptSchedule);

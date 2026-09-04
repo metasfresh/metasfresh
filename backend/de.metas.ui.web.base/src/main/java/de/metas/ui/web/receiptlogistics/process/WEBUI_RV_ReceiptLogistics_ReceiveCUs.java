@@ -25,6 +25,7 @@ package de.metas.ui.web.receiptlogistics.process;
 import de.metas.Profiles;
 import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 
@@ -56,7 +57,10 @@ public class WEBUI_RV_ReceiptLogistics_ReceiveCUs extends ReceiptLogisticsReceiv
 			return shared;
 		}
 
-		return receiptFromReceiptScheduleService.getDefaultQtyToReceive(getSelectedReceiptSchedule()).signum() > 0
+		// The ROW's own quantity, not the schedule's: on a planned row of a split the schedule can be exhausted
+		// while this planning's share is still outstanding (and the other way round), so asking the schedule
+		// would offer - or hide - the action against the wrong figure. Same rule the receive itself applies.
+		return getQtyToReceive().signum() > 0
 				? shared
 				: ProcessPreconditionsResolution.rejectWithInternalReason("nothing to receive");
 	}
@@ -76,6 +80,17 @@ public class WEBUI_RV_ReceiptLogistics_ReceiveCUs extends ReceiptLogisticsReceiv
 	protected void receive(@NonNull final ReceiptScheduleAndDeliveryPlanningId sourceIds)
 	{
 		receiptFromReceiptScheduleService.receiveCUs(sourceIds, getQtyToReceiveOverrideOrNull());
+	}
+
+	/**
+	 * What the selected row would receive with no quantity stated - resolved by the receive's own rule, so the
+	 * precondition, the operator-facing default and the booking cannot drift apart.
+	 */
+	protected final Quantity getQtyToReceive()
+	{
+		return receiptFromReceiptScheduleService.getQtyToReceive(
+				getSelectedReceiptSchedule(),
+				getSelectedSourceIds().getDeliveryPlanningId());
 	}
 
 	/**

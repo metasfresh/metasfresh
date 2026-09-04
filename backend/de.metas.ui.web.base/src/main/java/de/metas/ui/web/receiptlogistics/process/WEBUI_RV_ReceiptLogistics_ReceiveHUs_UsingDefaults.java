@@ -81,6 +81,13 @@ public class WEBUI_RV_ReceiptLogistics_ReceiveHUs_UsingDefaults extends ReceiptL
 				.format(HUPackingInfos.of(lutuConfig));
 	}
 
+	/** {@code false} - the one-click defaults are DERIVED from the schedule, so a planned row's share caps them. */
+	@Override
+	protected boolean isQtyToReceiveOperatorStated()
+	{
+		return false;
+	}
+
 	@Override
 	protected boolean isUpdateReceiptScheduleDefaultConfiguration()
 	{

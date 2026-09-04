@@ -23,6 +23,7 @@
 package de.metas.ui.web.receiptlogistics.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.deliveryplanning.receipt.CreateReceiptFromReceiptScheduleRequest;
 import de.metas.handlingunits.HuId;
@@ -42,6 +43,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -63,6 +65,13 @@ abstract class ReceiptLogisticsReceiveHUsProcess extends ReceiptLogisticsReceive
 
 	/** Whether the configuration the operator just used becomes the schedule's new default. */
 	protected abstract boolean isUpdateReceiptScheduleDefaultConfiguration();
+
+	/**
+	 * Whether the quantity in the LU/TU configuration is the OPERATOR's own statement rather than a default this
+	 * process derived. Every subclass must answer, because it decides whether a planned row's share caps it (see
+	 * {@link #getQtyToAllocate}).
+	 */
+	protected abstract boolean isQtyToReceiveOperatorStated();
 
 	@Override
 	protected final void receive(@NonNull final ReceiptScheduleAndDeliveryPlanningId sourceIds)
@@ -88,7 +97,8 @@ abstract class ReceiptLogisticsReceiveHUsProcess extends ReceiptLogisticsReceive
 		{
 			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
 		}
-		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
+		final Quantity qtyToAllocate = getQtyToAllocate(qtyCUsTotal, receiptSchedule, sourceIds.getDeliveryPlanningId());
+		huGenerator.setQtyToAllocateTarget(qtyToAllocate);
 
 		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
 		receiptFromReceiptScheduleService.updatePlanningHUAttributes(hus, receiptSchedule);
@@ -100,6 +110,39 @@ abstract class ReceiptLogisticsReceiveHUsProcess extends ReceiptLogisticsReceive
 				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 				.build());
 
-		receiptFromReceiptScheduleService.applyPlanningQuantityRules(sourceIds.getDeliveryPlanningId(), qtyCUsTotal);
+		receiptFromReceiptScheduleService.applyPlanningQuantityRules(sourceIds.getDeliveryPlanningId(), qtyToAllocate);
+	}
+
+	/**
+	 * How many CUs are actually booked out of the packing the configuration describes.
+	 * <p>
+	 * <b>An operator-stated packing is booked as stated</b> - "HUs annehmen" asks for the LU/TU/CU counts and
+	 * honours them, exactly as the CU receive honours a typed quantity and as
+	 * {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig} does; narrowing it behind the operator's back would
+	 * be a different action than the one pressed.
+	 * <p>
+	 * <b>A DERIVED default on a PLANNED row is capped at that planning's share.</b> This is the same defect the
+	 * single-row CU receive had: {@code ReceiptScheduleLUTUConfigurations.adjustToDefaults} derives its LU/TU
+	 * quantities from the SCHEDULE ({@code getQtyToMoveTU} and {@code QtyToMove}), and a split copies
+	 * {@code M_ReceiptSchedule_ID} onto every new planning, so the schedule's outstanding quantity is the whole
+	 * order line's. One-click receiving one row of a split would otherwise consume the line and leave the sibling
+	 * plannings unable to receive at all.
+	 * <p>
+	 * <b>An UNPLANNED row is left alone</b> - no planning, no share, and its receive must stay byte-for-byte what
+	 * window 541954 produces, packing rounding over the schedule's remainder included.
+	 */
+	private Quantity getQtyToAllocate(
+			@NonNull final Quantity qtyCUsFromPacking,
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		if (isQtyToReceiveOperatorStated())
+		{
+			return qtyCUsFromPacking;
+		}
+
+		return receiptFromReceiptScheduleService.getPlannedShareToReceive(receiptSchedule, deliveryPlanningId)
+				.map(qtyCUsFromPacking::min)
+				.orElse(qtyCUsFromPacking);
 	}
 }

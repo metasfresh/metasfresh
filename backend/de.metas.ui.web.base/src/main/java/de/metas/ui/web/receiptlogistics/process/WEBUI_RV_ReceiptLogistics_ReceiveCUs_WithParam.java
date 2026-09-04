@@ -54,8 +54,10 @@ public class WEBUI_RV_ReceiptLogistics_ReceiveCUs_WithParam extends WEBUI_RV_Rec
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
+		// Pre-filled with what pressing the quantity-less variant would receive - the ROW's own figure, so the
+		// operator of a split planned row is offered its share rather than the whole order line's remainder.
 		return PARAM_QtyCUsPerTU.equals(parameter.getColumnName())
-				? receiptFromReceiptScheduleService.getDefaultQtyToReceive(getSelectedReceiptSchedule()).toBigDecimal()
+				? getQtyToReceive().toBigDecimal()
 				: DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
