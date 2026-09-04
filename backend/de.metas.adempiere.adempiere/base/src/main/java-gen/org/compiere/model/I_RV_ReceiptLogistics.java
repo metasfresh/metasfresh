@@ -98,6 +98,27 @@ public interface I_RV_ReceiptLogistics
 	String COLUMNNAME_ATD = "ATD";
 
 	/**
+	 * Set Batch.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBatch (@Nullable java.lang.String Batch);
+
+	/**
+	 * Get Batch.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBatch();
+
+	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_Batch = new ModelColumn<>(I_RV_ReceiptLogistics.class, "Batch", null);
+	String COLUMNNAME_Batch = "Batch";
+
+	/**
 	 * Set KW.
 	 *
 	 * <br>Type: Number
@@ -323,6 +344,73 @@ public interface I_RV_ReceiptLogistics
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set B/L Received.
+	 * Has the bill of lading been received?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsBLReceived (boolean IsBLReceived);
+
+	/**
+	 * Get B/L Received.
+	 * Has the bill of lading been received?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isBLReceived();
+
+	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_IsBLReceived = new ModelColumn<>(I_RV_ReceiptLogistics.class, "IsBLReceived", null);
+	String COLUMNNAME_IsBLReceived = "IsBLReceived";
+
+	/**
+	 * Set Booking Confirmed.
+	 * Has the shipping booking been confirmed?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsBookingConfirmed (boolean IsBookingConfirmed);
+
+	/**
+	 * Get Booking Confirmed.
+	 * Has the shipping booking been confirmed?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isBookingConfirmed();
+
+	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_IsBookingConfirmed = new ModelColumn<>(I_RV_ReceiptLogistics.class, "IsBookingConfirmed", null);
+	String COLUMNNAME_IsBookingConfirmed = "IsBookingConfirmed";
+
+	/**
+	 * Set Confirmed by supplier.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsConfirmedBySupplier (boolean IsConfirmedBySupplier);
+
+	/**
+	 * Get Confirmed by supplier.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isConfirmedBySupplier();
+
+	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_IsConfirmedBySupplier = new ModelColumn<>(I_RV_ReceiptLogistics.class, "IsConfirmedBySupplier", null);
+	String COLUMNNAME_IsConfirmedBySupplier = "IsConfirmedBySupplier";
+
+	/**
 	 * Set Planned.
 	 * Indicates whether the row is backed by a delivery planning (planned) or only by a receipt schedule with no delivery planning (unplanned).
 	 *
@@ -344,6 +432,29 @@ public interface I_RV_ReceiptLogistics
 
 	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_IsPlanned = new ModelColumn<>(I_RV_ReceiptLogistics.class, "IsPlanned", null);
 	String COLUMNNAME_IsPlanned = "IsPlanned";
+
+	/**
+	 * Set WE Notice.
+	 * Has the container planning been completed?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsWENotice (boolean IsWENotice);
+
+	/**
+	 * Get WE Notice.
+	 * Has the container planning been completed?
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isWENotice();
+
+	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_IsWENotice = new ModelColumn<>(I_RV_ReceiptLogistics.class, "IsWENotice", null);
+	String COLUMNNAME_IsWENotice = "IsWENotice";
 
 	/**
 	 * Set Delivery Planning.
@@ -408,6 +519,29 @@ public interface I_RV_ReceiptLogistics
 
 	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_M_ReceiptSchedule_ID = new ModelColumn<>(I_RV_ReceiptLogistics.class, "M_ReceiptSchedule_ID", null);
 	String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_ID();
+
+	ModelColumn<I_RV_ReceiptLogistics, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_RV_ReceiptLogistics.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Warehouse.
@@ -476,6 +610,27 @@ public interface I_RV_ReceiptLogistics
 
 	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_QtyOrdered = new ModelColumn<>(I_RV_ReceiptLogistics.class, "QtyOrdered", null);
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
+
+	/**
+	 * Set Quantity to move.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToMove (@Nullable BigDecimal QtyToMove);
+
+	/**
+	 * Get Quantity to move.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToMove();
+
+	ModelColumn<I_RV_ReceiptLogistics, Object> COLUMN_QtyToMove = new ModelColumn<>(I_RV_ReceiptLogistics.class, "QtyToMove", null);
+	String COLUMNNAME_QtyToMove = "QtyToMove";
 
 	/**
 	 * Set Receipt Logistics.

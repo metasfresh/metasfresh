@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV_ReceiptLogistics, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 980824437L;
+	private static final long serialVersionUID = 441150739L;
 
     /** Standard Constructor */
     public X_RV_ReceiptLogistics (final Properties ctx, final int RV_ReceiptLogistics_ID, @Nullable final String trxName)
@@ -57,6 +57,18 @@ public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV
 	public java.sql.Timestamp getATD() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ATD);
+	}
+
+	@Override
+	public void setBatch (final @Nullable java.lang.String Batch)
+	{
+		set_ValueNoCheck (COLUMNNAME_Batch, Batch);
+	}
+
+	@Override
+	public java.lang.String getBatch() 
+	{
+		return get_ValueAsString(COLUMNNAME_Batch);
 	}
 
 	@Override
@@ -166,6 +178,42 @@ public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV
 	}
 
 	@Override
+	public void setIsBLReceived (final boolean IsBLReceived)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsBLReceived, IsBLReceived);
+	}
+
+	@Override
+	public boolean isBLReceived() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBLReceived);
+	}
+
+	@Override
+	public void setIsBookingConfirmed (final boolean IsBookingConfirmed)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsBookingConfirmed, IsBookingConfirmed);
+	}
+
+	@Override
+	public boolean isBookingConfirmed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBookingConfirmed);
+	}
+
+	@Override
+	public void setIsConfirmedBySupplier (final boolean IsConfirmedBySupplier)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsConfirmedBySupplier, IsConfirmedBySupplier);
+	}
+
+	@Override
+	public boolean isConfirmedBySupplier() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsConfirmedBySupplier);
+	}
+
+	@Override
 	public void setIsPlanned (final boolean IsPlanned)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsPlanned, IsPlanned);
@@ -175,6 +223,18 @@ public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV
 	public boolean isPlanned() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPlanned);
+	}
+
+	@Override
+	public void setIsWENotice (final boolean IsWENotice)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsWENotice, IsWENotice);
+	}
+
+	@Override
+	public boolean isWENotice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWENotice);
 	}
 
 	@Override
@@ -223,6 +283,21 @@ public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV
 	}
 
 	@Override
+	public void setM_Shipper_ID (final int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
+	}
+
+	@Override
+	public int getM_Shipper_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
+	}
+
+	@Override
 	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
@@ -259,6 +334,19 @@ public class X_RV_ReceiptLogistics extends org.compiere.model.PO implements I_RV
 	public BigDecimal getQtyOrdered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyToMove (final @Nullable BigDecimal QtyToMove)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyToMove, QtyToMove);
+	}
+
+	@Override
+	public BigDecimal getQtyToMove() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToMove);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

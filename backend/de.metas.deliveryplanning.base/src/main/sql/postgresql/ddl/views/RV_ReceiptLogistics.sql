@@ -88,6 +88,49 @@
 -- filtering only; it carries no statement about whether the row is currently actionable -- that stays
 -- with the receipt process's own preconditions.
 --
+-- SHIPPER. M_Shipper_ID reads from the already-JOINed C_Order alias (o.m_shipper_id), on BOTH
+-- branches -- one expression, no CASE, the same identity/context rule as product/partner/warehouse
+-- above. It does NOT read M_ReceiptSchedule.M_Shipper_ID (AD_Column 593496): that column is
+-- IsLazyLoading='Y', i.e. it has no physical value on the table -- it is an AD-level ColumnSQL
+-- ('select o.M_Shipper_ID from c_order o where o.C_Order_ID = M_ReceiptSchedule.C_Order_ID') that only
+-- the framework's lazy-column fetch machinery evaluates, not something a plain SQL view can select
+-- from m_receiptschedule. Reading o.m_shipper_id directly is the exact same value (same join key,
+-- c_order_id = rs.c_order_id) without depending on that indirection. Also does NOT read
+-- M_Delivery_Planning.M_Shipper_ID on branch one: that column is copied once, at creation, from
+-- C_OrderLine.M_Shipper_ID (GenerateIncomingDeliveryPlanningCommand), which can differ from the
+-- order HEADER's shipper (C_OrderLine.M_Shipper_ID defaults from the order at line-creation time but
+-- is never re-synced later) -- reading the order header uniformly on both branches avoids the two
+-- branches disagreeing about what "the shipper" means for the same concept.
+--
+-- QTYTOMOVE (the open-quantity figure). rs.qtytomove on BOTH branches -- M_ReceiptSchedule's own,
+-- already-maintained "how much is still outstanding to receive" (ReceiptScheduleQtysBL, clamped at
+-- zero, recalculated on every receipt). Every planned row has the same underlying schedule joined in,
+-- so this is identity/context, not plan-editable: M_Delivery_Planning.QtyTotalOpen is NOT used here
+-- because it is presently a stub that never recomputes after creation (it simply equals QtyOrdered
+-- until a separate, unrelated task gives it real behaviour) -- using the schedule's live figure on
+-- both branches shows the dispatcher the true outstanding amount instead of a frozen one. The
+-- order-line-level "how much is unplanned" figure (QtyTotalOpenPlanned on the planning window) is
+-- deliberately NOT mirrored here: this view's IsPlanned flag already answers "does a planning exist
+-- for this row" at the row grain that matters for a per-schedule dispatch list, and an order-line
+-- aggregate belongs to the sibling window that reasons about all of an order line's plannings.
+--
+-- BATCH. dp.batch on branch one (the planning's own, real column), NULL on branch two: a batch
+-- number is a fact about physical goods movement (HU tracking), which does not exist before a
+-- delivery planning -- let alone a receipt -- has been created for the schedule. This mirrors how
+-- M_Delivery_Planning_ID itself is already NULL on branch two: a per-branch column that legitimately
+-- carries no value on one side, not a "cannot be sourced" gap.
+--
+-- TRANSPORT CONFIRMATION FLAGS. IsConfirmedBySupplier reads the schedule's own real column
+-- (rs.isconfirmedbysupplier) on both branches -- identity/context, same reasoning as QtyToMove.
+-- IsBLReceived / IsBookingConfirmed / IsWENotice are NOT physical columns either (same lazy-loading
+-- shape as M_Shipper_ID): M_ReceiptSchedule's own AD_Column.ColumnSQL for each is
+-- '(SELECT max(st.<Flag>) FROM m_shippertransportation st JOIN m_shippingpackage sp ON
+-- sp.m_shippertransportation_id = st.m_shippertransportation_id WHERE sp.c_order_id =
+-- M_ReceiptSchedule.C_Order_ID)'. This view replicates that exact subquery, correlated on
+-- rs.c_order_id, on both branches -- the identical shape already used for containerno two paragraphs
+-- below, not a new join pattern. max() over char(1) is lexicographic (Y > N), matching the source
+-- column's own semantics: 'Y' the moment any attached shipper-transportation confirms it.
+--
 
 DROP VIEW IF EXISTS RV_ReceiptLogistics$new
 ;
@@ -119,6 +162,22 @@ SELECT dp.m_delivery_planning_id                                             AS 
                  JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
         WHERE sp.c_order_id = rs.c_order_id
           AND st.containerno IS NOT NULL)                                    AS containerno,
+       o.m_shipper_id,
+       rs.qtytomove,
+       dp.batch,
+       rs.isconfirmedbysupplier,
+       (SELECT max(st.isblreceived)
+        FROM m_shippertransportation st
+                 JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
+        WHERE sp.c_order_id = rs.c_order_id)                                 AS isblreceived,
+       (SELECT max(st.isbookingconfirmed)
+        FROM m_shippertransportation st
+                 JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
+        WHERE sp.c_order_id = rs.c_order_id)                                 AS isbookingconfirmed,
+       (SELECT max(st.iswenotice)
+        FROM m_shippertransportation st
+                 JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
+        WHERE sp.c_order_id = rs.c_order_id)                                 AS iswenotice,
        dp.ad_client_id,
        dp.ad_org_id,
        dp.isactive,
@@ -165,6 +224,22 @@ SELECT 1000000000 + rs.m_receiptschedule_id                AS RV_ReceiptLogistic
                  JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
         WHERE sp.c_order_id = rs.c_order_id
           AND st.containerno IS NOT NULL)                  AS containerno,
+       o.m_shipper_id,
+       rs.qtytomove,
+       NULL::character varying(250)                        AS batch,
+       rs.isconfirmedbysupplier,
+       (SELECT max(st.isblreceived)
+        FROM m_shippertransportation st
+                 JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
+        WHERE sp.c_order_id = rs.c_order_id)                AS isblreceived,
+       (SELECT max(st.isbookingconfirmed)
+        FROM m_shippertransportation st
+                 JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
+        WHERE sp.c_order_id = rs.c_order_id)                AS isbookingconfirmed,
+       (SELECT max(st.iswenotice)
+        FROM m_shippertransportation st
+                 JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
+        WHERE sp.c_order_id = rs.c_order_id)                AS iswenotice,
        rs.ad_client_id,
        rs.ad_org_id,
        rs.isactive,
