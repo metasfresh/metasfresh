@@ -71,13 +71,19 @@ Feature: report.getSalesPriceSpecialAndBase resolves the special and base price 
 
   # Three-level chain: assigned override -> middle override -> true base list. Base must come from the
   # true base list (90), not the middle override (80); Special is the nearest override (70).
+  # Every rung shares one country + currency (enforced by the M_PriceList interceptor), and a pricing
+  # system holds at most one SO and one non-SO list per country (unique index M_PriceList_UC_C_Country).
+  # A third rung therefore lives in a second pricing system: the customer's own system holds the assigned
+  # (SO) + middle (non-SO) lists; the middle list falls back to a global base list in a shared base pricing
+  # system. BasePriceList_ID may cross pricing systems.
   Scenario: three-level chain takes the base price from the true base list, not the middle override
     Given metasfresh contains M_PricingSystems
-      | Identifier             |
-      | layeredPricingSystem   |
+      | Identifier              |
+      | layeredPricingSystem    |
+      | globalBasePricingSystem |
     And metasfresh contains M_PriceLists
       | Identifier   | M_PricingSystem_ID.Identifier | C_Currency.ISO_Code | SOTrx | BasePriceList_ID.Identifier |
-      | trueBaseList | layeredPricingSystem          | EUR                 | false |                             |
+      | trueBaseList | globalBasePricingSystem       | EUR                 | false |                             |
       | middleList   | layeredPricingSystem          | EUR                 | false | trueBaseList                |
       | assignedList | layeredPricingSystem          | EUR                 | true  | middleList                  |
     And metasfresh contains M_PriceList_Versions
