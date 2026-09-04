@@ -32,7 +32,7 @@ import de.metas.dlm.partitioner.IIterateResultHandler.AddResult;
  */
 
 /**
- * Implementors are passed as paramter to {@link IRecordCrawlerService#crawl(de.metas.dlm.partitioner.config.PartitionConfig, IContextAware, IIterateResult)}.
+ * Implementors are passed as parameter to {@link IRecordCrawlerService#crawl(de.metas.dlm.partitioner.config.PartitionConfig, IContextAware, IIterateResult)}.
  * <p>
  * The crawler uses it both to add the records it found and to get the next record to load the incoming and outgoing references for.
  *

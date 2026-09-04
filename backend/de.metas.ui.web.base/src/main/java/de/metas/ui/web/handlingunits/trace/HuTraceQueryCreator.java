@@ -402,7 +402,7 @@ final class HuTraceQueryCreator
 
 	private static int extractInt(@NonNull final DocumentFilterParam parameter)
 	{
-		final Object value = Check.assumeNotNull(parameter.getValue(), "Given paramter may not have a null value; parameter={}", parameter);
+		final Object value = Check.assumeNotNull(parameter.getValue(), "Given parameter may not have a null value; parameter={}", parameter);
 
 		if (value instanceof LookupValue)
 		{
@@ -421,7 +421,7 @@ final class HuTraceQueryCreator
 
 	private static String extractString(@NonNull final DocumentFilterParam parameter)
 	{
-		final Object value = Check.assumeNotNull(parameter.getValue(), "Given paramter may not have a null value; parameter={}", parameter);
+		final Object value = Check.assumeNotNull(parameter.getValue(), "Given parameter may not have a null value; parameter={}", parameter);
 
 		if (value instanceof LookupValue)
 		{
