@@ -267,3 +267,99 @@ Feature: The receipt-logistics window lists what is arriving, planned or not
     And after not more than 60s, the C_Order identified by orderFlagUnplanned_RL has exactly the following rows in RV_ReceiptLogistics:
       | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID    | OPT.IsPlanned |
       | rowFlagUnplanned_RL    | null                   | scheduleFlagUnplanned_RL | false         |
+
+  @Id:S31789_TC7
+  Scenario: Receiving an unplanned row produces a plain receipt against its schedule
+
+    # An unplanned row is a receipt schedule nobody has planned. Receiving it must produce exactly what
+    # window 541954 produces: a completed receipt booked against that schedule and linked to NO delivery
+    # planning - the row has none to link to, and inventing one would be worse than omitting it.
+    Given metasfresh contains C_Orders:
+      | Identifier            | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderRcvUnplanned_RL  | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC7       |
+    And metasfresh contains C_OrderLines:
+      | Identifier               | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineRcvUnplanned_RL | orderRcvUnplanned_RL  | product_RL              | 7          | shipperPlain_RL             |
+
+    When the order identified by orderRcvUnplanned_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleRcvUnplanned_RL         | orderRcvUnplanned_RL  | orderLineRcvUnplanned_RL  | vendor_RL                | vendorLocation_RL                 | product_RL              | 7          | warehouse_RL              |
+    And after not more than 60s, the C_Order identified by orderRcvUnplanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID    | OPT.IsPlanned |
+      | rowRcvUnplanned_RL     | null                   | scheduleRcvUnplanned_RL | false         |
+
+    When the receipt-logistics row identified by rowRcvUnplanned_RL is received:
+      | OPT.Qty | OPT.M_InOut_ID       |
+      | 7       | receiptUnplanned_RL  |
+
+    And validate M_In_Out status
+      | M_InOut_ID          | DocStatus |
+      | receiptUnplanned_RL | CO        |
+
+    # The row carried no planning id, so the receipt carries none either - the null branch of the shared request.
+    And validate the delivery planning link of M_InOut:
+      | M_InOut_ID          | M_Delivery_Planning_ID |
+      | receiptUnplanned_RL | null                   |
+
+    # ... and the goods are booked on the schedule, which is what "the same receipt as window 541954" means.
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved |
+      | scheduleRcvUnplanned_RL         | orderRcvUnplanned_RL  | orderLineRcvUnplanned_RL  | vendor_RL                | vendorLocation_RL                 | product_RL              | 7          | warehouse_RL              | 7            |
+
+  @Id:S31789_TC8
+  Scenario: Receiving a planned row produces the receipt the delivery-planning window would, planning and all
+
+    # THE point of the shared request. A planned row hands the receive its M_Delivery_Planning_ID, the id
+    # travels INSIDE the request onto the draft receipt header, and the completion that happens in the same
+    # call fires the delivery-planning interceptor. Everything asserted below - the back-link on the planning,
+    # the actual discharge quantity, Processed, the open quantity going to zero - is derived from that one id
+    # being present BEFORE completion. Set afterwards, or dropped (which is what the HU-editor receive path
+    # does), every one of these assertions fails.
+    Given metasfresh contains C_Orders:
+      | Identifier          | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderRcvPlanned_RL  | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC8       |
+    And metasfresh contains C_OrderLines:
+      | Identifier             | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineRcvPlanned_RL | orderRcvPlanned_RL    | product_RL              | 5          | shipperPlanning_RL          |
+
+    When the order identified by orderRcvPlanned_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleRcvPlanned_RL           | orderRcvPlanned_RL    | orderLineRcvPlanned_RL    | vendor_RL                | vendorLocation_RL                 | product_RL              | 5          | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID         |
+      | planningRcvPlanned_RL  | orderLineRcvPlanned_RL |
+    And after not more than 60s, the C_Order identified by orderRcvPlanned_RL has exactly the following rows in RV_ReceiptLogistics:
+      | RV_ReceiptLogistics_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID  | OPT.IsPlanned |
+      | rowRcvPlanned_RL       | planningRcvPlanned_RL  | scheduleRcvPlanned_RL | true          |
+
+    # Nothing received yet: the discharge end is empty and the planning is still open.
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity | IsClosed | Processed |
+      | planningRcvPlanned_RL  | 5          | 5            | Incoming           | 0                       | false    | false     |
+
+    When the receipt-logistics row identified by rowRcvPlanned_RL is received:
+      | OPT.Qty | OPT.M_InOut_ID     |
+      | 5       | receiptPlanned_RL  |
+
+    And validate M_In_Out status
+      | M_InOut_ID        | DocStatus |
+      | receiptPlanned_RL | CO        |
+
+    # The link the HU-editor path silently omits.
+    And validate the delivery planning link of M_InOut:
+      | M_InOut_ID        | M_Delivery_Planning_ID |
+      | receiptPlanned_RL | planningRcvPlanned_RL  |
+
+    # ... and everything the interceptor derives from it, plus the planned-discharge write-back that
+    # M_Delivery_Planning_GenerateReceipt performs - i.e. exactly the state the delivery-planning window leaves.
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity | M_InOut_ID        | IsClosed | Processed |
+      | planningRcvPlanned_RL  | 5          | 0            | Incoming           | 5                        | 5                       | receiptPlanned_RL | false    | true      |
+
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved |
+      | scheduleRcvPlanned_RL           | orderRcvPlanned_RL    | orderLineRcvPlanned_RL    | vendor_RL                | vendorLocation_RL                 | product_RL              | 5          | warehouse_RL              | 5            |

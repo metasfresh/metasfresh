@@ -7,16 +7,13 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -84,36 +81,12 @@ import de.metas.util.Services;
 	 */
 	public static ProcessPreconditionsResolution checkEligibleForReceivingHUs(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		// Receipt schedule shall not be already closed
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-		if (receiptScheduleBL.isClosed(receiptSchedule))
-		{
-			return ProcessPreconditionsResolution.reject("receipt schedule closed");
-		}
-
-		// Receipt schedule shall not be about packing materials
-		if (receiptSchedule.isPackagingMaterial())
-		{
-			return ProcessPreconditionsResolution.reject("not applying for packing materials");
-		}
-
-		return ProcessPreconditionsResolution.accept();
-
+		return ReceiptScheduleReceiveEligibility.check(receiptSchedule);
 	}
 
 	protected static I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final I_M_HU_LUTU_Configuration lutuConfig = Services.get(IHUReceiptScheduleBL.class)
-				.createLUTUConfigurationManager(receiptSchedule)
-				.getCreateLUTUConfiguration();
-
-		// Make sure nobody is overriding the existing configuration
-		if (lutuConfig.getM_HU_LUTU_Configuration_ID() > 0)
-		{
-			InterfaceWrapperHelper.setSaveDeleteDisabled(lutuConfig, true);
-		}
-
-		return lutuConfig;
+		return ReceiptScheduleLUTUConfigurations.getCurrent(receiptSchedule);
 	}
 
 	@Override

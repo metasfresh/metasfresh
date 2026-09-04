@@ -4,32 +4,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.time.SystemTime;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningReceiptInfo;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.DeliveryPlanningShipmentInfo;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.sequence.DocSequenceId;
-import de.metas.handlingunits.ClearanceStatus;
+import de.metas.deliveryplanning.receipt.CreateReceiptFromReceiptScheduleRequest;
+import de.metas.deliveryplanning.receipt.CreateReceiptFromReceiptScheduleResult;
+import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
@@ -39,23 +22,20 @@ import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -68,15 +48,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.ILotNumberBL;
-import org.adempiere.mm.attributes.api.LotNoContext;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -117,6 +91,7 @@ class DeliveryPlanningGenerateProcessesHelper
 				.asyncBatchBL(Services.get(IAsyncBatchBL.class))
 				.msgBL(Services.get(IMsgBL.class))
 				.sysConfigBL(Services.get(ISysConfigBL.class))
+				.receiptFromReceiptScheduleService(SpringContextHolder.instance.getBean(ReceiptFromReceiptScheduleService.class))
 				.build();
 	}
 
@@ -146,12 +121,13 @@ class DeliveryPlanningGenerateProcessesHelper
 	private final IMsgBL msgBL;
 	private final ISysConfigBL sysConfigBL;
 
-	// stateless singletons used by the planning-VHU attribute copy (mirrors ReceiptScheduleBasedProcess)
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
-	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	/**
+	 * The ONE receive path - shared with the receipt-logistics window's actions, which receive the very same
+	 * schedules from a grid that unions planned and unplanned rows. See
+	 * {@link CreateReceiptFromReceiptScheduleRequest} for why the planning id must travel inside the request.
+	 */
+	private final ReceiptFromReceiptScheduleService receiptFromReceiptScheduleService;
+
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final HashMap<DeliveryPlanningId, Optional<DeliveryPlanningReceiptInfo>> receiptInfos = new HashMap<>();
@@ -177,7 +153,8 @@ class DeliveryPlanningGenerateProcessesHelper
 			@NonNull final IInOutDAO inOutDAO,
 			@NonNull final IAsyncBatchBL asyncBatchBL,
 			@NonNull final IMsgBL msgBL,
-			@NonNull final ISysConfigBL sysConfigBL)
+			@NonNull final ISysConfigBL sysConfigBL,
+			@NonNull final ReceiptFromReceiptScheduleService receiptFromReceiptScheduleService)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
 		this.shipmentService = shipmentService;
@@ -189,6 +166,7 @@ class DeliveryPlanningGenerateProcessesHelper
 		this.asyncBatchBL = asyncBatchBL;
 		this.msgBL = msgBL;
 		this.sysConfigBL = sysConfigBL;
+		this.receiptFromReceiptScheduleService = receiptFromReceiptScheduleService;
 	}
 
 	/**
@@ -513,221 +491,33 @@ class DeliveryPlanningGenerateProcessesHelper
 			throw new AdempiereException("Already received");
 		}
 
-		final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(receiptInfo.getReceiptScheduleId());
+		final ReceiptScheduleId receiptScheduleId = receiptInfo.getReceiptScheduleId();
+		final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(receiptScheduleId);
 		final Quantity qtyToReceive = Quantitys.of(request.getQtyToReceiveBD(), UomId.ofRepoId(receiptSchedule.getC_UOM_ID()));
 
-		final I_M_HU vhu = createPlanningVHU(receiptSchedule, qtyToReceive);
-		if (vhu == null)
+		final HuId vhuId = receiptFromReceiptScheduleService.createPlanningVHU(receiptScheduleId, qtyToReceive);
+		if (vhuId == null)
 		{
 			throw new AdempiereException("Failed receiving"); // shall not happen
 		}
-		final HuId vhuId = HuId.ofRepoId(vhu.getM_HU_ID());
 
-		// M_Delivery_Planning_ID travels WITH the request (CreateReceiptsParameters#deliveryPlanningId) so the
-		// receipt carries it while still a draft: processReceiptSchedules(...) COMPLETES the receipt before it
-		// returns, and interceptor/M_InOut#afterComplete - which derives the planning's delivered state, its
-		// actual discharge quantity, its Processed flag and the receipt back-link - only fires when the FK is
-		// already set at that moment.
-		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(
-				IHUReceiptScheduleBL.CreateReceiptsParameters.builder()
-						.commitEachReceiptIndividually(false)
+		// The planning id travels WITH the request rather than being written onto the finished receipt: the
+		// service COMPLETES the receipt before returning, and interceptor/M_InOut#afterComplete - which derives
+		// the planning's delivered state, its actual discharge quantity, its Processed flag and the receipt
+		// back-link - only fires when the FK is already set at that moment.
+		final CreateReceiptFromReceiptScheduleResult result = receiptFromReceiptScheduleService.createReceipt(
+				CreateReceiptFromReceiptScheduleRequest.builder()
+						.receiptScheduleId(receiptScheduleId)
+						.deliveryPlanningId(deliveryPlanningId)
+						.huIdsToReceive(ImmutableSet.of(vhuId))
 						.movementDateRule(ReceiptMovementDateRule.fixedDate(request.getReceiptDate()))
-						.ctx(Env.getCtx())
-						.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
-						.printReceiptLabels(true)
-						.receiptSchedules(ImmutableList.of(receiptSchedule))
-						.selectedHuIds(ImmutableSet.of(vhuId))
-						.deliveryPlanningId(deliveryPlanningId.getRepoId())
 						.build());
 
-		final I_M_InOut receipt = result.getSingleInOut(I_M_InOut.class);
-		final InOutId receiptId = InOutId.ofRepoId(receipt.getM_InOut_ID());
-
 		return DeliveryPlanningGenerateReceiptResult.builder()
-				.receiptId(receiptId)
+				.receiptId(result.getReceiptId())
 				.receivedVHUId(vhuId)
-				.productId(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()))
+				.productId(result.getProductId())
 				.qty(qtyToReceive)
 				.build();
 	}
-
-	/**
-	 * Creates a single planning VHU carrying {@code qtyToReceive} for the given receipt schedule, using the
-	 * branch-native allocation primitives (mirrors {@code WEBUI_M_ReceiptSchedule_ReceiveCUs.createPlanningVHU},
-	 * but with a caller-supplied qty instead of the schedule's remaining qty-to-move).
-	 */
-	@javax.annotation.Nullable
-	private I_M_HU createPlanningVHU(
-			@NonNull final I_M_ReceiptSchedule receiptSchedule,
-			@NonNull final Quantity qtyToReceive)
-	{
-		if (qtyToReceive.signum() <= 0)
-		{
-			return null;
-		}
-
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID());
-		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(Env.getCtx(), clientAndOrgId);
-
-		final I_M_Product product = productDAO.getById(receiptSchedule.getM_Product_ID());
-		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(product.getHUClearanceStatus());
-		final ClearanceStatusInfo clearanceStatusInfo;
-		if (clearanceStatus != null)
-		{
-			final String language = partnerOrgBL.getOrgLanguageOrLoggedInUserLanguage(clientAndOrgId.getOrgId());
-			clearanceStatusInfo = ClearanceStatusInfo.builder()
-					.clearanceStatus(clearanceStatus)
-					.clearanceNote(TranslatableStrings.adMessage(MESSAGE_ClearanceStatusInfo_Receipt).translate(language))
-					.clearanceDate(InstantAndOrgId.ofInstant(SystemTime.asInstant(), clientAndOrgId.getOrgId()))
-					.build();
-		}
-		else
-		{
-			clearanceStatusInfo = null;
-		}
-
-		final IAllocationRequest allocationRequest = AllocationUtils.builder()
-				.setHUContext(huContextInitial)
-				.setDateAsToday()
-				.setProduct(product)
-				.setQuantity(qtyToReceive)
-				.setFromReferencedModel(receiptSchedule)
-				.setForceQtyAllocation(true)
-				.setClearanceStatusInfo(clearanceStatusInfo)
-				.create();
-
-		// make sure the attributes are initialized (task 09717)
-		huReceiptScheduleBL.setInitialAttributeValueDefaults(allocationRequest, ImmutableList.of(receiptSchedule));
-
-		final IAllocationSource allocationSource = huReceiptScheduleBL.createAllocationSource(receiptSchedule);
-		final HUProducerDestination huProducer = HUProducerDestination.ofVirtualPI();
-
-		HULoader.of(allocationSource, huProducer)
-				.setAllowPartialUnloads(false)
-				.setAllowPartialLoads(false)
-				.load(allocationRequest);
-
-		final List<I_M_HU> hus = huProducer.getCreatedHUs();
-		if (hus == null || hus.size() != 1)
-		{
-			throw new HUException("One and only one VHU was expected but we got: " + hus);
-		}
-		final I_M_HU vhu = hus.get(0);
-
-		updatePlanningVHUAttributes(vhu, receiptSchedule);
-
-		return vhu;
-	}
-
-	/**
-	 * Copies the receipt schedule's Lot number, Best-Before-Date and Vendor attributes onto the freshly
-	 * created planning VHU. Mirrors {@code ReceiptScheduleBasedProcess.updateAttributes} — the only place this
-	 * logic exists on this branch is that process base class ({@code de.metas.ui.web.base}), which is not
-	 * reachable as a plain API here, so the three steps are reproduced.
-	 */
-	private void updatePlanningVHUAttributes(
-			@NonNull final I_M_HU vhu,
-			@NonNull final I_M_ReceiptSchedule receiptSchedule)
-	{
-		final IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
-		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(vhu);
-
-		setAttributeLotNumber(vhu, receiptSchedule, huAttributes);
-		setAttributeBBD(receiptSchedule, huAttributes);
-		setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
-	}
-
-	private void setAttributeLotNumber(
-			@NonNull final I_M_HU hu,
-			@NonNull final I_M_ReceiptSchedule receiptSchedule,
-			@NonNull final IAttributeStorage huAttributes)
-	{
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
-				&& Check.isBlank(huAttributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
-				&& huAttributesBL.isAutomaticallySetLotNumber())
-		{
-			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), HUAttributeUpdateRequest.builder()
-					.attributeCode(AttributeConstants.ATTR_LotNumber)
-					.attributeValue(hu.getValue())
-					.build());
-		}
-		else
-		{
-			final String lotNumber = getOrLoadLotNoFromSeq(receiptSchedule);
-			if (Check.isNotBlank(lotNumber))
-			{
-				huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), HUAttributeUpdateRequest.builder()
-						.attributeCode(AttributeConstants.ATTR_LotNumber)
-						.attributeValue(lotNumber)
-						.build());
-			}
-		}
-	}
-
-	@javax.annotation.Nullable
-	private String getOrLoadLotNoFromSeq(@NonNull final I_M_ReceiptSchedule receiptSchedule)
-	{
-		if (!lotNumberFromSeq.isPresent())
-		{
-			final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(receiptSchedule.getC_DocType_ID()));
-			final DocSequenceId lotNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getLotNo_Sequence_ID());
-			if (lotNoSequenceId != null)
-			{
-				lotNumberFromSeq = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
-						.sequenceId(lotNoSequenceId)
-						.clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
-						.build());
-			}
-		}
-		return lotNumberFromSeq.orElse(null);
-	}
-
-	private void setAttributeBBD(
-			@NonNull final I_M_ReceiptSchedule receiptSchedule,
-			@NonNull final IAttributeStorage huAttributes)
-	{
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-				&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null
-				&& huAttributesBL.isAutomaticallySetBestBeforeDate()
-				&& receiptSchedule.getMovementDate() != null)
-		{
-			final LocalDate bestBeforeDate = computeBestBeforeDate(
-					ProductId.ofRepoId(receiptSchedule.getM_Product_ID()),
-					TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
-			if (bestBeforeDate != null)
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-				huAttributes.saveChangesIfNeeded();
-			}
-		}
-	}
-
-	private void setVendorValueFromReceiptSchedule(
-			@NonNull final I_M_ReceiptSchedule receiptSchedule,
-			@NonNull final IAttributeStorage huAttributes)
-	{
-		if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
-				&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
-		{
-			final int bpId = receiptSchedule.getC_BPartner_ID();
-			if (bpId > 0)
-			{
-				huAttributes.setValue(AttributeConstants.ATTR_Vendor_BPartner_ID, bpId);
-				huAttributes.setSaveOnChange(true);
-				huAttributes.saveChangesIfNeeded();
-			}
-		}
-	}
-
-	@javax.annotation.Nullable
-	private LocalDate computeBestBeforeDate(@NonNull final ProductId productId, @NonNull final LocalDate datePromised)
-	{
-		final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
-		if (guaranteeDaysMin <= 0)
-		{
-			return null;
-		}
-		return datePromised.plusDays(guaranteeDaysMin);
-	}
-
 }
