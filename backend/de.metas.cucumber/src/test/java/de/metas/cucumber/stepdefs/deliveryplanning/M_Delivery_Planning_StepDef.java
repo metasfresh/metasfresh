@@ -64,6 +64,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
+import org.compiere.model.I_AD_Color;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -73,6 +74,8 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+
+import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
@@ -252,6 +255,10 @@ public class M_Delivery_Planning_StepDef
 	 *   <b>Processed</b> — (optional) expected {@code Processed}<br>
 	 *   <b>IsAllocated</b> — (optional) expected {@code IsAllocated}: {@code true} iff an ACTIVE
 	 *   {@code M_Delivery_Planning_Alloc} row currently references this planning<br>
+	 *   <b>IsDelivered</b> — (optional) expected {@code IsDelivered}: {@code true} iff the planning carries a
+	 *   receipt or shipment<br>
+	 *   <b>DeliveryStatus_Color_ID.Name</b> — (optional) expected {@code AD_Color.Name} of the status colour the
+	 *   planning resolves to; asserted alongside {@code IsDelivered} the two cannot silently disagree<br>
 	 *   <b>OrderStatus</b> — (optional, null-allowed) expected {@code OrderStatus}; {@code null} asserts the planning
 	 *   carries none<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (optional, identifier-ref, null-allowed) expected linked delivery
@@ -370,6 +377,15 @@ public class M_Delivery_Planning_StepDef
 			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsAllocated)
 					.ifPresent(isAllocated -> softly.assertThat(deliveryPlanning.isAllocated()).as(I_M_Delivery_Planning.COLUMNNAME_IsAllocated).isEqualTo(isAllocated));
 
+			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsDelivered)
+					.ifPresent(isDelivered -> softly.assertThat(deliveryPlanning.isDelivered()).as(I_M_Delivery_Planning.COLUMNNAME_IsDelivered).isEqualTo(isDelivered));
+
+			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_DeliveryStatus_Color_ID + ".Name")
+					.filter(Check::isNotBlank)
+					.ifPresent(expectedColorName -> softly.assertThat(getColorName(deliveryPlanning.getDeliveryStatus_Color_ID()))
+							.as(I_M_Delivery_Planning.COLUMNNAME_DeliveryStatus_Color_ID + ".Name")
+							.isEqualTo(expectedColorName));
+
 			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_OrderStatus)
 					.filter(Check::isNotBlank)
 					.ifPresent(orderStatus -> softly.assertThat(deliveryPlanning.getOrderStatus())
@@ -407,6 +423,21 @@ public class M_Delivery_Planning_StepDef
 
 			softly.assertAll();
 		});
+	}
+
+	/**
+	 * Resolves an {@code AD_Color_ID} to its name, so a feature file can name the colour it expects instead of
+	 * an instance-specific id. Returns {@code null} for "no colour at all", which is what a planning whose
+	 * status colour never got written looks like.
+	 */
+	@Nullable
+	private static String getColorName(final int colorRepoId)
+	{
+		if (colorRepoId <= 0)
+		{
+			return null;
+		}
+		return InterfaceWrapperHelper.load(colorRepoId, I_AD_Color.class).getName();
 	}
 
 	/**
