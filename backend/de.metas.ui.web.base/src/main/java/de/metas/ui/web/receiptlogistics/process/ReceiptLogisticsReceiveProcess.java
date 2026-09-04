@@ -22,19 +22,13 @@
 
 package de.metas.ui.web.receiptlogistics.process;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.deliveryplanning.receipt.CreateReceiptFromReceiptScheduleRequest;
 import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.process.ReceiptScheduleReceiveEligibility;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 
@@ -61,8 +55,6 @@ public abstract class ReceiptLogisticsReceiveProcess extends ReceiptLogisticsVie
 {
 	@NonNull protected final ReceiptFromReceiptScheduleService receiptFromReceiptScheduleService =
 			SpringContextHolder.instance.getBean(ReceiptFromReceiptScheduleService.class);
-
-	@NonNull protected final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 	/**
 	 * Books the row's goods: what is received into, how much, and - for a planned row - the planning id going
@@ -111,24 +103,4 @@ public abstract class ReceiptLogisticsReceiveProcess extends ReceiptLogisticsVie
 		return MSG_OK;
 	}
 
-	/**
-	 * The two source ids of the ONE selected row. Every action on this base is single-selection - the
-	 * multi-row receive is a separate action - so a selection of any other size is a programmer error rather
-	 * than something to iterate.
-	 */
-	@VisibleForTesting
-	protected final ReceiptScheduleAndDeliveryPlanningId getSelectedSourceIds()
-	{
-		final ImmutableSet<ReceiptScheduleAndDeliveryPlanningId> sourceIds = ImmutableSet.copyOf(getReceiptScheduleAndPlanningIds());
-		if (sourceIds.size() != 1)
-		{
-			throw new AdempiereException("Exactly one selected row is expected but got: " + sourceIds);
-		}
-		return sourceIds.iterator().next();
-	}
-
-	protected final I_M_ReceiptSchedule getSelectedReceiptSchedule()
-	{
-		return huReceiptScheduleBL.getById(getSelectedSourceIds().getReceiptScheduleId());
-	}
 }

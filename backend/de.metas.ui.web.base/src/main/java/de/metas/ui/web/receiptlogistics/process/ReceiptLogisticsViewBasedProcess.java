@@ -29,15 +29,20 @@ import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_RV_ReceiptLogistics;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -62,6 +67,19 @@ import java.util.Objects;
 public abstract class ReceiptLogisticsViewBasedProcess extends ViewBasedProcessTemplate
 {
 	@NonNull protected final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+
+	@NonNull protected final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+
+	/**
+	 * Puts a view and a row selection in front of this process the way the platform does, so a unit test can
+	 * assert WHICH records a selected row resolves to - the one thing these adapters own. {@code init} itself is
+	 * {@code protected final} on {@code ViewBasedProcessTemplate} and therefore unreachable from a test class.
+	 */
+	@VisibleForTesting
+	final void initForTesting(@NonNull final ViewAsPreconditionsContext context)
+	{
+		init(context);
+	}
 
 	/**
 	 * The source ids of every selected row, in the view's own order, one entry per row - planned rows carrying
@@ -138,5 +156,40 @@ public abstract class ReceiptLogisticsViewBasedProcess extends ViewBasedProcessT
 				.ifPresent(reason -> {
 					throw new AdempiereException(reason).markAsUserValidationError();
 				});
+	}
+
+	/**
+	 * The two source ids of the ONE selected row - every action on this window except the multi-row receive is
+	 * single-selection, so a selection of any other size is a programmer error rather than something to iterate.
+	 */
+	@VisibleForTesting
+	protected final ReceiptScheduleAndDeliveryPlanningId getSelectedSourceIds()
+	{
+		final ImmutableSet<ReceiptScheduleAndDeliveryPlanningId> sourceIds = ImmutableSet.copyOf(getReceiptScheduleAndPlanningIds());
+		if (sourceIds.size() != 1)
+		{
+			throw new AdempiereException("Exactly one selected row is expected but got: " + sourceIds);
+		}
+		return sourceIds.iterator().next();
+	}
+
+	/**
+	 * The receipt schedule of the ONE selected row - the record every pass-through action acts on, read off the
+	 * GRID ROW rather than out of a record reference (which on this window resolves as {@code RV_ReceiptLogistics}).
+	 */
+	protected final I_M_ReceiptSchedule getSelectedReceiptSchedule()
+	{
+		return huReceiptScheduleBL.getById(getSelectedSourceIds().getReceiptScheduleId());
+	}
+
+	/**
+	 * As {@link #getSelectedReceiptSchedule()}, but {@code null} when nothing is selected - for the one action
+	 * that is offered on an empty selection too ("Leergut Ausgabe" / "Leergut Rücknahme", which then create an
+	 * empty draft rather than one derived from a row).
+	 */
+	@Nullable
+	protected final I_M_ReceiptSchedule getSelectedReceiptScheduleOrNull()
+	{
+		return getSelectedRowIds().isEmpty() ? null : getSelectedReceiptSchedule();
 	}
 }

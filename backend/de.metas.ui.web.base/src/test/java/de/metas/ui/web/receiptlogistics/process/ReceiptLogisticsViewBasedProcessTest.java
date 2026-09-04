@@ -38,6 +38,7 @@ import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.MPackageRepository;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.TransportDirection;
@@ -106,6 +107,12 @@ class ReceiptLogisticsViewBasedProcessTest
 
 		SpringContextHolder.registerJUnitBean(deliveryPlanningService);
 		SpringContextHolder.registerJUnitBean(IViewsRepository.class, Mockito.mock(IViewsRepository.class));
+
+		// The HU receipt-schedule BL is resolved when any action on this base is constructed (it is what turns a
+		// row's receipt schedule id back into a record), and its implementation pulls in a slice of the shipping
+		// graph. Stubbed rather than built: nothing here loads a receipt schedule.
+		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.class,
+				Mockito.mock(PurchaseOrderToShipperTransportationRepository.class));
 	}
 
 	/**
