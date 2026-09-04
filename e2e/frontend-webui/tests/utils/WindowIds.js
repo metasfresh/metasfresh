@@ -64,6 +64,14 @@ export const DELIVERY_PLANNING_WINDOW_ID = 541632;
  */
 export const DELIVERY_INSTRUCTION_WINDOW_ID = 541657;
 
+/**
+ * Receipt Logistics window (Wareneingangsdisposition)
+ * Table: RV_ReceiptLogistics (AD_Table_ID=542644) — a union view over incoming delivery plannings and
+ * unplanned receipt schedules, single tab.
+ * Window ID: 542190
+ */
+export const RECEIPT_LOGISTICS_WINDOW_ID = 542190;
+
 // ============================================================================
 // MASTER DATA WINDOWS
 // ============================================================================
