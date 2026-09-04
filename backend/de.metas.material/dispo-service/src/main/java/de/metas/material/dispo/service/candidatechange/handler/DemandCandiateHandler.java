@@ -141,12 +141,16 @@ public class DemandCandiateHandler implements CandidateHandler
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(savedStockCandidate);
 
 		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
-		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
+		if (savedCandidate.getType().isDemand() && candidateSaveResult.getQtyDelta().signum() > 0)
 		{
 			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate());
 		}
 
-		if (candidateSaveResult.getQtyDelta().signum() < 0)
+		// only a DEMAND decrease means "less supply required"; mirror the increase branch above.
+		// The other handled types (ATTRIBUTES_CHANGED_FROM, UNEXPECTED_DECREASE, INVENTORY_DOWN) also
+		// carry a negative delta, but must NOT fire a supply-required-decreased event: SupplyRequiredEventCreator
+		// accepts only DEMAND/STOCK_UP and would reject them.
+		if (savedCandidate.getType().isDemand() && candidateSaveResult.getQtyDelta().signum() < 0)
 		{
 			fireSupplyRequiredDecreasedEventIfNeeded(savedCandidate, candidateSaveResult.getQtyDelta().negate());
 		}
