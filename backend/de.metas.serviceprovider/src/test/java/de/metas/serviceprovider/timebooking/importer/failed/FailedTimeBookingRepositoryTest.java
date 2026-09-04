@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class FailedTimeBookingRepositoryTest
 {
-	private final FailedTimeBookingRepository failedTimeBookingRepository = FailedTimeBookingRepository.newInstanceForUnitTesting();
+	private FailedTimeBookingRepository failedTimeBookingRepository;
 
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = null;
 	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
@@ -50,6 +50,9 @@ public class FailedTimeBookingRepositoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		// construct after init(): newInstanceForUnitTesting() requires JUnit test mode to be enabled
+		failedTimeBookingRepository = FailedTimeBookingRepository.newInstanceForUnitTesting();
 
 		MOCK_EXTERNAL_SYSTEM_EVERHOUR = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Everhour);
 		MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
