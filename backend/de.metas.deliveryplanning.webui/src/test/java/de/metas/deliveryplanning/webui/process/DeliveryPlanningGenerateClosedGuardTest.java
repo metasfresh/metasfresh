@@ -22,18 +22,22 @@
 
 package de.metas.deliveryplanning.webui.process;
 
+import de.metas.deliveryplanning.DeliveryInstructionRepository;
+import de.metas.deliveryplanning.DeliveryInstructionService;
+import de.metas.deliveryplanning.DeliveryPlanningAllocRepository;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
 import de.metas.deliveryplanning.MeansOfTransportationService;
 import de.metas.document.dimension.DimensionService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -60,16 +64,26 @@ class DeliveryPlanningGenerateClosedGuardTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final DeliveryPlanningRepository deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		final DeliveryInstructionRepository deliveryInstructionRepository = new DeliveryInstructionRepository(mock(DimensionService.class));
+		final DeliveryInstructionService deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
+
 		final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
-				new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)),
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
 
 		SpringContextHolder.registerJUnitBean(DeliveryPlanningService.class, deliveryPlanningService);
 		SpringContextHolder.registerJUnitBean(ShipmentService.class, Mockito.mock(ShipmentService.class));
+		// The helper now delegates the receipt itself to the shared receive path; newInstance() therefore
+		// resolves it, although these tests replace the whole helper with a stub before anything runs.
+		SpringContextHolder.registerJUnitBean(ReceiptFromReceiptScheduleService.class, Mockito.mock(ReceiptFromReceiptScheduleService.class));
 		SpringContextHolder.registerJUnitBean(
 				PurchaseOrderToShipperTransportationRepository.class,
 				Mockito.mock(PurchaseOrderToShipperTransportationRepository.class));

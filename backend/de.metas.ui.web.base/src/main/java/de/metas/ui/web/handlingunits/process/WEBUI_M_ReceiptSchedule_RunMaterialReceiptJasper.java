@@ -4,7 +4,6 @@ import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.report.HUReceiptScheduleReportExecutor;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 
@@ -56,14 +55,14 @@ public class WEBUI_M_ReceiptSchedule_RunMaterialReceiptJasper extends ReceiptSch
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	@Override
-	protected String doIt() throws Exception
-	{
-		final I_M_ReceiptSchedule receiptSchedule = getRecord(I_M_ReceiptSchedule.class);
+	// package-visible, non-final so a same-package unit test can substitute it; shared with the
+	// receipt-disposition delivery-planning window's adapter, which must print the very same report.
+	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
 
-		HUReceiptScheduleReportExecutor
-				.get(receiptSchedule)
-				.executeHUReport();
+	@Override
+	protected String doIt()
+	{
+		actions.runMaterialReceiptJasper(getRecord(I_M_ReceiptSchedule.class));
 
 		return MSG_OK;
 	}

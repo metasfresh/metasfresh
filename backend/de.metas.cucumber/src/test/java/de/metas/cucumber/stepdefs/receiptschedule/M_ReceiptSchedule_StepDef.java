@@ -180,7 +180,7 @@ public class M_ReceiptSchedule_StepDef
 		softly.assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
 
 		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsClosed)
-				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isIsClosed()).as("IsClosed").isEqualTo(isClosed));
+				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isClosed()).as("IsClosed").isEqualTo(isClosed));
 
 		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
 		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop)
@@ -211,6 +211,35 @@ public class M_ReceiptSchedule_StepDef
 
 		final List<I_M_ReceiptSchedule> purchaseOrderReceiptSchedules = producer.createOrUpdateReceiptSchedules(purchaseOrderLine, Collections.emptyList());
 		assertThat(purchaseOrderReceiptSchedules).isNull();
+	}
+
+	/**
+	 * Applies the operator's own overrides to an existing receipt schedule.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ReceiptSchedule_ID</b> — (required, identifier-ref) the receipt schedule to update<br>
+	 *   <b>OPT.DatePromised_Override</b> — (optional) the date the operator promises instead of the one the
+	 *   order carries; it is what {@code DatePromised_Effective} resolves to from then on<br>
+	 * @cucumber.depends StepDefData: M_ReceiptSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_ReceiptSchedule:
+	 *   | M_ReceiptSchedule_ID | OPT.DatePromised_Override |
+	 *   | receiptSchedule      | 2023-03-15                |
+	 * </pre>
+	 */
+	@And("update M_ReceiptSchedule:")
+	public void update_M_ReceiptSchedule(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_ReceiptSchedule receiptSchedule = row.getAsIdentifier(COLUMNNAME_M_ReceiptSchedule_ID).lookupNotNullIn(receiptScheduleTable);
+
+			row.getAsOptionalLocalDateTimestamp(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override)
+					.ifPresent(receiptSchedule::setDatePromised_Override);
+
+			saveRecord(receiptSchedule);
+		});
 	}
 
 	@And("^trigger (EMPTIES RECEIVE|EMPTIES RETURN) process:$")

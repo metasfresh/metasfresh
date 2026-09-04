@@ -2,18 +2,14 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
-import de.metas.handlingunits.inout.ReceiptCorrectHUsProcessor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -48,41 +44,17 @@ public class WEBUI_M_ReceiptSchedule_SelectHUsToReverse extends ReceiptScheduleB
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		// Receipt schedule shall not be already closed
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
-		if(receiptScheduleBL.isClosed(receiptSchedule))
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("already closed");
-		}
-
-		// Receipt schedule shall not be about packing materials
-		if (receiptSchedule.isPackagingMaterial())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not applying for packing materials");
-		}
-
-		if(receiptSchedule.getQtyMoved().signum()<=0)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("no receipts to be reversed");
-		}
-
-		return ProcessPreconditionsResolution.accept();
+		return actions.checkHUsToReverseApplicable(context.getSelectedModel(I_M_ReceiptSchedule.class));
 	}
 
-	@Override
-	protected String doIt() throws Exception
-	{
-		final I_M_ReceiptSchedule receiptSchedule = getRecord(I_M_ReceiptSchedule.class);
-		final List<I_M_HU> hus = ReceiptCorrectHUsProcessor.builder()
-				.setM_ReceiptSchedule(receiptSchedule)
-				.build()
-				.getAvailableHUsToReverse();
+	// package-visible, non-final so a same-package unit test can substitute it; shared with the
+	// receipt-disposition delivery-planning window's adapter, which must offer the very same HUs.
+	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
 
-		if (hus.isEmpty())
-		{
-			throw new AdempiereException("@NotFound@ @M_HU_ID@");
-		}
+	@Override
+	protected String doIt()
+	{
+		final List<I_M_HU> hus = actions.getHUsToReverse(getRecord(I_M_ReceiptSchedule.class));
 
 		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus));
 

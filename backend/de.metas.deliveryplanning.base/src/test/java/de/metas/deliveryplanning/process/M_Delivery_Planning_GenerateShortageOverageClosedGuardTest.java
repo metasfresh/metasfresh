@@ -22,15 +22,18 @@
 
 package de.metas.deliveryplanning.process;
 
+import de.metas.deliveryplanning.DeliveryInstructionRepository;
+import de.metas.deliveryplanning.DeliveryInstructionService;
+import de.metas.deliveryplanning.DeliveryPlanningAllocRepository;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
 import de.metas.deliveryplanning.MeansOfTransportationService;
 import de.metas.document.dimension.DimensionService;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.TransportDirection;
@@ -63,10 +66,17 @@ class M_Delivery_Planning_GenerateShortageOverageClosedGuardTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final DeliveryPlanningRepository deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		final DeliveryInstructionRepository deliveryInstructionRepository = new DeliveryInstructionRepository(mock(DimensionService.class));
+		final DeliveryInstructionService deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
+
 		final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
-				new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)),
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());

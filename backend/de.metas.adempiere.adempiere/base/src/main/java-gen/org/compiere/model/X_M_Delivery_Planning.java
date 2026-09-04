@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -734225450L;
+	private static final long serialVersionUID = 1456037581L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -231,11 +231,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setDeliveryStatus_Color_ID (final int DeliveryStatus_Color_ID)
 	{
-		if (DeliveryStatus_Color_ID < 1) 
-			set_Value (COLUMNNAME_DeliveryStatus_Color_ID, null);
-		else 
-			set_Value (COLUMNNAME_DeliveryStatus_Color_ID, DeliveryStatus_Color_ID);
-	}
+		throw new IllegalArgumentException ("DeliveryStatus_Color_ID is virtual column");	}
 
 	@Override
 	public int getDeliveryStatus_Color_ID() 
@@ -294,7 +290,8 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setIsAllocated (final boolean IsAllocated)
 	{
-		throw new IllegalArgumentException ("IsAllocated is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_IsAllocated, IsAllocated);
+	}
 
 	@Override
 	public boolean isAllocated() 
@@ -611,6 +608,19 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public BigDecimal getQtyTotalOpen() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTotalOpen);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyTotalOpenPlanned (final @Nullable BigDecimal QtyTotalOpenPlanned)
+	{
+		set_Value (COLUMNNAME_QtyTotalOpenPlanned, QtyTotalOpenPlanned);
+	}
+
+	@Override
+	public BigDecimal getQtyTotalOpenPlanned() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTotalOpenPlanned);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

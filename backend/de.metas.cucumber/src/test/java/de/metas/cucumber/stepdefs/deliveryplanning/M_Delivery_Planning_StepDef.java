@@ -36,8 +36,10 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.deliveryplanning.DeliveryPlanningCancelResult;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.process.M_Delivery_Planning_Close;
@@ -62,14 +64,18 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
+import org.compiere.model.I_AD_Color;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+
+import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
@@ -98,6 +104,7 @@ public class M_Delivery_Planning_StepDef
 	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
+	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final DeliveryPlanningRejectionHelper rejectionHelper;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -240,8 +247,18 @@ public class M_Delivery_Planning_StepDef
 	 *   <b>ETA</b> — (optional) expected {@code ETA}<br>
 	 *   <b>ETD</b> — (optional) expected {@code ETD}<br>
 	 *   <b>PlannedLoadedQuantity</b> — (optional) expected {@code PlannedLoadedQuantity}<br>
+	 *   <b>PlannedDischargeQuantity</b> — (optional) expected {@code PlannedDischargeQuantity}<br>
+	 *   <b>QtyTotalOpenPlanned</b> — (optional) expected {@code QtyTotalOpenPlanned}<br>
+	 *   <b>ActualLoadQty</b> — (optional) expected {@code ActualLoadQty}<br>
+	 *   <b>ActualDischargeQuantity</b> — (optional) expected {@code ActualDischargeQuantity}<br>
 	 *   <b>IsClosed</b> — (optional) expected {@code IsClosed}<br>
 	 *   <b>Processed</b> — (optional) expected {@code Processed}<br>
+	 *   <b>IsAllocated</b> — (optional) expected {@code IsAllocated}: {@code true} iff an ACTIVE
+	 *   {@code M_Delivery_Planning_Alloc} row currently references this planning<br>
+	 *   <b>IsDelivered</b> — (optional) expected {@code IsDelivered}: {@code true} iff the planning carries a
+	 *   receipt or shipment<br>
+	 *   <b>DeliveryStatus_Color_ID.Name</b> — (optional) expected {@code AD_Color.Name} of the status colour the
+	 *   planning resolves to; asserted alongside {@code IsDelivered} the two cannot silently disagree<br>
 	 *   <b>OrderStatus</b> — (optional, null-allowed) expected {@code OrderStatus}; {@code null} asserts the planning
 	 *   carries none<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (optional, identifier-ref, null-allowed) expected linked delivery
@@ -339,17 +356,57 @@ public class M_Delivery_Planning_StepDef
 			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity)
 					.ifPresent(plannedLoadedQty -> softly.assertThat(deliveryPlanning.getPlannedLoadedQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity).isEqualTo(plannedLoadedQty));
 
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity)
+					.ifPresent(plannedDischargeQty -> softly.assertThat(deliveryPlanning.getPlannedDischargeQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity).isEqualTo(plannedDischargeQty));
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_QtyTotalOpenPlanned)
+					.ifPresent(qtyTotalOpenPlanned -> softly.assertThat(deliveryPlanning.getQtyTotalOpenPlanned()).as(I_M_Delivery_Planning.COLUMNNAME_QtyTotalOpenPlanned).isEqualTo(qtyTotalOpenPlanned));
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty)
+					.ifPresent(actualLoadQty -> softly.assertThat(deliveryPlanning.getActualLoadQty()).as(I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty).isEqualTo(actualLoadQty));
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity)
+					.ifPresent(actualDischargeQty -> softly.assertThat(deliveryPlanning.getActualDischargeQuantity()).as(I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity).isEqualTo(actualDischargeQty));
+
 			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsClosed)
 					.ifPresent(isClosed -> softly.assertThat(deliveryPlanning.isClosed()).as(I_M_Delivery_Planning.COLUMNNAME_IsClosed).isEqualTo(isClosed));
 
 			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_Processed)
 					.ifPresent(isProcessed -> softly.assertThat(deliveryPlanning.isProcessed()).as(I_M_Delivery_Planning.COLUMNNAME_Processed).isEqualTo(isProcessed));
 
+			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsAllocated)
+					.ifPresent(isAllocated -> softly.assertThat(deliveryPlanning.isAllocated()).as(I_M_Delivery_Planning.COLUMNNAME_IsAllocated).isEqualTo(isAllocated));
+
+			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsDelivered)
+					.ifPresent(isDelivered -> softly.assertThat(deliveryPlanning.isDelivered()).as(I_M_Delivery_Planning.COLUMNNAME_IsDelivered).isEqualTo(isDelivered));
+
+			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_DeliveryStatus_Color_ID + ".Name")
+					.filter(Check::isNotBlank)
+					.ifPresent(expectedColorName -> softly.assertThat(getColorName(deliveryPlanning.getDeliveryStatus_Color_ID()))
+							.as(I_M_Delivery_Planning.COLUMNNAME_DeliveryStatus_Color_ID + ".Name")
+							.isEqualTo(expectedColorName));
+
 			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_OrderStatus)
 					.filter(Check::isNotBlank)
 					.ifPresent(orderStatus -> softly.assertThat(deliveryPlanning.getOrderStatus())
 							.as(I_M_Delivery_Planning.COLUMNNAME_OrderStatus)
 							.isEqualTo(DataTableUtil.nullToken2Null(orderStatus)));
+
+			// The receipt/shipment back-link the M_InOut TIMING_AFTER_COMPLETE interceptor writes. Asserting it
+			// is the only way a scenario notices that the interceptor did not run at all - the raw
+			// M_InOut.M_Delivery_Planning_ID is set by the generate process itself and looks fine either way.
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID)
+					.ifPresent(id -> {
+						if (id.isNullPlaceholder())
+						{
+							softly.assertThat(deliveryPlanning.getM_InOut_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID).isEqualTo(0);
+						}
+						else
+						{
+							final I_M_InOut inout = id.lookupNotNullIn(inOutTable);
+							softly.assertThat(deliveryPlanning.getM_InOut_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID).isEqualTo(inout.getM_InOut_ID());
+						}
+					});
 
 			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID)
 					.ifPresent(id -> {
@@ -366,6 +423,21 @@ public class M_Delivery_Planning_StepDef
 
 			softly.assertAll();
 		});
+	}
+
+	/**
+	 * Resolves an {@code AD_Color_ID} to its name, so a feature file can name the colour it expects instead of
+	 * an instance-specific id. Returns {@code null} for "no colour at all", which is what a planning whose
+	 * status colour never got written looks like.
+	 */
+	@Nullable
+	private static String getColorName(final int colorRepoId)
+	{
+		if (colorRepoId <= 0)
+		{
+			return null;
+		}
+		return InterfaceWrapperHelper.load(colorRepoId, I_AD_Color.class).getName();
 	}
 
 	/**
@@ -402,6 +474,38 @@ public class M_Delivery_Planning_StepDef
 						.appendParametersToMessage()
 						.setParameter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningIdentifiers);
 		}
+	}
+
+	/**
+	 * Cancels the given selection and asserts exactly which of them the cancel left with their planned
+	 * figures untouched because each was still allocated to a delivery instruction when the cancel ran -
+	 * {@link DeliveryPlanningCancelResult#getSkippedAllocatedIds()}. Every named planning is still fully
+	 * cancelled (voided, closed, cancelled order status) same as any other row; only the quantity zeroing is
+	 * skipped for it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When M_Delivery_Planning identified by deliveryPlanningCancel is canceled, retaining planned figures for: deliveryPlanningCancel
+	 * </pre>
+	 */
+	@When("^M_Delivery_Planning identified by (.*) is canceled, retaining planned figures for: (.*)$")
+	public void delivery_Planning_canceled_retaining_planned_figures_for(
+			@NonNull final String deliveryPlanningIdentifiers,
+			@NonNull final String retainedIdentifiers)
+	{
+		final IQueryFilter<I_M_Delivery_Planning> selectionFilter = getQueryFilterFor(deliveryPlanningIdentifiers);
+
+		final DeliveryPlanningCancelResult result = deliveryPlanningService.cancelDelivery(selectionFilter);
+
+		final ImmutableSet<DeliveryPlanningId> expectedRetainedIds = selectedDeliveryPlanningIds(retainedIdentifiers).stream()
+				.map(DeliveryPlanningId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		assertThat(ImmutableSet.copyOf(result.getSkippedAllocatedIds()))
+				.as("planning(s) whose planned figures the cancel left unchanged because they were still allocated, named in the result")
+				.isEqualTo(expectedRetainedIds);
 	}
 
 	/**
@@ -546,6 +650,14 @@ public class M_Delivery_Planning_StepDef
 	 * @cucumber.columns
 	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning to update<br>
 	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) new shipper to assign<br>
+	 *   <b>PlannedLoadedQuantity</b> — (optional) new {@code PlannedLoadedQuantity} to seed before a split -
+	 *   a scenario that needs a starting figure other than {@code QtyOrdered} sets it here<br>
+	 *   <b>PlannedDischargeQuantity</b> — (optional) new {@code PlannedDischargeQuantity} to seed before a split -
+	 *   generation always writes {@code 0}, so a scenario that needs a non-zero starting figure sets it here<br>
+	 *   <b>ActualLoadQty</b> — (optional) new {@code ActualLoadQty} to seed a partial shipment before a split -
+	 *   there is no shipment process driven in these scenarios, so the figure is set directly<br>
+	 *   <b>ActualDischargeQuantity</b> — (optional) new {@code ActualDischargeQuantity} to seed a partial receipt
+	 *   before a split - there is no receipt process driven in these scenarios, so the figure is set directly<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_Shipper_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -567,6 +679,18 @@ public class M_Delivery_Planning_StepDef
 						final I_M_Shipper shipper = id.lookupNotNullIn(shipperTable);
 						deliveryPlanning.setM_Shipper_ID(shipper.getM_Shipper_ID());
 					});
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity)
+					.ifPresent(deliveryPlanning::setPlannedLoadedQuantity);
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity)
+					.ifPresent(deliveryPlanning::setPlannedDischargeQuantity);
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty)
+					.ifPresent(deliveryPlanning::setActualLoadQty);
+
+			row.getAsOptionalBigDecimal(I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity)
+					.ifPresent(deliveryPlanning::setActualDischargeQuantity);
 
 			saveRecord(deliveryPlanning);
 		});

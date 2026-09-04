@@ -31,6 +31,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.notification.INotificationBL;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -80,6 +81,9 @@ class DeliveryPlanningAddToAdmissibilityTest
 	private static final int BPARTNER_LOCATION_ID = 540021;
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
@@ -97,10 +101,15 @@ class DeliveryPlanningAddToAdmissibilityTest
 		Services.registerService(INotificationBL.class, Mockito.mock(INotificationBL.class));
 
 		deliveryPlanningRepository = Mockito.spy(new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
@@ -277,7 +286,7 @@ class DeliveryPlanningAddToAdmissibilityTest
 			assertThatThrownBy(() -> deliveryPlanningService.addTo(selection, target))
 					.isInstanceOf(AdempiereException.class);
 
-			assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
+			assertThat(deliveryPlanningAllocRepository.getAllocatedPlanningIds(target))
 					.as("the target still holds only its own two plannings")
 					.containsExactlyInAnyOrder(idOf(p1), idOf(p3));
 			assertThat(reload(p2).getM_ShipperTransportation_ID())
@@ -299,7 +308,7 @@ class DeliveryPlanningAddToAdmissibilityTest
 
 			deliveryPlanningService.addTo(selection, target);
 
-			assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
+			assertThat(deliveryPlanningAllocRepository.getAllocatedPlanningIds(target))
 					.containsExactlyInAnyOrder(idOf(p1), idOf(p2));
 			assertThat(reload(p2).getM_ShipperTransportation_ID())
 					.isEqualTo(target.getRepoId());
@@ -340,7 +349,7 @@ class DeliveryPlanningAddToAdmissibilityTest
 
 			deliveryPlanningService.moveTo(selection, target);
 
-			assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
+			assertThat(deliveryPlanningAllocRepository.getAllocatedPlanningIds(target))
 					.as("nothing was added and nothing was taken away")
 					.containsExactlyInAnyOrder(idOf(p1), idOf(p3));
 			assertThat(reload(p1).getReleaseNo())
@@ -368,7 +377,7 @@ class DeliveryPlanningAddToAdmissibilityTest
 			assertThatThrownBy(() -> deliveryPlanningService.moveTo(selection, target))
 					.isInstanceOf(AdempiereException.class);
 
-			assertThat(deliveryPlanningRepository.getAllocatedPlanningIds(target))
+			assertThat(deliveryPlanningAllocRepository.getAllocatedPlanningIds(target))
 					.as("the target holds only its own two plannings")
 					.hasSize(2)
 					.doesNotContain(idOf(moving));

@@ -90,15 +90,35 @@ public enum TransportDirection implements ReferenceListAwareEnum
 		return type != null ? type.getCode() : null;
 	}
 
-	public boolean hasReceipt()
+	/**
+	 * The direction fact: {@code true} for {@link #Incoming} and {@link #Dropship}.
+	 */
+	public boolean isIncomingOrDropship()
 	{
 		return this == Incoming || this == Dropship;
 	}
 
-	/** Also true for {@link #Dropship}, whose shipment is generated together with the receipt but is carried by the paired sales-side planning. */
-	public boolean hasShipment()
+	/**
+	 * The direction fact: {@code true} for {@link #Outgoing} and {@link #Dropship}.
+	 */
+	public boolean isOutgoingOrDropship()
 	{
 		return this == Outgoing || this == Dropship;
+	}
+
+	/** One consequence of {@link #isIncomingOrDropship()}: the receipt-or-shipment document for an inbound transport is a receipt. */
+	public boolean hasReceipt()
+	{
+		return isIncomingOrDropship();
+	}
+
+	/**
+	 * One consequence of {@link #isOutgoingOrDropship()}: also true for {@link #Dropship}, whose shipment is generated together
+	 * with the receipt but is carried by the paired sales-side planning.
+	 */
+	public boolean hasShipment()
+	{
+		return isOutgoingOrDropship();
 	}
 
 	public boolean isDropship()

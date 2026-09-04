@@ -31,6 +31,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -74,6 +75,9 @@ class DeliveryPlanningAddressLoadingTest
 	private IWarehouseDAO warehouseDAO;
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 
 	@BeforeEach
@@ -91,10 +95,15 @@ class DeliveryPlanningAddressLoadingTest
 		Services.registerService(IWarehouseDAO.class, warehouseDAO);
 
 		deliveryPlanningRepository = Mockito.mock(DeliveryPlanningRepository.class);
+		deliveryPlanningAllocRepository = Mockito.mock(DeliveryPlanningAllocRepository.class);
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				new ShipperRepository(),
 				deliveryPlanningRepository,
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
@@ -167,7 +176,7 @@ class DeliveryPlanningAddressLoadingTest
 		Mockito.doAnswer(invocation -> records.iterator())
 				.when(deliveryPlanningRepository).extractDeliveryPlannings(filter);
 		Mockito.doReturn(allocations.build())
-				.when(deliveryPlanningRepository).getAllocationsByPlanningId(Mockito.any());
+				.when(deliveryPlanningAllocRepository).getAllocationsByPlanningId(Mockito.any());
 
 		return deliveryPlanningService.getBySelection(filter);
 	}
@@ -273,7 +282,7 @@ class DeliveryPlanningAddressLoadingTest
 		Mockito.verify(warehouseDAO, Mockito.times(1)).getByIds(Mockito.any());
 		Mockito.verify(warehouseDAO, Mockito.never()).getById(Mockito.any());
 		Mockito.verify(warehouseDAO, Mockito.never()).getById(Mockito.any(), Mockito.any());
-		Mockito.verify(deliveryPlanningRepository, Mockito.times(1)).getAllocationsByPlanningId(Mockito.any());
+		Mockito.verify(deliveryPlanningAllocRepository, Mockito.times(1)).getAllocationsByPlanningId(Mockito.any());
 	}
 
 	@Test

@@ -30,11 +30,12 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.notification.INotificationBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -83,6 +84,9 @@ class DeliveryPlanningBatchLoadingTest
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
@@ -99,10 +103,15 @@ class DeliveryPlanningBatchLoadingTest
 		Services.registerService(INotificationBL.class, Mockito.mock(INotificationBL.class));
 
 		deliveryPlanningRepository = Mockito.spy(new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
@@ -234,7 +243,7 @@ class DeliveryPlanningBatchLoadingTest
 	// ------------------------------------------------------------------ tests
 
 	@Test
-	@DisplayName("combine reads the selection in two batch loads - the only single-row load is the one seed header")
+	@DisplayName("combine reads the selection in four batch loads - the only single-row load is the one seed header")
 	void combineBatchLoadsTheSelection()
 	{
 		createDeliveryInstructionDocType();
@@ -245,9 +254,12 @@ class DeliveryPlanningBatchLoadingTest
 		// a draft, which is the default: a combined instruction is assembled over days
 		final ShipperTransportationId deliveryInstructionId = deliveryPlanningService.combine(selection, false);
 
-		// one batch for the allocation requests of the plannings behind the seed, one for the ReleaseNo stamping -
+		// one batch for the allocation requests of the plannings behind the seed, one for the ReleaseNo stamping,
+		// plus TWO for DeliveredState (Task Q9): createAllocations recomputes ONCE per call, and combine makes
+		// two calls here - the seed's (inside generateDeliveryInstruction) and the other two plannings' - not
+		// once per planning (that would have been 3, one per row; batched per call it is 2) -
 		// plus the single-row load of the ONE seed planning the header is built from
-		assertBatchLoadedExactly(2, 1);
+		assertBatchLoadedExactly(4, 1);
 
 		// the batch did not cost the outcome: all three are on the one instruction and carry their own ReleaseNo
 		final I_M_ShipperTransportation deliveryInstruction = InterfaceWrapperHelper.load(deliveryInstructionId, I_M_ShipperTransportation.class);
@@ -274,7 +286,7 @@ class DeliveryPlanningBatchLoadingTest
 	}
 
 	@Test
-	@DisplayName("add-to reads the selection in two batch loads - never one planning at a time")
+	@DisplayName("add-to reads the selection in three batch loads - never one planning at a time")
 	void addToBatchLoadsTheSelection()
 	{
 		final ImmutableList<I_M_Delivery_Planning> records = ImmutableList.of(deliveryPlanning(), deliveryPlanning(), deliveryPlanning());
@@ -283,8 +295,9 @@ class DeliveryPlanningBatchLoadingTest
 
 		deliveryPlanningService.addTo(selection, ShipperTransportationId.ofRepoId(target.getM_ShipperTransportation_ID()));
 
-		// one for the allocation requests, one for the ReleaseNo stamping
-		assertBatchLoadedExactly(2);
+		// one for the allocation requests, one for the ReleaseNo stamping, one for DeliveredState (Task Q9) -
+		// createAllocations recomputes ONCE per call, for the whole selection, not once per planning
+		assertBatchLoadedExactly(3);
 
 		// the batch did not cost the outcome: every planning is on the target and carries its own ReleaseNo
 		for (final I_M_Delivery_Planning record : records)
@@ -384,13 +397,14 @@ class DeliveryPlanningBatchLoadingTest
 		final I_M_ShipperTransportation completed = draftDeliveryInstruction("COMPLETED-5");
 		completed.setDocStatus(DocStatus.Completed.getCode());
 		InterfaceWrapperHelper.save(completed);
-		deliveryPlanningRepository.createAllocations(
+		deliveryInstructionService.createAllocations(
 				ShipperTransportationId.ofRepoId(completed.getM_ShipperTransportation_ID()),
 				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(idOf(records.get(1)))
-						.productId(ProductId.ofRepoId(PRODUCT_ID))
-						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+						.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+								.productId(ProductId.ofRepoId(PRODUCT_ID))
+								.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+								.build())
 						.build()));
 		final int allocationsBefore = allocationsInCreationOrder().size();
 

@@ -39,5 +39,12 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 
 	IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo);
 
+	/**
+	 * {@code M_Delivery_Planning_ID} to stamp onto each shipment header this producer creates, or {@code 0}
+	 * for none. Stamped on the draft, i.e. before the shipment is completed, so the document's
+	 * {@code TIMING_AFTER_COMPLETE} interceptors see it.
+	 */
+	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(int deliveryPlanningId);
+
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 }

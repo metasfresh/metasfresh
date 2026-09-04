@@ -106,3 +106,89 @@ Feature: Purchase order to transportation order
 
     When the order identified by order_PO2 is completed
     Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: transportationOrder2
+
+  @from:cucumber
+  @allure.label.epic:E0140_Purchasing
+  @allure.label.feature:F00600_Purchase_Order
+  @F00600
+  @Id:S31789_TC_Q17_WrongDirectionAdd
+  Scenario: Adding a purchase order to an OUTGOING transport order is refused
+    # An outgoing transport order carries only sales/shipment documents; a purchase order is a receipt-side
+    # document, so adding it here must be refused with a named message rather than silently creating shipping
+    # packages on a transport order that will never receive a matching receipt.
+    Given metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference    | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | M_Shipper_ID |
+      | order_PO_Wrong | N      | supplier                 | 2022-06-11  | po_ref_S0156_300   | POO             | ps_PO                             | supplier                              | A                | S                   | shipper_DHL  |
+    And metasfresh contains C_OrderLines:
+      | Identifier        | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_Wrong | order_PO_Wrong        | purchasedProduct        | 5          |
+
+    And metasfresh contains Transport Order
+      | Identifier             | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | outgoingTransportOrder | shipper_DHL  | supplier             | supplier             | Outgoing           |
+
+    And the order identified by order_PO_Wrong is completed
+
+    And C_Order_AddTo_M_ShipperTransportation is invoked for order order_PO_Wrong and transportation order outgoingTransportOrder, and is refused:
+      | ErrorAdMessage                           |
+      | WrongTransportDirectionForPurchaseOrder  |
+
+    And metasfresh contains exactly 0 M_ShippingPackages for transportation order: outgoingTransportOrder
+
+  @from:cucumber
+  @allure.label.epic:E0140_Purchasing
+  @allure.label.feature:F00600_Purchase_Order
+  @F00600
+  @Id:S31789_TC_Q17_DropshipAllowed
+  Scenario: Adding a purchase order to a DROPSHIP transport order still succeeds
+    # Dropship carries a receipt leg too (goods never enter our own warehouse, but the purchase-side document
+    # still links to it), so the direction guard must NOT block this path.
+    Given metasfresh contains C_Orders:
+      | Identifier      | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | M_Shipper_ID |
+      | order_PO_Dropship | N      | supplier                 | 2022-06-11  | po_ref_S0156_400  | POO             | ps_PO                             | supplier                              | A                | S                   | shipper_DHL  |
+    And metasfresh contains C_OrderLines:
+      | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_Dropship | order_PO_Dropship     | purchasedProduct        | 5          |
+
+    And metasfresh contains Transport Order
+      | Identifier              | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | dropshipTransportOrder  | shipper_DHL  | supplier             | supplier             | Dropship           |
+
+    And the order identified by order_PO_Dropship is completed
+
+    And C_Order_AddTo_M_ShipperTransportation is invoked for order order_PO_Dropship and transportation order: dropshipTransportOrder
+
+    And metasfresh contains exactly 1 M_ShippingPackages for transportation order: dropshipTransportOrder
+
+  @from:cucumber
+  @allure.label.epic:E0140_Purchasing
+  @allure.label.feature:F00600_Purchase_Order
+  @F00600
+  @Id:S31789_TC_Q18_ReceiptScheduleAddToPickerDirectionFilter
+  Scenario: The M_ShipperTransportation_ID picker on M_ReceiptSchedule_AddTo_M_ShipperTransportation filters by direction
+    # TC14's picker half: for a purchase order, the picker must not offer an Outgoing-only transport order
+    # (the direction the guard added in Q17 would refuse anyway); with no order in context (the @C_Order_ID/0@
+    # sentinel) it must still offer every open transport order, unchanged.
+    Given metasfresh contains C_Orders:
+      | Identifier          | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference  | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | M_Shipper_ID |
+      | order_PO_PickerTest | N       | supplier                 | 2022-06-11  | po_ref_S0156_500 | POO              | ps_PO                              | supplier                               | A                 | S                    | shipper_DHL  |
+    And metasfresh contains C_OrderLines:
+      | Identifier              | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_PickerTest | order_PO_PickerTest   | purchasedProduct        | 5          |
+
+    And metasfresh contains Transport Order
+      | Identifier          | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | pickerOutgoingOrder | shipper_DHL  | supplier             | supplier             | Outgoing           |
+      | pickerIncomingOrder | shipper_DHL  | supplier             | supplier             | Incoming           |
+
+    And the order identified by order_PO_PickerTest is completed
+
+    Then the M_ShipperTransportation_ID picker on M_ReceiptSchedule_AddTo_M_ShipperTransportation, for order order_PO_PickerTest, offers:
+      | Identifier          | Offered |
+      | pickerOutgoingOrder | false   |
+      | pickerIncomingOrder | true    |
+
+    And the M_ShipperTransportation_ID picker on M_ReceiptSchedule_AddTo_M_ShipperTransportation, for order no order, offers:
+      | Identifier          | Offered |
+      | pickerOutgoingOrder | true    |
+      | pickerIncomingOrder | true    |

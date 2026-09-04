@@ -175,6 +175,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
 
+	/**
+	 * {@code M_Delivery_Planning_ID} to stamp onto each shipment header, or {@code 0} for none.
+	 *
+	 * @see #setDeliveryPlanningId(int)
+	 */
+	private int deliveryPlanningId = 0;
+
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
 		this.result = result;
@@ -289,6 +296,15 @@ public class InOutProducerFromShipmentScheduleWithHU
 		if (shipment == null)
 		{
 			shipment = createShipmentHeader(candidate, shipmentDate);
+		}
+
+		// The delivery-planning back-link goes onto the DRAFT (both for a header just created and for one we
+		// consolidated onto), because this producer completes the shipment further down: stamping it after
+		// generation would be invisible to de.metas.deliveryplanning's TIMING_AFTER_COMPLETE interceptor.
+		if (deliveryPlanningId > 0 && shipment.getM_Delivery_Planning_ID() != deliveryPlanningId)
+		{
+			shipment.setM_Delivery_Planning_ID(deliveryPlanningId);
+			InterfaceWrapperHelper.save(shipment);
 		}
 
 		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, Integer.toString(shipment.getM_InOut_ID()));
@@ -731,6 +747,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 	public IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo)
 	{
 		this.scheduleId2ExternalInfo.putAll(scheduleId2ExternalInfo);
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(final int deliveryPlanningId)
+	{
+		this.deliveryPlanningId = deliveryPlanningId;
 		return this;
 	}
 

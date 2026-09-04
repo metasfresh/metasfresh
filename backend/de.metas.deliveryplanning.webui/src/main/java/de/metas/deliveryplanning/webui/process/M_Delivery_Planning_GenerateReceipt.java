@@ -29,7 +29,10 @@ import java.util.Optional;
 public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final DeliveryPlanningGenerateProcessesHelper helper = DeliveryPlanningGenerateProcessesHelper.newInstance();
+	// package-visible, non-final: overwritten with a mock by same-package unit tests (e.g.
+	// M_Delivery_Planning_GenerateReceiptWriteBackTest) that cannot otherwise stub the heavy
+	// production receipt-generation chain (real HU allocation).
+	DeliveryPlanningGenerateProcessesHelper helper = DeliveryPlanningGenerateProcessesHelper.newInstance();
 
 	private static final String PARAM_ReceiptDate = "ReceiptDate";
 	@Param(parameterName = PARAM_ReceiptDate, mandatory = true)
@@ -99,6 +102,10 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 						.receiptDate(receiptDate)
 						.qtyToReceiveBD(qty)
 						.build());
+
+		// Write the Qty override back onto the planning: a receipt reads/occupies the discharge end, so the
+		// override becomes the planning's new PlannedDischargeQuantity (spec direction rule, restated by Task Q12).
+		helper.writeBackPlannedDischargeQuantity(getDeliveryPlanningId(), receiptResult.getQty());
 
 		if (p_IsGenerateB2BShipment)
 		{

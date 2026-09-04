@@ -65,7 +65,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
@@ -123,6 +122,21 @@ public class DeliveryPlanningService
 
 	/** Rejects acting on a closed planning; also the per-row skip report of {@link #cancelDelivery}. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
+
+	/**
+	 * The per-row report of {@link #cancelDelivery} for a planning that was still allocated when the cancel ran:
+	 * it IS cancelled (voided, closed, cancelled order status) same as any other row, but its planned figures are
+	 * committed cargo and are named here instead of being silently left as they were.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_CancelAllocated = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.CancelAllocated");
+
+	/**
+	 * Rejects a receive action on an already-processed planning - one that was closed, or that already carries
+	 * its single receipt or shipment. Deliberately NOT {@link #MSG_M_Delivery_Planning_Closed}: that one says
+	 * "closed", which is a false statement about a delivered planning, and the two states are indistinguishable
+	 * through {@code Processed} anyway (Task Q10's invariant), so the wording has to cover both.
+	 */
+	public static final AdMessageKey MSG_M_Delivery_Planning_Processed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Processed");
 
 	/** The mirror of {@link #MSG_M_Delivery_Planning_Closed}: rejects RE-OPENING a planning that is still open. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Open = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Open");
@@ -201,7 +215,8 @@ public class DeliveryPlanningService
 
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
-	@NonNull private final DeliveryStatusColorPaletteService deliveryStatusColorPaletteService;
+	@NonNull private final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	@NonNull private final DeliveryInstructionService deliveryInstructionService;
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final MeansOfTransportationService meansOfTransportationService;
 
@@ -237,17 +252,11 @@ public class DeliveryPlanningService
 				.orElse(false); // inactive or missing shipper → skip
 	}
 
-	private DeliveryStatusColorPalette getColorPalette()
-	{
-		return deliveryStatusColorPaletteService.get();
-	}
-
 	public void generateIncomingDeliveryPlanning(final I_M_ReceiptSchedule receiptScheduleRecord)
 	{
 		GenerateIncomingDeliveryPlanningCommand.builder()
 				.deliveryPlanningRepository(deliveryPlanningRepository)
 				.receiptSchedule(receiptScheduleRecord)
-				.colorPalette(getColorPalette())
 				.dimensionService(dimensionService)
 				.build()
 				.execute();
@@ -258,7 +267,6 @@ public class DeliveryPlanningService
 		GenerateOutgoingDeliveryPlanningCommand.builder()
 				.deliveryPlanningRepository(deliveryPlanningRepository)
 				.shipmentSchedule(shipmentScheduleRecord)
-				.colorPalette(getColorPalette())
 				.dimensionService(dimensionService)
 				.build()
 				.execute();
@@ -285,7 +293,7 @@ public class DeliveryPlanningService
 	 * Refuses to delete a planning that an ACTIVE {@code M_Delivery_Planning_Alloc} still points at -
 	 * unconditionally, regardless of who is deleting it. Asked of the allocation table rather than of
 	 * {@code ReleaseNo}, which only mirrors it; see
-	 * {@link DeliveryPlanningRepository#hasActiveAllocation(DeliveryPlanningId)}.
+	 * {@link DeliveryPlanningAllocRepository#hasActiveAllocation(DeliveryPlanningId)}.
 	 * <p>
 	 * The allocation's shipping package is mandatory-FKed to a still-live instruction, so letting the delete through
 	 * would strand that instruction's cargo. A RETIRED allocation is the opposite case and must NOT be refused; it
@@ -293,7 +301,7 @@ public class DeliveryPlanningService
 	 */
 	public void assertNotCurrentlyAllocated(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
-		if (deliveryPlanningRepository.hasActiveAllocation(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID())))
+		if (deliveryPlanningAllocRepository.hasActiveAllocation(DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID())))
 		{
 			throw new AdempiereException(MSG_M_Delivery_Planning_AlreadyReferenced);
 		}
@@ -307,7 +315,7 @@ public class DeliveryPlanningService
 	 */
 	public void deleteAllocationsFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		deliveryPlanningRepository.deleteAllocationsFor(ImmutableList.of(deliveryPlanningId));
+		deliveryPlanningAllocRepository.deleteAllocationsFor(ImmutableList.of(deliveryPlanningId));
 	}
 
 	/**
@@ -331,14 +339,17 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		deliveryPlanningRepository.getInstructionIdByShippingPackageId(shippingPackageId)
+		deliveryPlanningAllocRepository.getInstructionIdByShippingPackageId(shippingPackageId)
 				.ifPresent(deliveryInstructionId -> {
-					final String documentNo = deliveryPlanningRepository.getInstructionById(deliveryInstructionId).getDocumentNo();
+					final String documentNo = deliveryInstructionService.getById(deliveryInstructionId).getDocumentNo();
 					throw new AdempiereException(TranslatableStrings.adMessage(MSG_M_ShippingPackage_Allocated, documentNo));
 				});
 	}
 
-	private DeliveryPlanningCreateRequest createRequest(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity plannedLoadedQty)
+	private DeliveryPlanningCreateRequest createRequest(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final Quantity plannedLoadedQty,
+			@NonNull final Quantity plannedDischargeQty)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
@@ -347,6 +358,21 @@ public class DeliveryPlanningService
 		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
 
 		final Dimension dimension = dimensionService.getFromRecord(deliveryPlanningRecord);
+
+		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord);
+
+		// D22/Task Q7c: a split-created planning is a CREATED planning, not a copy of the target - it is
+		// seeded exactly as GenerateIncomingDeliveryPlanningCommand seeds a fresh one, never by copying the
+		// target's actuals (that fabricated a received/loaded quantity nothing was ever received or loaded
+		// against, and multiplied it across every sibling). Inbound/dropship: ActualLoadQty starts equal to
+		// this NEW planning's own planned load, because nothing ever reports the vendor's load - same rule
+		// as at creation, kept in step afterwards by the interceptor in interceptor/M_Delivery_Planning.java.
+		// Outgoing is unspecified by this task, so it keeps the zero a fresh planning has always started
+		// with. ActualDischargeQuantity always starts empty - the receipt owns it, and the new planning has
+		// received nothing.
+		final Quantity actualLoadedQty = transportDirection.isIncomingOrDropship()
+				? plannedLoadedQty
+				: Quantity.zero(uomToUse);
 
 		return DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
@@ -361,16 +387,16 @@ public class DeliveryPlanningService
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
 				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.warehouseId(WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID()))
-				.transportDirection(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord))
+				.transportDirection(transportDirection)
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
 				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
-				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
+				.actualLoadedQty(actualLoadedQty)
 
 				.plannedLoadedQty(plannedLoadedQty)
-				.plannedDischargeQty(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
-				.actualDischargeQty(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
+				.plannedDischargeQty(plannedDischargeQty)
+				.actualDischargeQty(Quantity.zero(uomToUse))
 
 				.uom(uomToUse)
 				.plannedLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getETD()))
@@ -404,54 +430,211 @@ public class DeliveryPlanningService
 
 		Check.assumeGreaterThanZero(additionalLines, PARAM_AdditionalLines);
 
-		final Quantity openQty = getOpenQty(deliveryPlanningId);
+		// Quantity allocated to a delivery instruction is committed cargo (D8/AC12/TC12): once the target is
+		// allocated, its own planned figures are a FIXED POINT of the split - never rewritten as a side effect -
+		// and the new plannings share only what the order line still has uncommitted overall. Q3's divide (target
+		// gets a share too, from its own current figure) is the single exception to that rule, reserved for the
+		// unallocated case.
+		final boolean targetIsAllocated = deliveryPlanningAllocRepository.hasActiveAllocation(deliveryPlanningId);
 
-		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+		final Quantity openQty = getOpenQty(deliveryPlanningId, targetIsAllocated);
 
-		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
-		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
+		final Quantity newPlanningLoadedQty;
+		final Quantity newPlanningLoadedQtyRemainder;
+		final Quantity newPlanningDischargeQty;
+		final Quantity newPlanningDischargeQtyRemainder;
+
+		if (targetIsAllocated)
+		{
+			// The target's own planned figures are untouched (D8) - no repository write here. The new plannings
+			// split whatever remains uncommitted on the order line as a whole, floored at 0 by getOpenQty; "nothing
+			// remains" still creates the requested plannings, carrying 0, rather than refusing or erroring.
+			newPlanningLoadedQty = openQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+			// The target is untouchable here (unlike the unallocated branch below, which folds its remainder back
+			// into the target), so the DOWN-rounding remainder would otherwise vanish - e.g. openQty=10 over 3 new
+			// plannings gives 3+3+3=9, one unit silently lost off the order line. Handed to the LAST planning
+			// created by the loop below (fix round 1, Task Q5).
+			newPlanningLoadedQtyRemainder = openQty.subtract(newPlanningLoadedQty.multiply(additionalLines));
+
+			// The discharge pair follows the SAME pool rule as load (Task Q8) - a discharge pool exists exactly
+			// like the load one (Q3's "no order-line-relative pool on the discharge side" is superseded). The
+			// target's own discharge figure is committed cargo and stays untouched, same as its load figure; the
+			// new plannings share what remains, DOWN-rounded with the remainder on the last one, same as load.
+			final Quantity openDischargeQty = getPlannedDischargeQty(deliveryPlanningId, true);
+			newPlanningDischargeQty = openDischargeQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+			newPlanningDischargeQtyRemainder = openDischargeQty.subtract(newPlanningDischargeQty.multiply(additionalLines));
+		}
+		else
+		{
+			final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+
+			final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
+			// Two round-trips (getById+save each): DeliveryPlanningRepository has no single-record "set several
+			// columns at once" method, and adding one just to merge these two writes would widen its API for a
+			// non-hot-path call - left as-is per review (Task Q3, fix round 1).
+			deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
+			newPlanningLoadedQty = fraction;
+
+			final Quantity dischargeQty = getPlannedDischargeQty(deliveryPlanningId, false);
+			final Quantity dischargeFraction = dischargeQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
+			final Quantity dischargeRemainder = dischargeQty.subtract(dischargeFraction.multiply(additionalLines + 1));
+			deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, dischargeFraction.add(dischargeRemainder));
+			newPlanningDischargeQty = dischargeFraction;
+			// Unallocated: the target itself absorbs the DOWN-rounding remainder above, so every new planning gets
+			// the plain fraction and there is nothing left over to hand to any of them here.
+			newPlanningLoadedQtyRemainder = Quantity.zero(openQty.getUOM());
+			newPlanningDischargeQtyRemainder = Quantity.zero(openQty.getUOM());
+		}
 
 		for (int i = 0; i < additionalLines; i++)
 		{
-			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction);
+			// The last planning created carries the allocated branch's remainder (zero on the unallocated branch)
+			// so the new plannings' figures still sum to the distributed pool - both ends, not just load
+			// (Task Q8): with more than one additional line, a dropped discharge remainder would be exactly as
+			// invisible as the load-side defect fix round 1 caught.
+			final boolean isLastNewPlanning = i == additionalLines - 1;
+			final Quantity loadedQtyForThisPlanning = isLastNewPlanning
+					? newPlanningLoadedQty.add(newPlanningLoadedQtyRemainder)
+					: newPlanningLoadedQty;
+			final Quantity dischargeQtyForThisPlanning = isLastNewPlanning
+					? newPlanningDischargeQty.add(newPlanningDischargeQtyRemainder)
+					: newPlanningDischargeQty;
+
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, loadedQtyForThisPlanning, dischargeQtyForThisPlanning);
 
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
 	}
 
-	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId)
+	/**
+	 * The discharge-pair sibling of {@link #getOpenQty}: the order line's remaining distributable pool for the
+	 * DISCHARGE pair, following the SAME rule (owner, 2026-09-02, "The distributable pool") - a split
+	 * distributes what is left of the order line, and a sibling consumes its effective quantity: its actual once
+	 * one is recorded, otherwise its planned figure.
+	 * <p>
+	 * Supersedes Task Q3's comment here claiming "there is no order-line-relative pool on the discharge side" -
+	 * a discharge pool exists, exactly like the load one; that reasoning was correct under Q3's instructions and
+	 * is superseded by this per-end rule (Task Q8).
+	 */
+	private Quantity getPlannedDischargeQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
+	{
+		return resolveDistributablePool(deliveryPlanningId, targetIsAllocated, DeliveryPlanningList.PoolEnd.DISCHARGE);
+	}
+
+	/**
+	 * The order line's remaining distributable pool for {@code deliveryPlanningId}'s split (D8/AC12), for the
+	 * LOAD pair: {@code QtyOrdered} minus what every OTHER planning of the line already claims, minus the
+	 * target's own claim TOO once it is allocated - committed cargo is excluded from what a split may hand out,
+	 * same as any other planning's share. Unallocated, the target is excluded from the sum instead, exactly as
+	 * before Task Q5: its own share is still up for redistribution, which is what lets
+	 * {@link #createAdditionalDeliveryPlannings} give it a slice of this same pool.
+	 * <p>
+	 * {@code targetIsAllocated} is handed in rather than queried here so the caller - which already needs the same
+	 * fact to decide whether to rewrite the target's own figure - pays for {@link
+	 * DeliveryPlanningAllocRepository#hasActiveAllocation} once, not twice.
+	 */
+	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
+	{
+		return resolveDistributablePool(deliveryPlanningId, targetIsAllocated, DeliveryPlanningList.PoolEnd.LOAD);
+	}
+
+	/**
+	 * The ONE pool rule (owner, 2026-09-02, "The distributable pool"), shared by {@link #getOpenQty} (load) and
+	 * {@link #getPlannedDischargeQty} (discharge): the arithmetic itself lives in
+	 * {@link DeliveryPlanningList#openPlanQty}, loaded once per call via
+	 * {@link DeliveryPlanningRepository#getByOrderLineId} - unit-tested there without a database. Floored at 0
+	 * HERE, not in the shared calculation: a negative pool is not distributable (D16), so the clamp belongs to
+	 * this split-facing use of the figure, never to a display column that may legitimately show a negative
+	 * (over-planned/over-delivered signals the line's state, per D16).
+	 */
+	private Quantity resolveDistributablePool(
+			final DeliveryPlanningId deliveryPlanningId,
+			final boolean targetIsAllocated,
+			final DeliveryPlanningList.PoolEnd end)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final I_C_UOM uom = uomDAO.getById(deliveryPlanningRecord.getC_UOM_ID());
 
-		final Quantity qtyOrdered = Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uom);
-
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID());
 		if (orderLineId == null)
 		{
-			// the delivery planning has no order line => remaining open qty is 0
+			// the delivery planning has no order line => nothing to distribute
 			return Quantity.zero(uom);
 		}
 
-		Quantity openQty = qtyOrdered;
+		final DeliveryPlanningList orderLinePlannings = deliveryPlanningRepository.getByOrderLineId(orderLineId);
+		final DeliveryPlanningId excludePlanningId = targetIsAllocated ? null : deliveryPlanningId;
 
-		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
-				.filter(deliveryPlanning -> deliveryPlanningId.getRepoId() != deliveryPlanning.getM_Delivery_Planning_ID())
-				.map(DeliveryPlanningService::extractPlannedLoadedQuantity)
-				.reduce(Quantity::add)
-				.orElse(null);
-		if (plannedLoadedQtySum != null && !plannedLoadedQtySum.isZero())
-		{
-			openQty = openQty.subtract(plannedLoadedQtySum);
-		}
-
-		return openQty.toZeroIfNegative();
+		return orderLinePlannings.openPlanQty(excludePlanningId, end).toZeroIfNegative();
 	}
 
-	private static Quantity extractPlannedLoadedQuantity(final I_M_Delivery_Planning deliveryPlanning)
+	/**
+	 * Keeps {@code QtyTotalOpen}/{@code QtyTotalOpenPlanned} live (Task Q8) for the order line the given planning
+	 * sits on - called from the {@code M_Delivery_Planning} interceptor on every write path that changes a
+	 * planned/actual figure or adds a planning to the line, so every such path recomputes through this ONE
+	 * choke point rather than each caller repeating the arithmetic.
+	 */
+	public void recomputeOpenQuantitiesForOrderLine(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
-		final UomId uomId = UomId.ofRepoId(deliveryPlanning.getC_UOM_ID());
-		return Quantitys.of(deliveryPlanning.getPlannedLoadedQuantity(), uomId);
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanning.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			// not based on any order line -> QtyTotalOpen/QtyTotalOpenPlanned have nothing to be computed from
+			return;
+		}
+		deliveryPlanningRepository.recomputeOpenQuantitiesForOrderLine(orderLineId);
+	}
+
+	/**
+	 * Pushes a quantity change on ONE planning out to the delivery instruction line(s) that mirror it, so an
+	 * already-open Lieferanweisungen document refreshes its Versandpaket row with no manual reload
+	 * (Task Q14, TC11). See {@link DeliveryInstructionLineCacheInvalidation} for why the generic
+	 * {@code AD_SQLColumn_SourceTableColumn} invalidation cannot reach that row.
+	 */
+	public void invalidateDeliveryInstructionLinesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryInstructionService.invalidateDeliveryInstructionLinesFor(
+				DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
+	}
+
+	/**
+	 * Write-back for the generate-receipt process: a receipt reads/occupies the discharge end, so the qty the
+	 * operator confirmed at generation time becomes the planning's new {@code PlannedDischargeQuantity} (spec
+	 * direction rule, Task Q12). Kept as a thin passthrough on the service so the generate processes reach this
+	 * repository write through their one existing collaborator, never the repository directly.
+	 */
+	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, quantity);
+	}
+
+	/**
+	 * This planning's OWN planned discharge quantity - what it plans to receive, as opposed to what its receipt
+	 * schedule still has outstanding. The two differ exactly where it matters: a split copies
+	 * {@code M_ReceiptSchedule_ID} onto every new planning, so N plannings share ONE schedule and the schedule's
+	 * remaining quantity is the whole line's, not any single planning's. A receive that read the schedule for a
+	 * planned row would therefore let the first planning consume the whole line and starve its siblings.
+	 * <p>
+	 * A bare {@link BigDecimal} rather than a {@link Quantity}, matching what
+	 * {@code M_Delivery_Planning_GenerateReceipt} already passes: the figure is interpreted in the RECEIPT
+	 * SCHEDULE's UOM by whoever receives it, and inventing a conversion here would be a second convention.
+	 * <p>
+	 * Zero for a planning nobody has given a discharge figure yet - the value a freshly generated planning
+	 * carries ({@code plannedDischargeQty} is {@code Quantity.zero} at creation). The caller decides what to do
+	 * with that; it is not an error.
+	 */
+	public BigDecimal getPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.getById(deliveryPlanningId).getPlannedDischargeQuantity();
+	}
+
+	/**
+	 * Write-back for the generate-shipment process: the load-side sibling of
+	 * {@link #setPlannedDischargeQuantity} - a shipment reads/occupies the load end.
+	 */
+	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
+	{
+		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, quantity);
 	}
 
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
@@ -509,7 +692,7 @@ public class DeliveryPlanningService
 
 		final DeliveryPlanningId deliveryPlanningId = deliveryInstructionRequest.getDeliveryPlanningId();
 
-		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(deliveryInstructionRequest);
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionService.generateDeliveryInstruction(deliveryInstructionRequest);
 
 		if (complete)
 		{
@@ -551,7 +734,7 @@ public class DeliveryPlanningService
 
 		return toDeliveryPlanningList(
 				deliveryPlanningRecords,
-				deliveryPlanningRepository.getAllocationsByPlanningId(
+				deliveryPlanningAllocRepository.getAllocationsByPlanningId(
 						deliveryPlanningRecords.stream()
 								.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 								.collect(ImmutableSet.toImmutableSet())));
@@ -567,7 +750,7 @@ public class DeliveryPlanningService
 	 */
 	private DeliveryPlanningList getAllocatedTo(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableList<DeliveryPlanningAlloc> allocations = deliveryPlanningRepository.getAllocationsOfInstruction(deliveryInstructionId);
+		final ImmutableList<DeliveryPlanningAlloc> allocations = deliveryPlanningAllocRepository.getAllocationsOfInstruction(deliveryInstructionId);
 		if (allocations.isEmpty())
 		{
 			return DeliveryPlanningList.EMPTY;
@@ -622,6 +805,7 @@ public class DeliveryPlanningService
 				.deliveryLocationId(extractShipToLocationIdOrNull(record, transportDirection, addresses))
 				.etd(TimeUtil.asInstant(record.getETD()))
 				.closed(record.isClosed())
+				.processed(record.isProcessed())
 				.allocations(allocationsByPlanningId.get(deliveryPlanningId))
 				.build();
 	}
@@ -694,7 +878,7 @@ public class DeliveryPlanningService
 		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
-		final boolean hasReceipt = transportDirection.hasReceipt();
+		final boolean isInbound = transportDirection.isIncomingOrDropship();
 		final DeliveryPlanningAddresses addresses = loadAddresses(ImmutableList.of(deliveryPlanningRecord));
 		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord, transportDirection, addresses);
 		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord, transportDirection, addresses);
@@ -732,7 +916,7 @@ public class DeliveryPlanningService
 				.shipperId(ShipperId.ofRepoId(deliveryPlanningRecord.getM_Shipper_ID()))
 
 				.productId(productId)
-				.isToBeFetched(hasReceipt)
+				.isToBeFetched(isInbound)
 				//.locatorId() : Not yet decided where to take it from. TODO in a future CR
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
@@ -978,6 +1162,39 @@ public class DeliveryPlanningService
 	}
 
 	/**
+	 * The given plannings as the in-memory list the receive actions' shared precondition is answered against -
+	 * one round trip for the whole selection.
+	 */
+	public DeliveryPlanningList getProcessedStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	{
+		return deliveryPlanningRepository.getProcessedStatePlannings(deliveryPlanningIds);
+	}
+
+	/**
+	 * Why the given selection may not RECEIVE, or empty when it may. The ONE definition of the precondition every
+	 * receive action started from the receipt-disposition delivery-planning window shares - the actions call this, they never restate
+	 * the rule.
+	 * <p>
+	 * ALL-or-nothing, like {@link #getCloseRejectionReason(DeliveryPlanningList)} and every sibling
+	 * selection-shaped action: a single processed row refuses the whole selection rather than being skipped, so
+	 * the planner is never handed a partial result they did not ask for. It names every offending row, so they
+	 * can deselect exactly those in one go.
+	 * <p>
+	 * One predicate covers both refusals - see {@link DeliveryPlanningList#anyProcessed()}.
+	 */
+	public Optional<ITranslatableString> getReceiveRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
+	{
+		if (selectedDeliveryPlannings.anyProcessed())
+		{
+			return Optional.of(TranslatableStrings.adMessage(
+					MSG_M_Delivery_Planning_Processed,
+					toIdList(selectedDeliveryPlannings.processedOnes())));
+		}
+
+		return Optional.empty();
+	}
+
+	/**
 	 * Why the given selection cannot be RE-OPENED, or empty when it can. The mirror of
 	 * {@link #getCloseRejectionReason(DeliveryPlanningList)}, for the same reason:
 	 * {@link #reOpenSelectedDeliveryPlannings} refuses the whole selection as soon as one of its rows is still
@@ -1014,10 +1231,10 @@ public class DeliveryPlanningService
 	 */
 	public Optional<ITranslatableString> getCompleteRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
-			final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.getInstructionById(deliveryInstructionId);
+			final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionService.getById(deliveryInstructionId);
 			if (shipperTransportationDocSubTypeGuard.isDeliveryInstruction(deliveryInstruction))
 			{
 				return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_EmptyDeliveryInstruction));
@@ -1043,7 +1260,7 @@ public class DeliveryPlanningService
 	public Optional<ITranslatableString> getReActivateRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		return closedAllocatedPlanningsRejection(
-				deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId),
+				deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId),
 				MSG_M_Delivery_Planning_ReActivateClosedAllocatedPlannings);
 	}
 
@@ -1063,7 +1280,7 @@ public class DeliveryPlanningService
 	public Optional<ITranslatableString> getVoidRejectionReason(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		return closedAllocatedPlanningsRejection(
-				deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId),
+				deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId),
 				MSG_M_Delivery_Planning_VoidClosedAllocatedPlannings);
 	}
 
@@ -1126,7 +1343,7 @@ public class DeliveryPlanningService
 		final ImmutableList<DeliveryPlanningId> deliveryPlanningIds = selectedDeliveryPlannings.getIdsInAllocationOrder();
 
 		// the header, plus the seed planning's allocation and shipping package
-		final I_M_ShipperTransportation deliveryInstruction = deliveryPlanningRepository.generateDeliveryInstruction(
+		final I_M_ShipperTransportation deliveryInstruction = deliveryInstructionService.generateDeliveryInstruction(
 				createDeliveryInstructionRequest(deliveryPlanningIds.get(0)));
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
 
@@ -1138,7 +1355,7 @@ public class DeliveryPlanningService
 			// the seed header ALREADY resolved (generateDeliveryInstruction just built it), so the record this
 			// method holds is reused rather than reloaded to resolve the further plannings' dates against it
 			final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(deliveryInstruction, furtherAllocations);
-			deliveryPlanningRepository.createAllocations(deliveryInstruction, furtherAllocations, resolvedDates);
+			deliveryInstructionService.createAllocations(deliveryInstruction, furtherAllocations, resolvedDates);
 		}
 
 		if (complete)
@@ -1182,18 +1399,21 @@ public class DeliveryPlanningService
 
 		return DeliveryPlanningAllocCreateRequest.builder()
 				.deliveryPlanningId(deliveryPlanningId)
-				.productId(productId)
-				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
-				.qtyDischarged(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
-				.batchNo(deliveryPlanningRecord.getBatch())
-				.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
-				.orderId(OrderId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Order_ID()))
-				.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).hasReceipt())
+				.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+						.productId(productId)
+						.uomId(UomId.ofRepoId(uomToUse.getC_UOM_ID()))
+						.batchNo(deliveryPlanningRecord.getBatch())
+						.orderLineId(OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID()))
+						.orderId(OrderId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Order_ID()))
+						.toBeFetched(DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord).isIncomingOrDropship())
+						.build())
 				// the planning's own dates, so the instruction's fill-if-empty defaulting needs no second load
-				.etd(deliveryPlanningRecord.getETD())
-				.eta(deliveryPlanningRecord.getETA())
-				.loadingTime(deliveryPlanningRecord.getLoadingTime())
-				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
+				.headerDateCandidate(DeliveryPlanningAllocCreateRequest.HeaderDateCandidate.builder()
+						.etd(deliveryPlanningRecord.getETD())
+						.eta(deliveryPlanningRecord.getETA())
+						.loadingTime(deliveryPlanningRecord.getLoadingTime())
+						.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
+						.build())
 				.build();
 	}
 
@@ -1317,7 +1537,7 @@ public class DeliveryPlanningService
 			return Optional.empty();
 		}
 
-		if (!deliveryPlanningRepository.getDeliveryInstructionDocStatus(targetDeliveryInstructionId).isDrafted())
+		if (!deliveryInstructionService.getDocStatus(targetDeliveryInstructionId).isDrafted())
 		{
 			return Optional.of(TranslatableStrings.adMessage(MSG_M_Delivery_Planning_TargetInstructionNotDraft));
 		}
@@ -1396,7 +1616,7 @@ public class DeliveryPlanningService
 				.flatMap(Collection::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryPlanningRepository.getDeliveryInstructionDocStatuses(deliveryInstructionIds);
+		final ImmutableMap<ShipperTransportationId, DocStatus> docStatuses = deliveryInstructionService.getDocStatuses(deliveryInstructionIds);
 
 		return selectedDeliveryPlannings.stream()
 				.filter(DeliveryPlanning::isAllocated)
@@ -1501,7 +1721,7 @@ public class DeliveryPlanningService
 			// the source allocation and its package are DEACTIVATED, not deleted, so the record of what was once
 			// planned survives - the target's insert still finds no ACTIVE row to collide with on either partial
 			// unique index, since both are declared WHERE IsActive='Y'
-			final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
+			final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryInstructionService.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
 			resetDatesFromOrderAndSchedule(deactivatedIds);
 		}
 
@@ -1509,12 +1729,12 @@ public class DeliveryPlanningService
 		// instruction's, which the sync-down would still have on these rows before the reset ran
 		final ImmutableList<DeliveryPlanningAllocCreateRequest> allocations = createAllocCreateRequests(deliveryPlanningIds);
 
-		final I_M_ShipperTransportation targetInstruction = deliveryPlanningRepository.getInstructionById(targetDeliveryInstructionId);
+		final I_M_ShipperTransportation targetInstruction = deliveryInstructionService.getById(targetDeliveryInstructionId);
 		final DeliveryInstructionDates resolvedDates = resolveInstructionDatesForAllocation(targetInstruction, allocations);
-		deliveryPlanningRepository.createAllocations(targetInstruction, allocations, resolvedDates);
+		deliveryInstructionService.createAllocations(targetInstruction, allocations, resolvedDates);
 
 		// stamped from the target: on a move the old release number named a document the cargo has left
-		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
+		deliveryInstructionService.updateDeliveryPlanningsFromInstruction(deliveryPlanningIds, targetDeliveryInstructionId);
 	}
 
 	/**
@@ -1542,7 +1762,7 @@ public class DeliveryPlanningService
 		// No trxManager wrapper - same reason as in addTo: the only caller,
 		// M_Delivery_Planning_RemoveFromDeliveryInstruction.doIt(), is a JavaProcess without @RunOutOfTrx and
 		// therefore already runs inside a transaction.
-		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryPlanningRepository.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
+		final ImmutableSet<DeliveryPlanningId> deactivatedIds = deliveryInstructionService.deactivateAllocations(deliveryPlanningIds, SystemTime.asInstant());
 		resetDatesFromOrderAndSchedule(deactivatedIds);
 		deliveryPlanningRepository.clearInstructionReference(deliveryPlanningIds);
 	}
@@ -1551,17 +1771,17 @@ public class DeliveryPlanningService
 	 * Unlinks every planning currently allocated to the instruction (deactivating the allocations), resets their
 	 * dates and invalidates their invoice candidates - the same batch load
 	 * {@link #invalidateInvoiceCandidatesFor(ShipperTransportationId)} uses, but reading the affected ids from
-	 * {@link DeliveryPlanningRepository#unlinkDeliveryPlannings}'s OWN return value rather than a second, separate
+	 * {@link DeliveryInstructionService#unlinkDeliveryPlannings}'s OWN return value rather than a second, separate
 	 * query: the same pattern the other two retirement paths (remove-from and the source half of a move)
 	 * already follow - deactivate once, use what it reports it deactivated. Re-deriving the ids from
-	 * {@link DeliveryPlanningRepository#getAllocatedPlanningIds(ShipperTransportationId)} AFTER the deactivation
+	 * {@link DeliveryPlanningAllocRepository#getAllocatedPlanningIds(ShipperTransportationId)} AFTER the deactivation
 	 * would come back empty, which is exactly why the invalidation below is deferred to after-commit against the
 	 * ids captured HERE rather than re-resolved inside that deferred closure.
 	 */
 	public void unlinkDeliveryPlannings(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds =
-				deliveryPlanningRepository.unlinkDeliveryPlannings(deliveryInstructionId, SystemTime.asInstant()).getDeallocatedPlanningIds();
+				deliveryInstructionService.unlinkDeliveryPlannings(deliveryInstructionId, SystemTime.asInstant());
 		resetDatesFromOrderAndSchedule(allocatedPlanningIds);
 
 		if (!allocatedPlanningIds.isEmpty())
@@ -1584,7 +1804,7 @@ public class DeliveryPlanningService
 	public void syncDatesToAllocatedPlannings(@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
 		final ShipperTransportationId deliveryInstructionId = ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID());
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
 			return;
@@ -1599,7 +1819,7 @@ public class DeliveryPlanningService
 	 * field is still empty. Every field is guarded individually so a value the planner entered before the add
 	 * survives.
 	 * <p>
-	 * A pure function: it reads and decides, {@link DeliveryPlanningRepository#createAllocations} writes.
+	 * A pure function: it reads and decides, {@link DeliveryInstructionService#createAllocations} writes.
 	 * {@code ATD}/{@code ATA} are then derived from the FILLED {@code ETD}/{@code ETA} rather than from the
 	 * planning, so a planner-set departure propagates into the actual. {@code BLDate} belongs to the
 	 * transport-order flow and is not touched.
@@ -1617,21 +1837,22 @@ public class DeliveryPlanningService
 
 		for (final DeliveryPlanningAllocCreateRequest request : requests)
 		{
-			if (etd == null && request.getEtd() != null)
+			final DeliveryPlanningAllocCreateRequest.HeaderDateCandidate candidate = request.getHeaderDateCandidate();
+			if (etd == null && candidate.getEtd() != null)
 			{
-				etd = request.getEtd();
+				etd = candidate.getEtd();
 			}
-			if (eta == null && request.getEta() != null)
+			if (eta == null && candidate.getEta() != null)
 			{
-				eta = request.getEta();
+				eta = candidate.getEta();
 			}
-			if (Check.isBlank(loadingTime) && !Check.isBlank(request.getLoadingTime()))
+			if (Check.isBlank(loadingTime) && !Check.isBlank(candidate.getLoadingTime()))
 			{
-				loadingTime = request.getLoadingTime();
+				loadingTime = candidate.getLoadingTime();
 			}
-			if (Check.isBlank(deliveryTime) && !Check.isBlank(request.getDeliveryTime()))
+			if (Check.isBlank(deliveryTime) && !Check.isBlank(candidate.getDeliveryTime()))
 			{
-				deliveryTime = request.getDeliveryTime();
+				deliveryTime = candidate.getDeliveryTime();
 			}
 		}
 
@@ -1791,7 +2012,7 @@ public class DeliveryPlanningService
 
 	private void voidLinkedDeliveryInstructions(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final Iterator<I_M_ShipperTransportation> deliveryInstructionsIterator = deliveryPlanningRepository.retrieveForDeliveryPlanning(deliveryPlanningId);
+		final Iterator<I_M_ShipperTransportation> deliveryInstructionsIterator = deliveryInstructionService.retrieveForDeliveryPlanning(deliveryPlanningId);
 		while (deliveryInstructionsIterator.hasNext())
 		{
 			final I_M_ShipperTransportation deliveryInstructionRecord = deliveryInstructionsIterator.next();
@@ -1811,20 +2032,45 @@ public class DeliveryPlanningService
 	 * when a selected open planning SHARES its instruction with a closed one, the whole cancel aborts and nothing
 	 * is cancelled. That is the normal case under aggregation, and it is deliberate: the closed planning's cargo
 	 * would otherwise be released along with the open one's.
+	 * <p>
+	 * An open planning still allocated to a delivery instruction when this runs (D8/D19 - the same
+	 * committed-cargo rule the split applies, via {@link DeliveryPlanningAllocRepository#hasActiveAllocation}) is
+	 * fully cancelled the same as any other row - voided, closed, cancelled order status - but its
+	 * {@code PlannedLoadedQuantity}/{@code PlannedDischargeQuantity} are left untouched and it is named in
+	 * {@link DeliveryPlanningCancelResult#getSkippedAllocatedIds()} instead of being silently rewritten.
+	 * <p>
+	 * The allocation state is snapshotted for the WHOLE selection BEFORE any row is voided - not read per row
+	 * right before that row's own void. Two selected plannings sharing one instruction (the aggregation case
+	 * this method's own Javadoc above already describes) both go through {@link #voidLinkedDeliveryInstructions}
+	 * once each is reached in the loop, and voiding the shared instruction deactivates BOTH plannings'
+	 * allocations at once (the AFTER_VOID unlink cascade). A per-row "check right before voiding THIS row" would
+	 * therefore see the second-processed sibling as already unallocated - a side effect of iteration order the
+	 * first-processed row's void introduced - and zero its planned figures despite it being just as committed
+	 * as the first. The batch snapshot fixes what cancel actually found before it touched anything.
 	 */
 	public DeliveryPlanningCancelResult cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
 				.excludeDeliveryPlanningsWithoutReleaseNo(selectedDeliveryPlanningsFilter);
 
+		final ImmutableList<I_M_Delivery_Planning> selectedDeliveryPlannings = ImmutableList.copyOf(
+				deliveryPlanningRepository.extractDeliveryPlannings(dpFilter));
+
+		final ImmutableList<DeliveryPlanningId> selectedDeliveryPlanningIds = selectedDeliveryPlannings.stream()
+				.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		// snapshot, taken before the loop below voids anything - see the Javadoc above
+		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningAllocRepository
+				.getAllocationsByPlanningId(selectedDeliveryPlanningIds)
+				.keySet();
+
 		final ImmutableList.Builder<DeliveryPlanningId> cancelledIds = ImmutableList.builder();
 		final ImmutableList.Builder<DeliveryPlanningId> skippedClosedIds = ImmutableList.builder();
+		final ImmutableList.Builder<DeliveryPlanningId> skippedAllocatedIds = ImmutableList.builder();
 
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = deliveryPlanningRepository.extractDeliveryPlannings(dpFilter);
-
-		while (deliveryPlanningIterator.hasNext())
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : selectedDeliveryPlannings)
 		{
-			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 
 			// Reached by a planning closed WHILE allocated: closing sets the flag and nothing else, so such a row
@@ -1836,18 +2082,25 @@ public class DeliveryPlanningService
 				continue;
 			}
 
+			final boolean wasAllocated = allocatedIds.contains(deliveryPlanningId);
+
 			// first void the existent delivery instructions
 			voidLinkedDeliveryInstructions(deliveryPlanningId);
 
 			// re-read: the void's unlink cascade may have cleared ReleaseNo/M_ShipperTransportation_ID on this
 			// same row, and the pre-void record in hand here must not overwrite that with stale values
-			deliveryPlanningRepository.cancelDeliveryPlanning(deliveryPlanningRepository.getById(deliveryPlanningId));
+			deliveryPlanningRepository.cancelDeliveryPlanning(deliveryPlanningRepository.getById(deliveryPlanningId), !wasAllocated);
 			cancelledIds.add(deliveryPlanningId);
+			if (wasAllocated)
+			{
+				skippedAllocatedIds.add(deliveryPlanningId);
+			}
 		}
 
 		return DeliveryPlanningCancelResult.builder()
 				.cancelledIds(cancelledIds.build())
 				.skippedClosedIds(skippedClosedIds.build())
+				.skippedAllocatedIds(skippedAllocatedIds.build())
 				.build();
 	}
 
@@ -1866,13 +2119,7 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Consumer<DeliveryPlanningReceiptInfo> updater)
 	{
-		final DeliveryStatusColorPalette colorPalette = getColorPalette();
-		deliveryPlanningRepository.updateReceiptInfoById(
-				deliveryPlanningId,
-				receiptInfo -> {
-					updater.accept(receiptInfo);
-					receiptInfo.updateReceivedStatusColor(colorPalette);
-				});
+		deliveryPlanningRepository.updateReceiptInfoById(deliveryPlanningId, updater);
 	}
 
 	public Optional<DeliveryPlanningShipmentInfo> getShipmentInfoIfOutgoingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -1890,13 +2137,7 @@ public class DeliveryPlanningService
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Consumer<DeliveryPlanningShipmentInfo> updater)
 	{
-		final DeliveryStatusColorPalette colorPalette = getColorPalette();
-		deliveryPlanningRepository.updateShipmentInfoById(
-				deliveryPlanningId,
-				shipmentInfo -> {
-					updater.accept(shipmentInfo);
-					shipmentInfo.updateShippedStatusColor(colorPalette);
-				});
+		deliveryPlanningRepository.updateShipmentInfoById(deliveryPlanningId, updater);
 	}
 
 	public <T> T getShipmentOrReceiptInfo(
@@ -1914,7 +2155,7 @@ public class DeliveryPlanningService
 
 	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return deliveryPlanningRepository.hasCompleteDeliveryInstruction(deliveryPlanningId);
+		return deliveryInstructionService.hasCompleteDeliveryInstruction(deliveryPlanningId);
 	}
 
 	public boolean isExistsBlockedPartnerDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -1957,7 +2198,7 @@ public class DeliveryPlanningService
 	 */
 	public void invalidateInvoiceCandidatesFor(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningRepository.getAllocatedPlanningIds(deliveryInstructionId);
+		final ImmutableSet<DeliveryPlanningId> allocatedPlanningIds = deliveryPlanningAllocRepository.getAllocatedPlanningIds(deliveryInstructionId);
 		if (allocatedPlanningIds.isEmpty())
 		{
 			return;

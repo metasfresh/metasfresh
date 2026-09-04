@@ -25,7 +25,7 @@ package de.metas.deliveryplanning;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,9 +34,20 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 
 /**
- * One planning's share of a delivery instruction: the allocation to create, plus what goes on the
- * {@code M_ShippingPackage} it gets. Fields the instruction already holds (forwarder, its business partner and
- * location, the shipping date) are read off the instruction, not repeated here.
+ * One planning's contribution to a delivery instruction. Grouped by who actually owns each field - re-derived
+ * against the code as it stands (Task Q14 already stopped copying quantities onto the package; see below):
+ * <ul>
+ * <li>{@link #deliveryPlanningId} is the only field {@code M_Delivery_Planning_Alloc} itself owns -
+ * {@code M_ShippingPackage_ID} and {@code M_ShipperTransportation_ID} are derived inside
+ * {@link DeliveryInstructionService}, never supplied here.</li>
+ * <li>{@link #shippingPackage} is what {@link DeliveryInstructionRepository#createShippingPackage} needs to build the
+ * allocation's {@code M_ShippingPackage}.</li>
+ * <li>{@link #headerDateCandidate} is what this planning offers the delivery instruction header's fill-if-empty
+ * date defaulting - consumed by {@link DeliveryPlanningService#resolveInstructionDatesForAllocation}, never by
+ * {@link DeliveryInstructionService} itself.</li>
+ * </ul>
+ * Fields the instruction already holds (forwarder, its business partner and location, the shipping date) are read
+ * off the instruction, not repeated here.
  */
 @Value
 @Builder
@@ -44,27 +55,57 @@ public class DeliveryPlanningAllocCreateRequest
 {
 	@NonNull DeliveryPlanningId deliveryPlanningId;
 
-	@NonNull ProductId productId;
+	@NonNull ShippingPackageData shippingPackage;
 
-	@NonNull Quantity qtyLoaded;
+	/** Defaults to {@link HeaderDateCandidate#none()} - a request that contributes no dates need not build one. */
+	@Builder.Default
+	@NonNull HeaderDateCandidate headerDateCandidate = HeaderDateCandidate.none();
 
-	@NonNull Quantity qtyDischarged;
+	/**
+	 * What {@link DeliveryInstructionRepository#createShippingPackage} writes onto the created
+	 * {@code M_ShippingPackage}. Note there is no quantity here: the package's four quantity figures are derived
+	 * (Task Q14, {@code ColumnSQL}) from the planning through the allocation, so all that survives from the
+	 * planning's own quantity is the unit it is expressed in.
+	 */
+	@Value
+	@Builder
+	public static class ShippingPackageData
+	{
+		@NonNull ProductId productId;
 
-	@Nullable String batchNo;
+		@NonNull UomId uomId;
 
-	@Nullable OrderLineId orderLineId;
+		@Nullable String batchNo;
 
-	/** Lands on the created {@code M_ShippingPackage}; {@code null} for a planning that has no order. */
-	@Nullable OrderId orderId;
+		@Nullable OrderLineId orderLineId;
 
-	boolean toBeFetched;
+		/** Lands on the created {@code M_ShippingPackage}; {@code null} for a planning that has no order. */
+		@Nullable OrderId orderId;
 
-	/** The planning's own dates, used for the instruction's fill-if-empty defaulting. */
-	@Nullable Timestamp etd;
+		boolean toBeFetched;
+	}
 
-	@Nullable Timestamp eta;
+	/**
+	 * The planning's own {@code ETD}/{@code ETA}/{@code LoadingTime}/{@code DeliveryTime}, offered as a candidate
+	 * value for the instruction header's fill-if-empty defaulting. A request whose header is filled some other way
+	 * (e.g. {@link DeliveryInstructionService#generateDeliveryInstruction}, which sets the header directly from its
+	 * own {@code DeliveryInstructionCreateRequest} before ever building this type) contributes {@link #none()}.
+	 */
+	@Value
+	@Builder
+	public static class HeaderDateCandidate
+	{
+		@Nullable Timestamp etd;
 
-	@Nullable String loadingTime;
+		@Nullable Timestamp eta;
 
-	@Nullable String deliveryTime;
+		@Nullable String loadingTime;
+
+		@Nullable String deliveryTime;
+
+		static HeaderDateCandidate none()
+		{
+			return HeaderDateCandidate.builder().build();
+		}
+	}
 }

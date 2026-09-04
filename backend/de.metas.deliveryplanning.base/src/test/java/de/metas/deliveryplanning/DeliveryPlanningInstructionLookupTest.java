@@ -26,9 +26,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.UomId;
 import java.time.Instant;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,7 +42,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 
@@ -60,6 +60,9 @@ class DeliveryPlanningInstructionLookupTest
 	private static final int SHIPPER_ID = 540003;
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private I_C_UOM uom;
 
 	@BeforeEach
@@ -68,6 +71,10 @@ class DeliveryPlanningInstructionLookupTest
 		AdempiereTestHelper.get().init();
 
 		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);
@@ -98,9 +105,10 @@ class DeliveryPlanningInstructionLookupTest
 	{
 		return DeliveryPlanningAllocCreateRequest.builder()
 				.deliveryPlanningId(deliveryPlanningId)
-				.productId(ProductId.ofRepoId(540010))
-				.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-				.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+				.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+						.productId(ProductId.ofRepoId(540010))
+						.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+						.build())
 				.build();
 	}
 
@@ -123,9 +131,9 @@ class DeliveryPlanningInstructionLookupTest
 		{
 			final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Completed, true);
 			final DeliveryPlanningId planningId = createDeliveryPlanning();
-			deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
+			deliveryInstructionService.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
 
-			assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isTrue();
+			assertThat(deliveryInstructionService.hasCompleteDeliveryInstruction(planningId)).isTrue();
 		}
 
 		@Test
@@ -134,9 +142,9 @@ class DeliveryPlanningInstructionLookupTest
 		{
 			final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Drafted, false);
 			final DeliveryPlanningId planningId = createDeliveryPlanning();
-			deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
+			deliveryInstructionService.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
 
-			assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isFalse();
+			assertThat(deliveryInstructionService.hasCompleteDeliveryInstruction(planningId)).isFalse();
 		}
 
 		@Test
@@ -145,10 +153,10 @@ class DeliveryPlanningInstructionLookupTest
 		{
 			final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Completed, true);
 			final DeliveryPlanningId planningId = createDeliveryPlanning();
-			deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
-			deliveryPlanningRepository.deactivateAllocations(instructionId, REMOVED_AT);
+			deliveryInstructionService.createAllocations(instructionId, ImmutableList.of(allocRequestFor(planningId)));
+			deliveryInstructionService.deactivateAllocations(instructionId, REMOVED_AT);
 
-			assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(planningId)).isFalse();
+			assertThat(deliveryInstructionService.hasCompleteDeliveryInstruction(planningId)).isFalse();
 		}
 	}
 
@@ -161,12 +169,12 @@ class DeliveryPlanningInstructionLookupTest
 		// Without a second, foreign instruction in the database this cannot fail, which is why one is created here.
 		final ShipperTransportationId foreignInstructionId = createDeliveryInstruction(DocStatus.Completed, true);
 		final DeliveryPlanningId allocatedPlanningId = createDeliveryPlanning();
-		deliveryPlanningRepository.createAllocations(foreignInstructionId, ImmutableList.of(allocRequestFor(allocatedPlanningId)));
+		deliveryInstructionService.createAllocations(foreignInstructionId, ImmutableList.of(allocRequestFor(allocatedPlanningId)));
 
 		final DeliveryPlanningId unallocatedPlanningId = createDeliveryPlanning();
 
-		assertThat(toList(deliveryPlanningRepository.retrieveForDeliveryPlanning(unallocatedPlanningId))).isEmpty();
-		assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(unallocatedPlanningId)).isFalse();
+		assertThat(toList(deliveryInstructionService.retrieveForDeliveryPlanning(unallocatedPlanningId))).isEmpty();
+		assertThat(deliveryInstructionService.hasCompleteDeliveryInstruction(unallocatedPlanningId)).isFalse();
 	}
 
 	@Test
@@ -176,15 +184,15 @@ class DeliveryPlanningInstructionLookupTest
 		final ShipperTransportationId instructionId = createDeliveryInstruction(DocStatus.Completed, true);
 		final DeliveryPlanningId first = createDeliveryPlanning();
 		final DeliveryPlanningId second = createDeliveryPlanning();
-		deliveryPlanningRepository.createAllocations(instructionId, ImmutableList.of(allocRequestFor(first), allocRequestFor(second)));
+		deliveryInstructionService.createAllocations(instructionId, ImmutableList.of(allocRequestFor(first), allocRequestFor(second)));
 
-		assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(first)).isTrue();
-		assertThat(deliveryPlanningRepository.hasCompleteDeliveryInstruction(second)).isTrue();
+		assertThat(deliveryInstructionService.hasCompleteDeliveryInstruction(first)).isTrue();
+		assertThat(deliveryInstructionService.hasCompleteDeliveryInstruction(second)).isTrue();
 
-		assertThat(toList(deliveryPlanningRepository.retrieveForDeliveryPlanning(first)))
+		assertThat(toList(deliveryInstructionService.retrieveForDeliveryPlanning(first)))
 				.extracting(I_M_ShipperTransportation::getM_ShipperTransportation_ID)
 				.containsExactly(instructionId.getRepoId());
-		assertThat(toList(deliveryPlanningRepository.retrieveForDeliveryPlanning(second)))
+		assertThat(toList(deliveryInstructionService.retrieveForDeliveryPlanning(second)))
 				.extracting(I_M_ShipperTransportation::getM_ShipperTransportation_ID)
 				.containsExactly(instructionId.getRepoId());
 	}

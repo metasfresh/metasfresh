@@ -1,9 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ReceiptSchedule
  *  @author metasfresh (generated) 
@@ -951,6 +950,48 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_ExportStatus = "ExportStatus";
 
 	/**
+	 * Set External Header ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalHeaderId (@Nullable java.lang.String ExternalHeaderId);
+
+	/**
+	 * Get External Header ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalHeaderId();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExternalHeaderId = new ModelColumn<>(I_M_ReceiptSchedule.class, "ExternalHeaderId", null);
+	String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
+
+	/**
+	 * Set External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalLineId (@Nullable java.lang.String ExternalLineId);
+
+	/**
+	 * Get External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalLineId();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_M_ReceiptSchedule.class, "ExternalLineId", null);
+	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
 	 * Set External resource URL.
 	 *
 	 * <br>Type: String
@@ -970,6 +1011,27 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExternalResourceURL = new ModelColumn<>(I_M_ReceiptSchedule.class, "ExternalResourceURL", null);
 	String COLUMNNAME_ExternalResourceURL = "ExternalResourceURL";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Filtered-Count with order.
@@ -1037,27 +1099,6 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsActive = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Delivery Stop.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDeliveryStop (boolean IsDeliveryStop);
-
-	/**
-	 * Get Delivery Stop.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDeliveryStop();
-
-	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsDeliveryStop = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsDeliveryStop", null);
-	String COLUMNNAME_IsDeliveryStop = "IsDeliveryStop";
 
 	/**
 	 * Set B/L Received.
@@ -1135,6 +1176,27 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
 
 	/**
+	 * Set Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsClosed (boolean IsClosed);
+
+	/**
+	 * Get Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isClosed();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsClosed", null);
+	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
 	 * Set Confirmed by supplier.
 	 *
 	 * <br>Type: YesNo
@@ -1154,6 +1216,29 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsConfirmedBySupplier = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsConfirmedBySupplier", null);
 	String COLUMNNAME_IsConfirmedBySupplier = "IsConfirmedBySupplier";
+
+	/**
+	 * Set Delivery Stop.
+	 * Delivery / order stop
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryStop (boolean IsDeliveryStop);
+
+	/**
+	 * Get Delivery Stop.
+	 * Delivery / order stop
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryStop();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsDeliveryStop = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsDeliveryStop", null);
+	String COLUMNNAME_IsDeliveryStop = "IsDeliveryStop";
 
 	/**
 	 * Set Packaging Material .
@@ -1418,6 +1503,39 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_M_ReceiptSchedule_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "M_ReceiptSchedule_ID", null);
 	String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getM_Shipper_ID();
+
+	@Deprecated
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
+
+	@Deprecated
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
+
+	ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Transportation Order.
@@ -1750,27 +1868,6 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_Processed = new ModelColumn<>(I_M_ReceiptSchedule.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
-
-	/**
-	 * Set Closed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsClosed (boolean IsClosed);
-
-	/**
-	 * Get Closed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isIsClosed();
-
-	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsClosed", null);
-	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
 	 * Set Packaging capacity.
@@ -2352,69 +2449,4 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_VesselName = new ModelColumn<>(I_M_ReceiptSchedule.class, "VesselName", null);
 	String COLUMNNAME_VesselName = "VesselName";
-
-	/**
-	 * Set External Header ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalHeaderId (@Nullable String ExternalHeaderId);
-
-	/**
-	 * Get External Header ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getExternalHeaderId();
-
-	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExternalHeaderId = new ModelColumn<>(I_M_ReceiptSchedule.class, "ExternalHeaderId", null);
-	String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
-
-	/**
-	 * Set External Line ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalLineId (@Nullable String ExternalLineId);
-
-	/**
-	 * Get External Line ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getExternalLineId();
-
-	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_M_ReceiptSchedule.class, "ExternalLineId", null);
-	String COLUMNNAME_ExternalLineId = "ExternalLineId";
-
-
-
-	/**
-	 * Set External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystem_ID (int ExternalSystem_ID);
-
-	/**
-	 * Get External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternalSystem_ID();
-
-	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "ExternalSystem_ID", null);
-	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }

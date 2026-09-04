@@ -55,6 +55,7 @@ public class ShipmentScheduleWorkPackageParameters
 	public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 	public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
 	public static final String PARAM_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID";
+	public static final String PARAM_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
 	/**
 	 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 	 */
@@ -85,6 +86,14 @@ public class ShipmentScheduleWorkPackageParameters
 	@Nullable ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos;
 
 	@Nullable QtyToDeliverMap qtysToDeliverOverride;
+
+	/**
+	 * {@code M_Delivery_Planning_ID} to stamp onto every shipment header this workpackage creates, or
+	 * {@code 0} for none.
+	 *
+	 * @see GenerateShipmentsRequest#getDeliveryPlanningId()
+	 */
+	int deliveryPlanningId;
 
 	public IQueryFilter<I_M_ShipmentSchedule> getShipmentSchedulesQueryFiltersEffective()
 	{

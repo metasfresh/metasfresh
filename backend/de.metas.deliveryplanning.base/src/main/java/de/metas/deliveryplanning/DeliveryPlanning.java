@@ -25,8 +25,10 @@ package de.metas.deliveryplanning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.inout.InOutId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -78,6 +80,49 @@ public class DeliveryPlanning
 	boolean closed;
 
 	/**
+	 * {@code M_Delivery_Planning.Processed}, read straight off the stored column - never re-derived here. Task
+	 * Q10 maintains the invariant {@code Processed == (IsClosed || IsDelivered)} at every write point, so this
+	 * ONE flag answers both questions a receive action has to ask before it produces anything: has this planning
+	 * been called off (closed), and does it already carry its single receipt or shipment (delivered). That is why
+	 * {@link DeliveryPlanningList#anyProcessed()} - and not a pair of predicates - is the shared precondition.
+	 * <p>
+	 * A stored column, so asking it over a whole selection costs nothing per row. Contrast {@link #isAllocated()},
+	 * which reads the {@link #allocations} the caller had to load.
+	 * <p>
+	 * UNLIKE the {@code @Nullable} fields above, this is a primitive whose unset value ({@code false}) is the
+	 * PERMISSIVE answer for a guard - "not processed, go ahead". So every mapper that builds a
+	 * {@link DeliveryPlanning} from an {@code M_Delivery_Planning} record must set it, even one that carries
+	 * nothing else about the planning's state; leaving it out would silently wave a processed planning through.
+	 */
+	boolean processed;
+
+	/**
+	 * The order line's ordered quantity, replicated onto every planning of that line - {@code null} for a
+	 * planning loaded by a caller that never asks {@link DeliveryPlanningList#openPlanQty} about it (e.g. the
+	 * aggregation preconditions), which is why this is not {@code @NonNull}.
+	 */
+	@Nullable Quantity qtyOrdered;
+
+	/** This planning's own planned LOAD figure - the load half of {@link DeliveryPlanningList#openPlanQty}'s pool. */
+	@Nullable Quantity plannedLoadedQty;
+
+	/** This planning's own ACTUAL load figure - {@code null}/zero until something is recorded against it. */
+	@Nullable Quantity actualLoadedQty;
+
+	/** This planning's own planned DISCHARGE figure - the discharge half of the pool. */
+	@Nullable Quantity plannedDischargeQty;
+
+	/** This planning's own ACTUAL discharge figure - a receipt's, once booked. */
+	@Nullable Quantity actualDischargeQty;
+
+	/**
+	 * The receipt or shipment this planning is linked to - {@code M_Delivery_Planning.M_InOut_ID}, stamped and
+	 * un-stamped by {@code interceptor/M_InOut}. {@code null} for a planning loaded by a caller that never asks
+	 * {@link #isDelivered()} about it, same convention as the quantity fields above.
+	 */
+	@Nullable InOutId inOutId;
+
+	/**
 	 * This planning's ACTIVE allocations, one per delivery instruction it sits on. A list rather than a single id
 	 * because multi-leg transport puts one planning on several instructions; no consumer may assume at most one.
 	 */
@@ -101,4 +146,11 @@ public class DeliveryPlanning
 	}
 
 	public boolean isWithoutShipper() {return shipperId == null;}
+
+	/**
+	 * From {@code M_InOut_ID} being set - the same definition {@code M_Delivery_Planning.IsDelivered}'s
+	 * {@code ColumnSQL} evaluates in SQL (5821150), so the two layers cannot diverge. On an incoming planning
+	 * "delivered" means received.
+	 */
+	public boolean isDelivered() {return inOutId != null;}
 }

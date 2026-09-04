@@ -1,23 +1,14 @@
 package de.metas.ui.web.handlingunits.process;
 
-import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 
 /*
@@ -60,9 +51,9 @@ import org.compiere.model.I_M_InOut;
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	// services
-	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
-	private final DocumentCollection documentsRepo = SpringContextHolder.instance.getBean(DocumentCollection.class);
+	// package-visible, non-final so a same-package unit test can substitute it; shared with the
+	// receipt-disposition delivery-planning window's adapter, which must create the very same empties document.
+	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
 
 	private final String _returnMovementType;
 	private final AdWindowId _targetWindowId;
@@ -87,20 +78,11 @@ import org.compiere.model.I_M_InOut;
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final I_M_ReceiptSchedule receiptSchedule = getProcessInfo().getRecordIfApplies(I_M_ReceiptSchedule.class, ITrx.TRXNAME_ThreadInherited).orElse(null);
 
-		final int emptiesInOutId;
-		if (receiptSchedule == null)
-		{
-			emptiesInOutId = createDraftEmptiesDocument();
-		}
-		else
-		{
-			final I_M_InOut emptiesInOut = huEmptiesService.createDraftEmptiesInOutFromReceiptSchedule(receiptSchedule, getReturnMovementType());
-			emptiesInOutId = emptiesInOut == null ? -1 : emptiesInOut.getM_InOut_ID();
-		}
+		final int emptiesInOutId = actions.createEmptiesReturns(getCtx(), receiptSchedule, getReturnMovementType(), getTargetWindowId());
 
 		//
 		// Notify frontend that the empties document shall be opened in single document layout (not grid)
@@ -112,22 +94,4 @@ import org.compiere.model.I_M_InOut;
 		return MSG_OK;
 	}
 
-	private int createDraftEmptiesDocument()
-	{
-		final DocumentPath documentPath = DocumentPath.builder()
-				.setDocumentType(WindowId.of(getTargetWindowId()))
-				.setDocumentId(DocumentId.NEW_ID_STRING)
-				.allowNewDocumentId()
-				.build();
-
-		final DocumentId documentId = documentsRepo.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
-			huEmptiesService.newReturnsInOutProducer(getCtx())
-					.setMovementType(getReturnMovementType())
-					.setMovementDate(de.metas.common.util.time.SystemTime.asDayTimestamp())
-					.fillReturnsInOutHeader(InterfaceWrapperHelper.create(document, I_M_InOut.class));
-			return document.getDocumentId();
-		});
-
-		return documentId.toInt();
-	}
 }
