@@ -60,13 +60,13 @@ import java.util.Properties;
  * The receipt-logistics window carries the receipt-schedule window's action set (REQUIREMENTS 3.4), but it
  * cannot point its {@code AD_Table_Process} rows at the {@code WEBUI_M_ReceiptSchedule_*} classes: for a view
  * row the platform resolves a process' record through {@code IView#getTableRecordReferenceOrNull}, which on this
- * window yields {@code RV_ReceiptLogistics}, while every one of those classes asks for its record as
+ * window yields {@code RV_ReceiptDisposition_DeliveryPlanning}, while every one of those classes asks for its record as
  * {@code M_ReceiptSchedule} - and the seam is sealed ({@code JavaProcess#getRecord} is {@code protected final}).
  * So the new window needs its own thin adapter classes, which read the schedule off the selected GRID ROW.
  * <p>
  * <b>The work itself must not be written twice.</b> Two copies of "attach this photo", "print this Jasper",
  * "collect the HUs to reverse" would drift the moment one of them is fixed. So each action's body lives here
- * once, and BOTH the {@code WEBUI_M_ReceiptSchedule_*} process and its {@code WEBUI_RV_ReceiptLogistics_*}
+ * once, and BOTH the {@code WEBUI_M_ReceiptSchedule_*} process and its {@code WEBUI_RV_ReceiptDisposition_DeliveryPlanning_*}
  * adapter call it. Behaviour is unchanged on either window - the bodies were moved, not rewritten.
  * <p>
  * This is the same extraction {@link ReceiptScheduleReceiveEligibility} and

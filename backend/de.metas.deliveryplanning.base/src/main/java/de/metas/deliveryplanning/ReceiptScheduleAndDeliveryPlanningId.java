@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
  * The two source ids ONE receipt-logistics row stands for: the receipt schedule it is always about, and the
  * delivery planning that plans it - when one exists.
  * <p>
- * The nullable half IS the window's two branches. {@code RV_ReceiptLogistics} unions a <b>planned</b> row (an
+ * The nullable half IS the window's two branches. {@code RV_ReceiptDisposition_DeliveryPlanning} unions a <b>planned</b> row (an
  * active {@code Incoming} planning carrying a receipt schedule) with an <b>unplanned</b> one (a receipt schedule
  * no active planning refers to), so a receive action started from the grid gets a planning id for some selected
  * rows and none for others. Carrying that as {@code null} rather than as two collections keeps the two branches

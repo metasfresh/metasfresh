@@ -65,14 +65,14 @@ export const DELIVERY_PLANNING_WINDOW_ID = 541632;
 export const DELIVERY_INSTRUCTION_WINDOW_ID = 541657;
 
 /**
- * Receipt Logistics window (Wareneingangslogistik)
- * Table: RV_ReceiptLogistics (AD_Table_ID=542644) — a union view over incoming delivery plannings and
+ * Receipt Disposition including Delivery Planning window (Wareneingangsdisposition inkl. Lieferplanung)
+ * Table: RV_ReceiptDisposition_DeliveryPlanning (AD_Table_ID=542644) — a union view over incoming delivery plannings and
  * unplanned receipt schedules, single tab.
  * Window ID: 542190
  * Note: window 541954 "Wareneingangsdisposition Logistik" is the OTHER, delivery-planning-only window —
  * both windows' specs read this file, so the two names must not be swapped here.
  */
-export const RECEIPT_LOGISTICS_WINDOW_ID = 542190;
+export const RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID = 542190;
 
 // ============================================================================
 // MASTER DATA WINDOWS
