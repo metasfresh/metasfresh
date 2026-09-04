@@ -80,7 +80,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class ReceiptLogisticsViewBasedProcessTest
 {
-	private static final WindowId WINDOW_ID = WindowId.of(541961);
+	/** The receipt-logistics window itself ("Wareneingangslogistik"), so a reader is not misled about what is under test. */
+	private static final WindowId WINDOW_ID = WindowId.of(542190);
 
 	private static int nextId = 1;
 

@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { PURCHASE_ORDER_WINDOW_ID, RECEIPT_LOGISTICS_WINDOW_ID } from '../utils/WindowIds';
 
 /** AD_Tab_ID of "Bestellposition" (purchase order line) in the purchase order window. */
@@ -192,21 +192,30 @@ test.describe('Receipt logistics — quick-action default and its fallback', () 
       await rowForProduct(packedProductName).click();
       await rowForProduct(unpackedProductName).click({ modifiers: ['Control'] });
 
+      // NO `if (await ...isVisible())` around either assertion. An assertion that runs only when its own
+      // precondition happens to hold cannot fail, and that is not a hypothetical here: the action-menu half
+      // used to guard on `[data-testid="toggle-actions"], .actions-toggle, [data-testid="actions-btn"]`,
+      // none of which occurs anywhere in `frontend/src`, so the block never executed and the step reported
+      // green having asserted nothing. Both openers are waited for instead, so a missing one fails loudly.
+
       // Quick-actions dropdown: the multi-row receive must never appear here (WEBUI_ViewQuickAction='N').
       const dropdownToggle = page.locator('[data-testid="quick-action-dropdown-toggle"]');
-      if (await dropdownToggle.isVisible().catch(() => false)) {
-        await dropdownToggle.click();
-        await expect(page.locator(`[data-testid="quick-action-${MULTI_ROW_RECEIVE_INTERNAL_NAME}"]`)).toHaveCount(0);
-        await dropdownToggle.click();
-      }
+      await dropdownToggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await dropdownToggle.click();
+      await expect(page.locator(`[data-testid="quick-action-${MULTI_ROW_RECEIVE_INTERNAL_NAME}"]`)).toHaveCount(0);
+      await dropdownToggle.click(); // close
 
-      // Action menu (the side panel opened via the window's "Actions" affordance): the multi-row
-      // receive must be present here (WEBUI_ViewAction='Y').
-      const actionsToggle = page.locator('[data-testid="toggle-actions"], .actions-toggle, [data-testid="actions-btn"]').first();
-      if (await actionsToggle.isVisible().catch(() => false)) {
-        await actionsToggle.click();
-        await expect(page.locator(`[data-testid="action-${MULTI_ROW_RECEIVE_INTERNAL_NAME}"]`)).toBeVisible();
-      }
+      // Action menu: the header's "..." button (`.meta-icon-more`, Header.js) opens the subheader panel
+      // (`.subheader-container`), whose entries carry `data-testid="action-<internalName>"`
+      // (Actions.js). The multi-row receive must be present there (WEBUI_ViewAction='Y').
+      const actionsToggle = page.locator('.meta-icon-more').first();
+      await actionsToggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await actionsToggle.click();
+      await page
+        .locator('.subheader-container')
+        .first()
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await expect(page.locator(`[data-testid="action-${MULTI_ROW_RECEIVE_INTERNAL_NAME}"]`)).toBeVisible();
     });
   });
 });
