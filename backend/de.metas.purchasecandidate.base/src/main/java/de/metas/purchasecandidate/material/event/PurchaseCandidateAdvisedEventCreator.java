@@ -11,8 +11,10 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.PlanningUsage;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -60,21 +62,25 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
-	@NonNull private final PurchaseOrderDemandMatcher purchaseOrderDemandMatcher;
 	@NonNull private final VendorProductInfoService vendorProductInfoService;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepository;
 
-	public List<PurchaseCandidateAdvisedEvent> createAdvisedEvents(
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final MaterialPlanningContext context)
+	@NonNull
+	@Override
+	public PlanningUsage getPlanningUsage()
 	{
-		if (!purchaseOrderDemandMatcher.matches(context))
-		{
-			return ImmutableList.of();
-		}
+		return PlanningUsage.PURCHASING;
+	}
 
+	@NonNull
+	@Override
+	public SupplyAdvice createAdvisedEvents(
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity remainingQty)
+	{
 		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getProductId());
 		final OrgId orgId = supplyRequiredDescriptor.getOrgId();
 
@@ -82,11 +88,13 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		if (!defaultVendorProductInfo.isPresent())
 		{
 			Loggables.addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
-			return ImmutableList.of();
+			return SupplyAdvice.nothing(remainingQty);
 		}
 
 		final ProductPlanning productPlanning = context.getProductPlanning();
 
+		// Purchasing claims the full remainder: the purchase candidate record stores qty via the
+		// descriptor carried on the event, so there is nothing to override here.
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent.builder()
 				.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
@@ -96,7 +104,7 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 				.build();
 
 		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
-		return ImmutableList.of(event);
+		return SupplyAdvice.of(ImmutableList.of(event), remainingQty);
 	}
 
 	@Override
