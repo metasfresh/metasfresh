@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION report.getSalesPriceSpecialAndBase(
             )
 AS
 $$
-WITH RECURSIVE
+WITH
     bpl AS (SELECT bpl.C_BPartner_ID,
                    loc.C_Country_ID
             FROM C_BPartner_Location bpl
@@ -54,7 +54,8 @@ WITH RECURSIVE
                        FROM bpl
                                 JOIN C_BPartner bp ON bp.C_BPartner_ID = bpl.C_BPartner_ID
                                 LEFT JOIN C_BP_Group bpg ON bpg.C_BP_Group_ID = bp.C_BP_Group_ID),
-    -- Pick the SO price list matching the pricing system; country-specific wins over generic
+    -- Pick the SO price list matching the pricing system; country-specific wins over generic.
+    -- (No core helper exists for this step -- the resolvers below all start from a price list.)
     pricelist_root AS (SELECT pl.M_PriceList_ID
                        FROM M_PriceList pl,
                             pricing_system ps
@@ -65,77 +66,57 @@ WITH RECURSIVE
                        ORDER BY (pl.C_Country_ID IS NOT NULL) DESC,
                                 pl.M_PriceList_ID
                        LIMIT 1),
-    -- Walk M_PriceList.BasePriceList_ID chain (cycle-protected, max depth 10)
-    pl_chain AS (SELECT pl.M_PriceList_ID,
-                        pl.BasePriceList_ID,
-                        0                                    AS depth,
-                        ARRAY [pl.M_PriceList_ID]::numeric[] AS visited
-                 FROM M_PriceList pl
-                          JOIN pricelist_root r ON r.M_PriceList_ID = pl.M_PriceList_ID
-
-                 UNION ALL
-
-                 SELECT pl.M_PriceList_ID,
-                        pl.BasePriceList_ID,
-                        c.depth + 1,
-                        c.visited || pl.M_PriceList_ID
-                 FROM pl_chain c
-                          JOIN M_PriceList pl ON pl.M_PriceList_ID = c.BasePriceList_ID
-                 WHERE c.BasePriceList_ID IS NOT NULL
-                   AND pl.IsActive = 'Y'
-                   AND NOT (pl.M_PriceList_ID = ANY (c.visited))
-                   AND c.depth < 10),
-    -- For each PL in the chain, take its newest active PLV valid on p_Date
-    plv_per_pl AS (SELECT DISTINCT ON (c.M_PriceList_ID) c.depth,
-                                                         (c.BasePriceList_ID IS NULL) AS is_base_list,
-                                                         c.M_PriceList_ID,
-                                                         plv.M_PriceList_Version_ID
-                   FROM pl_chain c
-                            JOIN M_PriceList_Version plv ON plv.M_PriceList_ID = c.M_PriceList_ID
-                   WHERE plv.IsActive = 'Y'
-                     AND plv.ValidFrom <= p_Date
-                   ORDER BY c.M_PriceList_ID, plv.ValidFrom DESC),
-    -- Is the customer's assigned (depth-0) list an OVERRIDE list (has a base beneath it)?
-    root_info AS (SELECT (c.BasePriceList_ID IS NOT NULL) AS is_override
-                  FROM pl_chain c
-                  WHERE c.depth = 0),
-    -- All PLV rows in the chain that actually price this product
-    priced AS (SELECT x.depth,
-                      x.is_base_list,
+    -- The layering chain, from the core resolver: the price-list versions to search, ordered
+    -- nearest-first (seq 1 = the list the customer is assigned to) down to the base list.
+    -- Cycle-protection, the depth cap and the newest-valid-version-per-list pick all live in
+    -- public.getPriceListVersionsUpToBase, so this report resolves prices the same way pricing
+    -- does. An unresolvable root (no version valid on p_Date) yields NULL -> unnest gives no
+    -- rows -> both prices come back NULL.
+    chain AS (SELECT u.M_PriceList_Version_ID,
+                     u.seq
+              FROM pricelist_root r
+                       CROSS JOIN LATERAL
+                  unnest(public.getPriceListVersionsUpToBase(r.M_PriceList_ID, p_Date))
+                  WITH ORDINALITY AS u(M_PriceList_Version_ID, seq)),
+    -- Every rung of the chain that actually prices this article. Invalid, attribute-set-instance
+    -- (ASI) specific and packaging (HU/PI) specific prices are excluded, matching the canonical
+    -- ProductPriceQuery / get_Product_Price resolution.
+    priced AS (SELECT c.seq,
                       pp.PriceStd,
                       pp.C_UOM_ID,
                       plv.Name                       AS PLVName,
                       COALESCE(pp.SeqNo, 2147483647) AS seqno_sort,
                       pp.M_ProductPrice_ID
-               FROM plv_per_pl x
-                        JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = x.M_PriceList_Version_ID
-                        JOIN M_ProductPrice pp ON pp.M_PriceList_Version_ID = x.M_PriceList_Version_ID
+               FROM chain c
+                        JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = c.M_PriceList_Version_ID
+                        JOIN M_ProductPrice pp ON pp.M_PriceList_Version_ID = c.M_PriceList_Version_ID
                WHERE pp.M_Product_ID = p_M_Product_ID
                  AND pp.IsActive = 'Y'
-                 -- exclude invalid, attribute-set-instance (ASI) specific and packaging (HU/PI) specific
-                 -- prices, matching the canonical ProductPriceQuery / get_Product_Price resolution
                  AND pp.IsInvalidPrice <> 'Y'
                  AND pp.IsAttributeDependant = 'N'
                  AND pp.M_HU_PI_Item_Product_ID IS NULL),
-    -- Special: the depth-0 price, but ONLY when the assigned list is an override
-    special AS (SELECT pr.PriceStd, pr.C_UOM_ID, pr.PLVName
-                FROM priced pr,
-                     root_info ri
-                WHERE ri.is_override
-                  AND pr.depth = 0
-                ORDER BY pr.seqno_sort ASC,
-                         pr.M_ProductPrice_ID ASC
-                LIMIT 1),
-    -- Base: the price from the TRUE base list of the chain -- the price list whose
-    -- BasePriceList_ID IS NULL. It stays the standard/base price even when the customer's
-    -- assigned list is a multi-level override; a middle override level is never treated as base.
+    -- Base = the most GENERAL price that exists for this article: the deepest priced rung.
+    -- Deepest PRICED, not "the list whose BasePriceList_ID IS NULL" -- so a chain whose base
+    -- list does not price the article still yields the next-most-general price instead of
+    -- nothing, and a chain that could not be walked to the bottom degrades to what it reached.
     base AS (SELECT pr.PriceStd, pr.C_UOM_ID, pr.PLVName
              FROM priced pr
-             WHERE pr.is_base_list
-             ORDER BY pr.depth ASC,
+             ORDER BY pr.seq DESC,
                       pr.seqno_sort ASC,
                       pr.M_ProductPrice_ID ASC
-             LIMIT 1)
+             LIMIT 1),
+    -- Special = the price the customer actually gets: the nearest priced rung -- and only when
+    -- that is a DIFFERENT rung than the base above. Same rung means there is exactly one price
+    -- to show, i.e. no customer-specific arrangement for this article, and Special stays NULL.
+    -- No is_override flag: "has a special price" is a property of where this article's prices
+    -- were found, not of how the customer's price list happens to be wired.
+    special AS (SELECT pr.PriceStd, pr.C_UOM_ID, pr.PLVName
+                FROM priced pr
+                WHERE pr.seq < (SELECT MAX(p2.seq) FROM priced p2)
+                ORDER BY pr.seq ASC,
+                         pr.seqno_sort ASC,
+                         pr.M_ProductPrice_ID ASC
+                LIMIT 1)
 SELECT s.PriceStd::numeric AS SpecialPriceStd,
        s.C_UOM_ID::numeric AS SpecialC_UOM_ID,
        s.PLVName::varchar  AS SpecialPLV,
@@ -151,5 +132,5 @@ $$
 ;
 
 COMMENT ON FUNCTION report.getSalesPriceSpecialAndBase(timestamp with time zone, numeric, numeric)
-    IS 'Resolves, for a business-partner location and product on a given date, both the customer-specific special price (depth-0 override list) and the base/standard list price (base-list in the BasePriceList_ID chain). Either may be NULL. Used by report.getCustomerDeliveryPriceOverview.'
+    IS 'Resolves, for a business-partner location and product on a given date, both the price the customer actually gets (the nearest rung of the price-list layering chain that prices the article) and the most general price for that article (the deepest priced rung). Special is NULL when both land on the same rung, i.e. when there is no customer-specific arrangement for this article. Either may be NULL when the article is not priced at all. Chain resolution is delegated to public.getPriceListVersionsUpToBase so the report prices articles the same way pricing does. Used by report.getCustomerDeliveryPriceOverview.'
 ;
