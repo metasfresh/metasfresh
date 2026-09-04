@@ -192,11 +192,11 @@ test.describe('Receipt logistics — quick-action default and its fallback', () 
       await rowForProduct(packedProductName).click();
       await rowForProduct(unpackedProductName).click({ modifiers: ['Control'] });
 
-      // NO `if (await ...isVisible())` around either assertion. An assertion that runs only when its own
-      // precondition happens to hold cannot fail, and that is not a hypothetical here: the action-menu half
-      // used to guard on `[data-testid="toggle-actions"], .actions-toggle, [data-testid="actions-btn"]`,
-      // none of which occurs anywhere in `frontend/src`, so the block never executed and the step reported
-      // green having asserted nothing. Both openers are waited for instead, so a missing one fails loudly.
+      // Both assertions run UNCONDITIONALLY. An assertion reached only when its own precondition happens to
+      // hold cannot fail, and that is not a hypothetical here: the action-menu half used to be guarded on a
+      // visibility check over three speculative test ids, none of which any component in `frontend/src`
+      // renders, so the block never executed and the step reported green having asserted nothing. Each
+      // opener is waited for instead, so an affordance that disappears fails the step loudly.
 
       // Quick-actions dropdown: the multi-row receive must never appear here (WEBUI_ViewQuickAction='N').
       const dropdownToggle = page.locator('[data-testid="quick-action-dropdown-toggle"]');
