@@ -62,13 +62,20 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.process.PInstanceId;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -107,6 +114,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -663,6 +671,121 @@ public class C_Invoice_Candidate_StepDef
 						wrapInvoiceCandidateRelatedException(e, invoiceCandidateRecord, invoiceCandidateIdentifier);
 					}
 				});
+	}
+
+	private static final String INVOICING_PROCESS_ROLE_NAME = "WebUI";
+
+	/** Summary returned by the last invoicing-process run. */
+	private String lastInvoicingRunSummary;
+
+	/**
+	 * Runs the {@code C_Invoice_Candidate_EnqueueSelectionForInvoicing} AD_Process and keeps its summary.
+	 * <p>
+	 * NOT the {@code process invoice candidates} step: that goes through {@code InvoiceService}, which discards
+	 * the enqueue result, so the summary is not observable there.
+	 */
+	@When("run the invoicing process for invoice candidates:")
+	public void run_invoicing_process(@NonNull final DataTable dataTable)
+	{
+		final ProcessExecutionResult result = executeInvoicingProcess(dataTable);
+
+		assertThat(result.isError())
+				.as("the invoicing run must not fail; summary=" + result.getSummary())
+				.isFalse();
+
+		lastInvoicingRunSummary = result.getSummary();
+		logger.info("Invoicing run summary: {}", lastInvoicingRunSummary);
+	}
+
+	private ProcessExecutionResult executeInvoicingProcess(@NonNull final DataTable dataTable)
+	{
+		final List<Integer> invoiceCandidateIds = new ArrayList<>();
+		DataTableRows.of(dataTable).forEach(row -> row
+				.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
+				.toCommaSeparatedList()
+				.forEach(identifier -> invoiceCandidateIds.add(invoiceCandTable.getId(identifier).getRepoId())));
+
+		Check.assumeNotEmpty(invoiceCandidateIds, "at least one C_Invoice_Candidate_ID.Identifier is required");
+
+		final AdProcessId processId = Services.get(IADProcessDAO.class)
+				.retrieveProcessIdByValue("C_Invoice_Candidate_EnqueueSelectionForInvoicing");
+		assertThat(processId).as("AD_Process C_Invoice_Candidate_EnqueueSelectionForInvoicing must exist").isNotNull();
+
+		final StringBuilder idList = new StringBuilder();
+		for (final Integer id : invoiceCandidateIds)
+		{
+			if (idList.length() > 0)
+			{
+				idList.append(",");
+			}
+			idList.append(id);
+		}
+		final String whereClause = COLUMNNAME_C_Invoice_Candidate_ID + " IN (" + idList + ")";
+
+		final ProcessExecutionResult result;
+		try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
+		{
+			result = ProcessInfo.builder()
+					.setCtx(createInvoicingProcessCtx())
+					.setAD_Process_ID(processId)
+					.setWhereClause(whereClause)
+					.buildAndPrepareExecution()
+					.executeSync()
+					.getResult();
+		}
+
+		return result;
+	}
+
+	/** Variant for a selection in which every candidate is skipped: the process errors, but must still say why. */
+	@When("run the invoicing process and expect nothing invoiced for invoice candidates:")
+	public void run_invoicing_process_expecting_nothing_invoiced(@NonNull final DataTable dataTable)
+	{
+		final ProcessExecutionResult result = executeInvoicingProcess(dataTable);
+
+		assertThat(result.isError())
+				.as("the run must report an error when NOTHING could be invoiced; summary=" + result.getSummary())
+				.isTrue();
+
+		lastInvoicingRunSummary = result.getSummary();
+		logger.info("Invoicing run summary (nothing invoiced): {}", lastInvoicingRunSummary);
+	}
+
+	/**
+	 * The process selects with {@code addOnlyContextClient()} + {@code Access.READ}, so without a client, org, user
+	 * AND role the selection comes back empty. copyCtx (not deriveCtx): the ctx must carry the values itself.
+	 * Same construction as {@code M_ShipmentSchedule_StepDef#createProcessCtx()}.
+	 */
+	private Properties createInvoicingProcessCtx()
+	{
+		final UserId userId = StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
+		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, StepDefConstants.METASFRESH_VALUE, INVOICING_PROCESS_ROLE_NAME);
+
+		final Properties processCtx = Env.copyCtx(Env.getCtx());
+		Env.setClientId(processCtx, StepDefConstants.CLIENT_ID);
+		Env.setOrgId(processCtx, StepDefConstants.ORG_ID);
+		Env.setLoggedUserId(processCtx, userId);
+		Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
+
+		return processCtx;
+	}
+
+	/** Asserts the last invoicing run's summary mentions each given fragment. */
+	@Then("the invoicing run summary contains:")
+	public void invoicing_run_summary_contains(@NonNull final DataTable dataTable)
+	{
+		assertThat(lastInvoicingRunSummary)
+				.as("no invoicing run summary captured -- run the invoicing process step first")
+				.isNotNull();
+
+		final SoftAssertions softly = new SoftAssertions();
+		for (final String expectedFragment : dataTable.asList(String.class))
+		{
+			softly.assertThat(lastInvoicingRunSummary)
+					.as("invoicing run summary must mention " + expectedFragment)
+					.contains(expectedFragment);
+		}
+		softly.assertAll();
 	}
 
 	@And("process invoice candidates")

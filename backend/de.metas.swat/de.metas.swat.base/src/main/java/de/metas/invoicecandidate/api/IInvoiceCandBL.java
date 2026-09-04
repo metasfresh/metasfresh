@@ -142,6 +142,14 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, boolean isInvoiceManualRule);
 
+	/**
+	 * Like {@link #isSkipCandidateFromInvoicing(I_C_Invoice_Candidate, boolean, boolean)}, but yields the reason.
+	 *
+	 * @return the translated skip reason, or {@code null} if the candidate is NOT skipped.
+	 */
+	@Nullable
+	String getInvoicingSkipReasonOrNull(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, boolean isInvoiceManualRule);
+
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
 	void setPaymentTermIfMissing(@NonNull I_C_Invoice_Candidate icRecord);
