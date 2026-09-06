@@ -710,6 +710,14 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | cwFinProd    | MovingAverageInvoice | 53 CHF           | 1 PCE      |
 
+    # Baseline Lagerwert, before anything is manufactured: 7 + 53 = 60 CHF across both products. The whole
+    # point of discharging the residual is that the warehouse must be worth this same 60 again afterwards -
+    # manufacturing moves value between products, it does not create any.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | cwComp       | warehouseStd   | 1   | 7.0000         | 7.00             | 7.00                  |
+      | 2024-03-27 | cwFinProd    | warehouseStd   | 1   | 53.0000        | 53.00            | 53.00                 |
+
     And metasfresh contains PP_Product_BOMVersions:
       | Identifier   | M_Product_ID.Identifier | Name         |
       | cwBomVersion | cwFinProd               | cwBomVersion |
@@ -777,7 +785,8 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | Identifier | CostDifference |
       | cwOrder    | 46             |
 
-    # Lagerwert before discharging: both pieces still carry cwFinProd's own 53 CHF.
+    # Lagerwert before discharging: the component's 7 CHF is gone into the order, but both finished pieces
+    # carry cwFinProd's own 53, so the warehouse totals 106 - 46 CHF more than the 60 it started with.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | cwFinProd    | warehouseStd   | 2   | 53.0000        | 106.00           | 106.00                |
@@ -801,7 +810,9 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | cwFinProd    | MovingAverageInvoice | 30 CHF           | 2 PCE      |
 
-    # Lagerwert after discharging: qty untouched, 46 CHF of value removed from the ledger.
+    # Lagerwert after discharging: quantities untouched, 46 CHF of value removed, and the warehouse is back
+    # to the 60 CHF it was worth before the order - the invariant the whole cost-difference feature exists
+    # to restore.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | cwFinProd    | warehouseStd   | 2   | 30.0000        | 60.00            | 60.00                 |
