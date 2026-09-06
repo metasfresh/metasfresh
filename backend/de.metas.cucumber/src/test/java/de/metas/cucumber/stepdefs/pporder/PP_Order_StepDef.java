@@ -167,7 +167,7 @@ public class PP_Order_StepDef
 	 *   <b>M_AttributeSetInstance_ID</b> — (optional, identifier-ref) expected ASI, compared by attributes-key<br>
 	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing item-product<br>
 	 *   <b>DocStatus</b> — (optional) expected document status<br>
-	 *   <b>CostDifference</b> — (optional) expected received (MR/CO/BY) minus issued (MI) over the order's PP_Order_Cost rows<br>
+	 *   <b>CostDifference</b> — (optional) expected cumulatedamt minus postcalculationamt on the order's main-product (MR) PP_Order_Cost row, i.e. the negation of the residual the post-calculation posts<br>
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -175,7 +175,7 @@ public class PP_Order_StepDef
 	 *   | Identifier | CostDifference |
 	 *   | ppOrder    | 15             |
 	 * </pre>
-	 * @see de.metas.cucumber.stepdefs.costing.PP_Order_Cost_StepDef for the individual rows CostDifference aggregates
+	 * @see de.metas.cucumber.stepdefs.costing.PP_Order_Cost_StepDef for the underlying PP_Order_Cost rows
 	 */
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(

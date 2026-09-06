@@ -777,8 +777,8 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | Identifier | CostDifference |
       | cwOrder    | 46             |
 
-    # Discharge it, and assert the action posts exactly what the column showed - the catch-weight case is
-    # the one where the old and new definitions disagree, so it is the one worth proving end to end.
+    # Discharge it: the catch-weight case is where the old and new column definitions disagree, so it is
+    # the one worth carrying through to the posting.
     And the manufacturing order identified by cwOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
@@ -790,9 +790,8 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | Identifier | CostDifference | DocStatus |
       | cwOrder    | 0              | CL        |
 
-    # Discharging the 46 leaves the MANUFACTURED piece valued at the component's real issued value (7), so
-    # the average over it and the seeded piece (53) is (53 + 7) / 2 = 30 CHF over 2 PCE. This is what the
-    # action posts; the column's job is to have shown that same 46 beforehand, which it now does.
+    # The posting reprices the manufactured piece from 53 to the component's real issued value 7, so the
+    # average over it and the seeded piece is (53 + 7) / 2 = 30 CHF over 2 PCE.
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | cwFinProd    | MovingAverageInvoice | 30 CHF           | 2 PCE      |
