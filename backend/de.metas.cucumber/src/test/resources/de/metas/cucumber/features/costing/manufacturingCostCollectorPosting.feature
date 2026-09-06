@@ -131,9 +131,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     # Component issue: DR P_WIP_Acct / CR P_Asset_Acct (inventory down, WIP up).
     # Material receipt of finished good: DR P_Asset_Acct / CR P_WIP_Acct (inventory up, WIP down).
-    # Qty runs in the same direction as the amount on each leg: the debited account gains the quantity, the
-    # credited one loses it. The inventory valuation (Lagerwert) report sums Fact_Acct.qty per account, so a
-    # POSITIVE qty on the credit to P_Asset_Acct would add the issued component back onto the stock it left.
+    # Qty runs with the amount on each leg: the debited account gains it, the credited one loses it.
     And Fact_Acct records are matching
       | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
       | issueCostCollector   | P_WIP_Acct            | compProd     | 10        | 0         | 1 PCE  |
@@ -141,11 +139,10 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | receiptCostCollector | P_Asset_Acct          | finProd      | 10        | 0         | 1 PCE  |
       | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 10        | -1 PCE |
 
-    # Lagerwert, the report those qty signs feed: the component is down to 99 of its seeded 100 PCE, the
-    # finished good up to 11 of its seeded 10, each still at its unchanged 10 CHF/PCE. Both products are
-    # stocked and issued in the same UOM, so each lands on a single report row - which is what makes a
-    # wrong-signed issue qty invisible here: it is added to the stock row instead of subtracted from it,
-    # leaving the ledger amount right and only the quantity and cost price wrong (101 PCE at 990/101).
+    # Lagerwert, the report those qty signs feed: the component down to 99 of its seeded 100 PCE, the finished
+    # good up to 11 of its seeded 10, each at its unchanged 10 CHF/PCE. Both are stocked and issued in the same
+    # UOM, so each lands on one row - a wrong-signed issue qty is added there instead of subtracted (101 PCE at
+    # 990/101), leaving the ledger amount right and only the quantity and cost price wrong.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | compProd     | warehouseStd   | 99  | 10.0000        | 990.00           | 990.00                |

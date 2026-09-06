@@ -314,12 +314,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			}
 
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
-			// A ComponentIssue line carries a negated qty (DocLine_CostCollector.setQty(movementQty, isSOTrx=true)),
-			// so getCreateCosts returns a negative COST — negate it back to post DR P_WIP_Acct / CR P_Asset_Acct
-			// (inventory down, WIP up). Do NOT negate the qty as well: createFactLines already puts +qty on the
-			// debit leg and -qty on the credit leg, so the positive issued qty is what leaves P_Asset_Acct with
-			// -qty. Negating it too gave the credited P_Asset_Acct a POSITIVE qty, which report_InventoryValue
-			// (Lagerwert) sums back into the very stock the component had just left.
+			// The doc line carries a negated qty (DocLine_CostCollector.setQty(movementQty, isSOTrx=true)), so
+			// getCreateCosts returns a negative COST — negate it back. Do NOT negate the qty too: createFactLines
+			// puts +qty on the debit leg and -qty on the credit leg, so the positive issued qty is what leaves
+			// P_Asset_Acct with the -qty that report_InventoryValue sums as stock going out.
 			// alsoAddZeroLine=true: a component issue always books, even a zero-cost/zero-qty line
 			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qtyIssued, true);
 			if (fact != null)
