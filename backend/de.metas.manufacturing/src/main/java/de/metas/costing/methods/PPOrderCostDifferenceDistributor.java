@@ -135,9 +135,7 @@ public class PPOrderCostDifferenceDistributor
 
 		// Only decides whether there is anything to discharge at all; the amount that gets posted is recomputed
 		// per accounting schema while the collector is posted.
-		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
-		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
-		final AcctSchemaId acctSchemaId = acctSchemasRepo.getByClientAndOrg(clientId, orgId).getId();
+		final AcctSchemaId acctSchemaId = getAcctSchema(order).getId();
 
 		final CostAmount residual = getResidualCostForOrderOrNull(orderId, acctSchemaId);
 		if (residual == null || residual.isZero())

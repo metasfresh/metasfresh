@@ -30,6 +30,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.util.Services;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -38,25 +39,22 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * Steps for issuing handling units to a manufacturing order's BOM lines: checking what is available to
+ * issue, and performing a production-desktop-style whole-HU issue.
+ */
+@RequiredArgsConstructor
 public class ProductionIssue_StepDef
 {
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
-	private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
-	private final M_HU_StepDefData huTable;
-
-	public ProductionIssue_StepDef(
-			final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable,
-			final M_HU_StepDefData huTable)
-	{
-		this.ppOrderBOMLineTable = ppOrderBOMLineTable;
-		this.huTable = huTable;
-	}
+	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+	@NonNull private final M_HU_StepDefData huTable;
 
 	@And("^validate no M_HUs available to be issued for bomLine identified by (.*)$")
 	public void validate_no_hu_available_to_issue(@NonNull final String bomLineIdentifier)
 	{
-		final org.eevolution.model.I_PP_Order_BOMLine bomLine = ppOrderBOMLineTable.get(bomLineIdentifier);
+		final I_PP_Order_BOMLine bomLine = ppOrderBOMLineTable.get(bomLineIdentifier);
 
 		final List<HuId> availableHUs = huPPOrderBL.retrieveAvailableToIssue(bomLine);
 
