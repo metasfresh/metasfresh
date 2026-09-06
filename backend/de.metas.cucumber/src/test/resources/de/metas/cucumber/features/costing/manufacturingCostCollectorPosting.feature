@@ -378,6 +378,16 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | AveragePO        | 30 CHF           | 8 PCE      |
 
+    # Baseline Lagerwert, before anything is manufactured. The ledger holds what the seeding inventories
+    # actually posted - compProd at the Background's 10 CHF, not the 34 its current cost was later set to.
+    # The component is asserted ONLY here: after the issue the report's Qty counts the issued quantity with
+    # the wrong sign (100 + 10 issued reads as 110, not 90), so its Acct_CostPrice is wrong too while the
+    # amount stays right. Asserting that would bake the defect in - it is being fixed separately.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | compProd     | warehouseStd   | 100 | 10.0000        | 1000.00          | 1000.00               |
+      | 2024-03-27 | finProd      | warehouseStd   | 8   | 30.0000        | 240.00           | 240.00                |
+
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
       | ppOrder                | MOP         | finProd                 | 10         | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
@@ -528,6 +538,12 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | MovingAverageInvoice | 20 CHF           | 6 PCE      |
+
+    # Baseline Lagerwert, before anything is manufactured.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | compProd     | warehouseStd   | 100 | 10.0000        | 1000.00          | 1000.00               |
+      | 2024-03-27 | finProd      | warehouseStd   | 6   | 20.0000        | 120.00           | 120.00                |
 
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
