@@ -390,9 +390,6 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     # Baseline Lagerwert, before anything is manufactured. The ledger holds what the seeding inventories
     # actually posted - compProd at the Background's 10 CHF, not the 34 its current cost was later set to.
-    # The component is asserted ONLY here: after the issue the report's Qty counts the issued quantity with
-    # the wrong sign (100 + 10 issued reads as 110, not 90), so its Acct_CostPrice is wrong too while the
-    # amount stays right. Asserting that would bake the defect in - it is being fixed separately.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | compProd     | warehouseStd   | 100 | 10.0000        | 1000.00          | 1000.00               |
@@ -743,6 +740,8 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     # Baseline Lagerwert, before anything is manufactured: 7 + 53 = 60 CHF across both products. The whole
     # point of discharging the residual is that the warehouse must be worth this same 60 again afterwards -
     # manufacturing moves value between products, it does not create any.
+    # cwComp is asserted only here. Once issued it returns TWO report rows - the PCE stock and the KGM issue -
+    # because the report groups by the UOM on each posting, and the step takes one row per product.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | cwComp       | warehouseStd   | 1   | 7.0000         | 7.00             | 7.00                  |
