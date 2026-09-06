@@ -75,9 +75,8 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 			return ProcessPreconditionsResolution.reject();
 		}
 
-		// Refused WITH a reason rather than silently hidden: the order does show a difference, so a controller
-		// who cannot find the action needs to be told that what it shows is an un-issued receipt, not a cost
-		// difference.
+		// Refused WITH a reason, not hidden: the order does show a difference, so the user needs to be told
+		// that what it shows is an un-issued receipt.
 		if (!costDifferenceDistributor.hasInboundCosts(ppOrder))
 		{
 			return ProcessPreconditionsResolution.reject(MSG_NoComponentIssued);

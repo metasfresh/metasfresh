@@ -301,16 +301,8 @@ public final class PPOrderCosts
 	}
 
 	/**
-	 * Whether anything was actually issued into the order, for the given accounting schema and cost element:
-	 * the accumulated amounts of the INBOUND rows (material issues and resource utilization) sum to non-zero.
-	 * <p>
-	 * When they sum to zero the order received value out of no input cost at all, so
-	 * {@code updatePostCalculationAmountsForCostElement} leaves the main product's post-calculation amount at
-	 * zero and the residual degenerates into minus the whole receipt. That is not a cost difference and must
-	 * not be dispositioned as one.
-	 * <p>
-	 * Inbound-ness is read from {@link PPOrderCost#isInboundCost()} rather than by listing transaction types,
-	 * so it stays aligned with {@code PPOrderCostTrxType}'s own outbound flag.
+	 * When the inbound rows sum to zero the order received value out of no input cost, so the post-calculation
+	 * amount stays zero and the residual degenerates into minus the whole receipt - not a cost difference.
 	 */
 	public boolean hasInboundCosts(
 			@NonNull final AcctSchemaId acctSchemaId,

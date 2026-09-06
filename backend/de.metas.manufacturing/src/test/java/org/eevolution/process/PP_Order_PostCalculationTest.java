@@ -81,8 +81,7 @@ class PP_Order_PostCalculationTest
 		// the process resolves it in a field initializer; doIt() is not under test here
 		costDifferenceDistributor = Mockito.mock(PPOrderCostDifferenceDistributor.class);
 		SpringContextHolder.registerJUnitBean(PPOrderCostDifferenceDistributor.class, costDifferenceDistributor);
-		// the zero-inbound-cost guard is a separate condition; default it to "something was issued" so each
-		// test below exercises only the condition it names
+		// default to "something was issued" so each test exercises only the condition it names
 		Mockito.when(costDifferenceDistributor.hasInboundCosts(Mockito.any())).thenReturn(true);
 	}
 
@@ -103,9 +102,8 @@ class PP_Order_PostCalculationTest
 	}
 
 	/**
-	 * A completed order whose total inbound cost is zero received value out of nothing issued. What it carries
-	 * is not a cost difference, so the action must be refused rather than silently offered - running it would
-	 * remove the entire manufactured value from stock and close the order.
+	 * A completed order with zero inbound cost carries a receipt, not a cost difference, so the action must be
+	 * refused - running it would remove the whole manufactured value from stock and close the order.
 	 */
 	@Test
 	void notOffered_whenNothingWasIssued()
@@ -116,8 +114,8 @@ class PP_Order_PostCalculationTest
 		final ProcessPreconditionsResolution resolution = checkPreconditions(ppOrder(DocStatus.Completed));
 
 		assertThat(resolution.isRejected()).isTrue();
-		// asserting the rejection is NOT internal is the point of this test: every other branch rejects
-		// reason-lessly (internal), so isRejected() alone would still pass if the reason were dropped again.
+		// NOT internal is the point: every other branch rejects reason-lessly, so isRejected() alone would
+		// still pass if the reason were dropped.
 		assertThat(resolution.isInternal()).isFalse();
 	}
 

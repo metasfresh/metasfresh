@@ -447,11 +447,8 @@ public class PP_Order_StepDef
 					assertThat(ppOrderBOMLineAttributesKeys).isEqualTo(expectedAttributesKeys);
 				});
 
-		// Most tables declare the row's identifier as PP_Order_BOMLine_ID.Identifier, which the no-arg
-		// getAsOptionalIdentifier() does not see - it only matches a column literally named Identifier. Those
-		// rows therefore registered nothing, and the omission stayed invisible for as long as no scenario read
-		// a BOM line back out of the table. Five tables in the suite do use the bare Identifier column, so both
-		// spellings are honoured here.
+		// The no-arg getAsOptionalIdentifier() only matches a column literally named Identifier, so the tables
+		// declaring PP_Order_BOMLine_ID.Identifier registered nothing. Both spellings are honoured here.
 		Optionals.firstPresentOfSuppliers(
 						() -> row.getAsOptionalIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID),
 						row::getAsOptionalIdentifier)

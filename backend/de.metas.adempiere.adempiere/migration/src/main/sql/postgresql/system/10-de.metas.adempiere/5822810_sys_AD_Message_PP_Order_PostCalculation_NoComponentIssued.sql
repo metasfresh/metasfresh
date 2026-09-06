@@ -1,12 +1,9 @@
--- Reason shown instead of the manufacturing post-calculation action when the order's total inbound cost is
--- zero, i.e. it received value with no component ever issued. What such an order displays as a cost
--- difference is its entire receipt, so discharging it would remove the whole manufactured value from stock
--- and close the order. Refused WITH this reason rather than silently hidden, because the order does show a
--- difference and the controller needs to be told why the action is unavailable.
+-- Reason shown instead of the post-calculation action when the order's inbound cost is zero: what it
+-- displays as a cost difference is its entire receipt, so discharging it would remove the whole
+-- manufactured value from stock and close the order.
 --
--- MsgType 'E' (a refusal) WITH a short ErrorCode, per the AD_Message recipe: an 'E' message must carry one so
--- an API consumer can handle this specific refusal programmatically. (Many sibling 'E' messages in this module
--- omit it; that is pre-existing drift, not a precedent to copy.)
+-- MsgType 'E' WITH an ErrorCode, so an API consumer can handle this refusal programmatically. (Sibling 'E'
+-- messages in this module omit it; that is pre-existing drift, not a precedent.)
 
 -- 1. the message (base text = German)
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)

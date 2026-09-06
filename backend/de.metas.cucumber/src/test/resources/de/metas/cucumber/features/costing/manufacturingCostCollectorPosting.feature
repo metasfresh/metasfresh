@@ -455,8 +455,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | shipment1             | sched1                           |
-    # The shipment's outbound cost decrement lands at POSTING, not at completion, so the current cost
-    # must not be read before the shipment is posted - it would still show the pre-shipment quantity.
+    # The outbound cost decrement lands at POSTING, not at completion.
     And Wait until documents shipment1 are posted
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
@@ -607,8 +606,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | shipment1             | sched1                           |
-    # The shipment's outbound cost decrement lands at POSTING, not at completion, so the current cost
-    # must not be read before the shipment is posted - it would still show the pre-shipment quantity.
+    # The outbound cost decrement lands at POSTING, not at completion.
     And Wait until documents shipment1 are posted
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |

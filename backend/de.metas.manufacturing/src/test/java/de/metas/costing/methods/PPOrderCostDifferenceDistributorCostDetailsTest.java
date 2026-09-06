@@ -517,35 +517,23 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	}
 
 	/**
-	 * The API-bypass half of the zero-inbound-cost guard. An order that received value with NOTHING issued
-	 * has a non-zero residual - minus its whole receipt - so it sails past the zero-residual early-out and
-	 * would otherwise be discharged: the entire manufactured value stripped out of stock and the order
-	 * closed, leaving its components permanently un-issuable. The process precondition refuses it, and
-	 * {@code distribute()} must refuse it again so a caller that skips the precondition cannot bypass it.
+	 * The API-bypass half of the zero-inbound-cost guard: an order that received value with nothing issued has
+	 * a NON-zero residual, so it sails past the zero-residual early-out and only this guard stops it.
 	 * <p>
-	 * Seeded the way such an order really looks: the material-issue row EXISTS but is empty (qty 0, amount 0)
-	 * - the order's cost rows are created up-front for every BOM line, so a never-issued component leaves a
-	 * zero row rather than no row at all.
-	 * <p>
-	 * Remove the guard and this test fails: {@code distribute()} runs on into
-	 * {@code createCostDifferenceDistribution}, which this class's fixture deliberately does not carry (no
-	 * other test reaches collector creation - they all stop at the zero-residual early-out). So the failure
-	 * is the flow proceeding at all, which is exactly the regression being locked in.
+	 * Seeded the way such an order really looks - the material-issue row exists but is empty (qty 0, amount 0),
+	 * since cost rows are created up-front for every BOM line.
 	 */
 	@Test
 	void distribute_doesNothing_whenNothingWasIssued()
 	{
 		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
 		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		// issued=0 (nothing), received=60 => postCalculationAmount stays 0 => residual = 0 - 60 = -60. Non-zero,
-		// so the zero-residual early-out does NOT catch this; only the inbound-cost guard does.
+		// issued=0, received=60 => residual = -60: non-zero, so the zero-residual early-out does not catch it.
 		addPPOrderCosts(costs, orderAcctSchemaId, costElement.getId(), "10", "0", "6", "10");
 		saveCurrentCost(orderAcctSchemaId, costElement.getId(), "6", "10");
 		saveAll(costs.build());
 
-		// Only this test lets distribute() get as far as creating a collector (the others stop at the
-		// zero-residual early-out), and that path needs a plant on the order - so without the guard the run
-		// fails on THIS test's own assertion rather than on a missing fixture.
+		// Without the guard, distribute() reaches collector creation, which needs a plant on the order.
 		givenTheOrderHasAPlant();
 
 		assertThat(residualOf(orderAcctSchemaId, costElement.getId())).isNotEqualTo(CostAmount.zero(currencyId));

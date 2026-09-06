@@ -39,10 +39,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-/**
- * Steps for issuing handling units to a manufacturing order's BOM lines: checking what is available to
- * issue, and performing a production-desktop-style whole-HU issue.
- */
+/** Steps for issuing handling units to a manufacturing order's BOM lines. */
 @RequiredArgsConstructor
 public class ProductionIssue_StepDef
 {
@@ -62,9 +59,8 @@ public class ProductionIssue_StepDef
 	}
 
 	/**
-	 * Issues a whole handling unit to a BOM line the way the production desktop's "issue whole HU" process
-	 * does: {@code considerIssueMethodForQtyToIssueCalculation(false)} takes the HU's own on-hand quantity
-	 * as-is, so the BOM line's requirement does not cap it.
+	 * Whole-HU issue as the production desktop does it: {@code considerIssueMethodForQtyToIssueCalculation(false)}
+	 * takes the HU's on-hand quantity as-is, so the BOM line's requirement does not cap it.
 	 */
 	@And("^the handling unit identified by (.*) is issued whole to PP_Order_BOMLine (.*)$")
 	public void issue_whole_hu_to_bom_line(
