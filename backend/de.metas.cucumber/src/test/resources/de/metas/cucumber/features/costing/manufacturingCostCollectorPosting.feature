@@ -670,7 +670,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | cwComp     | PCE      |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
-      | cwComp       | PCE                    | KGM                   | 34           | true                     |
+      | cwComp       | PCE                    | KGM                   | 34           | Y                        |
 
     # cwFinProd's own packing instructions, so the manufacturing receipt has a receiving target.
     And metasfresh contains M_HU_PI:

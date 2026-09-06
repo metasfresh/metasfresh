@@ -22,11 +22,17 @@
 
 package de.metas.cucumber.stepdefs.pporder;
 
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.util.Services;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.List;
 
@@ -37,10 +43,14 @@ public class ProductionIssue_StepDef
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
 	private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+	private final M_HU_StepDefData huTable;
 
-	public ProductionIssue_StepDef(final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable)
+	public ProductionIssue_StepDef(
+			final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable,
+			final M_HU_StepDefData huTable)
 	{
 		this.ppOrderBOMLineTable = ppOrderBOMLineTable;
+		this.huTable = huTable;
 	}
 
 	@And("^validate no M_HUs available to be issued for bomLine identified by (.*)$")
@@ -53,4 +63,23 @@ public class ProductionIssue_StepDef
 		assertThat(availableHUs.size()).isEqualTo(0);
 	}
 
+	/**
+	 * Issues a whole handling unit to a BOM line the way the production desktop's "issue whole HU" process
+	 * does: {@code considerIssueMethodForQtyToIssueCalculation(false)} takes the HU's own on-hand quantity
+	 * as-is, so the BOM line's requirement does not cap it.
+	 */
+	@And("^the handling unit identified by (.*) is issued whole to PP_Order_BOMLine (.*)$")
+	public void issue_whole_hu_to_bom_line(
+			@NonNull final String huIdentifier,
+			@NonNull final String bomLineIdentifier)
+	{
+		final I_M_HU hu = huTable.get(huIdentifier);
+		final I_PP_Order_BOMLine bomLine = ppOrderBOMLineTable.get(bomLineIdentifier);
+
+		final HUPPOrderIssueProducer issueProducer = huPPOrderBL.createIssueProducer(PPOrderId.ofRepoId(bomLine.getPP_Order_ID()))
+				.considerIssueMethodForQtyToIssueCalculation(false)
+				.targetOrderBOMLine(bomLine);
+
+		issueProducer.createIssue(hu);
+	}
 }

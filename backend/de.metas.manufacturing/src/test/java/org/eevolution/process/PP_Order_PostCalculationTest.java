@@ -113,7 +113,12 @@ class PP_Order_PostCalculationTest
 		givenOrderHasCosts(true);
 		Mockito.when(costDifferenceDistributor.hasInboundCosts(Mockito.any())).thenReturn(false);
 
-		assertThat(checkPreconditions(ppOrder(DocStatus.Completed)).isRejected()).isTrue();
+		final ProcessPreconditionsResolution resolution = checkPreconditions(ppOrder(DocStatus.Completed));
+
+		assertThat(resolution.isRejected()).isTrue();
+		// asserting the rejection is NOT internal is the point of this test: every other branch rejects
+		// reason-lessly (internal), so isRejected() alone would still pass if the reason were dropped again.
+		assertThat(resolution.isInternal()).isFalse();
 	}
 
 	@Test

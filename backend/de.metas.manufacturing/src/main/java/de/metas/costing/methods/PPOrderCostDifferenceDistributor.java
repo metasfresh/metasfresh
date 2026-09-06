@@ -101,11 +101,7 @@ public class PPOrderCostDifferenceDistributor
 	 */
 	public boolean hasOrderCosts(@NonNull final I_PP_Order order)
 	{
-		final AcctSchema acctSchema = acctSchemasRepo.getByClientAndOrg(
-				ClientId.ofRepoId(order.getAD_Client_ID()),
-				OrgId.ofRepoId(order.getAD_Org_ID()));
-
-		return COSTING_METHODS_WITH_ORDER_COSTS.contains(acctSchema.getCosting().getCostingMethod());
+		return COSTING_METHODS_WITH_ORDER_COSTS.contains(getAcctSchema(order).getCosting().getCostingMethod());
 	}
 
 	/**
@@ -119,14 +115,18 @@ public class PPOrderCostDifferenceDistributor
 	 */
 	public boolean hasInboundCosts(@NonNull final I_PP_Order order)
 	{
-		final AcctSchema acctSchema = acctSchemasRepo.getByClientAndOrg(
-				ClientId.ofRepoId(order.getAD_Client_ID()),
-				OrgId.ofRepoId(order.getAD_Org_ID()));
-
+		final AcctSchema acctSchema = getAcctSchema(order);
 		final CostElementId materialCostElementId = getMaterialCostElementId(acctSchema.getCosting().getCostingMethod());
 
 		return ppOrderCostsService.getByOrderId(PPOrderId.ofRepoId(order.getPP_Order_ID()))
 				.hasInboundCosts(acctSchema.getId(), materialCostElementId);
+	}
+
+	private AcctSchema getAcctSchema(@NonNull final I_PP_Order order)
+	{
+		return acctSchemasRepo.getByClientAndOrg(
+				ClientId.ofRepoId(order.getAD_Client_ID()),
+				OrgId.ofRepoId(order.getAD_Org_ID()));
 	}
 
 	public void distribute(@NonNull final PPOrderId orderId)
