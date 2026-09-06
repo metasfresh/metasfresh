@@ -741,7 +741,8 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     # point of discharging the residual is that the warehouse must be worth this same 60 again afterwards -
     # manufacturing moves value between products, it does not create any.
     # cwComp is asserted only here. Once issued it returns TWO report rows - the PCE stock and the KGM issue -
-    # because the report groups by the UOM on each posting, and the step takes one row per product.
+    # because the report groups by the UOM on each posting, and the step REQUIRES exactly one row per
+    # product - it fails on more, it does not pick one.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | cwComp       | warehouseStd   | 1   | 7.0000         | 7.00             | 7.00                  |
