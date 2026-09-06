@@ -43,7 +43,7 @@ public interface IUnlockCommand
 	int release();
 
 	/**
-	 * Release the locks after given transaction is commited.
+	 * Release the locks after given transaction is committed.
 	 *
 	 * @return how many records were unlocked
 	 */

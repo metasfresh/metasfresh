@@ -54,7 +54,7 @@ import java.util.Set;
  * ASync module main validator. This is the entry point for all other stuff.
  * <p>
  * NOTE: to prevent data corruption, this validator shall be started as last one because it will also start the queue processors (if running on server).
- * Also to make sure this case does not happen we are using a inital delay (see {@link #getInitDelayMillis()}).
+ * Also to make sure this case does not happen we are using a initial delay (see {@link #getInitDelayMillis()}).
  *
  * @author tsa
  */

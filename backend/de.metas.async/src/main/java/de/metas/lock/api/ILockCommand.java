@@ -70,7 +70,7 @@ public interface ILockCommand
 
 	/**
 	 * Default value for {@link #isFailIfNothingLocked()} is <code>true</code>.
-	 * NOTE: we decided to do so because in most of the cases, when there is nothing inserted it's because the selection is created in a transaction which is not commited yet, and debugging this issue
+	 * NOTE: we decided to do so because in most of the cases, when there is nothing inserted it's because the selection is created in a transaction which is not committed yet, and debugging this issue
 	 * could be quite hard.
 	 */
 	boolean DEFAULT_FailIfNothingLocked = true;

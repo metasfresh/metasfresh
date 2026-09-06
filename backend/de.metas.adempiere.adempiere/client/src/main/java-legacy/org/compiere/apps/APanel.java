@@ -118,7 +118,7 @@ import java.util.Vector;
  * @contributor fer_luck@centuryon.com , FR [ 1757088 ]
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  *         <li>BF [ 1824621 ] History button can't be canceled
- *         <li>BF [ 1941271 ] VTreePanel is modifying even if is save wasn't successfull
+ *         <li>BF [ 1941271 ] VTreePanel is modifying even if is save wasn't successful
  *         <li>FR [ 1943731 ] Window data export functionality
  *         <li>FR [ 1974354 ] VCreateFrom.create should be more flexible
  *         <li>BF [ 1996056 ] Report error message is not displayed

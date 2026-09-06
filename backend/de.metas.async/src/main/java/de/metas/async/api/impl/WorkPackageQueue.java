@@ -491,7 +491,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			{
 				if (hit)
 				{
-					// transaction was previously commited or rollbacked
+					// transaction was previously committed or rollbacked
 					// now, there is nothing we can do
 					return;
 				}

@@ -70,7 +70,7 @@ public interface IWorkpackageProcessor2 extends IWorkpackageProcessor
 	 *
 	 * If this method returns <code>false</code>, basically it means:
 	 * <ul>
-	 * <li>the workpackage will be flagged as Processed, so no future retries will be posible (i.e. by unchecking the IsError flag)
+	 * <li>the workpackage will be flagged as Processed, so no future retries will be possible (i.e. by unchecking the IsError flag)
 	 * <li>avoids discarding items from this workpackage on future workpackages because they were enqueued here
 	 * </ul>
 	 */

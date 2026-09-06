@@ -72,7 +72,7 @@ public class ImmediateBankTransfer extends JavaProcess
     private String p_Name = "";					// Name
 	private String p_Description= "";			// Description
 	private int p_C_CashBook_ID = 0;   			// CashBook to be used as bridge
-	private BigDecimal p_Amount = new BigDecimal(0);  			// Amount to be transfered between the accounts
+	private BigDecimal p_Amount = new BigDecimal(0);  			// Amount to be transferred between the accounts
 	private int p_From_C_BP_BankAccount_ID = 0;	// Bank Account From
 	private int p_To_C_BP_BankAccount_ID= 0;		// Bank Account To
 	private Timestamp	p_StatementDate = null;  // Date Statement

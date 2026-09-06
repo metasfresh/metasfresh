@@ -212,7 +212,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 			{
 				if (packageProcessorIds.isEmpty())
 				{
-					slogger.warn("There were no package processor Ids set in the package query. This could be a posible development error"
+					slogger.warn("There were no package processor Ids set in the package query. This could be a possible development error"
 							+"\n Package query: "+packageQuery);
 				}
 				final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(workpackage.getC_Queue_PackageProcessor_ID());

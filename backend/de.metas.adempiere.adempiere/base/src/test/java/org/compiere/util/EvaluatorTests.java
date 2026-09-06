@@ -58,7 +58,7 @@ public class EvaluatorTests
 		assertEquals(true, Evaluator.evaluateLogic(ev2, "@noSuchName/' this is a default value with spaces '@ = \" this is a default value with spaces \""));
 		assertEquals(true, Evaluator.evaluateLogic(ev2, "@noSuchName/\" this is a default value with spaces \"@ = \" this is a default value with spaces \""));
 
-		// If default value is not quoted, it will be trimmed. If user really wants to have spaces at the begining/ending of the string, he/she shall quote it
+		// If default value is not quoted, it will be trimmed. If user really wants to have spaces at the beginning/ending of the string, he/she shall quote it
 		assertEquals(false, Evaluator.evaluateLogic(ev2, "@noSuchName/ this is a default value with spaces @ = 'this is a default value with spaces'"));
 
 		// Variable name contains spaces

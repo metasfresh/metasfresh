@@ -411,7 +411,7 @@ public class BuildDepWorkFile extends JavaProcess
 					}					
 					lastdepexp2 = depexp2.get_ID();
 					
-					//Advance calender
+					//Advance calendar
 					cal.add(Calendar.MONTH, 1);
 					cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
 					ts.setTime(cal.getTimeInMillis());

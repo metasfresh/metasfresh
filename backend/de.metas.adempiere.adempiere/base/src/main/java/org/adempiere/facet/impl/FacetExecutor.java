@@ -217,7 +217,7 @@ public class FacetExecutor<ModelType>
 		}
 
 		//
-		// Before collecting ALL facets from this data source, make sure the database source is reset to it's inital state.  
+		// Before collecting ALL facets from this data source, make sure the database source is reset to it's initial state.  
 		final IFacetFilterable<ModelType> facetFilterable = getFacetFilterable();
 		facetFilterable.reset();
 		

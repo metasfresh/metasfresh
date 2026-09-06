@@ -69,7 +69,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * Get client configuration property of type string.<br>
 	 * If there is more than one matching record, the value of the first <code>AD_SysConfig</code> record, according to <code>ORDER BY AD_Client_ID DESC, AD_Org_ID DESC</code> will be returned.
 	 *
-	 * @param AD_Client_ID the system will retrieve the value from an <code>AD_SysConfig</code> record that has the given client-ID or <code>0</code>, prefering a records with a not-<code>0</code> ID.
+	 * @param AD_Client_ID the system will retrieve the value from an <code>AD_SysConfig</code> record that has the given client-ID or <code>0</code>, preferring a records with a not-<code>0</code> ID.
 	 * @return String
 	 */
 	@Nullable
