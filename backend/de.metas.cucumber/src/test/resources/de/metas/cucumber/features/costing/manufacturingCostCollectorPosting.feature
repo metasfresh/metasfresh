@@ -777,6 +777,11 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | Identifier | CostDifference |
       | cwOrder    | 46             |
 
+    # Lagerwert before discharging: both pieces still carry cwFinProd's own 53 CHF.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | cwFinProd    | warehouseStd   | 2   | 53.0000        | 106.00           | 106.00                |
+
     # Discharge it: the catch-weight case is where the old and new column definitions disagree, so it is
     # the one worth carrying through to the posting.
     And the manufacturing order identified by cwOrder is distributed
@@ -795,3 +800,8 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | cwFinProd    | MovingAverageInvoice | 30 CHF           | 2 PCE      |
+
+    # Lagerwert after discharging: qty untouched, 46 CHF of value removed from the ledger.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | cwFinProd    | warehouseStd   | 2   | 30.0000        | 60.00            | 60.00                 |

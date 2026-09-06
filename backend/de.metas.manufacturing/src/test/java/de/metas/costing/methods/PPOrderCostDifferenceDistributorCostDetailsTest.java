@@ -85,6 +85,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class PPOrderCostDifferenceDistributorCostDetailsTest
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ofRepoId(0);
 	private PPOrderId orderId;
@@ -512,7 +514,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 
 		distributor.distribute(orderId);
 
-		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class).create().count()).isZero();
+		assertThat(queryBL.createQueryBuilder(I_PP_Cost_Collector.class).create().count()).isZero();
 		assertThat(InterfaceWrapperHelper.load(orderId, I_PP_Order.class).getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 	}
 
@@ -540,7 +542,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 
 		distributor.distribute(orderId);
 
-		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class).create().count()).isZero();
+		assertThat(queryBL.createQueryBuilder(I_PP_Cost_Collector.class).create().count()).isZero();
 		assertThat(InterfaceWrapperHelper.load(orderId, I_PP_Order.class).getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 	}
 }
