@@ -69,6 +69,7 @@ import org.eevolution.api.PPOrderCosts;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.impl.MockedProductCostingBL;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,6 +85,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class PPOrderCostDifferenceDistributorCostDetailsTest
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ofRepoId(0);
 	private PPOrderId orderId;
@@ -127,6 +130,16 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 				currentCostsRepo,
 				new CostDetailService(new CostDetailRepository(), costElementRepo));
 		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
+	}
+
+	private void givenTheOrderHasAPlant()
+	{
+		final I_S_Resource plant = InterfaceWrapperHelper.newInstance(I_S_Resource.class);
+		InterfaceWrapperHelper.saveRecord(plant);
+
+		final I_PP_Order order = InterfaceWrapperHelper.load(orderId, I_PP_Order.class);
+		order.setS_Resource_ID(plant.getS_Resource_ID());
+		InterfaceWrapperHelper.saveRecord(order);
 	}
 
 	private PPOrderId createCompletedPPOrder()
@@ -501,7 +514,35 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 
 		distributor.distribute(orderId);
 
-		assertThat(Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class).create().count()).isZero();
+		assertThat(queryBL.createQueryBuilder(I_PP_Cost_Collector.class).create().count()).isZero();
+		assertThat(InterfaceWrapperHelper.load(orderId, I_PP_Order.class).getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
+	}
+
+	/**
+	 * The API-bypass half of the zero-inbound-cost guard: an order that received value with nothing issued has
+	 * a NON-zero residual, so it sails past the zero-residual early-out and only this guard stops it.
+	 * <p>
+	 * Seeded the way such an order really looks - the material-issue row exists but is empty (qty 0, amount 0),
+	 * since cost rows are created up-front for every BOM line.
+	 */
+	@Test
+	void distribute_doesNothing_whenNothingWasIssued()
+	{
+		final ImmutableList.Builder<PPOrderCost> costs = ImmutableList.builder();
+		final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+		// issued=0, received=60 => residual = -60: non-zero, so the zero-residual early-out does not catch it.
+		addPPOrderCosts(costs, orderAcctSchemaId, costElement.getId(), "10", "0", "6", "10");
+		saveCurrentCost(orderAcctSchemaId, costElement.getId(), "6", "10");
+		saveAll(costs.build());
+
+		// Without the guard, distribute() reaches collector creation, which needs a plant on the order.
+		givenTheOrderHasAPlant();
+
+		assertThat(residualOf(orderAcctSchemaId, costElement.getId())).isNotEqualTo(CostAmount.zero(currencyId));
+
+		distributor.distribute(orderId);
+
+		assertThat(queryBL.createQueryBuilder(I_PP_Cost_Collector.class).create().count()).isZero();
 		assertThat(InterfaceWrapperHelper.load(orderId, I_PP_Order.class).getDocStatus()).isEqualTo(DocStatus.Completed.getCode());
 	}
 }
