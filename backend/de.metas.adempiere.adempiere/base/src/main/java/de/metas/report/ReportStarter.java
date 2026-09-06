@@ -73,7 +73,7 @@ public abstract class ReportStarter extends JavaProcess
 	 * </ul>
 	 */
 	@Override
-	@RunOutOfTrx // IMPORTANT: run out of trx because in case we are creating some T_Selection, and then we want to call the jasper server, we need that selection to be commited
+	@RunOutOfTrx // IMPORTANT: run out of trx because in case we are creating some T_Selection, and then we want to call the jasper server, we need that selection to be committed
 	protected final String doIt()
 	{
 		final ProcessInfo pi = getProcessInfo();

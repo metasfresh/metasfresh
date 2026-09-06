@@ -2462,7 +2462,7 @@ public class DB
 	 * In other words, note that depending on the actual type of <code>paramsIn</code>, the ordering might vary, but usually that is not a problem.
 	 *
 	 * <p>
-	 * <b>IMPORTANT: Please use {@link #buildSqlList(Collection, List)} instead!</b> When we used this method with Integer paramters, we got stuff which caused syntax errors! Example:
+	 * <b>IMPORTANT: Please use {@link #buildSqlList(Collection, List)} instead!</b> When we used this method with Integer parameters, we got stuff which caused syntax errors! Example:
 	 *
 	 * <pre>
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..

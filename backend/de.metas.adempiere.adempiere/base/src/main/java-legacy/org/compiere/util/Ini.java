@@ -712,7 +712,7 @@ public final class Ini
 	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
 
 	/**
-	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
+	 * Internal run mode marker. Note that the initial setting is equivalent to the old initialization of <code>s_client = true</code>
 	 * <p>
 	 * task 04585
 	 */

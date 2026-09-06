@@ -282,7 +282,7 @@ public interface ITrxManager extends ISingletonService
 	void run(String trxName, ITrxRunConfig cfg, TrxRunnable runnable);
 
 	/**
-	 * Execute the given <code>callable</code> in given transation using given transaction options.
+	 * Execute the given <code>callable</code> in given transaction using given transaction options.
 	 *
 	 * @return callable's return value
 	 */

@@ -230,7 +230,7 @@ public class AddressBuilder
 					{
 						outStr.append(text);
 					}
-					// add text without begining empty space if we have new line
+					// add text without beginning empty space if we have new line
 					else if (outStr.lastIndexOf("\n") == outStr.length() - 1 && !text.trim().isEmpty())
 					{
 						outStr.append(StringUtils.cleanBeginWhitespace(text));

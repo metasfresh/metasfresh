@@ -87,7 +87,7 @@ public class Trx extends AbstractTrx
 
 		// Handle the case when the connection was already closed
 		// Example: one case when we can get this is when we start a process with a transaction
-		// and that process is commiting the transaction somewhere
+		// and that process is committing the transaction somewhere
 		if (m_connection != null)
 		{
 			boolean isClosed = false;

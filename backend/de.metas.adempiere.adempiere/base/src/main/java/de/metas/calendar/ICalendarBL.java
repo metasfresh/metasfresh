@@ -80,7 +80,7 @@ public interface ICalendarBL extends ISingletonService
 	IBusinessDayMatcher createBusinessDayMatcherExcluding(Set<DayOfWeek> excludeWeekendDays);
 
 	/**
-	 * Get Calender from AD_OrgInfo.
+	 * Get Calendar from AD_OrgInfo.
 	 * Fallback to Calendar of current Org which has flag "default" to true.
 	 * Fallback to Org=Any.
 	 *

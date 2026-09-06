@@ -90,7 +90,7 @@ public class MCStage extends X_CM_CStage
 	 * 	Standard Constructor
 	 *	@param ctx context
 	 *	@param CM_CStage_ID id
-	 *	@param trxName tansaction
+	 *	@param trxName transaction
 	 */
 	public MCStage (Properties ctx, int CM_CStage_ID, String trxName)
 	{

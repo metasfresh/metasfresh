@@ -215,7 +215,7 @@ public final class ParsedSql
 				// metas kh: us135: search closing bracket only behind " ON ".
 				// Note: if we don't start the search for ")" *after* the " ON ", we might find the wrong bracket,
 				// e.g. with "... INNER JOIN (select ... from ... ) ON (...) ", we would find the first ")" instead of
-				// the second one (without the index paramter)
+				// the second one (without the index parameter)
 				int indexClose = from.indexOf(')', index + 4); // does not catch "IN (1,2)" in ON
 				// metas kh: us135 end.
 				final int indexNextOn = from.indexOf(ON, index + 4);

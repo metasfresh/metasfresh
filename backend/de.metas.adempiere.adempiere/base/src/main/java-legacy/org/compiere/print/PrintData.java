@@ -41,7 +41,7 @@ import org.w3c.dom.Element;
 /**
  *	Print Data Structure.
  * 	Created by DataEngine
- *  A Structure has rows, wich contain elements.
+ *  A Structure has rows, which contain elements.
  *  Elements can be end nodes (PrintDataElements) or data structures (PrintData).
  *  The row data is sparse - i.e. null if not existing.
  *  A Structure has optional meta info about content (PrintDataColumn).

@@ -1938,7 +1938,7 @@ public class GridField
 	}
 
 	/**
-	 * Fires a property chagne event to make our field's <code>VEditor</code> request the focus. This is done in the current thread.
+	 * Fires a property change event to make our field's <code>VEditor</code> request the focus. This is done in the current thread.
 	 */
 	private void requestFocusInCurrentThread()
 	{

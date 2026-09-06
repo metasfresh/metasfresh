@@ -48,7 +48,7 @@ public class MMediaDeploy extends X_CM_MediaDeploy
 	 * 	Load Constructor
 	 *	@param ctx context
 	 *	@param rs result set
-	 *	@param trxName tansaction
+	 *	@param trxName transaction
 	 */
 	public MMediaDeploy (Properties ctx, ResultSet rs, String trxName)
 	{

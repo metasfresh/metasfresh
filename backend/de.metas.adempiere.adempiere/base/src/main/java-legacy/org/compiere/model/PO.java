@@ -637,7 +637,7 @@ public abstract class PO
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.warn("Index invalid - {}", index, new Exception()); // metas: tsa: added exeption to trace it
+			log.warn("Index invalid - {}", index, new Exception()); // metas: tsa: added exception to trace it
 			return null;
 		}
 		if (m_newValues[index] != null)
