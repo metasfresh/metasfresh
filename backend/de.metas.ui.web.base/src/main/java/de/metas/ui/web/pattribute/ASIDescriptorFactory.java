@@ -404,7 +404,7 @@ public class ASIDescriptorFactory
 					.cast(ASILookupDescriptor.class)
 					.getAttributeValueId(lookupValue);
 
-			ai.setValueNumber(lookupValue != null && isNumericKey ? BigDecimal.valueOf(lookupValue.getIdAsInt()) : null); // IMPORTANT: always setValueNumber before setValue because setValueNumber is overriden and set the Value string too. wtf?!
+			ai.setValueNumber(lookupValue != null && isNumericKey ? BigDecimal.valueOf(lookupValue.getIdAsInt()) : null); // IMPORTANT: always setValueNumber before setValue because setValueNumber is overridden and set the Value string too. wtf?!
 			ai.setValue(lookupValue == null ? null : lookupValue.getIdAsString());
 			ai.setM_AttributeValue_ID(AttributeValueId.toRepoId(attributeValueId));
 		}

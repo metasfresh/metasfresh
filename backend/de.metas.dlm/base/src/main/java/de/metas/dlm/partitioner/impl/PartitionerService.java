@@ -310,7 +310,7 @@ public class PartitionerService implements IPartitionerService
 			final String referencedTableName = descriptor.getTargetTableName();
 
 			// Check.errorUnless(partition.getRecordsWithTable(referencedTableName).isEmpty(),
-			// "partition.getRecordsWithTable({}) should return an empty list because we stored & flushed this before we did the testmigration invokation that lead us into this catch-block; partition={}",
+			// "partition.getRecordsWithTable({}) should return an empty list because we stored & flushed this before we did the testmigration invocation that lead us into this catch-block; partition={}",
 			// referencedTableName, partition);
 
 			// retrieve all the records that might also be referenced from outside the partition via the new partitioner config augment.
@@ -491,7 +491,7 @@ public class PartitionerService implements IPartitionerService
 	@Override
 	public ITemporaryConnectionCustomizer createConnectionCustomizer()
 	{
-		// needs to be "TEST, because if it was "Live", then the "testmgiration" code would not be able to select and "pull back" records from "TEST" to "LIVE" after a successfull migration.
+		// needs to be "TEST, because if it was "Live", then the "testmgiration" code would not be able to select and "pull back" records from "TEST" to "LIVE" after a successful migration.
 		// then records would accululate in "TEST" and the DLM trigger functions would fail to throw DLMExceptions as they should
 		final int dlmLevel = IMigratorService.DLM_Level_TEST;
 

@@ -64,7 +64,7 @@ public class MockedPricingRule implements IPricingRule
 	private final Map<ProductId, BigDecimal> productId2price = new HashMap<>();
 
 	/**
-	 * Reset it to inital state.
+	 * Reset it to initial state.
 	 */
 	public void reset()
 	{

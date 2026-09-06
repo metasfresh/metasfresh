@@ -56,7 +56,7 @@ public interface IStorableIterateResult extends IIterateResult
 	List<WorkQueue> getQueueRecordsToDelete();
 
 	/**
-	 * @return the {@link Partition} from the last invokation of {@link #clearAfterPartitionStored(Partition)}, or an empty partition.
+	 * @return the {@link Partition} from the last invocation of {@link #clearAfterPartitionStored(Partition)}, or an empty partition.
 	 */
 	public Partition getPartition();
 }

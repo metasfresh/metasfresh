@@ -224,7 +224,7 @@ public class DunningDAO extends AbstractDunningDAO
 	}
 
 	/**
-	 * Deletes all active, unprocessed candidates of the given level via DELETE sql statment.
+	 * Deletes all active, unprocessed candidates of the given level via DELETE sql statement.
 	 *
 	 * @param context
 	 * @param dunningLevel

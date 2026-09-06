@@ -459,7 +459,7 @@ public class ESRImportBLTest extends ESRTestBase
 	}
 
 	/**
-	 * Same lines as in {@link #testProcessLinesWithInvoice_3Lines_1Payment()}, but all line shoudl have different payments. Despite none of the two payments' PayAmounts matches the invoice's grant
+	 * Same lines as in {@link #testProcessLinesWithInvoice_3Lines_1Payment()}, but all line should have different payments. Despite none of the two payments' PayAmounts matches the invoice's grant
 	 * total, the first two lines shall be processed, so that the user doen't need to deal with them.
 	 */
 	@Test

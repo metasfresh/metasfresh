@@ -27,7 +27,7 @@ package de.metas.device.api.request;
  * Examples for config params:
  * <ul>
  * <li>USB-ID</li>
- * <li>IP-Adress or hostname</li>
+ * <li>IP-Address or hostname</li>
  * <li>user name</li>
  * <li>PIN</li>
  * <li>...</li>

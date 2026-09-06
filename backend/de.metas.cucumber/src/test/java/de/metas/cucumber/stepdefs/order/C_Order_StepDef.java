@@ -481,7 +481,7 @@ public class C_Order_StepDef
 		saveRecord(order);
 
 		//
-		// Set the values again to make sure they are permanent and not overriden by some beforeSave BLs
+		// Set the values again to make sure they are permanent and not overridden by some beforeSave BLs
 		{
 			tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DeliveryRule).map(StringUtils::trimBlankToNull).ifPresent(order::setDeliveryRule);
 

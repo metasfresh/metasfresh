@@ -374,7 +374,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Basically this method delegates to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
-	 * If this proves to be usefull, we can add similar methods e.g. to <code>IOrderBL</code>.
+	 * If this proves to be useful, we can add similar methods e.g. to <code>IOrderBL</code>.
 	 */
 	void registerLineCopyHandler(
 			IQueryFilter<ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,

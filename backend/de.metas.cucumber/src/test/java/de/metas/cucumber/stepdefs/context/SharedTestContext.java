@@ -83,7 +83,7 @@ public class SharedTestContext
 	}
 
 	/**
-	 * Runs given <code>runnable</code> and in case of exception appends the test context to thrown exeception.
+	 * Runs given <code>runnable</code> and in case of exception appends the test context to thrown exception.
 	 * <p>
 	 * To add values to current context you can use {@link #put(String, Object)}, {@link #put(String, Supplier)} etc.
 	 */
