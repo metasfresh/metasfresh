@@ -320,7 +320,7 @@ public final class StringUtils
 			}
 			catch (final Exception e)
 			{
-				// In case message formating failed, we have a fallback format to use
+				// In case message formatting failed, we have a fallback format to use
 				messageFormated = new StringBuilder()
 						.append(message)
 						.append(" (").append(Arrays.toString(params)).append(")")

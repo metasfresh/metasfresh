@@ -29,7 +29,7 @@ package org.adempiere.util.lang;
  * This is the base interface for all reference aware classes and interfaces like:
  * <ul>
  * <li> {@link IMutable} which defines a mutable reference
- * <li> {@link LazyInitializer} which is an abtract class. It's value is initalized on first call of {@link #getValue()}.
+ * <li> {@link LazyInitializer} which is an abtract class. It's value is initialized on first call of {@link #getValue()}.
  * <li>etc
  * </ul>
  * 
