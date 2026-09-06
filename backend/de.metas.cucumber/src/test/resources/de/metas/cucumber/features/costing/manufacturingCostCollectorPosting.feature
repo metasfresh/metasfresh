@@ -694,20 +694,21 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | cwFinProdItem                       | cwFinPackTUItem             | cwFinProd                | 1   | 2022-01-01 |
 
     # Stock one whole piece of the component (1 PCE = 34 KGM) at its own MovingAverageInvoice cost.
+    # 7, 53 and 34 share no factors and no simple ratio, so every derived figure below traces to exactly one.
     And metasfresh contains single line completed inventories
       | M_Inventory_ID  | M_InventoryLine_ID  | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID  |
-      | cwCompInventory | cwCompInventoryLine | 2024-03-20   | 540008         | cwComp       | 0       | 1        | PCE          | 10        | cwCompHU |
+      | cwCompInventory | cwCompInventoryLine | 2024-03-20   | 540008         | cwComp       | 0       | 1        | PCE          | 7         | cwCompHU |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
-      | acctSchema      | cwComp       | MovingAverageInvoice | 10 CHF           | 1 PCE      |
+      | acctSchema      | cwComp       | MovingAverageInvoice | 7 CHF            | 1 PCE      |
 
     # cwFinProd carries its own standing MovingAverageInvoice cost, decoupled from the component cost.
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
-      | cwFinInventory | cwFinInventoryLine | 2024-03-20   | 540008         | cwFinProd    | 0       | 1        | PCE          | 20        | cwFinHU |
+      | cwFinInventory | cwFinInventoryLine | 2024-03-20   | 540008         | cwFinProd    | 0       | 1        | PCE          | 53        | cwFinHU |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
-      | acctSchema      | cwFinProd    | MovingAverageInvoice | 20 CHF           | 1 PCE      |
+      | acctSchema      | cwFinProd    | MovingAverageInvoice | 53 CHF           | 1 PCE      |
 
     And metasfresh contains PP_Product_BOMVersions:
       | Identifier   | M_Product_ID.Identifier | Name         |
@@ -765,13 +766,33 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And Wait until documents cwIssueCostCollector, cwReceiptCostCollector are posted
 
     # The MI row's price is snapshotted in the row's OWN unit (the BOM line's KGM, not the
-    # component's PCE): 10 CHF/PCE converted through the 34 KGM/PCE catch weight is 0.2941 CHF/KGM.
+    # component's PCE): 7 CHF/PCE converted through the 34 KGM/PCE catch weight is 0.2059 CHF/KGM.
     And PP_Order_Cost are found:
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | CurrentCostPrice |
-      | cwOrder                 | cwComp                   | MovingAverageInvoice | MI                    | 0.2941 CHF       |
+      | cwOrder                 | cwComp                   | MovingAverageInvoice | MI                    | 0.2059 CHF       |
 
-    # cumulatedamt (20, cwFinProd's own receipt) minus the component's real issued value (10, its
-    # own 1 PCE at 10 CHF/PCE) is a +10 residual: the column must read +10.
+    # cumulatedamt (53, cwFinProd's own receipt) minus the component's real issued value (7, its own
+    # 1 PCE at 7 CHF/PCE) = 46. Re-deriving 34 KGM x the 0.2059 snapshot instead gives 7.0006, i.e. 45.9994.
     And after not more than 60s, PP_Orders are found
       | Identifier | CostDifference |
-      | cwOrder    | 10             |
+      | cwOrder    | 46             |
+
+    # Discharge it, and assert the action posts exactly what the column showed - the catch-weight case is
+    # the one where the old and new definitions disagree, so it is the one worth proving end to end.
+    And the manufacturing order identified by cwOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | cwDistributionCostCollector     | cwOrder                | cwFinProd                | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents cwDistributionCostCollector are posted
+
+    # Discharged: the column re-reads the same two fields, which are now equal.
+    And after not more than 60s, PP_Orders are found
+      | Identifier | CostDifference | DocStatus |
+      | cwOrder    | 0              | CL        |
+
+    # Discharging the 46 leaves the MANUFACTURED piece valued at the component's real issued value (7), so
+    # the average over it and the seeded piece (53) is (53 + 7) / 2 = 30 CHF over 2 PCE. This is what the
+    # action posts; the column's job is to have shown that same 46 beforehand, which it now does.
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | cwFinProd    | MovingAverageInvoice | 30 CHF           | 2 PCE      |
