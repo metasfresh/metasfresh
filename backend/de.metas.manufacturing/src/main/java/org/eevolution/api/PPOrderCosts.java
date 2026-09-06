@@ -300,6 +300,24 @@ public final class PPOrderCosts
 		return mainProductCost.getResidualCost();
 	}
 
+	/**
+	 * When the inbound rows sum to zero the order received value out of no input cost, so the post-calculation
+	 * amount stays zero and the residual degenerates into minus the whole receipt - not a cost difference.
+	 */
+	public boolean hasInboundCosts(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId)
+	{
+		return costs.values().stream()
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.filter(PPOrderCost::isInboundCost)
+				.map(PPOrderCost::getAccumulatedAmount)
+				.reduce(CostAmount::add)
+				.map(totalInboundAmount -> !totalInboundAmount.isZero())
+				.orElse(false);
+	}
+
 	/** @return the single main-product cost row for the given schema and cost element, or {@code null}. */
 	@Nullable
 	public PPOrderCost getMainProductCostOrNull(

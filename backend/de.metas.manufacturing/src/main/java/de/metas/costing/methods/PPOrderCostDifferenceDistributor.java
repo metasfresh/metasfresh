@@ -101,11 +101,27 @@ public class PPOrderCostDifferenceDistributor
 	 */
 	public boolean hasOrderCosts(@NonNull final I_PP_Order order)
 	{
-		final AcctSchema acctSchema = acctSchemasRepo.getByClientAndOrg(
+		return COSTING_METHODS_WITH_ORDER_COSTS.contains(getAcctSchema(order).getCosting().getCostingMethod());
+	}
+
+	/**
+	 * Resolves schema and cost element exactly as {@link #distribute(PPOrderId)} does, so the guard and the
+	 * amount that would post cannot disagree.
+	 */
+	public boolean hasInboundCosts(@NonNull final I_PP_Order order)
+	{
+		final AcctSchema acctSchema = getAcctSchema(order);
+		final CostElementId materialCostElementId = getMaterialCostElementId(acctSchema.getCosting().getCostingMethod());
+
+		return ppOrderCostsService.getByOrderId(PPOrderId.ofRepoId(order.getPP_Order_ID()))
+				.hasInboundCosts(acctSchema.getId(), materialCostElementId);
+	}
+
+	private AcctSchema getAcctSchema(@NonNull final I_PP_Order order)
+	{
+		return acctSchemasRepo.getByClientAndOrg(
 				ClientId.ofRepoId(order.getAD_Client_ID()),
 				OrgId.ofRepoId(order.getAD_Org_ID()));
-
-		return COSTING_METHODS_WITH_ORDER_COSTS.contains(acctSchema.getCosting().getCostingMethod());
 	}
 
 	public void distribute(@NonNull final PPOrderId orderId)
@@ -114,12 +130,16 @@ public class PPOrderCostDifferenceDistributor
 
 		// Only decides whether there is anything to discharge at all; the amount that gets posted is recomputed
 		// per accounting schema while the collector is posted.
-		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
-		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
-		final AcctSchemaId acctSchemaId = acctSchemasRepo.getByClientAndOrg(clientId, orgId).getId();
+		final AcctSchemaId acctSchemaId = getAcctSchema(order).getId();
 
 		final CostAmount residual = getResidualCostForOrderOrNull(orderId, acctSchemaId);
 		if (residual == null || residual.isZero())
+		{
+			return;
+		}
+
+		// Repeated from the process precondition so an API caller cannot bypass it.
+		if (!hasInboundCosts(order))
 		{
 			return;
 		}
