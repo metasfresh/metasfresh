@@ -50,6 +50,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.cucumber.stepdefs.InterfaceWrapperHelperUtils;
 import de.metas.util.Check;
+import de.metas.util.ColorId;
+import de.metas.util.IColorRepository;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -64,7 +66,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.compiere.model.I_AD_Color;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -74,8 +75,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
-
-import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashSet;
@@ -108,6 +107,7 @@ public class M_Delivery_Planning_StepDef
 	@NonNull private final DeliveryPlanningRejectionHelper rejectionHelper;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IColorRepository colorRepository = Services.get(IColorRepository.class);
 
 	/**
 	 * Waits for the async {@code M_Delivery_Planning} generation for the given order line, then loads the created
@@ -380,11 +380,22 @@ public class M_Delivery_Planning_StepDef
 			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsDelivered)
 					.ifPresent(isDelivered -> softly.assertThat(deliveryPlanning.isDelivered()).as(I_M_Delivery_Planning.COLUMNNAME_IsDelivered).isEqualTo(isDelivered));
 
+			// A feature file names the colour it expects, but the only name->colour lookup there is returns a
+			// ColorId, so the comparison runs on ids. getColorIdByName() returns null for a name no AD_Color
+			// carries, hence the isNotNull() guard: without it a typo'd colour name would silently "match" a
+			// planning that has no status colour at all.
 			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_DeliveryStatus_Color_ID + ".Name")
 					.filter(Check::isNotBlank)
-					.ifPresent(expectedColorName -> softly.assertThat(getColorName(deliveryPlanning.getDeliveryStatus_Color_ID()))
-							.as(I_M_Delivery_Planning.COLUMNNAME_DeliveryStatus_Color_ID + ".Name")
-							.isEqualTo(expectedColorName));
+					.ifPresent(expectedColorName -> {
+						final ColorId expectedColorId = colorRepository.getColorIdByName(expectedColorName);
+						softly.assertThat(expectedColorId)
+								.as("no AD_Color exists with Name=" + expectedColorName)
+								.isNotNull();
+
+						softly.assertThat(ColorId.ofRepoIdOrNull(deliveryPlanning.getDeliveryStatus_Color_ID()))
+								.as(I_M_Delivery_Planning.COLUMNNAME_DeliveryStatus_Color_ID + ".Name=" + expectedColorName)
+								.isEqualTo(expectedColorId);
+					});
 
 			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_OrderStatus)
 					.filter(Check::isNotBlank)
@@ -423,21 +434,6 @@ public class M_Delivery_Planning_StepDef
 
 			softly.assertAll();
 		});
-	}
-
-	/**
-	 * Resolves an {@code AD_Color_ID} to its name, so a feature file can name the colour it expects instead of
-	 * an instance-specific id. Returns {@code null} for "no colour at all", which is what a planning whose
-	 * status colour never got written looks like.
-	 */
-	@Nullable
-	private static String getColorName(final int colorRepoId)
-	{
-		if (colorRepoId <= 0)
-		{
-			return null;
-		}
-		return InterfaceWrapperHelper.load(colorRepoId, I_AD_Color.class).getName();
 	}
 
 	/**
