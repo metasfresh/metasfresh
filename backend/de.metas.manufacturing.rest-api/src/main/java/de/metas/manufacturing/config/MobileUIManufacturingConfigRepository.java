@@ -22,6 +22,8 @@ public class MobileUIManufacturingConfigRepository
 	private static final MobileUIManufacturingConfig DEFAULT_CONFIG = MobileUIManufacturingConfig.builder()
 			.isScanResourceRequired(OptionalBoolean.FALSE)
 			.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
+			.isAllowEmptyingHUs(OptionalBoolean.TRUE)
+			.isConfirmEmptyingHU(OptionalBoolean.TRUE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -99,6 +101,8 @@ public class MobileUIManufacturingConfigRepository
 		return MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(OptionalBoolean.ofBoolean(record.isScanResourceRequired()))
 				.isAllowIssuingAnyHU(OptionalBoolean.ofBoolean(record.isAllowIssuingAnyHU()))
+				.isAllowEmptyingHUs(OptionalBoolean.ofBoolean(record.isAllowEmptyingHUs()))
+				.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(record.isConfirmEmptyingHU()))
 				.build();
 	}
 

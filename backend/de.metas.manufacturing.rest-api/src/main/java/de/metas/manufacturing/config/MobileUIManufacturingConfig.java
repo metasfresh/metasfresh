@@ -14,12 +14,16 @@ public class MobileUIManufacturingConfig
 {
 	@NonNull OptionalBoolean isScanResourceRequired;
 	@NonNull OptionalBoolean isAllowIssuingAnyHU;
+	@NonNull @Builder.Default OptionalBoolean isAllowEmptyingHUs = OptionalBoolean.UNKNOWN;
+	@NonNull @Builder.Default OptionalBoolean isConfirmEmptyingHU = OptionalBoolean.UNKNOWN;
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
 	{
 		final MobileUIManufacturingConfig result = MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(this.isScanResourceRequired.ifUnknown(other.isScanResourceRequired))
 				.isAllowIssuingAnyHU(this.isAllowIssuingAnyHU.ifUnknown(other.isAllowIssuingAnyHU))
+				.isAllowEmptyingHUs(this.isAllowEmptyingHUs.ifUnknown(other.isAllowEmptyingHUs))
+				.isConfirmEmptyingHU(this.isConfirmEmptyingHU.ifUnknown(other.isConfirmEmptyingHU))
 				.build();
 		if (result.equals(this))
 		{
