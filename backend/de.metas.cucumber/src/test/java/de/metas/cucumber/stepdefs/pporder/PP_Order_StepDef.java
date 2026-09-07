@@ -68,6 +68,8 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -170,7 +172,7 @@ public class PP_Order_StepDef
 	 *   <b>M_AttributeSetInstance_ID</b> — (optional, identifier-ref) expected ASI, compared by attributes-key<br>
 	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing item-product<br>
 	 *   <b>DocStatus</b> — (optional) expected document status<br>
-	 *   <b>CostDifference</b> — (optional) expected received (MR/CO/BY) minus issued (MI) over the order's PP_Order_Cost rows<br>
+	 *   <b>CostDifference</b> — (optional) expected cumulatedamt minus postcalculationamt on the order's main-product (MR) PP_Order_Cost row, i.e. the negation of the residual the post-calculation posts<br>
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -178,7 +180,7 @@ public class PP_Order_StepDef
 	 *   | Identifier | CostDifference |
 	 *   | ppOrder    | 15             |
 	 * </pre>
-	 * @see de.metas.cucumber.stepdefs.costing.PP_Order_Cost_StepDef for the individual rows CostDifference aggregates
+	 * @see de.metas.cucumber.stepdefs.costing.PP_Order_Cost_StepDef for the underlying PP_Order_Cost rows
 	 */
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(
@@ -496,7 +498,12 @@ public class PP_Order_StepDef
 					assertThat(ppOrderBOMLineAttributesKeys).isEqualTo(expectedAttributesKeys);
 				});
 
-		row.getAsOptionalIdentifier().ifPresent(identifier -> ppOrderBomLineTable.putOrReplace(identifier, ppOrderBOMLine));
+		// The no-arg getAsOptionalIdentifier() only matches a column literally named Identifier, so the tables
+		// declaring PP_Order_BOMLine_ID.Identifier registered nothing. Both spellings are honoured here.
+		Optionals.firstPresentOfSuppliers(
+						() -> row.getAsOptionalIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID),
+						row::getAsOptionalIdentifier)
+				.ifPresent(identifier -> ppOrderBomLineTable.putOrReplace(identifier, ppOrderBOMLine));
 	}
 
 	private IQuery<I_PP_Order_BOMLine> toPPOrderBOMLineQuery(final @NonNull DataTableRow row)
