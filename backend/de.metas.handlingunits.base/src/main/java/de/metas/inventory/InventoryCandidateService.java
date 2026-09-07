@@ -10,6 +10,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory_Candidate;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.picking.QtyRejectedReasonContext;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -40,7 +41,9 @@ public class InventoryCandidateService
 
 	public ADRefList getDisposalReasons()
 	{
-		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+		return QtyRejectedReasonCode.reasonsFor(
+				adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID),
+				QtyRejectedReasonContext.InventoryDisposal);
 	}
 
 	public void createDisposeCandidates(

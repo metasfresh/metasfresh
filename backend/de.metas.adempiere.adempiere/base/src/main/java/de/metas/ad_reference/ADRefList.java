@@ -47,4 +47,13 @@ public class ADRefList
 	public Optional<ADRefListItem> getItemByValue(@Nullable final String value) {return Optional.ofNullable(itemsByValue.get(value));}
 
 	public boolean containsValue(final String value) {return itemsByValue.get(value) != null;}
+
+	public ADRefList excluding(@NonNull final Collection<String> valuesToExclude)
+	{
+		if (valuesToExclude.isEmpty()) { return this; }
+		final ImmutableList<ADRefListItem> remaining = getItems().stream()
+				.filter(item -> !valuesToExclude.contains(item.getValue()))
+				.collect(ImmutableList.toImmutableList());
+		return remaining.size() == getItems().size() ? this : toBuilder().items(remaining).build();
+	}
 }

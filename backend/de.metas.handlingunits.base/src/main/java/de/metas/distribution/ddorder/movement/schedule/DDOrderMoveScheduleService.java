@@ -15,6 +15,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.picking.QtyRejectedReasonContext;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -44,7 +45,9 @@ public class DDOrderMoveScheduleService
 
 	public ADRefList getQtyRejectedReasons()
 	{
-		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
+		return QtyRejectedReasonCode.reasonsFor(
+				adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID),
+				QtyRejectedReasonContext.Distribution);
 	}
 
 	public DDOrderMoveSchedule createScheduleToMove(@NonNull final DDOrderMoveScheduleCreateRequest request)
