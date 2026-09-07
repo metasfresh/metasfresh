@@ -32,6 +32,9 @@ public final class QtyRejectedReasonCode
 
 	private static final Interner<QtyRejectedReasonCode> interner = Interners.newStrongInterner();
 
+	/** Reason for a handling unit emptied during a raw-materials issue. Declared after {@code interner}, which {@link #ofCode(String)} dereferences. */
+	public static final QtyRejectedReasonCode EMPTIED = ofCode("E");
+
 	@Getter
 	private final String code;
 
