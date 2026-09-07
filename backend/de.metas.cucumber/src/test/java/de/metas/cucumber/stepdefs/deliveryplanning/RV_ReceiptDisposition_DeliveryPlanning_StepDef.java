@@ -210,12 +210,12 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 		}
 
 		expected.getAsOptionalLocalDate(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_ETA)
-				.ifPresent(eta -> softly.assertThat(asLocalDate(actual.getETA()))
+				.ifPresent(eta -> softly.assertThat(TimeUtil.asLocalDate(actual.getETA()))
 						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_ETA)
 						.isEqualTo(eta));
 
 		expected.getAsOptionalLocalDate(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_DatePromised_Effective)
-				.ifPresent(date -> softly.assertThat(asLocalDate(actual.getDatePromised_Effective()))
+				.ifPresent(date -> softly.assertThat(TimeUtil.asLocalDate(actual.getDatePromised_Effective()))
 						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_DatePromised_Effective)
 						.isEqualTo(date));
 
@@ -275,11 +275,5 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 
 		expected.getAsOptionalIdentifier(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_RV_ReceiptDisposition_DeliveryPlanning_ID)
 				.ifPresent(identifier -> receiptDispositionDeliveryPlanningTable.putOrReplace(identifier, actual));
-	}
-
-	@Nullable
-	private static LocalDate asLocalDate(@Nullable final Timestamp timestamp)
-	{
-		return timestamp == null ? null : TimeUtil.asLocalDate(timestamp);
 	}
 }
