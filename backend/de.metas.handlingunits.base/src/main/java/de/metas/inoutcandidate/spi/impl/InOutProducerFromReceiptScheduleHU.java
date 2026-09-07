@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.spi.impl;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
@@ -59,6 +60,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -133,11 +135,11 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	private final ISnapshotProducer<I_M_HU> huSnapshotProducer;
 
 	/**
-	 * {@code M_Delivery_Planning_ID} to stamp onto each created receipt header, or {@code 0} for none.
+	 * Stamped onto each created receipt header, or {@code null} for none.
 	 *
 	 * @see CreateReceiptsParameters#getDeliveryPlanningId()
 	 */
-	private final int deliveryPlanningId;
+	@Nullable private final DeliveryPlanningId deliveryPlanningId;
 
 	public InOutProducerFromReceiptScheduleHU(
 			final CreateReceiptsParameters parameters,
@@ -180,9 +182,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final de.metas.inout.model.I_M_InOut receiptHeader,
 			final de.metas.inoutcandidate.model.I_M_ReceiptSchedule receiptSchedule)
 	{
-		if (deliveryPlanningId > 0)
+		if (deliveryPlanningId != null)
 		{
-			receiptHeader.setM_Delivery_Planning_ID(deliveryPlanningId);
+			receiptHeader.setM_Delivery_Planning_ID(deliveryPlanningId.getRepoId());
 		}
 	}
 

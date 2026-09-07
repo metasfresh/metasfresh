@@ -427,7 +427,7 @@ public class ReceiptFromReceiptScheduleService
 						.printReceiptLabels(true)
 						.receiptSchedules(receiptSchedules)
 						.selectedHuIds(huIdsToReceive)
-						.deliveryPlanningId(DeliveryPlanningId.toRepoId(deliveryPlanningId))
+						.deliveryPlanningId(deliveryPlanningId)
 						.build());
 	}
 

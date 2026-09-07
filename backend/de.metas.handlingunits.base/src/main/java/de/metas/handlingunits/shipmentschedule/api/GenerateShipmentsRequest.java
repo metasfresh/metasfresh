@@ -82,9 +82,6 @@ public class GenerateShipmentsRequest
 	 * written afterwards is invisible to the document's {@code TIMING_AFTER_COMPLETE} interceptor, which is
 	 * what derives the planning's delivered state, its actual quantities, its {@code Processed} flag and the
 	 * shipment back-link from the completion.
-	 * <p>
-	 * A plain repo id, because {@code DeliveryPlanningId} lives in {@code de.metas.deliveryplanning.base},
-	 * which depends on this module.
 	 */
 	int deliveryPlanningId;
 
