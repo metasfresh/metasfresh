@@ -37,7 +37,6 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.DocumentCollection;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -93,10 +92,10 @@ class ReceiptDispositionDeliveryPlanningPassThroughProcessTest
 		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.class,
 				Mockito.mock(PurchaseOrderToShipperTransportationRepository.class));
 
-		// Same reason, one level down: the process' own ReceiptScheduleActions field is constructed with it, and
-		// that class resolves the document collection in a FIELD (service-injection.md §2). Every test here
-		// replaces the actions object with a mock afterwards, so nothing in this class ever touches the real one.
-		SpringContextHolder.registerJUnitBean(DocumentCollection.class, Mockito.mock(DocumentCollection.class));
+		// The process' own actions field resolves ReceiptScheduleActions from the spring context when the process
+		// is constructed. Registering the very mock every test below asserts on keeps the real service - and the
+		// DocumentCollection bean it is injected with - out of this test entirely.
+		SpringContextHolder.registerJUnitBean(ReceiptScheduleActions.class, actions);
 
 		createReceiptScheduleRecord(RECEIPT_SCHEDULE_REPO_ID);
 		createReceiptScheduleRecord(OTHER_RECEIPT_SCHEDULE_REPO_ID);

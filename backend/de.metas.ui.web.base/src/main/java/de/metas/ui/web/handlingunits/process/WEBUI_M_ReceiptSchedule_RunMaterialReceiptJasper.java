@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
+import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
@@ -57,7 +58,7 @@ public class WEBUI_M_ReceiptSchedule_RunMaterialReceiptJasper extends ReceiptSch
 
 	// package-visible, non-final so a same-package unit test can substitute it; shared with the
 	// receipt-disposition delivery-planning window's adapter, which must print the very same report.
-	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
+	ReceiptScheduleActions actions = SpringContextHolder.instance.getBean(ReceiptScheduleActions.class);
 
 	@Override
 	protected String doIt()

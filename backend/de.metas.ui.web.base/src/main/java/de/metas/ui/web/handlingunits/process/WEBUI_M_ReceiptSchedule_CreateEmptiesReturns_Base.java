@@ -9,6 +9,7 @@ import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 
 /*
@@ -53,7 +54,7 @@ import org.compiere.model.I_M_InOut;
 
 	// package-visible, non-final so a same-package unit test can substitute it; shared with the
 	// receipt-disposition delivery-planning window's adapter, which must create the very same empties document.
-	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
+	ReceiptScheduleActions actions = SpringContextHolder.instance.getBean(ReceiptScheduleActions.class);
 
 	private final String _returnMovementType;
 	private final AdWindowId _targetWindowId;

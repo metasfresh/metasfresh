@@ -23,6 +23,7 @@
 package de.metas.ui.web.receiptdisposition_deliveryplanning.process;
 
 import de.metas.ui.web.handlingunits.process.ReceiptScheduleActions;
+import org.compiere.SpringContextHolder;
 
 /**
  * What the receipt-disposition delivery-planning window's PASS-THROUGH actions share - "Korrektur", "Leergut Ausgabe", "Leergut
@@ -47,5 +48,5 @@ abstract class ReceiptDispositionDeliveryPlanningPassThroughProcess extends Rece
 {
 	// package-visible, non-final: substituted with a mock by the same-package unit test, which asserts WHICH
 	// receipt schedule each adapter hands on. Same shape as M_Delivery_Planning_GenerateReceipt#helper.
-	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
+	ReceiptScheduleActions actions = SpringContextHolder.instance.getBean(ReceiptScheduleActions.class);
 }

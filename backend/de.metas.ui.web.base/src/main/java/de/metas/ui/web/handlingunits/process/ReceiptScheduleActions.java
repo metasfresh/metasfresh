@@ -39,12 +39,13 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MImage;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
@@ -72,15 +73,20 @@ import java.util.Properties;
  * This is the same extraction {@link ReceiptScheduleReceiveEligibility} and
  * {@link ReceiptScheduleLUTUConfigurations} already made for the receive actions; the difference is only that
  * those two extracted a RULE and this extracts the ACTIONS.
+ * <p>
+ * <b>Why a spring service</b> and not a {@code @UtilityClass} like those two: "Leergut" needs the
+ * {@link DocumentCollection} bean, and a class that depends on a bean gets it constructor-injected rather than
+ * reaching into the context for it - which means the class has to be a bean itself. The three
+ * {@code ISingletonService} collaborators are not spring beans and stay on {@code Services.get(...)}.
  */
+@Service
+@RequiredArgsConstructor
 public class ReceiptScheduleActions
 {
-	public static ReceiptScheduleActions newInstance() {return new ReceiptScheduleActions();}
-
-	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
-	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
-	private final DocumentCollection documentsRepo = SpringContextHolder.instance.getBean(DocumentCollection.class);
+	@NonNull private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
+	@NonNull private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	@NonNull private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+	@NonNull private final DocumentCollection documentsRepo;
 
 	// ---------------------------------------------------------------------------------------------
 	// "Foto"

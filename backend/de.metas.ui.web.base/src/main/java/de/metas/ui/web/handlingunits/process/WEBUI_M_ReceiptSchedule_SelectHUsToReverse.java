@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.List;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
 
 import de.metas.Profiles;
@@ -49,7 +50,7 @@ public class WEBUI_M_ReceiptSchedule_SelectHUsToReverse extends ReceiptScheduleB
 
 	// package-visible, non-final so a same-package unit test can substitute it; shared with the
 	// receipt-disposition delivery-planning window's adapter, which must offer the very same HUs.
-	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
+	ReceiptScheduleActions actions = SpringContextHolder.instance.getBean(ReceiptScheduleActions.class);
 
 	@Override
 	protected String doIt()

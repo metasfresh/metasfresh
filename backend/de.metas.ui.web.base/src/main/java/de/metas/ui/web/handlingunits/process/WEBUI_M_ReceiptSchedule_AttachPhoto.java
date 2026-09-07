@@ -7,6 +7,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -53,7 +54,7 @@ public class WEBUI_M_ReceiptSchedule_AttachPhoto extends ReceiptScheduleBasedPro
 
 	// package-visible, non-final so a same-package unit test can substitute it; the action's body itself is
 	// shared with the receipt-disposition delivery-planning window's adapter, which must attach the very same photo.
-	ReceiptScheduleActions actions = ReceiptScheduleActions.newInstance();
+	ReceiptScheduleActions actions = SpringContextHolder.instance.getBean(ReceiptScheduleActions.class);
 
 	@Override
 	protected String doIt()
