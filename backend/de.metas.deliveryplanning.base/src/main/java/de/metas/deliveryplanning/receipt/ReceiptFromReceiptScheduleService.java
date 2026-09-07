@@ -128,8 +128,8 @@ public class ReceiptFromReceiptScheduleService
 	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	@NonNull private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	/**
 	 * The WHOLE of a "receive CUs" action, for either row type of the receipt-disposition delivery-planning grid: one planning VHU
