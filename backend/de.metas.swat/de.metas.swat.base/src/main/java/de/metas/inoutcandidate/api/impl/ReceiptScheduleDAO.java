@@ -63,6 +63,12 @@ import java.util.Set;
  * #L%
  */
 
+/**
+ * Repository Tables: M_ReceiptSchedule (query owner; also written by {@link de.metas.inoutcandidate.ReceiptScheduleRepository}),
+ * M_ReceiptSchedule_Alloc (query owner), M_InOutLine (sub-query filter/navigation only),
+ * M_InOut (read, {@link #retrieveCompletedReceipts}), C_OrderLine (sub-query filter only)
+ * Repository Cluster: ReceiptScheduleDAO, ReceiptScheduleRepository
+ */
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -383,8 +389,18 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public Optional<ReceiptScheduleId> getIdByQuery(@NonNull final ReceiptScheduleQuery query)
 	{
+		// ofRepoIdOrNull, not ofRepoId: firstIdOnlyOptional wraps Optional.ofNullable(idMapper.apply(firstIdOnly())),
+		// so the mapper answers null for the not-found sentinel (-1) instead of the strict ofRepoId throwing
+		// "M_ReceiptSchedule_ID > 0 but it was -1". Callers of this method (e.g. ReceiptService) scope the query
+		// by a genuinely unique key (external id or order line), so firstIdOnly's multiplicity check is correct here.
 		return buildQuery(query)
-				.firstIdOnlyOptional(ReceiptScheduleId::ofRepoId);
+				.firstIdOnlyOptional(ReceiptScheduleId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public boolean existsByQuery(@NonNull final ReceiptScheduleQuery query)
+	{
+		return buildQuery(query).anyMatch();
 	}
 
 	@NonNull

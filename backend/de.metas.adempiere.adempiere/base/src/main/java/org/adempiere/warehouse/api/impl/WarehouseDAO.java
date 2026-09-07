@@ -882,7 +882,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_Value, value)
 				.create()
-				.firstIdOnlyOptional(WarehouseId::ofRepoId);
+				.firstIdOnlyOptional(WarehouseId::ofRepoIdOrNull);
 	}
 
 	@NonNull

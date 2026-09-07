@@ -22,6 +22,7 @@
 
 package de.metas.deliveryplanning.process;
 
+import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -33,6 +34,12 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
+/**
+ * Re-opens the selected delivery plannings: takes back the "leave this cargo alone" that Close set.
+ * <p>
+ * The mirror of {@link M_Delivery_Planning_Close}, down to the selection semantics: the only condition is the
+ * one {@link #checkNoneOpen} states - not one selected planning is still open.
+ */
 public class M_Delivery_Planning_ReOpen extends JavaProcess implements IProcessPrecondition
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
@@ -40,21 +47,29 @@ public class M_Delivery_Planning_ReOpen extends JavaProcess implements IProcessP
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> DeliveryPlanningProcessHelper.checkAnySelection(context),
+				() -> checkNoneOpen(context),
+				() -> checkNoBlockedPartner(context));
+	}
 
-		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
+	/**
+	 * Refuses the button as soon as ONE selected planning is still open, which is the same thing {@code doIt}
+	 * does - see {@link DeliveryPlanningService#getReOpenRejectionReason(DeliveryPlanningList)} for why the two
+	 * have to say it alike.
+	 */
+	private ProcessPreconditionsResolution checkNoneOpen(@NonNull final IProcessPreconditionsContext context)
+	{
+		final DeliveryPlanningList selectedDeliveryPlannings = deliveryPlanningService.getBySelection(context.getQueryFilter(I_M_Delivery_Planning.class));
 
-		final boolean isExistsClosedDeliveryPlannings = deliveryPlanningService.isExistsClosedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		return deliveryPlanningService.getReOpenRejectionReason(selectedDeliveryPlannings)
+				.map(ProcessPreconditionsResolution::reject)
+				.orElseGet(ProcessPreconditionsResolution::accept);
+	}
 
-		if (!isExistsClosedDeliveryPlannings)
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllOpen));
-		}
-
-		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(selectedDeliveryPlanningsFilter);
+	private ProcessPreconditionsResolution checkNoBlockedPartner(@NonNull final IProcessPreconditionsContext context)
+	{
+		final boolean existsBlockedPartnerDeliveryPlannings = deliveryPlanningService.isExistsBlockedPartnerDeliveryPlannings(context.getQueryFilter(I_M_Delivery_Planning.class));
 
 		if (existsBlockedPartnerDeliveryPlannings)
 		{

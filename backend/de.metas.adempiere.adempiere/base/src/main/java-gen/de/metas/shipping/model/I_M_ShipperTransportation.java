@@ -520,6 +520,31 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_ETD = "ETD";
 
 	/**
+	 * Set Has Shipping Packages.
+	 * Indicates whether shipping packages are already assigned to the document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setHasLines (boolean HasLines);
+
+	/**
+	 * Get Has Shipping Packages.
+	 * Indicates whether shipping packages are already assigned to the document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isHasLines();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_HasLines = new ModelColumn<>(I_M_ShipperTransportation.class, "HasLines", null);
+	String COLUMNNAME_HasLines = "HasLines";
+
+	/**
 	 * Set Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
@@ -635,29 +660,6 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_IsBookingConfirmed = "IsBookingConfirmed";
 
 	/**
-	 * Set Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsSOTrx (boolean IsSOTrx);
-
-	/**
-	 * Get Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isSOTrx();
-
-	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_M_ShipperTransportation.class, "IsSOTrx", null);
-	String COLUMNNAME_IsSOTrx = "IsSOTrx";
-
-	/**
 	 * Set WE Notice.
 	 * Has the container planning been completed?
 	 *
@@ -700,31 +702,6 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_LoadingTime = new ModelColumn<>(I_M_ShipperTransportation.class, "LoadingTime", null);
 	String COLUMNNAME_LoadingTime = "LoadingTime";
-
-	/**
-	 * Set Delivery Planning.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Delivery_Planning_ID (int M_Delivery_Planning_ID);
-
-	/**
-	 * Get Delivery Planning.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Delivery_Planning_ID();
-
-	@Nullable org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning();
-
-	void setM_Delivery_Planning(@Nullable org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning);
-
-	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_Delivery_Planning> COLUMN_M_Delivery_Planning_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_Delivery_Planning_ID", org.compiere.model.I_M_Delivery_Planning.class);
-	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
 
 	/**
 	 * Set Means of Transportation.
@@ -886,7 +863,8 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
 
 	/**
-	 * Set Abholung Uhrzeit bis.
+	 * Set Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -895,7 +873,8 @@ public interface I_M_ShipperTransportation
 	void setPickupTimeTo (@Nullable java.sql.Timestamp PickupTimeTo);
 
 	/**
-	 * Get Abholung Uhrzeit bis.
+	 * Get Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -1090,6 +1069,29 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_TrackingID = new ModelColumn<>(I_M_ShipperTransportation.class, "TrackingID", null);
 	String COLUMNNAME_TrackingID = "TrackingID";
+
+	/**
+	 * Set Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTransportDirection (java.lang.String TransportDirection);
+
+	/**
+	 * Get Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getTransportDirection();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_TransportDirection = new ModelColumn<>(I_M_ShipperTransportation.class, "TransportDirection", null);
+	String COLUMNNAME_TransportDirection = "TransportDirection";
 
 	/**
 	 * Get Updated.

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1719866973L;
+	private static final long serialVersionUID = 1215325079L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -468,6 +468,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isUpdateExportDate() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUpdateExportDate);
+	}
+
+	@Override
+	public void setIsUseAutoFilters (final boolean IsUseAutoFilters)
+	{
+		set_Value (COLUMNNAME_IsUseAutoFilters, IsUseAutoFilters);
+	}
+
+	@Override
+	public boolean isUseAutoFilters() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUseAutoFilters);
 	}
 
 	@Override

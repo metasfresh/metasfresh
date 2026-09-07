@@ -20,7 +20,7 @@ public class DeliveryPlanningReceiptInfo
 	@Nullable private final OrderAndLineId purchaseOrderAndLineId;
 	@NonNull private final ReceiptScheduleId receiptScheduleId;
 	@NonNull private final OrgId orgId;
-	boolean isB2B;
+	boolean dropship;
 
 	@Nullable private InOutId receiptId;
 	@Nullable private ColorId receivedStatusColorId;

@@ -150,8 +150,8 @@ Feature: Purchase order with complex payment term
       | PTB23                  | 9999-12-01 | 25.58  | PR     |
       | PTB24                  | 9999-12-01 | 25.56  | PR     |
     And metasfresh contains Transport Order
-      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
-      | shipperTransp_1 | shipper_DHL  | shipper             | shipperLocation     |
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | shipperTransp_1 | shipper_DHL  | shipper             | shipperLocation     | Incoming           |
     And metasfresh contains M_Package
       | Identifier | M_Shipper_ID |
       | Pckg       | shipper_DHL  |
@@ -299,8 +299,8 @@ Feature: Purchase order with complex payment term
       | PTB42                  | 9999-12-01 | 92.07  | PR     |
 
     And metasfresh contains Transport Order
-      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
-      | shipperTransp_2 | shipper_DHL  | shipper             | shipperLocation     |
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | shipperTransp_2 | shipper_DHL  | shipper             | shipperLocation     | Incoming           |
     And metasfresh contains M_Package
       | Identifier | M_Shipper_ID |
       | Pckg2      | shipper_DHL  |
@@ -353,8 +353,8 @@ Feature: Purchase order with complex payment term
       | PTB52                  | 9999-12-01 | 92.07  | PR     |
 
     And metasfresh contains Transport Order
-      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
-      | shipperTransp_3 | shipper_DHL  | shipper             | shipperLocation     |
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | shipperTransp_3 | shipper_DHL  | shipper             | shipperLocation     | Incoming           |
     And metasfresh contains M_Package
       | Identifier | M_Shipper_ID |
       | Pckg3      | shipper_DHL  |
@@ -410,8 +410,8 @@ Feature: Purchase order with complex payment term
       | PTB62                  | 9999-12-01 | 92.07  | PR     |
 
     And metasfresh contains Transport Order
-      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
-      | shipperTransp_4 | shipper_DHL  | shipper             | shipperLocation     |
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | shipperTransp_4 | shipper_DHL  | shipper             | shipperLocation     | Incoming           |
     And metasfresh contains M_Package
       | Identifier | M_Shipper_ID |
       | Pckg4      | shipper_DHL  |
@@ -464,8 +464,8 @@ Feature: Purchase order with complex payment term
       | PTB82                  | 9999-12-01 | 92.07  | PR     |
 
     And metasfresh contains Transport Order
-      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
-      | shipperTransp_5 | shipper_DHL  | shipper             | shipperLocation     |
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | shipperTransp_5 | shipper_DHL  | shipper             | shipperLocation     | Incoming           |
     And metasfresh contains M_Package
       | Identifier | M_Shipper_ID |
       | Pckg5      | shipper_DHL  |

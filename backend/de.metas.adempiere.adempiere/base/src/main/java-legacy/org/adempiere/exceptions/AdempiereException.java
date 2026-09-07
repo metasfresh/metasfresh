@@ -283,6 +283,7 @@ public class AdempiereException extends RuntimeException
 	private AdIssueId adIssueId = null;
 	private boolean userNotified = false;
 	private boolean userValidationError;
+	private UserMessagePresentation userMessagePresentation = UserMessagePresentation.TOAST;
 
 	private Map<String, Object> parameters = null;
 	private final Map<String, String> mdcContextMap;
@@ -642,6 +643,12 @@ public class AdempiereException extends RuntimeException
 		return this;
 	}
 
+	public AdempiereException setUserMessagePresentation(@NonNull final UserMessagePresentation userMessagePresentation)
+	{
+		this.userMessagePresentation = userMessagePresentation;
+		return this;
+	}
+
 	/**
 	 * Sets parameter.
 	 *
@@ -810,6 +817,16 @@ public class AdempiereException extends RuntimeException
 	public static boolean isUserValidationError(final Throwable ex)
 	{
 		return (ex instanceof AdempiereException) && ((AdempiereException)ex).isUserValidationError();
+	}
+
+	public final UserMessagePresentation getUserMessagePresentation()
+	{
+		return userMessagePresentation;
+	}
+
+	public static UserMessagePresentation getUserMessagePresentation(final Throwable ex)
+	{
+		return (ex instanceof AdempiereException) ? ((AdempiereException)ex).getUserMessagePresentation() : UserMessagePresentation.TOAST;
 	}
 
 	/**

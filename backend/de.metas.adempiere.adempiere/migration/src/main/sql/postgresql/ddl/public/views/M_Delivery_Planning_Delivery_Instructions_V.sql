@@ -34,8 +34,10 @@ SELECT di.documentno,
        di.ad_org_id,
        di.ad_client_id
 FROM M_ShipperTransportation di
-         INNER JOIN M_ShippingPackage sp ON di.m_shippertransportation_id = sp.m_shippertransportation_id
-         INNER JOIN M_Delivery_Planning dp ON dp.m_shippertransportation_id = di.m_shippertransportation_id
+         JOIN M_Delivery_Planning_Alloc dpa
+              ON dpa.m_shippertransportation_id = di.m_shippertransportation_id AND dpa.isactive = 'Y'
+         JOIN M_ShippingPackage sp ON sp.m_shippingpackage_id = dpa.m_shippingpackage_id
+         JOIN M_Delivery_Planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id
 WHERE di.docstatus NOT IN ('VO', 'RE')
 ;
 

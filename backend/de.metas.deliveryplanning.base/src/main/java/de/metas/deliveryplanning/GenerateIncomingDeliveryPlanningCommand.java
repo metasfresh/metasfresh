@@ -18,6 +18,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -101,7 +102,7 @@ public class GenerateIncomingDeliveryPlanningCommand
 				.clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
 				.receiptScheduleId(ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID()))
 				.deliveryStatusColorId(colorPalette.getNotDeliveredColorId())
-				.deliveryPlanningType(DeliveryPlanningType.Incoming)
+				.transportDirection(TransportDirection.Incoming)
 				.orderId(orderId)
 				.orderLineId(orderLineId)
 				.warehouseId(warehouseId)
@@ -124,7 +125,7 @@ public class GenerateIncomingDeliveryPlanningCommand
 		{
 			final I_C_Order order = orderDAO.getById(orderId);
 
-			requestBuilder.isB2B(order.isDropShip())
+			requestBuilder.transportDirection(order.isDropShip() ? TransportDirection.Dropship : TransportDirection.Incoming)
 					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
 					.incotermLocation(order.getIncotermLocation())
 					// gh30630: default the estimated departure/loading date (ETD) from the order's
