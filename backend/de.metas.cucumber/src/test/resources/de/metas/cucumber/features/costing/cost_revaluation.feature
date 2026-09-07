@@ -1,7 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
-@F1500
 @ghActions:run_on_executor7
 Feature: Cost Revaluation / Kosten Neubewertung
 ## F1500: Costing
@@ -10,7 +9,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     Given infrastructure and metasfresh are running
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2021-04-14T08:00:00+00:00
+    And metasfresh has date and time 2021-04-14T08:00:00+00:00[Europe/Berlin]
     And documents are accounted immediately
     And metasfresh contains M_Products:
       | Identifier | X12DE355 |
@@ -39,7 +38,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
     When metasfresh contains M_CostRevaluation:
       | Identifier  | C_AcctSchema_ID | M_CostElement_ID | EvaluationStartDate | DateAcct   |
       | revaluation | acctSchema      | AveragePO        | 2024-03-06          | 2024-03-06 |
-    And metasfresh contains M_CostRevaluationLine:
+    And cost revaluation lines are created for revaluation
+    And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
       | revaluation          | product      | 15           |
     And the cost revaluation identified by revaluation is completed

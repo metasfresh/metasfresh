@@ -22,16 +22,10 @@
 
 package de.metas.cucumber.stepdefs.costing;
 
-import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostElementId;
-import de.metas.costing.CostSegment;
-import de.metas.costing.CostSegmentAndElement;
-import de.metas.costing.CostingLevel;
-import de.metas.costing.CurrentCost;
-import de.metas.costing.IProductCostingBL;
-import de.metas.costing.impl.CurrentCostsRepository;
+import de.metas.costrevaluation.CostRevaluationId;
+import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -49,9 +43,8 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
@@ -63,16 +56,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for the {@code M_CostRevaluation} ("Kosten Neubewertung") document:
- * create the header + one line for a product, and complete the document.
+ * create the header, generate the lines via the real "Create Lines" process, set a line's target price,
+ * and complete the document.
  */
 @RequiredArgsConstructor
 public class M_CostRevaluation_StepDef
 {
-	@NonNull private final CurrentCostsRepository currentCostsRepository = SpringContextHolder.instance.getBean(CurrentCostsRepository.class);
+	@NonNull private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	@NonNull private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
 	@NonNull private final M_CostElement_StepDefData costElementTable;
@@ -130,75 +123,59 @@ public class M_CostRevaluation_StepDef
 	}
 
 	/**
-	 * Creates one {@code M_CostRevaluationLine} for the given product, copying the current-cost segment
-	 * (costing level, cost type, currency, UOM, current qty and current price) from the product's live cost.
+	 * Runs the real "Create Lines" process ({@link CostRevaluationService#createLines}) for the given header,
+	 * generating one {@code M_CostRevaluationLine} per stocked product at its current cost (NewCostPrice defaulted
+	 * to the current price).
+	 */
+	@And("^cost revaluation lines are created for (.*)$")
+	public void createLines(@NonNull final String identifier)
+	{
+		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
+		costRevaluationService.createLines(CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()));
+	}
+
+	/**
+	 * Sets the target {@code NewCostPrice} on the already-generated line of the given product.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>M_CostRevaluation_ID</b> — (required, identifier-ref) the header to add the line to<br>
-	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product to revaluate<br>
+	 *   <b>M_CostRevaluation_ID</b> — (required, identifier-ref) the header whose line to update<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product whose line to update<br>
 	 *   <b>NewCostPrice</b> — (required) the target cost price<br>
 	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData, M_Product_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * And metasfresh contains M_CostRevaluationLine:
+	 * And update M_CostRevaluationLine:
 	 *   | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
 	 *   | revaluation          | product      | 15           |
 	 * </pre>
 	 */
-	@And("metasfresh contains M_CostRevaluationLine:")
-	public void createCostRevaluationLines(@NonNull final DataTable dataTable)
+	@And("update M_CostRevaluationLine:")
+	public void updateCostRevaluationLines(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::createCostRevaluationLine);
+		DataTableRows.of(dataTable).forEach(this::updateCostRevaluationLine);
 	}
 
-	private void createCostRevaluationLine(@NonNull final DataTableRow row)
+	private void updateCostRevaluationLine(@NonNull final DataTableRow row)
 	{
 		final I_M_CostRevaluation header = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID).lookupNotNullIn(costRevaluationTable);
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(header.getC_AcctSchema_ID());
-		final CostElementId costElementId = CostElementId.ofRepoId(header.getM_CostElement_ID());
-		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
-
 		final ProductId productId = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
-		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchema);
 
-		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(acctSchema.getId())
-				.costTypeId(acctSchema.getCosting().getCostTypeId())
-				.clientId(ClientId.METASFRESH)
-				.orgId(Env.getOrgId())
-				.productId(productId)
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-				.costElementId(costElementId)
-				.build();
+		// Test-side lookup of the line generated by createLines(); kept here so no production query has to be added.
+		final I_M_CostRevaluationLine line = queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID, header.getM_CostRevaluation_ID())
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.create()
+				.firstOnlyNotNull(I_M_CostRevaluationLine.class);
 
-		final CurrentCost currentCost = currentCostsRepository.getOrNull(costSegmentAndElement);
-		assertThat(currentCost).as("current cost must exist for %s", costSegmentAndElement).isNotNull();
-
-		final CostSegment costSegment = currentCost.getCostSegment();
-
-		final I_M_CostRevaluationLine line = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
-		line.setM_CostRevaluation_ID(header.getM_CostRevaluation_ID());
-		line.setAD_Org_ID(costSegment.getOrgId().getRepoId());
-		line.setIsActive(true);
-		line.setIsRevaluated(false);
-		line.setCostingLevel(costSegment.getCostingLevel().getCode());
-		line.setC_AcctSchema_ID(costSegment.getAcctSchemaId().getRepoId());
-		line.setM_CostType_ID(costSegment.getCostTypeId().getRepoId());
-		line.setM_Product_ID(costSegment.getProductId().getRepoId());
-		line.setM_AttributeSetInstance_ID(costSegment.getAttributeSetInstanceId().getRepoId());
-		line.setM_CostElement_ID(costElementId.getRepoId());
-		line.setC_Currency_ID(currentCost.getCurrencyId().getRepoId());
-		line.setC_UOM_ID(currentCost.getUomId().getRepoId());
-		line.setCurrentCostPrice(currentCost.getCostPrice().getOwnCostPrice().toBigDecimal());
-		line.setCurrentQty(currentCost.getCurrentQty().toBigDecimal());
 		line.setNewCostPrice(row.getAsBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_NewCostPrice));
 		InterfaceWrapperHelper.save(line);
 	}
 
 	/**
 	 * Completes the given {@code M_CostRevaluation} document (DocAction Complete).
+	 *
+	 * @see IDocumentBL#processEx
 	 */
 	@And("^the cost revaluation identified by (.*) is completed$")
 	public void complete(@NonNull final String identifier)
