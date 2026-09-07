@@ -669,10 +669,10 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	}
 
 	/**
-	 * The auto-defaulting must NOT run for a sales (Outgoing direction) transport order.
+	 * A PURCHASE order may not be assigned to an Outgoing transport order at all, so the auto-defaulting never runs either.
 	 */
 	@Test
-	public void defaultDates_notAppliedForSalesTransportOrder()
+	public void purchaseOrder_ontoOutgoingTransportOrder_isRefused()
 	{
 		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
 		shipperTransportation.setTransportDirection(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
@@ -710,6 +710,62 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(reloaded.getATD()).isNull();
 		assertThat(reloaded.getATA()).isNull();
 		assertThat(reloaded.getBLDate()).isNull();
+	}
+
+	/**
+	 * A SALES order on an Outgoing transport order is the normal, correct combination. The purchase-side direction guard
+	 * must not fire for it: the assignment succeeds and the shipping packages are created.
+	 */
+	@Test
+	public void salesOrder_ontoOutgoingTransportOrder_isAccepted()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		shipperTransportation.setTransportDirection(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
+		save(shipperTransportation);
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("CustomerOutgoing", "addressCustomerOutgoing");
+		final OrderId orderId = createOrder(bpartnerAndLocation, true);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId);
+		assertThat(shippingPackages).as("the sales order's shipping package must have been created").hasSize(1);
+		assertThat(shippingPackages.get(0).getC_Order_ID()).isEqualTo(orderId.getRepoId());
+	}
+
+	/**
+	 * A SALES order that is the first order on a receipt-direction (Incoming) transport order must NOT seed the purchase-side
+	 * date defaults: ETA from {@code DatePromised} and ETD from {@code PreparationDate} describe an inbound purchase arrival,
+	 * not a sales departure. The assignment itself still succeeds - no sales-side rejection is defined.
+	 */
+	@Test
+	public void defaultDates_notAppliedForSalesOrderOnPurchaseTransportOrder()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation(); // Incoming
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("CustomerIncoming", "addressCustomerIncoming");
+		final OrderId orderId = createOrder(bpartnerAndLocation, true);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		// give the order a PreparationDate so a PURCHASE order would get a non-null ETD - proving the sales guard is what suppresses it
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		order.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()))));
+		save(order);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId);
+		assertThat(shippingPackages).as("the assignment itself must still succeed").hasSize(1);
+
+		final I_M_ShipperTransportation reloadedTransportation = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloadedTransportation.getETD()).as("ETD must not be seeded from a sales order").isNull();
+		assertThat(reloadedTransportation.getETA()).as("ETA must not be seeded from a sales order").isNull();
+		assertThat(reloadedTransportation.getATD()).isNull();
+		assertThat(reloadedTransportation.getATA()).isNull();
+		assertThat(reloadedTransportation.getBLDate()).isNull();
 	}
 
 	/**
@@ -1014,6 +1070,11 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 	private OrderId createOrder(final BPartnerLocationId bpartnerAndLocation)
 	{
+		return createOrder(bpartnerAndLocation, false);
+	}
+
+	private OrderId createOrder(final BPartnerLocationId bpartnerAndLocation, final boolean isSOTrx)
+	{
 
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 		save(warehouse);
@@ -1036,7 +1097,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		order.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 6), orgDAO.getTimeZone(OrgId.ofRepoId(warehouse.getAD_Org_ID()))));
 
-		order.setIsSOTrx(false);
+		order.setIsSOTrx(isSOTrx);
 
 		save(order);
 

@@ -290,9 +290,19 @@ public class PurchaseOrderToShipperTransportationService
 	 * {@link TransportDirection#isIncomingOrDropship()} (Incoming or Dropship). Blocks the state where an
 	 * Outgoing-only (pure sales/shipment) transport order silently ends up carrying purchase shipping packages
 	 * with no receipt ever able to link to it.
+	 * <p>
+	 * A SALES document is not constrained here and falls through untouched: it reaches this service through the
+	 * {@code C_Order_AddTo_M_ShipperTransportation} / {@code C_OrderLine_AddTo_M_ShipperTransportation} processes,
+	 * which are bound to C_Order/C_OrderLine and therefore offered on the sales windows too, and a sales order on an
+	 * Outgoing transport order is the normal, correct combination.
 	 */
 	private void assertTransportOrderAcceptsPurchaseDocument(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
 	{
+		if (order.isSOTrx())
+		{
+			return;
+		}
+
 		final TransportDirection direction = TransportDirection.ofCode(shipperTransportation.getTransportDirection());
 		if (!direction.isIncomingOrDropship())
 		{
@@ -316,11 +326,19 @@ public class PurchaseOrderToShipperTransportationService
 	 */
 	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
 	{
-		// isOutgoing(), NOT hasShipment(): Dropship carries a shipment too, but must fall through to the
+		// The defaults below describe an inbound purchase arrival (ETA from the PO's DatePromised, ETD from its
+		// PreparationDate), so they must only ever be seeded from a PURCHASE document - a sales order that happens to be
+		// the first order on an Incoming/Dropship transport order must not seed them.
+		if (order.isSOTrx())
+		{
+			return; // sales behaviour on the transport order must keep working unchanged
+		}
+
+		// isOutgoing(), NOT isOutgoingOrDropship(): Dropship carries a shipment too, but must fall through to the
 		// purchase-side defaults below.
 		if (TransportDirection.ofCode(shipperTransportation.getTransportDirection()).isOutgoing())
 		{
-			return; // sales behaviour on the transport order must keep working unchanged
+			return;
 		}
 
 		// ETA = the PO's promised (arrival) date; guaranteed non-null here (the caller already dereferences it when building the base
