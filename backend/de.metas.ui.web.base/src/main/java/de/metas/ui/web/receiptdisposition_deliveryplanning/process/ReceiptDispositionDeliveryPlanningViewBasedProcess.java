@@ -154,7 +154,7 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	{
 		deliveryPlanningService.getReceiveRejectionReason(selectedDeliveryPlannings)
 				.ifPresent(reason -> {
-					throw new AdempiereException(reason).markAsUserValidationError();
+					throw new AdempiereException(reason);
 				});
 	}
 

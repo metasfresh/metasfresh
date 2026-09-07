@@ -266,8 +266,7 @@ public class PurchaseOrderToShipperTransportationService
 
 			if (addedCount == 0)
 			{
-				throw new AdempiereException(MSG_NoLUPackingConfigForOrderLines, skippedLineNos)
-						.markAsUserValidationError();
+				throw new AdempiereException(MSG_NoLUPackingConfigForOrderLines, skippedLineNos);
 			}
 			else
 			{
@@ -299,8 +298,7 @@ public class PurchaseOrderToShipperTransportationService
 		final TransportDirection direction = TransportDirection.ofCode(shipperTransportation.getTransportDirection());
 		if (!direction.isIncomingOrDropship())
 		{
-			throw new AdempiereException(MSG_WrongTransportDirectionForPurchaseOrder, order.getDocumentNo(), shipperTransportation.getDocumentNo())
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_WrongTransportDirectionForPurchaseOrder, order.getDocumentNo(), shipperTransportation.getDocumentNo());
 		}
 	}
 
