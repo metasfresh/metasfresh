@@ -16,8 +16,8 @@ Feature: The delivery instruction's three-state delivered indicator
     And set sys config boolean value true for sys config de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically
 
     And metasfresh contains M_PricingSystems
-      | Identifier    | OPT.IsActive |
-      | pricingSystem | true         |
+      | Identifier    |
+      | pricingSystem |
     And metasfresh contains M_PriceLists
       | Identifier   | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_PO | pricingSystem      | DE                    | EUR                 | false |

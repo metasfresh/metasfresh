@@ -61,8 +61,8 @@ Feature: Delivery planning quantities
   Scenario: Creating an incoming delivery planning from a purchase order line seeds the planned discharge quantity from the planned load
 
     Given metasfresh contains M_PricingSystems
-      | Identifier         | OPT.IsActive |
-      | pricingSystemQtyPO | true         |
+      | Identifier         |
+      | pricingSystemQtyPO |
     And metasfresh contains M_PriceLists
       | Identifier      | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_QtyPO | pricingSystemQtyPO             | DE                    | EUR                 | false |
@@ -109,8 +109,8 @@ Feature: Delivery planning quantities
   Scenario: Creating an incoming delivery planning seeds ActualLoadQty from the planned load, because nothing ever reports the vendor's load
 
     Given metasfresh contains M_PricingSystems
-      | Identifier             | OPT.IsActive |
-      | pricingSystemQtySeedIn | true         |
+      | Identifier             |
+      | pricingSystemQtySeedIn |
     And metasfresh contains M_PriceLists
       | Identifier          | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_QtySeedIn | pricingSystemQtySeedIn        | DE                    | EUR                 | false |
@@ -157,8 +157,8 @@ Feature: Delivery planning quantities
   Scenario: Editing the planned load of an incoming delivery planning moves its ActualLoadQty along, but never touches the discharge actual a receipt owns
 
     Given metasfresh contains M_PricingSystems
-      | Identifier              | OPT.IsActive |
-      | pricingSystemQtyFollow | true         |
+      | Identifier              |
+      | pricingSystemQtyFollow |
     And metasfresh contains M_PriceLists
       | Identifier           | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_QtyFollow  | pricingSystemQtyFollow        | DE                    | EUR                 | false |
@@ -433,8 +433,8 @@ Feature: Delivery planning quantities
   Scenario: TC12 - Splitting a planning with both an allocation and a partial receipt leaves the received figure, the allocated portion and the original's planned figure unchanged
 
     Given metasfresh contains M_PricingSystems
-      | Identifier           | OPT.IsActive |
-      | pricingSystemQtyTC12 | true         |
+      | Identifier           |
+      | pricingSystemQtyTC12 |
     And metasfresh contains M_PriceLists
       | Identifier        | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_QtyTC12 | pricingSystemQtyTC12          | DE                    | EUR                 | false |
@@ -661,8 +661,8 @@ Feature: Delivery planning quantities
   Scenario: Splitting an incoming delivery planning seeds each new planning's ActualLoadQty from its OWN planned load, never copied from the target
 
     Given metasfresh contains M_PricingSystems
-      | Identifier               | OPT.IsActive |
-      | pricingSystemQtySplitIn  | true         |
+      | Identifier               |
+      | pricingSystemQtySplitIn  |
     And metasfresh contains M_PriceLists
       | Identifier            | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_QtySplitIn  | pricingSystemQtySplitIn       | DE                    | EUR                 | false |
@@ -864,8 +864,8 @@ Feature: Delivery planning quantities
   Scenario: Reopening a closed AND delivered planning keeps Processed set - the invariant Processed == (IsClosed or IsDelivered) survives the reopen
 
     Given metasfresh contains M_PricingSystems
-      | Identifier       | OPT.IsActive |
-      | pricingSystemQ10 | true         |
+      | Identifier       |
+      | pricingSystemQ10 |
     And metasfresh contains M_PriceLists
       | Identifier    | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_Q10 | pricingSystemQ10               | DE                    | EUR                 | false |
@@ -966,8 +966,8 @@ Feature: Delivery planning quantities
   Scenario: Reversing a receipt clears the discharge actual and unlocks the planning - which can then book again
 
     Given metasfresh contains M_PricingSystems
-      | Identifier        | OPT.IsActive |
-      | pricingSystemQ11R | true         |
+      | Identifier        |
+      | pricingSystemQ11R |
     And metasfresh contains M_PriceLists
       | Identifier     | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_Q11R | pricingSystemQ11R              | DE                    | EUR                 | false |
@@ -1301,8 +1301,8 @@ Feature: Delivery planning quantities
   Scenario: Completing a receipt writes only the discharge end - the load end stays mirrored from the plan
 
     Given metasfresh contains M_PricingSystems
-      | Identifier        | OPT.IsActive |
-      | pricingSystemQ11I | true         |
+      | Identifier        |
+      | pricingSystemQ11I |
     And metasfresh contains M_PriceLists
       | Identifier     | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_Q11I | pricingSystemQ11I              | DE                    | EUR                 | false |
@@ -1365,8 +1365,8 @@ Feature: Delivery planning quantities
     # the same way for both. So a Dropship RECEIPT must write discharge, exactly like an Incoming receipt -
     # never the load end, which stays the never-reported-vendor-load placeholder mirrored from the plan.
     Given metasfresh contains M_PricingSystems
-      | Identifier        | OPT.IsActive |
-      | pricingSystemQ11D | true         |
+      | Identifier        |
+      | pricingSystemQ11D |
     And metasfresh contains M_PriceLists
       | Identifier     | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_Q11D | pricingSystemQ11D              | DE                    | EUR                 | false |
@@ -1439,8 +1439,8 @@ Feature: Delivery planning quantities
     # recompute. The raw M_InOut.M_Delivery_Planning_ID would still end up set, so the data looks
     # half-right; only the four assertions below tell the two orderings apart.
     Given metasfresh contains M_PricingSystems
-      | Identifier        | OPT.IsActive |
-      | pricingSystemQ11P | true         |
+      | Identifier        |
+      | pricingSystemQ11P |
     And metasfresh contains M_PriceLists
       | Identifier     | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | priceList_Q11P | pricingSystemQ11P             | DE                    | EUR                 | false |

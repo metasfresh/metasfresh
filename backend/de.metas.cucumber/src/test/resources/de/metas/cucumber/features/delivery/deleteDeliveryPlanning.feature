@@ -13,11 +13,11 @@ Feature: Delete delivery planning
   Scenario: Delete delivery planning
 
     Given metasfresh contains M_PricingSystems
-      | Identifier    | Name              | Value                             | OPT.IsActive |
-      | pricingSystem | PricingSystemName | PricingSystemValueDelete_03022023 | true         |
+      | Identifier    | Name              | Value                             |
+      | pricingSystem | PricingSystemName | PricingSystemValueDelete_03022023 |
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                         | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListNameDelete_03022023 | true  | false         | 2              | true         |
+      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                         | SOTrx | IsTaxIncluded | PricePrecision |
+      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListNameDelete_03022023 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier          | M_PriceList_ID.Identifier | Name           | ValidFrom  |
       | priceListVersion_SO | priceList_SO              | SalesOrder-PLV | 2023-02-01 |
