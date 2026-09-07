@@ -28,6 +28,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
 import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.UomId;
 import lombok.NonNull;
@@ -35,6 +36,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.I_M_Delivery_Planning_Alloc;
+import org.compiere.model.I_M_Package;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,6 +46,7 @@ import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -74,9 +79,16 @@ class DeliveryInstructionDateDefaultsTest
 				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 	}
 
+	/** The instant a request carries. Fixed to UTC midnight so no assertion here depends on the machine's zone. */
+	private static Instant dayInstant(final int dayOfMonth)
+	{
+		return LocalDate.of(2026, 3, dayOfMonth).atStartOfDay(ZoneId.of("UTC")).toInstant();
+	}
+
+	/** The same point in time as {@link #dayInstant(int)}, in the type the {@code M_ShipperTransportation} columns use. */
 	private static Timestamp day(final int dayOfMonth)
 	{
-		return Timestamp.from(LocalDate.of(2026, 3, dayOfMonth).atStartOfDay(ZoneId.of("UTC")).toInstant());
+		return TimeUtil.asTimestamp(dayInstant(dayOfMonth));
 	}
 
 	private static I_M_ShipperTransportation draftDeliveryInstruction(
@@ -101,7 +113,7 @@ class DeliveryInstructionDateDefaultsTest
 	}
 
 	/**
-	 * A real, persisted row - not a fabricated id - because {@code createAllocations} (Task Q9) now reads the
+	 * A real, persisted row - not a fabricated id - because {@code createAllocations} now reads the
 	 * planning back to recompute the instruction's {@code DeliveredState}, so a request naming an id with no
 	 * backing row fails there instead of silently "succeeding" as it used to.
 	 */
@@ -113,8 +125,8 @@ class DeliveryInstructionDateDefaultsTest
 	}
 
 	private static DeliveryPlanningAllocCreateRequest allocRequest(
-			@Nullable final Timestamp etd,
-			@Nullable final Timestamp eta,
+			@Nullable final Instant etd,
+			@Nullable final Instant eta,
 			@Nullable final String loadingTime)
 	{
 		return DeliveryPlanningAllocCreateRequest.builder()
@@ -157,7 +169,7 @@ class DeliveryInstructionDateDefaultsTest
 	{
 		final I_M_ShipperTransportation instruction = draftDeliveryInstruction(null, null);
 
-		final DeliveryInstructionDates resolved = resolve(instruction, allocRequest(day(3), day(7), "08:00"));
+		final DeliveryInstructionDates resolved = resolve(instruction, allocRequest(dayInstant(3), dayInstant(7), "08:00"));
 
 		assertThat(resolved.getEtd()).as("ETD seeded from the planning").isEqualTo(day(3));
 		assertThat(resolved.getEta()).as("ETA seeded from the planning").isEqualTo(day(7));
@@ -175,7 +187,7 @@ class DeliveryInstructionDateDefaultsTest
 	{
 		final I_M_ShipperTransportation instruction = draftDeliveryInstruction(day(1), null);
 
-		final DeliveryInstructionDates resolved = resolve(instruction, allocRequest(day(3), day(7), null));
+		final DeliveryInstructionDates resolved = resolve(instruction, allocRequest(dayInstant(3), dayInstant(7), null));
 
 		assertThat(resolved.getEtd())
 				.as("these are defaults - a value entered before the allocation must be kept")
@@ -209,7 +221,7 @@ class DeliveryInstructionDateDefaultsTest
 		final I_M_ShipperTransportation instruction = savedDeliveryInstruction(day(1), null);
 		final ShipperTransportationId instructionId = ShipperTransportationId.ofRepoId(instruction.getM_ShipperTransportation_ID());
 
-		final DeliveryPlanningAllocCreateRequest request = allocRequest(day(3), day(7), "08:00");
+		final DeliveryPlanningAllocCreateRequest request = allocRequest(dayInstant(3), dayInstant(7), "08:00");
 		final DeliveryInstructionDates resolvedDates = resolve(instruction, request);
 
 		deliveryInstructionService.createAllocations(instructionId, ImmutableList.of(request), resolvedDates);
@@ -242,5 +254,39 @@ class DeliveryInstructionDateDefaultsTest
 		assertThat(reloaded.getETA()).isNull();
 		assertThat(reloaded.getATD()).as("an unset ETD must never persist a phantom ATD").isNull();
 		assertThat(reloaded.getATA()).isNull();
+	}
+
+	/**
+	 * Pins the instant that travels instruction ETA -> {@code MPackageCreateRequest} -> {@code M_Package.ShipDate}.
+	 * The request carries an {@code Instant} while both ends are {@code java.sql.Timestamp} columns, so the
+	 * conversion happens twice; this asserts the point in time is identical on both sides - no zone applied, no
+	 * truncation - and, because the ETA asserted here is one the add itself filled, that the header is still
+	 * written before the packages are built.
+	 */
+	@Test
+	@DisplayName("the allocation's M_Package carries the instruction's ETA as its ShipDate - the same instant, unshifted")
+	void allocationPackageShipDateIsTheInstructionEtaVerbatim()
+	{
+		final I_M_ShipperTransportation instruction = savedDeliveryInstruction(null, null);
+		final ShipperTransportationId instructionId = ShipperTransportationId.ofRepoId(instruction.getM_ShipperTransportation_ID());
+
+		final DeliveryPlanningAllocCreateRequest request = allocRequest(dayInstant(3), dayInstant(7), "08:00");
+		final DeliveryInstructionDates resolvedDates = resolve(instruction, request);
+
+		final DeliveryPlanningAllocId allocId = deliveryInstructionService
+				.createAllocations(instructionId, ImmutableList.of(request), resolvedDates)
+				.get(0);
+
+		final I_M_Delivery_Planning_Alloc alloc = InterfaceWrapperHelper.load(allocId, I_M_Delivery_Planning_Alloc.class);
+		final I_M_ShippingPackage shippingPackage = InterfaceWrapperHelper.load(alloc.getM_ShippingPackage_ID(), I_M_ShippingPackage.class);
+		final I_M_Package mPackage = InterfaceWrapperHelper.load(shippingPackage.getM_Package_ID(), I_M_Package.class);
+
+		assertThat(mPackage.getShipDate())
+				.as("ShipDate is seeded from the instruction's ETA - which this very add filled, so the header write "
+						+ "has to happen before the package is built")
+				.isEqualTo(day(7));
+		assertThat(mPackage.getShipDate().toInstant())
+				.as("the exact point in time survives the request's Instant <-> Timestamp conversions")
+				.isEqualTo(day(7).toInstant());
 	}
 }

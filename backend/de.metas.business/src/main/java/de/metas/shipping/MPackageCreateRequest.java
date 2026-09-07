@@ -28,7 +28,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * What {@link MPackageRepository#create(MPackageCreateRequest)} writes onto a new {@code M_Package}.
@@ -42,7 +42,7 @@ public class MPackageCreateRequest
 {
 	@Nullable ShipperId shipperId;
 
-	@Nullable Timestamp shipDate;
+	@Nullable Instant shipDate;
 
 	@Nullable BPartnerId bpartnerId;
 

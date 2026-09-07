@@ -10,6 +10,7 @@ import de.metas.shipping.mpackage.PackageId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Package;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 /*
@@ -50,7 +51,7 @@ public class MPackageRepository
 	{
 		final I_M_Package mpackage = newInstance(I_M_Package.class);
 		mpackage.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
-		mpackage.setShipDate(request.getShipDate());
+		mpackage.setShipDate(TimeUtil.asTimestamp(request.getShipDate()));
 		mpackage.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 		mpackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBpartnerLocationId()));
 		save(mpackage);

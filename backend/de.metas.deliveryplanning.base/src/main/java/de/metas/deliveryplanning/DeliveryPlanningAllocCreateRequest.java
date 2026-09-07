@@ -31,7 +31,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * One planning's contribution to a delivery instruction. Grouped by who actually owns each field - re-derived
@@ -95,9 +95,9 @@ public class DeliveryPlanningAllocCreateRequest
 	@Builder
 	public static class HeaderDateCandidate
 	{
-		@Nullable Timestamp etd;
+		@Nullable Instant etd;
 
-		@Nullable Timestamp eta;
+		@Nullable Instant eta;
 
 		@Nullable String loadingTime;
 

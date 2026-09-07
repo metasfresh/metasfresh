@@ -1409,8 +1409,8 @@ public class DeliveryPlanningService
 						.build())
 				// the planning's own dates, so the instruction's fill-if-empty defaulting needs no second load
 				.headerDateCandidate(DeliveryPlanningAllocCreateRequest.HeaderDateCandidate.builder()
-						.etd(deliveryPlanningRecord.getETD())
-						.eta(deliveryPlanningRecord.getETA())
+						.etd(TimeUtil.asInstant(deliveryPlanningRecord.getETD()))
+						.eta(TimeUtil.asInstant(deliveryPlanningRecord.getETA()))
 						.loadingTime(deliveryPlanningRecord.getLoadingTime())
 						.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
 						.build())
@@ -1840,11 +1840,11 @@ public class DeliveryPlanningService
 			final DeliveryPlanningAllocCreateRequest.HeaderDateCandidate candidate = request.getHeaderDateCandidate();
 			if (etd == null && candidate.getEtd() != null)
 			{
-				etd = candidate.getEtd();
+				etd = TimeUtil.asTimestamp(candidate.getEtd());
 			}
 			if (eta == null && candidate.getEta() != null)
 			{
-				eta = candidate.getEta();
+				eta = TimeUtil.asTimestamp(candidate.getEta());
 			}
 			if (Check.isBlank(loadingTime) && !Check.isBlank(candidate.getLoadingTime()))
 			{

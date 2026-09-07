@@ -42,6 +42,7 @@ import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -197,7 +198,7 @@ public class DeliveryInstructionService
 
 		final PackageId packageId = mPackageRepository.create(MPackageCreateRequest.builder()
 				.shipperId(ShipperId.ofRepoIdOrNull(deliveryInstructionRecord.getM_Shipper_ID()))
-				.shipDate(deliveryInstructionRecord.getETA())
+				.shipDate(TimeUtil.asInstant(deliveryInstructionRecord.getETA()))
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(shipperBPartnerId))
 				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(shipperBPartnerId, deliveryInstructionRecord.getShipper_Location_ID()))
 				.build());
