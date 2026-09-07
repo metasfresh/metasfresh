@@ -128,6 +128,8 @@ public class ReceiptFromReceiptScheduleService
 	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	/**
 	 * The WHOLE of a "receive CUs" action, for either row type of the receipt-disposition delivery-planning grid: one planning VHU
@@ -455,7 +457,7 @@ public class ReceiptFromReceiptScheduleService
 		}
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID());
-		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(Env.getCtx(), clientAndOrgId);
+		final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContextForProcessing(Env.getCtx(), clientAndOrgId);
 
 		final I_M_Product product = productDAO.getById(receiptSchedule.getM_Product_ID());
 		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(product.getHUClearanceStatus());
@@ -521,7 +523,7 @@ public class ReceiptFromReceiptScheduleService
 			@NonNull final Collection<I_M_HU> hus,
 			@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final IAttributeStorageFactory attributeStorageFactory = Services.get(IAttributeStorageFactoryService.class).createHUAttributeStorageFactory();
+		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final Supplier<String> lotNoFromSeq = Suppliers.memoize(() -> loadLotNoFromSeq(receiptSchedule))::get;
 
 		for (final I_M_HU hu : hus)
