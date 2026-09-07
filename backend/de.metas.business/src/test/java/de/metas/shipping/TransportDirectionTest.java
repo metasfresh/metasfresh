@@ -37,24 +37,8 @@ class TransportDirectionTest
 		assertThat(TransportDirection.ofSOTrx(SOTrx.PURCHASE)).isEqualTo(TransportDirection.Incoming);
 	}
 
-	@Test
-	void hasReceipt()
-	{
-		assertThat(TransportDirection.Incoming.hasReceipt()).isTrue();
-		assertThat(TransportDirection.Outgoing.hasReceipt()).isFalse();
-		assertThat(TransportDirection.Dropship.hasReceipt()).isTrue();
-	}
-
-	@Test
-	void hasShipment()
-	{
-		assertThat(TransportDirection.Incoming.hasShipment()).isFalse();
-		assertThat(TransportDirection.Outgoing.hasShipment()).isTrue();
-		assertThat(TransportDirection.Dropship.hasShipment()).isTrue();
-	}
-
 	/**
-	 * The contract that makes {@code isOutgoing()} worth having next to {@link TransportDirection#hasShipment()}:
+	 * The contract that makes {@code isOutgoing()} worth having next to {@link TransportDirection#isOutgoingOrDropship()}:
 	 * it is STRICTLY Outgoing, so a Dropship - which does have a shipment - is false here.
 	 */
 	@Test
@@ -62,7 +46,7 @@ class TransportDirectionTest
 	{
 		assertThat(TransportDirection.Outgoing.isOutgoing()).isTrue();
 		assertThat(TransportDirection.Dropship.isOutgoing())
-				.as("a dropship has a shipment but is NOT Outgoing - that is the whole difference to hasShipment()")
+				.as("a dropship has a shipment but is NOT Outgoing - that is the whole difference to isOutgoingOrDropship()")
 				.isFalse();
 		assertThat(TransportDirection.Incoming.isOutgoing()).isFalse();
 	}
@@ -96,8 +80,7 @@ class TransportDirectionTest
 	}
 
 	/**
-	 * The direction fact behind {@link TransportDirection#hasReceipt()}: true for {@link TransportDirection#Incoming}
-	 * and {@link TransportDirection#Dropship}.
+	 * True for {@link TransportDirection#Incoming} and {@link TransportDirection#Dropship}.
 	 */
 	@Test
 	void isIncomingOrDropship()
@@ -108,8 +91,7 @@ class TransportDirectionTest
 	}
 
 	/**
-	 * The direction fact behind {@link TransportDirection#hasShipment()}: true for {@link TransportDirection#Outgoing}
-	 * and {@link TransportDirection#Dropship}.
+	 * True for {@link TransportDirection#Outgoing} and {@link TransportDirection#Dropship}.
 	 */
 	@Test
 	void isOutgoingOrDropship()

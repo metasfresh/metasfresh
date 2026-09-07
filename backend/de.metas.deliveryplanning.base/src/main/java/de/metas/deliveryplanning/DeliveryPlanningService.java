@@ -879,7 +879,6 @@ public class DeliveryPlanningService
 		final I_C_UOM uomToUse = getUomOrStockUom(deliveryPlanningRecord, productId);
 
 		final BPartnerLocationId deliveryPlanningLocationId = BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID());
-		final boolean isInbound = transportDirection.isIncomingOrDropship();
 		final DeliveryPlanningAddresses addresses = loadAddresses(ImmutableList.of(deliveryPlanningRecord));
 		final BPartnerLocationId shipFrom = extractShipFromLocationId(deliveryPlanningRecord, transportDirection, addresses);
 		final BPartnerLocationId shipTo = extractShipToLocationId(deliveryPlanningRecord, transportDirection, addresses);
@@ -917,7 +916,7 @@ public class DeliveryPlanningService
 				.shipperId(ShipperId.ofRepoId(deliveryPlanningRecord.getM_Shipper_ID()))
 
 				.productId(productId)
-				.isToBeFetched(isInbound)
+				.isToBeFetched(transportDirection.isIncomingOrDropship())
 				//.locatorId() : Not yet decided where to take it from. TODO in a future CR
 				.batchNo(deliveryPlanningRecord.getBatch())
 				.qtyLoaded(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
@@ -940,7 +939,7 @@ public class DeliveryPlanningService
 			@NonNull final TransportDirection transportDirection,
 			@NonNull final DeliveryPlanningAddresses addresses)
 	{
-		if (transportDirection.hasReceipt())
+		if (transportDirection.isIncomingOrDropship())
 		{
 			final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ReceiptSchedule_ID());
 			return receiptScheduleId != null ? addresses.getReceiptScheduleLocationId(receiptScheduleId) : null;
@@ -1988,7 +1987,7 @@ public class DeliveryPlanningService
 	private static boolean hasReceiptOrUnknown(@NonNull final I_M_Delivery_Planning record)
 	{
 		final TransportDirection transportDirection = TransportDirection.ofNullableCode(record.getTransportDirection());
-		return transportDirection != null && transportDirection.hasReceipt();
+		return transportDirection != null && transportDirection.isIncomingOrDropship();
 	}
 
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)

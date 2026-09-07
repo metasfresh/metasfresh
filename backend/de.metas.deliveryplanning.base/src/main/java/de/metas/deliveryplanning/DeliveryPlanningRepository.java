@@ -195,7 +195,7 @@ public class DeliveryPlanningRepository
 	private static TransportDirection assertHasReceipt(final I_M_Delivery_Planning record)
 	{
 		final TransportDirection transportDirection = extractTransportDirection(record);
-		if (!transportDirection.hasReceipt())
+		if (!transportDirection.isIncomingOrDropship())
 		{
 			throw new AdempiereException("Expected the delivery planning to have a receipt: " + record);
 		}
@@ -224,7 +224,7 @@ public class DeliveryPlanningRepository
 	{
 		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
 		final TransportDirection transportDirection = extractTransportDirection(record);
-		return transportDirection.hasReceipt()
+		return transportDirection.isIncomingOrDropship()
 				? Optional.of(toDeliveryPlanningReceiptInfo(record))
 				: Optional.empty();
 	}
@@ -472,11 +472,13 @@ public class DeliveryPlanningRepository
 	{
 		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
 		final TransportDirection transportDirection = extractTransportDirection(record);
-		if (transportDirection.hasReceipt())
+		// The two predicates OVERLAP on Dropship, so this ordering decides that case: a dropship planning resolves
+		// receipt-side, because it carries no shipment schedule of its own.
+		if (transportDirection.isIncomingOrDropship())
 		{
 			return receiptInfoMapper.apply(toDeliveryPlanningReceiptInfo(record));
 		}
-		else if (transportDirection.hasShipment())
+		else if (transportDirection.isOutgoingOrDropship())
 		{
 			return shipmentInfoMapper.apply(toDeliveryPlanningShipmentInfo(record));
 		}

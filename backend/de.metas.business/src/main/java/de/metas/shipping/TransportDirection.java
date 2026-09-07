@@ -106,28 +106,13 @@ public enum TransportDirection implements ReferenceListAwareEnum
 		return this == Outgoing || this == Dropship;
 	}
 
-	/** One consequence of {@link #isIncomingOrDropship()}: the receipt-or-shipment document for an inbound transport is a receipt. */
-	public boolean hasReceipt()
-	{
-		return isIncomingOrDropship();
-	}
-
-	/**
-	 * One consequence of {@link #isOutgoingOrDropship()}: also true for {@link #Dropship}, whose shipment is generated together
-	 * with the receipt but is carried by the paired sales-side planning.
-	 */
-	public boolean hasShipment()
-	{
-		return isOutgoingOrDropship();
-	}
-
 	public boolean isDropship()
 	{
 		return this == Dropship;
 	}
 
 	/**
-	 * STRICTLY {@link #Outgoing}: unlike {@link #hasShipment()}, false for {@link #Dropship}, whose goods never
+	 * STRICTLY {@link #Outgoing}: unlike {@link #isOutgoingOrDropship()}, false for {@link #Dropship}, whose goods never
 	 * leave our own warehouse because they never enter it.
 	 */
 	public boolean isOutgoing()
