@@ -45,6 +45,7 @@ public class APIRequest
 
 	@Nullable @Builder.Default Integer expectedStatusCode = 200;
 	@Nullable String expectedErrorMessageContaining;
+	@Nullable String expectedErrorCode;
 	@Nullable Boolean expectErrorUserFriendly;
 
 	public static class APIRequestBuilder

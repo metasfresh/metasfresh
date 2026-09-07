@@ -66,7 +66,6 @@ public class Tax
 	Boolean isFiscalRepresentation;
 	@Nullable
 	Boolean isSmallBusiness;
-	boolean isSalesTax;
 	boolean isWholeTax;
 	boolean isReverseCharge;
 	boolean isDocumentLevel;
@@ -88,7 +87,6 @@ public class Tax
 			final boolean isTaxExempt,
 			@Nullable final Boolean isFiscalRepresentation,
 			@Nullable final Boolean isSmallBusiness,
-			final boolean isSalesTax,
 			final boolean isWholeTax,
 			final boolean isReverseCharge,
 			final boolean isDocumentLevel,
@@ -109,7 +107,6 @@ public class Tax
 		this.isTaxExempt = isTaxExempt;
 		this.isFiscalRepresentation = isFiscalRepresentation;
 		this.isSmallBusiness = isSmallBusiness;
-		this.isSalesTax = isSalesTax;
 		this.isWholeTax = isWholeTax;
 		this.isReverseCharge = isReverseCharge;
 		this.isDocumentLevel = isDocumentLevel;

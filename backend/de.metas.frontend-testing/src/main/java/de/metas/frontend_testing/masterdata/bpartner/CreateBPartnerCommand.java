@@ -5,25 +5,33 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.RandomGLNGenerator;
+import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -106,12 +114,35 @@ public class CreateBPartnerCommand
 		final String bpName = CoalesceUtil.coalesceNotNull(customName, bpValue);
 		bpartner.setName(bpName);
 		bpartner.setIsCompany(true);
-		bpartner.setCompanyName(request.getName());
+		bpartner.setCompanyName(bpName);
 		bpartner.setC_BP_Group_ID(bpGroupId.getRepoId());
 		bpartner.setIsVendor(request.isVendor());
 		bpartner.setIsCustomer(request.isCustomer());
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
+
+		final GRAIRequired graiRequired = request.getGraiRequired();
+		if (graiRequired != null)
+		{
+			bpartner.setGRAIRequired(graiRequired.getCode());
+		}
+
+		if (request.getIsEInvoiceRecipeint() != null)
+		{
+			bpartner.setIsEInvoiceRecipeint(request.getIsEInvoiceRecipeint());
+		}
+		if (request.getEInvoiceType() != null)
+		{
+			bpartner.setEInvoiceType(request.getEInvoiceType());
+		}
+		if (request.getEInvoiceBuyerReference() != null)
+		{
+			bpartner.setEInvoice_BuyerReference(request.getEInvoiceBuyerReference());
+		}
+		if (request.getVatTaxId() != null)
+		{
+			bpartner.setVATaxID(request.getVatTaxId());
+		}
 
 		// Set pricing system based on vendor/customer flags
 		if (request.isCustomer())
@@ -126,6 +157,14 @@ public class CreateBPartnerCommand
 		InterfaceWrapperHelper.saveRecord(bpartner);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		context.putIdentifier(bpIdentifier, bpartnerId);
+
+		if (request.getBankAccounts() != null)
+		{
+			for (final JsonBankAccountRequest bankAccountRequest : request.getBankAccounts().values())
+			{
+				createBankAccount(bankAccountRequest, bpartnerId);
+			}
+		}
 
 		final BPartnerLocationId singleBPLocationId;
 		final GLN singleGLN;
@@ -173,12 +212,40 @@ public class CreateBPartnerCommand
 			}
 		}
 
+		// Create contacts (AD_User records) if provided
+		final Map<String, JsonCreateBPartnerResponse.Contact> responseContacts;
+		if (request.getContacts() != null && !request.getContacts().isEmpty())
+		{
+			responseContacts = new HashMap<>();
+			for (final String contactIdentifierStr : request.getContacts().keySet())
+			{
+				final JsonCreateBPartnerRequest.Contact contactRequest = request.getContacts().get(contactIdentifierStr);
+				final I_AD_User contactRecord = createContact(contactRequest, bpartnerId);
+
+				@NonNull final Identifier contactIdentifier = Identifier.ofString(contactIdentifierStr);
+				final UserId contactId = UserId.ofRepoId(contactRecord.getAD_User_ID());
+				context.putIdentifier(contactIdentifier, contactId);
+
+				responseContacts.put(contactIdentifierStr, JsonCreateBPartnerResponse.Contact.builder()
+						.id(contactId.getRepoId())
+						.firstName(contactRecord.getFirstname())
+						.lastName(contactRecord.getLastname())
+						.email(contactRecord.getEMail())
+						.build());
+			}
+		}
+		else
+		{
+			responseContacts = null;
+		}
+
 		return JsonCreateBPartnerResponse.builder()
 				.id(bpartnerId)
 				.bpartnerCode(bpartner.getValue())
 				.bpartnerLocationId(singleBPLocationId != null ? singleBPLocationId.getRepoId() : null)
 				.gln(singleGLN)
 				.locations(responseLocations)
+				.contacts(responseContacts)
 				.build();
 	}
 
@@ -187,7 +254,7 @@ public class CreateBPartnerCommand
 			@NonNull final BPartnerId bpartnerId,
 			final boolean isDefault)
 	{
-		final LocationId locationId = createLocation();
+		final LocationId locationId = createLocation(request);
 
 		final GLN gln = toGLN(request.getGln());
 
@@ -201,6 +268,64 @@ public class CreateBPartnerCommand
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
 
 		return bPartnerLocationRecord;
+	}
+
+	private I_AD_User createContact(
+			@NonNull final JsonCreateBPartnerRequest.Contact request,
+			@NonNull final BPartnerId bpartnerId)
+	{
+		final I_AD_User contactRecord = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		contactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+		contactRecord.setAD_Org_ID(orgId.getRepoId());
+
+		// Set name - use lastName or firstName, or generate a default
+		final String firstName = StringUtils.trimBlankToNull(request.getFirstName());
+		final String lastName = StringUtils.trimBlankToNull(request.getLastName());
+
+		if (lastName != null)
+		{
+			contactRecord.setLastname(lastName);
+			contactRecord.setName(lastName + (firstName != null ? ", " + firstName : ""));
+		}
+		else if (firstName != null)
+		{
+			contactRecord.setName(firstName);
+		}
+		else
+		{
+			contactRecord.setName("Contact-" + System.currentTimeMillis());
+		}
+
+		if (firstName != null)
+		{
+			contactRecord.setFirstname(firstName);
+		}
+
+		final String email = StringUtils.trimBlankToNull(request.getEmail());
+		if (email != null)
+		{
+			contactRecord.setEMail(email);
+		}
+
+		final String phone = StringUtils.trimBlankToNull(request.getPhone());
+		if (phone != null)
+		{
+			contactRecord.setPhone(phone);
+		}
+
+		if (Boolean.TRUE.equals(request.getIsDefaultContact()))
+		{
+			contactRecord.setIsDefaultContact(true);
+		}
+
+		final String description = StringUtils.trimBlankToNull(request.getDescription());
+		if (description != null)
+		{
+			contactRecord.setDescription(description);
+		}
+
+		InterfaceWrapperHelper.saveRecord(contactRecord);
+		return contactRecord;
 	}
 
 	@Nullable
@@ -221,12 +346,53 @@ public class CreateBPartnerCommand
 		}
 	}
 
-	private LocationId createLocation()
+	private LocationId createLocation(@NonNull final JsonCreateBPartnerRequest.Location locationRequest)
 	{
+		CountryId resolvedCountryId = countryId;
+		if (locationRequest.getCountryCode() != null)
+		{
+			final CountryId lookedUp = Services.get(ICountryDAO.class)
+					.getCountryIdByCountryCodeOrNull(locationRequest.getCountryCode());
+			if (lookedUp != null)
+			{
+				resolvedCountryId = lookedUp;
+			}
+		}
+
 		final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-		locationRecord.setC_Country_ID(countryId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(locationRecord);
+		locationRecord.setC_Country_ID(resolvedCountryId.getRepoId());
+		if (locationRequest.getCity() != null)
+		{
+			locationRecord.setCity(locationRequest.getCity());
+		}
+		if (locationRequest.getPostal() != null)
+		{
+			locationRecord.setPostal(locationRequest.getPostal());
+		}
+		if (locationRequest.getAddress1() != null)
+		{
+			locationRecord.setAddress1(locationRequest.getAddress1());
+		}
+		Services.get(ILocationDAO.class).save(locationRecord);
 		return LocationId.ofRepoId(locationRecord.getC_Location_ID());
+	}
+
+	private void createBankAccount(
+			@NonNull final JsonBankAccountRequest req,
+			@NonNull final BPartnerId bpartnerId)
+	{
+		final CurrencyCode code = req.getCurrencyCode() != null
+				? CurrencyCode.ofThreeLetterCode(req.getCurrencyCode())
+				: CurrencyCode.EUR;
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(code);
+
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
+		bankAccount.setAD_Org_ID(orgId.getRepoId());
+		bankAccount.setC_Currency_ID(currencyId.getRepoId());
+		bankAccount.setIBAN(req.getIban());
+		bankAccount.setIsActive(true);
+		Services.get(IBPBankAccountDAO.class).save(bankAccount);
 	}
 
 	private PricingSystemId createPricingSystem()

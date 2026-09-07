@@ -72,7 +72,31 @@ public interface I_Carrier_Config
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Carrier Advise Type.
+	 * Which carrier-advise endpoint is used (ship advise vs order advise).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAdviseType (java.lang.String AdviseType);
+
+	/**
+	 * Get Carrier Advise Type.
+	 * Which carrier-advise endpoint is used (ship advise vs order advise).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAdviseType();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_AdviseType = new ModelColumn<>(I_Carrier_Config.class, "AdviseType", null);
+	String COLUMNNAME_AdviseType = "AdviseType";
+
+	/**
 	 * Set URL.
+	 * Base URL of the PostgREST service, e.g. http://postgrest:3000
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -82,6 +106,7 @@ public interface I_Carrier_Config
 
 	/**
 	 * Get URL.
+	 * Base URL of the PostgREST service, e.g. http://postgrest:3000
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -204,6 +229,50 @@ public interface I_Carrier_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Nur als Entwurf versenden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCreateDraftShipmentOnly (boolean IsCreateDraftShipmentOnly);
+
+	/**
+	 * Get Nur als Entwurf versenden.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCreateDraftShipmentOnly();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_IsCreateDraftShipmentOnly = new ModelColumn<>(I_Carrier_Config.class, "IsCreateDraftShipmentOnly", null);
+	String COLUMNNAME_IsCreateDraftShipmentOnly = "IsCreateDraftShipmentOnly";
+
+	/**
+	 * Set Selection Rules.
+	 * Activates the nShift Selection Rules during carrier advise.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSelectionRules (boolean IsSelectionRules);
+
+	/**
+	 * Get Selection Rules.
+	 * Activates the nShift Selection Rules during carrier advise.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSelectionRules();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_IsSelectionRules = new ModelColumn<>(I_Carrier_Config.class, "IsSelectionRules", null);
+	String COLUMNNAME_IsSelectionRules = "IsSelectionRules";
+
+	/**
 	 * Set Shipper.
 	 * Method or manner of product delivery
 	 *
@@ -269,6 +338,29 @@ public interface I_Carrier_Config
 
 	ModelColumn<I_Carrier_Config, Object> COLUMN_ServiceLevel = new ModelColumn<>(I_Carrier_Config.class, "ServiceLevel", null);
 	String COLUMNNAME_ServiceLevel = "ServiceLevel";
+
+	/**
+	 * Set Ship Type.
+	 * Which nShift endpoint creates the shipment (shipment vs order-advice submit).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setShipType (java.lang.String ShipType);
+
+	/**
+	 * Get Ship Type.
+	 * Which nShift endpoint creates the shipment (shipment vs order-advice submit).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getShipType();
+
+	ModelColumn<I_Carrier_Config, Object> COLUMN_ShipType = new ModelColumn<>(I_Carrier_Config.class, "ShipType", null);
+	String COLUMNNAME_ShipType = "ShipType";
 
 	/**
 	 * Get Updated.

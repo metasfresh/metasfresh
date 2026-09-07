@@ -37,12 +37,14 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -69,6 +71,12 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 	private final JavaScriptExecutorService javaScriptExecutorService = Mockito.mock(JavaScriptExecutorService.class);
 	private final ProducerTemplate producerTemplate = Mockito.spy(ProducerTemplate.class);
 
+	@TempDir
+	Path localProcessedDir;
+
+	@TempDir
+	Path localErrorDir;
+
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
@@ -77,7 +85,9 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 				MOCK_SCRIPT_IDENTIFIER,
 				javaScriptRepo,
 				javaScriptExecutorService,
-				producerTemplate);
+				producerTemplate,
+				localProcessedDir.toAbsolutePath().toString(),
+				localErrorDir.toAbsolutePath().toString());
 	}
 
 	@Test
@@ -200,5 +210,33 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		template.sendBody("direct:" + MOCK_ENDPOINT_NAME, null);
 
 		verifyNoInteractions(javaScriptRepo, javaScriptExecutorService, producerTemplate);
+	}
+
+	@Test
+	void successfulProcessing_archivesOriginalPayloadToLocalProcessedDir() throws Exception
+	{
+		context.start();
+
+		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER)).thenReturn(MOCK_SCRIPT);
+
+		final String inputPayload = "{\"orderId\":\"local-archive-test\"}";
+
+		Mockito.when(javaScriptExecutorService.executeScript(MOCK_SCRIPT_IDENTIFIER, MOCK_SCRIPT, inputPayload))
+				.thenReturn("[]");
+
+		template.sendBody("direct:" + MOCK_ENDPOINT_NAME, inputPayload);
+
+		final List<Path> archivedFiles;
+		try (var files = java.nio.file.Files.list(localProcessedDir))
+		{
+			archivedFiles = files.toList();
+		}
+		assertThat(archivedFiles).hasSize(1);
+		assertThat(java.nio.file.Files.readString(archivedFiles.get(0), StandardCharsets.UTF_8)).isEqualTo(inputPayload);
+
+		try (var errorFiles = java.nio.file.Files.list(localErrorDir))
+		{
+			assertThat(errorFiles.findAny()).isEmpty();
+		}
 	}
 }

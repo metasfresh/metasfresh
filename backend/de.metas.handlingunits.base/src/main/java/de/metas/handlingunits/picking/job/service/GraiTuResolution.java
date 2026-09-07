@@ -1,0 +1,22 @@
+package de.metas.handlingunits.picking.job.service;
+
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+/**
+ * The parsed GRAI together with its resolved TU packing-instruction and capacity.
+ */
+@Value
+@Builder
+public class GraiTuResolution
+{
+	@NonNull GRAI grai;
+	@NonNull HuPackingInstructionsId tuPIId;
+	@Nullable HUPIItemProductId huPIItemProductId;
+}

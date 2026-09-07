@@ -2,9 +2,12 @@ package de.metas.handlingunits.movement.spi.impl;
 
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -67,5 +70,12 @@ public class MovementLineHUPackingMaterialCollectorSource implements IHUPackingM
 	public boolean isCollectHUPipToSource()
 	{
 		return collectHUPipToSource;
+	}
+
+	@Nullable
+	@Override
+	public ProjectId getProjectId()
+	{
+		return null;//I_M_MovementLine contains no C_Project_ID column
 	}
 }

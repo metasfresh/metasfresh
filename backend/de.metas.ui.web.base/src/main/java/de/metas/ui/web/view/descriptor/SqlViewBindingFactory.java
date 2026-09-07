@@ -8,6 +8,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorsProvider;
 import de.metas.ui.web.view.DefaultViewInvalidationAdvisor;
 import de.metas.ui.web.view.IViewInvalidationAdvisor;
 import de.metas.ui.web.view.SqlViewCustomizer;
@@ -63,28 +64,29 @@ public class SqlViewBindingFactory
 	private static final Logger logger = LogManager.getLogger(SqlViewBindingFactory.class);
 
 	private final DocumentDescriptorFactory documentDescriptorFactory;
+	private final SqlDocumentFilterConverterDecoratorsProvider filterConverterDecoratorsProvider;
 	private final ImmutableList<SqlDocumentFilterConverter> filterConverters;
-	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> filterConvertorDecorators;
 	private final ImmutableMap<WindowId, IViewInvalidationAdvisor> viewInvalidationAdvisorsByWindowId;
 	private final SqlViewCustomizerMap viewCustomizers;
+	private final SqlViewBindingCustomizerMap viewBindingCustomizers;
 
 	private final CCache<SqlViewBindingKey, SqlViewBinding> cache = CCache.newCache("SqlViewBindings", 20, 0);
 
 	@Builder
 	private SqlViewBindingFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
+			@NonNull final SqlDocumentFilterConverterDecoratorsProvider filterConverterDecoratorsProvider,
 			@NonNull final SqlViewCustomizerMap viewCustomizers,
+			@NonNull final SqlViewBindingCustomizerMap viewBindingCustomizers,
 			@NonNull final List<SqlDocumentFilterConverter> filterConverters,
-			@NonNull final List<SqlDocumentFilterConverterDecorator> filterConverterDecorators,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
+		this.filterConverterDecoratorsProvider = filterConverterDecoratorsProvider;
+		this.viewBindingCustomizers = viewBindingCustomizers;
 
 		this.filterConverters = ImmutableList.copyOf(filterConverters);
 		logger.info("Filter converters: {}", filterConverters);
-
-		this.filterConvertorDecorators = makeDecoratorsMapAndHandleDuplicates(filterConverterDecorators);
-		logger.info("Filter converter decorators: {}", filterConvertorDecorators);
 
 		this.viewInvalidationAdvisorsByWindowId = makeViewInvalidationAdvisorsMap(viewInvalidationAdvisors);
 		logger.info("view invalidation advisors: {}", this.viewInvalidationAdvisorsByWindowId);
@@ -162,10 +164,8 @@ public class SqlViewBindingFactory
 
 		builder.filterConverters(filterConverters);
 
-		if (filterConvertorDecorators.containsKey(windowId))
-		{
-			builder.filterConverterDecorator(filterConvertorDecorators.get(windowId));
-		}
+		filterConverterDecoratorsProvider.getByWindowId(windowId)
+				.ifPresent(builder::filterConverterDecorator);
 
 		final SqlViewCustomizer sqlViewCustomizer = viewCustomizers.getOrNull(windowId, key.getProfileId());
 		if (sqlViewCustomizer != null)
@@ -173,6 +173,12 @@ public class SqlViewBindingFactory
 			builder.rowCustomizer(sqlViewCustomizer);
 
 			sqlViewCustomizer.customizeSqlViewBinding(builder);
+		}
+
+		final SqlViewBindingCustomizer sqlViewBindingCustomizer = viewBindingCustomizers.getOrNull(windowId);
+		if (sqlViewBindingCustomizer != null)
+		{
+			sqlViewBindingCustomizer.customizeSqlViewBinding(builder);
 		}
 
 		return builder.build();

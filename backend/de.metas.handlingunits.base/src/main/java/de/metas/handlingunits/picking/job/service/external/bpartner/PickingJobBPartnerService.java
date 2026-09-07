@@ -3,16 +3,19 @@ package de.metas.handlingunits.picking.job.service.external.bpartner;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
+import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Env;
@@ -29,7 +32,8 @@ public class PickingJobBPartnerService
 {
 	@NonNull private final BPartnerBL bpartnerBL;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
-	@NonNull private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public String getBPartnerName(@Nullable final BPartnerId bpartnerId)
 	{
@@ -64,6 +68,13 @@ public class PickingJobBPartnerService
 	public RenderedAddressProvider newRenderedAddressProvider()
 	{
 		return documentLocationBL.newRenderedAddressProvider();
+	}
+
+	@NonNull
+	public GRAIRequired getGRAIRequired(@NonNull final BPartnerId customerId)
+	{
+		final I_C_BPartner bpartner = bpartnerDAO.getById(customerId);
+		return GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired()).orElse(GRAIRequired.No);
 	}
 
 	/**

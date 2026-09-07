@@ -160,6 +160,24 @@
   th {
     font-weight: 500;
     position: relative;
+
+    .column-resize-handle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      cursor: col-resize;
+      z-index: 3;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+    }
+
+    &.column-resizing {
+      background-color: lighten($brand-color-secondary, 10%);
+    }
   }
 
   td {

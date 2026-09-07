@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.order.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_CompensationGroup_Schema_TemplateLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_CompensationGroup_Schema_TemplateLine extends org.compiere.model.PO implements I_C_CompensationGroup_Schema_TemplateLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1689134861L;
+	private static final long serialVersionUID = -1749823725L;
 
     /** Standard Constructor */
     public X_C_CompensationGroup_Schema_TemplateLine (final Properties ctx, final int C_CompensationGroup_Schema_TemplateLine_ID, @Nullable final String trxName)
@@ -129,6 +129,18 @@ public class X_C_CompensationGroup_Schema_TemplateLine extends org.compiere.mode
 	public boolean isHideWhenPrinting() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHideWhenPrinting);
+	}
+
+	@Override
+	public void setIsWithoutCharge (final boolean IsWithoutCharge)
+	{
+		set_Value (COLUMNNAME_IsWithoutCharge, IsWithoutCharge);
+	}
+
+	@Override
+	public boolean isWithoutCharge() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWithoutCharge);
 	}
 
 	@Override

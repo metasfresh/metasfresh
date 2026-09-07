@@ -24,20 +24,33 @@ package org.adempiere.warehouse;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.product.ProductCategoryId;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
-@RequiredArgsConstructor
+import java.util.Collection;
+
+@EqualsAndHashCode
+@ToString
 public class WarehouseSourceHUConfigList
 {
-	@NonNull private final ImmutableList<WarehouseSourceHUConfig> warehouseSourceHUConfigs;
+	public static final WarehouseSourceHUConfigList EMPTY = new WarehouseSourceHUConfigList(ImmutableList.of());
+
+	@NonNull private final ImmutableList<WarehouseSourceHUConfig> list;
+
+	private WarehouseSourceHUConfigList(@NonNull final ImmutableList<WarehouseSourceHUConfig> list)
+	{
+		this.list = list;
+	}
+
+	public static WarehouseSourceHUConfigList ofCollection(@NonNull final Collection<WarehouseSourceHUConfig> collection)
+	{
+		return collection.isEmpty() ? EMPTY : new WarehouseSourceHUConfigList(ImmutableList.copyOf(collection));
+	}
 
 	public boolean applies(@NonNull final ProductCategoryId productCategoryId)
 	{
-		if (warehouseSourceHUConfigs.isEmpty()) {return true;}
-
-		return warehouseSourceHUConfigs.stream()
-				.filter(config -> config.getProductCategoryId().equals(productCategoryId))
-				.anyMatch(config -> ProductCategoryId.equals(config.getProductCategoryId(), productCategoryId));
+		if (list.isEmpty()) {return true;}
+		return list.stream().anyMatch(config -> ProductCategoryId.equals(config.getProductCategoryId(), productCategoryId));
 	}
 }

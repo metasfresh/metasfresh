@@ -73,7 +73,7 @@ final class CreateReturnedHUsTrxListener implements IHUTrxListener
 	{
 		//
 		// Make sure this transaction is about customer returns
-		// If not, it means its not the subject of this listener
+		// If not, it means it's not the subject of this listener
 		final List<I_M_HU_Trx_Line> customerReturnTrxList = trxLines.stream()
 				.filter(this::isRelatedToCreatedReturnHUs)
 				.collect(ImmutableList.toImmutableList());

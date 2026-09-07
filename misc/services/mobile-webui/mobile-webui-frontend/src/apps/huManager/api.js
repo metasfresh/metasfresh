@@ -117,3 +117,11 @@ export const getHUsByDisplayableQRCode = (displayableQRCode) => {
 export const listHUsByQRCode = ({ qrCode, upperLevelLocatingQrCode }) => {
   return axios.post(`${huAPIBasePath}/list/byQRCode`, { qrCode, upperLevelLocatingQrCode }).then(unboxAxiosResponse);
 };
+
+export const getGRAIs = (huId) => {
+  return axios.get(`${huManagerAPIBasePath}/${huId}/grai`).then(unboxAxiosResponse);
+};
+
+export const setGRAIs = (huId, graiCodes) => {
+  return axios.put(`${huManagerAPIBasePath}/${huId}/grai`, { graiCodes }).then(unboxAxiosResponse);
+};

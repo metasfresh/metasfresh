@@ -59,6 +59,11 @@ public class C_Invoice
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void onComplete(final I_C_Invoice invoice)
 	{
+		if (!invoice.isFinancial())
+		{
+			return;
+		}
+
 		if (isCreditMemo(invoice))
 		{
 			return;
@@ -82,6 +87,11 @@ public class C_Invoice
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REACTIVATE })
 	public void onReverse(final I_C_Invoice invoice)
 	{
+		if (!invoice.isFinancial())
+		{
+			return;
+		}
+
 		if (isCreditMemo(invoice))
 		{
 			return;

@@ -1,5 +1,6 @@
 package de.metas.shipment.model.interceptor;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.AdMessageKey;
@@ -114,6 +115,12 @@ public class M_InOut
 	})
 	public void onBPartnerLocation(final I_M_InOut inout)
 	{
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID());
+		if(bpartnerLocationId == null)
+		{
+			return;
+		}
+
 		if (InterfaceWrapperHelper.isUIAction(inout))
 		{
 			inOutBL.setShipperId(inout);

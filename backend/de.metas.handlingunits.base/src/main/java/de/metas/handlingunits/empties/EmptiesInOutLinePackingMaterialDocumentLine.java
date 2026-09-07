@@ -22,15 +22,17 @@ package de.metas.handlingunits.empties;
  * #L%
  */
 
-import java.math.BigDecimal;
-
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /* package */class EmptiesInOutLinePackingMaterialDocumentLine extends AbstractPackingMaterialDocumentLine
 {
@@ -62,6 +64,13 @@ import de.metas.util.Services;
 	public BigDecimal getQty()
 	{
 		return inoutLine.getMovementQty();
+	}
+
+	@Nullable
+	@Override
+	public ProjectId getProjectIdOrNull()
+	{
+		return ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID());
 	}
 
 	/**

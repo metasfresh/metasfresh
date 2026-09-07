@@ -30,6 +30,27 @@ public interface I_DD_Order_Candidate
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Inputsource.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Inputsource.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_InputDataSource_ID();
+
+	ModelColumn<I_DD_Order_Candidate, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -89,16 +110,11 @@ public interface I_DD_Order_Candidate
 	 */
 	int getC_OrderLineSO_ID();
 
-	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLineSO();
-
-	void setC_OrderLineSO(@Nullable org.compiere.model.I_C_OrderLine C_OrderLineSO);
-
 	ModelColumn<I_DD_Order_Candidate, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLineSO_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "C_OrderLineSO_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
 
 	/**
-	 * Set Order.
-	 * Order
+	 * Set Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -107,18 +123,13 @@ public interface I_DD_Order_Candidate
 	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
-	 * Get Order.
-	 * Order
+	 * Get Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_OrderSO_ID();
-
-	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
-
-	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
 
 	ModelColumn<I_DD_Order_Candidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
@@ -213,10 +224,6 @@ public interface I_DD_Order_Candidate
 	 */
 	int getDD_NetworkDistribution_ID();
 
-	@Nullable org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution();
-
-	void setDD_NetworkDistribution(@Nullable org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution);
-
 	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_DD_NetworkDistribution> COLUMN_DD_NetworkDistribution_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "DD_NetworkDistribution_ID", org.eevolution.model.I_DD_NetworkDistribution.class);
 	String COLUMNNAME_DD_NetworkDistribution_ID = "DD_NetworkDistribution_ID";
 
@@ -237,10 +244,6 @@ public interface I_DD_Order_Candidate
 	 * <br>Virtual Column: false
 	 */
 	int getDD_NetworkDistributionLine_ID();
-
-	@Nullable org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine();
-
-	void setDD_NetworkDistributionLine(@Nullable org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine);
 
 	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_DD_NetworkDistributionLine> COLUMN_DD_NetworkDistributionLine_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "DD_NetworkDistributionLine_ID", org.eevolution.model.I_DD_NetworkDistributionLine.class);
 	String COLUMNNAME_DD_NetworkDistributionLine_ID = "DD_NetworkDistributionLine_ID";
@@ -305,10 +308,6 @@ public interface I_DD_Order_Candidate
 	 */
 	int getForward_PP_Order_BOMLine_ID();
 
-	@Nullable org.eevolution.model.I_PP_Order_BOMLine getForward_PP_Order_BOMLine();
-
-	void setForward_PP_Order_BOMLine(@Nullable org.eevolution.model.I_PP_Order_BOMLine Forward_PP_Order_BOMLine);
-
 	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_PP_Order_BOMLine> COLUMN_Forward_PP_Order_BOMLine_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "Forward_PP_Order_BOMLine_ID", org.eevolution.model.I_PP_Order_BOMLine.class);
 	String COLUMNNAME_Forward_PP_Order_BOMLine_ID = "Forward_PP_Order_BOMLine_ID";
 
@@ -329,10 +328,6 @@ public interface I_DD_Order_Candidate
 	 * <br>Virtual Column: false
 	 */
 	int getForward_PP_Order_Candidate_ID();
-
-	@Nullable org.eevolution.model.I_PP_Order_Candidate getForward_PP_Order_Candidate();
-
-	void setForward_PP_Order_Candidate(@Nullable org.eevolution.model.I_PP_Order_Candidate Forward_PP_Order_Candidate);
 
 	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_PP_Order_Candidate> COLUMN_Forward_PP_Order_Candidate_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "Forward_PP_Order_Candidate_ID", org.eevolution.model.I_PP_Order_Candidate.class);
 	String COLUMNNAME_Forward_PP_Order_Candidate_ID = "Forward_PP_Order_Candidate_ID";
@@ -355,10 +350,6 @@ public interface I_DD_Order_Candidate
 	 */
 	int getForward_PP_Order_ID();
 
-	@Nullable org.eevolution.model.I_PP_Order getForward_PP_Order();
-
-	void setForward_PP_Order(@Nullable org.eevolution.model.I_PP_Order Forward_PP_Order);
-
 	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_PP_Order> COLUMN_Forward_PP_Order_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "Forward_PP_Order_ID", org.eevolution.model.I_PP_Order.class);
 	String COLUMNNAME_Forward_PP_Order_ID = "Forward_PP_Order_ID";
 
@@ -379,10 +370,6 @@ public interface I_DD_Order_Candidate
 	 * <br>Virtual Column: false
 	 */
 	int getForward_PP_OrderLine_Candidate_ID();
-
-	@Nullable org.eevolution.model.I_PP_OrderLine_Candidate getForward_PP_OrderLine_Candidate();
-
-	void setForward_PP_OrderLine_Candidate(@Nullable org.eevolution.model.I_PP_OrderLine_Candidate Forward_PP_OrderLine_Candidate);
 
 	ModelColumn<I_DD_Order_Candidate, org.eevolution.model.I_PP_OrderLine_Candidate> COLUMN_Forward_PP_OrderLine_Candidate_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "Forward_PP_OrderLine_Candidate_ID", org.eevolution.model.I_PP_OrderLine_Candidate.class);
 	String COLUMNNAME_Forward_PP_OrderLine_Candidate_ID = "Forward_PP_OrderLine_Candidate_ID";
@@ -451,10 +438,6 @@ public interface I_DD_Order_Candidate
 	 */
 	int getM_AttributeSetInstance_ID();
 
-	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
-
-	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
-
 	ModelColumn<I_DD_Order_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
@@ -480,7 +463,7 @@ public interface I_DD_Order_Candidate
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set Von Lagerort.
+	 * Set From Locator.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -489,7 +472,7 @@ public interface I_DD_Order_Candidate
 	void setM_LocatorFrom_ID (int M_LocatorFrom_ID);
 
 	/**
-	 * Get Von Lagerort.
+	 * Get From Locator.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -561,10 +544,6 @@ public interface I_DD_Order_Candidate
 	 */
 	int getM_Shipper_ID();
 
-	org.compiere.model.I_M_Shipper getM_Shipper();
-
-	void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
-
 	ModelColumn<I_DD_Order_Candidate, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
 	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
@@ -626,10 +605,6 @@ public interface I_DD_Order_Candidate
 	 */
 	int getPP_Plant_From_ID();
 
-	@Nullable org.compiere.model.I_S_Resource getPP_Plant_From();
-
-	void setPP_Plant_From(@Nullable org.compiere.model.I_S_Resource PP_Plant_From);
-
 	ModelColumn<I_DD_Order_Candidate, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_From_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "PP_Plant_From_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_PP_Plant_From_ID = "PP_Plant_From_ID";
 
@@ -650,10 +625,6 @@ public interface I_DD_Order_Candidate
 	 * <br>Virtual Column: false
 	 */
 	int getPP_Plant_To_ID();
-
-	@Nullable org.compiere.model.I_S_Resource getPP_Plant_To();
-
-	void setPP_Plant_To(@Nullable org.compiere.model.I_S_Resource PP_Plant_To);
 
 	ModelColumn<I_DD_Order_Candidate, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_To_ID = new ModelColumn<>(I_DD_Order_Candidate.class, "PP_Plant_To_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_PP_Plant_To_ID = "PP_Plant_To_ID";

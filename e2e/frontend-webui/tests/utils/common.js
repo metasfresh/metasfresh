@@ -38,9 +38,13 @@ const runAndWatchForErrors = async (func) => {
       func(),
       ErrorToast.waitToPopup(
         async (toastLocator) => {
-          // Only handle error if this watcher is still active
+          // The toast belongs to a more deeply nested watcher, not to us. Do NOT return: returning
+          // resolves this branch, which settles the enclosing Promise.race and abandons func(), so
+          // every remaining step and assertion of the caller is silently skipped and the test passes
+          // vacuously. Hang instead, so only func() or a toast that IS ours can settle the race.
+          // See e2e/CLAUDE.md "An ownership guard inside a Promise.race branch must hang, never return".
           if (currentErrorWatcherId !== watcherId) {
-            return;
+            await new Promise(() => {});
           }
 
           const textContent = await toastLocator.textContent();
@@ -50,7 +54,12 @@ const runAndWatchForErrors = async (func) => {
       ),
     ]);
   } finally {
-    currentErrorWatcherId = 0;
+    // Release the slot only if we still own it. Promise.race does not cancel the losing branch, so an
+    // abandoned branch can reach this finally long after the winner unwound and would otherwise clear
+    // a slot a newer owner had claimed.
+    if (currentErrorWatcherId === watcherId) {
+      currentErrorWatcherId = 0;
+    }
   }
 };
 

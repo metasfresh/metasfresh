@@ -24,9 +24,11 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
@@ -40,10 +42,13 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
@@ -80,13 +85,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "invoiceCandDAO", "invoiceCandBL", "trxManager", "inOutCandidateBL", "inOutDAO", "shipmentService" })
+@ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleBL", "invoiceCandDAO", "invoiceCandBL", "trxManager", "inOutCandidateBL", "inOutDAO", "shipmentService" })
 public class HUShippingFacade
 {
 	private static final Logger logger = LogManager.getLogger(HUShippingFacade.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
-	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -96,6 +101,7 @@ public class HUShippingFacade
 	private final IShipmentService shipmentService = ShipmentService.getInstance();
 
 	private final Lazy<ShipperGatewayFacade> shipperGatewayFacadeHolder = SpringContextHolder.lazyBean(ShipperGatewayFacade.class);
+	private final Lazy<DeliveryOrderCarrierResolver> deliveryOrderCarrierResolverHolder = SpringContextHolder.lazyBean(DeliveryOrderCarrierResolver.class);
 
 	//
 	// Parameters
@@ -136,7 +142,7 @@ public class HUShippingFacade
 	{
 		if (_candidates == null)
 		{
-			_candidates = huShipmentScheduleDAO.retrieveShipmentSchedulesWithHUsFromHUs(hus);
+			_candidates = huShipmentScheduleBL.retrieveShipmentSchedulesWithHUsFromHUs(hus);
 		}
 		return _candidates;
 	}
@@ -293,6 +299,11 @@ public class HUShippingFacade
 		Check.assume(addToShipperTransportationId > 0, "addToShipperTransportationId > 0");
 		final I_M_ShipperTransportation shipperTransportation = load(addToShipperTransportationId, I_M_ShipperTransportation.class);
 
+		// Resolve the carrier from the shipment schedule (SCHEDULE-SOURCED); pass it to commons as data
+		// (commons must not depend on the handlingunits module — see DeliveryOrderCarrierResolver).
+		final ImmutableMap<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId = deliveryOrderCarrierResolverHolder.get()
+				.resolveByPackageIds(mPackageIds.stream().map(PackageId::ofRepoId).collect(ImmutableSet.toImmutableSet()));
+
 		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
 				.pickupDate(getPickupDate(shipperTransportation))
 				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
@@ -300,6 +311,7 @@ public class HUShippingFacade
 				.packageIds(mPackageIds)
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(addToShipperTransportationId))
 				.shipperGatewayId(shipperGatewayId)
+				.carrierByScheduleId(carrierByScheduleId)
 				.build();
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}

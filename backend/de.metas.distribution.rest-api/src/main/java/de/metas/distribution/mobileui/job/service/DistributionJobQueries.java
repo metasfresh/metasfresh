@@ -53,6 +53,7 @@ public class DistributionJobQueries
 				.workplacePickFromLocatorId(query.getWorkplacePickFromLocatorId())
 				.warehouseFromIds(activeFacetIds.getWarehouseFromIds())
 				.warehouseToIds(extractWarehouseToIds(query))
+				.excludeLocatorToIds(query.getExcludeLocatorToIds())
 				.salesOrderIds(activeFacetIds.getSalesOrderIds())
 				.manufacturingOrderIds(activeFacetIds.getManufacturingOrderIds())
 				.datesPromised(activeFacetIds.getDatesPromised())

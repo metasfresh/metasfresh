@@ -155,7 +155,7 @@ public class M_Cost_StepDef
 				.build();
 		SharedTestContext.put("costSegmentAndElement", costSegmentAndElement);
 
-		final CurrentCost currentCost = currentCostsRepository.getOrCreate(costSegmentAndElement);
+		final CurrentCost currentCost = currentCostsRepository.getOrCreateForUpdate(costSegmentAndElement);
 
 		row.getAsOptionalMoney(
 						I_M_Cost.COLUMNNAME_CurrentCostPrice,

@@ -63,6 +63,9 @@ public interface IShipperTransportationDAO extends ISingletonService
 	@NonNull
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
 
+	/** Persists changes made to an already-loaded transport-order header record. */
+	void save(@NonNull I_M_ShipperTransportation shipperTransportation);
+
 	ImmutableList<OrderId> retrieveOrderIds(@NonNull ShipperTransportationId shipperTransportationId);
 
 	Collection<I_M_ShipperTransportation> getByQuery(@NonNull ShipperTransportationQuery query);

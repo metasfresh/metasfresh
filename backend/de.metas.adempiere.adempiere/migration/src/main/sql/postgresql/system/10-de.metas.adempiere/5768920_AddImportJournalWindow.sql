@@ -4,7 +4,12 @@
 -- Action Type: W
 -- Window: Import - Hauptbuchjournal(278,D)
 -- 2025-09-18T09:55:00.233Z
+-- ON CONFLICT DO NOTHING guards against the partial unique index uc_ad_menu_internalname
+-- (UNIQUE(internalname) WHERE isactive='Y'). On the soft_panda_hotfix line the same menu already
+-- exists under AD_Menu_ID=542298 (script 5789380), so a plain INSERT of 542247 aborts the whole
+-- rollout. This only prevents the crash; 5789382_Normalize_ImportGLJournal_MenuID.sql establishes 542247.
 INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,Description,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,574197,542247,0,278,TO_TIMESTAMP('2025-09-18 09:54:59.925000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Import von Hauptbuch-Journalen','D','Import GL Journal','Y','N','N','N','N','Import - Hauptbuchjournal',TO_TIMESTAMP('2025-09-18 09:54:59.925000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+ON CONFLICT DO NOTHING
 ;
 
 -- 2025-09-18T09:55:00.246Z

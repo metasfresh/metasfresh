@@ -7,6 +7,7 @@ Feature: Document Print Option defaults resolve @SQL= expressions
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
+  @Id:F36025_static_default_resolves
   Scenario: AD_Process_Para with static default Y resolves to true
     Given metasfresh contains AD_Processes:
       | Identifier | Value            | Name              |
@@ -19,6 +20,7 @@ Feature: Document Print Option defaults resolve @SQL= expressions
       | PRINTER_OPTS_IsPrintLogo | true         |
 
   @from:cucumber
+  @Id:F36025_sql_default_resolves
   Scenario: AD_Process_Para with @SQL= default resolves correctly
     Given metasfresh contains AD_Processes:
       | Identifier | Value              | Name                |

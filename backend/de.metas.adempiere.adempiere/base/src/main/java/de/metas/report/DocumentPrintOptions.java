@@ -47,6 +47,7 @@ public final class DocumentPrintOptions
 
 	public static final String OPTION_IsPrintLogo = DocumentPrintOptionDescriptor.PROCESS_PARAM_PRINTER_OPTIONS_PREFIX + "IsPrintLogo";
 	public static final String OPTION_IsPrintTotals = DocumentPrintOptionDescriptor.PROCESS_PARAM_PRINTER_OPTIONS_PREFIX + "IsPrintTotals";
+	public static final String OPTION_IsPrintPrices = DocumentPrintOptionDescriptor.PROCESS_PARAM_PRINTER_OPTIONS_PREFIX + "IsPrintPrices";
 
 	private final String sourceName;
 

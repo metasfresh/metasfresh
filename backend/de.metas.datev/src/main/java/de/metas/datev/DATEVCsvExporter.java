@@ -1,26 +1,38 @@
 package de.metas.datev;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.PeriodId;
+import de.metas.calendar.PeriodRepo;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyBL;
+import de.metas.data.export.api.IExportDataDestination;
+import de.metas.data.export.api.IExportDataSource;
+import de.metas.data.export.api.impl.AbstractExporter;
+import de.metas.data.export.api.impl.CSVWriter;
+import de.metas.datev.model.I_DATEV_Export;
+import de.metas.money.CurrencyId;
+import de.metas.util.Services;
+import de.metas.util.ThreadLocalDecimalFormatter;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import de.metas.util.StringUtils;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-
-import de.metas.data.export.api.IExportDataDestination;
-import de.metas.data.export.api.IExportDataSource;
-import de.metas.data.export.api.impl.AbstractExporter;
-import de.metas.data.export.api.impl.CSVWriter;
-import de.metas.util.ThreadLocalDecimalFormatter;
-import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -46,20 +58,41 @@ import lombok.NonNull;
 
 public class DATEVCsvExporter extends AbstractExporter
 {
+	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final PeriodRepo periodRepo = SpringContextHolder.instance.getBean(PeriodRepo.class);
+	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+
+	private static final DateTimeFormatter EXTF_TS_FMT = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+	private static final DateTimeFormatter EXTF_DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+	@Nullable
+	private final I_DATEV_Export datevExport;
+
 	private final DATEVExportFormat exportFormat;
 
 	@Builder
 	private DATEVCsvExporter(
 			@NonNull final DATEVExportFormat exportFormat,
-			@NonNull final IExportDataSource dataSource)
+			@NonNull final IExportDataSource dataSource,
+			@Nullable final I_DATEV_Export datevExport)
 	{
 		this.exportFormat = exportFormat;
+		this.datevExport = datevExport;
 		setDataSource(dataSource);
 	}
 
 	@Override
-	protected CSVWriter createDataDestination(final OutputStream out) throws UnsupportedEncodingException
+	protected CSVWriter createDataDestination(final OutputStream out) throws IOException
 	{
+		if (datevExport != null && datevExport.getDATEV_Export_Config_ID() > 0)
+		{
+			final String extfLine = buildExtfLine(datevExport, exportFormat);
+			out.write(extfLine.getBytes(exportFormat.getCsvEncoding()));
+			out.write('\r');
+			out.write('\n');
+		}
+
 		final Properties config = new Properties(getConfig());
 		config.setProperty(CSVWriter.CONFIG_Encoding, exportFormat.getCsvEncoding());
 		config.setProperty(CSVWriter.CONFIG_FieldDelimiter, exportFormat.getCsvFieldDelimiter());
@@ -95,6 +128,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		return rowFormatted;
 	}
 
+	@Nullable
 	private Object formatCell(final Object value, final DATEVExportFormatColumn columnFormat)
 	{
 		if (value == null)
@@ -116,6 +150,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		}
 	}
 
+	@Nullable
 	private static String formatDateCell(final Object value, final DateTimeFormatter dateFormatter)
 	{
 		if (value == null)
@@ -129,7 +164,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		}
 		else if (value instanceof TemporalAccessor)
 		{
-			TemporalAccessor temporal = (TemporalAccessor)value;
+			final TemporalAccessor temporal = (TemporalAccessor)value;
 			return dateFormatter.format(temporal);
 		}
 		else
@@ -138,6 +173,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		}
 	}
 
+	@Nullable
 	private static String formatNumberCell(final Object value, final ThreadLocalDecimalFormatter numberFormatter)
 	{
 		if (value == null)
@@ -146,6 +182,51 @@ public class DATEVCsvExporter extends AbstractExporter
 		}
 
 		return numberFormatter.format(value);
+	}
+
+	private String buildExtfLine(@NonNull final I_DATEV_Export datevExport, @NonNull final DATEVExportFormat exportFormat)
+	{
+		final String ts = LocalDateTime.now().format(EXTF_TS_FMT);
+		final String dateFrom = datevExport.getDateAcctFrom() != null
+				? TimeUtil.asLocalDate(datevExport.getDateAcctFrom()).format(EXTF_DATE_FMT) : "";
+		final Timestamp dateToTS = datevExport.getDateAcctTo() != null
+				? datevExport.getDateAcctTo()
+				: Timestamp.valueOf(LocalDate.now().atStartOfDay());
+
+		final String dateTo = TimeUtil.asLocalDate(dateToTS).format(EXTF_DATE_FMT);
+		final String formatName = exportFormat.getName();
+
+		final AcctSchema primaryAcctSchema = acctSchemaBL.getPrimaryAcctSchema(ClientId.ofRepoId(datevExport.getAD_Client_ID()));
+		final CurrencyId acctSchemaCurrencyId = primaryAcctSchema.getCurrencyId();
+		final CurrencyCode currencyCode = currencyBL.getCurrencyCodeById(acctSchemaCurrencyId);
+
+		final PeriodId periodId = periodRepo.getPeriodId(datevExport.getC_Period_ID());
+		final LocalDate fiscalYearStartDate = TimeUtil.asLocalDate(calendarBL.getFirstDayOfYear(periodId.getYearId()));
+		final String fiscalYearStart = fiscalYearStartDate.format(EXTF_DATE_FMT);
+
+		final String advisorNumber = datevExport.getAdvisorNumber();
+		final String clientNumber = datevExport.getClientNumber();
+		final int chartOfAccountsNumberLength = datevExport.getChartOfAccountsNumberLength();
+		final String chartOfAccounts = datevExport.getChartOfAccounts();
+		final String origin = datevExport.getOrigin();
+
+		return "EXTF;510;21;"
+				+ formatName
+				+ ";7;" // Formatversion
+				+ ts // created
+				+ ";;"          // imported / exported (empty on export)
+				+ ";FR;B.L;"    // source, initials, reserved
+				+ ";" + advisorNumber
+				+ ";" + clientNumber
+				+ ";" + fiscalYearStart
+				+ ";" + chartOfAccountsNumberLength
+				+ ";" + dateFrom
+				+ ";" + dateTo
+				+ ";" + origin
+				+ ";MM;1;0;1;"
+				+ currencyCode.toThreeLetterCode()
+				+ ";;;;" + chartOfAccounts
+				+ ";;;;";
 	}
 
 }

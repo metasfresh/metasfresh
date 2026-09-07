@@ -106,15 +106,10 @@ public class RetrieveDbRecordsUtilTest
 				.recursionMode(RecursionMode.BOTH)
 				.inOutId(20).build();
 
+		// A query that matches no records creates no selection: createSelection() returns Optional.empty()
+		// when the selection would be empty (count <= 0), so queryToSelection returns null.
 		final PInstanceId selectionId = RetrieveDbRecordsUtil.queryToSelection(query);
-		assertThat(selectionId).isNotNull();
-
-		final List<I_M_HU_Trace> result = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
-				.setOnlySelection(selectionId)
-				.create()
-				.list();
-
-		assertThat(result).isEmpty();
+		assertThat(selectionId).isNull();
 	}
 
 	@Test

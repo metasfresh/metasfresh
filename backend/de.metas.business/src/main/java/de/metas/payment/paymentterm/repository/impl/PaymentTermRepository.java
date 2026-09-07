@@ -38,6 +38,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_PaySchedule;
 import org.compiere.model.I_C_PaymentTerm;
@@ -47,11 +48,16 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static de.metas.util.Check.isNotBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: C_PaymentTerm, C_PaymentTerm_Break, C_PaySchedule
+ * Repository Cluster: PaymentTermRepository
+ */
 public class PaymentTermRepository implements IPaymentTermRepository
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -86,6 +92,22 @@ public class PaymentTermRepository implements IPaymentTermRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsDefault, true)
 				.addOnlyContextClient(Env.getCtx())
+				.create()
+				.firstIdOptional(PaymentTermId::ofRepoIdOrNull);
+	}
+
+	@Override
+	@NonNull
+	public Optional<PaymentTermId> getImmediatePaymentTermId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_C_PaymentTerm.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_AD_Client_ID, clientId.getRepoId())
+				.addInArrayFilter(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_NetDays, 0)
+				.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_IsComplex, false)
+				.orderByDescending(I_C_PaymentTerm.COLUMNNAME_AD_Org_ID) // prefer org-specific over OrgId.ANY (0)
+				.orderByDescending(I_C_PaymentTerm.COLUMNNAME_IsDefault) // then prefer default
 				.create()
 				.firstIdOptional(PaymentTermId::ofRepoIdOrNull);
 	}
@@ -242,5 +264,18 @@ public class PaymentTermRepository implements IPaymentTermRepository
 		saveRecord(newPaymentTerm);
 
 		return PaymentTermId.ofRepoId(newPaymentTerm.getC_PaymentTerm_ID());
+	}
+
+	@Override
+	public boolean isAllowOverrideDueDate(@NonNull final PaymentTermId paymentTermId)
+	{
+		return getById(paymentTermId).isAllowOverrideDueDate();
+	}
+
+	@Override
+	@NonNull
+	public Set<PaymentTermId> getPaymentTermIdsByIsAllowOverrideDueDate(final boolean isAllowOverrideDueDate)
+	{
+		return getIndexedPaymentTerms().getPaymentTermIdsByIsAllowOverrideDueDate(isAllowOverrideDueDate);
 	}
 }

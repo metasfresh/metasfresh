@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
 import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
@@ -41,18 +42,21 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanning.ProductPlanningBuilder;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Maturing_Configuration;
 import org.compiere.model.I_M_Maturing_Configuration_Line;
@@ -60,7 +64,9 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -71,6 +77,9 @@ public class PP_Product_Planning_StepDef
 {
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+	/** Plannings created/updated with no M_Product — they match ALL products, so they must be deactivated after the scenario to avoid leaking into the next one (see {@link #deactivateGenericProductPlannings()}). */
+	private final Set<ProductPlanningId> genericPlanningIds = new HashSet<>();
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
@@ -83,21 +92,41 @@ public class PP_Product_Planning_StepDef
 	@NonNull private final M_Maturing_Configuration_StepDefData maturingConfigurationTable;
 	@NonNull private final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable;
 	@NonNull private final S_Resource_StepDefData resourceTable;
+	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 
 	private static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
 
+	/**
+	 * Creates or updates a {@code PP_Product_Planning} record for each row via {@link IProductPlanningDAO#save(ProductPlanning)}.
+	 * Matches an existing planning by org/warehouse/plant/product; creates a new one if none is found.
+	 * Key columns: {@code M_Product_ID}, {@code IsCreatePlan} (controls auto-enqueue of C_Order generation),
+	 * {@code IsDocComplete} (controls whether the auto-generated C_Order is completed), {@code IsPurchased},
+	 * {@code IsManufactured}, {@code IsAttributeDependant}, {@code PP_Product_BOMVersions_ID},
+	 * {@code DD_NetworkDistribution_ID}, {@code M_Warehouse_ID}, {@code S_Resource_ID},
+	 * {@code OPT.C_Manufacturing_Aggregation_ID.Identifier} (a {@code C_Aggregation} for table
+	 * {@code PP_Order_Candidate}; when set, {@code PPOrderCandidateAggregationFactory} uses it instead of the
+	 * default header aggregation key when grouping candidates into a {@code PP_Order}).
+	 */
 	@Given("metasfresh contains PP_Product_Plannings")
 	public void createOrUpdate(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> createOrUpdate(row));
 	}
 
+	/**
+	 * Updates an existing {@code PP_Product_Planning} record. Throws {@link org.adempiere.exceptions.AdempiereException}
+	 * if no matching planning is found; use {@code metasfresh contains PP_Product_Plannings} if upsert behaviour is needed.
+	 */
 	@Given("update existing PP_Product_Plannings")
 	public void updateExisting(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::updateExisting);
 	}
 
+	/**
+	 * Internal implementation used by both {@link #updateExisting(DataTable)} and {@link #createOrUpdate(DataTableRow)}.
+	 * Delegates to {@link IProductPlanningDAO#save(ProductPlanning)} after applying the data table row values to the builder.
+	 */
 	public void updateExisting(@NonNull final DataTableRow row)
 	{
 		final ProductPlanning productPlanning = getExistingProductPlanning(row).orElseThrow(() -> new AdempiereException("No product planning found for " + row));
@@ -130,8 +159,10 @@ public class PP_Product_Planning_StepDef
 		getResourceId(row).ifPresent(builder::plantId);
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_Workflow_ID).map(workflowTable::getId).ifPresent(builder::workflowId);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsCreatePlan).ifPresent(builder::isCreatePlan);
+		row.getAsOptionalInt(I_PP_Product_Planning.COLUMNNAME_DeliveryTime_Promised).ifPresent(builder::leadTimeDays);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsDocComplete).ifPresent(builder::isDocComplete);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufacturedLot4Lot).ifPresent(builder::isManufacturedLot4Lot);
 
 		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(productBomVersionsTable::getId)
@@ -189,7 +220,19 @@ public class PP_Product_Planning_StepDef
 				.map(MaturingConfigLineId::ofRepoId)
 				.ifPresent(builder::maturingConfigLineId);
 
+		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_C_Manufacturing_Aggregation_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> builder.manufacturingAggregationId(aggregationId.getRepoId()));
+
 		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
+
+		// A no-product planning matches ALL products; remember it so @After can deactivate it and it can't
+		// leak into the next scenario of the same shared-DB profile run.
+		if (productPlanning.getProductId() == null)
+		{
+			genericPlanningIds.add(productPlanning.getIdNotNull());
+		}
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> productPlanningTable.putOrReplace(identifier, productPlanning));
 	}
@@ -209,7 +252,14 @@ public class PP_Product_Planning_StepDef
 			return Optional.of(productPlanning);
 		}
 
-		final StepDefDataIdentifier identifier = row.getAsIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID);
+		// No M_Product column → a generic planning that applies to all products; there is nothing to look up an existing one by.
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_M_Product_ID)
+				.filter(id -> !id.isNullPlaceholder())
+				.orElse(null);
+		if (identifier == null)
+		{
+			return Optional.empty();
+		}
 		final I_M_Product productRecord = identifier.lookupIn(productTable);
 		assertThat(productRecord).as("Missing M_Product for identifier=%s", identifier.getAsString()).isNotNull();
 
@@ -241,5 +291,25 @@ public class PP_Product_Planning_StepDef
 						&& WarehouseId.equals(productPlanning.getWarehouseId(), warehouseId)
 						&& ResourceId.equals(productPlanning.getPlantId(), plantId)
 						&& ProductId.equals(productPlanning.getProductId(), productId));
+	}
+
+	/**
+	 * Deactivates the no-product plannings this scenario created (tracked in {@link #genericPlanningIds}).
+	 * A generic (no-{@code M_Product}) planning applies to ALL products, so one left active leaks into the next
+	 * scenario of the same shared-DB profile run — its products become "purchased" and spawn spurious
+	 * SUPPLY/PURCHASE MD_Candidates. Runs on scenario pass AND failure.
+	 */
+	@After
+	public void deactivateGenericProductPlannings()
+	{
+		for (final ProductPlanningId planningId : genericPlanningIds)
+		{
+			final I_PP_Product_Planning record = InterfaceWrapperHelper.load(planningId, I_PP_Product_Planning.class);
+			if (record.isActive())
+			{
+				record.setIsActive(false);
+				InterfaceWrapperHelper.saveRecord(record);
+			}
+		}
 	}
 }

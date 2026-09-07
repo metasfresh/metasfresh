@@ -376,6 +376,8 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		createdTotal += created;
 
 		// Update Tax
+		// T_Revenue_Acct and T_Expense_Acct are per-tax-rate overrides — deliberately
+		// not propagated from C_AcctSchema_Default, so any value set here is a customer choice.
 		if (p_CopyOverwriteAcct)
 		{
 			sql = "UPDATE C_Tax_Acct a "
@@ -383,7 +385,6 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 					+ ", T_Liability_Acct=" + acctSchemaDefault.getT_Liability_Acct()
 					+ ", T_Credit_Acct=" + acctSchemaDefault.getT_Credit_Acct()
 					+ ", T_Receivables_Acct=" + acctSchemaDefault.getT_Receivables_Acct()
-					+ ", T_Expense_Acct=" + acctSchemaDefault.getT_Expense_Acct()
 					+ ", Updated=now(), UpdatedBy=0 "
 					+ "WHERE a.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()
 					+ " AND EXISTS (SELECT * FROM C_Tax_Acct x "
@@ -396,10 +397,10 @@ public class AcctSchemaDefaultCopy extends JavaProcess
 		sql = "INSERT INTO C_Tax_Acct "
 				+ "(C_Tax_ID, C_AcctSchema_ID,"
 				+ " AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
-				+ " T_Due_Acct, T_Liability_Acct, T_Credit_Acct, T_Receivables_Acct, T_Expense_Acct) "
+				+ " T_Due_Acct, T_Liability_Acct, T_Credit_Acct, T_Receivables_Acct) "
 				+ "SELECT x.C_Tax_ID, acct.C_AcctSchema_ID,"
 				+ " x.AD_Client_ID, x.AD_Org_ID, 'Y', now(), 0, now(), 0,"
-				+ " acct.T_Due_Acct, acct.T_Liability_Acct, acct.T_Credit_Acct, acct.T_Receivables_Acct, acct.T_Expense_Acct "
+				+ " acct.T_Due_Acct, acct.T_Liability_Acct, acct.T_Credit_Acct, acct.T_Receivables_Acct "
 				+ "FROM C_Tax x"
 				+ " INNER JOIN C_AcctSchema_Default acct ON (x.AD_Client_ID=acct.AD_Client_ID) "
 				+ "WHERE acct.C_AcctSchema_ID=" + p_C_AcctSchema_ID.getRepoId()

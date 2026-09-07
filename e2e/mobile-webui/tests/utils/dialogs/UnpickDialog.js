@@ -1,5 +1,6 @@
 import { test } from "../../../playwright.config";
-import { page } from "../common";
+import { page, SLOW_ACTION_TIMEOUT } from "../common";
+import { BarcodeScannerComponent } from "../components/BarcodeScannerComponent";
 
 const NAME = 'UnpickDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -7,10 +8,14 @@ const containerElement = () => page.locator('.unpick-dialog');
 
 export const UnpickDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     clickSkipScanningTargetHUButton: async () => await test.step(`${NAME} - Click Skip button`, async () => {
         await page.locator('#skip-button').tap();
+    }),
+
+    scanTargetHU: async (qrCode) => await test.step(`${NAME} - Scan target HU ${qrCode}`, async () => {
+        await BarcodeScannerComponent.type(qrCode);
     }),
 };

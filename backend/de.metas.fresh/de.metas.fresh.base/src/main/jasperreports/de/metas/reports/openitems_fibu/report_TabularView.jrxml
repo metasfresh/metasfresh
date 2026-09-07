@@ -52,7 +52,7 @@ FROM
 		EXISTS (SELECT 0 FROM C_PaySelectionLine psl WHERE psl.processed = 'Y' AND psl.C_Invoice_ID = i.C_Invoice_ID AND psl.isActive = 'Y') AS PassForPayment,
 		COALESCE ( p.NetDays, DaysBetween( ips.DueDate::timestamp with time zone, i.DateInvoiced::timestamp with time zone ) ) AS NetDays,
 		p.DiscountDays,
-		COALESCE( PaymentTermDueDate( p.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone ), ips.DueDate ) AS DueDate,
+		COALESCE( i.DueDate, ips.DueDate ) AS DueDate,
 		COALESCE(
 			PaymentTermDueDays(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone, $P{Reference_Date}),
 			DaysBetween($P{Reference_Date}, ips.DueDate::timestamp with time zone)

@@ -1,0 +1,1 @@
+Method <de.metas.qualitymgmt.analysis.QMAnalysisReportDocumentHandler.completeIt(de.metas.document.engine.DocumentTableFields)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (QMAnalysisReportDocumentHandler.java:96)

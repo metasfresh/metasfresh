@@ -88,7 +88,7 @@ test('Expect picking directly without dialog', async ({ page }) => {
             },
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
-                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' } },
+                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
     });
@@ -106,7 +106,7 @@ test('Expect picking directly without dialog', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
-            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' } },
+            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -160,7 +160,7 @@ test('Expect read qty dialog with only LotNo attribute', async ({ page: _page })
             },
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
-                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'Lot-Nummer': testLotNo } },
+                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'Lot-Nummer': testLotNo }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
     });
@@ -178,7 +178,7 @@ test('Expect read qty dialog with only LotNo attribute', async ({ page: _page })
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
-            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'Lot-Nummer': testLotNo } },
+            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'Lot-Nummer': testLotNo }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });

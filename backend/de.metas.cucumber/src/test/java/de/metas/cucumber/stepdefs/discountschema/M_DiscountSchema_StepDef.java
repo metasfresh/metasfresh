@@ -72,6 +72,33 @@ public class M_DiscountSchema_StepDef
 		}
 	}
 
+	/**
+	 * Creates {@code M_DiscountSchemaBreak} rows (discount breaks attached to an existing {@code M_DiscountSchema}).
+	 * Each break is saved with {@code IsValid=true}; no look-up / upsert is performed — re-running against an
+	 * existing row is not supported.
+	 * <p>
+	 * Required DataTable columns:
+	 * <ul>
+	 * <li>{@code Identifier} — stored in {@link M_DiscountSchemaBreak_StepDefData} for later reference</li>
+	 * <li>{@code M_DiscountSchema_ID.Identifier} — parent schema (resolved from {@link M_DiscountSchema_StepDefData})</li>
+	 * <li>{@code M_Product_ID.Identifier} — product the break applies to (resolved from {@link M_Product_StepDefData})</li>
+	 * <li>{@code Base_PricingSystem_ID.Identifier} — base pricing system (resolved from {@link M_PricingSystem_StepDefData})</li>
+	 * <li>{@code SeqNo} — sequence within the schema</li>
+	 * </ul>
+	 * Optional columns:
+	 * <ul>
+	 * <li>{@code OPT.IsBPartnerFlatDiscount} — defaults to {@code false}</li>
+	 * <li>{@code OPT.PriceBase}</li>
+	 * <li>{@code OPT.BreakValue}</li>
+	 * <li>{@code OPT.BreakDiscount} — defaults to {@code 0}</li>
+	 * </ul>
+	 * Example usage:
+	 * <pre>{@code
+	 * Given metasfresh contains M_DiscountSchemaBreaks:
+	 *   | Identifier | M_DiscountSchema_ID.Identifier | M_Product_ID.Identifier | Base_PricingSystem_ID.Identifier | SeqNo | OPT.IsBPartnerFlatDiscount | OPT.PriceBase | OPT.BreakValue | OPT.BreakDiscount |
+	 *   | dsb_1      | ds_1                           | p_1                     | ps_1                             | 10    | Y                          | P             | 10             | 0                 |
+	 * }</pre>
+	 */
 	@Given("metasfresh contains M_DiscountSchemaBreaks:")
 	public void created_discount_schema_break(@NonNull final DataTable dataTable)
 	{

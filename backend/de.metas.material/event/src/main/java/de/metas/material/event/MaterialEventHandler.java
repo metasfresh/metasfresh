@@ -1,15 +1,8 @@
-package de.metas.material.event;
-
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-
-import java.util.Collection;
-
 /*
  * #%L
- * metasfresh-material-dispo-service
+ * metasfresh-material-event
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +19,13 @@ import java.util.Collection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.material.event;
+
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+
+import java.util.Collection;
 
 /**
  * Implementors of this interface are registered to {@link MaterialEventHandlerRegistry}.
@@ -57,7 +57,7 @@ public interface MaterialEventHandler<T extends MaterialEvent>
 	 * Implementors may validate the event before handling it. This allows for "dump" events that can be successfully posted even if the posting code is buggy etc.<br>
 	 * Errors can be logged to the event log.
 	 */
-	default void validateEvent(T event)
+	default void validateEvent(final T event)
 	{
 	}
 }

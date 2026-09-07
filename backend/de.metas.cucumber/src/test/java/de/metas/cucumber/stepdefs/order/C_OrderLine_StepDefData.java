@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.order;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
 import org.compiere.model.I_C_OrderLine;
@@ -60,5 +61,12 @@ public class C_OrderLine_StepDefData extends StepDefData<I_C_OrderLine>
 		{
 			return StepDefDataGetIdAware.super.getId(identifier);
 		}
+	}
+
+	@NonNull
+	public OrderAndLineId getOrderAndLineId(@NonNull final StepDefDataIdentifier identifier)
+	{
+		final I_C_OrderLine orderLine = get(identifier);
+		return OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
 	}
 }

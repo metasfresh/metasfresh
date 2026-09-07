@@ -45,7 +45,7 @@ public class DDOrderCandidateEnqueueService
 			return;
 		}
 
-		final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(ids);
+		final PInstanceId selectionId = ddOrderCandidateRepository.createSelection(ids).getSelectionId();
 		enqueueSelection(DDOrderCandidateEnqueueRequest.ofSelectionId(selectionId));
 	}
 

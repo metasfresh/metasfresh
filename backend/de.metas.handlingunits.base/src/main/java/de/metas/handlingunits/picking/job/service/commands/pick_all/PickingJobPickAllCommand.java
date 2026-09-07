@@ -35,6 +35,12 @@ public class PickingJobPickAllCommand
 
 		for (PickingJobLine line : pickingJob.getLines())
 		{
+			// A zero qtyRemainingToPick would trip the pick command's "qtyToPickCUs shall not be zero" guard and roll back the whole Quick Pack.
+			if (line.isFullyPicked())
+			{
+				continue;
+			}
+
 			pickingJobChanged = pickingJobService.newPickCommand()
 					.pickingJob(pickingJobChanged)
 					.pickingJobLineId(line.getId())

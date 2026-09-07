@@ -31,7 +31,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.IExternalSystemChildConfig;
@@ -66,13 +66,13 @@ public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSys
 	private final Debouncer<BPartnerId> syncBPartnerDebouncer;
 
 	protected ExportBPartnerToExternalSystem(
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigRepository,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final ExternalSystemConfigService externalSystemConfigService)
 	{
-		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepo, externalSystemMessageSender);
+		super(dataExportAuditRepository, dataExportAuditLogRepository, externalSystemConfigRepository, externalSystemMessageSender);
 
 		this.externalSystemConfigService = externalSystemConfigService;
 
@@ -92,7 +92,7 @@ public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSys
 	 */
 	public void enqueueBPartnerSync(@NonNull final BPartnerId bPartnerId)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("BPartnerId: {} enqueued to be synced.", bPartnerId);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ExportBPartnerToExternalSystem - C_BPartner_ID: {} enqueued to be synced.", bPartnerId.getRepoId());
 
 		syncBPartnerDebouncer.add(bPartnerId);
 	}
@@ -106,7 +106,7 @@ public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSys
 	{
 		final BPartnerId bpartnerId = bPartnerRecordReference.getIdAssumingTableName(I_C_BPartner.Table_Name, BPartnerId::ofRepoId);
 
-		final ExternalSystemParentConfig config = externalSystemConfigRepo.getById(externalSystemChildConfigId);
+		final ExternalSystemParentConfig config = externalSystemConfigRepository.getById(externalSystemChildConfigId);
 
 		if (!config.isActive())
 		{
@@ -145,7 +145,7 @@ public abstract class ExportBPartnerToExternalSystem extends ExportToExternalSys
 			return;
 		}
 
-		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
+		if (!externalSystemConfigRepository.isAnyConfigActive(getExternalSystemType()))
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No active config found for external system type: {}! No action is performed!", getExternalSystemType());
 			return; // nothing to do

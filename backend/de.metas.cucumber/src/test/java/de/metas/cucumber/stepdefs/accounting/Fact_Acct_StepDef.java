@@ -2,7 +2,8 @@ package de.metas.cucumber.stepdefs.accounting;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDefData;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -30,9 +31,11 @@ public class Fact_Acct_StepDef
 			@NonNull final IdentifiersResolver identifiersResolver,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Tax_StepDefData taxTable,
+			@NonNull final C_VAT_Code_StepDefData vatCodeTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_Locator_StepDefData locatorTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_ElementValue_StepDefData elementValueTable
 	)
 	{
 		this.identifiersResolver = identifiersResolver;
@@ -47,9 +50,11 @@ public class Fact_Acct_StepDef
 				.identifiersResolver(identifiersResolver)
 				.bpartnerTable(bpartnerTable)
 				.taxTable(taxTable)
+				.vatCodeTable(vatCodeTable)
 				.productTable(productTable)
 				.locatorTable(locatorTable)
 				.invoiceTable(invoiceTable)
+				.elementValueTable(elementValueTable)
 				.build();
 		this.factAcctTabularStringConverter = FactAcctToTabularStringConverter.builder()
 				.uomDAO(uomDAO)

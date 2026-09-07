@@ -2,9 +2,13 @@ DROP VIEW IF EXISTS M_InOut_DesadvLine2_V
 ;
 
 CREATE OR REPLACE VIEW M_InOut_DesadvLine2_V AS
-SELECT shipment.m_inout_id                                                                                                                  AS M_InOut_Desadv_ID,
+SELECT (shipment.m_inout_id::bigint * 10000000
+            + (row_number() OVER (PARTITION BY shipment.m_inout_id ORDER BY desadv.edi_desadv_id) - 1)
+       )::numeric                                                                                                                           AS M_InOut_Desadv_ID,
 
-       dline.edi_desadvline_id                                                                                                              AS M_InOut_DesadvLine2_V_ID,
+       (dline.edi_desadvline_id::bigint * 10000000
+            + (row_number() OVER (PARTITION BY dline.edi_desadvline_id ORDER BY shipment.m_inout_id) - 1)
+       )::numeric                                                                                                                           AS M_InOut_DesadvLine2_V_ID,
        shipment.m_inout_id,
        shipmentLine.m_inoutline_id,
 
@@ -52,7 +56,8 @@ SELECT shipment.m_inout_id                                                      
        CASE WHEN desadvInOutLine.DesadvLineTotalQtyDelivered >= COALESCE(dline.QtyOrdered_Override, dline.QtyOrdered) THEN 'Y' ELSE 'N' END AS IsDeliveryClosed
 FROM edi_desadv desadv
          INNER JOIN edi_desadvline dline ON desadv.edi_desadv_id = dline.edi_desadv_id
-         LEFT JOIN m_inout shipment ON desadv.edi_desadv_id = shipment.edi_desadv_id
+         INNER JOIN edi_desadv_m_inout link ON link.edi_desadv_id = desadv.edi_desadv_id AND link.isactive = 'Y'
+         INNER JOIN m_inout shipment ON shipment.m_inout_id = link.m_inout_id
          LEFT JOIN m_inoutline shipmentLine ON shipmentLine.m_inout_id = shipment.m_inout_id AND shipmentLine.edi_desadvline_id = dline.edi_desadvline_id
          LEFT JOIN EDI_DesadvLine_InOutLine desadvInOutLine ON shipmentLine.m_inoutline_id = desadvInOutLine.m_inoutline_id
 

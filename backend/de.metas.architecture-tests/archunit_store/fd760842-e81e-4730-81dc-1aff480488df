@@ -1,0 +1,2 @@
+Method <de.metas.dimension.DimensionSpec.createASIForDimensionSpec(org.compiere.model.I_M_AttributeSetInstance)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (DimensionSpec.java:127)
+Method <de.metas.dimension.DimensionSpec.createASIForDimensionSpec(org.compiere.model.I_M_AttributeSetInstance)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (DimensionSpec.java:144)

@@ -3,11 +3,13 @@ package de.metas.distribution.mobileui;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.mobileui.config.DistributionJobCaptionFormat;
+import de.metas.distribution.mobileui.config.DistributionJobCaptionFormatItem;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
-import de.metas.distribution.mobileui.external_services.warehouse.LocatorInfo;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.DistributionRestService;
+import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
 import de.metas.distribution.mobileui.launchers.DistributionWFProcessStartParams;
 import de.metas.distribution.mobileui.launchers.DistributionWorkflowLaunchersProvider;
 import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
@@ -23,7 +25,6 @@ import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
@@ -53,6 +54,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 
 	@NonNull private final DistributionRestService distributionRestService;
 	@NonNull private final DistributionWorkflowLaunchersProvider wfLaunchersProvider;
+	@NonNull private final DistributionLauncherCaptionProvider displayValueProvider;
 
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
@@ -174,63 +176,28 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	public WFProcessHeaderProperties getHeaderProperties(final @NonNull WFProcess wfProcess)
 	{
 		final DistributionJob job = getDistributionJob(wfProcess);
-		final WFProcessHeaderProperties.WFProcessHeaderPropertiesBuilder builder = WFProcessHeaderProperties.builder()
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
-						.value(job.getDocumentNo())
-						.build())
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("PickDate"))
-						.value(job.getPickDate())
-						.build())
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("DateRequired"))
-						.value(job.getDateRequired())
-						.build())
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("M_Warehouse_From_ID"))
-						.value(job.getPickFromWarehouse().getCaption())
-						.build())
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("M_LocatorFrom_ID"))
-						.value(job.getSinglePickFromLocator().map(LocatorInfo::getCaption).orElse(null))
-						.build())
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("M_Warehouse_To_ID"))
-						.value(job.getDropToWarehouse().getCaption())
-						.build())
-				.entry(WFProcessHeaderProperty.builder()
-						.caption(TranslatableStrings.adElementOrMessage("M_LocatorTo_ID"))
-						.value(job.getSingleDropToLocator().map(LocatorInfo::getCaption).orElse(null))
-						.build());
+		final MobileUIDistributionConfig config = distributionRestService.getConfig();
 
-		final String salesOrderDocumentNo = job.getSalesOrderRef() != null ? job.getSalesOrderRef().getDocumentNo() : null;
-		if (Check.isNotBlank(salesOrderDocumentNo))
-		{
-			builder.entry(WFProcessHeaderProperty.builder()
-					.caption(TranslatableStrings.adElementOrMessage("C_Order_DocumentNo"))
-					.value(salesOrderDocumentNo)
-					.build());
-		}
+		final DistributionJobCaptionFormat captionFormat = config.getCaptionFormat();
 
-		final String manufacturingOrderDocumentNo = job.getManufacturingOrderRef() != null ? job.getManufacturingOrderRef().getDocumentNo() : null;
-		if (Check.isNotBlank(manufacturingOrderDocumentNo))
-		{
-			builder.entry(WFProcessHeaderProperty.builder()
-					.caption(TranslatableStrings.adElementOrMessage("PP_Order_DocumentNo"))
-					.value(manufacturingOrderDocumentNo)
-					.build());
-		}
+		final ImmutableList<WFProcessHeaderProperty> entries = captionFormat.getItems()
+				.stream()
+				.map(field -> computeHeaderProperty(field, job))
+				.filter(WFProcessHeaderProperty::isValueNotBlank)
+				.collect(ImmutableList.toImmutableList());
 
-		if (Check.isNotBlank(job.getPlantName()))
-		{
-			builder.entry(WFProcessHeaderProperty.builder()
-					.caption(TranslatableStrings.adElementOrMessage("PP_Plant_ID"))
-					.value(job.getPlantName())
-					.build());
-		}
+		return WFProcessHeaderProperties.builder()
+				.entries(entries)
+				.build();
+	}
 
-		return builder.build();
+	private WFProcessHeaderProperty computeHeaderProperty(final DistributionJobCaptionFormatItem field, final DistributionJob job)
+	{
+		return WFProcessHeaderProperty.builder()
+				.id(field.getField().getCode())
+				.caption(field.getCaption())
+				.value(displayValueProvider.computeItem(job, field.getField()))
+				.build();
 	}
 
 	public JsonGetNextEligiblePickFromLineResponse getNextEligiblePickFromLine(@NonNull final JsonGetNextEligiblePickFromLineRequest request, @NonNull final UserId callerId)
@@ -258,6 +225,12 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	public WFProcess complete(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
 		final DistributionJob job = distributionRestService.complete(DistributionJobId.ofWFProcessId(wfProcessId), callerId);
+		return toWFProcess(job);
+	}
+
+	public WFProcess switchPickFromLocatorToNext(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final DistributionJob job = distributionRestService.switchPickFromLocatorToNext(DistributionJobId.ofWFProcessId(wfProcessId), callerId);
 		return toWFProcess(job);
 	}
 

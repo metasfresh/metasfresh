@@ -210,7 +210,7 @@ class ManufacturingRepostCostCollectorTest
 
 		assertThat(utils.getExistingCostDetails(request)).hasSize(1);
 
-		final CurrentCost componentCost = utils.getCurrentCost(request);
+		final CurrentCost componentCost = utils.getCurrentCostForUpdate(request);
 		assertThat(componentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo(COMPONENT_CURRENT_QTY_AFTER_ONE_ISSUE);
 		assertThat(componentCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo(ISSUED_QTY);
 	}
@@ -227,7 +227,7 @@ class ManufacturingRepostCostCollectorTest
 
 		assertThat(utils.getExistingCostDetails(request)).hasSize(1);
 
-		final CurrentCost mainProductCost = utils.getCurrentCost(request);
+		final CurrentCost mainProductCost = utils.getCurrentCostForUpdate(request);
 		assertThat(mainProductCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo(MAIN_PRODUCT_CURRENT_QTY_AFTER_ONE_RECEIPT);
 		assertThat(mainProductCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo(RECEIVED_QTY);
 	}

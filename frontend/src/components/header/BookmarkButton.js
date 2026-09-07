@@ -13,7 +13,6 @@ export default class BookmarkButton extends Component {
     super(props);
 
     this.state = {
-      isBookmarkButtonShowed: false,
       isBookmark: props.isBookmark,
     };
   }
@@ -28,18 +27,6 @@ export default class BookmarkButton extends Component {
       this.setState({ isBookmark: nextProps.isBookmark });
     }
   }
-
-  /**
-   * @method handleButtonEnter
-   * @summary ToDo: Describe the method.
-   */
-  handleButtonEnter = () => {
-    this.setState({ isBookmarkButtonShowed: true });
-  };
-
-  handleButtonLeave = () => {
-    this.setState({ isBookmarkButtonShowed: false });
-  };
 
   /**
    * @method handleClick
@@ -69,30 +56,23 @@ export default class BookmarkButton extends Component {
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { children, alwaysShowed, transparentBookmarks } = this.props;
-    const { isBookmarkButtonShowed, isBookmark } = this.state;
+    const { children, transparentBookmarks } = this.props;
+    const { isBookmark } = this.state;
 
     if (transparentBookmarks) {
       return children;
     }
 
     return (
-      <span
-        onMouseEnter={this.handleButtonEnter}
-        onMouseLeave={this.handleButtonLeave}
-        className="btn-bookmark"
-      >
+      <span className="btn-bookmark">
         {children}
-        {alwaysShowed ||
-          ((isBookmarkButtonShowed || isBookmark) && (
-            <i
-              onClick={this.handleClick}
-              className={
-                'btn-bookmark-icon meta-icon-star icon-spaced ' +
-                (isBookmark ? 'active ' : '')
-              }
-            />
-          ))}
+        <i
+          onClick={this.handleClick}
+          className={
+            'btn-bookmark-icon meta-icon-star icon-spaced ' +
+            (isBookmark ? 'active ' : '')
+          }
+        />
       </span>
     );
   }
@@ -101,7 +81,6 @@ export default class BookmarkButton extends Component {
 /**
  * @typedef {object} Props Component props
  * @prop {*} [children]
- * @prop {*} [alwaysShowed]
  * @prop {*} [transparentBookmarks]
  * @prop {*} [nodeId]
  * @prop {*} [onUpdateData]
@@ -109,7 +88,6 @@ export default class BookmarkButton extends Component {
  */
 BookmarkButton.propTypes = {
   children: PropTypes.any,
-  alwaysShowed: PropTypes.any,
   transparentBookmarks: PropTypes.any,
   nodeId: PropTypes.any,
   onUpdateData: PropTypes.any,

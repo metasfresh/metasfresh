@@ -10,6 +10,8 @@ import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepositor
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
+import de.metas.distribution.mobileui.external_services.warehouse.NextPickFromLocatorResolver;
+import de.metas.distribution.mobileui.job.service.commands.switch_pick_from_locator.DistributionJobSwitchPickFromLocatorCommand;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.model.DistributionJobLine;
@@ -23,8 +25,10 @@ import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
 import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineRequest;
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -38,6 +42,7 @@ import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -53,6 +58,7 @@ public class DistributionRestService
 	@NonNull private final DistributionHUService huService;
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionProductService productService;
+	@NonNull private final NextPickFromLocatorResolver nextPickFromLocatorResolver;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -122,6 +128,22 @@ public class DistributionRestService
 	private DistributionJobLoader newLoader()
 	{
 		return new DistributionJobLoader(loadingSupportServices);
+	}
+
+	public DistributionJob switchPickFromLocatorToNext(
+			@NonNull final DistributionJobId jobId,
+			@NonNull final UserId callerId)
+	{
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+
+		return DistributionJobSwitchPickFromLocatorCommand.builder()
+				.trxManager(trxManager)
+				.loadingSupportServices(loadingSupportServices)
+				.nextLocatorResolver(nextPickFromLocatorResolver)
+				.jobId(jobId)
+				.build()
+				.execute();
 	}
 
 	public DistributionJob processEvent(@NonNull final JsonDistributionEvent event, @NonNull final UserId callerId)
@@ -274,8 +296,20 @@ public class DistributionRestService
 			nextEligiblePickFromLineId = job.getNextEligiblePickFromLineId(productId).orElse(null);
 		}
 
+		// Only needed when there's a line to pick into: the mobile UI caps the proposed move-qty to
+		// min(scanned-HU-available-qty, line-remaining). Skip the HU storage read for the no-line case.
+		BigDecimal qtyAvailableBD = null;
+		if (nextEligiblePickFromLineId != null)
+		{
+			final HuId huId = huService.getHuIdByQRCode(huQRCode);
+			qtyAvailableBD = huService.getProductQuantityIfAny(huId, productId)
+					.map(qty -> qty.toBigDecimal())
+					.orElse(null);
+		}
+
 		return JsonGetNextEligiblePickFromLineResponse.builder()
 				.lineId(nextEligiblePickFromLineId)
+				.qtyAvailable(qtyAvailableBD)
 				.build();
 	}
 

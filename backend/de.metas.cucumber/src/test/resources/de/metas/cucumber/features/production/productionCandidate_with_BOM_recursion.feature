@@ -198,6 +198,8 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
 
     And the PP_Order ppo_1_S0460_20 is voided
 
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+
     And after not more than 60s, PP_Orders are found
       | Identifier     | M_Product_ID         | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID  | QtyEntered | QtyOrdered | C_BPartner_ID     | DatePromised         | DocStatus |
       | ppo_1_S0460_20 | product_1_1_S0460_20 | bom_1_S0460_20    | ppln_1_1_S0460_20      | resource_S0460 | 0 PCE      | 0          | customer_S0460_20 | 2024-09-22T21:00:00Z | VO        |
@@ -472,7 +474,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1_S0460_40             | 1              |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     When the order identified by o_1_S0460_40 is completed
 
@@ -600,7 +602,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1_S0460_50             | 7              |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     When the order identified by o_1_S0460_50 is completed
 

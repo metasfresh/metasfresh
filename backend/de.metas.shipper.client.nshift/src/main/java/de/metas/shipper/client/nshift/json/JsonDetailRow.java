@@ -22,6 +22,7 @@
 
 package de.metas.shipper.client.nshift.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,6 +44,7 @@ public class JsonDetailRow
 	Integer lineNo;
 
 	@JsonProperty("Details")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
 	private List<JsonDetail> details;
 }

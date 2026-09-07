@@ -83,6 +83,9 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 		final ProductPlanning productPlanning = context.getProductPlanning();
 
+		// Lot-for-lot and ATP share this whole path; they differ ONLY in the requested qty carried by the
+		// SupplyRequiredDescriptor (this order's own demand for lot-for-lot vs the global ATP gap for ATP, decided
+		// upstream in DemandCandidateHandler). Everything below treats them identically.
 		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context);
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
@@ -95,7 +98,6 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		{
 			final PPOrderCandidateId parentPPOrderCandidateId = supplyRequiredDescriptor.getPpOrderCandidateId();
 
-			// this is the PPOrderCandidate which we advise the system to create! 
 			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request)
 					.withParentPPOrderCandidateId(parentPPOrderCandidateId);
 
@@ -105,15 +107,10 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 
-			if (firstRequest)
-			{
-				eventBuilder.tryUpdateExistingCandidate(true);
-				firstRequest = false;
-			}
-			else
-			{ // all further events need to get their respective new supply candidates, rather that updating ("overwriting") the existing one.
-				eventBuilder.tryUpdateExistingCandidate(false);
-			}
+			// The first partial updates the pre-existing supply candidate (if any); further partials (capacity
+			// split) create their own. Identical for ATP and lot-for-lot.
+			eventBuilder.tryUpdateExistingCandidate(firstRequest);
+			firstRequest = false;
 
 			result.add(eventBuilder.build());
 			Loggables.addLog("Created PPOrderCandidateAdvisedEvent with quantity={}", request.getQtyToSupply());
@@ -230,6 +227,14 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 			final BigDecimal qtyToDecrease = remainingQtyToDistribute.min(quantityToProcess).toBigDecimal();
 			ppOrderCandidate.setQtyToProcess(ppOrderCandidate.getQtyToProcess().subtract(qtyToDecrease));
 			ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyEntered().subtract(qtyToDecrease));
+
+			// A candidate emptied by the decrease carries no production and must not linger as a 0-qty row: deactivate
+			// it. Safe because we only ever reduce the QtyToProcess headroom, so QtyEntered==0 also means QtyProcessed==0
+			// (nothing was produced). Shared by ATP and lot-for-lot — this is the single production-decrease path.
+			if (ppOrderCandidate.getQtyEntered().signum() == 0)
+			{
+				ppOrderCandidate.setIsActive(false);
+			}
 			ppOrderCandidateDAO.save(ppOrderCandidate);
 			return remainingQtyToDistribute.subtract(qtyToDecrease);
 		}

@@ -22,8 +22,10 @@
 
 package de.metas.material.dispo.service.event.handler.ppordercandidate;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -35,7 +37,10 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
+import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +50,8 @@ import java.util.Collection;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class PPOrderCandidateUpdatedEventHandler extends PPOrderCandidateEventHandler implements MaterialEventHandler<PPOrderCandidateUpdatedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(PPOrderCandidateUpdatedEventHandler.class);
+
 	public PPOrderCandidateUpdatedEventHandler(
 			@NonNull final CandidateChangeService candidateChangeService,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
@@ -61,6 +68,15 @@ public class PPOrderCandidateUpdatedEventHandler extends PPOrderCandidateEventHa
 	@Override
 	public void handleEvent(@NonNull final PPOrderCandidateUpdatedEvent event)
 	{
+		if (isWarehouseExcludedFromMaterialDispo(event))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(event.getPpOrderCandidate().getPpOrderData().getWarehouseId()));
+			return;
+		}
+
 		final CandidatesQuery preExistingHeaderSupplyQuery = createPreExistingHeaderSupplyCandidateQuery(event);
 
 		final Candidate headerCandidate = createHeaderCandidate(event, preExistingHeaderSupplyQuery);

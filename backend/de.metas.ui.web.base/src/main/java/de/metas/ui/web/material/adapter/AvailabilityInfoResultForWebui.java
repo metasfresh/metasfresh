@@ -3,12 +3,10 @@ package de.metas.ui.web.material.adapter;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import javax.annotation.Nullable;
@@ -44,22 +42,7 @@ public class AvailabilityInfoResultForWebui
 	@Builder
 	private AvailabilityInfoResultForWebui(@Singular final List<Group> groups)
 	{
-		Check.assumeNotEmpty(groups, "groups is not empty");
 		this.groups = groups;
-	}
-
-	private Group getSingleGroup()
-	{
-		if (groups.size() > 1)
-		{
-			throw new AdempiereException("Not a single group: " + this);
-		}
-		return groups.get(0);
-	}
-
-	public Quantity getSingleQuantity()
-	{
-		return getSingleGroup().getQty();
 	}
 
 	@Value

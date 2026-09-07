@@ -1,4 +1,4 @@
-package de.metas.invoicecandidate.api.impl;
+	package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
@@ -21,7 +21,9 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPool;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
@@ -48,11 +50,17 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -81,6 +89,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +101,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /**
- * Aggregates multiple {@link I_C_Invoice_Candidate} records and returns a result that that is suitable to create invoices.
+ * Aggregates multiple {@link I_C_Invoice_Candidate} records and returns a result that is suitable to create invoices.
  *
  * @see IAggregator
  */
@@ -123,6 +132,7 @@ public final class AggregationEngine
 			OrderEmailPropagationSysConfigRepository.class);
 
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
 
@@ -134,14 +144,39 @@ public final class AggregationEngine
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
 	private final LocalDate dateAcctParam;
+	private final LocalDate overrideDueDateParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
+	private final boolean deliveryDateAsInvoiceDate;
+	@Nullable private final Boolean partialInvoice;
 
 	private final AdTableId inoutLineTableId;
 	/**
-	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}
+	 * Map: HeaderAggregationKey to {@link InvoiceHeaderAndLineAggregators}.
+	 * <p>
+	 * {@link LinkedHashMap} on purpose: {@link #aggregate()} iterates the buckets in insertion order, and the
+	 * shared {@code ic2QtyInvoiceable} map (see {@link #seenIcs}) is mutated bucket-by-bucket so each later
+	 * bucket sees the residual qty left after the earlier ones. Since ICIOLs are added in
+	 * {@code M_InOutLine_ID} order by {@link de.metas.invoicecandidate.api.IInvoiceCandDAO#retrieveICIOLAssociationsExclRE},
+	 * the buckets are processed in delivery order — which is what users expect when one IC is split across
+	 * multiple invoice headers (e.g. via the "Per each shipment/receipt" header aggregation attribute).
 	 */
 	private final Map<AggregationKey, InvoiceHeaderAndLineAggregators> key2headerAndAggregators = new LinkedHashMap<>();
+
+	/**
+	 * Tracks every IC added to this engine, so we can build a single shared {@code ic2QtyInvoiceable} map
+	 * at {@link #aggregate()} time and thread it through every bucket's line aggregator. Without sharing,
+	 * ICIOLs of one IC split across multiple invoice headers (e.g. via the "Per each shipment/receipt"
+	 * header aggregation attribute) over-allocate because each bucket would start fresh from
+	 * {@code ic.getQtyToInvoice()}.
+	 * <p>
+	 * Stored as a live {@code I_C_Invoice_Candidate} reference (not a snapshot of its qty fields): the
+	 * engine is single-threaded per invoicing batch, callers do not mutate {@code QtyToInvoice} between
+	 * {@code addInvoiceCandidate*} and {@link #aggregate()}, and {@link de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator#addInvoiceCandidate}'s
+	 * own {@code InterfaceWrapperHelper.refresh(ic)} call is a DB re-read — it does not change the in-memory
+	 * qty within one aggregation pass.
+	 */
+	private final HashMap<InvoiceCandidateId, I_C_Invoice_Candidate> seenIcs = new HashMap<>();
 
 	@Builder
 	private AggregationEngine(
@@ -150,8 +185,11 @@ public final class AggregationEngine
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
+			@Nullable final LocalDate overrideDueDateParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
-			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService)
+			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService,
+			final boolean deliveryDateAsInvoiceDate,
+			@Nullable final Boolean partialInvoice)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, MatchInvoiceService::get);
@@ -162,12 +200,15 @@ public final class AggregationEngine
 
 		this.dateInvoicedParam = dateInvoicedParam;
 		this.dateAcctParam = dateAcctParam;
+		this.overrideDueDateParam = overrideDueDateParam;
 		this.useDefaultBillLocationAndContactIfNotOverride = useDefaultBillLocationAndContactIfNotOverride;
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
 
 		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
+		this.deliveryDateAsInvoiceDate = deliveryDateAsInvoiceDate;
+		this.partialInvoice = partialInvoice;
 	}
 
 	@Override
@@ -285,6 +326,13 @@ public final class AggregationEngine
 			@Nullable final I_C_InvoiceCandidate_InOutLine iciol,
 			final boolean isLastIcIol)
 	{
+		// Remember every IC we see; aggregate() will build the shared ic2QtyInvoiceable
+		// map from these and pass it to every line aggregator. putIfAbsent: the first call
+		// for an IC carries the freshest pre-aggregation snapshot (the engine doesn't refresh
+		// the record before aggregate() runs), and any subsequent ICIOL calls for the same
+		// IC must not displace it.
+		seenIcs.putIfAbsent(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()), icRecord);
+
 		final I_M_InOutLine icInOutLine = iciol == null ? null : iciol.getM_InOutLine();
 		final InOutId inoutId = icInOutLine != null ? InOutId.ofRepoIdOrNull(icInOutLine.getM_InOut_ID()) : null;
 
@@ -375,18 +423,7 @@ public final class AggregationEngine
 			final List<IInvoiceLineAttribute> invoiceLineAttributes = aggregationBL.extractInvoiceLineAttributes(inOutLine);
 			icAggregationRequestBuilder.addInvoiceLineAttributes(invoiceLineAttributes);
 
-			//
-			// Sales iols from different inOuts shall go into different invoice lines
-			// NOTE: this shall be configured in line aggregation definition.
-			// For legacy key builder we moved to de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD.buildAggregationKey(I_C_Invoice_Candidate)
-			// if (ic.isSOTrx())
-			// {
-			// icAggregationRequestBuilder.addLineAggregationKeyElement(inOutLine.getM_InOut_ID());
-			// }
-
-			// this is only relevant if iciol != null. Otherwise we allocate the full invoicable Qty anyways.
-			final boolean allocateRemainingQty = isLastIcIol && (icAggregationOrNull == null || !icAggregationOrNull.hasInvoicePerShipmentAttribute());
-			icAggregationRequestBuilder.setAllocateRemainingQty(allocateRemainingQty);
+			icAggregationRequestBuilder.setAllocateRemainingQty(isLastIcIol);
 		}
 
 		//
@@ -409,6 +446,8 @@ public final class AggregationEngine
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 			invoiceHeader.setC_Incoterms_ID(icRecord.getC_Incoterms_ID());
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
+			invoiceHeader.setPromotionCodeId(PromotionCodeId.ofRepoIdOrNull(icRecord.getC_PromotionCode_ID()));
+			invoiceHeader.setPromotionCode2Id(PromotionCodeId.ofRepoIdOrNull(icRecord.getC_PromotionCode2_ID()));
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 
 			if (orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))
@@ -439,6 +478,10 @@ public final class AggregationEngine
 			final LocalDate dateAcct = computeDateAcct(icRecord);
 			logger.debug("Setting invoiceHeader's dateAcct={}", dateAcct);
 			invoiceHeader.setDateAcct(dateAcct);
+
+			final LocalDate overrideDueDate = computeOverrideDueDate(icRecord);
+			logger.debug("Setting invoiceHeader's OverrideDueDate={}", overrideDueDate);
+			invoiceHeader.setOverrideDueDate(overrideDueDate);
 
 			// #367 Invoice candidates invoicing Pricelist not found
 			// https://github.com/metasfresh/metasfresh/issues/367
@@ -522,9 +565,19 @@ public final class AggregationEngine
 		}
 	}
 
+	@Nullable
 	private LocalDate computeDateInvoiced(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return CoalesceUtil.coalesceSuppliers(
+				() -> {
+					final LocalDate result = TimeUtil.asLocalDate(ic.getDeliveryDate());
+					if (deliveryDateAsInvoiceDate && result != null)
+					{
+						logger.debug("computeDateInvoiced - returning ic's deliveryDate={} as dateInvoiced", result);
+						return result;
+					}
+					return null;
+				},
 				() -> {
 					if (dateInvoicedParam != null)
 					{
@@ -586,6 +639,29 @@ public final class AggregationEngine
 				});
 	}
 
+	private LocalDate computeOverrideDueDate(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		if (overrideDueDateParam == null)
+		{
+			return null;
+		}
+		final PaymentTermId paymentTermId = getC_PaymentTerm_ID(ic);
+		if (paymentTermId == null || !paymentTermRepository.isAllowOverrideDueDate(paymentTermId))
+		{
+			return null;
+		}
+		logger.debug("computeOverrideDueDate - returning aggregator's overrideDueDateParam={} as overrideDueDate", overrideDueDateParam);
+		return overrideDueDateParam;
+	}
+
+	@Nullable
+	private PaymentTermId getC_PaymentTerm_ID(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
+	}
+
 	private BPartnerInfo getBillTo(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final BPartnerLocationAndCaptureId bpLocationId = getBillLocationId(ic);
@@ -635,8 +711,22 @@ public final class AggregationEngine
 	{
 		final List<IInvoiceHeader> invoiceHeaders = new ArrayList<>();
 
+		// Build a shared "qty left to invoice per IC" map seeded with every IC's QtyToInvoice
+		// and thread it through every bucket's line aggregator before that bucket aggregates.
+		// Buckets are processed in insertion order (key2headerAndAggregators is a LinkedHashMap),
+		// and each bucket's aggregate() reduces the shared map via subtractQtyInvoiceable. So
+		// when ICIOLs of one IC are split across multiple invoice headers, each later bucket
+		// sees the residual left after earlier buckets consumed their share — instead of always
+		// seeing the IC's full QtyToInvoice and over-allocating.
+		final Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedIc2QtyInvoiceable = buildSharedIc2QtyInvoiceable();
+
 		for (final InvoiceHeaderAndLineAggregators headerAndAggregators : key2headerAndAggregators.values())
 		{
+			for (final IAggregator lineAggregator : headerAndAggregators.getLineAggregators())
+			{
+				lineAggregator.setSharedIc2QtyInvoiceable(sharedIc2QtyInvoiceable);
+			}
+
 			final IInvoiceHeader invoiceHeader = aggregate(headerAndAggregators);
 
 			final ILoggable loggable = Loggables.get();
@@ -655,6 +745,38 @@ public final class AggregationEngine
 		}
 
 		return invoiceHeaders;
+	}
+
+	/**
+	 * Builds a single {@code ic2QtyInvoiceable} map covering every IC the engine has seen,
+	 * seeded with each IC's effective {@code QtyToInvoice}. Threaded into each bucket's
+	 * {@link de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator} so that
+	 * allocations in one bucket reduce what subsequent buckets see.
+	 */
+	private Map<InvoiceCandidateId, StockQtyAndUOMQty> buildSharedIc2QtyInvoiceable()
+	{
+		final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> map = new HashMap<>();
+		for (final Map.Entry<InvoiceCandidateId, I_C_Invoice_Candidate> entry : seenIcs.entrySet())
+		{
+			final I_C_Invoice_Candidate ic = entry.getValue();
+			final ProductId productId = ProductId.ofRepoIdOrNull(ic.getM_Product_ID());
+			if (productId == null)
+			{
+				// charge-only IC (no M_Product_ID). It would have no M_InOutLine and therefore no ICIOL,
+				// so it shouldn't even be in seenIcs — guard defensively and skip; the bucket's
+				// fallback createInvoiceableQtysMap() handles charge-only ICs the same way (it only
+				// seeds entries for ICs that appear as InvoiceCandidateWithInOutLine).
+				continue;
+			}
+			final UomId icUomId = UomId.ofRepoId(ic.getC_UOM_ID());
+			// task 08507 (same rationale as DefaultAggregator.createInvoiceableQtysMap()):
+			// ic.getQtyToInvoice() is already the "effective" qty (override-aware).
+			final StockQtyAndUOMQty qtyToInvoice = StockQtyAndUOMQtys.create(
+					ic.getQtyToInvoice(), productId,
+					ic.getQtyToInvoiceInUOM(), icUomId);
+			map.put(entry.getKey(), qtyToInvoice);
+		}
+		return map;
 	}
 
 	/**
@@ -829,12 +951,13 @@ public final class AggregationEngine
 				.collect(GuavaCollectors.toImmutableMapByKey(line -> PaymentTermId.optionalOfRepoId(line.getC_PaymentTerm_ID())));
 	}
 
-	private void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
+	@VisibleForTesting
+	void setDocTypeInvoiceId(@NonNull final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
 		final boolean isTakeDocTypeFromPool = invoiceHeader.isTakeDocTypeFromPool();
 
-		final DocTypeId docTypeIdToBeUsed;
+		DocTypeId docTypeIdToBeUsed;
 
 		final Optional<DocTypeId> docTypeInvoiceId = invoiceHeader.getDocTypeInvoiceId();
 		if (docTypeInvoiceId.isPresent() && !isTakeDocTypeFromPool)
@@ -858,7 +981,59 @@ public final class AggregationEngine
 			docTypeIdToBeUsed = null;
 		}
 
+		// If a specific isPartialInvoice flavor is required and a doctype was resolved,
+		// try to swap to a sibling doctype that matches the required isPartialInvoice flag.
+		// Iter-3 tri-state: when the doctype is NA (NULL) the doctype is neutral and no swap
+		// is needed — the invoice's IsPartialInvoice value will be set directly from the caller
+		// via the C_Invoice interceptor. If a swap is needed but no sibling exists, fall through
+		// and keep the current doctype rather than throwing (same rationale: the explicit
+		// caller value is honoured by the interceptor).
+		if (partialInvoice != null && docTypeIdToBeUsed != null)
+		{
+			final I_C_DocType resolvedDocType = docTypeBL.getById(docTypeIdToBeUsed);
+			final de.metas.invoice.IsPartialInvoice resolvedDocTypeIntent = de.metas.invoice.IsPartialInvoice.fromValue(
+					InterfaceWrapperHelper.getValue(resolvedDocType, I_C_DocType.COLUMNNAME_IsPartialInvoice).orElse(null));
+
+			final boolean swapNeeded = !resolvedDocTypeIntent.isNA()
+					&& (resolvedDocTypeIntent.isYes() != partialInvoice);
+
+			if (swapNeeded)
+			{
+				final DocTypeId alternativeDocTypeId = docTypeBL.getDocTypeIdOrNull(DocTypeQuery.builder()
+						.docBaseType(DocBaseType.ofCode(resolvedDocType.getDocBaseType()))
+						.adClientId(resolvedDocType.getAD_Client_ID())
+						.adOrgId(resolvedDocType.getAD_Org_ID())
+						.isSOTrx(resolvedDocType.isSOTrx())
+						.isPartialInvoice(partialInvoice)
+						.build());
+				if (alternativeDocTypeId == null)
+				{
+					// No sibling doctype found — keep the current doctype; the invoice's
+					// IsPartialInvoice will be set explicitly from the caller's intent via
+					// the C_Invoice interceptor's "skip if already set" branch. Don't throw —
+					// migration 5801950 made the doctype-swap optional.
+					logger.warn("No sibling doctype with IsPartialInvoice={} found for resolved {}; keeping current doctype, invoice intent will be set directly.",
+							partialInvoice, resolvedDocType);
+				}
+				else
+				{
+					docTypeIdToBeUsed = alternativeDocTypeId;
+				}
+			}
+		}
 		invoiceHeader.setDocTypeInvoiceId(docTypeIdToBeUsed);
+
+		// Propagate caller's explicit IsPartialInvoice intent directly to the invoice header.
+		// The downstream invoice-creation code (InvoiceCandBLCreateInvoices) sets the value on
+		// the C_Invoice via setValue before save; the C_Invoice BEFORE_NEW interceptor's
+		// "skip if already set" branch then preserves it. Required because migration
+		// 5801950 made C_DocType.IsPartialInvoice nullable, so the doctype-swap above may find
+		// no matching sibling — the direct propagation guarantees the caller's intent reaches
+		// the invoice. See me03 #29369.
+		if (partialInvoice != null)
+		{
+			invoiceHeader.setIsPartialInvoice(partialInvoice);
+		}
 	}
 
 	private Optional<DocTypeInvoicingPool> getDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)

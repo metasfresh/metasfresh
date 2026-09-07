@@ -55,6 +55,6 @@ BEGIN
 END;
 
 $BODY$
-  LANGUAGE plpgsql VOLATILE
+  LANGUAGE plpgsql STABLE
   COST 100;
 

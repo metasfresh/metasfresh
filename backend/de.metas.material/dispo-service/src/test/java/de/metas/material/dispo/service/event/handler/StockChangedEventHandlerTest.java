@@ -14,7 +14,13 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -61,6 +67,14 @@ public class StockChangedEventHandlerTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+
+		// Pre-create the WAREHOUSE_ID warehouse so WarehouseBL.isIgnoreInMaterialDispo can load it.
+		{
+			final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+			InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, WAREHOUSE_ID.getRepoId());
+			InterfaceWrapperHelper.saveRecord(warehouse);
+		}
 
 		candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
 		candidateChangeService = Mockito.mock(CandidateChangeService.class);
@@ -129,6 +143,34 @@ public class StockChangedEventHandlerTest
 		assertInvocationCandidateCommons(candidate);
 		assertThat(candidate.getType()).isEqualTo(CandidateType.INVENTORY_DOWN);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("5");
+	}
+
+	@Test
+	public void handleEvent_excludedWarehouse_shortCircuits()
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouse.setMRP_Exclude("Y");
+		InterfaceWrapperHelper.saveRecord(warehouse);
+		final WarehouseId excludedWarehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+
+		final StockChangedEvent event = StockChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.changeDate(Instant.parse("2018-11-19T10:15:30.00Z"))
+				.productDescriptor(createProductDescriptor())
+				.qtyOnHand(TEN)
+				.qtyOnHandOld(ZERO)
+				.stockChangeDetails(StockChangeDetails.builder()
+						.stockId(30)
+						.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(40))
+						.transactionId(50)
+						.build())
+				.warehouseId(excludedWarehouseId)
+				.build();
+		event.validate();
+
+		stockChangedEventHandler.handleEvent(event);
+
+		Mockito.verifyZeroInteractions(candidateChangeService);
 	}
 
 	private StockChangedEvent createCommonStockChangedEvent()

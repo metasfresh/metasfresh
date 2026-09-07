@@ -118,7 +118,8 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	int retrieveTableId(@Nullable String tableName);
 
-	AdTableId retrieveAdTableId(String tableName);
+	@NonNull
+	AdTableId retrieveAdTableId(@NonNull String tableName);
 
 	List<I_AD_Table> retrieveAllTables(Properties ctx, String trxName);
 

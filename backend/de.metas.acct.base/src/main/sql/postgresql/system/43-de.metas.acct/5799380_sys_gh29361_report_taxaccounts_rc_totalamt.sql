@@ -1,0 +1,502 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/report_taxaccounts.sql
+-- A.4 / TC-E1: RC-aware `TotalAmt` column. Previous formula `taxbaseamt + taxamt` produced
+-- misleading numbers (1190 / 810) for Reverse-Charge rows, where the VAT does not move cash
+-- and the invoice total is the net amount. Fix: keep the existing formula for non-RC rows
+-- (so `sum(TotalAmt) per invoice = invoice gross` still holds), drop only the tax summand
+-- when the row's tax is reverse-charge.
+--
+-- `isreversecharge` is read from de_metas_acct.tax_accounts_details_v (projected in the
+-- companion view-migration 5799370_..._tax_accounts_details_v_expose_isreversecharge.sql,
+-- which is sequenced BEFORE this one by numeric prefix).
+--
+-- Also: inline per-column documentation on RETURNS TABLE (currencies + role of each column).
+--
+-- Apply full function body — keep DDL source and migration in sync.
+
+DROP FUNCTION IF EXISTS de_metas_acct.report_taxaccounts(numeric, numeric, numeric, date, date, character, character, character varying)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_acct.report_taxaccounts(p_ad_org_id     numeric,
+                                                            p_account_id    numeric,
+                                                            p_c_vat_code_id numeric,
+                                                            p_datefrom      date,
+                                                            p_dateto        date,
+                                                            p_isshowdetails character DEFAULT 'N'::bpchar,
+                                                            p_level         character DEFAULT NULL::bpchar,
+                                                            p_ad_language   character varying DEFAULT 'de_DE'::bpchar,
+                                                            p_c_tax_id      numeric DEFAULT NULL)
+    -- Return-column contract (KEEP IN SYNC with the SELECT at the bottom of this function).
+    -- Amount columns come in two currencies:
+    --   * Source currency (`source_currency`)    : the currency the document was captured in.
+    --   * Accounting currency (`currency`)       : the leading accounting-schema currency.
+    -- The distinction matters for multi-currency installations — non-RC gross (`TotalAmt`)
+    -- is only filled when source==accounting currency; otherwise NULL (we do not convert here).
+    RETURNS TABLE
+            (
+                -- '1'=per vatcode, '2'=per vatcode+account, '3'=per vatcode+account+tax,
+                -- '4'=detail row (per document+line), 'ReCap'=per vatcode+tax. See header comment.
+                Level               varchar,
+                -- VAT code (C_VAT_Code.vatcode) this row belongs to. NULL mapped to "NoTax" label.
+                vatcode             varchar,
+                -- Pre-formatted "<accountno> <accountname>" label for the GL account.
+                AccountName         text,
+                -- Tax name (C_Tax.Name) — German regulators expect the product-name / rate label.
+                Taxname             text,
+                -- Net amount aggregate for the current period, in `source_currency`.
+                -- Populated on sum rows (levels 1/2/3/ReCap); NULL on detail rows.
+                -- Detail-level net is in the `NetAmt` column below.
+                NetAmt_SUM          numeric,
+                -- Tax amount aggregate for the current period, in `source_currency`.
+                -- Populated on sum rows (levels 1/2/3/ReCap); NULL on detail rows.
+                TaxAmt_SUM          numeric,
+                -- Tax amount aggregate for the same period one year earlier, in `source_currency`.
+                -- Used for year-over-year reconciliation on sum rows only. Zero on detail rows.
+                TaxAmt_SUM_PrevYear numeric,
+                -- Accounting-schema (reporting) currency ISO code (e.g. 'EUR').
+                Currency            varchar,
+                -- Posting date (Fact_Acct.DateAcct). Detail rows only; NULL on sum rows.
+                DateAcct            timestamp,
+                -- Source document number (C_Invoice / SAP_GLJournal / …). Detail rows only.
+                DocumentNo          text,
+                -- Business partner name. Detail rows only.
+                BPartnerName        text,
+                -- Document total per row, in `source_currency`, only filled when source==accounting currency.
+                -- Non-RC: NetAmt + TaxAmt (the invoice gross contribution of this row).
+                -- RC: NetAmt only — the §13b tax doesn't move cash (recipient self-assesses both legs,
+                --     they cancel), so the true "total" is the net. See detail in this file near TotalAmt.
+                TotalAmt            numeric,
+                -- Net (tax base) amount at detail level, in `source_currency`. NULL on sum rows
+                -- (sum-level aggregate is in `NetAmt_SUM`).
+                NetAmt              numeric,
+                -- Source currency ISO code (e.g. 'EUR') — the currency the document was captured in.
+                source_currency     varchar,
+                -- Tax amount at detail level, in `source_currency`. NULL on sum rows
+                -- (sum-level aggregate is in `TaxAmt_SUM`).
+                TaxAmt              numeric,
+                -- Echo of the p_datefrom parameter (report start date). Same on every row.
+                param_startdate     date,
+                -- Echo of the p_dateto parameter (report end date). Same on every row.
+                param_enddate       date,
+                -- Echo of the p_account_id parameter rendered as "<value> - <name>" (NULL if not filtered).
+                param_konto         varchar,
+                -- Echo of the p_c_vat_code_id parameter rendered as the VAT code (NULL if not filtered).
+                param_vatcode       varchar,
+                -- Echo of the p_ad_org_id parameter rendered as AD_Org.Name (NULL if no org filter).
+                param_org           varchar
+            )
+    LANGUAGE plpgsql
+AS
+$$
+    # VARIABLE_CONFLICT USE_COLUMN
+DECLARE
+    v_rowcount       NUMERIC;
+    v_notax          character varying;
+    v_AcctSchemaInfo record;
+    v_periodInfo     record;
+BEGIN
+
+    SELECT getmessage('notax', p_ad_language) INTO v_notax;
+
+    -- Get Accounting Schema Info
+    SELECT acs.c_acctschema_id,
+           acs.c_currency_id,
+           acs.ad_client_id,
+           ci.c_calendar_id,
+           cr.iso_code
+    INTO v_AcctSchemaInfo
+    FROM AD_Client c
+             INNER JOIN AD_ClientInfo ci ON ci.AD_Client_ID = c.ad_client_id
+             INNER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
+             INNER JOIN C_Currency cr ON acs.C_Currency_ID = cr.C_Currency_ID AND cr.isActive = 'Y'
+    WHERE c.AD_Client_ID = 1000000;
+
+    -- get period info
+    SELECT period_LastYearEnd.EndDate::date         AS period_LastYearEnd_EndDate,
+           period_CurrentYearStart.StartDate::date  AS period_CurrentYearStart_StartDate,
+           period_PreviousYearStart.StartDate::date AS period_PreviousYearStart_StartDate,
+           p.EndDate::date                          AS EndDate,
+           p.StartDate::date                        AS StartDate
+    INTO v_periodInfo
+    FROM C_Period p
+             -- Get last period of previous year
+             LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, p.PeriodNo::int)) AND period_LastYearEnd.isActive = 'Y'
+             LEFT OUTER JOIN C_Period period_CurrentYearStart ON (period_CurrentYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, (p.PeriodNo - 1)::int)) AND period_CurrentYearStart.isActive = 'Y'
+             LEFT OUTER JOIN C_Period period_PreviousYearStart ON (period_PreviousYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(period_LastYearEnd.C_Period_ID, period_LastYearEnd.PeriodNo::int-1)) AND period_PreviousYearStart.isActive = 'Y'
+    WHERE TRUE
+      -- Period: determine it by DateAcct
+      AND p.C_Period_ID = report.Get_Period(v_AcctSchemaInfo.C_Calendar_ID, p_datefrom);
+
+
+    DROP TABLE IF EXISTS tmp_taxaccounts_details_previous_year;
+    CREATE TEMPORARY TABLE tmp_taxaccounts_details_previous_year AS
+    WITH vat_codes AS (SELECT DISTINCT v.vatcode
+                       FROM C_VAT_Code v
+                       WHERE p_c_vat_code_id IS NULL
+                          OR v.C_VAT_Code_ID = p_c_vat_code_id
+
+                       UNION ALL
+
+                       SELECT  NULL::varchar AS vatcode
+                       WHERE p_c_vat_code_id IS NULL -- include NULL vatcode if no filter is applied
+    )
+
+    SELECT COALESCE(t.vatcode, v_notax) as vatcode,
+           (accountno || ' ' || accountname)::text AS AccountName,
+           taxname,
+           SUM(taxamt)                             AS taxamt,
+           currency,
+           SUM(taxbaseamt)                         AS taxbaseamt,
+           source_currency,
+           (CASE
+                WHEN p_AD_Org_ID IS NULL
+                    THEN NULL
+                    ELSE (SELECT o.NAME
+                          FROM ad_org o
+                          WHERE o.ad_org_id = p_AD_Org_ID)
+            END)::varchar                          AS param_org
+    FROM de_metas_acct.tax_accounts_details_v t
+             INNER JOIN vat_codes ON vat_codes.vatcode IS NOT DISTINCT FROM t.vatcode
+    WHERE ad_org_id = p_ad_org_id
+      AND (p_account_id IS NULL OR p_account_id = account_id)
+      AND (p_c_tax_id IS NULL OR c_tax_id = p_c_tax_id)
+      AND (DateAcct >= v_periodInfo.period_PreviousYearStart_StartDate::date AND DateAcct <= v_periodInfo.period_LastYearEnd_EndDate::date)
+    GROUP BY t.vatcode, accountno, accountname, taxname, currency, source_currency;
+
+    CREATE INDEX ON tmp_taxaccounts_details_previous_year (vatcode, currency, source_currency, param_org);
+    CREATE INDEX ON tmp_taxaccounts_details_previous_year (vatcode, currency, source_currency, param_org, accountname, taxname);
+
+    -- start computing for current period
+
+    DROP TABLE IF EXISTS tmp_taxaccounts_details;
+    CREATE TEMPORARY TABLE tmp_taxaccounts_details AS
+    WITH vat_codes AS (SELECT DISTINCT v.vatcode
+                       FROM C_VAT_Code v
+                       WHERE p_c_vat_code_id IS NULL
+                          OR v.C_VAT_Code_ID = p_c_vat_code_id
+
+                       UNION ALL
+
+                       SELECT NULL::varchar AS vatcode
+                       WHERE p_c_vat_code_id IS NULL -- include NULL vatcode if no filter is applied
+    )
+
+    SELECT COALESCE(t.vatcode, v_notax)            AS vatcode,
+           (accountno || ' ' || accountname)::text AS AccountName,
+           dateacct,
+           documentno,
+           taxname,
+           taxrate,
+           bpName,
+           taxamt,
+           currency,
+           taxbaseamt,
+           -- Dedup key: a §13b Reverse-Charge invoice posts two Fact_Acct rows
+           -- per invoice+tax (T_Credit_Acct DR + T_Due_Acct CR). Both rows join the same
+           -- C_InvoiceTax and thus carry the same taxbaseamt. Summing them at levels 1 / ReCap
+           -- would double-count the base. `row_in_doc_tax = 1` marks the first row per
+           -- (vatcode, ad_table_id, record_id, c_tax_id); subsequent rows contribute 0.
+           -- Partitioning by (ad_table_id, record_id) rather than documentno avoids collisions
+           -- when two invoices from different BPartners share the same DocumentNo.
+           ROW_NUMBER() OVER (PARTITION BY COALESCE(t.vatcode, v_notax), t.ad_table_id, t.record_id, c_tax_id
+                              ORDER BY accountno, accountname) AS row_in_doc_tax,
+           -- TotalAmt semantics (source currency, only filled when source==accounting currency):
+           -- Non-RC rows: taxbaseamt + taxamt = invoice gross for the tax portion (summed per invoice = invoice gross).
+           -- RC rows: the VAT doesn't move cash (recipient self-assesses both legs and they cancel), so the
+           -- invoice total IS the net (taxbaseamt). Including the tax summand would produce 1190 / 810 per leg,
+           -- neither of which is meaningful for the §13b declaration. The branch below preserves the non-RC
+           -- behaviour exactly and corrects only RC.
+           --
+           -- `isreversecharge` is projected on `tax_accounts_details_v` (the view we read from),
+           -- so no extra join against C_Tax is needed here.
+           (CASE
+                WHEN c_currency_id = source_currency_id
+                    THEN taxbaseamt + CASE WHEN t.isreversecharge = 'Y' THEN 0 ELSE taxamt END
+                ELSE NULL
+            END)                                   AS TotalAmt,
+           source_currency,
+           c_tax_id,
+           source_currency_id,
+           c_currency_id,
+           account_id                              AS c_elementvalue_id,
+           p_DateFrom                              AS param_startdate,
+           p_DateTo                                AS param_enddate,
+           (CASE
+                WHEN p_Account_ID IS NULL
+                    THEN NULL
+                    ELSE (SELECT ev.VALUE || ' - ' || ev.NAME
+                          FROM C_ElementValue ev
+                          WHERE ev.C_ElementValue_ID = p_Account_ID)
+            END)::varchar                          AS param_konto,
+           (CASE
+                WHEN p_C_Vat_Code_ID IS NULL
+                    THEN NULL
+                    ELSE (SELECT vc.vatcode
+                          FROM C_Vat_Code vc
+                          WHERE vc.C_Vat_Code_ID = p_C_Vat_Code_ID)
+            END) ::varchar                         AS param_vatcode,
+           (CASE
+                WHEN p_AD_Org_ID IS NULL
+                    THEN NULL
+                    ELSE (SELECT o.NAME
+                          FROM ad_org o
+                          WHERE o.ad_org_id = p_AD_Org_ID)
+            END)::varchar                          AS param_org
+    FROM de_metas_acct.tax_accounts_details_v t
+             INNER JOIN vat_codes ON vat_codes.vatcode IS NOT DISTINCT FROM t.vatcode
+    WHERE ad_org_id = p_ad_org_id
+      AND (p_account_id IS NULL OR p_account_id = account_id)
+      AND (p_c_tax_id IS NULL OR c_tax_id = p_c_tax_id)
+      AND (DateAcct >= p_datefrom AND DateAcct <= p_dateto);
+
+    GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+    RAISE NOTICE 'Show all taxes  % tmp_taxaccounts_details', v_rowcount;
+
+    CREATE INDEX ON tmp_taxaccounts_details (vatcode, currency, source_currency, param_org);
+    CREATE INDEX ON tmp_taxaccounts_details (vatcode, currency, source_currency, param_org, accountname, taxname);
+
+
+    -- assemble the result in one temporray table
+    DROP TABLE IF EXISTS tmp_final_taxaccounts_report;
+
+    CREATE TEMP TABLE tmp_final_taxaccounts_report
+    (
+        Level               varchar,
+        vatcode             varchar,
+        AccountName         text,
+        DateAcct            timestamp,
+        DocumentNo          text,
+        BPartnerName        text,
+        Taxname             text,
+        TotalAmt            numeric,
+        NetAmt              numeric,
+        TaxAmt              numeric,
+        NetAmt_SUM          numeric,
+        source_currency     varchar,
+        TaxAmt_SUM          numeric,
+        TaxAmt_SUM_PrevYear numeric,
+        Currency            varchar,
+        param_startdate     date,
+        param_enddate       date,
+        param_konto         varchar,
+        param_vatcode       varchar,
+        param_org           varchar
+    );
+
+    -- insert data for sums per vatcode, currency, source_currency, param_org
+    -- Level 1
+    IF p_level IS NULL OR p_level = '1' THEN
+        INSERT INTO tmp_final_taxaccounts_report
+        SELECT '1'::varchar             AS level,
+               vatcode,
+               NULL::text               AS AccountName,
+               NULL::timestamp          AS DateAcct,
+               NULL::text               AS DocumentNo,
+               NULL::text               AS BPartnerName,
+               NULL::text               AS Taxname,
+               NULL::numeric            AS TotalAmt,
+               NULL::numeric            AS NetAmt,
+               NULL::numeric            AS TaxAmt,
+               -- Reverse-Charge dedup: a §13b invoice posts two Fact_Acct rows (T_Credit + T_Due)
+               -- that both join the same C_InvoiceTax and carry the same taxbaseamt. Count the
+               -- base once per (vatcode, ad_table_id, record_id, c_tax_id) — only the first row
+               -- contributes to the grand-total; subsequent rows contribute 0. Non-RC is a no-op.
+               SUM(CASE WHEN row_in_doc_tax = 1 THEN taxbaseamt ELSE 0 END) AS NetAmt_SUM,
+               source_currency::varchar AS source_currency,
+               SUM(taxamt)              AS TaxAmt_SUM,
+               0::numeric               AS TaxAmt_SUM_PrevYear,
+               currency::varchar        AS Currency,
+               param_startdate::date,
+               param_enddate::date,
+               param_konto ::varchar,
+               param_vatcode::varchar,
+               param_org ::varchar
+        FROM tmp_taxaccounts_details
+        GROUP BY vatcode, currency, source_currency, param_org, param_startdate, param_enddate, param_konto, param_vatcode;
+    END IF;
+
+    -- insert data for sums per vatcode, currency, param_org, accountno, accountname
+    -- Level 2
+    IF p_level IS NULL OR p_level = '2' THEN
+        INSERT INTO tmp_final_taxaccounts_report
+        SELECT '2'::varchar             AS level,
+               vatcode,
+               AccountName,
+               NULL::timestamp          AS DateAcct,
+               NULL::text               AS DocumentNo,
+               NULL::text               AS BPartnerName,
+               NULL::text               AS Taxname,
+               NULL::numeric            AS TotalAmt,
+               NULL::numeric            AS NetAmt,
+               NULL::numeric            AS TaxAmt,
+               SUM(taxbaseamt)          AS NetAmt_SUM,
+               source_currency::varchar AS source_currency,
+               SUM(taxamt)              AS TaxAmt_SUM,
+               0::numeric               AS TaxAmt_SUM_PrevYear,
+               currency::varchar        AS Currency,
+               param_startdate::date,
+               param_enddate::date,
+               param_konto ::varchar,
+               param_vatcode::varchar,
+               param_org ::varchar
+        FROM tmp_taxaccounts_details
+        GROUP BY vatcode, currency, source_currency, accountname, param_org, param_startdate, param_enddate, param_konto, param_vatcode;
+    END IF;
+
+    -- insert data for sums per vatcode, currency, source_currency, param_org, accountno, accountname, taxname
+    -- Level 3
+    IF p_level IS NULL OR p_level = '3' THEN
+        INSERT INTO tmp_final_taxaccounts_report
+        SELECT '3' ::varchar            AS level,
+               vatcode,
+               AccountName,
+               NULL::timestamp          AS DateAcct,
+               NULL::text               AS DocumentNo,
+               NULL::text               AS BPartnerName,
+               taxname::text            AS Taxname,
+               NULL::numeric            AS TotalAmt,
+               NULL::numeric            AS NetAmt,
+               NULL::numeric            AS TaxAmt,
+               SUM(taxbaseamt)          AS NetAmt_SUM,
+               source_currency::varchar AS source_currency,
+               SUM(taxamt)              AS TaxAmt_SUM,
+               0::numeric               AS TaxAmt_SUM_PrevYear,
+               currency::varchar        AS Currency,
+               param_startdate::date,
+               param_enddate::date,
+               param_konto ::varchar,
+               param_vatcode::varchar,
+               param_org ::varchar
+        FROM tmp_taxaccounts_details
+        GROUP BY vatcode, currency, source_currency, accountname, taxname, param_org, param_startdate, param_enddate, param_konto, param_vatcode;
+    END IF;
+
+    -- add data per documents - level 4
+    IF (p_level IS NULL OR p_level = '4') AND p_isshowdetails = 'Y' THEN
+        INSERT INTO tmp_final_taxaccounts_report
+        SELECT '4' ::varchar            AS level,
+               vatcode,
+               AccountName,
+               t.dateacct               AS DateAcct,
+               t.documentno             AS DocumentNo,
+               t.bpname                 AS BPartnerName,
+               t.taxname                AS Taxname,
+               t.TotalAmt               AS TotalAmt,
+               t.taxbaseamt             AS NetAmt,
+               t.taxamt                 AS TaxAmt,
+               NULL::numeric            AS NetAmt_SUM,
+               source_currency::varchar AS source_currency,
+               NULL::numeric            AS TaxAmt_SUM,
+               NULL::numeric            AS TaxAmt_SUM_PrevYear,
+               currency::varchar        AS Currency,
+               param_startdate::date,
+               param_enddate::date,
+               param_konto ::varchar,
+               param_vatcode::varchar,
+               param_org ::varchar
+        FROM tmp_taxaccounts_details t;
+    END IF;
+
+    IF p_level = 'ReCap' THEN
+        INSERT INTO tmp_final_taxaccounts_report
+        SELECT 'ReCap'::varchar         AS level,
+               vatcode,
+               NULL::text               AS AccountName,
+               NULL::timestamp          AS DateAcct,
+               NULL::text               AS DocumentNo,
+               NULL::text               AS BPartnerName,
+               TaxName                  AS Taxname,
+               NULL::numeric            AS TotalAmt,
+               NULL::numeric            AS NetAmt,
+               NULL::numeric            AS TaxAmt,
+               -- Reverse-Charge dedup — see Level 1 above.
+               SUM(CASE WHEN row_in_doc_tax = 1 THEN taxbaseamt ELSE 0 END) AS NetAmt_SUM,
+               source_currency::varchar AS source_currency,
+               SUM(taxamt)              AS TaxAmt_SUM,
+               0::numeric               AS TaxAmt_SUM_PrevYear,
+               currency::varchar        AS Currency,
+               param_startdate::date,
+               param_enddate::date,
+               param_konto ::varchar,
+               param_vatcode::varchar,
+               param_org ::varchar
+        FROM tmp_taxaccounts_details
+        GROUP BY vatcode, taxname, currency, source_currency, param_org, param_startdate, param_enddate, param_konto, param_vatcode;
+    END IF;
+
+    --- update balance for the previous year
+    ---data for sums per vatcode, currency, source_currency, param_org
+    IF p_level IS NULL OR p_level = '1' THEN
+        UPDATE tmp_final_taxaccounts_report t
+        SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
+                                   FROM tmp_taxaccounts_details_previous_year p
+                                   WHERE COALESCE(p.vatcode, v_notax)  = t.vatcode
+                                     AND p.source_currency = t.source_currency)
+        WHERE t.Level = '1';
+    END IF;
+
+    ---data for sums per vatcode, currency, param_org, accountno, accountname
+    IF p_level IS NULL OR p_level = '2' THEN
+        UPDATE tmp_final_taxaccounts_report t
+        SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
+                                   FROM tmp_taxaccounts_details_previous_year p
+                                   WHERE COALESCE(p.vatcode, v_notax)  = t.vatcode
+                                     AND p.source_currency = t.source_currency
+                                     AND p.AccountName = t.AccountName)
+        WHERE t.Level = '2';
+    END IF;
+
+    ---data for sums per vatcode, currency, source_currency, param_org, accountno, accountname, taxname
+    IF p_level IS NULL OR p_level = '3' THEN
+        UPDATE tmp_final_taxaccounts_report t
+        SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
+                                   FROM tmp_taxaccounts_details_previous_year p
+                                   WHERE COALESCE(p.vatcode, v_notax)  = t.vatcode
+                                     AND p.source_currency = t.source_currency
+                                     AND p.AccountName = t.AccountName
+                                     AND p.Taxname = t.Taxname)
+        WHERE t.Level = '3';
+    END IF;
+
+    --- update balance for the previous year
+    ---data for sums per vatcode, currency, source_currency, param_org
+    IF p_level = 'ReCap' THEN
+        UPDATE tmp_final_taxaccounts_report t
+        SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
+                                   FROM tmp_taxaccounts_details_previous_year p
+                                   WHERE COALESCE(p.vatcode, v_notax)   = t.vatcode
+                                     AND p.Taxname = t.Taxname
+                                     AND p.source_currency = t.source_currency)
+        WHERE t.Level = 'ReCap';
+    END IF;
+
+
+    <<RESULT_TABLE>>
+    BEGIN
+        RETURN QUERY
+            SELECT Level,
+                   vatcode,
+                   AccountName,
+                   Taxname,
+                   NetAmt_SUM,
+                   TaxAmt_SUM,
+                   TaxAmt_SUM_PrevYear,
+                   Currency,
+                   DateAcct,
+                   DocumentNo,
+                   BPartnerName,
+                   TotalAmt,
+                   NetAmt,
+                   source_currency,
+                   TaxAmt,
+                   param_startdate,
+                   param_enddate,
+                   param_konto,
+                   param_vatcode,
+                   param_org
+            FROM tmp_final_taxaccounts_report b
+            ORDER BY vatcode, AccountName NULLS FIRST, taxname NULLS FIRST, DateAcct NULLS FIRST, DocumentNo, BPartnerName;
+
+    END RESULT_TABLE;
+END;
+$$
+;

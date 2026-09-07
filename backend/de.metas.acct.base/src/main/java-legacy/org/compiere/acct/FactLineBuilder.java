@@ -94,6 +94,8 @@ public final class FactLineBuilder
 	@Nullable private BPartnerId bpartnerId;
 	@Nullable private BPartnerLocationId bPartnerLocationId;
 	@Nullable private TaxId C_Tax_ID;
+	@Nullable private Boolean vatCodeIsSOTrxOverride;
+	@Nullable private String vatCode;
 	@Nullable private Integer locatorId;
 	@Nullable private Optional<ActivityId> activityId;
 	@Nullable private ProjectId projectId;
@@ -254,7 +256,18 @@ public final class FactLineBuilder
 		//
 		if (C_Tax_ID != null)
 		{
-			line.setTaxIdAndUpdateVatCode(C_Tax_ID);
+			if (vatCodeIsSOTrxOverride != null)
+			{
+				line.setTaxIdAndUpdateVatCode(C_Tax_ID, vatCodeIsSOTrxOverride);
+			}
+			else
+			{
+				line.setTaxIdAndUpdateVatCode(C_Tax_ID);
+			}
+		}
+		if (vatCode != null)
+		{
+			line.setVatCode(vatCode);
 		}
 
 		if (fromLocationId != null)
@@ -654,6 +667,27 @@ public final class FactLineBuilder
 	{
 		assertNotBuild();
 		this.C_Tax_ID = taxId;
+		return this;
+	}
+
+	/**
+	 * Sets the TaxId and forces the {@code IsSOTrx} used for VATCode lookup. For reverse-charge
+	 * legs: pass {@code true} on the T_Due_Acct leg (§13b output, KZ 84/85) and {@code false} on
+	 * the T_Credit_Acct leg (§13b input, KZ 67).
+	 */
+	public FactLineBuilder setTaxIdAndUpdateVatCode(@Nullable final TaxId taxId, final boolean isSOTrxOverride)
+	{
+		assertNotBuild();
+		this.C_Tax_ID = taxId;
+		this.vatCodeIsSOTrxOverride = isSOTrxOverride;
+		return this;
+	}
+
+	/** Pre-resolved VATCode (e.g. copied from a source Fact_Acct row in allocation corrections). */
+	public FactLineBuilder vatCode(@Nullable final String vatCode)
+	{
+		assertNotBuild();
+		this.vatCode = vatCode;
 		return this;
 	}
 

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -85,7 +85,7 @@ public interface IOrderDAO extends ISingletonService
 		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), modelType);
 	}
 
-	ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(Collection<OrderAndLineId> orderAndLineIds);
+	ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * @return order lines for given order
@@ -147,6 +147,11 @@ public interface IOrderDAO extends ISingletonService
 
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 
+	/**
+	 * @return the ids of every order of {@code bpartnerId} that is not yet processed — the orders whose {@code C_OrderLine.C_Tax_ID} may still legitimately be recomputed.
+	 */
+	Set<OrderId> retrieveNotProcessedOrderIds(BPartnerId bpartnerId);
+
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
 
 	void deleteByLineId(OrderAndLineId orderAndLineId);
@@ -175,4 +180,6 @@ public interface IOrderDAO extends ISingletonService
 	boolean hasDeliveredItems(@NonNull OrderId orderId);
 
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
+	List<I_C_Order> getByLineQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);
+	Set<OrderLineId> getLineIdsByQueryFilter(final IQueryFilter<org.compiere.model.I_C_OrderLine> queryFilter);
 }

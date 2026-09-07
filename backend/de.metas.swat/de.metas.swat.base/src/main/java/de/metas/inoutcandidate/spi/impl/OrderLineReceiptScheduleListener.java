@@ -38,7 +38,15 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 
 		orderBL.closeLine(orderLine);
 
-		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+
+		// Nothing was received, so the candidates can never be invoiced and would linger as open work that
+		// "Create Invoices" silently skips. A partial receipt must stay open - its delivered part is invoiceable.
+		if (orderLine.getQtyDelivered().signum() == 0)
+		{
+			invoiceCandBL.closeInvoiceCandidatesByOrderLineId(orderLineId);
+		}
 	}
 
 	/**
@@ -60,6 +68,9 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 		}
 
 		orderBL.reopenLine(orderLine);
-		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(orderLineId);
+		invoiceCandBL.openInvoiceCandidatesByOrderLineId(orderLineId);
 	}
 }

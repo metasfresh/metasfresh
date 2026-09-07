@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Package_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.pickingterminal.M_ShippingPackage_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
@@ -63,6 +64,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * Step definitions for M_ShipperTransportation, the transport order ("Speditionslieferung"). Allows scenarios to:
+ * <ul>
+ *   <li>Create a transport order and add orders / shipments / packages to it;</li>
+ *   <li>Load the transport order belonging to a shipment, and assert its column values;</li>
+ *   <li>Update its dates (notably {@code BLDate} and {@code ETA}) and complete it, which drives
+ *       {@code M_ShipperTransportation.syncOrderDatesOnEdit} and therefore the pay-schedule due
+ *       dates of the linked orders (scenarios {@code @Id:S30954_1..5}).</li>
+ * </ul>
+ * <p>
+ * Note: these steps write through the model layer ({@code InterfaceWrapperHelper}), never through the
+ * WebUI {@code Document} layer. Field editability — {@code AD_Column.IsAlwaysUpdateable} evaluated by
+ * {@code DocumentReadonly} on a {@code Processed} record — is therefore out of reach here by
+ * construction, and is covered instead by the Playwright spec
+ * {@code transport-order-dates-editable-when-completed.spec.js}.
+ */
 @AllArgsConstructor
 public class M_ShipperTransportation_StepDef
 {
@@ -111,6 +128,28 @@ public class M_ShipperTransportation_StepDef
 			softly.assertThat(shipperLocation).isNotNull();
 			softly.assertThat(deliveryInstruction.getShipper_Location_ID()).as(I_M_ShipperTransportation.COLUMNNAME_Shipper_Location_ID).isEqualTo(shipperLocation.getC_BPartner_Location_ID());
 
+			final String deliveryLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Delivery_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(deliveryLocationIdentifier))
+			{
+				final I_C_BPartner_Location deliveryLocation = bPartnerLocationTable.get(deliveryLocationIdentifier);
+				softly.assertThat(deliveryLocation).isNotNull();
+				softly.assertThat(deliveryInstruction.getC_BPartner_Location_Delivery_ID()).as(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Delivery_ID).isEqualTo(deliveryLocation.getC_BPartner_Location_ID());
+			}
+
+			final String loadingLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Loading_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(loadingLocationIdentifier))
+			{
+				final I_C_BPartner_Location loadingLocation = bPartnerLocationTable.get(loadingLocationIdentifier);
+				softly.assertThat(loadingLocation).isNotNull();
+				softly.assertThat(deliveryInstruction.getC_BPartner_Location_Loading_ID()).as(I_M_ShipperTransportation.COLUMNNAME_C_BPartner_Location_Loading_ID).isEqualTo(loadingLocation.getC_BPartner_Location_ID());
+			}
+
+			final Timestamp deliveryDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_ETA);
+			if (deliveryDate != null)
+			{
+				softly.assertThat(deliveryInstruction.getETA()).as(I_M_ShipperTransportation.COLUMNNAME_ETA).isEqualTo(deliveryDate);
+			}
+
 			final String docStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_DocStatus);
 			if (Check.isNotBlank(docStatus))
 			{
@@ -141,6 +180,82 @@ public class M_ShipperTransportation_StepDef
 		}
 	}
 
+	/**
+	 * Polling variant of {@code load Transportation Order from Shipment} — waits for the async
+	 * {@code M_InOut.afterComplete → CreatePackagesForShipmentWorkpackageProcessor} chain triggered by
+	 * sysconfig {@code de.metas.handlingunits.picking.addToDailyShipperTransportationOrder=true}.
+	 */
+	@And("^after not more than (.*)s, Transportation Order is found for Shipment:$")
+	public void findTransportationOrderForShipment(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			try
+			{
+				pollTransportationOrderForShipment(timeoutSec, row);
+			}
+			catch (final InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				throw new RuntimeException(e);
+			}
+		});
+	}
+
+	private void pollTransportationOrderForShipment(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final I_M_InOut shipment = shipmentTable.get(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID));
+
+		final I_M_ShipperTransportation[] resultHolder = new I_M_ShipperTransportation[1];
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
+			final I_M_ShipperTransportation found = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
+					.andCollect(I_M_ShippingPackage.COLUMN_M_ShipperTransportation_ID)
+					.orderBy(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
+					.first();
+			if (found == null)
+			{
+				return false;
+			}
+			resultHolder[0] = found;
+			return true;
+		});
+
+		assertThat(resultHolder[0])
+				.as("No M_ShipperTransportation found for M_InOut_ID=%s within %ss — is sysconfig "
+						+ "'de.metas.handlingunits.picking.addToDailyShipperTransportationOrder' set to true?",
+						shipment.getM_InOut_ID(), timeoutSec)
+				.isNotNull();
+
+		deliveryInstructionTable.putOrReplace(row.getAsIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID), resultHolder[0]);
+	}
+
+	/**
+	 * Creates one {@code M_ShipperTransportation} (transport order / delivery instruction) record per row and
+	 * stores it under its identifier. {@code TransportDirection} is <b>required</b>: the column is mandatory and
+	 * has no default, so a scenario has to say which direction it means.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> (or <b>M_ShipperTransportation_ID</b>) — (required) alias to store the created record
+	 *   under; either header works, the step registers {@code M_ShipperTransportation_ID} as an additional row
+	 *   identifier column<br>
+	 *   <b>TransportDirection</b> — (required) {@code Outgoing}, {@code Incoming} or {@code Dropship}
+	 *   (see {@code X_M_ShipperTransportation.TRANSPORTDIRECTION_*})<br>
+	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) the shipper; set through
+	 *   {@code IShipperTransportationBL#setShipper}, which also copies the shipper's pickup time window<br>
+	 *   <b>Shipper_BPartner_ID</b> — (optional, identifier-ref) the forwarder business partner<br>
+	 *   <b>Shipper_Location_ID</b> — (optional, identifier-ref) the forwarder location<br>
+	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData, M_Shipper_StepDefData,
+	 * C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains Transport Order
+	 *   | Identifier     | M_Shipper_ID    | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+	 *   | transportOrder | shipper_freight | supplier            | supplierLocation    | Incoming           |
+	 * </pre>
+	 */
 	@And("metasfresh contains Transport Order")
 	public void add_TransportOrder(@NonNull final DataTable dataTable)
 	{
@@ -149,9 +264,15 @@ public class M_ShipperTransportation_StepDef
 				.forEach(this::createTransportOrder);
 	}
 
+	/**
+	 * Row-level worker of {@link #add_TransportOrder(DataTable)}; the column contract is documented there.
+	 * Public so other step defs can create a transport order from a row they already hold.
+	 */
 	public void createTransportOrder(@NonNull final DataTableRow row)
 	{
 		final I_M_ShipperTransportation shipperTransportationRecord = newInstance(I_M_ShipperTransportation.class);
+
+		shipperTransportationRecord.setTransportDirection(row.getAsString(I_M_ShipperTransportation.COLUMNNAME_TransportDirection));
 
 		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID)
 				.map(shipperTable::getId)
@@ -253,6 +374,36 @@ public class M_ShipperTransportation_StepDef
 				.ifPresent(packageIdentifier -> packageTable.putOrReplace(packageIdentifier, packageRecord));
 	}
 
+	/**
+	 * Updates the transport order THROUGH THE MODEL LAYER on purpose: {@code saveRecord} fires the real
+	 * {@code @ModelChange} interceptor {@code de.metas.shipping.model.validator.M_ShipperTransportation#syncOrderDatesOnEdit},
+	 * which is what propagates ETA / BLDate onto the linked purchase orders and re-drives their pay schedules.
+	 * Never replace this with a direct SQL/DB write: the propagation would no longer be exercised and the
+	 * scenarios relying on it (S30954_1..S30954_3 and S30954_5 in purchaseOrderComplexPaymentTerm.feature)
+	 * would keep passing with the chain broken.
+	 * <p>
+	 * Note this writes straight to the record and therefore bypasses the WebUI Document layer, where a
+	 * completed ({@code Processed='Y'}) transport order is read-only unless the column is always-updateable.
+	 * That gate is covered by the Playwright spec
+	 * {@code e2e/frontend-webui/tests/spec/transport-order-dates-editable-when-completed.spec.js}.
+	 * <p>
+	 * On a DELIVERY instruction the same write also syncs the changed dates down onto every allocated planning.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipperTransportation_ID</b> (or <b>Identifier</b>) — (required, identifier-ref) the record to update<br>
+	 *   <b>ETD</b> — (optional) new estimated departure<br>
+	 *   <b>ETA</b> — (optional) new estimated arrival<br>
+	 *   <b>BLDate</b> — (optional) new bill-of-lading date<br>
+	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update transport order
+	 *   | M_ShipperTransportation_ID | ETD                  | ETA                  |
+	 *   | deliveryInstruction        | 2023-06-01T00:00:00Z | 2023-06-05T00:00:00Z |
+	 * </pre>
+	 * @see de.metas.shipping.model.validator.M_ShipperTransportation
+	 */
 	@And("update transport order")
 	public void update_TransportOrder(@NonNull final DataTable dataTable)
 	{
@@ -265,6 +416,9 @@ public class M_ShipperTransportation_StepDef
 	{
 		final ShipperTransportationId shipperTransportationId = tableRow.getAsIdentifier().lookupNotNullIdIn(deliveryInstructionTable);
 		final I_M_ShipperTransportation record = shipperTransportationDAO.getById(shipperTransportationId);
+
+		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_ETD)
+				.ifPresent(expected -> record.setETD(Timestamp.from(expected)));
 
 		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_ETA)
 				.ifPresent(expected -> record.setETA(Timestamp.from(expected)));

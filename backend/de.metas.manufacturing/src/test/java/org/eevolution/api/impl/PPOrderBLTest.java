@@ -10,7 +10,12 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.quantity.Quantity;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -19,6 +24,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -127,5 +134,75 @@ public class PPOrderBLTest
 			assertThat(order.getCanBeExportedFrom()).isEqualTo(Env.MAX_DATE);
 		}
 
+	}
+
+	/**
+	 * The IsFixedProductionDate flag must stop the automatic overwrite of the
+	 * effective production date (DateDelivered) done by {@link PPOrderBL#addQty}.
+	 */
+	@Nested
+	public class addQty
+	{
+		private I_C_UOM uom;
+		private I_PP_Order order;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			uom = newInstance(I_C_UOM.class);
+			uom.setName("Each");
+			uom.setStdPrecision(0);
+			saveRecord(uom);
+
+			final I_M_Product product = newInstance(I_M_Product.class);
+			product.setName("ProductUnderTest");
+			product.setC_UOM_ID(uom.getC_UOM_ID());
+			saveRecord(product);
+
+			order = newInstance(I_PP_Order.class);
+			order.setM_Product_ID(product.getM_Product_ID());
+			order.setC_UOM_ID(uom.getC_UOM_ID());
+			order.setQtyOrdered(new BigDecimal("10"));
+			saveRecord(order);
+		}
+
+		private void reportReceipt(final ZonedDateTime date)
+		{
+			ppOrderBL.addQty(OrderQtyChangeRequest.builder()
+					.ppOrderId(PPOrderId.ofRepoId(order.getPP_Order_ID()))
+					.qtyReceivedToAdd(Quantity.of(new BigDecimal("2"), uom))
+					.date(date)
+					.build());
+		}
+
+		private I_PP_Order reload()
+		{
+			return ppOrderBL.getById(PPOrderId.ofRepoId(order.getPP_Order_ID()));
+		}
+
+		@Test
+		public void dateDelivered_isUpdatedToReceiptDate_whenNotFixedProductionDate()
+		{
+			order.setIsFixedProductionDate(false);
+			saveRecord(order);
+
+			final ZonedDateTime receiptDate = ZonedDateTime.parse("2026-06-15T10:00:00Z");
+			reportReceipt(receiptDate);
+
+			assertThat(reload().getDateDelivered()).isEqualTo(TimeUtil.asTimestamp(receiptDate));
+		}
+
+		@Test
+		public void dateDelivered_isPreserved_whenFixedProductionDate()
+		{
+			final Timestamp manualProdDate = TimeUtil.asTimestamp(ZonedDateTime.parse("2026-01-01T00:00:00Z"));
+			order.setIsFixedProductionDate(true);
+			order.setDateDelivered(manualProdDate);
+			saveRecord(order);
+
+			reportReceipt(ZonedDateTime.parse("2026-06-15T10:00:00Z"));
+
+			assertThat(reload().getDateDelivered()).isEqualTo(manualProdDate);
+		}
 	}
 }

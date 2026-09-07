@@ -53,7 +53,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	@Override
 	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 		
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
@@ -70,7 +70,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	{
 		final boolean isReturnTrx = request.getQty().signum() > 0;
 
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 		
 		final CostDetailCreateResult result;
@@ -100,7 +100,7 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request.getCostSegmentAndElement());
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request.getCostSegmentAndElement());
 
 		currentCosts.addToCurrentQtyAndCumulate(request.getQty().negate(), request.getAmt().negate(), utils.getQuantityUOMConverter());
 

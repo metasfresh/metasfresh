@@ -22,13 +22,12 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-
-import java.util.Iterator;
-import java.util.Properties;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * Generates from {@link I_C_Invoice}s from {@link I_C_Invoice_Candidate}s
@@ -53,6 +52,14 @@ public interface IInvoiceGenerator
 	IInvoiceGenerator setContext(Properties ctx, String trxName);
 
 	IInvoiceGenerator setIgnoreInvoiceSchedule(boolean ignoreInvoiceSchedule);
+
+	/**
+	 * When {@code true}, invoice candidates whose effective {@link de.metas.order.InvoiceRule} is
+	 * {@link de.metas.order.InvoiceRule#Manual} are NOT skipped at the actual-invoicing stage. The workpackage
+	 * processor sets this to {@code true} on the assumption that any Manual IC that reached the workpackage
+	 * already passed the enqueue-time skip filter.
+	 */
+	IInvoiceGenerator setInvoiceManualRule(boolean isInvoiceManualRule);
 
 	IInvoiceGenerator setCollector(IInvoiceGenerateResult collector);
 

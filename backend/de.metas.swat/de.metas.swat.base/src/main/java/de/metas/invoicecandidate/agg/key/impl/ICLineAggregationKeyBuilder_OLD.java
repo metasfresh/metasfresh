@@ -11,6 +11,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.Language;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
@@ -46,7 +47,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuilder<I_C_Invoice_Candidate>
 {
-	public static final transient ICLineAggregationKeyBuilder_OLD instance = new ICLineAggregationKeyBuilder_OLD();
+	public static final ICLineAggregationKeyBuilder_OLD instance = new ICLineAggregationKeyBuilder_OLD();
 
 	private static final List<String> columnNames = ImmutableList.<String> builder()
 			.add(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_Agg_ID)
@@ -173,15 +174,20 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		// task 08543: *do not* aggregate different ICs into one invoice line. This includes "Gebinde/Packagingmaterial!"
 		// background: the user expects the invoice candidates to be transformed into invoice lines one-by-one.
 		sb.append("#").append(ic.getC_Invoice_Candidate_ID());
-
+		
 		//
-		// Sales iols from different inOuts shall go into different invoice lines
+		// Sales iols from different inOuts shall go into different invoice lines?
 		if (ic.isSOTrx())
 		{
-			final AggregationAttribute attribute = new AggregationAttribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_M_InOut_ID);
-			final Evaluatee ctx = null; // does not matter because it is actually not used
-			final Object value = attribute.evaluate(ctx);
-			sb.append("#").append(value);
+			final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+			final boolean allowDifferentShipmentsInSameInvoiceLine = invoiceCandidateHandlerDAO.retrieveFor(ic).isAllowDifferentShipmentsInSameInvoiceLine();
+			if (!allowDifferentShipmentsInSameInvoiceLine)
+			{
+				final AggregationAttribute attribute = new AggregationAttribute(AggregationKeyEvaluationContext.ATTRIBUTE_CODE_AggregatePer_M_InOut_ID);
+				final Evaluatee ctx = null; // does not matter because it is actually not used
+				final Object value = attribute.evaluate(ctx);
+				sb.append("#").append(value);
+			}
 		}
 
 		final AggregationId aggregationId = null;

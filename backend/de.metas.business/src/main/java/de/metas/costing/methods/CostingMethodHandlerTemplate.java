@@ -215,7 +215,7 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			throw new AdempiereException("Cost revaluation requests shall have explicit cost price set");
 		}
 
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
 		currentCosts.setOwnCostPrice(explicitCostPrice);

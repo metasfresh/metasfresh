@@ -51,6 +51,10 @@ public class C_Order_ReceiptSchedule
 	private static final AdMessageKey ERR_NoReactivationIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoReactivationIfProcessedReceiptSchedules");
 	private static final AdMessageKey ERR_NoVoidIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoVoidIfProcessedReceiptSchedules");
 	private static final String SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED = "PO_AllowReactivationIfReceiptsCreated";
+
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -66,6 +70,27 @@ public class C_Order_ReceiptSchedule
 				&& !orderBL.isMediated(order);
 	}
 
+	/**
+	 * On COMPLETE: first reopen any previously closed receipt schedules, then create new ones
+	 * for order lines that don't have one yet.
+	 * <p>
+	 * Declaration order matters: reopenReceiptSchedules must run before createReceiptSchedules
+	 * so that reopened schedules already have their final QtyOrdered and ASI when
+	 * createReceiptSchedules fires the async workpackage (which reads these fields).
+	 * The reopen combines IsClosed + QtyOrdered + ASI into a single save to produce exactly one
+	 * ReceiptScheduleCreatedEvent with the correct storageAttributesKey.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void reopenReceiptSchedules(final I_C_Order order)
+	{
+		if (!isEligibleForReceiptSchedule(order))
+		{
+			return;
+		}
+
+		receiptScheduleBL.reopenReceiptSchedulesForOrder(order);
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void createReceiptSchedules(final I_C_Order order)
 	{
@@ -76,7 +101,6 @@ public class C_Order_ReceiptSchedule
 
 		// services
 		final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		//
 		// Generate receipt schedules from this order.
@@ -89,6 +113,13 @@ public class C_Order_ReceiptSchedule
 		final IReceiptScheduleProducer receiptScheduleProducer = receiptScheduleProducerFactory.createProducer(I_C_OrderLine.Table_Name, createReceiptSchedulesAsync);
 
 		// Iterate order lines and call the producer for each of them.
+		// NOTE: we intentionally do NOT skip order lines that already have a reopened receipt schedule.
+		// The async workpackage will find the existing schedule and run the update path, which
+		// synchronises M_AttributeSetInstance_ID (via cloneOrCreateASI) and other fields from the
+		// order line. If the ASI hasn't changed, the storageAttributesKey stays the same and the
+		// resulting ReceiptScheduleUpdatedEvent has zero deltas (no-op). If the ASI DID change
+		// (e.g. user changed it during reactivation), the event correctly moves cockpit quantities
+		// from the old to the new storageAttributesKey bucket.
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
@@ -97,20 +128,19 @@ public class C_Order_ReceiptSchedule
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_VOID })
-	public void inactivateReceiptSchedules(final I_C_Order order)
+	/**
+	 * On REACTIVATE and VOID: close receipt schedules instead of deleting them.
+	 * This preserves user modifications (delivery dates, override columns, transport orders).
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID })
+	public void closeReceiptSchedulesOnReactivateOrVoid(final I_C_Order order)
 	{
 		if (!isEligibleForReceiptSchedule(order))
 		{
 			return;
 		}
 
-		// NOTE: we are doing the inactivation synchronously because we need to have it done right away
-		final IReceiptScheduleProducer producer = Services.get(IReceiptScheduleProducerFactory.class)
-				.createProducer(I_C_Order.Table_Name, false);
-
-		producer.inactivateReceiptSchedules(order);
+		receiptScheduleBL.closeReceiptSchedulesForOrder(order);
 	}
 
 	/**
@@ -138,7 +168,7 @@ public class C_Order_ReceiptSchedule
 
 	private boolean hasReceipts(final I_C_Order order)
 	{
-		final List<I_M_InOut> inouts = Services.get(IOrderDAO.class).retrieveInOutsForMatchingOrderLines(order);
+		final List<I_M_InOut> inouts = orderDAO.retrieveInOutsForMatchingOrderLines(order);
 
 		return !inouts.isEmpty();
 	}
@@ -178,17 +208,14 @@ public class C_Order_ReceiptSchedule
 
 	public boolean hasProcessedReceiptSchedules(final I_C_Order order)
 	{
-		// services
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
 
-			// Throw exception if at least one processed receipt schedule is linked to a line of this order
-			if (receiptSchedule != null && receiptSchedule.isProcessed())
+			// Return true only for schedules processed from REAL receipt activity,
+			// not schedules that are merely "parked" (IsClosed=Y) due to PO reactivation/void.
+			if (receiptSchedule != null && receiptSchedule.isProcessed() && !receiptSchedule.isIsClosed())
 			{
 				return true;
 			}
@@ -204,11 +231,6 @@ public class C_Order_ReceiptSchedule
 		{
 			return;
 		}
-
-		// services
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)

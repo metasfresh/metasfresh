@@ -1,6 +1,7 @@
 package de.metas.distribution.mobileui.external_services.product;
 
 import de.metas.gs1.GTIN;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
@@ -14,6 +15,8 @@ import java.util.Optional;
 @Service
 public class DistributionProductService
 {
+	private static final AdMessageKey MSG_NoProductForScannedCode = AdMessageKey.of("MobileUI_Distribution_NoProductForScannedCode");
+
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public ProductInfo getProductInfo(@NonNull final ProductId productId)
@@ -45,7 +48,7 @@ public class DistributionProductService
 
 		if (productId == null)
 		{
-			throw new AdempiereException("No product found for scanned product code: " + scannedProductCode);
+			throw new AdempiereException(MSG_NoProductForScannedCode, scannedProductCode.getAsString());
 		}
 
 		return productId;
