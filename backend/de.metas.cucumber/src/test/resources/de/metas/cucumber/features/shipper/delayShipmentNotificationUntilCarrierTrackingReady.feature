@@ -115,34 +115,35 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
     Given the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID |
       | cp1                | cgt1                  |
-    And the nShift shipment service is stubbed to return a successful shipment creation response
+    # No tracking URL in the ship response → the parcel starts without one, so the mail WP is held (not a post-hoc blank).
+    And the nShift shipment service is stubbed to return a successful shipment creation response without tracking url
 
     # ── order → shipment pipeline ─────────────────────────────────────────────
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
       | so         | true    | customer      | 2022-12-12  | wh             | nShift       |
+    # 10-CU-per-TU packing → on-the-fly pick builds ONE TU → 1 M_Package → 1 Carrier_ShipmentOrder → 1 parcel.
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so_l1      | so         | product      | 10         |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_l1      | so         | product      | 10         | product_TU_10CU         |
     When the order identified by so is completed
+    # Wait for the async carrier auto-advise to land — the schedule must carry the advised product before shipping.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss         | so_l1          | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss         | so_l1          | N             | cp1                | cgt1                  |
+    # IsOnTheFlyPickToPackingInstructions=true packs the picked CUs into the order-line TU (real shipper-transportation flow).
     And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss                    | shipment   |
+      | M_ShipmentSchedule_ID | M_InOut_ID | IsOnTheFlyPickToPackingInstructions |
+      | ss                    | shipment   | true                                |
+    And after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID | M_ShipperTransportation_ID |
+      | shipment   | transpOrder                |
     And after not more than 60s, Carrier_ShipmentOrder is found:
       | Identifier | M_InOut_ID |
       | cso        | shipment   |
-    # The nShift stub delivers an AWB+TrackingURL; clear it to simulate the carrier not yet confirming
-    And update Carrier_ShipmentOrder_Parcel TrackingURL:
-      | Carrier_ShipmentOrder_ID | TrackingURL |
-      | cso                      | null        |
 
-    # ── assert: shipment mail WP is held because TrackingURL is still blank ────
-    # Poll the committed WP state directly (it retries until terminal); no queue-drain step —
-    # the drain only checks ready-message count and is blind to in-flight (unacked) cascade events.
-    Then after not more than 300s, MailWorkpackageProcessor workpackage for document is in state:
+    # ── assert: shipment mail WP is held because the carrier has not yet provided a TrackingURL ────
+    Then after not more than 30s, MailWorkpackageProcessor workpackage for document is in state:
       | Record_ID | ExpectedState |
       | shipment  | skipped       |
 
@@ -152,7 +153,7 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
       | cso                      | https://track.example.com/test |
     # "released" = the WP ran past the delay gate (either processed or attempted to send);
     # we do not assert actual SMTP delivery here — that depends on the test infra mail config
-    Then after not more than 300s, MailWorkpackageProcessor workpackage for document is in state:
+    Then after not more than 60s, MailWorkpackageProcessor workpackage for document is in state:
       | Record_ID | ExpectedState |
       | shipment  | released      |
 
@@ -173,16 +174,22 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
       | so2        | true    | customer      | 2022-12-12  | wh             | nShift       |
+    # 10-CU-per-TU packing → on-the-fly pick builds ONE TU → 1 M_Package → 1 Carrier_ShipmentOrder → 1 parcel.
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so2_l1     | so2        | product      | 10         |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so2_l1     | so2        | product      | 10         | product_TU_10CU         |
     When the order identified by so2 is completed
+    # Wait for the async carrier auto-advise to land — the schedule must carry the advised product before shipping.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss2        | so2_l1         | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss2        | so2_l1         | N             | cp1                | cgt1                  |
+    # IsOnTheFlyPickToPackingInstructions=true packs the picked CUs into the order-line TU (real shipper-transportation flow).
     And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss2                   | shipment2  |
+      | M_ShipmentSchedule_ID | M_InOut_ID | IsOnTheFlyPickToPackingInstructions |
+      | ss2                   | shipment2  | true                                |
+    And after not more than 60s, Transportation Order is found for Shipment:
+      | M_InOut_ID | M_ShipperTransportation_ID |
+      | shipment2  | transpOrder2               |
     And after not more than 60s, Carrier_ShipmentOrder is found:
       | Identifier | M_InOut_ID |
       | cso2       | shipment2  |
@@ -192,7 +199,7 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
       | cso2                     | awb1 | trackingUrl1 |
 
     # ── assert: shipment mail WP was NOT held — goes straight past the gate ────
-    Then after not more than 300s, MailWorkpackageProcessor workpackage for document is in state:
+    Then after not more than 60s, MailWorkpackageProcessor workpackage for document is in state:
       | Record_ID | ExpectedState |
       | shipment2 | released      |
 

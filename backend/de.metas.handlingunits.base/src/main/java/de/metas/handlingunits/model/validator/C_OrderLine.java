@@ -160,7 +160,9 @@ public class C_OrderLine
 		{
 			validateQtyEntered(orderLine);
 		}
-		else
+		// the lock is a policy for user edits only; background writers (e.g. the invoicing run updating
+		// the order line) must not be aborted by it
+		else if (InterfaceWrapperHelper.isUIAction(orderLine))
 		{
 			throw new AdempiereException(ERR_ORDER_MODIFICATION_NOT_ALLOWED_RECEIPT_EXISTS)
 					.markAsUserValidationError();

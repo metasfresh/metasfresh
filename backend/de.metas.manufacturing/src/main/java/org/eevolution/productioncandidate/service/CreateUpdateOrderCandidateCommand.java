@@ -73,16 +73,12 @@ public class CreateUpdateOrderCandidateCommand
 				Check.assumeNotNull(request.getProductPlanningId(), "request.getProductPlanningId; request={}", request));
 
 		final I_PP_Product_BOM bom = getBOM(request.getProductPlanningId());
-		// Create PP Order Candidate
-		final I_PP_Order_Candidate ppOrderCandidateRecord;
-		if (request.getPpOrderCandidateId() == null)
-		{
-			ppOrderCandidateRecord = InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
-		}
-		else
-		{
-			ppOrderCandidateRecord = ppOrderCandidateDAO.getById(request.getPpOrderCandidateId());
-		}
+		// Create PP Order Candidate. The material-dispo path never carries a ppOrderCandidateId, so it always
+		// creates a NEW candidate (both ATP and lot-for-lot); the by-id branch serves the callers that do supply
+		// one (model interceptor / maturing sync).
+		final I_PP_Order_Candidate ppOrderCandidateRecord = request.getPpOrderCandidateId() != null
+				? ppOrderCandidateDAO.getById(request.getPpOrderCandidateId())
+				: InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
 
 		PPOrderCandidatePojoConverter.setMaterialDispoGroupId(ppOrderCandidateRecord, request.getMaterialDispoGroupId());
 		PPOrderCandidatePojoConverter.setMaterialDispoTraceId(ppOrderCandidateRecord, request.getTraceId());

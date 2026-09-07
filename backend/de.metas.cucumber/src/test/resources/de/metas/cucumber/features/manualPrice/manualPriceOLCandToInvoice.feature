@@ -140,7 +140,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | huPiItemTU_S0469_20        | packingVersionTU_S0469_20     | 0   | MI       |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier  | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | GTIN         |
-      | huItemManufacturingProduct_S0469_20 | huPiItemTU_S0469_20        | p_S0469_20              | 10  | 2022-01-01 | 123456789120 |
+      | huItemManufacturingProduct_S0469_20 | huPiItemTU_S0469_20        | p_S0469_20              | 10  | 2020-01-01 | 123456789120 |
 
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |

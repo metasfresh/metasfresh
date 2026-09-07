@@ -166,6 +166,20 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 
 	void deleteByTopLevelHUsAndShipmentScheduleId(@NonNull Collection<I_M_HU> topLevelHUs, @NonNull ShipmentScheduleId shipmentScheduleId);
 
+	/**
+	 * Reduces the {@link I_M_ShipmentSchedule_QtyPicked} row(s) keyed to the given pick-to TU (i.e.
+	 * {@code M_TU_HU_ID = pickToTuId}) by {@code qtyToReduce}, walking the rows newest-first (highest
+	 * {@code M_ShipmentSchedule_QtyPicked_ID} first). A row fully consumed by the reduction is deleted;
+	 * the last touched row (if any qty remains after it) is partially reduced instead. Use this — instead of
+	 * {@link #deleteByTopLevelHUsAndShipmentScheduleId}/{@link #deleteByTopLevelHUAndShipmentScheduleId} —
+	 * for a partial unpick-to-floor of a CU picked into a bare TU, where the picked-to row is keyed to the
+	 * TU (not the leaf CU) and a blind delete would also erase the still-picked remainder.
+	 */
+	void reduceQtyPickedForPickToTU(
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull HuId pickToTuId,
+			@NonNull Quantity qtyToReduce);
+
 	WarehouseId getWarehouseId(@NonNull I_M_ShipmentSchedule schedule);
 
 	BPartnerId getBPartnerId(@NonNull I_M_ShipmentSchedule schedule);

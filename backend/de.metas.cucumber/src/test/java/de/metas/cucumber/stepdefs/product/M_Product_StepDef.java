@@ -33,17 +33,19 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.order.C_CompensationGroup_Schema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.ClearanceStatus;
+import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
-import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
@@ -86,6 +88,22 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
+/**
+ * Step definitions for {@code M_Product}: creating and updating products (including
+ * {@code ProductLifeCycleStatus}/BBS-Status), and asserting product master data.
+ * <p>
+ * Products created here are registered in {@link M_Product_StepDefData} under their feature-file identifier,
+ * so later steps and other step-def classes can resolve them by that identifier.
+ *
+ * <pre>{@code
+ * Given metasfresh contains M_Products:
+ *   | Identifier | ProductLifeCycleStatus |
+ *   | flippedToG | O                      |
+ * When update M_Product:
+ *   | M_Product_ID.Identifier | ProductLifeCycleStatus |
+ *   | flippedToG              | G                      |
+ * }</pre>
+ */
 @RequiredArgsConstructor
 public class M_Product_StepDef
 {
@@ -95,6 +113,7 @@ public class M_Product_StepDef
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final de.metas.cucumber.stepdefs.customstariff.M_CustomsTariff_StepDefData customsTariffTable;
+	@NonNull private final C_CompensationGroup_Schema_StepDefData compensationGroupSchemaTable;
 	@NonNull private final TestContext restTestContext;
 
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -103,6 +122,27 @@ public class M_Product_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService = SpringContextHolder.instance.getBean(ExternalIdentifierProductLookupService.class);
 
+	/**
+	 * Creates (or updates, if a matching {@code Value} already exists) {@link I_M_Product} records.
+	 * <p>
+	 * Frequently used DataTable columns (full handling is in {@link #createM_Product(DataTableRow)}):
+	 * <ul>
+	 *     <li>{@code Identifier} (required) — identifier for later reference.</li>
+	 *     <li>{@code Name} / {@code Value} (optional) — auto-generated unique when omitted.</li>
+	 *     <li>{@code OPT.M_Product_Category_ID.Identifier}, {@code OPT.C_UOM_ID.X12DE355},
+	 *         {@code OPT.M_AttributeSetInstance_ID.Identifier} — the common optional links.</li>
+	 *     <li>{@code OPT.C_CompensationGroup_Schema_ID.Identifier} (optional) — identifier of a
+	 *         {@link I_C_CompensationGroup_Schema} (created via
+	 *         "metasfresh contains C_CompensationGroup_Schema:") linking the product to its
+	 *         compensation-group schema.</li>
+	 *      <li>{@code ProductLifeCycleStatus} — (optional) BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}</li>
+	 * </ul>
+	 * <pre>{@code
+	 * Given metasfresh contains M_Products:
+	 *   | Identifier         | Name               | OPT.C_CompensationGroup_Schema_ID.Identifier |
+	 *   | schemaProduct | schemaProduct | compGroupSchema | ProductLifeCycleStatus |                            |
+	 * }</pre>
+	 */
 	@Given("metasfresh contains M_Products:")
 	public void metasfresh_contains_m_product(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{
@@ -257,6 +297,21 @@ public class M_Product_StepDef
 		}
 	}
 
+	/**
+	 * Updates existing products, looked up by their feature-file identifier.
+	 * <p>
+	 * Required column:<br>
+	 *   <b>M_Product_ID.Identifier</b> — identifier of a product created/loaded earlier in the scenario<br>
+	 * Optional columns (only the ones present are written):<br>
+	 *   <b>Value</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>,
+	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}
+	 *
+	 * <pre>{@code
+	 * When update M_Product:
+	 *   | M_Product_ID.Identifier | ProductLifeCycleStatus |
+	 *   | flippedToG              | G                      |
+	 * }</pre>
+	 */
 	@Given("update M_Product:")
 	public void update_M_Product(@NonNull final DataTable dataTable)
 	{
@@ -307,6 +362,8 @@ public class M_Product_StepDef
 				.ifPresent(value -> productRecord.setUPC(nullToken2Null(value)));
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode)
 				.ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
+				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
 
 		tableRow.getAsOptionalQuantity("WeightNet", uomDAO::getByX12DE355)
 				.ifPresent(netWeight -> {
@@ -340,6 +397,10 @@ public class M_Product_StepDef
 			final AttributeSetId attributeSetId = attributeSetTable.getId(asIdentifier);
 			productRecord.setM_AttributeSet_ID(attributeSetId.getRepoId());
 		}
+
+		tableRow.getAsOptionalIdentifier(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID)
+				.map(identifier -> identifier.lookupNotNullIn(compensationGroupSchemaTable))
+				.ifPresent(schema -> productRecord.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID()));
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
@@ -424,6 +485,21 @@ public class M_Product_StepDef
 				.ifPresent(id -> productTable.putOrReplace(identifier, productDAO.getById(id)));
 	}
 
+	/**
+	 * Resolves a {@code ProductLifeCycleStatus} cell, mapping an explicit NULL token to {@code 'O'}.
+	 * <p>
+	 * The column is mandatory ({@code NOT NULL}, default {@code 'O'}), so a NULL cannot be written
+	 * through. Nothing is lost by defaulting it: NULL and {@code 'O'} mean the same thing to the
+	 * application — {@code BBSStatus.ofNullableCode(null)} yields no status and every
+	 * {@code ProductLifeCycleAction} is allowed, which is exactly what {@code 'O'} (OK) encodes. So a
+	 * feature file writing NULL still gets the unrestricted product it asked for.
+	 */
+	@NonNull
+	private static String productLifeCycleStatusOrDefault(@Nullable final String value)
+	{
+		return CoalesceUtil.coalesceNotNull(nullToken2Null(value), X_M_Product.PRODUCTLIFECYCLESTATUS_OK);
+	}
+
 	private void updateMProduct(@NonNull final DataTableRow row)
 	{
 		final I_M_Product productRecord = row.getAsIdentifier().lookupIn(productTable);
@@ -435,6 +511,8 @@ public class M_Product_StepDef
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
+				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
 
 		saveRecord(productRecord);
 		productTable.putOrReplace(row.getAsIdentifier(), productRecord);

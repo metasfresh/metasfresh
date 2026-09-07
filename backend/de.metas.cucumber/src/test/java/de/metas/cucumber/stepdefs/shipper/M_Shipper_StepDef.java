@@ -68,6 +68,28 @@ public class M_Shipper_StepDef
 		shipperTable.put(row.getAsIdentifier(), shipperRecord);
 	}
 
+	/**
+	 * Creates or updates {@code M_Shipper} records.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (optional) alias to store the shipper under<br>
+	 *   <b>PickupTimeFrom</b> — (optional) defaults to 08:00<br>
+	 *   <b>PickupTimeTo</b> — (optional) defaults to 17:00<br>
+	 *   <b>InternalName</b> — (optional)<br>
+	 *   <b>ShipperGateway</b> — (optional)<br>
+	 *   <b>IsApiCarrierAdvise</b> — (optional)<br>
+	 *   <b>IsCreateDeliveryPlanning</b> — (optional)<br>
+	 *   <b>PriorityRule</b> — (optional) the shipper's priority rule code (1=Urgent, 3=High, 5=Medium,
+	 *     7=Low, 9=Minor); left empty (the AD column default) when omitted<br>
+	 * @cucumber.depends StepDefData: M_Shipper_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And contains M_Shippers
+	 *   | Identifier | PriorityRule |
+	 *   | express    | 1            |
+	 * </pre>
+	 */
 	@And("contains M_Shippers")
 	public void createOrUpdateShippers(@NonNull final DataTable dataTable)
 	{
@@ -106,10 +128,56 @@ public class M_Shipper_StepDef
 				.map(StringUtils::trimBlankToNull)
 				.ifPresent(record::setShipperGateway);
 
+		row.getAsOptionalBoolean(I_M_Shipper.COLUMNNAME_IsApiCarrierAdvise)
+				.ifPresent(record::setIsApiCarrierAdvise);
+
+		row.getAsOptionalBoolean(I_M_Shipper.COLUMNNAME_IsCreateDeliveryPlanning)
+				.ifPresent(record::setIsCreateDeliveryPlanning);
+
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_PriorityRule)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(record::setPriorityRule);
+
 		InterfaceWrapperHelper.save(record);
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(identifier -> shipperTable.put(identifier, record));
+	}
+
+	/**
+	 * Updates an already-known {@code M_Shipper} record — e.g. a carrier-service employee changing the
+	 * shipper's priority in the *Lieferweg* window.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required, identifier-ref) alias from a prior {@code contains M_Shippers}<br>
+	 *   <b>PriorityRule</b> — (optional) the shipper's new priority rule code (1=Urgent, 3=High, 5=Medium,
+	 *     7=Low, 9=Minor)<br>
+	 * @cucumber.depends StepDefData: M_Shipper_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_Shipper:
+	 *   | Identifier | PriorityRule |
+	 *   | express    | 1            |
+	 * </pre>
+	 */
+	@And("update M_Shipper:")
+	public void updateShipper(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::updateShipper);
+	}
+
+	private void updateShipper(@NonNull final DataTableRow row)
+	{
+		final I_M_Shipper record = row.getAsIdentifier().lookupNotNullIn(shipperTable);
+
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_PriorityRule)
+				.map(StringUtils::trimBlankToNull)
+				.ifPresent(record::setPriorityRule);
+
+		InterfaceWrapperHelper.save(record);
+
+		shipperTable.putOrReplace(row.getAsIdentifier(), record);
 	}
 
 }

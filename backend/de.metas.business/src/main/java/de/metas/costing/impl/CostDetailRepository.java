@@ -2,6 +2,8 @@ package de.metas.costing.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
@@ -10,6 +12,7 @@ import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostDetailRepository;
 import de.metas.costing.methods.CostAmountType;
@@ -40,6 +43,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -252,6 +256,13 @@ public class CostDetailRepository implements ICostDetailRepository
 			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostDetail_Type, amtType.getCode());
 		}
 
+		// IsChangingCosts
+		// Not a "someFiltersApplied" filter on its own: it would still match half the table.
+		if (query.getChangingCosts() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_IsChangingCosts, query.getChangingCosts());
+		}
+
 		// Product
 		if (query.getProductId() != null)
 		{
@@ -415,6 +426,56 @@ public class CostDetailRepository implements ICostDetailRepository
 	{
 		return toSqlQuery(CostDetailQuery.builder().productId(productId).build())
 				.anyMatch();
+	}
+
+	@Override
+	public boolean hasCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return toSqlQuery(query).anyMatch();
+	}
+
+	@Override
+	public ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final Set<ProductId> productIds)
+	{
+		if (productIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		// ONE batched, indexed query over the given product set (no per-product N+1). M_CostRevaluationLine_ID is a
+		// NULLABLE FK, set ONLY on cost details written by a completed M_CostRevaluation line (see
+		// #updateRecordFromDocumentRef) — NULL on every other detail. So "IS NOT NULL" means a completed
+		// cost-revaluation line has already written a detail here — regardless of RevaluationSource (broad,
+		// source-agnostic signal, NOT restricted to a prior CopyFromCostElement switch).
+		return queryBL.createQueryBuilder(I_M_CostDetail.class)
+				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostElement_ID, costElementId)
+				.addInArrayFilter(I_M_CostDetail.COLUMNNAME_M_Product_ID, productIds)
+				.addNotNull(I_M_CostDetail.COLUMNNAME_M_CostRevaluationLine_ID)
+				.create()
+				.listDistinctAsImmutableSet(I_M_CostDetail.COLUMNNAME_M_Product_ID, ProductId.class);
+	}
+
+	@Override
+	public Optional<CostDetail> getFirstChangingCostsDetailAfter(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Instant asOfDate)
+	{
+		// Range.greaterThan => DateAcct > asOfDate, STRICTLY after. A detail dated exactly ON asOfDate is a pre-cut-off
+		// event; see ICostingService#getCostAsOf for why that boundary must not be relaxed to >=.
+		return toSqlQuery(CostDetailQuery.builderFrom(costSegmentAndElement)
+				// Only changing-costs details carry a meaningful Prev_* state; recording-only ones repeat the current one.
+				.changingCosts(true)
+				.dateAcctRage(Range.greaterThan(asOfDate))
+				.orderBy(CostDetailQuery.OrderBy.DATE_ACCT_ASC)
+				.orderBy(CostDetailQuery.OrderBy.ID_ASC)
+				.build())
+				.create()
+				.firstOptional()
+				.map(this::toCostDetail);
 	}
 
 	@Override

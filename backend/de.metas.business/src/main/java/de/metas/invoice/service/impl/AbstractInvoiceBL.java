@@ -1652,6 +1652,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	@Nullable
+	public final DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID());
+		return docTypeId != null
+				? docTypeId
+				: DocTypeId.ofRepoIdOrNull(invoice.getC_DocTypeTarget_ID());
+	}
+
+	@Override
 	public final boolean isPurchaseProforma(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		return getInvoiceDocBaseType(invoice).isPurchaseProformaInvoice();

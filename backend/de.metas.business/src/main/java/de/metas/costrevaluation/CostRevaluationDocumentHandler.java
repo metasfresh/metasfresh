@@ -101,4 +101,21 @@ class CostRevaluationDocumentHandler implements DocumentHandler
 		costRevaluation.setDocAction(IDocument.ACTION_None);
 		return DocStatus.Completed.getCode();
 	}
+
+	@Override
+	public void reverseCorrectIt(final DocumentTableFields docFields)
+	{
+		final I_M_CostRevaluation costRevaluation = extractRecord(docFields);
+
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(costRevaluation.getDocStatus());
+		if (!docStatus.isCompleted())
+		{
+			throw new AdempiereException("Only completed documents can be reversed. Current status: " + docStatus);
+		}
+
+		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(costRevaluation.getM_CostRevaluation_ID());
+		costRevaluationService.reverseDetails(costRevaluationId);
+
+		costRevaluation.setDocAction(IDocument.ACTION_None);
+	}
 }

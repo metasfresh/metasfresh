@@ -360,6 +360,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsShowQtyAvailableForLines (final boolean IsShowQtyAvailableForLines)
+	{
+		set_Value (COLUMNNAME_IsShowQtyAvailableForLines, IsShowQtyAvailableForLines);
+	}
+
+	@Override
+	public boolean isShowQtyAvailableForLines()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowQtyAvailableForLines);
+	}
+
+	@Override
 	public void setLotNumber (final boolean LotNumber)
 	{
 		set_Value (COLUMNNAME_LotNumber, LotNumber);

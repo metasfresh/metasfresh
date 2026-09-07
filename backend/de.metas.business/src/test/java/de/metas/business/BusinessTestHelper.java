@@ -472,6 +472,7 @@ public class BusinessTestHelper
 		POJOWrapper.setInstanceName(currencyRecord, symbol);
 		currencyRecord.setCurSymbol(symbol);
 		currencyRecord.setISO_Code(CurrencyCode.EUR.toThreeLetterCode());
+		currencyRecord.setDescription(CurrencyCode.EUR.toThreeLetterCode());
 		currencyRecord.setIsActive(true);
 
 		saveRecord(currencyRecord);

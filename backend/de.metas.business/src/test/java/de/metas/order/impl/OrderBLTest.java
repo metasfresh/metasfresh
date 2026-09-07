@@ -26,6 +26,8 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.StringUtils;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -35,6 +37,8 @@ import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.sql.Timestamp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -293,6 +297,77 @@ class OrderBLTest
 			assertThat(order.isAutoInvoice())
 					.as("purchase order IsAutoInvoice must be false (PO path always false)")
 					.isFalse();
+		}
+	}
+
+	// syncDatesFromTransportOrder - BLDate and ETA are copied independently
+	////////////////////////////////
+
+	@Nested
+	class SyncDatesFromTransportOrder
+	{
+		private I_M_ShipperTransportation transportOrder;
+		private I_C_Order order;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			transportOrder = InterfaceWrapperHelper.newInstance(I_M_ShipperTransportation.class);
+			order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+			saveRecord(order);
+		}
+
+		@Test
+		void bothDatesSetOnTransportOrder_thenBothApplied()
+		{
+			transportOrder.setBLDate(Timestamp.valueOf("2026-08-01 00:00:00"));
+			transportOrder.setETA(Timestamp.valueOf("2026-08-05 00:00:00"));
+
+			orderBL.syncDatesFromTransportOrder(OrderId.ofRepoId(order.getC_Order_ID()), transportOrder);
+
+			final I_C_Order reloaded = InterfaceWrapperHelper.load(order.getC_Order_ID(), I_C_Order.class);
+			assertThat(reloaded.getBLDate()).isEqualTo(Timestamp.valueOf("2026-08-01 00:00:00"));
+			assertThat(reloaded.getETA()).isEqualTo(Timestamp.valueOf("2026-08-05 00:00:00"));
+		}
+
+		@Test
+		void transportOrderHasNoETA_thenOrdersExistingETAIsNotWiped()
+		{
+			order.setETA(Timestamp.valueOf("2026-07-01 00:00:00"));
+			saveRecord(order);
+
+			transportOrder.setBLDate(Timestamp.valueOf("2026-08-01 00:00:00"));
+			// transportOrder.ETA left unset (null)
+
+			orderBL.syncDatesFromTransportOrder(OrderId.ofRepoId(order.getC_Order_ID()), transportOrder);
+
+			final I_C_Order reloaded = InterfaceWrapperHelper.load(order.getC_Order_ID(), I_C_Order.class);
+			assertThat(reloaded.getBLDate())
+					.as("the transport order's BLDate is genuinely set, so it must still be applied")
+					.isEqualTo(Timestamp.valueOf("2026-08-01 00:00:00"));
+			assertThat(reloaded.getETA())
+					.as("the transport order carries no ETA - the order's own, already-set ETA must survive untouched")
+					.isEqualTo(Timestamp.valueOf("2026-07-01 00:00:00"));
+		}
+
+		@Test
+		void transportOrderHasNoBLDate_thenOrdersExistingBLDateIsNotWiped()
+		{
+			order.setBLDate(Timestamp.valueOf("2026-06-01 00:00:00"));
+			saveRecord(order);
+
+			transportOrder.setETA(Timestamp.valueOf("2026-08-05 00:00:00"));
+			// transportOrder.BLDate left unset (null)
+
+			orderBL.syncDatesFromTransportOrder(OrderId.ofRepoId(order.getC_Order_ID()), transportOrder);
+
+			final I_C_Order reloaded = InterfaceWrapperHelper.load(order.getC_Order_ID(), I_C_Order.class);
+			assertThat(reloaded.getETA())
+					.as("the transport order's ETA is genuinely set, so it must still be applied")
+					.isEqualTo(Timestamp.valueOf("2026-08-05 00:00:00"));
+			assertThat(reloaded.getBLDate())
+					.as("the transport order carries no BLDate - the order's own, already-set BLDate must survive untouched")
+					.isEqualTo(Timestamp.valueOf("2026-06-01 00:00:00"));
 		}
 	}
 }

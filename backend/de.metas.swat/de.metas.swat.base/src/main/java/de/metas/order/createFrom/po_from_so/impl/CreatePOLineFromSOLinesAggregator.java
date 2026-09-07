@@ -11,6 +11,8 @@ import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -72,6 +74,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	private final transient IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final transient IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	private final I_C_Order purchaseOrder;
 
@@ -80,7 +83,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	@NonNull
 	private final PurchaseTypeEnum purchaseType;
 
-	private final Map<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
+	/* package */ final Map<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
 
 	/**
 	 * @param purchaseQtySource column name of the sales order line column to get the qty from. Can be either can be either QtyOrdered or QtyReserved.
@@ -169,10 +172,43 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 
+		// Propagate SO shipper only when it drives delivery planning.
+		if (purchaseType.isDropship())
+		{
+			copyDPShipperFromSOLineToPOLine(salesOrderLine, purchaseOrderLine);
+		}
+
 		purchaseOrderLine.setM_AttributeSetInstance(poASI);
 		IModelAttributeSetInstanceListener.DYNATTR_DisableASIUpdateOnModelChange.setValue(purchaseOrderLine, true); // (08091)
 
 		return purchaseOrderLine;
+	}
+
+	/**
+	 * Propagates the SO line's M_Shipper_ID to the PO line when the shipper has
+	 * {@code IsCreateDeliveryPlanning='Y'}. Only called in the DROPSHIP branch.
+	 * <p>
+	 * Why this is needed: the {@code M_ReceiptSchedule} interceptor reads {@code C_OrderLine.M_Shipper_ID}
+	 * from the generated PO line to resolve the shipper for incoming delivery-planning auto-creation
+	 * (the C2 gate in {@code DeliveryPlanningService.isAutoCreateEnabled}). Without the shipper on the PO
+	 * line, the shipper-less dropship receipt schedule would create no incoming delivery planning.
+	 * When the shipper is NOT a DP-shipper the vendor-derived shipper on the PO line is left unchanged.
+	 */
+	private void copyDPShipperFromSOLineToPOLine(
+			@NonNull final I_C_OrderLine salesOrderLine,
+			@NonNull final I_C_OrderLine purchaseOrderLine)
+	{
+		final ShipperId soShipperId = ShipperId.ofRepoIdOrNull(salesOrderLine.getM_Shipper_ID());
+		if (soShipperId == null)
+		{
+			return;
+		}
+
+		final boolean isDPShipper = shipperDAO.getById(soShipperId).isCreateDeliveryPlanning();
+		if (isDPShipper)
+		{
+			purchaseOrderLine.setM_Shipper_ID(soShipperId.getRepoId());
+		}
 	}
 
 	private void copyBPartnerAndLocationDetailsFromSalesToPurchaseOrderLine(

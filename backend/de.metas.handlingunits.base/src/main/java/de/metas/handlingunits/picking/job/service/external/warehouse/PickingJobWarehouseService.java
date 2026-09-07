@@ -13,7 +13,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -40,11 +39,6 @@ public class PickingJobWarehouseService
 	public Optional<WarehouseId> getWarehouseIdByUserId(@NonNull final UserId userId)
 	{
 		return workplaceService.getWarehouseIdByUserId(userId);
-	}
-
-	public Set<LocatorId> getPickFromLocatorIds(final Workplace workplace)
-	{
-		return workplaceService.getPickFromLocatorIds(workplace);
 	}
 
 }

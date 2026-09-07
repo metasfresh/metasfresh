@@ -28,6 +28,10 @@ import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -40,6 +44,7 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
 import lombok.Builder;
@@ -93,7 +98,7 @@ public class PickingJobCreateCommand
 		{
 			final PickingJobHeaderKey headerKey = extractPickingJobHeaderKey(items);
 
-			final PickingJob pickingJob = pickingJobRepository.createNewAndGet(
+			PickingJob pickingJob = pickingJobRepository.createNewAndGet(
 					PickingJobCreateRepoRequest.builder()
 							.aggregationType(request.getAggregationType())
 							.orgId(headerKey.getOrgId())
@@ -108,6 +113,12 @@ public class PickingJobCreateCommand
 							.handoverLocationId(headerKey.getHandoverLocationId())
 							.build(),
 					loadingSupportServices);
+
+			// Initialise the header carrier from the (all-unprocessed) lines at creation, so the carrier-advise
+			// caption is shown as soon as the job is opened — before any parcel (LU/TU select/close) event.
+			// All lines share one carrier → that carrier; divergent → null (shown per-line in the line view).
+			pickingJob = pickingJob.withHeaderCarrierFromUnprocessedLines();
+			pickingJobRepository.save(pickingJob);
 
 			huService.reservePickFromHUs(pickingJob);
 
@@ -265,6 +276,38 @@ public class PickingJobCreateCommand
 		}
 	}
 
+	@NonNull
+	private CarrierAdviseState getCarrierAdviseState(@NonNull final ScheduledPackageableList items)
+	{
+		final ShipmentScheduleAndJobScheduleId scheduleId = items.getSingleScheduleIdIfUnique().orElse(null);
+		if (scheduleId == null)
+		{
+			return CarrierAdviseState.NONE;
+		}
+
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleService.getByIdAsRecord(scheduleId.getShipmentScheduleId());
+		final CarrierAdviseStatus advisingStatus = CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status());
+
+		return CarrierAdviseState.builder()
+				.carrierProductId(CarrierProductId.ofRepoIdOrNull(shipmentSchedule.getCarrier_Product_ID()))
+				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(shipmentSchedule.getCarrier_Goods_Type_ID()))
+				.carrierServices(shipmentScheduleService.getCarrierServiceIds(scheduleId.getShipmentScheduleId()))
+				.isManual(advisingStatus != null && advisingStatus.isManual())
+				.build();
+	}
+
+	@Value
+	@Builder
+	private static class CarrierAdviseState
+	{
+		static final CarrierAdviseState NONE = CarrierAdviseState.builder().build();
+
+		@Nullable CarrierProductId carrierProductId;
+		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+		@Builder.Default @NonNull ImmutableSet<CarrierServiceId> carrierServices = ImmutableSet.of();
+		boolean isManual;
+	}
+
 	private PickingJobCreateRepoRequest.Line createLineRequest_WithPickingPlan(final @NonNull ScheduledPackageableList items)
 	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
@@ -286,6 +329,8 @@ public class PickingJobCreateCommand
 		final ImmutableSet<HuId> allowedReservedVhuIds = huService.getVHUIdsByDocumentRef(
 				HUReservationDocRef.ofSalesOrderLineId(items.getSingleSalesOrderLineId()));
 
+		final CarrierAdviseState carrierAdviseState = getCarrierAdviseState(items);
+
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(items.getSingleProductId())
 				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
@@ -293,6 +338,10 @@ public class PickingJobCreateCommand
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
 				.scheduleId(items.getSingleScheduleIdIfUnique().orElse(null))
+				.carrierProductId(carrierAdviseState.getCarrierProductId())
+				.carrierGoodsTypeId(carrierAdviseState.getCarrierGoodsTypeId())
+				.carrierServices(carrierAdviseState.getCarrierServices())
+				.isManual(carrierAdviseState.isManual())
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.steps(lines.stream()
 						.map(planLine -> createStepRequest(planLine, allowedReservedVhuIds))
@@ -304,8 +353,10 @@ public class PickingJobCreateCommand
 				.build();
 	}
 
-	private static PickingJobCreateRepoRequest.Line createLineRequest_NoPickingPlan(final @NonNull ScheduledPackageableList items)
+	private PickingJobCreateRepoRequest.Line createLineRequest_NoPickingPlan(final @NonNull ScheduledPackageableList items)
 	{
+		final CarrierAdviseState carrierAdviseState = getCarrierAdviseState(items);
+
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(items.getSingleProductId())
 				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
@@ -313,6 +364,10 @@ public class PickingJobCreateCommand
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
 				.scheduleId(items.getSingleScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No single schedule found for " + items)))
+				.carrierProductId(carrierAdviseState.getCarrierProductId())
+				.carrierGoodsTypeId(carrierAdviseState.getCarrierGoodsTypeId())
+				.carrierServices(carrierAdviseState.getCarrierServices())
+				.isManual(carrierAdviseState.isManual())
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.pickFromManufacturingOrderId(items.getSingleManufacturingOrderId().orElse(null))
 				.build();

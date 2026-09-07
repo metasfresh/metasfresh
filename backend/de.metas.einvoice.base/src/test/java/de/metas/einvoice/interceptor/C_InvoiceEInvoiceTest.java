@@ -284,6 +284,7 @@ public class C_InvoiceEInvoiceTest
 		// === Currency + bank ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		final I_C_BP_BankAccount sellerBank = newInstance(I_C_BP_BankAccount.class);
@@ -420,6 +421,7 @@ public class C_InvoiceEInvoiceTest
 
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		final I_C_DocType docType = newInstance(I_C_DocType.class);

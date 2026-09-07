@@ -86,10 +86,24 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
+		this(sqlBindings, SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings));
+	}
+
+	/**
+	 * Seam for windows that need a non-default selection factory (e.g. one that builds the row
+	 * selection from a parameterized function instead of scanning a fully-materialized view). The default
+	 * behavior of every other window is untouched (they use the single-argument constructor above).
+	 */
+	SqlViewDataRepository(
+			@NonNull final SqlViewBinding sqlBindings,
+			@NonNull final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory)
+	{
 		this.sqlViewBinding = sqlBindings;
-		this.viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
+		this.viewRowIdsOrderedSelectionFactory = viewRowIdsOrderedSelectionFactory;
 		this.filterConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlBindings);
 	}
+
+	protected final SqlViewBinding getSqlViewBinding() {return sqlViewBinding;}
 
 	@Override
 	public String toString()
@@ -456,12 +470,11 @@ class SqlViewDataRepository implements IViewDataRepository
 		logger.debug("Using: {}", orderedSelection);
 
 		final ViewId viewId = orderedSelection.getViewId();
-		final SqlAndParams sqlAndParams = sqlViewBinding.getSqlViewSelect().selectByPage()
-				.viewEvalCtx(viewEvalCtx)
-				.viewId(viewId)
-				.firstRowZeroBased(firstRow)
-				.pageLength(pageLength)
-				.build();
+		final SqlAndParams sqlAndParams = buildSelectByPage(viewEvalCtx, viewId, firstRow, pageLength);
+		if (sqlAndParams == null)
+		{
+			return ImmutableList.of();
+		}
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -485,6 +498,45 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
+	/**
+	 * Builds the page-render SQL for {@link #retrievePage(ViewEvaluationCtx, ViewRowIdsOrderedSelection, int, int)}.
+	 * Default: join the persisted selection back to the view/table. Subclasses may override to source the
+	 * page from a different relation. Returning {@code null} yields an empty page.
+	 */
+	@Nullable
+	protected SqlAndParams buildSelectByPage(
+			final ViewEvaluationCtx viewEvalCtx,
+			final ViewId viewId,
+			final int firstRow,
+			final int pageLength)
+	{
+		return sqlViewBinding.getSqlViewSelect().selectByPage()
+				.viewEvalCtx(viewEvalCtx)
+				.viewId(viewId)
+				.firstRowZeroBased(firstRow)
+				.pageLength(pageLength)
+				.build();
+	}
+
+	/**
+	 * Builds the row-ids page SQL for {@link #retrieveRowIdsByPage(ViewEvaluationCtx, ViewRowIdsOrderedSelection, int, int)}.
+	 * See {@link #buildSelectByPage(ViewEvaluationCtx, ViewId, int, int)}.
+	 */
+	@Nullable
+	protected SqlAndParams buildSelectRowIdsByPage(
+			final ViewEvaluationCtx viewEvalCtx,
+			final ViewId viewId,
+			final int firstRow,
+			final int pageLength)
+	{
+		return sqlViewBinding.getSqlViewSelect().selectRowIdsByPage()
+				.viewEvalCtx(viewEvalCtx)
+				.viewId(viewId)
+				.firstRowZeroBased(firstRow)
+				.pageLength(pageLength)
+				.build();
+	}
+
 	@Override
 	public ImmutableList<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx,
 														  final ViewRowIdsOrderedSelection orderedSelection,
@@ -495,12 +547,11 @@ class SqlViewDataRepository implements IViewDataRepository
 		logger.debug("Using: {}", orderedSelection);
 
 		final ViewId viewId = orderedSelection.getViewId();
-		final SqlAndParams sqlAndParams = sqlViewBinding.getSqlViewSelect().selectRowIdsByPage()
-				.viewEvalCtx(viewEvalCtx)
-				.viewId(viewId)
-				.firstRowZeroBased(firstRow)
-				.pageLength(pageLength)
-				.build();
+		final SqlAndParams sqlAndParams = buildSelectRowIdsByPage(viewEvalCtx, viewId, firstRow, pageLength);
+		if (sqlAndParams == null)
+		{
+			return ImmutableList.of();
+		}
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

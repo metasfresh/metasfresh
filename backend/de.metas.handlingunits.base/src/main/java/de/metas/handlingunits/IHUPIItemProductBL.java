@@ -52,6 +52,15 @@ import java.util.Set;
 
 public interface IHUPIItemProductBL extends ISingletonService
 {
+	/**
+	 * Legacy key. The setting predates this accessor and is still named after the WebUI quick-input helper
+	 * that first read it; it is now read from here too, because the same rule applies to the order line
+	 * interceptor. The string must NOT change — {@code AD_SysConfig} rows on live instances key on it
+	 * verbatim.
+	 */
+	String SYSCONFIG_EnforcePrecisePricePerHUItemProduct =
+			"de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper.EnforcePrecisePricePerHUItemProduct";
+
 	HUPIItemProduct getById(@NonNull HUPIItemProductId id);
 
 	I_M_HU_PI_Item_Product getRecordById(HUPIItemProductId id);

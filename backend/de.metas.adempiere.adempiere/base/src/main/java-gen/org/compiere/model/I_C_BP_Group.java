@@ -510,7 +510,7 @@ public interface I_C_BP_Group
 	String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
-	 * Set Association.
+	 * Set Alternate Invoice Recipient.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -519,7 +519,7 @@ public interface I_C_BP_Group
 	void setIsDeviatingBillBPartner (boolean IsDeviatingBillBPartner);
 
 	/**
-	 * Get Association.
+	 * Get Alternate Invoice Recipient.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -529,6 +529,27 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_IsDeviatingBillBPartner = new ModelColumn<>(I_C_BP_Group.class, "IsDeviatingBillBPartner", null);
 	String COLUMNNAME_IsDeviatingBillBPartner = "IsDeviatingBillBPartner";
+
+	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (@Nullable java.lang.String IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	@Nullable java.lang.String getIsPreAdviceRequired();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_BP_Group.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
 
 	/**
 	 * Set Discount Schema.

@@ -34,6 +34,7 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
@@ -294,6 +295,31 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 						.qtyScrap(qtyScrap)
 						.qtyReject(qtyReject)
 						.pickingCandidateId(candidate.getPickingCandidateId())
+						.build());
+	}
+
+	@Override
+	@NonNull
+	public I_PP_Cost_Collector createCostDifferenceDistribution(
+			@NonNull final I_PP_Order order,
+			@NonNull final ZonedDateTime movementDate)
+	{
+		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
+		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(order.getM_Locator_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(order.getM_AttributeSetInstance_ID());
+
+		return createCollector(
+				CostCollectorCreateRequest.builder()
+						.costCollectorType(CostCollectorType.CostDifferenceDistribution)
+						.order(order)
+						.productId(productId)
+						.locatorId(locatorId)
+						.attributeSetInstanceId(asiId)
+						.resourceId(ResourceId.ofRepoId(order.getS_Resource_ID()))
+						.movementDate(movementDate)
+						// The collector carries no quantity: the posted amounts are recomputed from the order's
+						// PP_Order_Cost rows, so a qty here would only invite double-counting.
+						.qty(Quantitys.zero(productId))
 						.build());
 	}
 

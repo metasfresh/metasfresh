@@ -46,6 +46,7 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.util.StringUtils;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.edi.impprocessor.IMP_Processor_StepDefData;
@@ -257,6 +258,24 @@ public class C_OLCand_StepDef
 		assertThat(olCand.getErrorMsg()).contains(errorMsg);
 	}
 
+	/**
+	 * @cucumber.stepdef Validates fields of an already-loaded {@code C_OLCand}. Only the columns present in the row are asserted.
+	 * @cucumber.columns
+	 *   <b>C_OLCand_ID</b> — (required, identifier-ref) the OLCand to validate<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) expected product<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected bpartner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref) expected bpartner location<br>
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected packing instruction<br>
+	 *   <b>IsError</b> — (optional) expected error flag<br>
+	 *   <b>QtyEntered, DeliveryRule, DeliveryViaRule, POReference, Processed, PriceActual, …</b> — (optional) asserted when present<br>
+	 * @cucumber.depends StepDefData: C_OLCand_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, M_Product_StepDefData, M_HU_PI_Item_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate C_OLCand:
+	 *   | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | QtyEntered |
+	 *   | olCand                 | product                 | huItemProduct_old                      | 10         |
+	 * </pre>
+	 */
 	@And("validate C_OLCand:")
 	public void validate_C_OLCand(@NonNull final DataTable dataTable)
 	{
@@ -268,11 +287,19 @@ public class C_OLCand_StepDef
 			assertThat(olCand).isNotNull();
 			InterfaceWrapperHelper.refresh(olCand);
 
-			final BPartnerId bPartnerId = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID).lookupIdIn(bpartnerTable);
-			softly.assertThat(olCand.getC_BPartner_ID()).as(COLUMNNAME_C_BPartner_ID).isEqualTo(BPartnerId.toRepoId(bPartnerId));
+			row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final BPartnerId bPartnerId = id.lookupIdIn(bpartnerTable);
+						softly.assertThat(olCand.getC_BPartner_ID()).as(COLUMNNAME_C_BPartner_ID).isEqualTo(BPartnerId.toRepoId(bPartnerId));
+					});
 
-			final BPartnerLocationId bPartnerLocationId = row.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID).lookupIdIn(bpartnerLocationTable);
-			softly.assertThat(olCand.getC_BPartner_Location_ID()).as(COLUMNNAME_C_BPartner_Location_ID).isEqualTo(BPartnerLocationId.toRepoId(bPartnerLocationId));
+			row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final BPartnerLocationId bPartnerLocationId = id.lookupIdIn(bpartnerLocationTable);
+						softly.assertThat(olCand.getC_BPartner_Location_ID()).as(COLUMNNAME_C_BPartner_Location_ID).isEqualTo(BPartnerLocationId.toRepoId(bPartnerLocationId));
+					});
 
 			final ProductId productId = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
 			softly.assertThat(olCand.getM_Product_ID()).as(COLUMNNAME_M_Product_ID).isEqualTo(ProductId.toRepoId(productId));
@@ -291,8 +318,9 @@ public class C_OLCand_StepDef
 			row.getAsOptionalBigDecimal(COLUMNNAME_QtyEntered)
 					.ifPresent(qtyEntered -> softly.assertThat(olCand.getQtyEntered()).as(COLUMNNAME_QtyEntered).isEqualTo(qtyEntered));
 
-			final Boolean isError = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsError);
-			softly.assertThat(olCand.isError()).as(COLUMNNAME_IsError).isEqualTo(isError);
+			row.getAsOptionalString(COLUMNNAME_IsError)
+					.map(StringUtils::toBoolean)
+					.ifPresent(isError -> softly.assertThat(olCand.isError()).as(COLUMNNAME_IsError).isEqualTo(isError));
 
 			final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_Processed, false);
 			softly.assertThat(olCand.isProcessed()).as(COLUMNNAME_Processed).isEqualTo(processed);

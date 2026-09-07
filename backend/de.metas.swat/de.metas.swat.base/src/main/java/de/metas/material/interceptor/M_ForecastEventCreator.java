@@ -93,6 +93,12 @@ public class M_ForecastEventCreator
 			@NonNull final I_M_Forecast forecastRecord,
 			@NonNull final DocTimingType timing)
 	{
+		if (forecastRecord.isBudgetForecast())
+		{
+			// A budget forecast is a planning figure only; it must not drive material disposition.
+			return Optional.empty();
+		}
+
 		final List<I_M_ForecastLine> forecastLineRecords = forecastsRepo
 				.retrieveLinesByForecastId(ForecastId.ofRepoId(forecastRecord.getM_Forecast_ID()));
 

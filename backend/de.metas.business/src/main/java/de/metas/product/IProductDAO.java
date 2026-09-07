@@ -117,6 +117,17 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull ClientId clientId);
 
+	/**
+	 * Finds the first active {@link org.compiere.model.I_M_Product} row matching the given barcode value
+	 * against {@code GTIN}, {@code EAN13_ProductCode}, or {@code UPC} columns (OR logic).
+	 * Ordered by {@code M_Product_ID} ascending; the first row's product is returned.
+	 *
+	 * @param gtin the GTIN/EAN13/UPC value to match
+	 * @return the product ID of the first matching row, or {@link Optional#empty()} if none found
+	 */
+	@NonNull
+	Optional<ProductId> findFirstProductIdByGtin(@NonNull GTIN gtin);
+
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 
 	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
@@ -204,7 +215,7 @@ public interface IProductDAO extends ISingletonService
 
 	String getProductCategoryNameById(ProductCategoryId id);
 
-	ProductId getProductIdByResourceId(ResourceId resourceId);
+	Optional<ProductId> getProductIdByResourceId(ResourceId resourceId);
 
 	void updateProductsByResourceIds(Set<ResourceId> resourceIds, Consumer<I_M_Product> productUpdater);
 
@@ -229,4 +240,15 @@ public interface IProductDAO extends ISingletonService
 
 	@NonNull
 	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
+
+	/**
+	 * Like {@link #getByIdsInTrx(Set)}, but does <b>not</b> filter out inactive records — mirroring
+	 * {@link #getByIdInTrx(ProductId)}, which also loads a product regardless of its {@code IsActive} flag.
+	 * <p>
+	 * Use this where a batch check has to behave exactly like N single-product checks; a product can be
+	 * deactivated while documents still reference it, and dropping it from the batch would silently skip it.
+	 * Ids with no product at all are simply absent from the result.
+	 */
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrxIncludingInactive(@NonNull Set<ProductId> productIds);
 }

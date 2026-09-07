@@ -371,6 +371,34 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		Check.assume(added, "Line should not be already compensated: {}", this);
 	}
 
+	/**
+	 * @return true if this line is a <b>sales</b> credit memo whose counter-line is a sales invoice.
+	 * <p>
+	 * For such a pair, the credit memo's receivable is cleared by
+	 * {@code Doc_AllocationHdr.createCreditMemoCompensationFacts()} while the <i>invoice</i> line is iterated,
+	 * so all that is left to book on this line is its own discount / write-off.
+	 * <p>
+	 * Unlike {@link #isInvoiceWithCreditMemoCounterLine(AcctSchemaId)} this is purely structural, i.e. it does not
+	 * depend on the order in which the allocation's lines are iterated.
+	 */
+	public boolean isSalesCreditMemoWithInvoiceCounterLine()
+	{
+		if (!hasInvoiceDocument() || !isCreditMemoInvoice() || !isSOTrxInvoice())
+		{
+			return false;
+		}
+
+		final DocLine_Allocation counterLine = getCounterDocLine();
+		if (counterLine == null || !counterLine.hasInvoiceDocument())
+		{
+			return false;
+		}
+
+		// Same SOTrx, counter is a regular invoice
+		return counterLine.isSOTrxInvoice()
+				&& !counterLine.isCreditMemoInvoice();
+	}
+
 	public boolean hasInvoiceDocument()
 	{
 		return getC_Invoice() != null;

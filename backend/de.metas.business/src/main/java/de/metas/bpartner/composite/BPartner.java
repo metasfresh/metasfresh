@@ -3,6 +3,8 @@ package de.metas.bpartner.composite;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
@@ -178,7 +180,8 @@ public class BPartner
 	private boolean identifiedByExternalReference;
 
 	private final PaymentTermId customerPaymentTermId;
-	private final PricingSystemId customerPricingSystemId;
+	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's priceListId
+	private PricingSystemId customerPricingSystemId;
 	private final IncotermsId customerIncotermsId;
 
 	private final PaymentTermId vendorPaymentTermId;
@@ -188,8 +191,10 @@ public class BPartner
 	private final String referrer;
 	@Nullable private final CampaignId campaignId;
 
-	private final Integer creditorId;
-	private final Integer debtorId;
+	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's creditorId
+	private @Nullable CreditorId creditorId;
+	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's debtorId
+	private @Nullable DebtorId debtorId;
 
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
@@ -243,8 +248,8 @@ public class BPartner
 			@Nullable final DocTypeId soDocTypeTargetId,
 			@Nullable final String firstName,
 			@Nullable final String lastName,
-			@Nullable final Integer creditorId,
-			@Nullable final Integer debtorId,
+			@Nullable final CreditorId creditorId,
+			@Nullable final DebtorId debtorId,
 			@Nullable final String glnLookupLabel)
 	{
 		this.id = id;

@@ -34,6 +34,20 @@ export const GetQuantityDialog = {
         await page.locator('#qty-input').fill(`${qty}`);
     }),
 
+    expectQtyEnteredVisible: async () => await test.step(`${NAME} - Expect QtyEntered field visible`, async () => {
+        await expect(page.locator('#qty-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectCatchWeightVisible: async () => await test.step(`${NAME} - Expect CatchWeight field visible`, async () => {
+        await expect(page.locator('#catch-weight')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // The catch-weight row exists only while the line carries a catch-weight UOM, so what the
+    // operator sees when the weight is not captured is the row being ABSENT, not merely hidden.
+    expectCatchWeightNotVisible: async () => await test.step(`${NAME} - Expect CatchWeight field not present`, async () => {
+        await expect(page.locator('#catch-weight')).toHaveCount(0);
+    }),
+
     expectLotNoVisible: async () => await test.step(`${NAME} - Expect LotNo visible`, async () => {
         await expect(page.getByTestId('lotNo')).toBeVisible();
     }),
@@ -206,7 +220,9 @@ export const GetQuantityDialog = {
 
     clickManual: async () => await test.step(`${NAME} - Press Manual`, async () => {
         await page.getByTestId('switchToManualInput-button').tap();
-        await page.locator('#qty-input').waitFor({ timeout: SLOW_ACTION_TIMEOUT }); // atm that's the only indicator that we switched to manual input
+        // The quantity field appearing is what tells the operator - and us - that the switch happened;
+        // atm it is also the only indicator.
+        await expect(page.locator('#qty-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
@@ -218,12 +234,23 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError, closeTarget = false }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyInputVisible, expectCatchWeightVisible, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError, closeTarget = false }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
         if (switchToManualInput) {
             await GetQuantityDialog.clickManual();
+        }
+
+        if (expectQtyInputVisible) {
+            await GetQuantityDialog.expectQtyEnteredVisible();
+        }
+        if (expectCatchWeightVisible != null) {
+            if (expectCatchWeightVisible) {
+                await GetQuantityDialog.expectCatchWeightVisible();
+            } else {
+                await GetQuantityDialog.expectCatchWeightNotVisible();
+            }
         }
 
         if (expectQtyEntered != null) {

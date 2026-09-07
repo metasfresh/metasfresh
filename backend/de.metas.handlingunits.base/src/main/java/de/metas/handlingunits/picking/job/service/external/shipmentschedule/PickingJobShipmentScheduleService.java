@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.shipmentschedule;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.HuId;
@@ -7,7 +8,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
+import com.google.common.collect.ImmutableSet;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -43,15 +47,24 @@ public class PickingJobShipmentScheduleService
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
+	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
 
+	@VisibleForTesting
 	public static PickingJobShipmentScheduleService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				PickingJobShipmentScheduleService.class,
-				() -> new PickingJobShipmentScheduleService(ShipmentScheduleRepository.newInstanceForUnitTesting())
+				() -> new PickingJobShipmentScheduleService(
+						ShipmentScheduleRepository.newInstanceForUnitTesting(),
+						ShipmentScheduleCarrierServiceRepository.newInstanceForUnitTesting())
 		);
+	}
+
+	public ImmutableSet<CarrierServiceId> getCarrierServiceIds(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return carrierServiceRepository.getAssignedServiceIdsByShipmentScheduleId(shipmentScheduleId);
 	}
 
 	public ShipmentScheduleInfoLoadingCache newLoadingCache()
@@ -133,6 +146,17 @@ public class PickingJobShipmentScheduleService
 	public void deleteByTopLevelHUsAndShipmentScheduleId(@NonNull final Collection<I_M_HU> topLevelHUs, @NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		huShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
+	}
+
+	/**
+	 * @see IHUShipmentScheduleBL#reduceQtyPickedForPickToTU(ShipmentScheduleId, HuId, Quantity)
+	 */
+	public void reduceQtyPickedForPickToTU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final HuId pickToTuId,
+			@NonNull final Quantity qtyToReduce)
+	{
+		huShipmentScheduleBL.reduceQtyPickedForPickToTU(shipmentScheduleId, pickToTuId, qtyToReduce);
 	}
 
 	public Stream<Packageable> stream(@NonNull final PackageableQuery query)

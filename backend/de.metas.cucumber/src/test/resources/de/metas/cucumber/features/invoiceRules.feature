@@ -1,7 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00703_Invoice_Rule
-@F00703
 @ghActions:run_on_executor5
 Feature: invoice rules
 ## F00703: Invoice Rule
@@ -12,10 +11,6 @@ Feature: invoice rules
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
-  @from:cucumber
-@allure.label.epic:E0340_Invoicing
-@allure.label.feature:F00703_Invoice_Rule
-@F00703
   Scenario: we can invoice a sales order with invoice rule after delivery
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -71,10 +66,6 @@ Feature: invoice rules
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_1               | invoice_1               | p_1                     | 10          | true      |
 
-  @from:cucumber
-@allure.label.epic:E0340_Invoicing
-@allure.label.feature:F00703_Invoice_Rule
-@F00703
   Scenario: we can invoice a sales order with invoice rule after pick
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -133,10 +124,6 @@ Feature: invoice rules
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_2               | invoice_2               | p_2                     | 6           | true      |
 
-  @from:cucumber
-@allure.label.epic:E0340_Invoicing
-@allure.label.feature:F00703_Invoice_Rule
-@F00703
   Scenario: we can invoice a sales order with invoice rule after pick and over-picked quantity
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -205,10 +192,6 @@ Feature: invoice rules
       | shipmentLine1_1           | shipment              | p_3                     | 12          | true      |
 
 
-  @from:cucumber
-@allure.label.epic:E0340_Invoicing
-@allure.label.feature:F00703_Invoice_Rule
-@F00703
   Scenario: we can double-invoice a sales order with invoice rule after pick, if we pick some quantity and then override the qty to deliver to be equal to qty ordered
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -330,11 +313,7 @@ Feature: invoice rules
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_4_1             | invoice_4               | p_3                     | 10          | true      |
 
-  @from:cucumber
-  @allure.label.epic:E0340_Invoicing
-  @allure.label.feature:F00703_Invoice_Rule
   @Id:S30448_TC1
-  @ghActions:run_on_executor5
   Scenario: MOrder.setBPartner inherits InvoiceRule and IsAutoInvoice from BP group when BP has no direct value
     # Verifies that MOrder.setBPartner (called from beforeSave when no location is set) resolves
     # InvoiceRule and IsAutoInvoice via BPartnerEffectiveBL (group chain), not raw bp.getInvoiceRule().
@@ -389,11 +368,7 @@ Feature: invoice rules
       | C_Invoice_Candidate_ID.Identifier | InvoiceRule | IsAutoInvoice |
       | invoiceCandidate                  | D           | true          |
 
-  @from:cucumber
-  @allure.label.epic:E0340_Invoicing
-  @allure.label.feature:F00703_Invoice_Rule
   @Id:S30448_TC2
-  @ghActions:run_on_executor5
   Scenario: OLCand explicit invoiceRule and isAutoInvoice win over BP-group defaults
     # Guard scenario: when an OLCand request explicitly sets invoiceRule=I (Immediate) and isAutoInvoice=false,
     # those values must be preserved on the resulting order even though the BP's group has InvoiceRule=D/IsAutoInvoice=Y.

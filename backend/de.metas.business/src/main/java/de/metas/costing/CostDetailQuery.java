@@ -58,6 +58,9 @@ public class CostDetailQuery
 
 	@Nullable CostDetailId afterCostDetailId;
 
+	/** {@code TRUE}/{@code FALSE} match {@code IsChangingCosts}; {@code null} means "don't care". */
+	@Nullable Boolean changingCosts;
+
 	@Nullable Range<Instant> dateAcctRage;
 
 	@NonNull @Singular ImmutableList<OrderBy> orderBys;

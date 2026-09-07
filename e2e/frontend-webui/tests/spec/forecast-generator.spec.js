@@ -6,6 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { FORECAST_WINDOW_ID } from '../utils/WindowIds';
+import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 
 /**
  * Forecast Generator E2E test suite.
@@ -330,6 +331,142 @@ which is the primary way users interact with the feature.
       });
 
       console.log(`[${language}] Forecast Generator test completed successfully`);
+    });
+
+    test(`Budgetprognose field renders, toggles, and persists (${label} UI)`, async ({ page }) => {
+      // === ALLURE METADATA ===
+      allure.epic('E0300: Planning');
+      allure.tag('F03010: Forecast');
+      allure.tag('F03010');
+      allure.story('Forecast: Budgetprognose (IsBudgetForecast) flag field');
+      allure.severity('normal');
+      allure.parameter('Language', language);
+      allure.parameter('UI Label', label);
+      allure.tag(language);
+
+      allure.description(`
+## E0300: Planning
+
+## F03010: Forecast
+
+### Test Scenario
+Verifies the new **Budgetprognose** (\`IsBudgetForecast\`) flag field on the Forecast
+window (AD_Window_ID=328) is wired into the WebUI layout and persists:
+
+1. Create login user and open a new Forecast record (window 328)
+2. Fill mandatory fields so the record is valid/saved
+3. Assert the \`IsBudgetForecast\` field is present in the rendered form
+4. Toggle it on via the UI checkbox
+5. Reload the record
+6. Assert the value persisted (WebAPI field value + reloaded checkbox state)
+
+### Business Value
+The Budgetprognose flag marks a forecast as a budget forecast, which suppresses
+material-dispo demand-candidate generation. This test guards the field's render +
+persistence chain against regressions.
+      `);
+
+      test.setTimeout(120000); // 2 minutes
+
+      // Step 1: Create test data (login user)
+      const masterdata = await Backend.createMasterdata({
+        request: {
+          login: {
+            user: {
+              language,
+              firstname: 'budgetprognose',
+              lastname: 'tester',
+            },
+          },
+        },
+      });
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+      console.log(`[${language}] Master data created`);
+
+      // Step 2: Login
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await DashboardPage.expectVisible();
+      console.log(`[${language}] Logged in successfully`);
+
+      // Step 3: Navigate to M_Forecast window (Prognose) and create new record
+      let recordId;
+      await test.step('Create new forecast record', async () => {
+        await page.goto(`${FRONTEND_BASE_URL}/window/${FORECAST_WINDOW_ID}/NEW`);
+        await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+        await page
+          .locator('.rotating, .indicator-pending')
+          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+        await page.waitForTimeout(1000);
+
+        recordId = page.url().split('/').pop();
+        console.log(`[${language}] Forecast record created in WebUI: ${recordId}`);
+      });
+
+      // Step 4: Fill all mandatory fields so the record becomes valid/saved
+      await test.step('Fill mandatory fields', async () => {
+        await patchField(page, FORECAST_WINDOW_ID, recordId, 'Name', `E2E-Budgetprognose-${language}-${Date.now()}`);
+        await patchField(page, FORECAST_WINDOW_ID, recordId, 'DatePromised', '2026-03-07');
+        await patchField(page, FORECAST_WINDOW_ID, recordId, 'M_Warehouse_ID', { key: 540008, caption: 'Hauptlager' });
+
+        const validStatus = await waitForRecordValid(page, FORECAST_WINDOW_ID, recordId);
+        expect(validStatus?.valid).toBe(true);
+        console.log(`[${language}] Record is valid and saved`);
+
+        await page.reload({ waitUntil: 'networkidle', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+        await page.waitForTimeout(1000);
+      });
+
+      // Step 5: Assert the field renders, then toggle it on via the UI (default is 'N').
+      // metasfresh YesNo widgets hide the real <input> behind a styled tick, so we use the
+      // BooleanWidget helper (JS el.click()) instead of a raw Playwright checkbox.check().
+      await test.step('Assert Budgetprognose field present and toggle it on', async () => {
+        const fieldContainer = page.locator('.form-field-IsBudgetForecast');
+        await fieldContainer.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+        expect(await BooleanWidget.getValue('IsBudgetForecast')).toBe(false);
+
+        await BooleanWidget.setTrue('IsBudgetForecast');
+        expect(await BooleanWidget.getValue('IsBudgetForecast')).toBe(true);
+
+        const shot = await page.screenshot();
+        allure.attachment('Budgetprognose toggled on', shot, 'image/png');
+        console.log(`[${language}] Budgetprognose toggled on via UI`);
+      });
+
+      // Step 6: Reload and assert the value persisted (WebAPI + UI)
+      await test.step('Reload and assert persistence', async () => {
+        // let the auto-save PATCH settle before reloading
+        await page.waitForTimeout(1500);
+        await page.reload({ waitUntil: 'networkidle', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+        await page.waitForTimeout(1000);
+
+        // Authoritative check: the persisted field value in the WebAPI record
+        const fieldValue = await page.evaluate(
+          async ({ windowId, recordId }) => {
+            const resp = await fetch(`/rest/api/window/${windowId}/${recordId}`, {
+              credentials: 'include',
+              headers: { Accept: 'application/json' },
+            });
+            if (!resp.ok) return { error: `HTTP ${resp.status}` };
+            const data = await resp.json();
+            return data[0]?.fieldsByName?.IsBudgetForecast?.value ?? null;
+          },
+          { windowId: FORECAST_WINDOW_ID, recordId }
+        );
+        expect(fieldValue).toBe(true);
+        console.log(`[${language}] IsBudgetForecast persisted = ${JSON.stringify(fieldValue)}`);
+
+        // The reloaded UI reflects the persisted value
+        await page.locator('.form-field-IsBudgetForecast').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        expect(await BooleanWidget.getValue('IsBudgetForecast')).toBe(true);
+
+        const shot = await page.screenshot();
+        allure.attachment('Budgetprognose persisted after reload', shot, 'image/png');
+        console.log(`[${language}] Budgetprognose persistence verified`);
+      });
     });
   });
 });

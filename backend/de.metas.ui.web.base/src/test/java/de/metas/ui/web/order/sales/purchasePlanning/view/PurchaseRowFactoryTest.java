@@ -30,6 +30,7 @@ import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.PurchaseDemandId;
@@ -119,6 +120,7 @@ public class PurchaseRowFactoryTest
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.vendorId(vendorProductInfo.getVendorId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())
+				.source(PurchaseCandidateSource.SalesOrder)
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())
 				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())

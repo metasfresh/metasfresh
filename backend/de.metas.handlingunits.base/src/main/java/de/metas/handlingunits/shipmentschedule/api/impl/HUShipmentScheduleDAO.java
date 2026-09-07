@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -31,6 +33,12 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 	private IHandlingUnitsBL handlingUnitsBL() {return Services.get(IHandlingUnitsBL.class);}
+
+	@Override
+	public void saveQtyPicked(@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPicked)
+	{
+		save(qtyPicked);
+	}
 
 	@Override
 	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(@NonNull final I_M_HU hu)
@@ -132,6 +140,12 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
 				.create()
 				.list();
+	}
+
+	@Override
+	public boolean hasActiveQtyPickedForTopLevelHU(@NonNull final I_M_HU topLevelHU)
+	{
+		return queryByTopLevelHU(topLevelHU).create().anyMatch();
 	}
 
 	@Override

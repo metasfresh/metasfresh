@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.effective.BPartnerEffective;
@@ -181,6 +182,7 @@ public class OrderBL implements IOrderBL
 	@NonNull private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
 	@NonNull private final SpringContextHolder.Lazy<BPartnerProductEffectiveBL> bpartnerProductEffectiveBL = SpringContextHolder.lazyBean(BPartnerProductEffectiveBL.class);
 	@NonNull private final SpringContextHolder.Lazy<BPartnerEffectiveBL> bpartnerEffectiveBL = SpringContextHolder.lazyBean(BPartnerEffectiveBL.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerAddressEffectiveBL> bpartnerAddressEffectiveBL = SpringContextHolder.lazyBean(BPartnerAddressEffectiveBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -1457,10 +1459,7 @@ public class OrderBL implements IOrderBL
 	@Nullable
 	private ShipperId findShipperId(@NonNull final I_C_Order orderRecord)
 	{
-		return bPartnerBL.getEffectiveShipperId(
-				BPartnerLocationId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID(), orderRecord.getDropShip_Location_ID()),
-				BPartnerLocationId.ofRepoId(orderRecord.getC_BPartner_ID(), orderRecord.getC_BPartner_Location_ID())
-		);
+		return bpartnerAddressEffectiveBL.get().getDeliveryEffective(orderRecord).getShipperId();
 	}
 
 	@Override
@@ -1493,8 +1492,16 @@ public class OrderBL implements IOrderBL
 	public void syncDatesFromTransportOrder(@NonNull final OrderId orderId, @NonNull final I_M_ShipperTransportation transportOrder)
 	{
 		final I_C_Order order = getById(orderId);
-		order.setBLDate(transportOrder.getBLDate());
-		order.setETA(transportOrder.getETA());
+		// each date is copied independently: a field the transport order genuinely has no value for must not
+		// wipe an already-set value on the order (e.g. only BLDate changed on this edit, ETA untouched)
+		if (transportOrder.getBLDate() != null)
+		{
+			order.setBLDate(transportOrder.getBLDate());
+		}
+		if (transportOrder.getETA() != null)
+		{
+			order.setETA(transportOrder.getETA());
+		}
 		save(order);
 	}
 

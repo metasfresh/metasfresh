@@ -30,10 +30,21 @@ public class NShiftConstants
 	// config.additionalProperties
 	public static final String ACTOR_ID = "ActorId";
 	public static final String SERVICE_LEVEL = "ServiceLevel";
+	public static final String MANUAL = "IsManual";
+	public static final String SELECTION_RULES = "IsSelectionRules";
 	public static final String IS_CREATE_DRAFT_SHIPMENT_ONLY = "IsCreateDraftShipmentOnly";
 
 	// shipAdvises
 	public static final String PROD_CONCEPT_ID = "ProdConceptId";
 	public static final String GOODS_TYPE_ID = "GoodsTypeID";
 	public static final String GOODS_TYPE_NAME = "GoodsTypeName";
+
+	// Shared endpoint paths
+	/** Used by both {@link de.metas.shipper.client.nshift.NShiftOrderAdvisorService} (advise, Submit=0)
+	 * and {@link de.metas.shipper.client.nshift.NShiftShipmentService} (book, Submit=1). */
+	public static final String ORDER_ADVICE_ENDPOINT = "/ShipServer/{ID}/OrderAdvice";
+
+	/** OrderAdvice option Visibility="extended": nShift returns product + carrier (+ goods type) detail in the
+	 * response. Required on both the advise (Submit=0) and the booking (Submit=1) OrderAdvice calls. */
+	public static final String VISIBILITY_EXTENDED = "extended";
 }

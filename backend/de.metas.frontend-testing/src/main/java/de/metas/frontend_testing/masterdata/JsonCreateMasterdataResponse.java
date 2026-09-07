@@ -8,6 +8,7 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
+import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
@@ -42,8 +43,10 @@ public class JsonCreateMasterdataResponse
 
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonMobileConfigResponse mobileConfig;
 	@NonNull Map<String, JsonLoginUserResponse> login;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonMailboxResponse> mailboxes;
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
 	@Nullable Map<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas;
+	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse> vatIdChecks;
 	@NonNull Map<String, JsonCreateProductResponse> products;
 	@Nullable Map<String, JsonCreateResourceResponse> resources;
 	@NonNull Map<String, JsonCreateProductPlanningResponse> productPlannings;

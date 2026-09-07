@@ -68,6 +68,13 @@ public class DeliveryDayFacetHandler implements PickingJobFacetHandler
 	public List<DeliveryDayFacet> extractFacets(@NonNull final Packageable packageable, @NonNull final CollectingParameters parameters)
 	{
 		final InstantAndOrgId deliveryDate = packageable.getDeliveryDate();
+		if (deliveryDate == null)
+		{
+			// the shipment schedule carries no delivery date; the order contributes no delivery-day option
+			// and stays pickable, rather than taking the whole filter list down with it
+			return ImmutableList.of();
+		}
+
 		//final ZoneId timeZone = orgDAO.getTimeZone(deliveryDate.getOrgId());
 		final ZoneId timeZone = SystemTime.zoneId();
 		final LocalDate deliveryDay = deliveryDate.toZonedDateTime(timeZone).toLocalDate();

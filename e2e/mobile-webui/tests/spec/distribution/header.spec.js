@@ -6,6 +6,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { generateEAN13 } from '../../utils/ean13';
+import { ApiCacheControl } from '../../utils/apiCacheControl';
 
 const createMasterdata = async ({ qtyToMove, captionFormat }) => {
     return await Backend.createMasterdata({
@@ -60,6 +61,10 @@ test('Header reflects the configured caption items (incl. Product Value and Name
         captionFormat: 'LocatorFrom,LocatorTo,ProductValueAndName',
     });
 
+    // The device must never answer an operator-context read from its own cache, or the screen freezes on
+    // the context the app was opened with. Recorded over the whole session below, asserted at the end.
+    const apiResponses = ApiCacheControl.startRecording();
+
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
@@ -74,4 +79,8 @@ test('Header reflects the configured caption items (incl. Product Value and Name
         caption: 'Product Value and Name',
         value: masterdata.products.P1.productCode + "_" + masterdata.products.P1.productName,
     });
+
+    // `/api/v2/workplace` is the operator-context read the launchers screen makes on every app start; the
+    // assertion covers every other /api/v2 response of this session too, which is the actual contract.
+    await apiResponses.expectNoApiResponseIsCacheable({ including: ['/api/v2/workplace'] });
 });

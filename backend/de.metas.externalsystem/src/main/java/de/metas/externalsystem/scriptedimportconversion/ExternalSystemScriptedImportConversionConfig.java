@@ -39,14 +39,10 @@ public class ExternalSystemScriptedImportConversionConfig implements IExternalSy
 	@NonNull ExternalSystemScriptedImportConversionConfigId id;
 	@NonNull ExternalSystemParentConfigId parentId;
 	@NonNull String value;
-	@NonNull String endpointName;
 	@NonNull String scriptIdentifier;
 	@NonNull UserId userImportId;
 	@Nullable String description;
-	@Nullable ExternalSystemEndpointId externalSystemEndpointId;
-	@Nullable Integer sftpPollingIntervalMs;
-	@Nullable String sftpProcessedDirectory;
-	@Nullable String sftpErrorDirectory;
+	@NonNull ExternalSystemEndpointId externalSystemEndpointId;
 
 	public static ExternalSystemScriptedImportConversionConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{

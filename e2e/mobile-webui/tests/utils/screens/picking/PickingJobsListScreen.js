@@ -7,6 +7,14 @@ import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expectClasses } from '../../expectations';
 import { MassPrintingScanScreen } from './MassPrintingScanScreen';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { OperatorContextErrorPanel } from '../../components/OperatorContextErrorPanel';
+// Bounded tap-and-recover for the launcher-start navigation (see tapLauncherUntilJobScreen), shared
+// with the distribution job-start helper. Small attempt count with explicit per-step timeouts so the
+// retry cost stays modest: only the first attempt pays the full slow-action settle budget; retries
+// re-settle an already-populated list on a short budget, so a few attempts do not multiply the full
+// 20s screen wait.
+import { JOB_START_ARRIVAL_TIMEOUT, JOB_START_TAP_ATTEMPTS, recoverToLauncherList } from '../jobStartRecovery';
 
 const NAME = 'PickingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -15,15 +23,6 @@ const containerElement = () => page.locator('#WFLaunchersScreen');
 // containerElement in PickingJobScreen.js — keep the two in sync if the workflow-process screen id changes.
 /** @returns {import('@playwright/test').Locator} */
 const jobScreenElement = () => page.locator('#WFProcessScreen');
-
-// Bounded tap-and-recover for the launcher-start navigation (see tapLauncherUntilJobScreen).
-// Small attempt count with explicit per-step timeouts so the retry cost stays modest: only the first
-// attempt pays the full slow-action settle budget; retries re-settle an already-populated list on a
-// short budget, so a few attempts do not multiply the full 20s screen wait.
-const JOB_START_TAP_ATTEMPTS = 3;
-// Short per-attempt wait for the job screen to appear after a tap. On the happy path the first
-// attempt succeeds immediately; only a slow/lost workflow-start round-trip pays this.
-const JOB_START_ARRIVAL_TIMEOUT = 8000; // 8sec
 
 export const PickingJobsListScreen = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -98,7 +97,18 @@ export const PickingJobsListScreen = {
     startJob: async ({ index, documentNo, qtyToDeliver, customerLocationId }) => {
         if (documentNo != null) {
             return await test.step(`${NAME} - Start job by documentNo ${documentNo}`, async () => {
-                await locateJobButtons({ documentNo }).tap();
+                for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
+                    await locateJobButtons({ documentNo }).tap();
+                    const hasArrived = await jobScreenElement()
+                        .waitFor({ state: 'attached', timeout: JOB_START_ARRIVAL_TIMEOUT })
+                        .then(() => true, () => false);
+                    if (hasArrived || attempt === JOB_START_TAP_ATTEMPTS) {
+                        break;
+                    }
+                    if ((await recoverToLauncherList({ applicationId: 'picking' })) === 'unknown') {
+                        break;
+                    }
+                }
                 await PickingJobScreen.waitForScreen();
                 return {
                     pickingJobId: await PickingJobScreen.getPickingJobId(),
@@ -115,6 +125,17 @@ export const PickingJobsListScreen = {
             throw "No documentNo or index provided";
         }
     },
+
+    // Start a job by dispatching the click event directly on the launcher (by document number),
+    // bypassing hit-testing. Use ONLY when a foreground `.loading` overlay would intercept a normal
+    // tap yet the launcher itself is the intended target — e.g. a test that deliberately holds a
+    // launchers refresh in flight while starting the job. Waits for the job (WF-process) screen.
+    startJobByDispatchClick: async ({ documentNo }) => await test.step(`${NAME} - Start job by dispatched click (documentNo ${documentNo})`, async () => {
+        const launcher = locateJobButtons({ documentNo });
+        await launcher.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await launcher.dispatchEvent('click');
+        await PickingJobScreen.waitForScreen();
+    }),
 
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
         await test.step(`Wait for all expected buttons to be attached`, async () => {
@@ -150,6 +171,34 @@ export const PickingJobsListScreen = {
 
     expectMassPrintingButtonHidden: async () => await test.step(`${NAME} - Expect Mass Printing button hidden`, async () => {
         await page.getByTestId('massPrinting-button').waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
+    }),
+
+    // The jobs list itself asks for a workplace when the picking profile requires an active one and
+    // the operator has none assigned yet: the screen renders its own scanner instead of the job list.
+    expectAsksForWorkplace: async () => await test.step(`${NAME} - Expect the screen to ask for a workplace`, async () => {
+        await PickingJobsListScreen.expectVisible();
+        await BarcodeScannerComponent.expectAttached({});
+    }),
+
+    // Scan without asserting the job list takes over — for scenarios where the assign is expected to
+    // fail (e.g. the connection dropped), so the scanner does NOT give way to the job list.
+    typeWorkplaceQRCode: async (qrCode) => await test.step(`${NAME} - Scan workplace QR '${qrCode}'`, async () => {
+        await BarcodeScannerComponent.type(qrCode);
+    }),
+
+    // When the operator's workplace cannot be read — or assigned from a scan — because the connection
+    // dropped, the screen must say so and offer a retry, instead of silently showing no workplace.
+    expectConnectionErrorPanel: async () => await test.step(`${NAME} - Expect operator-context connection error panel`, async () => {
+        await OperatorContextErrorPanel.expectVisible();
+    }),
+
+    expectNoConnectionErrorPanel: async () => await test.step(`${NAME} - Expect no operator-context connection error panel`, async () => {
+        await OperatorContextErrorPanel.expectNotVisible();
+    }),
+
+    retryLoadingOperatorContext: async () => await test.step(`${NAME} - Retry loading workplace/workstation`, async () => {
+        await OperatorContextErrorPanel.tapRetry();
+        await PickingJobsListScreen.waitForScreen();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
@@ -206,22 +255,17 @@ const tapLauncherUntilJobScreen = async ({ index, qtyToDeliver, customerLocation
         const target = await resolveLauncherTapTarget({ index, qtyToDeliver, customerLocationId, settleTimeout });
         await target.tap();
 
-        const arrived = await jobScreenElement()
+        const hasArrived = await jobScreenElement()
             .waitFor({ state: 'attached', timeout: JOB_START_ARRIVAL_TIMEOUT })
             .then(() => true, () => false);
-        if (arrived || attempt === JOB_START_TAP_ATTEMPTS) {
+        if (hasArrived || attempt === JOB_START_TAP_ATTEMPTS) {
             break;
         }
 
-        // Not on the job screen yet, and attempts remain. Only loop to re-tap if we are back on the
-        // launcher list — the launcher and job screens are mutually-exclusive routes, so its presence
-        // (attached) means we truly returned, not a mid-transition overlap. Otherwise a navigation may
-        // still be in flight — give it a bounded moment to land rather than blindly re-tapping (which
-        // could double-start the workflow), then let the final settle below settle-or-fail.
-        const backOnLauncherList = await containerElement()
-            .waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT })
-            .then(() => true, () => false);
-        if (!backOnLauncherList) {
+        // Not on the job screen yet, and attempts remain. recoverToLauncherList also handles the case the
+        // old code could not: the app landed on the applications menu, where neither screen is attached,
+        // so breaking out here burned the remaining attempts on the 20s wait.
+        if ((await recoverToLauncherList({ applicationId: 'picking' })) === 'unknown') {
             break;
         }
     }
@@ -265,7 +309,7 @@ const locateJobButtons = ({ documentNo, index, salesOrderId, customerId, qtyToDe
 };
 
 const expectJobButton = async ({ name, button, expectation }) => await test.step(`Expect job button ${name}`, async () => {
-    await button.waitFor({ state: 'attached' });
+    await button.waitFor({ state: 'visible', timeout: VERY_FAST_ACTION_TIMEOUT });
     await expect(button).toHaveCount(1);
 
     if (expectation.indicator != null) {
@@ -282,6 +326,10 @@ const expectJobButton = async ({ name, button, expectation }) => await test.step
         } else {
             await expect(indicatorLocator).toHaveCount(0);
         }
+    }
+
+    if (expectation.caption != null) {
+        await expect(button).toHaveText(expectation.caption);
     }
 });
 

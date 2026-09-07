@@ -31,18 +31,14 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.endpoint.EndpointAuthType;
-import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -51,6 +47,10 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
+import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
@@ -94,7 +94,7 @@ public class ExternalSystem_Config_StepDef
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemConfigRepository externalSystemConfigRepository = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	private final ExternalSystemScriptedExportConversionRepository scriptedExportConversionRepository = SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionRepository.class);
 
@@ -228,7 +228,7 @@ public class ExternalSystem_Config_StepDef
 
 		final ExternalSystemType externalSystemType = ExternalSystemType.ofLegacyCodeOrNull(typeCode);
 
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(externalSystemType, externalSystemChildValue);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepository.getByTypeAndValue(externalSystemType, externalSystemChildValue);
 
 		if (externalSystemParentConfig.isPresent())
 		{
@@ -397,7 +397,7 @@ public class ExternalSystem_Config_StepDef
 
 		// Create an outbound endpoint with defaults
 		final I_ExternalSystem_Endpoint outboundEndpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-		outboundEndpoint.setOutboundHttpEP("http://localhost:9999");
+		outboundEndpoint.setHttpEndPoint("http://localhost:9999");
 		outboundEndpoint.setOutboundHttpMethod(HttpMethod.POST.getCode());
 		outboundEndpoint.setType(X_ExternalSystem_Endpoint.TYPE_HTTP);
 		outboundEndpoint.setAuthType(EndpointAuthType.Token.getCode());
@@ -432,8 +432,8 @@ public class ExternalSystem_Config_StepDef
 		if (readStatusColumn)
 		{
 			// Status_AD_Column_ID was removed from the model when the per-record status design was
-			// consolidated into ExternalSystem_ScriptedExportConversion_Status (a single-row-upsert table
-			// that carries the export lifecycle).  IsTriggerOnComplete is still required to tell the
+			// consolidated into ExternalSystem_ScriptedExportConversion_Status (one row per export
+			// attempt, carrying the export lifecycle).  IsTriggerOnComplete is still required to tell the
 			// complete-interceptor to start the export.
 			scriptedExportConversionConfig.setIsTriggerOnComplete(true);
 

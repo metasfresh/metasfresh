@@ -5,7 +5,7 @@
 -- so every detail row can be joined to its parent overview row.
 --
 -- IDs allocated from idserver.metas.de on 2026-07-02:
---   AD_Column 581169  (M_Picking_OrderBoard_Overview_v_ID in AD_Table 542622)
+--   AD_Column 592960  (M_Picking_OrderBoard_Overview_v_ID in AD_Table 542622)
 
 -- ============================================================
 -- 1. Update M_Picking_OrderBoard_v DDL to add the FK column
@@ -87,11 +87,11 @@ DROP VIEW IF EXISTS M_Picking_OrderBoard_v$new;
 -- ============================================================
 -- 2. Register the new FK column in AD_Column (AD_Table 542622)
 -- ============================================================
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,PersonalDataCategory,Updated,UpdatedBy,Version) VALUES (0,581169/*From ID Server*/,581145/*AD_Element for M_Picking_OrderBoard_Overview_v_ID*/,0,30,542622/*M_Picking_OrderBoard_v*/,'M_Picking_OrderBoard_Overview_v_ID',TO_TIMESTAMP('2026-07-02 22:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',10,'Y','Y','N','N','N','N','N','N','N','N','N','Auftrags-Board-Übersicht','NP',TO_TIMESTAMP('2026-07-02 22:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,PersonalDataCategory,Updated,UpdatedBy,Version) VALUES (0,592960/*From ID Server*/,585094/*AD_Element for M_Picking_OrderBoard_Overview_v_ID*/,0,30,542622/*M_Picking_OrderBoard_v*/,'M_Picking_OrderBoard_Overview_v_ID',TO_TIMESTAMP('2026-07-02 22:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',10,'Y','Y','N','N','N','N','N','N','N','N','N','Auftrags-Board-Übersicht','NP',TO_TIMESTAMP('2026-07-02 22:30:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
-INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=581169 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=592960 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
-/* DDL */ select update_Column_Translation_From_AD_Element(581145)
+/* DDL */ select update_Column_Translation_From_AD_Element(585094)
 ;

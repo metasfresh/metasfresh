@@ -22,8 +22,10 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
+import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,17 +68,22 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 		shipmentScheduleBL = (ShipmentScheduleBL)Services.get(IShipmentScheduleBL.class);
 	}
 
+	private static void enableCloseIfPartiallyShipped(final OrgId orgId)
+	{
+		Services.get(ISysConfigBL.class).setValue(
+				ShipmentScheduleBL.SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped,
+				true,
+				ClientId.METASFRESH,
+				orgId);
+	}
+
 	@Test
 	public void closePartiallyShipped_ShipmentSchedules_doesNotCloseScheduleAlreadyFullyDeliveredBySiblingInOut()
 	{
 		final OrgId orgId = OrgId.ANY;
 
 		// enable "close partially shipped schedules" for this org
-		Services.get(ISysConfigBL.class).setValue(
-				"M_ShipmentSchedule_Close_PartiallyShipped",
-				true,
-				ClientId.METASFRESH,
-				orgId);
+		enableCloseIfPartiallyShipped(orgId);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setIsSOTrx(true);
@@ -98,9 +105,30 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 		scheduleFull.setRecord_ID(orderLineFull.getC_OrderLine_ID());
 		scheduleFull.setQtyOrdered(new BigDecimal("12"));
 		scheduleFull.setQtyOrdered_Calculated(new BigDecimal("12")); // effective QtyOrdered (no override)
-		scheduleFull.setQtyDelivered(new BigDecimal("12")); // fully delivered already, e.g. by a sibling InOut
+		scheduleFull.setQtyDelivered(new BigDecimal("12")); // recompute already landed (not read by the close decision)
 		scheduleFull.setIsClosed(false);
 		save(scheduleFull);
+
+		// the committed sibling delivery backing S_full: a completed M_InOut line (12) linked to S_full via
+		// M_ShipmentSchedule_QtyPicked - this is what the close decision actually reads (the processed-line ledger)
+		final I_M_InOut siblingInOut = newInstance(I_M_InOut.class);
+		siblingInOut.setAD_Org_ID(orgId.getRepoId());
+		siblingInOut.setIsSOTrx(true);
+		siblingInOut.setDocStatus(DocStatus.Completed.getCode());
+		save(siblingInOut);
+
+		final I_M_InOutLine siblingLineFull = newInstance(I_M_InOutLine.class);
+		siblingLineFull.setM_InOut(siblingInOut);
+		siblingLineFull.setC_OrderLine_ID(orderLineFull.getC_OrderLine_ID());
+		siblingLineFull.setMovementQty(new BigDecimal("12"));
+		siblingLineFull.setProcessed(true);
+		save(siblingLineFull);
+
+		final I_M_ShipmentSchedule_QtyPicked allocFull = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		allocFull.setM_ShipmentSchedule_ID(scheduleFull.getM_ShipmentSchedule_ID());
+		allocFull.setM_InOutLine_ID(siblingLineFull.getM_InOutLine_ID());
+		allocFull.setQtyPicked(new BigDecimal("12"));
+		save(allocFull);
 
 		// S_partial: shipped by the CURRENT InOut with MovementQty=8 of 12 ordered (partial delivery).
 		// QtyDelivered is still 0 at TIMING_AFTER_COMPLETE - the QtyPicked->QtyDelivered shift for this
@@ -147,17 +175,125 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 				.isTrue();
 	}
 
+	/**
+	 * The async-stale variant of the sibling-InOut case. When one order's picked lines ship via ≥2
+	 * separate {@code M_InOut} docs, each InOut's {@code QtyPicked→QtyDelivered} shift runs in its OWN
+	 * deferred {@code runAfterCommit} hook. So when a later sibling InOut completes and runs
+	 * {@code closePartiallyShipped}, a schedule fully shipped by an EARLIER sibling InOut can still have
+	 * {@code QtyDelivered=0} — its recompute has not landed yet. The committed truth is the sibling's
+	 * {@code M_InOutLine.MovementQty}; if the close trusts the stale {@code QtyDelivered} it wrongly
+	 * closes the fully-shipped schedule, which nothing ever reopens.
+	 */
+	@Test
+	public void closePartiallyShipped_ShipmentSchedules_doesNotCloseScheduleFullyDeliveredBySibling_whenQtyDeliveredNotYetRecomputed()
+	{
+		final OrgId orgId = OrgId.ANY;
+
+		enableCloseIfPartiallyShipped(orgId);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+		save(order);
+
+		final int orderLineTableId = InterfaceWrapperHelper.getTableId(I_C_OrderLine.class);
+
+		// S_full: fully shipped (12/12) by a SIBLING, already-completed M_InOut, but QtyDelivered is
+		// still 0 because that sibling's QtyDelivered recompute has not landed yet (the race window).
+		final I_C_OrderLine orderLineFull = newInstance(I_C_OrderLine.class);
+		orderLineFull.setC_Order(order);
+		save(orderLineFull);
+
+		final I_M_ShipmentSchedule scheduleFull = newInstance(I_M_ShipmentSchedule.class);
+		scheduleFull.setAD_Org_ID(orgId.getRepoId());
+		scheduleFull.setC_Order_ID(order.getC_Order_ID());
+		scheduleFull.setC_OrderLine_ID(orderLineFull.getC_OrderLine_ID());
+		scheduleFull.setAD_Table_ID(orderLineTableId);
+		scheduleFull.setRecord_ID(orderLineFull.getC_OrderLine_ID());
+		scheduleFull.setQtyOrdered(new BigDecimal("12"));
+		scheduleFull.setQtyOrdered_Calculated(new BigDecimal("12"));
+		scheduleFull.setQtyDelivered(BigDecimal.ZERO); // stale: sibling's recompute not yet landed
+		scheduleFull.setIsClosed(false);
+		save(scheduleFull);
+
+		// the sibling shipment that already delivered S_full's 12 (completed, not a reversal)
+		final I_M_InOut siblingInOut = newInstance(I_M_InOut.class);
+		siblingInOut.setAD_Org_ID(orgId.getRepoId());
+		siblingInOut.setIsSOTrx(true);
+		siblingInOut.setDocStatus(DocStatus.Completed.getCode());
+		save(siblingInOut);
+
+		final I_M_InOutLine siblingLineFull = newInstance(I_M_InOutLine.class);
+		siblingLineFull.setM_InOut(siblingInOut);
+		siblingLineFull.setC_OrderLine_ID(orderLineFull.getC_OrderLine_ID());
+		siblingLineFull.setMovementQty(new BigDecimal("12"));
+		siblingLineFull.setProcessed(true);
+		save(siblingLineFull);
+
+		// the committed picking->shipment allocation binding S_full to the sibling shipment line
+		final I_M_ShipmentSchedule_QtyPicked allocFull = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		allocFull.setM_ShipmentSchedule_ID(scheduleFull.getM_ShipmentSchedule_ID());
+		allocFull.setM_InOutLine_ID(siblingLineFull.getM_InOutLine_ID());
+		allocFull.setQtyPicked(new BigDecimal("12"));
+		save(allocFull);
+
+		// S_partial: shipped 8/12 by the CURRENT InOut (its QtyDelivered is 0 at close-time too)
+		final I_C_OrderLine orderLinePartial = newInstance(I_C_OrderLine.class);
+		orderLinePartial.setC_Order(order);
+		save(orderLinePartial);
+
+		final I_M_ShipmentSchedule schedulePartial = newInstance(I_M_ShipmentSchedule.class);
+		schedulePartial.setAD_Org_ID(orgId.getRepoId());
+		schedulePartial.setC_Order_ID(order.getC_Order_ID());
+		schedulePartial.setC_OrderLine_ID(orderLinePartial.getC_OrderLine_ID());
+		schedulePartial.setAD_Table_ID(orderLineTableId);
+		schedulePartial.setRecord_ID(orderLinePartial.getC_OrderLine_ID());
+		schedulePartial.setQtyOrdered(new BigDecimal("12"));
+		schedulePartial.setQtyOrdered_Calculated(new BigDecimal("12"));
+		schedulePartial.setQtyDelivered(BigDecimal.ZERO);
+		schedulePartial.setIsClosed(false);
+		save(schedulePartial);
+
+		final I_M_InOut currentInOut = newInstance(I_M_InOut.class);
+		currentInOut.setAD_Org_ID(orgId.getRepoId());
+		currentInOut.setIsSOTrx(true);
+		currentInOut.setDocStatus(DocStatus.Completed.getCode());
+		save(currentInOut);
+
+		final I_M_InOutLine currentLinePartial = newInstance(I_M_InOutLine.class);
+		currentLinePartial.setM_InOut(currentInOut);
+		currentLinePartial.setC_OrderLine_ID(orderLinePartial.getC_OrderLine_ID());
+		currentLinePartial.setMovementQty(new BigDecimal("8"));
+		// this InOut is completing NOW: its lines are not yet Processed at close-time (TIMING_AFTER_COMPLETE
+		// fires before setProcessed), so this delivery is counted via MovementQty, not the processed-line ledger
+		currentLinePartial.setProcessed(false);
+		save(currentLinePartial);
+
+		final I_M_ShipmentSchedule_QtyPicked allocPartial = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		allocPartial.setM_ShipmentSchedule_ID(schedulePartial.getM_ShipmentSchedule_ID());
+		allocPartial.setM_InOutLine_ID(currentLinePartial.getM_InOutLine_ID());
+		allocPartial.setQtyPicked(new BigDecimal("8"));
+		save(allocPartial);
+
+		shipmentScheduleBL.closePartiallyShipped_ShipmentSchedules(currentInOut);
+
+		refresh(scheduleFull);
+		refresh(schedulePartial);
+
+		assertThat(scheduleFull.isClosed())
+				.as("S_full is fully delivered by a sibling InOut (committed in M_InOutLine, QtyDelivered not yet recomputed) and must stay open")
+				.isFalse();
+		assertThat(schedulePartial.isClosed())
+				.as("S_partial is not fully delivered => must be closed")
+				.isTrue();
+	}
+
 	@Test
 	public void closePartiallyShipped_ShipmentSchedules_closesCompletelyUnshippedSchedule()
 	{
 		final OrgId orgId = OrgId.ANY;
 
 		// enable "close partially shipped schedules" for this org
-		Services.get(ISysConfigBL.class).setValue(
-				"M_ShipmentSchedule_Close_PartiallyShipped",
-				true,
-				ClientId.METASFRESH,
-				orgId);
+		enableCloseIfPartiallyShipped(orgId);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setIsSOTrx(true);
@@ -227,11 +363,7 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 		final OrgId orgId = OrgId.ANY;
 
 		// enable "close partially shipped schedules" for this org
-		Services.get(ISysConfigBL.class).setValue(
-				"M_ShipmentSchedule_Close_PartiallyShipped",
-				true,
-				ClientId.METASFRESH,
-				orgId);
+		enableCloseIfPartiallyShipped(orgId);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setIsSOTrx(true);

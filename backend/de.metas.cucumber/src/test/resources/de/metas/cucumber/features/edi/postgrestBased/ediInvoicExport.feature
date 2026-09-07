@@ -586,3 +586,248 @@ Feature: EDI INVOIC export via postgREST
   ]
 }
     """
+
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00359_EDI_INVOICE_JSON
+@F00359
+  Scenario: a packaging-material invoice line does not add a second delivery party (DP)
+    # A packaging-material line (deposit / Leergut) carries no C_OrderLine_ID.
+    # It must not be exported as an INVOIC line item, and — because it would otherwise fall back to
+    # the invoice's own bill-to location — it must not emit a second DP party. The order's delivery
+    # (HandOver) location differs from the bill-to, so the genuine DP is the delivery location and a
+    # spurious second DP (= bill-to, from the packaging line) is detectable.
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City   |
+      | loc_bill                 | DE          | billAddr     | 111        | billCity   |
+      | loc_delivery             | DE          | delivAddr    | 222        | delivCity  |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName |
+      | bpLoc_bill   | 1111111111111 | customer1                | loc_bill                     | true         | true         | billBPName       |
+      | bpLoc_deliv  | 2222222222222 | customer1                | loc_delivery                 | true         | false        | delivBPName      |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
+      | wh             | customer1     | bpLoc_bill             |
+    And metasfresh contains M_Products:
+      | Identifier    | Value              | Name              | Description              |
+      | productNormal | normalProductValue | normalProductName | normalProductDescription |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID |
+      | salesPLV               | productNormal | 5.00     | PCE      |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | HandOver_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
+      | o_1        | true    | customer1     | bpLoc_bill             | bpLoc_deliv          | F            | 2025-05-01  | 2025-05-01Z  | wh             |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID  | QtyEntered |
+      | ol_1       | o_1                   | productNormal | 1          |
+    And the order identified by o_1 is completed
+
+    # Build the invoice directly (not via the IC pipeline): a product line linked to the order line
+    # (so its delivery party resolves to the order's HandOver location) plus an order-less
+    # packaging-material line (as a deposit / Leergut line would be — no C_OrderLine_ID).
+    # M_PriceList_ID is set explicitly: bpLoc_bill is a non-default bill location, so the invoice's
+    # price list is not defaulted for it — the explicit price list keeps completion deterministic.
+    And metasfresh contains C_Invoice:
+      | Identifier | REST.Context  | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | pkgInvoice | pkgInvoice_ID | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID  | C_OrderLine_ID | QtyInvoiced | IsPackagingMaterial |
+      | pkgInvoice   | productNormal | ol_1           | 1 PCE       | N                   |
+      | pkgInvoice   | productNormal |                | 1 PCE       | Y                   |
+    And the invoice identified by pkgInvoice is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@pkgInvoice_ID@"
+    }
+  ]
+}
+    """
+
+    # The packaging line is excluded from Lines (only the product line is exported), and Partners
+    # carries exactly ONE "DP" (the HandOver delivery location) — NOT a second DP at the bill-to
+    # location. Without the fix the order-less packaging line adds that second DP and the Partners
+    # array has 6 entries, so this assertion fails.
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @pkgInvoice_ID@,
+      "Lines": [
+        {
+          "Invoice_Line": 10,
+          "Product_Name": "normalProductName",
+          "Product_Supplier_ProductNo": "normalProductValue"
+        }
+      ],
+      "Partners": [
+        { "EANCOM_LocationType": "SU", "Name": "metasfresh AG", "City": "Bonn" },
+        { "EANCOM_LocationType": "BY", "GLN": "1111111111111", "Address1": "billAddr", "City": "billCity" },
+        { "EANCOM_LocationType": "IV", "GLN": "1111111111111", "Address1": "billAddr", "City": "billCity" },
+        { "EANCOM_LocationType": "SN", "GLN": "1111111111111", "Address1": "billAddr", "City": "billCity" },
+        { "EANCOM_LocationType": "DP", "GLN": "2222222222222", "Address1": "delivAddr", "City": "delivCity" }
+      ]
+    }
+  ]
+}
+    """
+  @Id:S31499_010
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
+  Scenario: INVOIC consumer-unit GTIN falls back to the ASI-data EAN_CU when the product has no GTIN
+  ## The product carries no M_Product.GTIN. Its only identifier is EAN_CU on a wildcard
+  ## M_Product_ASI_Data row, so Buyer_GTIN_CU can only resolve through the EAN fallback.
+  ## Without that fallback the exported Product_Buyer_CU_GTIN is null and the clearing
+  ## centre rejects the line for missing product info.
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | bpartner_location_1 | customer1     | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier        | Value              | Name              | Description              |
+      | product_S31499_010 | eanCuProductValue | eanCuProductName  | eanCuProductDescription  |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier          | M_Product_ID       | SeqNo | EAN_CU        |
+      | asiData_S31499_010  | product_S31499_010 | 10    | 4055555000019 |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID       | PriceStd | C_UOM_ID |
+      | salesPLV               | product_S31499_010 | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier             | REST.Context              | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoiceS31499_010 | salesInvoiceS31499_010_ID | customer1     | Ausgangsrechnung        | S31499_010 | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID           | M_Product_ID       | QtyInvoiced |
+      | salesInvoiceS31499_010 | product_S31499_010 | 1 PCE       |
+    And the invoice identified by salesInvoiceS31499_010 is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@salesInvoiceS31499_010_ID@"
+    }
+  ]
+}
+    """
+
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @salesInvoiceS31499_010_ID@,
+      "Invoice_DocumentNo": "S31499_010",
+      "Lines": [
+        {
+          "Invoice_Line": 10,
+          "Product_Name": "eanCuProductName",
+          "Product_Supplier_ProductNo": "eanCuProductValue",
+          "Product_Buyer_CU_GTIN": "4055555000019"
+        }
+      ]
+    }
+  ]
+}
+    """
+
+  @Id:S31499_020
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
+  Scenario: INVOIC consumer-unit GTIN falls back to the ASI-data EAN13_ProductCode when neither GTIN nor EAN_CU is set
+  ## Last resort of the consumer-unit chain before the product's own GTIN:
+  ## M_Product_ASI_Data.EAN13_ProductCode. It was widened to VARCHAR(50) by migration
+  ## 5802510 precisely so it can hold a real 13-digit EAN for this fallback.
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | bpartner_location_1 | customer1     | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier         | Value             | Name             | Description             |
+      | product_S31499_020 | ean13ProductValue | ean13ProductName | ean13ProductDescription |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier         | M_Product_ID       | SeqNo | EAN13_ProductCode |
+      | asiData_S31499_020 | product_S31499_020 | 10    | 4055555000026     |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID       | PriceStd | C_UOM_ID |
+      | salesPLV               | product_S31499_020 | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier             | REST.Context              | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoiceS31499_020 | salesInvoiceS31499_020_ID | customer1     | Ausgangsrechnung        | S31499_020 | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID           | M_Product_ID       | QtyInvoiced |
+      | salesInvoiceS31499_020 | product_S31499_020 | 1 PCE       |
+    And the invoice identified by salesInvoiceS31499_020 is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@salesInvoiceS31499_020_ID@"
+    }
+  ]
+}
+    """
+
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @salesInvoiceS31499_020_ID@,
+      "Invoice_DocumentNo": "S31499_020",
+      "Lines": [
+        {
+          "Invoice_Line": 10,
+          "Product_Name": "ean13ProductName",
+          "Product_Supplier_ProductNo": "ean13ProductValue",
+          "Product_Buyer_CU_GTIN": "4055555000026"
+        }
+      ]
+    }
+  ]
+}
+    """

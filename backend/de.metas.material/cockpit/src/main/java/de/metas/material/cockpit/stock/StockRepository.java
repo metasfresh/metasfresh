@@ -235,6 +235,8 @@ public class StockRepository
 	{
 		final IQueryBuilder<I_MD_Stock> queryBuilder = queryBL.createQueryBuilder(I_MD_Stock.class);
 
+		queryBuilder.addOnlyActiveRecordsFilter(); // deactivated (e.g. de-duplicated) MD_Stock rows keep their stale QtyOnHand and must not be summed into current stock
+
 		queryBuilder.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, query.getProductId());
 
 		if (!query.getWarehouseIds().isEmpty())

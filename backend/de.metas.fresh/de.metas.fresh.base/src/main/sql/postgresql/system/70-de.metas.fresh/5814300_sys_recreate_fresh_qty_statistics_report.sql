@@ -1,0 +1,82 @@
+DROP FUNCTION IF EXISTS report.fresh_qty_statistics_report(numeric, character varying, numeric, numeric, numeric, numeric, numeric, numeric, character varying);
+
+CREATE OR REPLACE FUNCTION report.fresh_qty_statistics_report
+	(
+		IN C_Period_ID numeric,
+		IN issotrx character varying,
+		IN C_BPartner_ID numeric,
+		IN C_Activity_ID numeric,
+		IN M_Product_ID numeric,
+		IN M_Product_Category_ID numeric,
+		IN M_AttributeSetInstance_ID numeric,
+		IN AD_Org_ID numeric,
+		IN AD_Language Character Varying (6)
+	)
+	RETURNS SETOF report.fresh_qty_statistics_report AS
+$BODY$
+	SELECT
+		bp_name, bp_value, pc_name, p_name, p_value, uomsymbol,
+		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
+		Period1Sum, Period2Sum, Period3Sum, Period4Sum, Period5Sum, Period6Sum,
+		Period7Sum, Period8Sum, Period9Sum, Period10Sum, Period11Sum, Period12Sum,
+		TotalSum, TotalAmt,
+		StartDate, EndDate,
+		param_bp, param_activity, param_product, param_product_category, param_attributes,
+		ad_org_id, iso_code,
+		1 AS UnionOrder
+	FROM
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+UNION ALL
+	SELECT
+		bp_name, bp_Value, pc_name, null AS P_name, null AS P_value, UOMSymbol,
+		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
+		SUM( Period1Sum ) AS Period1Sum, SUM( Period2Sum ) AS Period2Sum, SUM( Period3Sum ) AS Period3Sum,
+		SUM( Period4Sum ) AS Period4Sum, SUM( Period5Sum ) AS Period5Sum, SUM( Period6Sum ) AS Period6Sum,
+		SUM( Period7Sum ) AS Period7Sum, SUM( Period8Sum ) AS Period8Sum, SUM( Period9Sum ) AS Period9Sum,
+		SUM( Period10Sum ) AS Period10Sum, SUM( Period11Sum ) AS Period11Sum, SUM( Period12Sum ) AS Period12Sum,
+		SUM( TotalSum ) AS TotalSum, SUM( TotalAmt ) AS TotalAmt,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code,
+		2 AS UnionOrder
+	FROM
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	GROUP BY
+		bp_name, bp_Value, pc_name, UOMSymbol,
+		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code
+UNION ALL
+	SELECT
+		bp_name, bp_Value, null, null, null, UOMSymbol,
+		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
+		SUM( Period1Sum ) AS Period1Sum, SUM( Period2Sum ) AS Period2Sum, SUM( Period3Sum ) AS Period3Sum,
+		SUM( Period4Sum ) AS Period4Sum, SUM( Period5Sum ) AS Period5Sum, SUM( Period6Sum ) AS Period6Sum,
+		SUM( Period7Sum ) AS Period7Sum, SUM( Period8Sum ) AS Period8Sum, SUM( Period9Sum ) AS Period9Sum,
+		SUM( Period10Sum ) AS Period10Sum, SUM( Period11Sum ) AS Period11Sum, SUM( Period12Sum ) AS Period12Sum,
+		SUM( TotalSum ) AS TotalSum, SUM( TotalAmt ) AS TotalAmt,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code,
+		3 AS UnionOrder
+	FROM
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	GROUP BY
+		bp_name, bp_Value, UOMSymbol,
+		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code
+UNION ALL
+	SELECT
+		bp_name, bp_Value, null, null, null, null,
+		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
+		null, null, null, null, null, null, null, null, null, null, null, null,
+		null, SUM( TotalAmt ) AS TotalAmt,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code,
+		4 AS UnionOrder
+	FROM
+		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	GROUP BY
+		bp_name, bp_Value,
+		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
+		StartDate, EndDate, param_bp, param_Activity, param_product, param_Product_Category, Param_Attributes,ad_org_id,iso_code
+	HAVING
+		count(DISTINCT UOMSymbol) > 1
+ORDER BY
+	bp_name, pc_name NULLS LAST, UnionOrder, p_name
+$BODY$
+LANGUAGE sql STABLE;

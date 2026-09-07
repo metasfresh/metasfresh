@@ -15,6 +15,10 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
+/**
+ * Repository Tables: MobileUI_MFG_Config, MobileUI_UserProfile_MFG
+ * Repository Cluster: MobileUIManufacturingConfigRepository
+ */
 @Repository
 public class MobileUIManufacturingConfigRepository
 {
@@ -26,6 +30,11 @@ public class MobileUIManufacturingConfigRepository
 			.receiveUnitType(ReceiveUnitType.CU)
 			.isBestBeforeDateEditable(OptionalBoolean.TRUE)
 			.isLotNumberEditable(OptionalBoolean.TRUE)
+			.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.TRUE)
+			.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.TRUE)
+			.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.FALSE)
+			.isCaptureCatchWeightAtReceipt(OptionalBoolean.TRUE)
+			.isAllowReceiveWithoutPackingItem(OptionalBoolean.FALSE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -86,6 +95,11 @@ public class MobileUIManufacturingConfigRepository
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
 				.isBestBeforeDateEditable(OptionalBoolean.ofNullableString(record.getIsBestBeforeDateEditable()))
 				.isLotNumberEditable(OptionalBoolean.ofNullableString(record.getIsLotNumberEditable()))
+				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofNullableString(record.getIsAllowFinishedGoodsReceiveToLU()))
+				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofNullableString(record.getIsAllowFinishedGoodsReceiveToTU()))
+				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofNullableString(record.getIsSkipFinishedGoodsReceiveTargetStep()))
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofNullableString(record.getIsCaptureCatchWeightAtReceipt()))
+				.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofNullableString(record.getIsAllowReceiveWithoutPackingItem()))
 				.build();
 	}
 
@@ -96,6 +110,11 @@ public class MobileUIManufacturingConfigRepository
 		record.setReceiveUnitType(from.getReceiveUnitType() != null ? from.getReceiveUnitType().getCode() : null);
 		record.setIsBestBeforeDateEditable(from.getIsBestBeforeDateEditable().toBooleanString());
 		record.setIsLotNumberEditable(from.getIsLotNumberEditable().toBooleanString());
+		record.setIsAllowFinishedGoodsReceiveToLU(from.getIsAllowFinishedGoodsReceiveToLU().toBooleanString());
+		record.setIsAllowFinishedGoodsReceiveToTU(from.getIsAllowFinishedGoodsReceiveToTU().toBooleanString());
+		record.setIsSkipFinishedGoodsReceiveTargetStep(from.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanString());
+		record.setIsCaptureCatchWeightAtReceipt(from.getIsCaptureCatchWeightAtReceipt().toBooleanString());
+		record.setIsAllowReceiveWithoutPackingItem(from.getIsAllowReceiveWithoutPackingItem().toBooleanString());
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -116,6 +135,11 @@ public class MobileUIManufacturingConfigRepository
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
 				.isBestBeforeDateEditable(OptionalBoolean.ofBoolean(record.isBestBeforeDateEditable()))
 				.isLotNumberEditable(OptionalBoolean.ofBoolean(record.isLotNumberEditable()))
+				.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.ofBoolean(record.isAllowFinishedGoodsReceiveToLU()))
+				.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.ofBoolean(record.isAllowFinishedGoodsReceiveToTU()))
+				.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.ofBoolean(record.isSkipFinishedGoodsReceiveTargetStep()))
+				.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(record.isCaptureCatchWeightAtReceipt()))
+				.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofBoolean(record.isAllowReceiveWithoutPackingItem()))
 				.build();
 	}
 

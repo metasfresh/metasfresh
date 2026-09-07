@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1271990746L;
+	private static final long serialVersionUID = -326160252L;
 
     /** Standard Constructor */
     public X_M_Picking_Job (final Properties ctx, final int M_Picking_Job_ID, @Nullable final String trxName)
@@ -32,6 +32,21 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setCarrier_Product_ID (final int Carrier_Product_ID)
+	{
+		if (Carrier_Product_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Product_ID, Carrier_Product_ID);
+	}
+
+	@Override
+	public int getCarrier_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Product_ID);
 	}
 
 	@Override
@@ -196,6 +211,18 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public boolean isAllowPickingAnyHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public void setIsCarrierAdviseReadOnly (final boolean IsCarrierAdviseReadOnly)
+	{
+		set_Value (COLUMNNAME_IsCarrierAdviseReadOnly, IsCarrierAdviseReadOnly);
+	}
+
+	@Override
+	public boolean isCarrierAdviseReadOnly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCarrierAdviseReadOnly);
 	}
 
 	@Override

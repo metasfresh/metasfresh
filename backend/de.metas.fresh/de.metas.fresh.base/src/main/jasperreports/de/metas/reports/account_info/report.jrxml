@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/account_info/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -347,12 +347,14 @@ ORDER BY param_acct_name, dateacct, unionorder
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_acct_value}]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement x="356" y="71" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+					<reportElement x="356" y="71" width="40" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{param_start_date} + " - " + $F{param_end_date}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{param_start_date}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="356" y="60" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -420,6 +422,24 @@ ORDER BY param_acct_name, dateacct, unionorder
 						<pen lineWidth="1.0" lineStyle="Solid"/>
 					</graphicElement>
 				</line>
+				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+					<reportElement x="409" y="71" width="40" height="9" uuid="d5f510bd-559e-4633-bb0d-dd3553fc1a49">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
+					<textElement>
+						<font fontName="Arial" size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_end_date}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="396" y="71" width="13" height="9" uuid="a4084f00-0657-42bc-abca-cb2631f9dfa6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
+					<textElement>
+						<font fontName="Arial" size="7" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[" - "]]></textFieldExpression>
+				</textField>
 			</band>
 			<band height="74">
 				<property name="com.jaspersoft.studio.unit.height" value="px"/>

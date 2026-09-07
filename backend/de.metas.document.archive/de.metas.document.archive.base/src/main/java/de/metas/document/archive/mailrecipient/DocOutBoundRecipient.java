@@ -37,7 +37,7 @@ import java.util.function.Supplier;
 @Builder
 public class DocOutBoundRecipient
 {
-	@NonNull DocOutBoundRecipientId id;
+	@Nullable DocOutBoundRecipientId id;
 	@Nullable @With String emailAddress;
 	boolean invoiceAsEmail;
 	@Nullable Language userLanguage;
@@ -55,6 +55,18 @@ public class DocOutBoundRecipient
 
 		final String newEmailAddressNorm = StringUtils.trimBlankToNull(newEmailAddressSupplier.get());
 		return newEmailAddressNorm != null ? withEmailAddress(newEmailAddressNorm) : this;
+	}
+
+	public static DocOutBoundRecipient ofEmailAddress(
+			@NonNull final String emailAddress,
+			@Nullable final Language bPartnerLanguage,
+			final boolean invoiceAsEmail)
+	{
+		return DocOutBoundRecipient.builder()
+				.emailAddress(emailAddress)
+				.invoiceAsEmail(invoiceAsEmail)
+				.bPartnerLanguage(bPartnerLanguage)
+				.build();
 	}
 
 }

@@ -10,6 +10,7 @@ import org.compiere.model.X_M_Product;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -70,6 +71,14 @@ public enum ProductType implements ReferenceListAwareEnum
 	public static String toCodeOrNull(@Nullable final ProductType type)
 	{
 		return type != null ? type.getCode() : null;
+	}
+
+	public static String getCodesAsSqlList()
+	{
+		return Arrays.stream(values())
+				.map(ProductType::getCode)
+				.map(code -> "'" + code + "'")
+				.collect(Collectors.joining(","));
 	}
 
 	private static final ImmutableMap<String, ProductType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ProductType::getCode);

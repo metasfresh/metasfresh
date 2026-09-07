@@ -125,10 +125,15 @@ final class PackageableRowsRepository
 				.salesOrderId(filterVO.getSalesOrderId())
 				.warehouseId(filterVO.getWarehouseId())
 				.warehouseTypeId(filterVO.getWarehouseTypeId())
-				.preparationDate(filterVO.getPreparationDate())
 				.maximumFixedPreparationDate(zonedDateTime)
 				.maximumFixedPromisedDate(zonedDateTime)
 				.shipperId(filterVO.getShipperId());
+
+		// optional filter parameter; @Singular's adder does not take null
+		if (filterVO.getPreparationDate() != null)
+		{
+			builder.preparationDay(filterVO.getPreparationDate());
+		}
 
 		if (filterVO.getCustomerId() != null)
 		{

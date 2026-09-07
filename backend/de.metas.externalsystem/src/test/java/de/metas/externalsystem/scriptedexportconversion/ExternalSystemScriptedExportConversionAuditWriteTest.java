@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
@@ -73,8 +73,8 @@ public class ExternalSystemScriptedExportConversionAuditWriteTest
 
 		auditRepo = ExternalSystemExportAuditRepo.newInstanceForUnitTesting();
 
-		// Mock ExternalSystemConfigRepo so that getParentTypeById(PARENT_ID) returns SCRIPTED_TYPE
-		final ExternalSystemConfigRepo configRepoMock = Mockito.mock(ExternalSystemConfigRepo.class);
+		// Mock ExternalSystemConfigRepository so that getParentTypeById(PARENT_ID) returns SCRIPTED_TYPE
+		final ExternalSystemConfigRepository configRepoMock = Mockito.mock(ExternalSystemConfigRepository.class);
 		Mockito.when(configRepoMock.getParentTypeById(PARENT_ID))
 				.thenReturn(SCRIPTED_TYPE.getValue());
 

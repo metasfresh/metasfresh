@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.tax;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -89,13 +90,14 @@ public class C_Tax_StepDef
 	 *     <li>{@code SeqNo} — integer; auto-assigned if missing</li>
 	 *     <li>{@code EN16931VATCategory} — EN16931 VAT category code (e.g. {@code S}), required for e-invoice mapping</li>
 	 *     <li>{@code TypeOfDestCountry}, {@code ValidFrom} — as documented in {@link I_C_Tax}</li>
+	 *     <li>{@code RequiresTaxCertificate} — {@code Y}/{@code N}/{@code true}/{@code false}; tri-state column
+	 *         (blank/omitted leaves it unset, i.e. matches regardless) — this tax only applies to a BPartner
+	 *         that holds (or lacks) a tax certificate, as resolved during tax determination in
+	 *         {@code TaxDAO}</li>
 	 * </ul>
 	 *
-	 * <p>Re-running this step for an existing identifier acts as an upsert — applying the new
-	 * column values and saving, which re-triggers the {@code C_Tax} interceptor. This is the
-	 * standard way to drive flag-exclusivity test scenarios.
-	 *
-	 * <p>Upserts by {@code Name} so repeated runs don't collide on the unique-name constraint.
+	 * <p>Upserts by {@code Name}, so repeated runs neither collide on the unique-name constraint nor skip
+	 * the {@code C_Tax} interceptor — which is how flag-exclusivity scenarios are driven.
 	 *
 	 * <p><b>Gherkin usage example</b>:
 	 * <pre>{@code
@@ -160,6 +162,8 @@ public class C_Tax_StepDef
 				.ifPresent(taxRecord::setIsDocumentLevel);
 		tableRow.getAsOptionalString(I_C_Tax.COLUMNNAME_EN16931VATCategory)
 				.ifPresent(taxRecord::setEN16931VATCategory);
+		tableRow.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_RequiresTaxCertificate)
+				.ifPresent(value -> taxRecord.setRequiresTaxCertificate(StringUtils.ofBoolean(value)));
 
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 

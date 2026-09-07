@@ -10,6 +10,7 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
+import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
@@ -60,12 +61,24 @@ public class JsonCreateMasterdataRequest
 
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;
+	@Nullable Map<String, JsonMailboxRequest> mailboxes;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonUOMRequest> uoms;
+	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest> vatIdChecks;
 	@Nullable Map<String, JsonCompensationGroupSchemaRequest> compensationGroupSchemas;
 	@Nullable Map<String, JsonCreateProductRequest> products;
+
+	/**
+	 * Updates {@code M_Product.ProductLifeCycleStatus} (BBS-Status) on already-created products:
+	 * product identifier → status code ({@code O}/{@code A}/{@code G}/{@code N}). Applied late
+	 * (after order creation) so a product can be flipped to a blocking status only once its
+	 * order/picking-job setup exists — mirroring the real-life temporal block. See
+	 * {@link de.metas.frontend_testing.masterdata.product.SetProductLifeCycleStatusCommand}.
+	 */
+	@Nullable Map<String, String> productLifeCycleStatuses;
+
 	@Nullable Map<String, JsonCreateResourceRequest> resources;
 	@Nullable Map<String, JsonCreateProductPlanningRequest> productPlannings;
 	@Nullable Map<String, JsonPickingSlotCreateRequest> pickingSlots;

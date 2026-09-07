@@ -22,7 +22,7 @@
 
 package de.metas.rest_api.v2.externlasystem;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
@@ -31,11 +31,11 @@ import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.process.PInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.springframework.http.HttpStatus;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
 
 import java.util.Collections;
 import java.util.List;
@@ -112,7 +112,7 @@ public class ExternalSystemServiceSuccessTest
 			final List<IExternalSystemInvocationSuccessListener> successListeners)
 	{
 		return new ExternalSystemService(
-				ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+				ExternalSystemConfigRepository.newInstanceForUnitTesting(),
 				ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
 				new RuntimeParametersRepository(),
 				ExternalServices.newInstanceForUnitTesting(),

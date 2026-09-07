@@ -190,3 +190,110 @@ Feature: Customer Return from Shipment
     And M_HU are validated:
       | M_HU_ID    | HUStatus | IsActive |
       | return_hu3 | D        | N        |
+
+
+  @from:cucumber
+  @Id:S30583_TC2
+  @allure.label.epic:E0110_Sales
+  @allure.label.feature:F00200_Sales_Order
+  Scenario: Customer return invoice candidate prices correctly when product price is keyed on Packvorschrift
+    # Regression guard for the customer-return path. Unlike vendor receipt lines, HU shipment lines ARE
+    # PI-stamped (ShipmentLineBuilder writes the Override/Calculated columns from the order line), so a
+    # customer return pricing from its origin shipment line already finds the PI-keyed price — customer
+    # returns are NOT affected by the vendor-return defect. This scenario therefore prices correctly both
+    # before and after the fix (IsError=N, PriceActual=20), guarding that the return-scoped fix does not
+    # regress customer-return pricing. The product carries two PI-keyed prices (a realistic setup).
+
+    # Step 1a: Build the primary PI chain for the SO order line
+    Given metasfresh contains M_Products:
+      | Identifier    |
+      | product_CR_PI |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID     |
+      | huPackTU_CR_PI |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID     | HU_UnitType | IsCurrent |
+      | packingVer_CR_PI   | huPackTU_CR_PI | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | ItemType |
+      | huPiItem_CR_PI  | packingVer_CR_PI   | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier         | M_HU_PI_Item_ID | M_Product_ID  | Qty | ValidFrom  |
+      | huPiItemProd_CR_PI | huPiItem_CR_PI  | product_CR_PI | 10  | 2022-03-01 |
+
+    # Step 1b: Build the decoy PI chain (different PI, to force ≥2 PI-keyed price candidates)
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID            |
+      | huPackTU_CR_PI_decoy  |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID       | M_HU_PI_ID           | HU_UnitType | IsCurrent |
+      | packingVer_CR_PI_decoy   | huPackTU_CR_PI_decoy | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID          | M_HU_PI_Version_ID     | ItemType |
+      | huPiItem_CR_PI_decoy     | packingVer_CR_PI_decoy | MI       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier               | M_HU_PI_Item_ID      | M_Product_ID  | Qty | ValidFrom  |
+      | huPiItemProd_CR_PI_decoy | huPiItem_CR_PI_decoy | product_CR_PI | 10  | 2022-03-01 |
+
+    # Step 1c: Price list — two PI-keyed prices (no non-PI fallback)
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_CR_PI   |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_CR_PI   | ps_CR_PI           | DE                        | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID | ValidFrom  |
+      | plv_CR_PI  | pl_CR_PI       | 2022-03-01 |
+    # pp_CR_PI is keyed on the SO order-line PI (PriceStd=20, the price the return resolves to).
+    # pp_CR_PI_decoy is keyed on a different PI — a realistic second PI-keyed row for the same product.
+    And metasfresh contains M_ProductPrices
+      | Identifier           | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | M_HU_PI_Item_Product_ID  |
+      | pp_CR_PI             | plv_CR_PI              | product_CR_PI | 20.0     | PCE               | Normal                        | huPiItemProd_CR_PI       |
+      | pp_CR_PI_decoy       | plv_CR_PI              | product_CR_PI | 99.0     | PCE               | Normal                        | huPiItemProd_CR_PI_decoy |
+    And metasfresh contains C_BPartners:
+      | Identifier     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID |
+      | customer_CR_PI | N            | Y              | ps_CR_PI           |
+
+    # Step 2: Create Sales Order — SO line carries the Packvorschrift (huPiItemProd_CR_PI)
+    Given metasfresh contains C_Orders:
+      | Identifier  | IsSOTrx | C_BPartner_ID  | DateOrdered | OPT.POReference | OPT.M_PricingSystem_ID | OPT.C_BPartner_Location_ID | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_CR_PI | Y       | customer_CR_PI | 2022-06-10  | so_ref_CR_PI    | ps_CR_PI               | customer_CR_PI             | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier      | C_Order_ID  | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | orderLine_CR_PI | order_CR_PI | product_CR_PI | 10         | huPiItemProd_CR_PI      |
+
+    When the order identified by order_CR_PI is completed
+
+    # Step 3: Wait for shipment schedule, generate and complete shipment
+    # The shipment line IS PI-stamped (ShipmentLineBuilder writes the Override/Calculated columns from the
+    # order line) — this is why the customer return, pricing from this origin line, is not affected by the bug.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID  | IsToRecompute |
+      | schedule_CR_PI | orderLine_CR_PI | N             |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | schedule_CR_PI        | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID     |
+      | schedule_CR_PI        | shipment_CR_PI |
+
+    # Step 4: Create customer return referencing the shipment
+    And generate customer return from shipment
+      | M_InOut_ID     | CustomerReturn_ID    |
+      | shipment_CR_PI | customerReturn_CR_PI |
+
+    And the return inOut identified by customerReturn_CR_PI is completed
+
+    # Step 5: Wait for the product IC (filter by product to exclude packing-material ICs) and assert the price.
+    # The customer return prices correctly regardless of the fix (origin shipment line carries the PI):
+    # IsError=N, PriceActual=20 (the original sales price).
+    And after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID.Identifier | C_Invoice_Candidate_ID.Identifier | OPT.M_Product_ID.Identifier |
+      | customerReturn_CR_PI  | ic_CR_PI                          | product_CR_PI               |
+
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | IsError | PriceActual |
+      | ic_CR_PI               | false   | 20          |

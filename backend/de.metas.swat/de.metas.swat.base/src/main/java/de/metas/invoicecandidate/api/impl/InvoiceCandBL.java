@@ -283,6 +283,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
@@ -2270,6 +2271,27 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public void openInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		invoiceCandidates.forEach(this::openInvoiceCandidate);
+	}
+
+	/** Counterpart of {@link #closeInvoiceCandidate(I_C_Invoice_Candidate)}; QtyToInvoice is not restored, the invalidation recomputes it. */
+	private void openInvoiceCandidate(@NonNull final I_C_Invoice_Candidate candidate)
+	{
+		candidate.setProcessed_Override(null);
+
+		if (!InterfaceWrapperHelper.hasChanges(candidate))
+		{
+			return;
+		}
+
+		invoiceCandDAO.invalidateCand(candidate);
+		invoiceCandDAO.save(candidate);
+	}
+
+	@Override
 	public void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
@@ -2702,13 +2724,24 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
+	/**
+	 * SysConfig: max seconds {@link #waitForInvoiceCandidatesUpdated(InvoiceCandidateIdsSelection)} blocks while polling
+	 * for the selection's invoice candidates to be recomputed. Configurable so it can be lowered (e.g. in automated
+	 * tests, or on an instance whose recompute is wedged) to fail fast instead of blocking for the full default hour.
+	 */
+	private static final String SYSCONFIG_WaitForInvoiceCandidatesUpdatedTimeoutSeconds = "de.metas.invoicecandidate.api.impl.InvoiceCandBL.WaitForInvoiceCandidatesUpdatedTimeoutSeconds";
+	private static final int DEFAULT_WaitForInvoiceCandidatesUpdatedTimeoutSeconds = 3600; // a full hour (default preserves the previous hard-coded behaviour)
+
 	private void waitForInvoiceCandidatesUpdated(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue; Selection={}", invoiceCandidateIdsSelection);
+		// getPositiveIntValue (not getIntValue): TryAndWaitUtil treats maxWaitSeconds<=0 as an INFINITE wait, so a
+		// mistaken 0/negative config would hang forever instead of failing fast — fall back to the default on non-positive.
+		final int timeoutSeconds = sysConfigBL.getPositiveIntValue(SYSCONFIG_WaitForInvoiceCandidatesUpdatedTimeoutSeconds, DEFAULT_WaitForInvoiceCandidatesUpdatedTimeoutSeconds);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue (timeout={}s); Selection={}", timeoutSeconds, invoiceCandidateIdsSelection);
 		try
 		{
 			TryAndWaitUtil.tryAndWait(
-					3600 /*let's wait a full hour*/,
+					timeoutSeconds,
 					1000 /*check once a second*/,
 					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(invoiceCandidateIdsSelection),
 					null);
