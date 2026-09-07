@@ -134,9 +134,8 @@ public class DeliveryInstructionRepository
 	 */
 	public void updateDates(@NonNull final I_M_ShipperTransportation record, @NonNull final DeliveryInstructionDates dates)
 	{
-		// the record's columns are java.sql.Timestamp while the resolved dates are Instant, so each pair is
-		// brought to Instant BEFORE comparing: Objects.equals across the two types compiles, always answers
-		// "differs", and would leave this guard permanently open
+		// Compare as Instant on both sides: the columns are Timestamp, and Objects.equals(Timestamp, Instant)
+		// compiles but always answers "differs", which would leave this no-op guard permanently open.
 		final boolean changed = !Objects.equals(TimeUtil.asInstant(record.getETD()), dates.getEtd())
 				|| !Objects.equals(TimeUtil.asInstant(record.getETA()), dates.getEta())
 				|| !Objects.equals(TimeUtil.asInstant(record.getATD()), dates.getAtd())
