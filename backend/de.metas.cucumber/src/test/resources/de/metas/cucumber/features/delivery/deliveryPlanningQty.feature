@@ -1051,8 +1051,8 @@ Feature: Delivery planning quantities
     # more than the shipment schedule's qty-on-hand, and the shared shipment chain picks actual HUs. So the
     # warehouse is stocked by an inventory document first, and the sales order is pinned to that warehouse.
     Given metasfresh contains M_Products:
-      | Identifier    | Name          | IsStocked |
-      | productQ11Out | ProductQ11Out | true      |
+      | Identifier    | IsStocked |
+      | productQ11Out | true      |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | priceListVersion_SO               | productQ11Out           | 10.0     | PCE               | Normal                        |
