@@ -32,6 +32,10 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.UomId;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -67,6 +71,7 @@ class DeliveryInstructionDateDefaultsTest
 	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
 	private DeliveryInstructionRepository deliveryInstructionRepository;
 	private DeliveryInstructionService deliveryInstructionService;
+	private M_ShipperTransportation_WriteCounter headerWriteCounter;
 
 	@BeforeEach
 	void setUp()
@@ -77,6 +82,9 @@ class DeliveryInstructionDateDefaultsTest
 		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
 		deliveryInstructionService = new DeliveryInstructionService(
 				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
+
+		headerWriteCounter = new M_ShipperTransportation_WriteCounter();
+		POJOLookupMap.get().addModelValidator(headerWriteCounter);
 	}
 
 	/** The instant a request carries. Fixed to UTC midnight so no assertion here depends on the machine's zone. */
@@ -171,14 +179,14 @@ class DeliveryInstructionDateDefaultsTest
 
 		final DeliveryInstructionDates resolved = resolve(instruction, allocRequest(dayInstant(3), dayInstant(7), "08:00"));
 
-		assertThat(resolved.getEtd()).as("ETD seeded from the planning").isEqualTo(day(3));
-		assertThat(resolved.getEta()).as("ETA seeded from the planning").isEqualTo(day(7));
+		assertThat(resolved.getEtd()).as("ETD seeded from the planning").isEqualTo(dayInstant(3));
+		assertThat(resolved.getEta()).as("ETA seeded from the planning").isEqualTo(dayInstant(7));
 		assertThat(resolved.getLoadingTime()).as("LoadingTime seeded from the planning").isEqualTo("08:00");
 		assertThat(resolved.getAtd())
 				.as("ATD derives from the instruction's ETD FIELD after the fill, exactly as the transport-order "
 						+ "precedent does, so a planner-set ETD propagates into ATD")
-				.isEqualTo(day(3));
-		assertThat(resolved.getAta()).as("ATA derives from the filled ETA").isEqualTo(day(7));
+				.isEqualTo(dayInstant(3));
+		assertThat(resolved.getAta()).as("ATA derives from the filled ETA").isEqualTo(dayInstant(7));
 	}
 
 	@Test
@@ -191,11 +199,11 @@ class DeliveryInstructionDateDefaultsTest
 
 		assertThat(resolved.getEtd())
 				.as("these are defaults - a value entered before the allocation must be kept")
-				.isEqualTo(day(1));
+				.isEqualTo(dayInstant(1));
 		assertThat(resolved.getEta())
 				.as("per field, not per document: one field being set must not skip the whole seed")
-				.isEqualTo(day(7));
-		assertThat(resolved.getAtd()).as("ATD follows the planner's ETD, not the planning's").isEqualTo(day(1));
+				.isEqualTo(dayInstant(7));
+		assertThat(resolved.getAtd()).as("ATD follows the planner's ETD, not the planning's").isEqualTo(dayInstant(1));
 	}
 
 	@Test
@@ -288,5 +296,83 @@ class DeliveryInstructionDateDefaultsTest
 		assertThat(mPackage.getShipDate().toInstant())
 				.as("the exact point in time survives the request's Instant <-> Timestamp conversions")
 				.isEqualTo(day(7).toInstant());
+	}
+
+	/**
+	 * Counts the saves that actually reach the instruction header. {@code POJOLookupMap.save} fires
+	 * {@code BEFORE_CHANGE} on every save of an ALREADY-PERSISTED row - whether or not any column value differs -
+	 * so a fire here means {@code saveRecord} was really called, which is exactly what the no-op guard suppresses.
+	 */
+	@Interceptor(I_M_ShipperTransportation.class)
+	static class M_ShipperTransportation_WriteCounter
+	{
+		private int writes = 0;
+
+		@ModelChange(types = ModelChangeType.BEFORE_CHANGE)
+		public void count(@NonNull final I_M_ShipperTransportation record)
+		{
+			writes++;
+		}
+	}
+
+	/** An instruction that already carries all six date fields, so a re-resolution of the same values is a no-op. */
+	private static I_M_ShipperTransportation savedInstructionCarryingAllDates()
+	{
+		final I_M_ShipperTransportation record = draftDeliveryInstruction(day(1), day(7));
+		record.setATD(day(1));
+		record.setATA(day(7));
+		record.setLoadingTime("08:00");
+		record.setDeliveryTime("17:00");
+		InterfaceWrapperHelper.save(record);
+		return record;
+	}
+
+	/** The dates {@link #savedInstructionCarryingAllDates()} carries, with {@code ETA} left free to vary. */
+	private static DeliveryInstructionDates datesWithEta(@Nullable final Instant eta)
+	{
+		return DeliveryInstructionDates.builder()
+				.etd(dayInstant(1))
+				.eta(eta)
+				.atd(dayInstant(1))
+				.ata(dayInstant(7))
+				.loadingTime("08:00")
+				.deliveryTime("17:00")
+				.build();
+	}
+
+	/**
+	 * The no-op guard in {@code DeliveryInstructionRepository#updateDates}. It matters beyond saving a round trip:
+	 * a header save fires the {@code M_ShipperTransportation} interceptor chain, which syncs the header's dates back
+	 * DOWN onto every allocated planning. The guard therefore has to compare both sides in the SAME type - compare a
+	 * resolved date against the record's own in DIFFERENT types and every field answers "differs", the guard is
+	 * permanently open, and every resolution writes.
+	 */
+	@Test
+	@DisplayName("updateDates writes nothing when every resolved date already equals the one on the instruction")
+	void updateDatesDoesNotWriteWhenNothingChanged()
+	{
+		final I_M_ShipperTransportation instruction = savedInstructionCarryingAllDates();
+		final int writesBefore = headerWriteCounter.writes;
+
+		deliveryInstructionRepository.updateDates(instruction, datesWithEta(dayInstant(7)));
+
+		assertThat(headerWriteCounter.writes)
+				.as("a resolution that changes nothing must cost no write, so no sync-down onto the plannings is fired")
+				.isEqualTo(writesBefore);
+	}
+
+	@Test
+	@DisplayName("updateDates does write when a single resolved date differs")
+	void updateDatesWritesWhenOneDateDiffers()
+	{
+		final I_M_ShipperTransportation instruction = savedInstructionCarryingAllDates();
+		final int writesBefore = headerWriteCounter.writes;
+
+		deliveryInstructionRepository.updateDates(instruction, datesWithEta(dayInstant(9)));
+
+		assertThat(headerWriteCounter.writes)
+				.as("the guard must let a real change through - one differing field is enough")
+				.isEqualTo(writesBefore + 1);
+		assertThat(instruction.getETA()).as("the differing date is the one that lands on the record").isEqualTo(day(9));
 	}
 }

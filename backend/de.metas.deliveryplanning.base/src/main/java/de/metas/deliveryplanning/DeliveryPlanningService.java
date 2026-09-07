@@ -102,6 +102,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -1830,8 +1831,8 @@ public class DeliveryPlanningService
 			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
 			@NonNull final List<DeliveryPlanningAllocCreateRequest> requests)
 	{
-		Timestamp etd = deliveryInstructionRecord.getETD();
-		Timestamp eta = deliveryInstructionRecord.getETA();
+		Instant etd = TimeUtil.asInstant(deliveryInstructionRecord.getETD());
+		Instant eta = TimeUtil.asInstant(deliveryInstructionRecord.getETA());
 		String loadingTime = deliveryInstructionRecord.getLoadingTime();
 		String deliveryTime = deliveryInstructionRecord.getDeliveryTime();
 
@@ -1840,11 +1841,11 @@ public class DeliveryPlanningService
 			final DeliveryPlanningAllocCreateRequest.HeaderDateCandidate candidate = request.getHeaderDateCandidate();
 			if (etd == null && candidate.getEtd() != null)
 			{
-				etd = TimeUtil.asTimestamp(candidate.getEtd());
+				etd = candidate.getEtd();
 			}
 			if (eta == null && candidate.getEta() != null)
 			{
-				eta = TimeUtil.asTimestamp(candidate.getEta());
+				eta = candidate.getEta();
 			}
 			if (Check.isBlank(loadingTime) && !Check.isBlank(candidate.getLoadingTime()))
 			{
@@ -1859,15 +1860,15 @@ public class DeliveryPlanningService
 		return DeliveryInstructionDates.builder()
 				.etd(etd)
 				.eta(eta)
-				.atd(deriveActualIfEmpty(deliveryInstructionRecord.getATD(), etd))
-				.ata(deriveActualIfEmpty(deliveryInstructionRecord.getATA(), eta))
+				.atd(deriveActualIfEmpty(TimeUtil.asInstant(deliveryInstructionRecord.getATD()), etd))
+				.ata(deriveActualIfEmpty(TimeUtil.asInstant(deliveryInstructionRecord.getATA()), eta))
 				.loadingTime(loadingTime)
 				.deliveryTime(deliveryTime)
 				.build();
 	}
 
 	/** An unset actual (planner never confirmed one) defaults to the matching estimate; a real actual is kept. */
-	private static Timestamp deriveActualIfEmpty(@Nullable final Timestamp actual, @Nullable final Timestamp estimated)
+	private static <T> T deriveActualIfEmpty(@Nullable final T actual, @Nullable final T estimated)
 	{
 		return CoalesceUtil.coalesce(actual, estimated);
 	}
@@ -1960,13 +1961,13 @@ public class DeliveryPlanningService
 		}
 
 		// the Outgoing command's own fallback for an unset delivery date; the Incoming command has none
-		final Timestamp eta = deliveryDateEffective == null && !hasReceipt && orderLine != null
+		final Instant eta = TimeUtil.asInstant(deliveryDateEffective == null && !hasReceipt && orderLine != null
 				? orderLine.getDatePromised()
-				: deliveryDateEffective;
+				: deliveryDateEffective);
 
-		final Timestamp ata = orderLine != null ? CoalesceUtil.coalesce(orderLine.getDateDelivered(), deliveryDateEffective) : null;
+		final Instant ata = TimeUtil.asInstant(orderLine != null ? CoalesceUtil.coalesce(orderLine.getDateDelivered(), deliveryDateEffective) : null);
 
-		final Timestamp etd = order != null ? order.getPreparationDate() : null;
+		final Instant etd = TimeUtil.asInstant(order != null ? order.getPreparationDate() : null);
 
 		return DeliveryInstructionDates.builder()
 				.etd(etd)

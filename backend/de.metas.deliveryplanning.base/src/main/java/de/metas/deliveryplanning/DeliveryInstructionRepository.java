@@ -134,10 +134,13 @@ public class DeliveryInstructionRepository
 	 */
 	public void updateDates(@NonNull final I_M_ShipperTransportation record, @NonNull final DeliveryInstructionDates dates)
 	{
-		final boolean changed = !Objects.equals(record.getETD(), dates.getEtd())
-				|| !Objects.equals(record.getETA(), dates.getEta())
-				|| !Objects.equals(record.getATD(), dates.getAtd())
-				|| !Objects.equals(record.getATA(), dates.getAta())
+		// the record's columns are java.sql.Timestamp while the resolved dates are Instant, so each pair is
+		// brought to Instant BEFORE comparing: Objects.equals across the two types compiles, always answers
+		// "differs", and would leave this guard permanently open
+		final boolean changed = !Objects.equals(TimeUtil.asInstant(record.getETD()), dates.getEtd())
+				|| !Objects.equals(TimeUtil.asInstant(record.getETA()), dates.getEta())
+				|| !Objects.equals(TimeUtil.asInstant(record.getATD()), dates.getAtd())
+				|| !Objects.equals(TimeUtil.asInstant(record.getATA()), dates.getAta())
 				|| !Objects.equals(record.getLoadingTime(), dates.getLoadingTime())
 				|| !Objects.equals(record.getDeliveryTime(), dates.getDeliveryTime());
 		if (!changed)
@@ -145,10 +148,10 @@ public class DeliveryInstructionRepository
 			return;
 		}
 
-		record.setETD(dates.getEtd());
-		record.setETA(dates.getEta());
-		record.setATD(dates.getAtd());
-		record.setATA(dates.getAta());
+		record.setETD(TimeUtil.asTimestamp(dates.getEtd()));
+		record.setETA(TimeUtil.asTimestamp(dates.getEta()));
+		record.setATD(TimeUtil.asTimestamp(dates.getAtd()));
+		record.setATA(TimeUtil.asTimestamp(dates.getAta()));
 		record.setLoadingTime(dates.getLoadingTime());
 		record.setDeliveryTime(dates.getDeliveryTime());
 		saveRecord(record);

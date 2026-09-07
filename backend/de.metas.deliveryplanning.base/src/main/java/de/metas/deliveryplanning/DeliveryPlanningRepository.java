@@ -775,10 +775,10 @@ public class DeliveryPlanningRepository
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
 			final DeliveryInstructionDates dates = getResolvedDatesOrThrow(resolvedDatesByPlanningId, deliveryPlanningId);
 
-			record.setETD(dates.getEtd());
-			record.setATD(dates.getAtd());
-			record.setETA(dates.getEta());
-			record.setATA(dates.getAta());
+			record.setETD(TimeUtil.asTimestamp(dates.getEtd()));
+			record.setATD(TimeUtil.asTimestamp(dates.getAtd()));
+			record.setETA(TimeUtil.asTimestamp(dates.getEta()));
+			record.setATA(TimeUtil.asTimestamp(dates.getAta()));
 			record.setLoadingTime(dates.getLoadingTime());
 			record.setDeliveryTime(dates.getDeliveryTime());
 			saveRecord(record);
