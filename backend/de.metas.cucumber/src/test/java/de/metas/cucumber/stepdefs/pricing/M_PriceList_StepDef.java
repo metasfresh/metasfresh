@@ -176,7 +176,7 @@ public class M_PriceList_StepDef
 
 		// Layering chain: link this list onto the list it falls back to (its base). getPriceListVersionsUpToBase
 		// walks BasePriceList_ID to reach the base list, so special/base price resolution can be exercised.
-		final StepDefDataIdentifier baseListIdentifier = row.getAsOptionalIdentifier("BasePriceList_ID")
+		final StepDefDataIdentifier baseListIdentifier = row.getAsOptionalIdentifier(I_M_PriceList.COLUMNNAME_BasePriceList_ID)
 				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
 				.orElse(null);
 		if (baseListIdentifier != null)

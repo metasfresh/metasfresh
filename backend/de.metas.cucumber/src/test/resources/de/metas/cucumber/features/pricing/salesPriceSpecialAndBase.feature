@@ -71,20 +71,21 @@ Feature: report.getSalesPriceSpecialAndBase resolves the special and base price 
 
   # Three-level chain: assigned override -> middle override -> true base list. Base must come from the
   # true base list (90), not the middle override (80); Special is the nearest override (70).
-  # Every rung shares one country + currency (enforced by the M_PriceList interceptor), and a pricing
-  # system holds at most one SO and one non-SO list per country (unique index M_PriceList_UC_C_Country).
-  # A third rung therefore lives in a second pricing system: the customer's own system holds the assigned
-  # (SO) + middle (non-SO) lists; the middle list falls back to a global base list in a shared base pricing
-  # system. BasePriceList_ID may cross pricing systems.
+  # All three rungs are SALES (SO) lists -- a sales-price report walks sales lists only. The unique index
+  # M_PriceList_UC_C_Country (M_PricingSystem_ID, IsSOPriceList, COALESCE(C_Country_ID,0)) allows only ONE
+  # sales list per pricing system per country, and country-less lists collapse to country 0, so a three-rung
+  # all-sales chain needs one pricing system per rung. BasePriceList_ID may cross pricing systems; the
+  # customer is assigned the pricing system holding the top (assigned) list.
   Scenario: three-level chain takes the base price from the true base list, not the middle override
     Given metasfresh contains M_PricingSystems
       | Identifier              |
       | layeredPricingSystem    |
+      | middlePricingSystem     |
       | globalBasePricingSystem |
     And metasfresh contains M_PriceLists
       | Identifier   | M_PricingSystem_ID.Identifier | C_Currency.ISO_Code | SOTrx | BasePriceList_ID.Identifier |
-      | trueBaseList | globalBasePricingSystem       | EUR                 | false |                             |
-      | middleList   | layeredPricingSystem          | EUR                 | false | trueBaseList                |
+      | trueBaseList | globalBasePricingSystem       | EUR                 | true  |                             |
+      | middleList   | middlePricingSystem           | EUR                 | true  | trueBaseList                |
       | assignedList | layeredPricingSystem          | EUR                 | true  | middleList                  |
     And metasfresh contains M_PriceList_Versions
       | Identifier      | M_PriceList_ID.Identifier | ValidFrom  |
@@ -105,3 +106,25 @@ Feature: report.getSalesPriceSpecialAndBase resolves the special and base price 
     Then report.getSalesPriceSpecialAndBase returns:
       | C_BPartner_Location_ID  | M_Product_ID   | Date       | SpecialPriceStd | BasePriceStd |
       | layeredCustomerLocation | layeredProduct | 2022-05-17 | 70              | 90           |
+
+  # Version-by-date selection: getPriceListVersionsUpToBase picks, per list, the newest version whose
+  # ValidFrom is on/before the report date (MAX(ValidFrom) WHERE ValidFrom <= p_Date). baseList (from the
+  # Background) gets one version BEFORE and one AFTER the 2022-05-17 report date, around the in-range
+  # baseListVersion (2022-05-01). The in-range version's price (110) must win over the older (100) and the
+  # future (120) versions. The article is priced only on the base list, so Special stays empty.
+  Scenario: the newest price-list version valid on the report date is used, ignoring older and future versions
+    Given metasfresh contains M_PriceList_Versions
+      | Identifier          | M_PriceList_ID.Identifier | ValidFrom  |
+      | baseListVersionOld  | baseList                  | 2022-01-01 |
+      | baseListVersionNext | baseList                  | 2022-09-01 |
+    And metasfresh contains M_Products:
+      | Identifier   |
+      | productDated |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | baseListVersionOld                | productDated            | 100      | PCE               | Normal                        |
+      | baseListVersion                   | productDated            | 110      | PCE               | Normal                        |
+      | baseListVersionNext               | productDated            | 120      | PCE               | Normal                        |
+    Then report.getSalesPriceSpecialAndBase returns:
+      | C_BPartner_Location_ID | M_Product_ID | Date       | SpecialPriceStd | BasePriceStd |
+      | customerLocation       | productDated | 2022-05-17 |                 | 110          |
