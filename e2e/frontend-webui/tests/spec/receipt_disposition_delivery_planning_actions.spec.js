@@ -78,8 +78,18 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
           },
         },
         products: {
-          PACKED: { name: `RL packed product ${Date.now()}`, type: 'Item' },
-          UNPACKED: { name: `RL unpacked product ${Date.now()}`, type: 'Item' },
+          // Both need a price on the vendor's purchase price list: completing the order prices every
+          // line, so a product without one fails the PATCH with ProductNotOnPriceListException.
+          PACKED: {
+            name: `RL packed product ${Date.now()}`,
+            type: 'Item',
+            prices: [{ price: 10.0, currencyCode: 'EUR' }],
+          },
+          UNPACKED: {
+            name: `RL unpacked product ${Date.now()}`,
+            type: 'Item',
+            prices: [{ price: 10.0, currencyCode: 'EUR' }],
+          },
         },
         // Gives PACKED product a default LU/TU configuration (M_HU_PI_Item_Product) — the ONE thing
         // that makes "HUs annehmen Voreinst." resolve. UNPACKED gets none, which is the natural,
