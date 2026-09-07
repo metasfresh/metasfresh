@@ -737,6 +737,19 @@ jobs:
           # Aggregate SQL files directly from source code (no Maven dependency)
           # Preserve intermediate folder structure (e.g., 10-de.metas.adempiere/, 20-de.metas.aggregation/)
           # Use -print0/read -d '' to handle filenames with spaces
+          # A script must live one level deep, inside its module's NN-<module> folder:
+          # the find below matches ".../system/<folder>/<file>.sql" only, so a script placed
+          # directly in ".../system/" would be dropped WITHOUT any error and its migration
+          # would silently never reach the DB image. Fail loudly instead.
+          # `set -e` is on (Actions' bash default), so a bare $(find ...) that errors would
+          # abort the step with no message. Capture the status and say what broke instead.
+          STRAY=$(find backend -path "*/src/main/sql/postgresql/system/*.sql" -not -path "*/system/*/*") || {
+            echo "::error::could not scan for stray migration scripts (find exited $?)"; exit 1; }
+          if [ -n "$STRAY" ]; then
+            echo "::error::migration script(s) sit directly in src/main/sql/postgresql/system/ and would not be aggregated. Move each into its module's NN-<module> subfolder:"
+            echo "$STRAY"
+            exit 1
+          fi
           mkdir -p migration-sql
           find backend -path "*/src/main/sql/postgresql/system/*/*.sql" -print0 | while IFS= read -r -d '' sql_file; do
             intermediate_folder=$(basename "$(dirname "$sql_file")")
