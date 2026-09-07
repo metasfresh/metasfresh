@@ -131,12 +131,22 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     # Component issue: DR P_WIP_Acct / CR P_Asset_Acct (inventory down, WIP up).
     # Material receipt of finished good: DR P_Asset_Acct / CR P_WIP_Acct (inventory up, WIP down).
+    # Qty runs with the amount on each leg: the debited account gains it, the credited one loses it.
     And Fact_Acct records are matching
-      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
-      | issueCostCollector   | P_WIP_Acct            | compProd     | 10        | 0         |
-      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 10        |
-      | receiptCostCollector | P_Asset_Acct          | finProd      | 10        | 0         |
-      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 10        |
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | issueCostCollector   | P_WIP_Acct            | compProd     | 10        | 0         | 1 PCE  |
+      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 10        | -1 PCE |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 10        | 0         | 1 PCE  |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 10        | -1 PCE |
+
+    # Lagerwert, the report those qty signs feed: the component down to 99 of its seeded 100 PCE, the finished
+    # good up to 11 of its seeded 10, each at its unchanged 10 CHF/PCE. Both are stocked and issued in the same
+    # UOM, so each lands on one row - a wrong-signed issue qty is added there instead of subtracted (101 PCE at
+    # 990/101), leaving the ledger amount right and only the quantity and cost price wrong.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | compProd     | warehouseStd   | 99  | 10.0000        | 990.00           | 990.00                |
+      | 2024-03-27 | finProd      | warehouseStd   | 11  | 10.0000        | 110.00           | 110.00                |
 
   @from:cucumber
   @Id:S26253_TC1
@@ -380,9 +390,6 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     # Baseline Lagerwert, before anything is manufactured. The ledger holds what the seeding inventories
     # actually posted - compProd at the Background's 10 CHF, not the 34 its current cost was later set to.
-    # The component is asserted ONLY here: after the issue the report's Qty counts the issued quantity with
-    # the wrong sign (100 + 10 issued reads as 110, not 90), so its Acct_CostPrice is wrong too while the
-    # amount stays right. Asserting that would bake the defect in - it is being fixed separately.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | compProd     | warehouseStd   | 100 | 10.0000        | 1000.00          | 1000.00               |
@@ -428,11 +435,11 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     # issued 340 - received 300 = a 40 CHF WIP residual for the Distribute action to discharge.
     And Fact_Acct records are matching
-      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
-      | issueCostCollector   | P_WIP_Acct            | compProd     | 340       | 0         |
-      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 340       |
-      | receiptCostCollector | P_Asset_Acct          | finProd      | 300       | 0         |
-      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 300       |
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty     |
+      | issueCostCollector   | P_WIP_Acct            | compProd     | 340       | 0         | 10 PCE  |
+      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 340       | -10 PCE |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 300       | 0         | 10 PCE  |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 300       | -10 PCE |
 
     # Sell 10 of the 18 PCE on hand, leaving the 8 PCE onto which the residual gets capitalized.
     And metasfresh contains M_PricingSystems
@@ -471,10 +478,12 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | AveragePO        | 30 CHF           | 8 PCE      |
 
-    # Lagerwert before discharging: the 8 PCE still on hand, booked on P_Asset_Acct at 30 CHF/PCE.
+    # Lagerwert before discharging: the 8 PCE still on hand, booked on P_Asset_Acct at 30 CHF/PCE, and the
+    # component down to 90 of its seeded 100 PCE - 1000 CHF seeded minus the 340 issued, so 660 over 90 PCE.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | finProd      | warehouseStd   | 8   | 30.0000        | 240.00           | 240.00                |
+      | 2024-03-27 | compProd     | warehouseStd   | 90  | 7.3333         | 660.00           | 660.00                |
 
     And the manufacturing order identified by ppOrder is distributed
 
@@ -585,11 +594,11 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     # issued 250 - received 200 = a 50 CHF WIP residual for the Distribute action to discharge.
     And Fact_Acct records are matching
-      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
-      | issueCostCollector   | P_WIP_Acct            | compProd     | 250       | 0         |
-      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 250       |
-      | receiptCostCollector | P_Asset_Acct          | finProd      | 200       | 0         |
-      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 200       |
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty     |
+      | issueCostCollector   | P_WIP_Acct            | compProd     | 250       | 0         | 10 PCE  |
+      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 250       | -10 PCE |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 200       | 0         | 10 PCE  |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 200       | -10 PCE |
 
     # Sell 10 of the 16 PCE on hand, leaving the 6 PCE onto which the residual gets capitalized.
     And metasfresh contains M_PricingSystems
@@ -628,10 +637,12 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | MovingAverageInvoice | 20 CHF           | 6 PCE      |
 
-    # Lagerwert before discharging: the 6 PCE still on hand, booked on P_Asset_Acct at 20 CHF/PCE.
+    # Lagerwert before discharging: the 6 PCE still on hand, booked on P_Asset_Acct at 20 CHF/PCE, and the
+    # component down to 90 of its seeded 100 PCE - 1000 CHF seeded minus the 250 issued, so 750 over 90 PCE.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | finProd      | warehouseStd   | 6   | 20.0000        | 120.00           | 120.00                |
+      | 2024-03-27 | compProd     | warehouseStd   | 90  | 8.3333         | 750.00           | 750.00                |
 
     And the manufacturing order identified by ppOrder is distributed
 
@@ -729,6 +740,9 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     # Baseline Lagerwert, before anything is manufactured: 7 + 53 = 60 CHF across both products. The whole
     # point of discharging the residual is that the warehouse must be worth this same 60 again afterwards -
     # manufacturing moves value between products, it does not create any.
+    # cwComp is asserted only here. Once issued it returns TWO report rows - the PCE stock and the KGM issue -
+    # because the report groups by the UOM on each posting, and the step REQUIRES exactly one row per
+    # product - it fails on more, it does not pick one.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | cwComp       | warehouseStd   | 1   | 7.0000         | 7.00             | 7.00                  |
