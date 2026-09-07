@@ -1991,6 +1991,10 @@ public class DeliveryPlanningService
 		return transportDirection != null && transportDirection.isIncomingOrDropship();
 	}
 
+	/**
+	 * Voids and re-creates the instruction of every selected planning. Under aggregation an instruction carries
+	 * several plannings, so this also replaces the document that UNSELECTED sibling plannings ride on.
+	 */
 	public void regenerateDeliveryInstructions(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final ICompositeQueryFilter<I_M_Delivery_Planning> dpFilter = deliveryPlanningRepository
@@ -2011,6 +2015,10 @@ public class DeliveryPlanningService
 		}
 	}
 
+	/**
+	 * Voids the WHOLE instruction the given planning is linked to, not just that planning's share of it - under
+	 * aggregation the same instruction carries sibling plannings, and they lose their document along with it.
+	 */
 	private void voidLinkedDeliveryInstructions(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		final Iterator<I_M_ShipperTransportation> deliveryInstructionsIterator = deliveryInstructionService.retrieveForDeliveryPlanning(deliveryPlanningId);
