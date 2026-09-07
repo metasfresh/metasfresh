@@ -84,11 +84,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQtyPO               | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value             | Name              | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQtyPO             | warehouseValueQtyPO | warehouseNameQtyPO | warehouseBPQtyPO             | warehouseLocationQtyPO                 |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQtyPO            | warehouseBPQtyPO             | warehouseLocationQtyPO                |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value          | M_Warehouse_ID.Identifier |
-      | locatorQtyPO              | locatorValueQtyPO | warehouseQtyPO             |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQtyPO            | warehouseQtyPO            |
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderQtyPO   | false   | vendorQtyPO               | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQtyPO                    | warehouseQtyPO                 | POO             |
@@ -132,11 +132,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQtySeedIn          | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier   | Value                   | Name                   | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQtySeedIn          | warehouseValueQtySeedIn | warehouseNameQtySeedIn | warehouseBPQtySeedIn         | warehouseLocationQtySeedIn             |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQtySeedIn        | warehouseBPQtySeedIn         | warehouseLocationQtySeedIn            |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value                 | M_Warehouse_ID.Identifier |
-      | locatorQtySeedIn        | locatorValueQtySeedIn | warehouseQtySeedIn        |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQtySeedIn        | warehouseQtySeedIn        |
     And metasfresh contains C_Orders:
       | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderQtySeedIn   | false   | vendorQtySeedIn           | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQtySeedIn                | warehouseQtySeedIn             | POO             |
@@ -180,11 +180,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQtyFollow          | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier  | Value                    | Name                    | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQtyFollow         | warehouseValueQtyFollow  | warehouseNameQtyFollow  | warehouseBPQtyFollow         | warehouseLocationQtyFollow             |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQtyFollow        | warehouseBPQtyFollow         | warehouseLocationQtyFollow            |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value                  | M_Warehouse_ID.Identifier |
-      | locatorQtyFollow        | locatorValueQtyFollow  | warehouseQtyFollow        |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQtyFollow        | warehouseQtyFollow        |
     And metasfresh contains C_Orders:
       | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderQtyFollow    | false   | vendorQtyFollow           | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQtyFollow                | warehouseQtyFollow             | POO             |
@@ -456,11 +456,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQtyTC12            | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                 | Name                 | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQtyTC12          | warehouseValueQtyTC12 | warehouseNameQtyTC12 | warehouseBPQtyTC12           | warehouseLocationQtyTC12               |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQtyTC12          | warehouseBPQtyTC12           | warehouseLocationQtyTC12              |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value               | M_Warehouse_ID.Identifier |
-      | locatorQtyTC12          | locatorValueQtyTC12 | warehouseQtyTC12          |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQtyTC12          | warehouseQtyTC12          |
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderQtyTC12 | false   | vendorQtyTC12             | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQtyTC12                 | warehouseQtyTC12               | POO             |
@@ -684,11 +684,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQtySplitIn         | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                    | Name                    | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQtySplitIn       | warehouseValueQtySplitIn | warehouseNameQtySplitIn | warehouseBPQtySplitIn        | warehouseLocationQtySplitIn            |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQtySplitIn       | warehouseBPQtySplitIn        | warehouseLocationQtySplitIn           |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value                  | M_Warehouse_ID.Identifier |
-      | locatorQtySplitIn       | locatorValueQtySplitIn | warehouseQtySplitIn       |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQtySplitIn       | warehouseQtySplitIn       |
     And metasfresh contains C_Orders:
       | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderQtySplitIn   | false   | vendorQtySplitIn          | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQtySplitIn               | warehouseQtySplitIn            | POO             |
@@ -887,11 +887,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQ10                | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value             | Name              | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQ10               | warehouseValueQ10 | warehouseNameQ10  | warehouseBPQ10                | warehouseLocationQ10                   |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQ10              | warehouseBPQ10               | warehouseLocationQ10                  |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value            | M_Warehouse_ID.Identifier |
-      | locatorQ10               | locatorValueQ10  | warehouseQ10               |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQ10              | warehouseQ10              |
     And metasfresh contains C_Orders:
       | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderQ10Delivered  | false   | vendorQ10                 | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQ10                      | warehouseQ10                    | POO             |
@@ -989,11 +989,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQ11R                | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value               | Name                | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQ11R              | warehouseValueQ11R  | warehouseNameQ11R   | warehouseBPQ11R               | warehouseLocationQ11R                  |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQ11R             | warehouseBPQ11R              | warehouseLocationQ11R                 |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value             | M_Warehouse_ID.Identifier |
-      | locatorQ11R              | locatorValueQ11R  | warehouseQ11R              |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQ11R             | warehouseQ11R             |
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderQ11R      | false   | vendorQ11R                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQ11R                     | warehouseQ11R                  | POO             |
@@ -1057,11 +1057,11 @@ Feature: Delivery planning quantities
       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | priceListVersion_SO               | productQ11Out           | 10.0     | PCE               | Normal                        |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                | Name                |
-      | warehouseQ11Out           | warehouseValueQ11Out | warehouseNameQ11Out |
+      | M_Warehouse_ID.Identifier |
+      | warehouseQ11Out           |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value              | M_Warehouse_ID.Identifier |
-      | locatorQ11Out           | locatorValueQ11Out | warehouseQ11Out           |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQ11Out           | warehouseQ11Out           |
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID  | MovementDate | OPT.DocumentNo |
       | inventoryQ11Out           | warehouseQ11Out | 2023-02-02   | Q11Out_stock   |
@@ -1135,17 +1135,17 @@ Feature: Delivery planning quantities
     # much of them is available. Their own warehouse keeps their shipments out of any other scenario's
     # consolidation window.
     Given metasfresh contains M_Products:
-      | Identifier  | Name        |
-      | productQ11C | ProductQ11C |
+      | Identifier  |
+      | productQ11C |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | priceListVersion_SO               | productQ11C             | 10.0     | PCE               | Normal                        |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value              | Name              |
-      | warehouseQ11C             | warehouseValueQ11C | warehouseNameQ11C |
+      | M_Warehouse_ID.Identifier |
+      | warehouseQ11C             |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value            | M_Warehouse_ID.Identifier |
-      | locatorQ11C             | locatorValueQ11C | warehouseQ11C             |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQ11C             | warehouseQ11C             |
 
     # The OTHER order, on the same customer / ship-to location / warehouse. Both orders promise 2023-02-05,
     # which is the date both shipments end up carrying (a shipment generated with IsShipToday=false is dated
@@ -1232,17 +1232,17 @@ Feature: Delivery planning quantities
     # availability - the subject here is which LINES a completion books. Their own warehouse keeps these
     # shipments out of any other scenario's consolidation window.
     Given metasfresh contains M_Products:
-      | Identifier  | Name        |
-      | productQ11S | ProductQ11S |
+      | Identifier  |
+      | productQ11S |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | priceListVersion_SO               | productQ11S             | 10.0     | PCE               | Normal                        |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value              | Name              |
-      | warehouseQ11S             | warehouseValueQ11S | warehouseNameQ11S |
+      | M_Warehouse_ID.Identifier |
+      | warehouseQ11S             |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value            | M_Warehouse_ID.Identifier |
-      | locatorQ11S             | locatorValueQ11S | warehouseQ11S             |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQ11S             | warehouseQ11S             |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DeliveryRule |
       | orderQ11S  | true    | customer                 | 2023-02-03  | 2023-02-05T00:00:00Z | customerLocation                      | warehouseQ11S                 | F                |
@@ -1324,11 +1324,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQ11I                | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value               | Name                | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQ11I              | warehouseValueQ11I  | warehouseNameQ11I   | warehouseBPQ11I               | warehouseLocationQ11I                  |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQ11I             | warehouseBPQ11I              | warehouseLocationQ11I                 |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value             | M_Warehouse_ID.Identifier |
-      | locatorQ11I              | locatorValueQ11I  | warehouseQ11I              |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQ11I             | warehouseQ11I             |
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderQ11I      | false   | vendorQ11I                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQ11I                     | warehouseQ11I                  | POO             |
@@ -1388,11 +1388,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQ11D                | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value               | Name                | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQ11D              | warehouseValueQ11D  | warehouseNameQ11D   | warehouseBPQ11D               | warehouseLocationQ11D                  |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQ11D             | warehouseBPQ11D              | warehouseLocationQ11D                 |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value             | M_Warehouse_ID.Identifier |
-      | locatorQ11D              | locatorValueQ11D  | warehouseQ11D              |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQ11D             | warehouseQ11D             |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.IsDropShip | OPT.DropShip_BPartner_ID.Identifier |
       | orderQ11D  | false   | vendorQ11D                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQ11D                     | warehouseQ11D                  | POO             | true           | customer                             |
@@ -1462,11 +1462,11 @@ Feature: Delivery planning quantities
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendorQ11P               | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value              | Name              | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseQ11P             | warehouseValueQ11P | warehouseNameQ11P | warehouseBPQ11P              | warehouseLocationQ11P                 |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseQ11P             | warehouseBPQ11P              | warehouseLocationQ11P                 |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value             | M_Warehouse_ID.Identifier |
-      | locatorQ11P             | locatorValueQ11P  | warehouseQ11P             |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorQ11P             | warehouseQ11P             |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderQ11P  | false   | vendorQ11P               | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQ11P                    | warehouseQ11P                 | POO             |

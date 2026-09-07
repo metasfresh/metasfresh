@@ -42,11 +42,11 @@ Feature: The delivery instruction's three-state delivered indicator
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor                   | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                      | Name                       | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseState             | warehouseValueDeliveredState | warehouseNameDeliveredState | warehouseBP                   | warehouseLocation                      |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouseState            | warehouseBP                  | warehouseLocation                     |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value                    | M_Warehouse_ID.Identifier |
-      | locatorState            | LocatorDeliveredState    | warehouseState             |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorState            | warehouseState            |
     And contains M_Shippers
       | Identifier      | OPT.IsCreateDeliveryPlanning |
       | shipper_forward | true                         |

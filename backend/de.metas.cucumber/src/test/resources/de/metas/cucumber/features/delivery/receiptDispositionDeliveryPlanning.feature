@@ -57,11 +57,11 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | vendor_RL                | product_RL              |
       | vendor_RL                | product2_RL             |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                  | Name                   | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouse_RL              | warehouseValue_RL31789 | warehouseName_RL31789  | warehouseBP_RL               | warehouseLocation_RL                  |
+      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | warehouse_RL              | warehouseBP_RL               | warehouseLocation_RL                  |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value               | M_Warehouse_ID.Identifier |
-      | locator_RL              | locatorValue_RL31789| warehouse_RL              |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locator_RL              | warehouse_RL              |
     And contains M_Shippers
       | Identifier          | OPT.IsCreateDeliveryPlanning |
       | shipperPlanning_RL  | true                         |

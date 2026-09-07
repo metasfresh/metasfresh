@@ -30,8 +30,8 @@ Feature: The delivery planning's status colour is the delivered state, rendered
       | Identifier                | M_PriceList_ID.Identifier |
       | priceListVersionSOColour  | priceListSOColour         |
     And metasfresh contains M_Products:
-      | Identifier      | Name           |
-      | productColour   | ProductColour  |
+      | Identifier    |
+      | productColour |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | priceListVersionSOColour          | productColour           | 10.0     | PCE               | Normal                        |
@@ -45,11 +45,11 @@ Feature: The delivery planning's status colour is the delivered state, rendered
       | Identifier     | OPT.IsCreateDeliveryPlanning |
       | shipperColour  | true                         |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                 | Name                 |
-      | warehouseColour           | warehouseValueColour  | warehouseNameColour  |
+      | M_Warehouse_ID.Identifier |
+      | warehouseColour           |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value               | M_Warehouse_ID.Identifier |
-      | locatorColour           | locatorValueColour  | warehouseColour           |
+      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
+      | locatorColour           | warehouseColour           |
 
   @Id:S31789_TC_StatusColourDerivedFromDeliveredState
   Scenario: The status colour agrees with IsDelivered on both a generated planning and a SPLIT sibling

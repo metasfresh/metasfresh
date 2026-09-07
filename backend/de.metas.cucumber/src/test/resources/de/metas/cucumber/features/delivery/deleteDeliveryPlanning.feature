@@ -13,23 +13,23 @@ Feature: Delete delivery planning
   Scenario: Delete delivery planning
 
     Given metasfresh contains M_PricingSystems
-      | Identifier    | Name              | Value                             |
-      | pricingSystem | PricingSystemName | PricingSystemValueDelete_03022023 |
+      | Identifier    |
+      | pricingSystem |
     And metasfresh contains M_PriceLists
-      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                         | SOTrx | IsTaxIncluded | PricePrecision |
-      | priceList_SO | pricingSystem                 | DE                        | EUR                 | PriceListNameDelete_03022023 | true  | false         | 2              |
+      | Identifier   | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
+      | priceList_SO | pricingSystem                 | DE                        | EUR                 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier          | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | priceListVersion_SO | priceList_SO              | SalesOrder-PLV | 2023-02-01 |
+      | Identifier          | M_PriceList_ID.Identifier | ValidFrom  |
+      | priceListVersion_SO | priceList_SO              | 2023-02-01 |
     And metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | product    | ProductNameDelete_03022023 |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
       | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | productPrice_SO_4 | priceListVersion_SO               | product                 | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer   | CustomerDelete_03022023 | N            | Y              | pricingSystem                 |
+      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer   | N            | Y              | pricingSystem                 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | customerLocation | 1230367890599 | customer                 | true                | true                |

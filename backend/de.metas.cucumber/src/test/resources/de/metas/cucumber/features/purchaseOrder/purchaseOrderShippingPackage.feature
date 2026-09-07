@@ -28,11 +28,11 @@ Feature: Purchase order to transportation order
       | Identifier |
       | ps_PO      |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name       | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_PO      | ps_PO                         | DE                        | EUR                 | pl_PO_name | false | false         | 2              |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_PO      | ps_PO                         | DE                        | EUR                 | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
-      | plv_PO     | pl_PO                     | plv_PO | 2022-03-01 |
+      | Identifier | M_PriceList_ID.Identifier | ValidFrom  |
+      | plv_PO     | pl_PO                     | 2022-03-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_PO      | plv_PO                            | purchasedProduct        | 10.0     | PCE               | Normal                        |
