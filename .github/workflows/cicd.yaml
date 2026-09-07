@@ -32,6 +32,7 @@ jobs:
       branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
       is-local: ${{ steps.detect-local.outputs.is-local }}
       skip-publish-reports: ${{ steps.skip-checks.outputs.skip-publish-reports }}
+      branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
     steps:
       - name: Detect local execution
         id: detect-local
@@ -371,6 +372,8 @@ jobs:
     permissions:
       packages: write
     needs: init
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1282,6 +1285,8 @@ jobs:
     permissions:
       packages: write
     needs: [ init, java ]
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -2736,6 +2741,47 @@ jobs:
           _Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
 
           # Find existing comment with marker, update or create
+          COMMENT_ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --paginate --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -1)
+          if [ -n "$COMMENT_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$BODY" --silent
+            echo "Updated existing comment ${COMMENT_ID} on PR #${PR}"
+          else
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            echo "Posted new comment on PR #${PR}"
+          fi
+
+      - name: Post report link on PR
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "${{ github.ref_name }}" --json number --jq '.[0].number')
+          if [ -z "$PR" ]; then
+            echo "No open PR for branch ${{ github.ref_name }} — skipping comment"
+            exit 0
+          fi
+
+          BASE_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/allure"
+          REPORT_LINKS=""
+          for report_type in ${{ steps.inventory.outputs.reports }}; do
+            REPORT_LINKS="${REPORT_LINKS}| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |"$'\n'
+          done
+
+          MARKER="<!-- allure-reports -->"
+          BODY="${MARKER}
+          ### 📊 Test Reports
+
+          **Build:** \`${VERSION}\`
+
+          | Report | Link |
+          |--------|------|
+          ${REPORT_LINKS}
+          _Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
+
+          # Find existing comment with the marker, update in place or create
           COMMENT_ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --paginate --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -1)
           if [ -n "$COMMENT_ID" ]; then
             gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$BODY" --silent
