@@ -129,11 +129,11 @@ public class M_ShippingPackage_StepDef
 	 * @cucumber.columns
 	 *   <b>M_ShippingPackage_ID</b> — (required, identifier-ref) the package to assert<br>
 	 *   <b>ActualLoadQty</b> — (required) expected loaded quantity<br>
-	 *   <b>ActualDischargeQuantity</b> — (optional) expected discharged quantity - Task Q14, mirrored from
+	 *   <b>ActualDischargeQuantity</b> — (optional) expected discharged quantity - mirrored from
 	 *   the planning<br>
-	 *   <b>PlannedLoadedQuantity</b> — (optional) expected planned load quantity - Task Q14, mirrored from
+	 *   <b>PlannedLoadedQuantity</b> — (optional) expected planned load quantity - mirrored from
 	 *   the planning<br>
-	 *   <b>PlannedDischargeQuantity</b> — (optional) expected planned discharge quantity - Task Q14, mirrored
+	 *   <b>PlannedDischargeQuantity</b> — (optional) expected planned discharge quantity - mirrored
 	 *   from the planning<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (optional, identifier-ref) expected delivery instruction<br>
 	 *   <b>M_Package_ID</b> — (optional, identifier-ref) expected package<br>
@@ -164,7 +164,7 @@ public class M_ShippingPackage_StepDef
 					.as("%s of M_ShippingPackage %s", I_M_ShippingPackage.COLUMNNAME_ActualLoadQty, shippingPackageIdentifier)
 					.isEqualTo(row.getAsBigDecimal(I_M_ShippingPackage.COLUMNNAME_ActualLoadQty));
 
-			// Task Q14: all four quantity figures are derived from the planning - assert the other three when
+			// All four quantity figures are derived from the planning - assert the other three when
 			// the row carries them, same pattern as ActualLoadQty above.
 			row.getAsOptionalBigDecimal(I_M_ShippingPackage.COLUMNNAME_ActualDischargeQuantity)
 					.ifPresent(expected -> softly.assertThat(shippingPackage.getActualDischargeQuantity())
@@ -241,7 +241,7 @@ public class M_ShippingPackage_StepDef
 
 	/**
 	 * Re-reads the package straight from the database, discarding the in-memory record the identifier table
-	 * hands out. Originally mandatory since Task Q14: the four quantity figures are no longer physical columns
+	 * hands out. Mandatory because the four quantity figures are no longer physical columns
 	 * written once at generation, they are {@code ColumnSQL} read-throughs of the planning, so any step that
 	 * changes the planning changes what this assertion must see.
 	 * <p>

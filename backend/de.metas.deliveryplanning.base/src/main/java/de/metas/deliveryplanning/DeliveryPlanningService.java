@@ -134,7 +134,7 @@ public class DeliveryPlanningService
 	 * Rejects a receive action on an already-processed planning - one that was closed, or that already carries
 	 * its single receipt or shipment. Deliberately NOT {@link #MSG_M_Delivery_Planning_Closed}: that one says
 	 * "closed", which is a false statement about a delivered planning, and the two states are indistinguishable
-	 * through {@code Processed} anyway (Task Q10's invariant), so the wording has to cover both.
+	 * through {@code Processed} anyway (the invariant), so the wording has to cover both.
 	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Processed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Processed");
 
@@ -361,7 +361,7 @@ public class DeliveryPlanningService
 
 		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord);
 
-		// D22/Task Q7c: a split-created planning is a CREATED planning, not a copy of the target - it is
+		// D22: a split-created planning is a CREATED planning, not a copy of the target - it is
 		// seeded exactly as GenerateIncomingDeliveryPlanningCommand seeds a fresh one, never by copying the
 		// target's actuals (that fabricated a received/loaded quantity nothing was ever received or loaded
 		// against, and multiplied it across every sibling). Inbound/dropship: ActualLoadQty starts equal to
@@ -432,9 +432,9 @@ public class DeliveryPlanningService
 
 		// Quantity allocated to a delivery instruction is committed cargo (D8/AC12/TC12): once the target is
 		// allocated, its own planned figures are a FIXED POINT of the split - never rewritten as a side effect -
-		// and the new plannings share only what the order line still has uncommitted overall. Q3's divide (target
-		// gets a share too, from its own current figure) is the single exception to that rule, reserved for the
-		// unallocated case.
+		// and the new plannings share only what the order line still has uncommitted overall. The unallocated
+		// branch's divide (target gets a share too, from its own current figure) is the single exception to
+		// that rule, reserved for the unallocated case.
 		final boolean targetIsAllocated = deliveryPlanningAllocRepository.hasActiveAllocation(deliveryPlanningId);
 
 		final Quantity openQty = getOpenQty(deliveryPlanningId, targetIsAllocated);
@@ -453,11 +453,12 @@ public class DeliveryPlanningService
 			// The target is untouchable here (unlike the unallocated branch below, which folds its remainder back
 			// into the target), so the DOWN-rounding remainder would otherwise vanish - e.g. openQty=10 over 3 new
 			// plannings gives 3+3+3=9, one unit silently lost off the order line. Handed to the LAST planning
-			// created by the loop below (fix round 1, Task Q5).
+			// created by the loop below.
 			newPlanningLoadedQtyRemainder = openQty.subtract(newPlanningLoadedQty.multiply(additionalLines));
 
-			// The discharge pair follows the SAME pool rule as load (Task Q8) - a discharge pool exists exactly
-			// like the load one (Q3's "no order-line-relative pool on the discharge side" is superseded). The
+			// The discharge pair follows the SAME pool rule as load - a discharge pool exists exactly
+			// like the load one (an earlier reading that there is no order-line-relative pool on the discharge
+			// side is superseded). The
 			// target's own discharge figure is committed cargo and stays untouched, same as its load figure; the
 			// new plannings share what remains, DOWN-rounded with the remainder on the last one, same as load.
 			final Quantity openDischargeQty = getPlannedDischargeQty(deliveryPlanningId, true);
@@ -471,7 +472,7 @@ public class DeliveryPlanningService
 			final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
 			// Two round-trips (getById+save each): DeliveryPlanningRepository has no single-record "set several
 			// columns at once" method, and adding one just to merge these two writes would widen its API for a
-			// non-hot-path call - left as-is per review (Task Q3, fix round 1).
+			// non-hot-path call - left as-is per review.
 			deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
 			newPlanningLoadedQty = fraction;
 
@@ -489,8 +490,8 @@ public class DeliveryPlanningService
 		for (int i = 0; i < additionalLines; i++)
 		{
 			// The last planning created carries the allocated branch's remainder (zero on the unallocated branch)
-			// so the new plannings' figures still sum to the distributed pool - both ends, not just load
-			// (Task Q8): with more than one additional line, a dropped discharge remainder would be exactly as
+			// so the new plannings' figures still sum to the distributed pool - both ends, not just load:
+			// with more than one additional line, a dropped discharge remainder would be exactly as
 			// invisible as the load-side defect fix round 1 caught.
 			final boolean isLastNewPlanning = i == additionalLines - 1;
 			final Quantity loadedQtyForThisPlanning = isLastNewPlanning
@@ -512,9 +513,9 @@ public class DeliveryPlanningService
 	 * distributes what is left of the order line, and a sibling consumes its effective quantity: its actual once
 	 * one is recorded, otherwise its planned figure.
 	 * <p>
-	 * Supersedes Task Q3's comment here claiming "there is no order-line-relative pool on the discharge side" -
-	 * a discharge pool exists, exactly like the load one; that reasoning was correct under Q3's instructions and
-	 * is superseded by this per-end rule (Task Q8).
+	 * Supersedes an earlier comment here claiming "there is no order-line-relative pool on the discharge side" -
+	 * a discharge pool exists, exactly like the load one; that earlier reasoning was correct under the narrower
+	 * scope it was written for, and is superseded by this per-end rule.
 	 */
 	private Quantity getPlannedDischargeQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
 	{
@@ -526,7 +527,7 @@ public class DeliveryPlanningService
 	 * LOAD pair: {@code QtyOrdered} minus what every OTHER planning of the line already claims, minus the
 	 * target's own claim TOO once it is allocated - committed cargo is excluded from what a split may hand out,
 	 * same as any other planning's share. Unallocated, the target is excluded from the sum instead, exactly as
-	 * before Task Q5: its own share is still up for redistribution, which is what lets
+	 * its own share is still up for redistribution, which is what lets
 	 * {@link #createAdditionalDeliveryPlannings} give it a slice of this same pool.
 	 * <p>
 	 * {@code targetIsAllocated} is handed in rather than queried here so the caller - which already needs the same
@@ -569,7 +570,7 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * Keeps {@code QtyTotalOpen}/{@code QtyTotalOpenPlanned} live (Task Q8) for the order line the given planning
+	 * Keeps {@code QtyTotalOpen}/{@code QtyTotalOpenPlanned} live for the order line the given planning
 	 * sits on - called from the {@code M_Delivery_Planning} interceptor on every write path that changes a
 	 * planned/actual figure or adds a planning to the line, so every such path recomputes through this ONE
 	 * choke point rather than each caller repeating the arithmetic.
@@ -588,7 +589,7 @@ public class DeliveryPlanningService
 	/**
 	 * Pushes a quantity change on ONE planning out to the delivery instruction line(s) that mirror it, so an
 	 * already-open Lieferanweisungen document refreshes its Versandpaket row with no manual reload
-	 * (Task Q14, TC11). See {@link DeliveryInstructionLineCacheInvalidation} for why the generic
+	 * (TC11). See {@link DeliveryInstructionLineCacheInvalidation} for why the generic
 	 * {@code AD_SQLColumn_SourceTableColumn} invalidation cannot reach that row.
 	 */
 	public void invalidateDeliveryInstructionLinesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
@@ -600,7 +601,7 @@ public class DeliveryPlanningService
 	/**
 	 * Write-back for the generate-receipt process: a receipt reads/occupies the discharge end, so the qty the
 	 * operator confirmed at generation time becomes the planning's new {@code PlannedDischargeQuantity} (spec
-	 * direction rule, Task Q12). Kept as a thin passthrough on the service so the generate processes reach this
+	 * direction rule). Kept as a thin passthrough on the service so the generate processes reach this
 	 * repository write through their one existing collaborator, never the repository directly.
 	 */
 	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)

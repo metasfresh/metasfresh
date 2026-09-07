@@ -172,7 +172,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * Whether ANY planning in this selection is already processed - the shared precondition of every receive
 	 * action started from the receipt-disposition delivery-planning window.
 	 * <p>
-	 * ONE predicate rather than {@code anyClosed() || anyDelivered()}, because Task Q10's invariant
+	 * ONE predicate rather than {@code anyClosed() || anyDelivered()}, because the invariant
 	 * {@code Processed == (IsClosed || IsDelivered)} makes them the same question: a closed planning was called
 	 * off, a delivered one already carries the single receipt or shipment a planning may have, and neither may
 	 * receive again.
@@ -210,7 +210,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * vacuously - the same "no allocation's planning is delivered" condition a non-empty all-open selection
 	 * answers.
 	 * <p>
-	 * The ONE place this is computed (rule 6, Task Q9): every write point that can change which plannings are
+	 * The ONE place this is computed (rule 6): every write point that can change which plannings are
 	 * delivered, or which plannings are actively allocated to the instruction, loads this list and calls this
 	 * method, rather than re-deriving the three states inline - so a stored {@code DeliveredState} column
 	 * cannot drift from this definition by having a second copy of it.

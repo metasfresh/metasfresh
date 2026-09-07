@@ -35,7 +35,8 @@ import java.time.Instant;
 
 /**
  * One planning's contribution to a delivery instruction. Grouped by who actually owns each field - re-derived
- * against the code as it stands (Task Q14 already stopped copying quantities onto the package; see below):
+ * against the code as it stands (quantities already stopped being copied onto the package - they are
+ * derived instead; see below):
  * <ul>
  * <li>{@link #deliveryPlanningId} is the only field {@code M_Delivery_Planning_Alloc} itself owns -
  * {@code M_ShippingPackage_ID} and {@code M_ShipperTransportation_ID} are derived inside
@@ -64,7 +65,7 @@ public class DeliveryPlanningAllocCreateRequest
 	/**
 	 * What {@link DeliveryInstructionRepository#createShippingPackage} writes onto the created
 	 * {@code M_ShippingPackage}. Note there is no quantity here: the package's four quantity figures are derived
-	 * (Task Q14, {@code ColumnSQL}) from the planning through the allocation, so all that survives from the
+	 * ({@code ColumnSQL}) from the planning through the allocation, so all that survives from the
 	 * planning's own quantity is the unit it is expressed in.
 	 */
 	@Value

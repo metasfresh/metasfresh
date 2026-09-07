@@ -35,7 +35,7 @@ import java.util.Collection;
 
 /**
  * The cache-invalidation request that makes a delivery instruction's {@code M_ShippingPackage} line show a
- * planning's CURRENT quantities without a manual reload (Task Q14, TC11).
+ * planning's CURRENT quantities without a manual reload (TC11).
  * <p>
  * <b>Why this exists at all - the generic path cannot express it.</b> The four figures are {@code ColumnSQL}
  * on {@code M_ShippingPackage} reading the planning through {@code M_Delivery_Planning_Alloc}, and they carry

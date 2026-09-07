@@ -37,7 +37,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * The shape of the cache-invalidation request that makes a delivery instruction's Versandpaket line show a
- * planning's new quantity without a manual reload (Task Q14, TC11).
+ * planning's new quantity without a manual reload (TC11).
  * <p>
  * The four figures are {@code ColumnSQL} on {@code M_ShippingPackage}, and the generic
  * {@code AD_SQLColumn_SourceTableColumn} machinery answers a planning change with

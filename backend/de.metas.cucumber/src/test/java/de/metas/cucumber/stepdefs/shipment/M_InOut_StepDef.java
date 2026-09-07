@@ -730,7 +730,7 @@ public class M_InOut_StepDef
 	 *
 	 * @cucumber.columns <b>M_Delivery_Planning_ID</b> — (optional, identifier-ref) links this manually-created
 	 * 		M_InOut to a delivery planning BEFORE it is completed, so {@code interceptor/M_InOut#afterComplete}
-	 * 		(Task Q9) finds the FK set and stamps the planning / recomputes the instruction's delivered state -
+	 * 		finds the FK set and stamps the planning / recomputes the instruction's delivered state -
 	 * 		the same shape production code produces via the generate-receipt/-shipment processes, which stamp
 	 * 		the FK before completion.
 	 */

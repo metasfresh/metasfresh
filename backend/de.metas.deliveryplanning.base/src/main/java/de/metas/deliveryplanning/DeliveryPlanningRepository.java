@@ -98,14 +98,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * as that row is written - persistence rather than a delivery-planning decision), plus {@code IInOutBL} and
  * {@code IUOMConversionBL} (via {@code Services.get}), used to resolve the booked quantity a completed receipt or
  * shipment writes onto the planning and to branch that write by {@link TransportDirection} / {@code IsClosed}
- * (Task Q11 - {@code recordActualQtyOnComplete} / {@code clearActualQtyOnReverse}).
+ * ({@code recordActualQtyOnComplete} / {@code clearActualQtyOnReverse}).
  */
 @Repository
 public class DeliveryPlanningRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	/** Task Q11: resolving the booked quantity a completed receipt or shipment writes onto the planning. */
+	/** Resolving the booked quantity a completed receipt or shipment writes onto the planning. */
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -303,7 +303,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Task Q11: writes the actual quantity onto the end(s) THIS receipt or shipment occupies (the plan's
+	 * Writes the actual quantity onto the end(s) THIS receipt or shipment occupies (the plan's
 	 * write-by-the-END table), and marks the planning {@code Processed} - it is now delivered.
 	 * <p>
 	 * A shipment is the only document a strictly {@link TransportDirection#Outgoing} planning ever gets, so
@@ -315,7 +315,7 @@ public class DeliveryPlanningRepository
 	 * planning is created and driven exactly like {@link TransportDirection#Incoming} (only
 	 * {@code GenerateIncomingDeliveryPlanningCommand} creates it, seeding {@code ActualLoadQty} from the
 	 * planned load the same way, and {@code PoolEnd.forDirection} groups it with Incoming) - it IS the
-	 * purchase leg until the consolidated planning lands. {@code ActualLoadQty} is Task Q7c's derived
+	 * purchase leg until the consolidated planning lands. {@code ActualLoadQty} is a derived
 	 * placeholder for the never-reported vendor load and must never be touched by a receipt's completion,
 	 * for either direction.
 	 * <p>
@@ -363,8 +363,8 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * The reversal mirror of {@link #recordActualQtyOnComplete}: clears every end completion wrote back to
-	 * empty, and clears {@code Processed} unless the planning is closed - the mirror of ReOpen's rule
-	 * (Task Q10), so the invariant {@code Processed == (IsClosed || IsDelivered)} keeps holding here too.
+	 * empty, and clears {@code Processed} unless the planning is closed - the mirror of ReOpen's rule,
+	 * so the invariant {@code Processed == (IsClosed || IsDelivered)} keeps holding here too.
 	 * Without this, a reversed receipt/shipment would leave the planning permanently {@code Processed} with
 	 * no route back except Close-then-ReOpen. Direction handling mirrors {@link #recordActualQtyOnComplete}
 	 * exactly - see its Javadoc for why a receipt always clears discharge, Dropship included.
@@ -615,7 +615,7 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * The write-point every path that changes a planning's planned/actual figures, or adds a planning to an
-	 * order line, owes (Task Q8): recomputes {@code QtyTotalOpen} ({@code QtyOrdered - actual}, summed over every
+	 * order line, owes: recomputes {@code QtyTotalOpen} ({@code QtyOrdered - actual}, summed over every
 	 * planning of the line) and {@code QtyTotalOpenPlanned} ({@code QtyOrdered - planned}, summed the same way)
 	 * and writes both onto EVERY planning of the line - they are order-line totals redundantly displayed on each
 	 * row, not a per-row figure, so a planning created or edited elsewhere on the line must move every sibling's
@@ -697,7 +697,7 @@ public class DeliveryPlanningRepository
 	 * The counterpart of {@link #closeSelectedDeliveryPlannings}, all-or-nothing in the same way: a planning that
 	 * is still open is refused by name, before anything is written.
 	 * <p>
-	 * {@code Processed} is cleared only when the planning is NOT delivered (Task Q10): a delivered planning stays
+	 * {@code Processed} is cleared only when the planning is NOT delivered: a delivered planning stays
 	 * {@code Processed} through a reopen, so the invariant {@code Processed == (IsClosed || IsDelivered)} keeps
 	 * holding - reopening only ever lifts the {@code IsClosed} half of that OR, it never overrides the
 	 * {@code IsDelivered} half. Reads {@code M_InOut_ID} directly rather than the generated (virtual-column)
@@ -845,7 +845,7 @@ public class DeliveryPlanningRepository
 	/**
 	 * The minimal {@link DeliveryPlanning} {@link #getProcessedStatePlannings} needs. It carries {@code closed}
 	 * and {@code inOutId} beside {@code processed} although the guard reads only the latter: they are the two
-	 * halves of Task Q10's invariant {@code Processed == (IsClosed || IsDelivered)}, they are free (the record is
+	 * halves of the invariant {@code Processed == (IsClosed || IsDelivered)}, they are free (the record is
 	 * already in hand), and carrying them keeps the value object from asserting {@code processed} while silently
 	 * claiming to be neither closed nor delivered.
 	 */

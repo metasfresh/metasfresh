@@ -28,7 +28,7 @@ const GENERATE_DELIVERY_INSTRUCTION_PROCESS_ID = 'ADP_585176';
 /**
  * TC11 — a delivery instruction line must show the planning's CURRENT quantity, with no manual reload.
  *
- * Task Q14 made all four quantity figures on M_ShippingPackage derived (ColumnSQL through
+ * All four quantity figures on M_ShippingPackage became derived (ColumnSQL through
  * M_Delivery_Planning_Alloc) instead of physical copies written at generation time. That makes the value
  * CURRENT in the database, which is only half of TC11: the figures live on AD_Tab 546736 — tabLevel 1,
  * an INCLUDED document of the Lieferanweisungen window (541657), not an IView — so making them appear

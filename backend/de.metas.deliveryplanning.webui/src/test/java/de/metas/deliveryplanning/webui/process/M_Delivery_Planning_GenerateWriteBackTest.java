@@ -66,7 +66,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Task Q12: the {@code Qty} override on the single-row generate is written back onto the planning's
+ * The {@code Qty} override on the single-row generate is written back onto the planning's
  * own planned figure - a shipment occupies the load end, a receipt the discharge end (spec direction
  * rule). The production shipment/receipt generation chain (async batch + {@code ShipmentService}, real
  * HU allocation) is not driven here - {@link DeliveryPlanningGenerateProcessesHelper#generateShipment}
@@ -178,7 +178,7 @@ class M_Delivery_Planning_GenerateWriteBackTest
 		// not part of the heavy chain being stubbed - forward it to the real, JUnit-registered repository so the
 		// process's doIt() write-back is genuinely exercised and observable below, exactly as it was before that
 		// write-back moved from an inline SpringContextHolder.getBean(DeliveryPlanningRepository.class) call into
-		// this helper method (Task Q12 fix round: JavaProcess.doIt() must not grab a @Repository directly).
+		// this helper method (JavaProcess.doIt() must not grab a @Repository directly).
 		// NOTE what this no longer covers: the doAnswer hardcodes the CORRECT repository method, so the
 		// helper -> service -> repository routing is not under test here - swapping writeBackPlannedLoadedQuantity
 		// to call setPlannedDischargeQuantity would keep this test green. That routing is pinned end-to-end by

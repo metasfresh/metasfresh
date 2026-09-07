@@ -1,4 +1,4 @@
--- Task Q14 fix round (delivery planning quantities): a shipping package with NO active
+-- Delivery planning quantities, fix round: a shipping package with NO active
 -- M_Delivery_Planning_Alloc behind it must show 0, not a blank cell.
 --
 -- 5822240 made all four quantity figures on M_ShippingPackage derived, each as a correlated subselect
@@ -15,7 +15,7 @@
 -- Lieferanweisungen (541657, tab 546736, fields 710204/710205/784915/784916) - Transport Auftrag
 -- (540020) shows other M_ShippingPackage columns, not these.
 --
--- So: coalesce to 0. It restores exactly what those rows displayed before this task, which keeps a task
+-- So: coalesce to 0. It restores exactly what those rows displayed before this change, which keeps a change
 -- about ADDING two planned figures from silently changing what the other two showed on rows it was never
 -- about. Where an allocation DOES exist nothing changes - coalesce is transparent for a subselect that
 -- returns a row, including one whose value is a real 0.

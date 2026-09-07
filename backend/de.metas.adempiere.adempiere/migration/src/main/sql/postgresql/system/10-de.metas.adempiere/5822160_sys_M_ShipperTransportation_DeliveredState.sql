@@ -1,5 +1,5 @@
 -- M_ShipperTransportation.DeliveredState: the delivery instruction's three-state delivered indicator
--- (spec 5.7, Task Q9). Not a boolean: on a consolidated instruction "partly delivered" is the normal
+-- (spec 5.7). Not a boolean: on a consolidated instruction "partly delivered" is the normal
 -- intermediate state, and collapsing it into a single "not fully" is exactly the distinction the
 -- operator needs to act on.
 --

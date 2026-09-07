@@ -97,7 +97,7 @@ public class M_Delivery_Planning_GenerateShipment extends JavaProcess
 
 		// Write the Qty override back onto the planning: a shipment reads/occupies the load end, so the
 		// override - the requested qty, not necessarily what was actually shipped - becomes the planning's new
-		// PlannedLoadedQuantity (spec direction rule, restated by Task Q12).
+		// PlannedLoadedQuantity (spec direction rule).
 		final ProductId productId = ProductId.ofRepoId(getRecord(I_M_Delivery_Planning.class).getM_Product_ID());
 		final Quantity qtyToShip = Quantitys.of(qtyToShipBD, productId);
 		helper.writeBackPlannedLoadedQuantity(getDeliveryPlanningId(), qtyToShip);

@@ -206,7 +206,7 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | ActualDischargeQuantity |
       | deliveryPlanningFollow | 4                       |
 
-    # Task Q8: QtyTotalOpen is now LIVE - Incoming nets discharge, so the actual write above moves it
+    # QtyTotalOpen is now LIVE - Incoming nets discharge, so the actual write above moves it
     # immediately from 9 (QtyOrdered - 0) to 5 (QtyOrdered - 4), rather than staying frozen at creation.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity |
@@ -481,7 +481,7 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | ActualDischargeQuantity |
       | deliveryPlanningTC12_1 | 40                      |
 
-    # Task Q8: the write moves QtyTotalOpen immediately - QtyOrdered(50) - actual(40) = 10 - the moment the
+    # The write moves QtyTotalOpen immediately - QtyOrdered(50) - actual(40) = 10 - the moment the
     # receipt is recorded, before any instruction or split exists.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity |
@@ -496,12 +496,12 @@ Feature: Delivery planning quantities
     Then after not more than 30s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID                         | C_OrderLine_ID   |
       | deliveryPlanningTC12_1,deliveryPlanningTC12_2 | orderLineQtyTC12 |
-    # Task Q8: the discharge pool now nets coalesce(nullif(actual, 0), planned) instead of copying the
+    # The discharge pool now nets coalesce(nullif(actual, 0), planned) instead of copying the
     # target's own committed 50 as zero. The target is allocated, so its OWN claim counts too: the pool is
     # QtyOrdered(50) - its actual(40, nonzero so it wins over its planned 50) = 10, all of which the single
-    # new planning receives (additionalLines=1) - not the 0 a planned-only/pre-Q8 reading gave.
+    # new planning receives (additionalLines=1) - not the 0 a planned-only reading (before the pool went live) gave.
     #
-    # QtyTotalOpen is also live now (Task Q8) and is an ORDER-LINE total, redundantly shown on both rows:
+    # QtyTotalOpen is also live now and is an ORDER-LINE total, redundantly shown on both rows:
     # Incoming nets discharge, so it is QtyOrdered(50) - the actual discharge summed across BOTH plannings
     # (40 + 0) = 10, not the frozen 50 either row started with. The split touches no actual, so this figure
     # is unchanged by the split itself - it was already 10 the moment the receipt above was recorded.
@@ -586,7 +586,7 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID    | ActualLoadQty |
       | deliveryPlanningPartial_2 | 6             |
 
-    # Task Q8: QtyTotalOpen is a live ORDER-LINE total (not a per-row figure) - Outgoing nets load, so the
+    # QtyTotalOpen is a live ORDER-LINE total (not a per-row figure) - Outgoing nets load, so the
     # write above moves BOTH rows at once from 20 (QtyOrdered - actual 0) to 14 (QtyOrdered - actual 6),
     # before any second split exists. QtyTotalOpenPlanned is untouched (0): nothing PLANNED changed here.
     Then validate M_Delivery_Planning:
@@ -644,8 +644,8 @@ Feature: Delivery planning quantities
     # Allocated: the target's own discharge (13) is committed cargo and stays untouched (D8). The pool is
     # QtyOrdered(13) - its own actual(2, nonzero so it wins over its planned 13) = 11, DOWN-divided over 2
     # additional lines (additionalLines=2, a non-dividing quantity): 11/2 = 5 remainder 1 - the remainder
-    # goes to the LAST new planning, same rule the load figure already followed (fix round 1, Task Q5),
-    # applied here to discharge for the first time (Task Q8).
+    # goes to the LAST new planning, same rule the load figure already followed, applied here to
+    # discharge for the first time.
     When generate 2 additional M_Delivery_Planning records for: deliveryPlanningDischRem_1
 
     Then after not more than 30s, load created M_Delivery_Planning:
@@ -706,7 +706,8 @@ Feature: Delivery planning quantities
       | deliveryPlanningSplitIn_1 | 10         | 10           | Incoming            | 10                    | 10            |
 
     # unallocated split with an uneven divisor (10 / 3 additionalLines+1): the target absorbs the DOWN-rounding
-    # remainder via setPlannedLoadedQuantity, which - through the Task Q7c interceptor - also moves the
+    # remainder via setPlannedLoadedQuantity, which - through the delivery-planning interceptor that mirrors
+    # planned load onto ActualLoadQty for incoming plannings - also moves the
     # target's OWN ActualLoadQty to 4. That makes 4 a different, nonzero number from the two new plannings'
     # own planned load of 3: if createRequest ever again copied the TARGET's actual instead of seeding from
     # each new planning's OWN planned load, deliveryPlanningSplitIn_2/_3 would come back 4, not 3.
@@ -799,7 +800,7 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID    | ErrorCode |
       | deliveryPlanningDelete1_2 |           |
 
-    # Task Q8 fix round: QtyTotalOpen/QtyTotalOpenPlanned on the SURVIVOR now reflect the line with the
+    # QtyTotalOpen/QtyTotalOpenPlanned on the SURVIVOR now reflect the line with the
     # deleted planning's claim gone - both climb back up (16/8), not left frozen at the pre-delete 13/0.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | QtyTotalOpenPlanned |
@@ -915,8 +916,8 @@ Feature: Delivery planning quantities
     # now delivered - close it, which always sets Processed regardless of delivered state
     And M_Delivery_Planning identified by deliveryPlanningQ10Deld is closed
 
-    # QtyTotalOpen is 0, not the pre-Task-Q11 10: completion now writes ActualDischargeQuantity from the
-    # booked quantity (Task Q11), and Task Q8 already nets QtyTotalOpen live against it - fully received,
+    # QtyTotalOpen is 0, not the pre-completion 10: completion now writes ActualDischargeQuantity from the
+    # booked quantity, and QtyTotalOpen already nets live against it - fully received,
     # so nothing is left open.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed |
@@ -925,8 +926,8 @@ Feature: Delivery planning quantities
     When M_Delivery_Planning identified by deliveryPlanningQ10Deld is opened
 
     # THE INVARIANT: Processed == (IsClosed || IsDelivered). IsClosed just went back to false, but the
-    # planning is delivered, so Processed MUST stay true - the defect Task Q10 fixes is reopen clearing this
-    # unconditionally, which would wrongly unlock a delivered planning.
+    # planning is delivered, so Processed MUST stay true - reopen must not clear Processed unconditionally,
+    # which would wrongly unlock a delivered planning.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed |
       | deliveryPlanningQ10Deld | 10         | 0            | Incoming            | false    | true      |
@@ -1009,14 +1010,15 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
       | deliveryPlanningQ11R   | 10         | 10           | Incoming            | 10                    | 10            | 0                       | false    | false     |
 
-    # First booking - through the production generate-receipt process (same as Task Q10's pattern).
+    # First booking - through the production generate-receipt process (the same pattern used above
+    # for the closed/reopened scenario).
     When the delivery planning identified by deliveryPlanningQ11R generates a receipt:
       | ReceiptDate | Qty | OPT.M_InOut_ID |
       | 2023-02-05  | 10  | receiptQ11R_1  |
 
     # Completion: the discharge end is written from the booked quantity, and the planning is now Processed -
     # the invariant Processed == (IsClosed || IsDelivered) holds via IsDelivered (M_InOut_ID is set).
-    # ActualLoadQty is untouched (still 10, Task Q7c's mirror of the plan) - that end is never ours to write.
+    # ActualLoadQty is untouched (still 10, mirrored from the plan) - that end is never ours to write.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
       | deliveryPlanningQ11R   | 10         | 0            | Incoming            | 10                    | 10            | 10                      | false    | true      |
@@ -1024,9 +1026,9 @@ Feature: Delivery planning quantities
     When the material receipt identified by receiptQ11R_1 is reversed
 
     # Reversal: the discharge actual clears back to empty and Processed clears too - the planning is
-    # NOT closed, so the mirror of ReOpen's rule unlocks it (Task Q10's invariant, asserted at this site).
-    # Without this, the planning would be permanently stuck Processed with no route back except
-    # Close-then-ReOpen (the defect this task exists to prevent).
+    # NOT closed, so the mirror of ReOpen's rule unlocks it (the Processed == (IsClosed || IsDelivered)
+    # invariant, asserted at this site). Without this, the planning would be permanently stuck Processed
+    # with no route back except Close-then-ReOpen (exactly the defect this invariant exists to prevent).
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
       | deliveryPlanningQ11R   | 10         | 10           | Incoming            | 10                    | 10            | 0                       | false    | false     |
@@ -1097,7 +1099,7 @@ Feature: Delivery planning quantities
       | 2023-02-05   | 7   | shipmentQ11Out |
 
     # PlannedLoadedQuantity is now 7, not the ordered 10: a shipment occupies the load end, so the process'
-    # own Qty write-back overwrites the planned load with the shipped 7 (Task Q12). That write-back happens
+    # own Qty write-back overwrites the planned load with the shipped 7. That write-back happens
     # under BOTH orderings, so it is the control here - ActualLoadQty / ActualDischargeQuantity / Processed /
     # M_InOut_ID are the ones only completion's interceptor writes.
     Then validate M_Delivery_Planning:
@@ -1296,7 +1298,7 @@ Feature: Delivery planning quantities
       | deliveryPlanningQ11S_2 | 10         | 0            | Outgoing           | 5                     | 5             | 5                       | false    | true      | shipmentQ11S_2 |
 
   @Id:S31789_TC_Q11_IncomingCompletionWritesDischargeOnly
-  Scenario: Completing a receipt writes only the discharge end - the load end stays the Task Q7c mirror of the plan
+  Scenario: Completing a receipt writes only the discharge end - the load end stays mirrored from the plan
 
     Given metasfresh contains M_PricingSystems
       | Identifier        | OPT.IsActive |
@@ -1361,7 +1363,7 @@ Feature: Delivery planning quantities
     # consolidated planning): GenerateIncomingDeliveryPlanningCommand is the only command that creates it
     # (order.isDropShip() decides Incoming vs Dropship), and it seeds ActualLoadQty from the planned load
     # the same way for both. So a Dropship RECEIPT must write discharge, exactly like an Incoming receipt -
-    # never the load end, which stays Task Q7c's never-reported-vendor-load placeholder.
+    # never the load end, which stays the never-reported-vendor-load placeholder mirrored from the plan.
     Given metasfresh contains M_PricingSystems
       | Identifier        | OPT.IsActive |
       | pricingSystemQ11D | true         |
@@ -1411,7 +1413,7 @@ Feature: Delivery planning quantities
       | ReceiptDate | Qty | OPT.M_InOut_ID |
       | 2023-02-05  | 5   | receiptQ11D    |
 
-    # Discharge moves to the booked 5; the load placeholder stays 8 (Task Q7c's mirror of the plan) -
+    # Discharge moves to the booked 5; the load placeholder stays 8 (mirrored from the plan) -
     # NOT overwritten with the booked quantity, which the pre-fix code did.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | Processed |
@@ -1494,7 +1496,7 @@ Feature: Delivery planning quantities
     #  - ActualDischargeQuantity 5: the booked quantity on the end a receipt occupies
     #  - Processed true: the planning is now delivered
     #  - M_InOut_ID: the receipt back-link
-    # ActualLoadQty stays 9 (Task Q7c's mirror of the plan, never a receipt's to write) and
+    # ActualLoadQty stays 9 (mirrored from the plan, never a receipt's to write) and
     # PlannedDischargeQuantity became 5 - that one is the process' own Qty write-back, not the interceptor's,
     # so it is the control: it holds under BOTH orderings.
     Then validate M_Delivery_Planning:
@@ -1513,7 +1515,7 @@ Feature: Delivery planning quantities
 
     # The instruction line has no logic of its own - all four figures (planned load, planned discharge,
     # actual load, actual discharge) are a straight read-through of the planning via the allocation
-    # (ColumnSQL, Task Q14). So editing the planning directly - no generate, no receipt/shipment
+    # (ColumnSQL). So editing the planning directly - no generate, no receipt/shipment
     # completion, no explicit "sync" step of any kind - must be the only thing this scenario does before
     # the line already shows the new figures.
     Given metasfresh contains C_Orders:

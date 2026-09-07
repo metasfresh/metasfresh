@@ -172,7 +172,7 @@ public class DeliveryInstructionService
 			allocIds.add(createAllocation(deliveryInstructionRecord, request));
 		}
 
-		// DeliveredState (Task Q9): ONCE per batch call, not once per request - every request here targets the
+		// DeliveredState: ONCE per batch call, not once per request - every request here targets the
 		// SAME instruction (the method's single deliveryInstructionRecord parameter), so recomputing inside the
 		// loop above would cost one query round trip per row for a result that only the LAST iteration's answer
 		// survives. Combine's 3-planning case measured this: per-row would have tripled combine's getByIds calls
@@ -206,7 +206,7 @@ public class DeliveryInstructionService
 		final ShippingPackageId shippingPackageId = deliveryInstructionRepository.createShippingPackage(
 				deliveryInstructionRecord, request.getShippingPackage(), packageId);
 
-		// DeliveredState (Task Q9) is recomputed once per BATCH by the caller (createAllocations), not here per
+		// DeliveredState is recomputed once per BATCH by the caller (createAllocations), not here per
 		// row - see that method's note on why.
 
 		return deliveryPlanningAllocRepository.create(
@@ -286,7 +286,7 @@ public class DeliveryInstructionService
 
 	/**
 	 * Recomputes {@code M_ShipperTransportation.DeliveredState} for every delivery instruction the given planning
-	 * is currently ACTIVELY allocated to (spec &sect; 5.7, Task Q9) - the entry point
+	 * is currently ACTIVELY allocated to (spec &sect; 5.7) - the entry point
 	 * {@code interceptor/M_InOut#afterComplete}/{@code #afterReverseCorrect} routes through after a receipt or
 	 * shipment completes or is reversed, since that is the write that can change ONE planning's
 	 * {@code IsDelivered} and therefore every instruction it sits on.
@@ -303,7 +303,7 @@ public class DeliveryInstructionService
 	 * Recomputes and stores {@code M_ShipperTransportation.DeliveredState} for ONE delivery instruction, from
 	 * {@link DeliveryPlanningList#getDeliveredState()} over its currently ACTIVE allocations - the single
 	 * derivation every write point that can change which plannings are delivered, or which plannings are
-	 * actively allocated to the instruction, routes through (rule 6, Task Q9): {@link #createAllocations},
+	 * actively allocated to the instruction, routes through (rule 6): {@link #createAllocations},
 	 * {@link #afterDeactivation} and {@link #recomputeDeliveredStateForAllocatedInstructions}. An instruction
 	 * with no active allocation is {@code NotDelivered} - the same vacuous case the ADD COLUMN DEFAULT already
 	 * gives a freshly-created instruction, so this is never a special case, only the general one.

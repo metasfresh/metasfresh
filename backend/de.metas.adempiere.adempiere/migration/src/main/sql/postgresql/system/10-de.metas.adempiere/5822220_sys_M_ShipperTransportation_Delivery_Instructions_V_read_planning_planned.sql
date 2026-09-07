@@ -1,6 +1,6 @@
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_ShipperTransportation_Delivery_Instructions_V.sql
 --
--- Task Q14 (delivery planning quantities): this view aliased the package's own actualloadqty/
+-- Delivery planning quantities: this view aliased the package's own actualloadqty/
 -- actualdischargequantity AS plannedloadedquantity/planneddischargequantity - a pre-existing mismatch
 -- between the exposed name and the physical source, made moot now that M_ShippingPackage no longer
 -- carries these as physical columns. Read the planning (dp, already joined) directly under its own

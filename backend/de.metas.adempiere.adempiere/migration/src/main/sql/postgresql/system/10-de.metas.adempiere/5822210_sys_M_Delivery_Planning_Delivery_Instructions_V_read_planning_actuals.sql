@@ -1,6 +1,6 @@
 -- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/views/M_Delivery_Planning_Delivery_Instructions_V.sql
 --
--- Task Q14 (delivery planning quantities): M_ShippingPackage.ActualLoadQty/ActualDischargeQuantity become
+-- Delivery planning quantities: M_ShippingPackage.ActualLoadQty/ActualDischargeQuantity become
 -- derived (mirrored from the planning through the allocation) rather than physical columns written at
 -- generation time. This view previously read the package's own actualloadqty/actualdischargequantity -
 -- read the planning (dp, already joined) directly instead, so it keeps working once those two package

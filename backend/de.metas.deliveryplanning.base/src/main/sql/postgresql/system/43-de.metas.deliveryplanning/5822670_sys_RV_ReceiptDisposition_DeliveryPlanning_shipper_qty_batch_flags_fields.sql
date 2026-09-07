@@ -6,7 +6,7 @@
 -- and merely propagated onto the new records -- no new element, no translation authoring here.
 -- M_Shipper_ID, QtyToMove and Batch join the "main" element group (555764) next to the fields they
 -- relate to; the three shipper-transportation flags join the existing "flags" group (555766), next to
--- IsActive. No filter configuration here -- that is Task W6b's own dedicated script, once every
+-- IsActive. No filter configuration here -- that is 5822680's own dedicated script, once every
 -- filtered column exists.
 
 -- ============================================================================

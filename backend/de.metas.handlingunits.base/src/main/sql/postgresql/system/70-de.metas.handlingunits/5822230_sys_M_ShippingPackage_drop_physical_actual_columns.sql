@@ -1,4 +1,4 @@
--- Task Q14 (delivery planning quantities): M_ShippingPackage.ActualLoadQty and .ActualDischargeQuantity
+-- Delivery planning quantities: M_ShippingPackage.ActualLoadQty and .ActualDischargeQuantity
 -- stop being physical columns written at generation time (a planned->actual copy, the "frozen figure"
 -- defect) and become derived (ColumnSQL, see the AD_Column migration 5822240) that mirror the planning's
 -- own ActualLoadQty/ActualDischargeQuantity through the M_Delivery_Planning_Alloc allocation.

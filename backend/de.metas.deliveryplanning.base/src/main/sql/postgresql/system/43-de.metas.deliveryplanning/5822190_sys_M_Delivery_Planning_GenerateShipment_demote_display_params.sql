@@ -1,4 +1,4 @@
--- Task Q12: doIt() of M_Delivery_Planning_GenerateShipment never reads QtyTotalOpen or QtyAvailableParam -
+-- doIt() of M_Delivery_Planning_GenerateShipment never reads QtyTotalOpen or QtyAvailableParam -
 -- both are display-only aids for the user typing the Qty override, so neither should be mandatory.
 
 -- QtyAvailableParam (542644) is already read-only (ReadOnlyLogic='1=1') but was still mandatory, which -

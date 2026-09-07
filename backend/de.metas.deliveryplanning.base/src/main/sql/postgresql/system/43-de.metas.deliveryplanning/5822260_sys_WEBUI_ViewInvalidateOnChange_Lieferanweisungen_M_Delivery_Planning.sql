@@ -1,4 +1,4 @@
--- Task Q14 (delivery planning quantities): TC11 - editing a planning's quantity must make the delivery
+-- Delivery planning quantities: TC11 - editing a planning's quantity must make the delivery
 -- instruction line show the new figure without a manual reload. Deriving the M_ShippingPackage columns
 -- (5822240) makes the value CURRENT; only this registration makes it APPEAR - without it, the WebUI view
 -- open on the Lieferanweisungen window keeps serving its cached rows until the user reloads by hand.

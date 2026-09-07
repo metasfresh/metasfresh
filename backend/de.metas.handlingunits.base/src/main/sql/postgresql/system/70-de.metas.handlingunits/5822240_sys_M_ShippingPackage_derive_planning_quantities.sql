@@ -1,4 +1,4 @@
--- Task Q14 (delivery planning quantities): all four quantity figures on M_ShippingPackage (planned load,
+-- Delivery planning quantities: all four quantity figures on M_ShippingPackage (planned load,
 -- planned discharge, actual load, actual discharge) become derived from the planning they are allocated
 -- to, read-only on the instruction. The planning is reached through M_Delivery_Planning_Alloc - there is
 -- no direct FK from M_ShippingPackage to M_Delivery_Planning - and there is exactly one active allocation
@@ -13,8 +13,8 @@
 -- construction.
 --
 -- IsLazyLoading='Y' on all four: display-only on the instruction line, no production Java reads them
--- (DeliveryInstructionRepository#createShippingPackage no longer writes them either - see the code change
--- in this task). Superseded on this same branch: 5822320 flips all four to IsLazyLoading='N', because
+-- (DeliveryInstructionRepository#createShippingPackage no longer writes them either - see the corresponding
+-- code change). Superseded on this same branch: 5822320 flips all four to IsLazyLoading='N', because
 -- the instruction grid displays them across a whole result set and a lazy ColumnSQL costs one extra
 -- query per row there.
 

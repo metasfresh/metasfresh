@@ -1,4 +1,4 @@
--- Task Q14 fix round (delivery planning quantities): the two new AD_Field rows on tab 546736
+-- Delivery planning quantities, fix round: the two new AD_Field rows on tab 546736
 -- ("Versandpaket") must follow the tab's own convention and carry NO AD_Field ordering.
 --
 -- 5822250 inserted them with SeqNo=10 on BOTH rows and SeqNoGrid=45/55, while all 23 pre-existing fields

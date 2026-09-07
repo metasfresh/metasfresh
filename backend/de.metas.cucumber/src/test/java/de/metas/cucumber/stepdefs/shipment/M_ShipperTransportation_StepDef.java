@@ -169,7 +169,7 @@ public class M_ShipperTransportation_StepDef
 				softly.assertThat(deliveryInstruction.getDocStatus()).as(I_M_ShipperTransportation.COLUMNNAME_DocStatus).isEqualTo(docStatus);
 			}
 
-			// DeliveredState (Task Q9): the three-state delivered indicator, e.g. "NotDelivered" / "PartlyDelivered" / "FullyDelivered".
+			// DeliveredState: the three-state delivered indicator, e.g. "NotDelivered" / "PartlyDelivered" / "FullyDelivered".
 			final String deliveredState = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipperTransportation.COLUMNNAME_DeliveredState);
 			if (Check.isNotBlank(deliveredState))
 			{
@@ -491,7 +491,7 @@ public class M_ShipperTransportation_StepDef
 	}
 
 	/**
-	 * Evaluates the M_ShipperTransportation_ID picker of the given AddTo process (Task Q18's direction filter) -
+	 * Evaluates the M_ShipperTransportation_ID picker of the given AddTo process (the incoming/outgoing direction filter) -
 	 * the SAME persisted {@code AD_Val_Rule.Code} the WebUI process-parameter picker evaluates, substituted
 	 * through the real {@link Env#parseContext} context mechanism (never a re-implemented query) - and asserts
 	 * which named transport orders it does/doesn't offer. Pass {@code "no order"} for {@code orderIdentifierOrNoOrder}

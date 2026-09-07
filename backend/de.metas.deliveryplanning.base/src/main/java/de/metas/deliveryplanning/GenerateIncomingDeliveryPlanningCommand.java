@@ -115,7 +115,7 @@ public class GenerateIncomingDeliveryPlanningCommand
 				// not part of this figure, and subtracting it would make the order-line-less path disagree
 				// with every order-line-bearing one for the same data.
 				.qtyTotalOpen(qtyOrdered)
-				// D22/Task Q7c: nothing ever reports the vendor's load, so for an inbound (or dropship, per
+				// D22: nothing ever reports the vendor's load, so for an inbound (or dropship, per
 				// order.isDropShip() below) planning the actual load starts equal to the planned load - never
 				// zero. The interceptor in interceptor/M_Delivery_Planning.java keeps it in step afterwards.
 				.actualLoadedQty(qtyOrdered)

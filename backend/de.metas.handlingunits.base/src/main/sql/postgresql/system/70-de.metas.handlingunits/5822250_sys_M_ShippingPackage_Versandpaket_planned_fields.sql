@@ -1,4 +1,4 @@
--- Task Q14 (delivery planning quantities): place the two new derived columns (PlannedLoadedQuantity,
+-- Delivery planning quantities: place the two new derived columns (PlannedLoadedQuantity,
 -- PlannedDischargeQuantity - migration 5822240) on the Versandpaket tab (AD_Tab 546736, window
 -- Lieferanweisungen 541657), mirroring the planning tab's own order (planned before actual, per pair).
 -- Also flips IsReadOnly='Y' on all four quantity fields (the two existing ones and the two new ones) - the
@@ -10,7 +10,7 @@
 --
 -- No AD_Name_ID override on either new field: the point of reusing the planning's own AD_Element
 -- (581794/581795) is identical wording by construction - a field-level override is precisely the defect
--- Task Q15 exists to retire on the two existing fields.
+-- an earlier fix round exists to retire on the two existing fields.
 
 -- Existing fields become read-only: the mirror has no logic the user could edit into.
 UPDATE AD_Field

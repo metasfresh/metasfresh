@@ -255,7 +255,7 @@ class DeliveryPlanningBatchLoadingTest
 		final ShipperTransportationId deliveryInstructionId = deliveryPlanningService.combine(selection, false);
 
 		// one batch for the allocation requests of the plannings behind the seed, one for the ReleaseNo stamping,
-		// plus TWO for DeliveredState (Task Q9): createAllocations recomputes ONCE per call, and combine makes
+		// plus TWO for DeliveredState: createAllocations recomputes ONCE per call, and combine makes
 		// two calls here - the seed's (inside generateDeliveryInstruction) and the other two plannings' - not
 		// once per planning (that would have been 3, one per row; batched per call it is 2) -
 		// plus the single-row load of the ONE seed planning the header is built from
@@ -295,7 +295,7 @@ class DeliveryPlanningBatchLoadingTest
 
 		deliveryPlanningService.addTo(selection, ShipperTransportationId.ofRepoId(target.getM_ShipperTransportation_ID()));
 
-		// one for the allocation requests, one for the ReleaseNo stamping, one for DeliveredState (Task Q9) -
+		// one for the allocation requests, one for the ReleaseNo stamping, one for DeliveredState -
 		// createAllocations recomputes ONCE per call, for the whole selection, not once per planning
 		assertBatchLoadedExactly(3);
 

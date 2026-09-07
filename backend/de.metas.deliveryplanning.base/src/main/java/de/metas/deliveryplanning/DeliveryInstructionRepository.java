@@ -239,7 +239,7 @@ public class DeliveryInstructionRepository
 		shippingPackageRecord.setIsToBeFetched(packageData.isToBeFetched());
 		shippingPackageRecord.setM_Product_ID(packageData.getProductId().getRepoId());
 
-		// Task Q14: the four quantity figures (planned load, planned discharge, actual load, actual
+		// The four quantity figures (planned load, planned discharge, actual load, actual
 		// discharge) are a ColumnSQL read-through of the planning, reached through the
 		// M_Delivery_Planning_Alloc allocation - so there is nothing to write here, and a written copy
 		// would freeze the package's "actual" at whatever the planning said at creation time.

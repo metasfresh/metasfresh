@@ -32,19 +32,19 @@ public class M_InOut
 			if (inout.isSOTrx())
 			{
 				deliveryPlanningService.updateShipmentInfoById(deliveryPlanningId, shipmentInfo -> shipmentInfo.setShipmentId(inoutId));
-				// Task Q11: writes the booked quantity onto the end(s) this shipment occupies, and marks the
+				// Writes the booked quantity onto the end(s) this shipment occupies, and marks the
 				// planning Processed - alongside the recompute below, not instead of it.
 				deliveryPlanningRepository.recordActualQtyOnComplete(deliveryPlanningId, false, inout);
 			}
 			else
 			{
 				deliveryPlanningService.updateReceiptInfoById(deliveryPlanningId, receiptInfo -> receiptInfo.setReceiptId(inoutId));
-				// Task Q11: writes the booked quantity onto the end this receipt occupies, and marks the
+				// Writes the booked quantity onto the end this receipt occupies, and marks the
 				// planning Processed - alongside the recompute below, not instead of it.
 				deliveryPlanningRepository.recordActualQtyOnComplete(deliveryPlanningId, true, inout);
 			}
 
-			// DeliveredState recompute wiring (Task Q9): the planning's IsDelivered just changed (M_InOut_ID
+			// DeliveredState recompute wiring: the planning's IsDelivered just changed (M_InOut_ID
 			// was set above), so every delivery instruction it is actively allocated to must be recomputed.
 			deliveryInstructionService.recomputeDeliveredStateForAllocatedInstructions(deliveryPlanningId);
 		}
@@ -67,8 +67,8 @@ public class M_InOut
 								shipmentInfo.setShipmentId(null);
 							}
 						});
-				// Task Q11: the undo of the shipment's completion write-back - clears every end it wrote, and
-				// clears Processed unless the planning is closed (Task Q10's invariant, symmetric with complete).
+				// The undo of the shipment's completion write-back - clears every end it wrote, and
+				// clears Processed unless the planning is closed (the Processed invariant, symmetric with complete).
 				deliveryPlanningRepository.clearActualQtyOnReverse(deliveryPlanningId, false);
 			}
 			else
@@ -81,11 +81,11 @@ public class M_InOut
 								receiptInfo.setReceiptId(null);
 							}
 						});
-				// Task Q11: the undo of the receipt's completion write-back - see above.
+				// The undo of the receipt's completion write-back - see above.
 				deliveryPlanningRepository.clearActualQtyOnReverse(deliveryPlanningId, true);
 			}
 
-			// DeliveredState recompute wiring (Task Q9): the reversal case a stored implementation would get
+			// DeliveredState recompute wiring: the reversal case a stored implementation would get
 			// wrong (spec 5.7) if this call were missing - the planning's IsDelivered just went back to false,
 			// so an instruction previously FullyDelivered must fall back to PartlyDelivered (or NotDelivered).
 			deliveryInstructionService.recomputeDeliveredStateForAllocatedInstructions(deliveryPlanningId);

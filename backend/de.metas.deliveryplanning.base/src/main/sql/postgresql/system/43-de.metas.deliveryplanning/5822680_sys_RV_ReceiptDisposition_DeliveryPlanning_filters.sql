@@ -1,8 +1,8 @@
--- Task W6b: set the receipt-disposition delivery-planning window's selection filters, now that every filtered column
+-- Sets the receipt-disposition delivery-planning window's selection filters, now that every filtered column
 -- exists on the view (5822440..5822670). The mechanism is AD_Column.IsSelectionColumn +
--- SelectionColumnSeqNo (never a bespoke filter descriptor), matching Task W2's own convention.
+-- SelectionColumnSeqNo (never a bespoke filter descriptor), matching 5822460's own convention.
 --
--- The 9 columns Task W2 already configured are untouched here -- verified correct and already
+-- The 9 columns 5822460 already configured are untouched here -- verified correct and already
 -- mirroring the delivery-planning window seq-for-seq: ETA/ETD/ATD/ATA/DatePromised_Effective/
 -- C_BPartner_ID/IsPlanned at seq 0 (filterable, not in the default panel -- the SAME arrangement as
 -- M_Delivery_Planning's own ETA/ETD/ATA/ATD/C_BPartner_ID, and the reason ETA is "not in the default

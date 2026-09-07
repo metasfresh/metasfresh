@@ -332,12 +332,12 @@ class DeliveryPlanningCloseSemanticsTest
 				.isEmpty();
 	}
 
-	// ------------------------------------------------------------------ Task Q10: Processed follows closed-or-delivered
+	// ------------------------------------------------------------------ Processed follows closed-or-delivered
 
 	/**
 	 * A planning is "delivered" the same way E3's {@code IsDelivered} virtual column defines it - an
 	 * {@code M_InOut_ID} is set - without going through the real receipt/shipment flow (that interceptor is
-	 * Task Q11's territory, deliberately untouched here).
+	 * the completion write-back's territory, deliberately untouched here).
 	 */
 	private static void markDelivered(@NonNull final I_M_Delivery_Planning record)
 	{
@@ -346,7 +346,7 @@ class DeliveryPlanningCloseSemanticsTest
 	}
 
 	/**
-	 * The invariant Task Q10 exists to enforce: {@code Processed == (IsClosed || IsDelivered)}. Reads
+	 * The invariant enforced here: {@code Processed == (IsClosed || IsDelivered)}. Reads
 	 * {@code M_InOut_ID} directly rather than the generated {@code isDelivered()} getter - that getter proxies a
 	 * DB-side virtual column ({@code CASE WHEN M_InOut_ID IS NOT NULL}), which the POJO in-memory test
 	 * infrastructure this test class uses does not evaluate, so it would misreport "delivered" as false here even

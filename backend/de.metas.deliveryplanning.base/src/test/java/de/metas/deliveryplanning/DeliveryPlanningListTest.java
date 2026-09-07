@@ -615,7 +615,7 @@ class DeliveryPlanningListTest
 	/**
 	 * Pure in-memory arithmetic of the one distributable-pool rule (owner, 2026-09-02, "The distributable
 	 * pool") - the whole reason it lives on {@link DeliveryPlanningList} rather than inline in
-	 * {@code DeliveryPlanningService}, per Task Q8.
+	 * {@code DeliveryPlanningService}.
 	 */
 	@Nested
 	@DisplayName("openPlanQty")
@@ -722,7 +722,7 @@ class DeliveryPlanningListTest
 	}
 
 	/**
-	 * The three-state instruction indicator (spec &sect; 5.7, Task Q9), pure in-memory over
+	 * The three-state instruction indicator (spec &sect; 5.7), pure in-memory over
 	 * {@link DeliveryPlanning#isDelivered()} - the cucumber scenario
 	 * ({@code deliveryInstructionDeliveredState.feature}) covers the write-point wiring (the interceptor and
 	 * repository call sites actually recomputing and persisting this on a real instruction); this pins the
@@ -797,7 +797,7 @@ class DeliveryPlanningListTest
 	}
 
 	/**
-	 * The two live open-quantity figures (Task Q8, owner 2026-09-02, "the open quantity is a PAIR of fields"):
+	 * The two live open-quantity figures (owner 2026-09-02, "the open quantity is a PAIR of fields"):
 	 * order-line TOTALS, summed straight across every planning of the line - no nullif/coalesce fallback and no
 	 * target exclusion, unlike {@link OpenPlanQty}'s split-facing pool.
 	 */

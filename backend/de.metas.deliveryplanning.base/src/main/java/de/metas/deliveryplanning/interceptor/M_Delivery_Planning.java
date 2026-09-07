@@ -68,11 +68,11 @@ public class M_Delivery_Planning
 
 	/**
 	 * Keeps an inbound (or dropship) planning's derived {@code ActualLoadQty} equal to its planned load
-	 * whenever the plan is edited (D22/Task Q7c) - nothing ever reports the vendor's load, so the plan is
+	 * whenever the plan is edited (D22) - nothing ever reports the vendor's load, so the plan is
 	 * its only source. {@code TYPE_BEFORE_CHANGE} so the mutation rides along in the same UPDATE the caller
 	 * already triggered: no extra query, no extra save.
 	 * <p>
-	 * Never touches {@code ActualDischargeQuantity} - that end is the receipt's once booked (Task Q11), and
+	 * Never touches {@code ActualDischargeQuantity} - that end is the receipt's once booked, and
 	 * is not watched here at all.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity)
@@ -88,7 +88,7 @@ public class M_Delivery_Planning
 	}
 
 	/**
-	 * Keeps {@code QtyTotalOpen} and {@code QtyTotalOpenPlanned} live (Task Q8) whenever a NEW planning joins an
+	 * Keeps {@code QtyTotalOpen} and {@code QtyTotalOpenPlanned} live whenever a NEW planning joins an
 	 * order line - a split's new plannings, or a schedule's first-generated one. {@code AFTER_NEW} rather than
 	 * {@code BEFORE}: the recompute reads every planning of the line back out via a fresh query, which needs this
 	 * row's own insert already flushed to be counted.
@@ -100,7 +100,7 @@ public class M_Delivery_Planning
 	}
 
 	/**
-	 * Keeps {@code QtyTotalOpen} and {@code QtyTotalOpenPlanned} live (Task Q8) whenever any of the four figures
+	 * Keeps {@code QtyTotalOpen} and {@code QtyTotalOpenPlanned} live whenever any of the four figures
 	 * they are computed from changes on ANY planning of the line - the split's rewrite of the target's own
 	 * planned figure (unallocated branch), a direct planned/actual edit, or the {@code ActualLoadQty} an incoming
 	 * planning's own {@link #onPlannedLoadedQuantityChanged} above moves in lockstep with its plan.
@@ -121,7 +121,7 @@ public class M_Delivery_Planning
 	{
 		deliveryPlanningService.recomputeOpenQuantitiesForOrderLine(deliveryPlanning);
 
-		// Task Q14 (TC11): the delivery instruction's Versandpaket line is a read-through of these four
+		// TC11: the delivery instruction's Versandpaket line is a read-through of these four
 		// figures, so this is also the moment an OPEN Lieferanweisungen document has to be told to re-read
 		// that row. The AD_SQLColumn_SourceTableColumn rows the columns carry cannot do it - they invalidate
 		// the model cache, not the document; see DeliveryInstructionLineCacheInvalidation.
@@ -129,7 +129,7 @@ public class M_Delivery_Planning
 	}
 
 	/**
-	 * Keeps {@code QtyTotalOpen} and {@code QtyTotalOpenPlanned} live (Task Q8, fix round) on a deleted
+	 * Keeps {@code QtyTotalOpen} and {@code QtyTotalOpenPlanned} live on a deleted
 	 * planning's SURVIVING siblings - without this, a delete leaves every remaining planning of the line
 	 * showing a stale total (the deleted row's own contribution never drops out) until some unrelated later
 	 * write happens to refresh it: the same frozen-figure defect this plan exists to remove, reached by a
