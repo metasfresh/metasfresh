@@ -44,7 +44,6 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
-import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.tax.api.ITaxBL;
@@ -241,7 +240,15 @@ public class M_PriceList_StepDef
 				.atStartOfDay(SystemTime.zoneId()); // we shall use org's timezone but for now we use system zone to keep it working as before
 		final String description = row.getAsOptionalString(I_M_PriceList_Version.COLUMNNAME_Description).orElse(null);
 
-		I_M_PriceList_Version m_priceList_Version = priceListDAO.retrievePriceListVersionOrNull(PriceListId.ofRepoId(priceList.getM_PriceList_ID()), validFrom, null);
+		// Upsert by the EXACT ValidFrom. An applicability lookup (ValidFrom <= date) would reuse the nearest
+		// earlier version, so a later-dated version declared on a list that already has one would silently
+		// collapse onto it instead of being created as a distinct version.
+		I_M_PriceList_Version m_priceList_Version = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, priceList.getM_PriceList_ID())
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, Timestamp.from(validFrom.toInstant()))
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnlyOrNull(I_M_PriceList_Version.class);
 		if (m_priceList_Version == null)
 		{
 			m_priceList_Version = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
