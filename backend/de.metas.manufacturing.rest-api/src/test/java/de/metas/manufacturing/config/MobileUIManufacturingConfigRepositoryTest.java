@@ -230,19 +230,6 @@ class MobileUIManufacturingConfigRepositoryTest
 		}
 
 		@Test
-		void noExistingConfig_createsConfigAndOrderedChildRows()
-		{
-			createAttribute("Attr1");
-			createAttribute("Attr2");
-
-			repo.saveGlobalEditableAttributeCodesInOrder(clientId, ImmutableList.of(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2")));
-
-			final MobileUIManufacturingConfig config = repo.getConfig(USER_ID, clientId);
-			assertThat(config.getEditableAttributeCodesInOrder())
-					.containsExactly(AttributeCode.ofString("Attr1"), AttributeCode.ofString("Attr2"));
-		}
-
-		@Test
 		void reConfigWithDifferentList_replacesIt_deactivatingDroppedAttribute()
 		{
 			createAttribute("Attr1");

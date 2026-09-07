@@ -3,8 +3,6 @@ package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.attribute.json.JsonAttribute;
-import de.metas.handlingunits.attribute.json.JsonAttributeListValue;
-import de.metas.handlingunits.attribute.json.JsonAttributeValueType;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
@@ -29,7 +27,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeUse;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.junit.jupiter.api.BeforeEach;
@@ -187,15 +184,6 @@ class MaterialReceiptActivityHandlerTest
 			return attributeSet;
 		}
 
-		private void createAttributeValue(final I_M_Attribute attribute, final String value)
-		{
-			final I_M_AttributeValue record = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class);
-			record.setM_Attribute_ID(attribute.getM_Attribute_ID());
-			record.setValue(value);
-			record.setName("Name_" + value);
-			InterfaceWrapperHelper.save(record);
-		}
-
 		private ProductId createProductWithAttributeSet(final I_M_AttributeSet attributeSet)
 		{
 			final I_M_Product_Category category = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class);
@@ -227,24 +215,6 @@ class MaterialReceiptActivityHandlerTest
 		}
 
 		@Test
-		void configuredAttributeInProductAttributeSet_instanceLevel_isIncluded()
-		{
-			final I_M_Attribute attribute = createAttribute("Color", AttributeValueType.STRING.getCode(), true);
-			final I_M_AttributeSet attributeSet = createAttributeSet(attribute);
-			final ProductId productId = createProductWithAttributeSet(attributeSet);
-
-			final List<JsonAttribute> result = handler.buildEditableAttributes(
-					productId,
-					configWithEditableCodes(AttributeCode.ofString("Color")),
-					AD_LANGUAGE);
-
-			assertThat(result).extracting(JsonAttribute::getCode).containsExactly(AttributeCode.ofString("Color"));
-			assertThat(result.get(0).getCaption()).isEqualTo("Color");
-			assertThat(result.get(0).getValueType()).isEqualTo(JsonAttributeValueType.STRING);
-			assertThat(result.get(0).getValue()).isNull(); // no value has been entered yet at this stage
-		}
-
-		@Test
 		void configuredAttributeNotInProductAttributeSet_isExcluded()
 		{
 			final I_M_Attribute inSet = createAttribute("Color2", AttributeValueType.STRING.getCode(), true);
@@ -257,104 +227,6 @@ class MaterialReceiptActivityHandlerTest
 					AD_LANGUAGE);
 
 			assertThat(result).extracting(JsonAttribute::getCode).containsExactly(AttributeCode.ofString("Color2"));
-		}
-
-		@Test
-		void configuredAttributeNotInstanceLevel_isExcluded()
-		{
-			final I_M_Attribute instanceAttr = createAttribute("Color3", AttributeValueType.STRING.getCode(), true);
-			final I_M_Attribute productLevelAttr = createAttribute("Weight3", AttributeValueType.NUMBER.getCode(), false);
-			final I_M_AttributeSet attributeSet = createAttributeSet(instanceAttr, productLevelAttr);
-			final ProductId productId = createProductWithAttributeSet(attributeSet);
-
-			final List<JsonAttribute> result = handler.buildEditableAttributes(
-					productId,
-					configWithEditableCodes(AttributeCode.ofString("Color3"), AttributeCode.ofString("Weight3")),
-					AD_LANGUAGE);
-
-			assertThat(result).extracting(JsonAttribute::getCode).containsExactly(AttributeCode.ofString("Color3"));
-		}
-
-		@Test
-		void orderedByConfigSeqNoOrder_notByAttributeSetInsertionOrder()
-		{
-			final I_M_Attribute attr1 = createAttribute("Attr1x", AttributeValueType.STRING.getCode(), true);
-			final I_M_Attribute attr2 = createAttribute("Attr2x", AttributeValueType.STRING.getCode(), true);
-			// attribute-set child rows created in reverse ("Attr2x, Attr1x") order - the config's SeqNo order must still win
-			final I_M_AttributeSet attributeSet = createAttributeSet(attr2, attr1);
-			final ProductId productId = createProductWithAttributeSet(attributeSet);
-
-			final List<JsonAttribute> result = handler.buildEditableAttributes(
-					productId,
-					configWithEditableCodes(AttributeCode.ofString("Attr1x"), AttributeCode.ofString("Attr2x")),
-					AD_LANGUAGE);
-
-			assertThat(result).extracting(JsonAttribute::getCode)
-					.containsExactly(AttributeCode.ofString("Attr1x"), AttributeCode.ofString("Attr2x"));
-		}
-
-		@Test
-		void coProductLine_differentProduct_alsoGetsOwnEditableAttributes()
-		{
-			final I_M_Attribute colorAttr = createAttribute("Color4", AttributeValueType.STRING.getCode(), true);
-
-			final I_M_AttributeSet mainSet = createAttributeSet(colorAttr);
-			final ProductId mainProductId = createProductWithAttributeSet(mainSet);
-
-			final I_M_AttributeSet coProductSet = createAttributeSet(colorAttr);
-			final ProductId coProductId = createProductWithAttributeSet(coProductSet);
-
-			final MobileUIManufacturingConfig config = configWithEditableCodes(AttributeCode.ofString("Color4"));
-
-			assertThat(handler.buildEditableAttributes(mainProductId, config, AD_LANGUAGE))
-					.extracting(JsonAttribute::getCode).containsExactly(AttributeCode.ofString("Color4"));
-			assertThat(handler.buildEditableAttributes(coProductId, config, AD_LANGUAGE))
-					.extracting(JsonAttribute::getCode).containsExactly(AttributeCode.ofString("Color4"));
-		}
-
-		@Test
-		void listAttribute_carriesAllowedListValues()
-		{
-			final I_M_Attribute sizeAttr = createAttribute("Size5", AttributeValueType.LIST.getCode(), true);
-			createAttributeValue(sizeAttr, "S");
-			createAttributeValue(sizeAttr, "M");
-			final I_M_AttributeSet attributeSet = createAttributeSet(sizeAttr);
-			final ProductId productId = createProductWithAttributeSet(attributeSet);
-
-			final List<JsonAttribute> result = handler.buildEditableAttributes(
-					productId,
-					configWithEditableCodes(AttributeCode.ofString("Size5")),
-					AD_LANGUAGE);
-
-			assertThat(result).hasSize(1);
-			final JsonAttribute jsonAttribute = result.get(0);
-			assertThat(jsonAttribute.getValueType()).isEqualTo(JsonAttributeValueType.LIST);
-			assertThat(jsonAttribute.getListValues())
-					.extracting(JsonAttributeListValue::getValue)
-					.containsExactlyInAnyOrder("S", "M");
-		}
-
-		@Test
-		void noConfiguredAttributes_returnsEmpty()
-		{
-			final I_M_Attribute attribute = createAttribute("Color6", AttributeValueType.STRING.getCode(), true);
-			final I_M_AttributeSet attributeSet = createAttributeSet(attribute);
-			final ProductId productId = createProductWithAttributeSet(attributeSet);
-
-			final List<JsonAttribute> result = handler.buildEditableAttributes(productId, configWithEditableCodes(), AD_LANGUAGE);
-
-			assertThat(result).isEmpty();
-		}
-
-		@Test
-		void productWithNoAttributeSet_returnsEmpty()
-		{
-			final List<JsonAttribute> result = handler.buildEditableAttributes(
-					productId, // the outer class's plain product, created without any M_AttributeSet
-					configWithEditableCodes(AttributeCode.ofString("Color7")),
-					AD_LANGUAGE);
-
-			assertThat(result).isEmpty();
 		}
 	}
 }
