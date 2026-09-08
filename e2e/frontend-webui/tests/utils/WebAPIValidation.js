@@ -212,6 +212,26 @@ export async function getTabInfo(windowId, recordId, tabId) {
 }
 
 /**
+ * Fetch the included-tab rows of a record: GET /window/{windowId}/{recordId}/{tabId}
+ * (WindowRestController). Returns the array of row documents (each with fieldsByName).
+ *
+ * The endpoint's JSON body is a JSONDocumentList ({ result, missingIds, orderBys }), not a
+ * bare array — unwrap `.result`.
+ */
+export async function getTabRows(windowId, recordId, tabId) {
+  const page = getPage();
+  const response = await page.request.get(
+    `${WEBAPI_BASE_URL}/window/${windowId}/${recordId}/${tabId}`,
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  if (!response.ok()) {
+    throw new Error(`HTTP ${response.status()} fetching rows of ${windowId}/${recordId}/${tabId}`);
+  }
+  const data = await response.json();
+  return data.result;
+}
+
+/**
  * Wait for a record to be saved (with retries).
  * Useful after filling mandatory fields and triggering save.
  *

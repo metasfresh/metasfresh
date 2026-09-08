@@ -11,6 +11,19 @@ export const VERY_SLOW_ACTION_TIMEOUT = 40000;   // 40 seconds
 export const getPage = () => global.currentPage;
 
 /**
+ * Collect uncaught page errors and console.error entries from `page` for a hard
+ * zero-error assertion at the end of a scenario. Attach BEFORE navigating.
+ */
+export function collectPageErrors(page) {
+  const errors = [];
+  page.on('pageerror', (err) => errors.push(`pageerror: ${err.message}`));
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') errors.push(`console.error: ${msg.text()}`);
+  });
+  return errors;
+}
+
+/**
  * Wrap a test step function with automatic error detection.
  * If an error toast appears during execution, the step will fail.
  */

@@ -5,9 +5,9 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, collectPageErrors } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { waitForTabAllowsNew } from '../utils/WebAPIValidation';
+import { waitForTabAllowsNew, getTabRows } from '../utils/WebAPIValidation';
 
 /**
  * Quick Input (Batch Entry) E2E test suite.
@@ -21,6 +21,8 @@ import { waitForTabAllowsNew } from '../utils/WebAPIValidation';
  * 3. Multiple lines in sequence: Add two lines via Enter-key workflow
  * 4. Invalid product: no beep when sysconfig disabled (default behavior)
  * 5. Regular form lookup regression: Customer selection in header (non-quick-input)
+ * 6. Enter-key selects packing instruction on secondary sub-field (the reported bug)
+ * 7. Mouse-click selects packing instruction on secondary sub-field (regression)
  */
 
 // ============================================================================
@@ -31,7 +33,10 @@ import { waitForTabAllowsNew } from '../utils/WebAPIValidation';
  * Create standard masterdata for quick input tests.
  * Creates a user, customer, and one or two products.
  */
-async function createMasterdata(language, { twoProducts = false } = {}) {
+async function createMasterdata(
+  language,
+  { twoProducts = false, withPackingInstruction = false } = {}
+) {
   const products = {
     Product1: {
       name: 'QIPROD',
@@ -48,26 +53,32 @@ async function createMasterdata(language, { twoProducts = false } = {}) {
     };
   }
 
-  return await Backend.createMasterdata({
-    request: {
-      login: {
-        user: {
-          language,
-          firstname: 'QI',
-          lastname: 'Test',
-        },
+  const request = {
+    login: {
+      user: {
+        language,
+        firstname: 'QI',
+        lastname: 'Test',
       },
-      bpartners: {
-        CUSTOMER1: {
-          isVendor: false,
-          isCustomer: true,
-          isSoPriceList: true,
-          name: 'Customer',
-        },
-      },
-      products,
     },
-  });
+    bpartners: {
+      CUSTOMER1: {
+        isVendor: false,
+        isCustomer: true,
+        isSoPriceList: true,
+        name: 'Customer',
+      },
+    },
+    products,
+  };
+
+  if (withPackingInstruction) {
+    request.packingInstructions = {
+      PI: { tu: 'TU', product: 'Product1', qtyCUsPerTU: 4 },
+    };
+  }
+
+  return await Backend.createMasterdata({ request });
 }
 
 /**
@@ -144,6 +155,36 @@ async function typeProductAndWaitForDropdown(page, productCode) {
   await page.waitForTimeout(300);
 
   return productInput;
+}
+
+/**
+ * Type into the Packvorschrift (M_HU_PI_Item_Product_ID) sub-field of the quick input
+ * (index 2 of the composite product lookup) and wait for its dropdown.
+ */
+async function typePackingInstructionAndWaitForDropdown(page, text) {
+  const piInput = page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field');
+  await piInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await expect(piInput).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT }); // enabled once the product is set
+  await piInput.click();
+  await piInput.fill(text);
+  await page.waitForTimeout(500);
+  await page
+    .locator('#lookup_M_HU_PI_Item_Product_ID .rotating, #lookup_M_HU_PI_Item_Product_ID .spinner')
+    .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+    .catch(() => {});
+  await page.locator('.input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  return piInput;
+}
+
+/** Assert the single order line carries the given M_HU_PI_Item_Product_ID. */
+async function expectSingleLineWithPackingInstruction(recordId, expectedPiItemProductId) {
+  const rows = await getTabRows(SALES_ORDER_WINDOW_ID, recordId, 'AD_Tab-187');
+  expect(rows).toHaveLength(1);
+  const piField = rows[0].fieldsByName.M_HU_PI_Item_Product_ID;
+  // masterdata.packingInstructions.PI.tuPIItemProductTestId is a data-testid style string
+  // ("tuPIItemProduct-<M_HU_PI_Item_Product_ID>"), not the bare id — strip the prefix.
+  const expectedId = String(expectedPiItemProductId).replace(/^\D+/, '');
+  expect(piField && piField.value && String(piField.value.key)).toBe(expectedId);
 }
 
 /**
@@ -450,6 +491,88 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       console.log(
         `[${language}] Multiple lines test passed — 2 lines created`
       );
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 6 (TC2): Enter on the SECONDARY sub-field (Packvorschrift) of the
+    // composite product lookup — the reported bug. Index 2, not index 0.
+    // ------------------------------------------------------------------
+    test(`Enter-key selects packing instruction on secondary sub-field (${label})`, async ({ page }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00101.10: Sales Order Quick Entry packing instruction');
+      allure.tag('F00101.10');
+      allure.story('Quick Input: packing instruction via Enter');
+      allure.severity('critical');
+      allure.parameter('Language', language);
+      allure.tag(language);
+      test.setTimeout(150000);
+
+      const errors = collectPageErrors(page);
+      const masterdata = await createMasterdata(language, { withPackingInstruction: true });
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+      const pi = masterdata.packingInstructions.PI;
+
+      const { recordId } = await setupOrderWithBatchEntry(page, masterdata, language);
+
+      await typeProductAndWaitForDropdown(page, masterdata.products.Product1.productCode);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1000);
+
+      const piInput = await typePackingInstructionAndWaitForDropdown(page, pi.tuName);
+      await page.keyboard.press('Enter');          // ← the defective path (RawLookup.handleAutoSelectAndAdvance, index 2)
+      await page.waitForTimeout(1000);
+      expect(await piInput.inputValue()).toContain(pi.tuName);
+
+      const quantityInput = page.getByRole('spinbutton');
+      await quantityInput.click();
+      await quantityInput.fill('3');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(2000);
+
+      await expectSingleLineWithPackingInstruction(recordId, pi.tuPIItemProductTestId);
+      await expect(page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field')).toHaveValue('');
+      await expect(page.locator('#lookup_M_Product_ID input.input-field')).toHaveValue('');
+      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 7 (TC6): same sub-field, MOUSE selection (handleSelect_RegularItem, index 2).
+    // Works today; must keep working after the shared-helper refactor.
+    // ------------------------------------------------------------------
+    test(`Mouse-click selects packing instruction on secondary sub-field (${label})`, async ({ page }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00101.10: Sales Order Quick Entry packing instruction');
+      allure.tag('F00101.10');
+      allure.story('Quick Input: packing instruction via mouse');
+      allure.severity('normal');
+      allure.parameter('Language', language);
+      allure.tag(language);
+      test.setTimeout(150000);
+
+      const errors = collectPageErrors(page);
+      const masterdata = await createMasterdata(language, { withPackingInstruction: true });
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+      const pi = masterdata.packingInstructions.PI;
+
+      const { recordId } = await setupOrderWithBatchEntry(page, masterdata, language);
+
+      await typeProductAndWaitForDropdown(page, masterdata.products.Product1.productCode);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1000);
+
+      await typePackingInstructionAndWaitForDropdown(page, pi.tuName);
+      await page.locator('.input-dropdown-list-option').getByText(pi.tuName).first().click();
+      await page.waitForTimeout(1000);
+
+      const quantityInput = page.getByRole('spinbutton');
+      await quantityInput.click();
+      await quantityInput.fill('3');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(2000);
+
+      await expectSingleLineWithPackingInstruction(recordId, pi.tuPIItemProductTestId);
+      await expect(page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field')).toHaveValue('');
+      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
     });
 
     // ------------------------------------------------------------------
