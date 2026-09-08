@@ -15,6 +15,10 @@ export const YesNoDialog = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    expectPromptContains: async (text) => await test.step(`${NAME} - Expect prompt to contain '${text}'`, async () => {
+        await expect(containerElement()).toContainText(text);
+    }),
+
     clickYesButton: async () => await test.step(`${NAME} - Click Yes Button`, async () => {
         await YesNoDialog.expectVisible();
         await page.locator('#yes-button').click();

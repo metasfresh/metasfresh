@@ -33,10 +33,44 @@ class MobileConfigManufacturingCommand
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
 		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
 
+		// IsAllowEmptyingHUs / IsConfirmEmptyingHU are client-level only (MobileUI_MFG_Config has no
+		// per-user column for them, cf. RawMaterialsIssueActivityHandler#resolveEmptyingHUsConfig) —
+		// route them to the global config, never to the per-user profile above.
+		if (request.getIsAllowEmptyingHUs() != null || request.getIsConfirmEmptyingHU() != null)
+		{
+			updateGlobalEmptyingHUsConfig();
+		}
+
+		final MobileUIManufacturingConfig effectiveConfig = mobileManufacturingConfigRepository.getConfig(loginUserId, ClientId.METASFRESH);
 		return JsonMobileConfigResponse.Manufacturing.builder()
-				.isScanResourceRequired(newConfig.getIsScanResourceRequired().toBooleanOrNull())
-				.isAllowIssuingAnyHU(newConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
+				.isScanResourceRequired(effectiveConfig.getIsScanResourceRequired().toBooleanOrNull())
+				.isAllowIssuingAnyHU(effectiveConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
+				.isAllowEmptyingHUs(effectiveConfig.getIsAllowEmptyingHUs().toBooleanOrNull())
+				.isConfirmEmptyingHU(effectiveConfig.getIsConfirmEmptyingHU().toBooleanOrNull())
 				.build();
+	}
+
+	private void updateGlobalEmptyingHUsConfig()
+	{
+		final MobileUIManufacturingConfig currentGlobal = mobileManufacturingConfigRepository.getGlobalConfig(ClientId.METASFRESH);
+		final MobileUIManufacturingConfig.MobileUIManufacturingConfigBuilder globalConfigBuilder = currentGlobal != null
+				? currentGlobal.toBuilder()
+				: MobileUIManufacturingConfig.builder()
+						.isScanResourceRequired(OptionalBoolean.FALSE)
+						.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
+						.isAllowEmptyingHUs(OptionalBoolean.TRUE)
+						.isConfirmEmptyingHU(OptionalBoolean.TRUE);
+
+		if (request.getIsAllowEmptyingHUs() != null)
+		{
+			globalConfigBuilder.isAllowEmptyingHUs(OptionalBoolean.ofBoolean(request.getIsAllowEmptyingHUs()));
+		}
+		if (request.getIsConfirmEmptyingHU() != null)
+		{
+			globalConfigBuilder.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(request.getIsConfirmEmptyingHU()));
+		}
+
+		mobileManufacturingConfigRepository.saveGlobalConfig(globalConfigBuilder.build(), ClientId.METASFRESH);
 	}
 
 }

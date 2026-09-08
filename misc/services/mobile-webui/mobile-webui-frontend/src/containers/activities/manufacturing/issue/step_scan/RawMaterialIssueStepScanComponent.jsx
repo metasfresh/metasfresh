@@ -57,6 +57,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       lineQtyToIssueRemaining,
       lineQtyIssued,
       isWeightable,
+      isIssueWholeHU,
       qtyRejectedReasons,
       scaleDevice,
       scaleTolerance,
@@ -87,6 +88,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       // Props which are needed by `onResult` function (see below):
       stepId: step.id,
       isWeightable,
+      isIssueWholeHU,
     };
   };
 
@@ -108,7 +110,13 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
 
     const stepId = resolvedBarcodeData.stepId;
     const isWeightable = !!resolvedBarcodeData.isWeightable;
-    const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
+    // The whole-HU decision must be the one made when the step was offered (target vs the HU's own
+    // capacity — computeStepScanPropsFromActivity.js), not recomputed from the qty the operator
+    // actually typed: typing less than capacity is exactly the "issue a partial amount with a
+    // reason" case (not found / damaged / empty), and recomputing from the entered qty always
+    // evaluates false there, silently dropping qtyRejected/qtyRejectedReasonCode before they reach
+    // the backend.
+    const isIssueWholeHU = !!resolvedBarcodeData.isIssueWholeHU;
 
     return dispatch(
       updateManufacturingIssue({

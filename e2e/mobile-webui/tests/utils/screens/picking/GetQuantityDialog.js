@@ -68,6 +68,20 @@ export const GetQuantityDialog = {
         await expect(radioButton).toBeChecked();
     }),
 
+    expectQtyNotFoundReasonOffered: async ({ reason, offered = true }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' offered=${offered}`, async () => {
+        const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
+        if (offered) {
+            await expect(radioButton).toBeVisible();
+        } else {
+            await expect(radioButton).toHaveCount(0);
+        }
+    }),
+
+    expectQtyNotFoundReasonCaption: async ({ reason, caption }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' caption '${caption}'`, async () => {
+        const label = page.getByTestId(`qty-reason-radio-${reason}`).locator('xpath=..');
+        await expect(label).toContainText(caption);
+    }),
+
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
         let doneButton = page.getByTestId('done-button');
 

@@ -31,7 +31,7 @@ public class MobileUIManufacturingConfigRepository
 			.build();
 
 	private final CCache<ClientId, Optional<MobileUIManufacturingConfig>> globalConfigsCache = CCache.<ClientId, Optional<MobileUIManufacturingConfig>>builder()
-			.tableName(I_MobileUI_UserProfile_MFG.Table_Name)
+			.tableName(I_MobileUI_MFG_Config.Table_Name)
 			.build();
 
 	public MobileUIManufacturingConfig getConfig(@NonNull final UserId userId, @NonNull final ClientId clientId)
@@ -88,12 +88,17 @@ public class MobileUIManufacturingConfigRepository
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
 	{
+		return retrieveGlobalConfigRecord(clientId)
+				.map(MobileUIManufacturingConfigRepository::fromRecord);
+	}
+
+	private Optional<I_MobileUI_MFG_Config> retrieveGlobalConfigRecord(@NonNull final ClientId clientId)
+	{
 		return queryBL.createQueryBuilder(I_MobileUI_MFG_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MobileUI_MFG_Config.COLUMNNAME_AD_Client_ID, clientId)
 				.create()
-				.firstOnlyOptional(I_MobileUI_MFG_Config.class)
-				.map(MobileUIManufacturingConfigRepository::fromRecord);
+				.firstOnlyOptional(I_MobileUI_MFG_Config.class);
 	}
 
 	private static MobileUIManufacturingConfig fromRecord(@NonNull final I_MobileUI_MFG_Config record)
@@ -106,12 +111,34 @@ public class MobileUIManufacturingConfigRepository
 				.build();
 	}
 
+	private static void updateGlobalRecord(@NonNull final I_MobileUI_MFG_Config record, @NonNull final MobileUIManufacturingConfig from)
+	{
+		record.setIsScanResourceRequired(from.getIsScanResourceRequired().isTrue());
+		record.setIsAllowIssuingAnyHU(from.getIsAllowIssuingAnyHU().isTrue());
+		record.setIsAllowEmptyingHUs(from.getIsAllowEmptyingHUs().isTrue());
+		record.setIsConfirmEmptyingHU(from.getIsConfirmEmptyingHU().isTrue());
+	}
+
 	public void saveUserConfig(@NonNull final MobileUIManufacturingConfig newConfig, @NonNull final UserId userId)
 	{
 		final I_MobileUI_UserProfile_MFG record = retrieveUserConfigRecord(userId).orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_MFG.class));
 		record.setIsActive(true);
 		record.setAD_User_ID(userId.getRepoId());
 		updateRecord(record, newConfig);
+		InterfaceWrapperHelper.save(record);
+	}
+
+	/**
+	 * Test-support entry point: {@code MobileUI_MFG_Config} has no production save path (only the
+	 * per-user profile is user-editable), but the frontend-testing masterdata harness needs one to
+	 * deterministically drive {@code IsAllowEmptyingHUs} / {@code IsConfirmEmptyingHU} for E2E specs
+	 * (see {@code MobileConfigManufacturingCommand}). Upserts the single row for the given client.
+	 */
+	public void saveGlobalConfig(@NonNull final MobileUIManufacturingConfig newConfig, @NonNull final ClientId clientId)
+	{
+		final I_MobileUI_MFG_Config record = retrieveGlobalConfigRecord(clientId).orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class));
+		record.setIsActive(true);
+		updateGlobalRecord(record, newConfig);
 		InterfaceWrapperHelper.save(record);
 	}
 
