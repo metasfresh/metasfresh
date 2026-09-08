@@ -7,8 +7,8 @@
 -- ==========================================================================
 
 -- Base language (German)
-INSERT INTO AD_Message (AD_Message_ID, AD_Client_ID, AD_Org_ID, Value, MsgType, MsgText, ErrorCode, IsActive, Created, CreatedBy, Updated, UpdatedBy)
-VALUES (545831 /*From ID Server*/, 0, 0, 'de.metas.manufacturing.job.service.EmptyingNotAllowedForHU', 'E', 'Der Grund "leer (autom. Inventur)" ist für dieses Gebinde nicht verfügbar', NULL, 'Y', TO_TIMESTAMP('2026-09-08 14:30:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-09-08 14:30:00', 'YYYY-MM-DD HH24:MI:SS'), 100);
+INSERT INTO AD_Message (AD_Message_ID, AD_Client_ID, AD_Org_ID, Value, MsgType, MsgText, ErrorCode, EntityType, IsActive, Created, CreatedBy, Updated, UpdatedBy)
+VALUES (545831 /*From ID Server*/, 0, 0, 'de.metas.manufacturing.job.service.EmptyingNotAllowedForHU', 'E', 'Der Grund "leer (autom. Inventur)" ist für dieses Gebinde nicht verfügbar', 'ERR_EMPTYING_NOT_ALLOWED_FOR_HU', 'D', 'Y', TO_TIMESTAMP('2026-09-08 14:30:00', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-09-08 14:30:00', 'YYYY-MM-DD HH24:MI:SS'), 100);
 
 -- Seed translations for all active system languages (copy base text, mark as untranslated)
 INSERT INTO AD_Message_Trl (AD_Language, AD_Message_ID, MsgText, IsTranslated, IsActive, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
