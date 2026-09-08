@@ -107,7 +107,7 @@
 					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="294" y="22" width="27" height="24" forecolor="#000000" uuid="e6751346-9ec6-4aa2-a9da-dd114e9766f0">
+					<reportElement key="textField-20" x="294" y="22" width="29" height="24" forecolor="#000000" uuid="e6751346-9ec6-4aa2-a9da-dd114e9766f0">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<box leftPadding="1"/>
@@ -117,7 +117,7 @@
 					<textFieldExpression><![CDATA[$R{BaseListPrice}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="323" y="22" width="36" height="24" forecolor="#000000" uuid="777f2b24-e500-4a85-ac56-0a302d75af6b">
+					<reportElement key="textField-20" x="323" y="22" width="40" height="24" forecolor="#000000" uuid="777f2b24-e500-4a85-ac56-0a302d75af6b">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<box leftPadding="1"/>
@@ -127,7 +127,7 @@
 					<textFieldExpression><![CDATA[$R{BasePricePerUOM}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="363" y="22" width="36" height="24" forecolor="#000000" uuid="b71fbe77-5023-42f2-9088-93be2c93b85b">
+					<reportElement key="textField-20" x="363" y="22" width="77" height="24" forecolor="#000000" uuid="b71fbe77-5023-42f2-9088-93be2c93b85b">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<box leftPadding="1"/>
@@ -156,7 +156,7 @@
 					<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="509" y="22" width="36" height="24" forecolor="#000000" uuid="bc62c05e-3c73-49ff-906a-4b1a5b0b2783"/>
+					<reportElement key="textField-20" x="509" y="22" width="76" height="24" forecolor="#000000" uuid="bc62c05e-3c73-49ff-906a-4b1a5b0b2783"/>
 					<box leftPadding="1"/>
 					<textElement textAlignment="Left" verticalAlignment="Bottom" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
@@ -164,7 +164,7 @@
 					<textFieldExpression><![CDATA[$R{SpecialPriceListVersion}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="469" y="22" width="36" height="24" forecolor="#000000" uuid="5604ea47-be99-450d-a9c7-56a265516c0a">
+					<reportElement key="textField-20" x="469" y="22" width="40" height="24" forecolor="#000000" uuid="5604ea47-be99-450d-a9c7-56a265516c0a">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<box leftPadding="1"/>
@@ -174,7 +174,7 @@
 					<textFieldExpression><![CDATA[$R{SpecialPricePerUOM}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="440" y="22" width="27" height="24" forecolor="#000000" uuid="8e02bdf8-9b2d-40b4-8f39-71065f86ceaf">
+					<reportElement key="textField-20" x="440" y="22" width="29" height="24" forecolor="#000000" uuid="8e02bdf8-9b2d-40b4-8f39-71065f86ceaf">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<box leftPadding="1"/>
