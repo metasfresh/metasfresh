@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * metasfresh-material-dispo-commons
@@ -44,5 +46,26 @@ public class SourceDocumentStatusTest
 	public void testNoSourceDocumentIsNotContributingToAtp()
 	{
 		assertThat(SourceDocumentStatus.NO_SOURCE_DOCUMENT.isContributingToAtp()).isFalse();
+	}
+
+	/**
+	 * Guards the implicit default in {@link SourceDocumentStatus#isContributingToAtp()}, which is
+	 * {@code this == STILL_OPEN} — i.e. any NEW constant silently becomes non-contributing. Concrete
+	 * scenario this prevents: a fourth status is added for the unreliable-era date cutoff, nobody adds a
+	 * test for it, and it is silently treated as "does not contribute to ATP" with every other test green.
+	 * This test fails on any added or renamed constant, forcing an explicit decision for it.
+	 */
+	@Test
+	public void testEveryConstantIsClassifiedDeliberately()
+	{
+		assertThat(SourceDocumentStatus.values())
+				.containsExactly(
+						SourceDocumentStatus.STILL_OPEN,
+						SourceDocumentStatus.CLOSED,
+						SourceDocumentStatus.NO_SOURCE_DOCUMENT);
+
+		assertThat(Arrays.stream(SourceDocumentStatus.values())
+						.filter(SourceDocumentStatus::isContributingToAtp))
+				.containsExactly(SourceDocumentStatus.STILL_OPEN);
 	}
 }
