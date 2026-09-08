@@ -456,6 +456,14 @@ public class ESRImportDAO implements IESRImportDAO
 				continue;
 			}
 			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID());
+			if (invoiceId == null)
+			{
+				// This line has no invoice, so it cannot be a duplicate *via the invoice*: isMatchInvoice
+				// asks whether the candidate payment is allocated to THIS line's invoice, and there is
+				// none. Skipping keeps the remaining candidates in play; passing null on would hit
+				// getByIdInTrx's @NonNull parameter and abort the whole import.
+				continue;
+			}
 			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 			final I_C_Payment payment = paymentDAO.getById(paymentId);
 			if (paymentBL.isMatchInvoice(payment, invoice))
