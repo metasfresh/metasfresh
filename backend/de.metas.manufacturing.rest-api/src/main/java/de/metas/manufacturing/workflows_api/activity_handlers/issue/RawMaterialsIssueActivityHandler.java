@@ -24,6 +24,7 @@ import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonSca
 import de.metas.product.ProductId;
 import de.metas.product.allergen.ProductAllergensService;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -39,6 +40,8 @@ import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.api.Params;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -51,6 +54,7 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/rawMaterialsIssue");
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	private final ManufacturingJobService manufacturingJobService;
 	private final ProductHazardSymbolService productHazardSymbolService;
@@ -65,12 +69,13 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
 		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
+		final boolean offerEmptyingHUs = isOfferEmptyingHUs(job);
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("scaleDevice", getCurrentScaleDevice(job, jsonOpts))
-						.valueObj("lines", getLines(job, wfActivity.getId(), jsonOpts))
-						.valueObj("qtyRejectedReasons", getJsonRejectReasonsList(jsonOpts))
+						.valueObj("lines", getLines(job, wfActivity.getId(), jsonOpts, offerEmptyingHUs))
+						.valueObj("qtyRejectedReasons", getJsonRejectReasonsList(jsonOpts, offerEmptyingHUs))
 						.build())
 				.build();
 	}
@@ -83,19 +88,19 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 				.orElse(null);
 	}
 
-	private ImmutableList<JsonRawMaterialsIssueLine> getLines(final ManufacturingJob job, final @NonNull WFActivityId wfActivityId, final @NonNull JsonOpts jsonOpts)
+	private ImmutableList<JsonRawMaterialsIssueLine> getLines(final ManufacturingJob job, final @NonNull WFActivityId wfActivityId, final @NonNull JsonOpts jsonOpts, final boolean offerEmptyingHUs)
 	{
 		return job.getActivityById(wfActivityId)
 				.getRawMaterialsIssueAssumingNotNull()
 				.getLines().stream()
-				.map(line -> toJson(line, jsonOpts))
+				.map(line -> toJson(line, jsonOpts, offerEmptyingHUs))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private JsonRawMaterialsIssueLine toJson(final @NonNull RawMaterialsIssueLine line, final @NonNull JsonOpts jsonOpts)
+	private JsonRawMaterialsIssueLine toJson(final @NonNull RawMaterialsIssueLine line, final @NonNull JsonOpts jsonOpts, final boolean offerEmptyingHUs)
 	{
 		final ImmutableList<RawMaterialsIssueStep> stepsWithAllowEmptying = line.getSteps().stream()
-				.map(step -> step.withAllowEmptying(isAllowEmptying(step)))
+				.map(step -> step.withAllowEmptying(isAllowEmptying(step, offerEmptyingHUs)))
 				.collect(ImmutableList.toImmutableList());
 
 		// The per-step flag (above) is authoritative. This line-level flag is only a coarse hint
@@ -114,8 +119,13 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	}
 
 	/** @return {@code true} if the step's source HU may be written off via the "empty (auto. inventory)" reason. */
-	private boolean isAllowEmptying(@NonNull final RawMaterialsIssueStep step)
+	private boolean isAllowEmptying(@NonNull final RawMaterialsIssueStep step, final boolean offerEmptyingHUs)
 	{
+		if (!offerEmptyingHUs)
+		{
+			return false;
+		}
+
 		final I_M_HU hu = handlingUnitsBL.getById(step.getIssueFromHU().getId());
 		return isAllowEmptying(hu);
 	}
@@ -160,13 +170,13 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private JsonRejectReasonsList getJsonRejectReasonsList(final @NonNull JsonOpts jsonOpts)
+	private JsonRejectReasonsList getJsonRejectReasonsList(final @NonNull JsonOpts jsonOpts, final boolean offerEmptyingHUs)
 	{
 		ADRefList reasons = QtyRejectedReasonCode.reasonsFor(
 				adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID),
 				QtyRejectedReasonContext.ManufacturingIssue);
 
-		if (!isOfferEmptyingHUs())
+		if (!offerEmptyingHUs)
 		{
 			reasons = reasons.excluding(ImmutableSet.of(QtyRejectedReasonCode.EMPTIED.getCode()));
 		}
@@ -174,14 +184,24 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 		return JsonRejectReasonsList.of(reasons, jsonOpts);
 	}
 
-	private boolean isOfferEmptyingHUs()
+	/**
+	 * Resolved once per request (from the job's own {@code AD_Client_ID}) and threaded into both the per-step
+	 * {@code isAllowEmptying} computation and the reject-reasons list, so both derive from the same decision.
+	 */
+	private boolean isOfferEmptyingHUs(@NonNull final ManufacturingJob job)
 	{
 		// getConfig(), not getGlobalConfig(): the merged chain falls back to DEFAULT_CONFIG, which carries
 		// the flag's 'on' default. getGlobalConfig() returns null when the client has no active
 		// MobileUI_MFG_Config row, which would silently disable the feature on any instance that never
 		// created one -- the opposite of the documented default. The user profile cannot influence these
 		// two flags: MobileUI_UserProfile_MFG has no columns for them, so they stay UNKNOWN and fall through.
-		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(Env.getLoggedUserId(), ClientId.METASFRESH);
+		final I_PP_Order ppOrder = ppOrderDAO.getById(job.getPpOrderId());
+		final ClientId clientId = ClientId.ofRepoId(ppOrder.getAD_Client_ID());
+		// job.getResponsibleId() is @Nullable (e.g. an order whose AD_User_Responsible_ID was never set);
+		// fall back to the currently logged-in user rather than fail the whole request on a config lookup.
+		final UserId responsibleId = job.getResponsibleId() != null ? job.getResponsibleId() : Env.getLoggedUserId();
+
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(responsibleId, clientId);
 		return config.getIsAllowEmptyingHUs().isTrue();
 	}
 
