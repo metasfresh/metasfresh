@@ -44,6 +44,7 @@ const MULTI_ROW_RECEIVE_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPla
 test.describe('Receipt-disposition delivery-planning — quick-action default and its fallback', () => {
   test('a row with a packing instruction defaults to "HUs annehmen Voreinst.", a row without one falls back to "CUs annehmen", and the multi-row receive stays menu-only', async ({
     page,
+    request,
   }) => {
     allure.epic('E0360: Transport (Extralogistik)');
     allure.tag('F29050: Delivery Planning');
@@ -103,11 +104,16 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     const vendorId = masterdata.bpartners.VENDOR.id;
     const packedProductId = masterdata.products.PACKED.id;
     const unpackedProductId = masterdata.products.UNPACKED.id;
-    const packedProductName = masterdata.products.PACKED.name;
-    const unpackedProductName = masterdata.products.UNPACKED.name;
+    // `productName`, not `name` — JsonCreateProductResponse carries {id, productCode, productName}.
+    // Reading `.name` yielded undefined and the grid locator then silently searched for the literal
+    // text "undefined", so the step failed 40s later on a row that never existed rather than here.
+    const packedProductName = masterdata.products.PACKED.productName;
+    const unpackedProductName = masterdata.products.UNPACKED.productName;
     expect(vendorId).toBeTruthy();
     expect(packedProductId).toBeTruthy();
     expect(unpackedProductId).toBeTruthy();
+    expect(packedProductName, 'the packed product name the grid rows are matched on').toBeTruthy();
+    expect(unpackedProductName, 'the unpacked product name the grid rows are matched on').toBeTruthy();
 
     const REST = FRONTEND_BASE_URL.replace(/:3000$/, ':8080') + '/rest/api';
 
@@ -116,25 +122,32 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       const path = tabId
         ? `${REST}/window/${windowId}/${documentId}/${tabId}/${rowId}`
         : `${REST}/window/${windowId}/${documentId}`;
-      const response = await page.request.patch(path, { data: changes });
+      const response = await request.patch(path, { data: changes });
       if (!response.ok()) {
         throw new Error(`PATCH ${path} failed: HTTP ${response.status()} ${await response.text()}`);
       }
       return firstDocument(await response.json());
     };
 
-    // === Authenticate via REST (session cookie carries over to the browser part below) — same
-    // 'metasfresh'/'metasfresh' admin credentials delivery-instruction-qty-sync.spec.js uses for its
-    // window-PATCH setup, independent of the per-test login user created above for the browser part.
-    await test.step('Authenticate via REST', async () => {
-      const sessionBody = await (await page.request.get(`${REST}/userSession`)).json().catch(() => ({}));
+    // === Authenticate the SETUP session via REST — the same 'metasfresh'/'metasfresh' admin
+    // credentials delivery-instruction-qty-sync.spec.js uses for its window-PATCH setup.
+    //
+    // On the `request` FIXTURE, not on `page.request`: this test drives the browser as the per-test
+    // de_DE user (its German quick-action captions are the assertion), and `page.request` shares the
+    // browser context's cookie jar, so authenticating there logged the browser in as `metasfresh` and
+    // the UI login then died on the form's "User already logged in". The `request` fixture is an
+    // isolated APIRequestContext with its own jar, which makes the setup session genuinely
+    // independent of the browser session — what the two-user split intended all along. Every REST
+    // setup call below therefore goes through `request`, every UI interaction through `page`.
+    await test.step('Authenticate the REST setup session', async () => {
+      const sessionBody = await (await request.get(`${REST}/userSession`)).json().catch(() => ({}));
       if (!sessionBody.loggedIn) {
-        const authResponse = await page.request.post(`${REST}/login/authenticate`, {
+        const authResponse = await request.post(`${REST}/login/authenticate`, {
           data: { username: 'metasfresh', password: 'metasfresh' },
         });
         const authBody = await authResponse.json();
         if (authBody.loginComplete === false && authBody.roles && authBody.roles.length > 0) {
-          await page.request.post(`${REST}/login/loginComplete`, { data: authBody.roles[0] });
+          await request.post(`${REST}/login/loginComplete`, { data: authBody.roles[0] });
         }
       }
     });
@@ -147,21 +160,107 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
         { op: 'replace', path: 'C_BPartner_ID', value: Number(vendorId) },
       ]);
 
+      // Each line is created AND filled by ONE checked PATCH against rowId 'NEW': WindowRestController
+      // -> DocumentCollection#forDocumentWritable creates the included row and applies the events to it
+      // within the same execution, so no row id ever has to travel back to the test.
+      //
+      // Creating the row first and reading its `rowId` out of that response is what used to fail here,
+      // and only for the SECOND line: saving line 1 stales the root document, the next request
+      // refreshes it and re-marks its included tabs stale, and then
+      // DocumentChangesCollector#streamOrderedDocumentChanges DROPS the change event of every included
+      // row of a staled tab (isStaleDocumentChanges) — by design, because the frontend re-reads a
+      // staled tab instead of trusting the response. The creation therefore answers HTTP 200 carrying
+      // the ROOT document only, `rowId` reads as undefined, and the follow-up PATCH goes to
+      // `.../AD_Tab-293/undefined` -> HTTP 500. A PATCH response is simply not a place to read a new
+      // included row's id from.
       for (const productId of [packedProductId, unpackedProductId]) {
-        const lineResponse = await page.request.patch(
-          `${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}/${PURCHASE_ORDER_LINE_TAB_ID}/NEW`,
-          { data: [] }
-        );
-        const lineRow = firstDocument(await lineResponse.json());
-        await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID, lineRow.rowId, [
+        await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID, 'NEW', [
           { op: 'replace', path: 'M_Product_ID', value: Number(productId) },
           { op: 'replace', path: 'QtyEntered', value: 5 },
         ]);
       }
 
+      // Both lines really landed — asserted on the TAB'S OWN ROWS, not on a PATCH response, so a row
+      // creation the backend silently refuses fails right here instead of surfacing later as a
+      // one-row grid or a completion error.
+      const lineRows = (
+        await (
+          await request.get(
+            `${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}/${PURCHASE_ORDER_LINE_TAB_ID}`
+          )
+        ).json()
+      ).result;
+      expect(
+        lineRows.map((row) => String(row.fieldsByName.M_Product_ID.value.key)).sort(),
+        'the products of the created purchase order lines'
+      ).toEqual([String(packedProductId), String(unpackedProductId)].sort());
+      for (const lineRow of lineRows) {
+        expect(lineRow.saveStatus && lineRow.saveStatus.saved, `order line ${lineRow.rowId} is saved`).toBe(true);
+        expect(lineRow.validStatus && lineRow.validStatus.valid, `order line ${lineRow.rowId} is valid`).toBe(true);
+      }
+
       await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
         { op: 'replace', path: 'DocAction', value: 'CO' },
       ]);
+      const completed = firstDocument(
+        await (await request.get(`${REST}/window/${PURCHASE_ORDER_WINDOW_ID}/${purchaseOrderId}`)).json()
+      );
+      expect(completed.fieldsByName.DocStatus.value.key, 'purchase order DocStatus').toBe('CO');
+    });
+
+    // === Wait for the receipt-schedule rows the completion creates ASYNCHRONOUSLY ===
+    // Completing the order only ENQUEUES the receipt-schedule creation (de.metas.async), so the rows
+    // are not there when the PATCH returns — measured against this stack: the view is still empty on
+    // the first poll and holds both rows a few seconds later. The window's grid is queried once when
+    // the page loads and never re-queried, so navigating too early leaves the row missing for the
+    // whole test however long a locator waits afterwards. Hence a wait on the CONDITION here, never a
+    // sleep and never a locator timeout standing in for one.
+    //
+    // Polled through the window's own view because the tab carries no filter field at all
+    // (AD_Field.IsFilterField is unset on every field of tab 549491), so the rows cannot be narrowed
+    // server-side: a fresh view per attempt (a view is a snapshot), read NEWEST FIRST via
+    // ?orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID and paged to the end, matched on THIS
+    // order's C_Order_ID. Same shape as delivery-instruction-qty-sync.spec.js's wait for its
+    // delivery planning.
+    const ownReceiptDispositionRowCount = async () => {
+      const view = await (
+        await request.post(`${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`, {
+          data: { windowId: String(RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID), viewType: 'grid' },
+        })
+      ).json();
+
+      const PAGE_LENGTH = 500;
+      let ownRows = 0;
+      for (let firstRow = 0; ; firstRow += PAGE_LENGTH) {
+        const rowsPage = await (
+          await request.get(
+            `${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}/${view.viewId}` +
+              `?firstRow=${firstRow}&pageLength=${PAGE_LENGTH}&orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID`
+          )
+        ).json();
+        const rows = rowsPage.result || [];
+        ownRows += rows.filter(
+          (row) => String(row.fieldsByName?.C_Order_ID?.value?.key) === String(purchaseOrderId)
+        ).length;
+        if (rows.length < PAGE_LENGTH) {
+          return ownRows;
+        }
+      }
+    };
+
+    await test.step('wait for the two receipt-schedule rows the completion creates asynchronously', async () => {
+      await expect
+        .poll(ownReceiptDispositionRowCount, {
+          message:
+            `both receipt-schedule rows of purchase order ${purchaseOrderId} show up on window ` +
+            `${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}. Fewer than two means the async ` +
+            `receipt-schedule creation the completion enqueued never finished — on a freshly started ` +
+            `stack that is SysConfig de.metas.async.Async_InitDelayMillis, which idles the processors ` +
+            `for 3 minutes unless lowered (launch-stack.sh sets it to 2s)`,
+          timeout: 90000,
+          intervals: [1000, 2000],
+        })
+        .toBe(2);
     });
 
     // === Login the browser session and open the receipt-disposition delivery-planning window ===
@@ -169,8 +268,11 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
+    // No `waitForLoadState('networkidle').catch(() => {})` here: the SPA holds a websocket open, so
+    // networkidle is not a state this page reliably reaches, and swallowing its timeout hid whatever
+    // else went wrong at navigation. The grid row waited for in the first step below is the real
+    // condition — the data it needs is already guaranteed by the poll above.
     await page.goto(`${FRONTEND_BASE_URL}/window/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`);
-    await page.waitForLoadState('networkidle', { timeout: VERY_SLOW_ACTION_TIMEOUT }).catch(() => {});
 
     const rowForProduct = (productName) => page.locator(`table tbody tr:has-text("${productName}")`).first();
 
