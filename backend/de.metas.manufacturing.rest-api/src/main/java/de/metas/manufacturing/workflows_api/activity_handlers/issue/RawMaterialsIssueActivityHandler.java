@@ -53,14 +53,14 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.rawMaterialsIssue");
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/rawMaterialsIssue");
 
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
-	private final ManufacturingJobService manufacturingJobService;
-	private final ProductHazardSymbolService productHazardSymbolService;
-	private final ProductAllergensService productAllergensService;
-	private final ADReferenceService adReferenceService;
-	private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
+	@NonNull private final ManufacturingJobService manufacturingJobService;
+	@NonNull private final ProductHazardSymbolService productHazardSymbolService;
+	@NonNull private final ProductAllergensService productAllergensService;
+	@NonNull private final ADReferenceService adReferenceService;
+	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
