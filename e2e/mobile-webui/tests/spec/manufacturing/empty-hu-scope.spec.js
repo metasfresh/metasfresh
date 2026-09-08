@@ -194,16 +194,36 @@ test('TC5: A pallet-sourced line — primary LU step refuses the reason, pallet 
 /**
  * TC5's second half — "open one of the alternative (per-TU) steps; expect the new reason IS
  * offered; using it empties that single TU only, and the pallet's other TUs are untouched"
- * (REQUIREMENTS.md §5) — is NOT implemented here. BLOCKED: the masterdata harness has no way to
- * obtain a scannable QR code for a TU included inside an LU created via `handlingUnits` +
- * `packingInstructions` (`lu`/`tu`). `CreateHUCommand`/`JsonCreateHUResponse`
- * (backend/de.metas.frontend-testing/.../masterdata/hu/) return the QR of only the single
- * top-level created HU (the LU itself, per `transformCU0`'s `producer.getSingleCreatedHU()`); the
- * included TUs' own `HUQRCode`s are never looked up or returned, and no other reachable
- * masterdata/REST endpoint lists an LU's included TUs with their QR codes. Per this task's
- * instruction, this is reported BLOCKED rather than driven through a debug/shortcut QR code or a
- * fabricated state the real system cannot produce. Minimal fix (not in scope here): extend
- * `CreateHUCommand`, when `packingInstructions.luPIItem != null`, to also resolve the created TUs
- * via `IHandlingUnitsDAO.retrieveIncludedHUs(HuId)` and return their `huId`/`qrCode` in
- * `JsonCreateHUResponse` (e.g. a `tus: [{ huId, qrCode }, ...]` list).
+ * (REQUIREMENTS.md §5) — is NOT implemented here. BLOCKED on a genuine, deeper masterdata-harness
+ * gap than the one this task's harness extension closed.
+ *
+ * The harness now returns each included TU's QR code (`CreateHUCommand.getIncludedTUs`,
+ * `JsonCreateHUResponse.tus`) — but only for TUs that are individually addressable at all. With
+ * `createPalletMasterdata()`'s `PALLET_PI` (`qtyTUsPerLU: 3, qtyCUsPerTU: 5`, total exactly 15 = the
+ * order's own need), every one of the 3 TUs is loaded to EXACTLY its rated capacity. Per
+ * `TUProducerDestination.loadHU` (backend/de.metas.handlingunits.base/.../allocation/transfer/impl/
+ * TUProducerDestination.java): a TU is only ever created as a "real" (individually addressable) HU
+ * row when its load is a PARTIAL fill (`exceedingCapacityOfTU.isPositive()`) or the PI has infinite
+ * capacity; an EXACT fill is coalesced into a single "aggregate HU" row that stands in for all N
+ * identical TUs (confirmed empirically: `retrieveIncludedHUs` on the pallet returned exactly ONE row
+ * with `getTUsCount() == 3`, and asking `HUQRCodesService.getQRCodeByHuId` for a single QR on that
+ * row threw "Expected only one QR code to be generated ... but found [3 distinct codes]" — fixed
+ * harness-side by skipping aggregate rows in `getIncludedTUs`, since an aggregate is not a real
+ * single-TU write-off source anyway, same as AC9 excludes it from the reason).
+ *
+ * So under the CURRENT masterdata request shape (`packingInstructions.lu`/`tu` +
+ * `qtyTUsPerLU`/`qtyCUsPerTU`), the total is always derived as `qtyTUsPerTU * qtyTUsPerLU`
+ * (`PackingInstructions.getQtyCUs()`) — an exact multiple by construction, so every TU is always
+ * exactly filled and always coalesces into one aggregate row. There is no way, via this request
+ * shape, to make `CreateHUCommand.getTotalQtyCUs()` load a partial (non-capacity) quantity into the
+ * last TU, which is the only thing that would make `retrieveIncludedHUs` return a genuinely
+ * individually-scannable TU row for this scenario. Per this task's instruction, this is reported
+ * BLOCKED rather than driven through a debug/shortcut QR code or a fabricated state the real system
+ * can't produce.
+ *
+ * Minimal fix for a follow-up (out of scope here): let `JsonCreateHURequest`/`PackingInstructions`
+ * accept an explicit total `qty` alongside a finite-capacity `packingInstructions` (today
+ * `CreateHUCommand.getTotalQtyCUs()` throws "qty shall not be set when packingInstructions are set"
+ * whenever `packingInstructions` has a finite `qtyCUsPerTU`), so a masterdata request can deliberately
+ * under-fill the last TU and force it to be created as a real, separately-scannable row.
  */
