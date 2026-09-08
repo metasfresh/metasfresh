@@ -181,36 +181,63 @@ const createPackageAssignedMasterdata = async ({ huQty, orderQty }) => {
 
 /**
  * TC10 (2nd half) — "an HU assigned to an M_Package reports the existing specific message and leaves
- * stock unchanged" (AC18) — is NOT implemented as a green refusal test. BLOCKED: confirmed by source
- * trace AND a live run that the write-off flow has NO wiring to `IHUPackageDAO.isHUAssignedToPackage`
- * at all. That predicate has exactly ONE caller in the whole backend —
- * `M_ShippingPackage_CreateFromPickingSlots.createShippingPackage` (an unrelated shipping-package
- * process) — never `HUQtyService.updateQty`, `PPOrderIssueScheduleService.bookEmptiedHUToZero`, nor any
- * class in the HU-destroy/`HUContextProcessorExecutor` chain the write-off reuses. Grepped
- * `de.metas.handlingunits.model.validator.M_HU` and every `HUStatusBL` status-transition guard: none
- * checks `M_Package_HU` either.
+ * stock unchanged" (AC18). The earlier "live-confirmed bypass" recorded above this comment (now
+ * removed) was itself wrong: the fixture HUs it inspected were never touched by the write-off at all
+ * (still HUStatus 'A', qty unchanged) — the flow it drove never reached the booking step it claimed to
+ * exercise. Re-traced: `HUQtyService.updateQty` -> `SyncInventoryQtyToHUsCommand:332-336` ->
+ * `HandlingUnitsBL.destroyIfEmptyStorage:304-348` -> `markDestroyed:350-374`, which — unconditionally,
+ * before setting `HUStatus = Destroyed` — calls `IHUPackageBL.retrievePackageIds(huId)` and throws
+ * `HUException(ERR_HUHasPackages, huId, packageIds).markAsUserValidationError()` whenever that list is
+ * non-empty. The refusal DOES exist on the write-off path; this is a normal test against it, not a
+ * product-gap report.
  *
- * Live confirmation: created the masterdata above (HU assigned to `PKG1` via `M_Package_HU`, HTTP 200,
- * package id resolved) and drove the real issue step with reason `E` (`isConfirmEmptyingHU: false`,
- * matching TC1's shape): the booking completed successfully — no error toast, HU quantity zero, `HUStatus
- * = 'D'` — i.e. the write-off proceeds despite the M_Package assignment. This is a genuine PRODUCT GAP
- * relative to AC18, not a test-writing gap: no assertion is fabricated here for a refusal that does not
- * happen. **No "existing specific message" is reachable from this flow because no code path checks
- * `isHUAssignedToPackage` before booking** — the message AC18 refers to (if it exists anywhere) belongs
- * to the unrelated shipping-package flow above, not to this feature.
- *
- * Fix for a follow-up (out of scope here — no production-code change was authorized beyond the two
- * harness commands this task's dispatch A added): gate `PPOrderIssueScheduleService.bookEmptiedHUToZero`
- * (or `HUQtyService.updateQty`) on `huPackageDAO.isHUAssignedToPackage(hu)`, throwing before any
- * inventory line is created, with an `AD_Message` naming the package the same way AC17's network message
- * names the warehouse.
- *
- * **Decision needed**: whether to open a follow-up issue for this gap (not decided here, per this
- * workspace's deferral-needs-approval rule).
+ * `AD_Message` `de.metas.handlingunits.impl.HUHasPackages` (en_US, verified via read-only psql against
+ * task_force_uat :45432): "You can't destroy handling unit {0} because it's still linked to these
+ * packages: {1}." — `{0}`/`{1}` are substituted with the raw `M_HU_ID`/`M_Package_ID` repo ids (not the
+ * QR code or package name), so the test matches the stable, parameter-free portion of the sentence.
  */
 
+// noinspection JSUnusedLocalSymbols
+test('TC10b: an HU assigned to an M_Package refuses the write-off', async ({ page }) => {
+    const masterdata = await createPackageAssignedMasterdata({ huQty: 0.5, orderQty: 0.5 });
+
+    await startIssueStep(masterdata);
+
+    await GetQuantityDialog.expectQtyEntered('0.5');
+    await GetQuantityDialog.typeQtyEntered('0.498');
+    await GetQuantityDialog.expectQtyNotFoundReasonOffered({ reason: EMPTIED_REASON, offered: true });
+    await GetQuantityDialog.clickQtyNotFoundReason({ reason: EMPTIED_REASON });
+
+    // isConfirmEmptyingHU is false in this masterdata, so Done attempts the booking directly (no
+    // Yes/No prompt in between) — the refusal must surface right here.
+    await GetQuantityDialog.clickDone({ expectedError: "still linked to these packages" });
+
+    // The dialog stays open — the operator is not navigated away by a refused booking, same shape
+    // as RawMaterialIssueLineScreen.scanQRCodeExpectError's over-issue case.
+    await GetQuantityDialog.waitForDialog();
+    await GetQuantityDialog.clickCancel();
+    await RawMaterialIssueLineScanScreen.goBack();
+    await RawMaterialIssueLineScreen.goBack();
+
+    // Expect: the refusal is atomic — the HU is untouched, no write-off inventory was created.
+    await Backend.expect({
+        hus: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                huStatus: 'A',
+                storages: { COMP: '0.5 KGM' },
+            },
+        },
+        inventories: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                isExists: false,
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+            },
+        },
+    });
+});
+
 // ---------------------------------------------------------------------------------------------
-// TC11: with packing material and a network line, the packaging is returned (AC21).
+// TC11: a completed write-off inventory, and its packing material moved to the empties warehouse (AC21).
 // ---------------------------------------------------------------------------------------------
 
 /**
@@ -249,7 +276,7 @@ const createPackingMaterialMasterdata = async ({ huQty, orderQty }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC11: with packing material and a network line, the packaging is returned', async ({ page }) => {
+test('TC11: a completed write-off inventory, and its packing material moved to the empties warehouse', async ({ page }) => {
     const masterdata = await createPackingMaterialMasterdata({ huQty: 0.5, orderQty: 0.5 });
 
     await startIssueStep(masterdata);
