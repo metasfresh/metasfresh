@@ -36,16 +36,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
-import org.compiere.util.TrxRunnable;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderCloseResult;
 import org.eevolution.model.I_PP_Order;
-
-import javax.annotation.Nullable;
-import java.util.Iterator;
 
 /**
  * Closes the completed manufacturing orders of the current selection.
@@ -58,12 +53,7 @@ import java.util.Iterator;
 public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrecondition
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-
-	private int countClosed = 0;
-	private int countFailed = 0;
-	@Nullable private String firstFailureMessage = null;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -122,33 +112,22 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 	}
 
 	/**
-	 * Runs out of transaction so each order can be closed in a transaction of its own: one order that refuses
-	 * to close must neither abort the batch nor roll back the orders already closed.
+	 * Runs out of transaction because the orders are closed one transaction at a time.
 	 */
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final Iterator<I_PP_Order> ppOrders = queryBL
-				.createQueryBuilder(I_PP_Order.class)
-				.setOnlySelection(getPinstanceId())
-				.orderBy(I_PP_Order.COLUMNNAME_PP_Order_ID) // predictable order, so "the first failure" is reproducible
-				.create()
-				.iterate(I_PP_Order.class);
+		final PPOrderCloseResult result = ppOrderBL.closeOrdersInSelection(getPinstanceId());
 
-		while (ppOrders.hasNext())
-		{
-			close(ppOrders.next());
-		}
-
-		final String summary = "@Processed@ (OK=#" + countClosed + ", Error=#" + countFailed + ")";
-		if (countFailed <= 0)
+		final String summary = "@Processed@ (OK=#" + result.getCountClosed() + ", Error=#" + result.getCountFailed() + ")";
+		if (result.getCountFailed() <= 0)
 		{
 			return summary;
 		}
 
-		final String summaryWithFirstFailure = summary + ": " + firstFailureMessage;
-		if (countClosed > 0)
+		final String summaryWithFirstFailure = summary + ": " + result.getFirstFailureMessage();
+		if (result.getCountClosed() > 0)
 		{
 			// Partial success is reported as a success carrying the counts and the first failure's message:
 			// the orders that did close are committed, so failing the process here would misreport them.
@@ -160,40 +139,5 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 		// Note that returning MSG_Error would NOT do it: JavaProcess only treats the result as an error when
 		// it equals "@Error@" exactly, so a message-carrying result has to be thrown.
 		throw new AdempiereException(summaryWithFirstFailure);
-	}
-
-	private void close(@NonNull final I_PP_Order ppOrder)
-	{
-		try
-		{
-			trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
-				InterfaceWrapperHelper.refresh(ppOrder, localTrxName);
-				ppOrderBL.closeOrder(ppOrder);
-
-				// closeOrder() runs the document action without asserting the outcome, so a close that
-				// silently did not take effect would otherwise be counted as a success.
-				final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
-				if (!docStatus.isClosed())
-				{
-					throw new AdempiereException("@Invalid@ @DocStatus@: " + docStatus);
-				}
-			});
-
-			countClosed++;
-			addLog("PP_Order {}: closed", ppOrder.getDocumentNo());
-		}
-		catch (final RuntimeException e)
-		{
-			countFailed++;
-
-			final String failureMessage = AdempiereException.extractMessage(e);
-			if (firstFailureMessage == null)
-			{
-				firstFailureMessage = ppOrder.getDocumentNo() + ": " + failureMessage;
-			}
-
-			addLog("PP_Order {}: failed - {}", ppOrder.getDocumentNo(), failureMessage);
-			log.warn("Failed closing PP_Order {}", ppOrder.getPP_Order_ID(), e);
-		}
 	}
 }

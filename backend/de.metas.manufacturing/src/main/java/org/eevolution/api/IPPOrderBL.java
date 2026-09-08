@@ -97,6 +97,17 @@ public interface IPPOrderBL extends ISingletonService
 	void closeOrdersByIds(@NonNull Set<PPOrderId> ppOrderIds);
 
 	/**
+	 * Closes every manufacturing order of the given selection, each one in a transaction of its own, so that
+	 * an order that refuses to close neither aborts the batch nor rolls back the orders already closed.
+	 * Distinct from {@link #closeOrdersByIds(Set)}, which closes them in the caller's transaction and lets the
+	 * first failure take the whole batch down with it.
+	 *
+	 * @return how many orders closed, how many failed, and the first failure's message. Every order is also
+	 * reported to the loggable, one line each.
+	 */
+	PPOrderCloseResult closeOrdersInSelection(@NonNull PInstanceId selectionId);
+
+	/**
 	 * Set QtyOrdered=QtyDelivered, QtyClosed=QtyOrdered(old) - QtyDelivered
 	 */
 	void closeQtyOrdered(I_PP_Order ppOrder);
