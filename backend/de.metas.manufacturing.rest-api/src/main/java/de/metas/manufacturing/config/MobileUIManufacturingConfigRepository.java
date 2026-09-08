@@ -10,9 +10,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_MobileUI_MFG_Config;
 import org.compiere.model.I_MobileUI_UserProfile_MFG;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.Properties;
 
 @Repository
 public class MobileUIManufacturingConfigRepository
@@ -137,16 +139,23 @@ public class MobileUIManufacturingConfigRepository
 	 */
 	public void saveGlobalConfig(@NonNull final MobileUIManufacturingConfig newConfig, @NonNull final ClientId clientId)
 	{
-		final I_MobileUI_MFG_Config record = retrieveGlobalConfigRecord(clientId).orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class));
-		// NOTE on client scoping: a new record's AD_Client_ID is assigned by the framework from the ambient
-		// context -- the generated model exposes getAD_Client_ID() but deliberately NO setter -- while the
-		// lookup above filters on the clientId parameter. So a caller whose ambient client differs from the
-		// clientId it passes would create a row that retrieveGlobalConfigRecord(clientId) can never find
-		// again. Both callers pass the session's own client, so this holds today; it cannot be defended
-		// here without going behind the model, hence stated rather than asserted.
+		// The generated model exposes getAD_Client_ID() but deliberately NO setter, so a new record's
+		// AD_Client_ID is assigned by the framework from the ambient context. To make sure a new row lands
+		// under the passed clientId (not whatever the caller's ambient context happens to be), the record is
+		// created against a local context that has clientId forced into it -- the same idiom used e.g. by
+		// C_Flatrate_Term / PrintingQueueBL / InboundEMailService / WorkPackageQueue.
+		final I_MobileUI_MFG_Config record = retrieveGlobalConfigRecord(clientId).orElseGet(() -> newGlobalConfigRecord(clientId));
 		record.setIsActive(true);
 		updateGlobalRecord(record, newConfig);
 		InterfaceWrapperHelper.save(record);
+	}
+
+	private static I_MobileUI_MFG_Config newGlobalConfigRecord(@NonNull final ClientId clientId)
+	{
+		final Properties localCtx = Env.deriveCtx(Env.getCtx());
+		Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, clientId.getRepoId());
+
+		return InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class, localCtx);
 	}
 
 }
