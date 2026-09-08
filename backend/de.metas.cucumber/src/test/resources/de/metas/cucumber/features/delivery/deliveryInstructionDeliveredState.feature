@@ -35,37 +35,37 @@ Feature: The delivery instruction's three-state delivered indicator
       | vendor      | Y        | N          | pricingSystem      |
       | warehouseBP | N        | N          |                     |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier        | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
-      | vendorLocation     | vendor                   | true                 | true                |
-      | warehouseLocation  | warehouseBP              | true                 | true                |
+      | Identifier        | C_BPartner_ID | IsBillToDefault | IsShipToDefault |
+      | vendorLocation    | vendor        | true            | true            |
+      | warehouseLocation | warehouseBP   | true            | true            |
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor                   | product                 |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouseState            | warehouseBP                  | warehouseLocation                     |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
+      | warehouseState | warehouseBP   | warehouseLocation      |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
-      | locatorState            | warehouseState            |
+      | M_Locator_ID | M_Warehouse_ID |
+      | locatorState | warehouseState |
     And contains M_Shippers
-      | Identifier      | OPT.IsCreateDeliveryPlanning |
-      | shipper_forward | true                         |
+      | Identifier      | IsCreateDeliveryPlanning |
+      | shipper_forward | true                     |
 
   @Id:S31789_TC13
   Scenario: Two-planning instruction reports none / one / both delivered, and returns to partly on reversal
 
     Given metasfresh contains C_Orders:
-      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
-      | orderState    | false   | vendor                   | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation                        | warehouseState                 | POO             |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised         | C_BPartner_Location_ID | M_Warehouse_ID |
+      | orderState | false   | vendor        | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation         | warehouseState |
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
-      | orderLineState | orderState             | product                 | 20         | shipper_forward             |
+      | Identifier     | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineState | orderState | product      | 20         | shipper_forward             |
 
     When the order identified by orderState is completed
 
     Then after not more than 60s, M_ReceiptSchedule are found:
-      | M_ReceiptSchedule_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
-      | receiptScheduleState             | orderLineState             | vendor                    | vendorLocation                     | product                  | 20         | warehouseState              |
+      | M_ReceiptSchedule_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
+      | receiptScheduleState | orderLineState | vendor        | vendorLocation         | product      | 20         | warehouseState |
     And after not more than 60s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID | C_OrderLine_ID |
       | planningState_1        | orderLineState |
@@ -92,8 +92,8 @@ Feature: The delivery instruction's three-state delivered indicator
     # planning link is on the draft at that moment does interceptor/M_InOut#afterComplete fire and recompute
     # the instruction.
     When the delivery planning identified by planningState_1 generates a receipt:
-      | ReceiptDate | Qty | OPT.M_InOut_ID  |
-      | 2023-02-05  | 10  | receiptState_1  |
+      | ReceiptDate | Qty | M_InOut_ID     |
+      | 2023-02-05  | 10  | receiptState_1 |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DeliveredState |
@@ -102,8 +102,8 @@ Feature: The delivery instruction's three-state delivered indicator
     # STATE 3: both allocated plannings are delivered - again through the production generate-receipt
     # process, this time for the second planning.
     When the delivery planning identified by planningState_2 generates a receipt:
-      | ReceiptDate | Qty | OPT.M_InOut_ID  |
-      | 2023-02-06  | 10  | receiptState_2  |
+      | ReceiptDate | Qty | M_InOut_ID     |
+      | 2023-02-06  | 10  | receiptState_2 |
 
     Then validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DeliveredState |
