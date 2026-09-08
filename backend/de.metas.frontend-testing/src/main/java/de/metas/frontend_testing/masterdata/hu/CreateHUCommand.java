@@ -211,11 +211,12 @@ public class CreateHUCommand
 			}
 			else
 			{
-				if (request.getQty() != null)
-				{
-					throw new AdempiereException("qty shall not be set when packingInstructions are set");
-				}
-				return packingInstructions.getQtyCUs();
+				// An explicit qty together with finite-capacity packingInstructions means: load this
+				// total across the LU's TUs, under-filling the last one (it is NOT rejected as it used
+				// to be) — this is what lets a masterdata request force a real, individually
+				// addressable (non-aggregate) TU into existence for scanning (see getIncludedTUs).
+				// Absent qty keeps the old behaviour: exact fill, derived from the packing instructions.
+				return CoalesceUtil.coalesce(request.getQty(), packingInstructions.getQtyCUs());
 			}
 		}
 		else
