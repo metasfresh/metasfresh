@@ -34,8 +34,6 @@ public class JsonRawMaterialsIssueLine
 
 	boolean readOnly;
 
-	boolean isAllowEmptying;
-
 	public static JsonRawMaterialsIssueLineBuilder builderFrom(
 			@NonNull final RawMaterialsIssueLine from,
 			@NonNull final JsonOpts jsonOpts)
@@ -51,7 +49,6 @@ public class JsonRawMaterialsIssueLine
 				.qtyIssued(from.getQtyIssued().toBigDecimal())
 				.seqNo(from.getSeqNo())
 				.readOnly(!from.isAllowManualIssue())
-				.isAllowEmptying(from.isAllowEmptying())
 				.steps(from.getSteps()
 						.stream()
 						.map(step -> JsonRawMaterialsIssueLineStep.of(step, jsonOpts))

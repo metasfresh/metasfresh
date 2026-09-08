@@ -32,7 +32,6 @@ public class RawMaterialsIssueLine
 	@NonNull Quantity qtyToIssue;
 	@Nullable IssuingToleranceSpec issuingToleranceSpec;
 	@NonNull ImmutableList<RawMaterialsIssueStep> steps;
-	boolean isAllowEmptying;
 
 	@NonNull Quantity qtyIssued; // computed
 	@NonNull WFActivityStatus status;
@@ -48,8 +47,7 @@ public class RawMaterialsIssueLine
 			@NonNull final Quantity qtyToIssue,
 			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
 			@NonNull final ImmutableList<RawMaterialsIssueStep> steps,
-			final int seqNo,
-			final boolean isAllowEmptying)
+			final int seqNo)
 	{
 		this.productId = productId;
 		this.productName = productName;
@@ -59,7 +57,6 @@ public class RawMaterialsIssueLine
 		this.qtyToIssue = qtyToIssue;
 		this.issuingToleranceSpec = issuingToleranceSpec;
 		this.steps = steps;
-		this.isAllowEmptying = isAllowEmptying;
 
 		this.qtyIssued = computeQtyIssued(this.steps).orElseGet(qtyToIssue::toZero);
 		this.seqNo = seqNo;

@@ -108,13 +108,8 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 				.map(step -> step.withAllowEmptying(offerEmptyingHUs && step.isAllowEmptying()))
 				.collect(ImmutableList.toImmutableList());
 
-		// The per-step flag (above) is authoritative. This line-level flag is only a coarse hint
-		// ("at least one of this line's steps allows emptying") kept for consumers that need a single boolean per line.
-		final boolean lineAllowsEmptying = stepsWithAllowEmptying.stream().anyMatch(RawMaterialsIssueStep::isAllowEmptying);
-
 		final RawMaterialsIssueLine enrichedLine = line.toBuilder()
 				.steps(stepsWithAllowEmptying)
-				.isAllowEmptying(lineAllowsEmptying)
 				.build();
 
 		return JsonRawMaterialsIssueLine.builderFrom(enrichedLine, jsonOpts)
