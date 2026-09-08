@@ -800,6 +800,13 @@ public class MD_Candidate_StepDef
 	 * Note: <code>qtyOnHandOld</code> is fixed at zero, so the <code>MovementQty</code> persisted on the resulting
 	 * <code>MD_Candidate_Transaction_Detail</code> row is the full new <code>QtyOnHand</code> rather than the true
 	 * delta; no scenario asserts that column, but do not rely on it.
+	 * <p>
+	 * Gherkin:
+	 * <pre>
+	 * When metasfresh receives a StockChangedEvent for the current MD_Stock
+	 *   | M_Product_ID | OPT.ChangeDate       |
+	 *   | p_od_1       | 2024-09-23T06:00:00Z |
+	 * </pre>
 	 */
 	@And("^metasfresh receives a StockChangedEvent for the current MD_Stock$")
 	public void metasfresh_receives_stock_changed_event(@NonNull final DataTable dataTable)
@@ -849,6 +856,8 @@ public class MD_Candidate_StepDef
 	/**
 	 * Overwrites the running ATP of one candidate's STOCK record, to set up a chain that has drifted
 	 * away from the physical stock.
+	 * <p>
+	 * Gherkin: {@code the ATP of the STOCK candidate of <candidateIdentifier> is manually set to <newAtp>}
 	 */
 	@And("^the ATP of the STOCK candidate of (.*) is manually set to (.*)$")
 	public void set_stock_candidate_atp(@NonNull final String candidateIdentifier, @NonNull final String newAtpStr)

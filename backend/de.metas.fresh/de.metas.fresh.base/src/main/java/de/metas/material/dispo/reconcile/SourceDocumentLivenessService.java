@@ -23,7 +23,6 @@ package de.metas.material.dispo.reconcile;
  */
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.common.util.IdConstants;
 import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -35,9 +34,8 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.reconcile.SourceDocumentStatus;
 import de.metas.material.event.ddorder.DDOrderRef;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
+import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Forecast;
@@ -80,18 +78,17 @@ import java.time.Instant;
  * inside the {@code MD_Stock.QtyOnHand} term of the target expression. Letting them contribute a second
  * time would double-count them against physical stock — the same failure family as the drift this
  * service exists to reconcile.
+ * <p>
+ * A candidate whose source document cannot be found at all — because the document was purged — likewise
+ * yields {@link SourceDocumentStatus#NO_SOURCE_DOCUMENT}, and must never abort the run: that dangling
+ * reference is itself part of the drifted state this feature exists to find and report. Hence the lookups
+ * go through {@link SourceDocumentRepository}, whose by-id lookup is null-tolerant.
  */
 @Service
+@RequiredArgsConstructor
 public class SourceDocumentLivenessService
 {
-	// IQueryBL rather than the owning DAOs, deliberately: no null-tolerant by-id lookup exists across all
-	// five source documents. ShipmentSchedulePA.getById and IForecastDAO.getById throw on a miss (in
-	// production, not just in tests); the receipt-schedule, PP_Order and DD_Order DAOs are bare
-	// InterfaceWrapperHelper.load(...) calls, which NPE on a miss in unit-test POJO mode; and DD_Order plus
-	// the M_ForecastLine hop offer no null-tolerant batch alternative either. A candidate referencing a
-	// purged document must degrade to NO_SOURCE_DOCUMENT, never abort the run — that dangling reference is
-	// precisely the drifted state this feature exists to find and report.
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final SourceDocumentRepository sourceDocumentRepository;
 
 	@VisibleForTesting
 	public static SourceDocumentLivenessService newInstanceForUnitTesting()
@@ -100,7 +97,10 @@ public class SourceDocumentLivenessService
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				SourceDocumentLivenessService.class,
-				SourceDocumentLivenessService::new);
+				() -> new SourceDocumentLivenessService(
+						SpringContextHolder.getBeanOrSupply(
+								SourceDocumentRepository.class,
+								SourceDocumentRepository::new)));
 	}
 
 	/**
@@ -161,7 +161,7 @@ public class SourceDocumentLivenessService
 			return SourceDocumentStatus.NO_SOURCE_DOCUMENT;
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = getSourceDocumentOrNull(
+		final I_M_ShipmentSchedule shipmentSchedule = sourceDocumentRepository.getByIdOrNull(
 				I_M_ShipmentSchedule.class,
 				I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID,
 				demandDetail.getShipmentScheduleId());
@@ -181,7 +181,7 @@ public class SourceDocumentLivenessService
 			return SourceDocumentStatus.NO_SOURCE_DOCUMENT;
 		}
 
-		final I_M_ReceiptSchedule receiptSchedule = getSourceDocumentOrNull(
+		final I_M_ReceiptSchedule receiptSchedule = sourceDocumentRepository.getByIdOrNull(
 				I_M_ReceiptSchedule.class,
 				I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID,
 				purchaseDetail.getReceiptScheduleRepoId());
@@ -208,7 +208,7 @@ public class SourceDocumentLivenessService
 			return SourceDocumentStatus.NO_SOURCE_DOCUMENT;
 		}
 
-		final I_PP_Order ppOrder = getSourceDocumentOrNull(
+		final I_PP_Order ppOrder = sourceDocumentRepository.getByIdOrNull(
 				I_PP_Order.class,
 				I_PP_Order.COLUMNNAME_PP_Order_ID,
 				ppOrderId.getRepoId());
@@ -235,7 +235,7 @@ public class SourceDocumentLivenessService
 			return SourceDocumentStatus.NO_SOURCE_DOCUMENT;
 		}
 
-		final I_DD_Order ddOrder = getSourceDocumentOrNull(
+		final I_DD_Order ddOrder = sourceDocumentRepository.getByIdOrNull(
 				I_DD_Order.class,
 				I_DD_Order.COLUMNNAME_DD_Order_ID,
 				ddOrderRef.getDdOrderId());
@@ -256,7 +256,7 @@ public class SourceDocumentLivenessService
 		}
 
 		// the demand detail references the forecast LINE; the DocStatus lives on the forecast header
-		final I_M_ForecastLine forecastLine = getSourceDocumentOrNull(
+		final I_M_ForecastLine forecastLine = sourceDocumentRepository.getByIdOrNull(
 				I_M_ForecastLine.class,
 				I_M_ForecastLine.COLUMNNAME_M_ForecastLine_ID,
 				demandDetail.getForecastLineId());
@@ -265,7 +265,7 @@ public class SourceDocumentLivenessService
 			return SourceDocumentStatus.NO_SOURCE_DOCUMENT;
 		}
 
-		final I_M_Forecast forecast = getSourceDocumentOrNull(
+		final I_M_Forecast forecast = sourceDocumentRepository.getByIdOrNull(
 				I_M_Forecast.class,
 				I_M_Forecast.COLUMNNAME_M_Forecast_ID,
 				forecastLine.getM_Forecast_ID());
@@ -275,25 +275,6 @@ public class SourceDocumentLivenessService
 		}
 
 		return toStatus(isStillOpenDocStatus(forecast.getDocStatus()));
-	}
-
-	@Nullable
-	private <T> T getSourceDocumentOrNull(
-			@NonNull final Class<T> modelClass,
-			@NonNull final String idColumnName,
-			final int recordId)
-	{
-		// note that an unset id is IdConstants.UNSPECIFIED_REPO_ID, which is positive
-		final int repoId = IdConstants.toRepoId(recordId);
-		if (repoId <= 0)
-		{
-			return null;
-		}
-
-		return queryBL.createQueryBuilder(modelClass)
-				.addEqualsFilter(idColumnName, repoId)
-				.create()
-				.firstOnly(modelClass);
 	}
 
 	/**
