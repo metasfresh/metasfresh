@@ -12,6 +12,7 @@ import de.metas.handlingunits.attribute.weightable.PlainWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
@@ -154,6 +155,19 @@ public class PPOrderIssueScheduleService
 	private void bookEmptiedHUToZero(@NonNull final HuId huId, @NonNull final String description)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+		{
+			// The ordinary "qty issued" step above already consumed this HU AS A WHOLE: when the issued
+			// qty reaches the HU's own capacity, HUTransformService's "complete cuHU" branch issues the
+			// HU itself (no split), moving its status to Issued (then, once the resulting cost collector
+			// is completed, to Destroyed) without ever reducing its M_HU_Storage row. That qty is already
+			// accounted for as issued to production, so writing it off here as well would double-count
+			// it (issued/destroyed AND zeroed). Only an HU still Active is still on-hand stock this
+			// method may legitimately book a remainder against (the split-branch case, e.g. a bare VHU
+			// with product left over after the issue).
+			return;
+		}
+
 		final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
 		if (huStorage.getProductStorages().isEmpty())
 		{
