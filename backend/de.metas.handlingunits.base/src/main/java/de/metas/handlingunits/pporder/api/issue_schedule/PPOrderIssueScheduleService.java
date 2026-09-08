@@ -75,14 +75,23 @@ public class PPOrderIssueScheduleService
 					.setParameter("issueSchedule", issueSchedule);
 		}
 
+		//
+		// Qty Rejected (resolved early: a weight confirmation below, if any, may itself be the call
+		// that drains the HU to zero on the EMPTIED reason, so it must carry the same write-off
+		// description `bookEmptiedHUToZero` would otherwise apply).
+		final I_C_UOM uom = issueSchedule.getQtyToIssue().getUOM();
+		final QtyRejectedWithReason qtyRejected = getQtyRejectedWithReason(request, uom);
+		final String emptiedHUInventoryDescription = qtyRejected != null && QtyRejectedReasonCode.EMPTIED.equals(qtyRejected.getReasonCode())
+				? resolveEmptiedHUInventoryDescription(request.getPpOrderId())
+				: null;
+
 		if (request.getHuWeightGrossBeforeIssue() != null)
 		{
-			weightHU(issueSchedule.getIssueFromHUId(), request.getHuWeightGrossBeforeIssue());
+			weightHU(issueSchedule.getIssueFromHUId(), request.getHuWeightGrossBeforeIssue(), emptiedHUInventoryDescription);
 		}
 
 		//
 		// Qty Issued
-		final I_C_UOM uom = issueSchedule.getQtyToIssue().getUOM();
 		final Quantity qtyIssued = Quantity.of(request.getQtyIssued(), uom);
 		if (qtyIssued.signum() != 0)
 		{
@@ -109,10 +118,9 @@ public class PPOrderIssueScheduleService
 
 		//
 		// Qty Rejected
-		final QtyRejectedWithReason qtyRejected = getQtyRejectedWithReason(request, uom);
-		if (qtyRejected != null && QtyRejectedReasonCode.EMPTIED.equals(qtyRejected.getReasonCode()))
+		if (emptiedHUInventoryDescription != null)
 		{
-			bookEmptiedHUToZero(issueSchedule.getIssueFromHUId(), request.getPpOrderId());
+			bookEmptiedHUToZero(issueSchedule.getIssueFromHUId(), emptiedHUInventoryDescription);
 		}
 
 		//
@@ -137,22 +145,28 @@ public class PPOrderIssueScheduleService
 		return QtyRejectedWithReason.of(qtyRejected, request.getQtyRejectedReasonCode());
 	}
 
-	private void bookEmptiedHUToZero(@NonNull final HuId huId, @NonNull final PPOrderId ppOrderId)
+	private String resolveEmptiedHUInventoryDescription(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
+		return msgBL.getMsg(Language.getBaseAD_Language(), MSG_EmptiedHUInventoryDescription, new Object[] { ppOrder.getDocumentNo() });
+	}
+
+	private void bookEmptiedHUToZero(@NonNull final HuId huId, @NonNull final String description)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 		final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
 		if (huStorage.getProductStorages().isEmpty())
 		{
-			// Nothing to write off: the HU already carries no product storage at all.
+			// Nothing to write off: the HU already carries no product storage at all. This is the normal
+			// case for a weight-tracked HU (e.g. a packing-instruction-produced TU): `weightHU` below
+			// already drained it to the counted weight, carrying this SAME description, before the
+			// ordinary issue consumed the rest.
 			// HUQtyService.updateQty(huId=...) requires exactly one M_HU_Storage row (it throws "Empty HU is not handled"
 			// for zero storages), so calling it here would fail on an HU that is already effectively empty.
 			return;
 		}
 
 		final Quantity qtyZero = huStorage.getQtyForProductStorages().toZero();
-
-		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
-		final String description = msgBL.getMsg(Language.getBaseAD_Language(), MSG_EmptiedHUInventoryDescription, new Object[] { ppOrder.getDocumentNo() });
 
 		huQtyService.updateQty(UpdateHUQtyRequest.builder()
 				.huId(huId)
@@ -161,7 +175,7 @@ public class PPOrderIssueScheduleService
 				.build());
 	}
 
-	private void weightHU(@NonNull final HuId huId, @NonNull final BigDecimal weightGross)
+	private void weightHU(@NonNull final HuId huId, @NonNull final BigDecimal weightGross, @Nullable final String description)
 	{
 		if (weightGross.signum() < 0)
 		{
@@ -187,6 +201,7 @@ public class PPOrderIssueScheduleService
 				//
 				.huId(huId)
 				.targetWeight(targetWeight)
+				.description(description)
 				.build()
 				//
 				.execute();

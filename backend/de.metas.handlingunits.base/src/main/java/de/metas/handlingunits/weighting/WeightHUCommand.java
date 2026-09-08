@@ -49,18 +49,21 @@ public class WeightHUCommand
 
 	private final HuId huId;
 	private final PlainWeightable targetWeight;
+	@Nullable private final String description;
 
 	@Builder
 	private WeightHUCommand(
 			@NonNull final HUQtyService huQtyService,
 			//
 			@NonNull final HuId huId,
-			@NonNull final IWeightable targetWeight)
+			@NonNull final IWeightable targetWeight,
+			@Nullable final String description)
 	{
 		this.huQtyService = huQtyService;
 
 		this.huId = huId;
 		this.targetWeight = PlainWeightable.copyOf(targetWeight);
+		this.description = description;
 	}
 
 	public Optional<InventoryId> execute()
@@ -84,6 +87,7 @@ public class WeightHUCommand
 		final UpdateHUQtyRequest updateHUQtyRequest = UpdateHUQtyRequest.builder()
 				.qty(targetWeightNet)
 				.huId(huId)
+				.description(description)
 				.build();
 
 		return huQtyService.updateQty(updateHUQtyRequest);
