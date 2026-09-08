@@ -225,11 +225,13 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     });
 
     await test.step('Run Close selection', async () => {
-      const processStarted = page.waitForResponse(
-        (response) => response.request().method() === 'POST' && response.url().includes('/process/')
-      );
+      // Running a quick action is two calls: POST /process/<id> only creates the pinstance, the
+      // process is EXECUTED by the follow-up GET /process/<id>/<pinstanceId>/start
+      // (ProcessActions.createProcess -> api/process.startProcess). Awaiting the POST would let the
+      // test read the result back before the close has committed.
+      const processExecuted = page.waitForResponse((response) => response.url().endsWith('/start'));
       await closeSelection.click();
-      await processStarted;
+      await processExecuted;
     });
 
     // The outcome, read back from a FRESH view: the monitor's tab is scoped to DocStatus='CO', so an
