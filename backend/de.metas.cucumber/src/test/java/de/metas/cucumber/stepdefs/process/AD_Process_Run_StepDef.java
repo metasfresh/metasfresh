@@ -138,14 +138,21 @@ public class AD_Process_Run_StepDef
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
 
-		ProcessInfo.builder()
+		final ProcessInfo.ProcessInfoBuilder processInfo = ProcessInfo.builder()
 				.setAD_Process_ID(processId.getRepoId())
 				.setClientId(clientId)
 				.setRoleId(roleId)
-				.setCreateTemporaryCtx()
-				.setTableName(tableName)
-				.setWhereClause(whereClause)
-				.buildAndPrepareExecution()
+				.setCreateTemporaryCtx();
+
+		// Only touch the table/selection setters on the selection path. setTableName(null) is NOT the same as
+		// never calling it: it pins AD_Table_ID to -1 and kills the AD_PInstance fallback that the plain
+		// no-selection step has always relied on.
+		if (tableName != null)
+		{
+			processInfo.setTableName(tableName).setWhereClause(whereClause);
+		}
+
+		processInfo.buildAndPrepareExecution()
 				.switchContextWhenRunning()
 				.executeSync()
 				.getResult()
