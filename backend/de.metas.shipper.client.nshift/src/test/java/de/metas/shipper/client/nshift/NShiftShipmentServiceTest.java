@@ -55,6 +55,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -317,6 +318,57 @@ public class NShiftShipmentServiceTest
 		assertNull(custNoOf(shipmentRequest, JsonAddressKind.RECEIVER), "product-scoped CustNo must be skipped when no product is selected");
 	}
 
+	@Test
+	void buildShipmentRequest_testModeOn_replacesBothAttentions()
+	{
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "Y")
+						.withAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION, "TEST SHIPMENT"))
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertEquals("TEST SHIPMENT", attentionOf(shipmentRequest, JsonAddressKind.SENDER),
+				"Sender Attention must be the configured test text, not the mapping-resolved one");
+		assertEquals("TEST SHIPMENT", attentionOf(shipmentRequest, JsonAddressKind.RECEIVER),
+				"Receiver Attention must be the configured test text, not the mapping-resolved one");
+	}
+
+	@Test
+	void buildShipmentRequest_testModeOff_keepsMappedAttentions()
+	{
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "N")
+						.withAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION, "TEST SHIPMENT"))
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertNotEquals("TEST SHIPMENT", attentionOf(shipmentRequest, JsonAddressKind.SENDER),
+				"With test mode off the sender Attention must stay the mapping-resolved value");
+		assertNotEquals("TEST SHIPMENT", attentionOf(shipmentRequest, JsonAddressKind.RECEIVER),
+				"With test mode off the receiver Attention must stay the mapping-resolved value");
+	}
+
+	@Test
+	void buildShipmentRequest_testModeOnWithoutText_sendsEmptyAttention()
+	{
+		// No TestMode_Attention property at all - the column is nullable and null values are dropped from the
+		// property map. Test mode must still take effect and send an EMPTY Attention (which nShift rejects),
+		// never fall back to the real one, or the shipment would go out unmarked.
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "Y"))
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertEquals("", attentionOf(shipmentRequest, JsonAddressKind.SENDER), "Sender Attention must be empty");
+		assertEquals("", attentionOf(shipmentRequest, JsonAddressKind.RECEIVER), "Receiver Attention must be empty");
+	}
+
 	private static String custNoOf(final JsonShipmentRequest request, final JsonAddressKind kind)
 	{
 		return request.getData().getAddresses().stream()
@@ -324,6 +376,15 @@ public class NShiftShipmentServiceTest
 				.findFirst()
 				.orElseThrow(() -> new AssertionError("no " + kind + " address"))
 				.getCustNo();
+	}
+
+	private static String attentionOf(final JsonShipmentRequest request, final JsonAddressKind kind)
+	{
+		return request.getData().getAddresses().stream()
+				.filter(a -> a.getKind() == kind)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no " + kind + " address"))
+				.getAttention();
 	}
 
 }
