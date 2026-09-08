@@ -21,6 +21,16 @@ const HUS_VOREINST_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPlanning
 const MULTI_ROW_RECEIVE_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPlanning_Generate_M_InOuts';
 
 /**
+ * {@code M_HU_PI_Item_Product_ID} of the virtual "No Packing Item" row — the hard-coded id every
+ * {@code M_HU_PI_Item_Product_ID} field defaults to, and what
+ * {@code ReceiptScheduleDocumentLUTUConfigurationHandler#getM_HU_PI_Item_Product} falls back to. A receipt
+ * schedule carrying it resolves to the VIRTUAL TU packing instruction with infinite CU capacity, so
+ * {@code HUPackingInfoFormatter} formats nothing and the HU-defaults receive rejects with "no default
+ * LU/TU configuration" — i.e. this id is exactly the "unpacked" state.
+ */
+const NO_PACKING_ITEM_ID = 101;
+
+/**
  * The receipt-disposition delivery-planning window's quick-action default and its fallback, and the multi-row receive being
  * reachable only from the action menu.
  *
@@ -92,9 +102,10 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
             prices: [{ price: 10.0, currencyCode: 'EUR' }],
           },
         },
-        // Gives PACKED product a default LU/TU configuration (M_HU_PI_Item_Product) — the ONE thing
-        // that makes "HUs annehmen Voreinst." resolve. UNPACKED gets none, which is the natural,
-        // no-setup-needed state that makes its default reject internally.
+        // Gives PACKED product a packing instruction (an M_HU_PI_Item_Product) — the ONE thing that
+        // makes "HUs annehmen Voreinst." resolve, once it is also LINKED to the order line below.
+        // UNPACKED gets none, which is the natural, no-setup-needed state that makes its default
+        // reject internally.
         packingInstructions: {
           RL_TU: { tu: 'RL_TU_PI', product: 'PACKED', qtyCUsPerTU: 10 },
         },
@@ -114,6 +125,24 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     expect(unpackedProductId).toBeTruthy();
     expect(packedProductName, 'the packed product name the grid rows are matched on').toBeTruthy();
     expect(unpackedProductName, 'the unpacked product name the grid rows are matched on').toBeTruthy();
+
+    // The `M_HU_PI_Item_Product_ID` of the packing instruction this run just created, taken from the
+    // masterdata response — never hard-coded, because every run creates a fresh row. The response exposes
+    // that id in exactly one place: `tuPIItemProductTestId`, a frontend test id of the form
+    // `tuPIItemProduct-<M_HU_PI_Item_Product_ID>`
+    // (JsonPackingInstructionsResponse <- MaterialReceiptActivityHandler#extractNewTUTargetTestId).
+    const packedPackingInstructionsId = Number(
+      String(masterdata.packingInstructions.RL_TU.tuPIItemProductTestId).replace(/^tuPIItemProduct-/, '')
+    );
+    expect(
+      packedPackingInstructionsId,
+      'the M_HU_PI_Item_Product id of the packed product\'s packing instruction, parsed out of the ' +
+        'masterdata response\'s tuPIItemProductTestId'
+    ).toBeGreaterThan(0);
+    expect(
+      packedPackingInstructionsId,
+      'the created packing instruction is a real one, not the virtual "No Packing Item" row'
+    ).not.toBe(NO_PACKING_ITEM_ID);
 
     const REST = FRONTEND_BASE_URL.replace(/:3000$/, ':8080') + '/rest/api';
 
@@ -173,10 +202,25 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       // the ROOT document only, `rowId` reads as undefined, and the follow-up PATCH goes to
       // `.../AD_Tab-293/undefined` -> HTTP 500. A PATCH response is simply not a place to read a new
       // included row's id from.
-      for (const productId of [packedProductId, unpackedProductId]) {
+      //
+      // The packing instruction is set EXPLICITLY on the packed line, and deliberately not on the other.
+      // Nothing derives it here: picking a product's default packing instruction is a WebUI batch-entry /
+      // quick-input behaviour (`PackingItemProductFieldHelper` off `IOrderLineQuickInput`), and these lines
+      // are created by PATCHing the plain order-line tab, which runs none of it. Without this op BOTH lines
+      // keep `M_HU_PI_Item_Product_ID = 101` ("No Packing Item"), the receipt schedule copies that id
+      // verbatim at creation (`HUReceiptScheduleProducer#updateFromOrderline`, once and only for a
+      // just-created schedule), and the "packed" row then offers exactly the same quick action as the
+      // unpacked one — the distinction this whole test is about, silently gone.
+      for (const line of [
+        { productId: packedProductId, packingInstructionsId: packedPackingInstructionsId },
+        { productId: unpackedProductId, packingInstructionsId: null },
+      ]) {
         await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, PURCHASE_ORDER_LINE_TAB_ID, 'NEW', [
-          { op: 'replace', path: 'M_Product_ID', value: Number(productId) },
+          { op: 'replace', path: 'M_Product_ID', value: Number(line.productId) },
           { op: 'replace', path: 'QtyEntered', value: 5 },
+          ...(line.packingInstructionsId
+            ? [{ op: 'replace', path: 'M_HU_PI_Item_Product_ID', value: line.packingInstructionsId }]
+            : []),
         ]);
       }
 
@@ -198,6 +242,26 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
         expect(lineRow.saveStatus && lineRow.saveStatus.saved, `order line ${lineRow.rowId} is saved`).toBe(true);
         expect(lineRow.validStatus && lineRow.validStatus.valid, `order line ${lineRow.rowId} is valid`).toBe(true);
       }
+
+      // The packing instruction really landed on the packed line, and only there. Asserted rather than
+      // assumed: the packed-vs-unpacked split is the single variable the quick-action expectations below
+      // rest on, and a PATCH op the backend quietly drops (or applies to the wrong row) would leave both
+      // lines identical while every later step still reported green.
+      const packingInstructionIdByProductId = new Map(
+        lineRows.map((row) => [
+          String(row.fieldsByName.M_Product_ID.value.key),
+          Number(row.fieldsByName.M_HU_PI_Item_Product_ID.value.key),
+        ])
+      );
+      expect(
+        packingInstructionIdByProductId.get(String(packedProductId)),
+        'the packed order line carries the packing instruction created for its product'
+      ).toBe(packedPackingInstructionsId);
+      expect(
+        packingInstructionIdByProductId.get(String(unpackedProductId)),
+        'the unpacked order line carries no packing instruction — the virtual "No Packing Item" row, which ' +
+          'is what makes its HU-defaults receive reject'
+      ).toBe(NO_PACKING_ITEM_ID);
 
       await patchDocument(PURCHASE_ORDER_WINDOW_ID, purchaseOrderId, null, null, [
         { op: 'replace', path: 'DocAction', value: 'CO' },
