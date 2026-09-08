@@ -46,6 +46,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.dispo.commons.SimulatedCandidateService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -64,7 +65,10 @@ import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
+import de.metas.material.event.stock.ResetStockPInstanceId;
+import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
@@ -109,6 +113,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.material.dispo.CandidatesToTabularStringConverter.toTabularStringFromCandidateRows;
@@ -122,6 +127,12 @@ import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_Qty;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+/**
+ * Step definitions for {@code MD_Candidate} — the material-disposition candidates that carry the
+ * projected ATP. Covers creating and asserting candidates and their detail rows, posting material
+ * events that make the dispo engine build a candidate chain, and reading the resulting running ATP
+ * off the {@code STOCK} candidates.
+ */
 @RequiredArgsConstructor
 public class MD_Candidate_StepDef
 {
@@ -779,4 +790,107 @@ public class MD_Candidate_StepDef
 		assertThat(result.isError()).isFalse();
 	}
 
+
+	/**
+	 * Sets the ATP baseline from MD_Stock: for the given product, posts one reset-stock
+	 * {@link StockChangedEvent} per MD_Stock row,
+	 * carrying that row's current QtyOnHand. Mirrors what
+	 * StockDataUpdateRequestHandler.fireStockChangedEvent builds, but WITHOUT the old==new guard.
+	 * <p>
+	 * Note: <code>qtyOnHandOld</code> is fixed at zero, so the <code>MovementQty</code> persisted on the resulting
+	 * <code>MD_Candidate_Transaction_Detail</code> row is the full new <code>QtyOnHand</code> rather than the true
+	 * delta; no scenario asserts that column, but do not rely on it.
+	 */
+	@And("^metasfresh receives a StockChangedEvent for the current MD_Stock$")
+	public void metasfresh_receives_stock_changed_event(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID");
+			final int productId = productTable.get(productIdentifier).getM_Product_ID();
+
+			final String changeDateStr = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ChangeDate");
+			final Instant changeDate = (changeDateStr == null || changeDateStr.trim().isEmpty())
+					? null
+					: Instant.parse(changeDateStr.trim());
+
+			final List<I_MD_Stock> stockRecords = queryBL.createQueryBuilderOutOfTrx(I_MD_Stock.class)
+					.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
+					.create()
+					.list(I_MD_Stock.class);
+			assertThat(stockRecords).as("MD_Stock rows for product %s", productIdentifier).isNotEmpty();
+
+			for (final I_MD_Stock stockRecord : stockRecords)
+			{
+				final AttributesKey attributesKey = AttributesKeys.pruneEmptyParts(AttributesKey.ofString(stockRecord.getAttributesKey()));
+				final AttributeSetInstanceId asiId = AttributesKeys.createAttributeSetInstanceFromAttributesKey(attributesKey);
+
+				final StockChangedEvent event = StockChangedEvent.builder()
+						.eventDescriptor(EventDescriptor.ofClientAndOrg(stockRecord.getAD_Client_ID(), stockRecord.getAD_Org_ID()))
+						.productDescriptor(ProductDescriptor.forProductAndAttributes(productId, attributesKey, asiId.getRepoId()))
+						.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
+						.qtyOnHand(stockRecord.getQtyOnHand())
+						.qtyOnHandOld(BigDecimal.ZERO)
+						.changeDate(changeDate)
+						.stockChangeDetails(StockChangedEvent.StockChangeDetails.builder()
+								.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(nextResetStockPInstanceRepoId()))
+								.stockId(stockRecord.getMD_Stock_ID())
+								.build())
+						.build();
+
+				postMaterialEventService.enqueueEventNow(event);
+			}
+		}
+	}
+
+	/**
+	 * Overwrites the running ATP of one candidate's STOCK record, to set up a chain that has drifted
+	 * away from the physical stock.
+	 */
+	@And("^the ATP of the STOCK candidate of (.*) is manually set to (.*)$")
+	public void set_stock_candidate_atp(@NonNull final String candidateIdentifier, @NonNull final String newAtpStr)
+	{
+		final BigDecimal newAtp = new BigDecimal(newAtpStr.trim());
+
+		final CandidateId candidateId = materialDispoDataItemStepDefData.get(candidateIdentifier).getCandidateId();
+		final I_MD_Candidate candidateRecord = InterfaceWrapperHelper.load(candidateId.getRepoId(), I_MD_Candidate.class);
+		assertThat(candidateRecord).isNotNull();
+
+		I_MD_Candidate stockRecord = null;
+
+		final int parentId = candidateRecord.getMD_Candidate_Parent_ID();
+		if (parentId > 0)
+		{
+			final I_MD_Candidate parentRecord = InterfaceWrapperHelper.load(parentId, I_MD_Candidate.class);
+			if (parentRecord != null && CandidateType.STOCK.getCode().equals(parentRecord.getMD_Candidate_Type()))
+			{
+				stockRecord = parentRecord;
+			}
+		}
+		if (stockRecord == null)
+		{
+			stockRecord = queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidateId.getRepoId())
+					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, CandidateType.STOCK.getCode())
+					.create()
+					.firstOnly(I_MD_Candidate.class);
+		}
+		assertThat(stockRecord).as("STOCK candidate of %s", candidateIdentifier).isNotNull();
+
+		stockRecord.setQty(newAtp);
+		InterfaceWrapperHelper.save(stockRecord);
+	}
+
+	/**
+	 * A UNIQUE synthetic reset-stock pinstance id per posted event. It must be unique: the engine looks
+	 * its own MD_Candidate_Transaction_Detail up by AD_PInstance_ResetStock_ID, so a constant makes that
+	 * lookup throw QueryMoreThanOneRecordsFound on the second event and the STOCK chain is never built.
+	 */
+	private static final AtomicInteger RESET_STOCK_PINSTANCE_SEQ =
+			new AtomicInteger((int)(System.currentTimeMillis() / 1000L));
+
+	private static int nextResetStockPInstanceRepoId()
+	{
+		return RESET_STOCK_PINSTANCE_SEQ.incrementAndGet();
+	}
 }
