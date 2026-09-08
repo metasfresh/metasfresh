@@ -116,6 +116,8 @@ test('TC-CW2: a kg whole-HU issue entered short with the emptied reason books ex
     await RawMaterialIssueLineScreen.waitForScreen();
     await RawMaterialIssueLineScreen.goBack();
 
+    // `count: 1` with a `description` filter pins DESCRIBED inventories only: an extra UNdescribed
+    // write-off alongside it would not be caught here, but AC4 is specifically about the described document.
     await Backend.expect({
         inventories: {
             [masterdata.handlingUnits.HU.qrCode]: {
@@ -127,7 +129,7 @@ test('TC-CW2: a kg whole-HU issue entered short with the emptied reason books ex
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC-CW3: a kg whole-HU issue with no rejection reason leaves the weight-confirm inventory undescribed', async ({ page }) => {
+test('TC-CW3: a kg whole-HU issue without a reason creates no write-off and no weight-confirm inventory', async ({ page }) => {
     const masterdata = await createMasterdata({ uom: 'KGM' });
 
     await startIssueStep(masterdata);
@@ -144,15 +146,16 @@ test('TC-CW3: a kg whole-HU issue with no rejection reason leaves the weight-con
 
     // Entering the full booked qty leaves the counted weight equal to the HU's already-recorded qty
     // (0.5 -> 0.5), so `weightHU`'s own qty update is a zero-delta no-op and creates no inventory line
-    // of its own — only the harness's seed inventory references the HU. `count: 1` without a
-    // `description` filter pins that exact total, unlike a bare `isExists: true` check (which the seed
-    // inventory alone would already satisfy even if an extra, unwanted inventory had been created).
+    // of its own — only the harness's seed inventory references the HU, and no write-off is booked
+    // either (no rejection reason was given). `count: 1` without a `description` filter pins that exact
+    // total, unlike a bare `isExists: true` check (which the seed inventory alone would already satisfy
+    // even if an extra, unwanted inventory had been created).
     await Backend.expect({
         inventories: {
             [masterdata.handlingUnits.HU.qrCode]: { count: 1 },
         },
     });
-    // ...but none of them carries the AC4 write-off description (nothing was written off).
+    // ...and none of them carries the AC4 write-off description (confirms no write-off was created).
     await Backend.expect({
         inventories: {
             [masterdata.handlingUnits.HU.qrCode]: {
