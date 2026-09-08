@@ -846,3 +846,30 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | cwFinProd    | warehouseStd   | 2   | 30.0000        | 60.00            | 60.00                 |
+
+  @from:cucumber
+  @Id:S30811_TC6
+  Scenario: Close selection closes the completed manufacturing orders and skips a drafted one
+    # The cost-monitor window lists completed-but-not-closed orders. A balanced one has no residual left to
+    # post, so a bulk close is its only remaining action there.
+    # The drafted order rides along in the selection on purpose: the process filters DocStatus='CO' in the
+    # query that builds its selection, so a stale client-side selection cannot close a non-completed order.
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrderCompleted1      | MOP         | finProd                 | 1          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+      | ppOrderCompleted2      | MOP         | finProd                 | 2          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+      | ppOrderDrafted         | MOP         | finProd                 | 3          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | N                | prodPlan                              |
+
+    And after not more than 60s, PP_Orders are found
+      | Identifier        | DocStatus |
+      | ppOrderCompleted1 | CO        |
+      | ppOrderCompleted2 | CO        |
+      | ppOrderDrafted    | DR        |
+
+    When the manufacturing orders identified by ppOrderCompleted1,ppOrderCompleted2,ppOrderDrafted are closed by selection
+
+    Then after not more than 60s, PP_Orders are found
+      | Identifier        | DocStatus |
+      | ppOrderCompleted1 | CL        |
+      | ppOrderCompleted2 | CL        |
+      | ppOrderDrafted    | DR        |
