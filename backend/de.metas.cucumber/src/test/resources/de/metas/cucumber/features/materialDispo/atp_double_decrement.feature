@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
-@allure.label.feature:F19000
+@allure.label.feature:F19000_Material_Dispo
 @ghActions:run_on_executor6
 Feature: ATP double decrement — a never-issued BOM demand plus the inventory that corrects for it
 ## The same physical consumption is subtracted from the ATP twice: component X has ATP and stock 100;

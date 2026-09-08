@@ -843,7 +843,8 @@ public class MD_Candidate_StepDef
 					.build();
 
 			postMaterialEventService.enqueueEventNow(event);
-		}	}
+		}
+	}
 
 	/**
 	 * Overwrites the running ATP of one candidate's STOCK record, to set up a chain that has drifted

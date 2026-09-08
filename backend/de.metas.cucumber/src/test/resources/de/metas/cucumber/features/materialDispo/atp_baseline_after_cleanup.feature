@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
-@allure.label.feature:F19000
+@allure.label.feature:F19000_Material_Dispo
 @ghActions:run_on_executor6
 Feature: ATP baseline from physical stock after an MD_Candidate cleanup
 ## After historic candidates are zeroed, the ATP chain restarts at 0 while the physical stock is still

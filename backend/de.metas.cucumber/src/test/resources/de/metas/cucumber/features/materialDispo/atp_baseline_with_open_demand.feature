@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
-@allure.label.feature:F19000
+@allure.label.feature:F19000_Material_Dispo
 @ghActions:run_on_executor6
 Feature: ATP baseline from MD_Stock when an open sales order precedes it
 ## Does a reset-stock StockChangedEvent still honour an open, unshipped demand? Business-correct answer
