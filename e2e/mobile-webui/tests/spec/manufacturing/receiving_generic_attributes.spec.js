@@ -159,7 +159,7 @@ test('Receive selecting a LIST attribute — produced HU carries it; not-configu
     await page.getByTestId('receive-qty-button').tap();
     await GetQuantityDialog.waitForDialog();
 
-    // Field order follows the config's given order (HU_BestBeforeDate, TestSizeCM, Lot-Nummer) - not
+    // Field order follows the config's given order (bestBeforeDateAttr, sizeAttr, lotNumberAttr) - not
     // alphabetical, not the Lot-then-BestBefore pairing - proving SeqNo (the config's order) drives it.
     // Attributes are referenced by their masterdata identifier; the screen object resolves each to its
     // per-run code.
