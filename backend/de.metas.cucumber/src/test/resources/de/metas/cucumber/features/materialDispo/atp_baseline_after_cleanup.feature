@@ -63,7 +63,7 @@ Feature: ATP baseline from physical stock after an MD_Candidate cleanup
       | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
       | inv_1_b        | invl_1_b   | p_base_1     | 100     | 100      | WH_BASE        | PCE          |
     And the inventory identified by inv_1_b is completed
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- result: ATP is still 0, no new candidate was created ---------------------------
     Then after not more than 60s, the MD_Candidate table has only the following records
@@ -110,7 +110,7 @@ Feature: ATP baseline from physical stock after an MD_Candidate cleanup
       | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
       | inv_2_b        | invl_2_b   | p_base_2     | 0       | 100      | WH_BASE        | PCE          |
     And the inventory identified by inv_2_b is completed
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- result: ATP is back to 100, but the physical stock is now 200 (double-counted) ---
     Then after not more than 60s, MD_Candidates are found

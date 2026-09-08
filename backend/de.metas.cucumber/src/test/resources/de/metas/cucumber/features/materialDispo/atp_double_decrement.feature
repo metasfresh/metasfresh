@@ -67,7 +67,7 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | M_Warehouse_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
       | ppo_dd                 | MOP         | fin_dd                  | 1          | plant_dd                 | WH_DD                     | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | Y                |
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     # the component's ATP must now be 100 - 20 = 80 while its stock is untouched at 100
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | ATP | M_Warehouse_ID |
@@ -78,7 +78,7 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
 
     # --- the order is CLOSED without ever issuing the components ------------------------
     When the manufacturing order identified by ppo_dd is closed
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- the inventory then counts reality: the components were consumed after all -------
     And metasfresh has date and time 2024-09-22T08:00:00+01:00[Europe/Berlin]
@@ -89,7 +89,7 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
       | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 | M_HU_ID.Identifier |
       | inv_dd_2       | invl_dd_2  | comp_dd      | 100     | 80       | WH_DD          | PCE          | hu_dd_1            |
     And the inventory identified by inv_dd_2 is completed
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- stock is correct at 80; the business-correct ATP is ALSO 80 ---------------------
     Then after not more than 60 seconds metasfresh has MD_Stock data

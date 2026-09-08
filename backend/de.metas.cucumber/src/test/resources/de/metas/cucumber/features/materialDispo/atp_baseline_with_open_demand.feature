@@ -62,7 +62,7 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_od_1   | so_od_1    | p_od_1       | 30         |
     And the order identified by so_od_1 is completed
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_od_1     | DEMAND            | SHIPMENT                  | p_od_1       | 2024-09-21T21:00:00Z | -30 | 70  | WH_OD          |
@@ -85,7 +85,7 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
     When metasfresh receives a StockChangedEvent for the current MD_Stock
       | M_Product_ID | OPT.ChangeDate       |
       | p_od_1       | 2024-09-23T06:00:00Z |
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # business-correct expectation: stock 200 minus the still-open demand 30 = 170
     Then after not more than 60s, MD_Candidates are found
@@ -134,13 +134,13 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_od_2   | so_od_2    | p_od_2       | 30         |
     And the order identified by so_od_2 is completed
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # 4) post the reset-stock event; MD_Stock is still 200
     When metasfresh receives a StockChangedEvent for the current MD_Stock
       | M_Product_ID | OPT.ChangeDate       |
       | p_od_2       | 2024-09-23T06:00:00Z |
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # business-correct expectation: the later demand still applies -> 200 - 30 = 170
     Then after not more than 60s, MD_Candidates are found
@@ -178,7 +178,7 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_od_3   | so_od_3    | p_od_3       | 30         |
     And the order identified by so_od_3 is completed
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_od_3     | DEMAND            | SHIPMENT                  | p_od_3       | 2024-09-21T21:00:00Z | -30 | 70  | WH_OD          |
@@ -193,7 +193,7 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | ship_od_3             | ss_od_3                          | D                 | Y                  |
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # the invariant: stock dropped to 70, ATP is UNCHANGED at 70
     Then after not more than 60 seconds metasfresh has MD_Stock data
