@@ -29,6 +29,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -193,9 +194,11 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 				return isSingleProductStorage(hu);
 			case LoadLogistiqueUnit:
 				return false;
-			default:
-				return false;                                             // a future unit type is not silently accepted
 		}
+
+		// No default: case above -- every current HUType is handled explicitly. A future unit type
+		// added to the enum without a matching case here fails loudly instead of silently returning false.
+		throw new AdempiereException("Unhandled HUType: " + huType);
 	}
 
 	private boolean isSingleProductStorage(@NonNull final I_M_HU hu)
