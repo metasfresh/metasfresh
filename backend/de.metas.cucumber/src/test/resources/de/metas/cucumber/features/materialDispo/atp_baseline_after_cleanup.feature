@@ -65,10 +65,15 @@ Feature: ATP baseline from physical stock after an MD_Candidate cleanup
     And the inventory identified by inv_1_b is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # --- result: ATP is still 0, no new candidate was created ---------------------------
+    # --- result: ATP is still 0 -----------------------------------------------------------
+    # The engine mirrors EVERY inventory M_Transaction 1:1 into an INVENTORY_UP/DOWN candidate, and a
+    # zero-movement line (QtyCount == QtyBook) still books one such transaction with MovementQty 0. So a
+    # second, zero-quantity INVENTORY_DOWN candidate appears. It leaves ATP at 0 — which is exactly this
+    # scenario's point: counting the correct physical stock does NOT restore a zeroed ATP.
     Then after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | cand_1_a   | INVENTORY_UP      |                           | p_base_1     | 2024-09-20T06:00:00Z | 0   | 0   | WH_BASE        |
+      | cand_1_b   | INVENTORY_DOWN    |                           | p_base_1     | 2024-09-21T06:00:00Z | 0   | 0   | WH_BASE        |
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | p_base_1                | 100       |
