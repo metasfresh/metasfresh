@@ -33,16 +33,17 @@ import de.metas.inventory.InventoryId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
@@ -187,17 +188,19 @@ public class AssertExpectationsCommandServices
 		final Set<Integer> fromLocatorRepoIds = toRepoIds(warehouseDAO.getLocatorIds(fromWarehouseId));
 		final Set<Integer> toLocatorRepoIds = toRepoIds(warehouseDAO.getLocatorIds(toWarehouseId));
 
-		final List<I_M_MovementLine> lines = queryBL.createQueryBuilder(I_M_MovementLine.class)
+		final IQuery<I_M_Movement> completedMovementQuery = queryBL.createQueryBuilder(I_M_Movement.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Movement.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_MovementLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
 				.addInArrayFilter(I_M_MovementLine.COLUMNNAME_M_Locator_ID, fromLocatorRepoIds)
 				.addInArrayFilter(I_M_MovementLine.COLUMNNAME_M_LocatorTo_ID, toLocatorRepoIds)
+				.addInSubQueryFilter(I_M_MovementLine.COLUMNNAME_M_Movement_ID, I_M_Movement.COLUMNNAME_M_Movement_ID, completedMovementQuery)
 				.create()
-				.list();
-
-		return lines.stream()
-				.map(line -> InterfaceWrapperHelper.load(line.getM_Movement_ID(), I_M_Movement.class))
-				.anyMatch(movement -> "CO".equals(movement.getDocStatus()));
+				.anyMatch();
 	}
 
 	private static Set<Integer> toRepoIds(@NonNull final List<LocatorId> locatorIds)

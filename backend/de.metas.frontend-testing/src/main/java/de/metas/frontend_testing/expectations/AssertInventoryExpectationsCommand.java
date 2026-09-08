@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Inventory;
 
+import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +101,34 @@ class AssertInventoryExpectationsCommand
 				assertThat(getLatestInventory(inventoryLines).getDescription()).as("Description").isEqualTo(description);
 			}
 		}
+
+		if (expectation.getCount() != null)
+		{
+			final long actualCount = countMatchingInventories(inventoryLines, description);
+			assertThat(actualCount).as(countAssertionLabel(expectation)).isEqualTo((long)expectation.getCount());
+		}
+	}
+
+	/**
+	 * Number of DISTINCT inventory documents referencing the HU, matching {@code description} when given
+	 * (else every one of them). Distinct by {@code M_Inventory_ID} because a single inventory document can
+	 * carry more than one line for the same HU.
+	 */
+	private long countMatchingInventories(@NonNull final List<I_M_InventoryLine> inventoryLines, @Nullable final String description)
+	{
+		return inventoryLines.stream()
+				.map(this::getInventoryOf)
+				.filter(inventory -> description == null || Objects.equals(inventory.getDescription(), description))
+				.map(I_M_Inventory::getM_Inventory_ID)
+				.distinct()
+				.count();
+	}
+
+	private static String countAssertionLabel(@NonNull final JsonInventoryExpectation expectation)
+	{
+		return expectation.getDescription() != null
+				? "Number of inventory documents with description '" + expectation.getDescription() + "'"
+				: "Number of inventory documents";
 	}
 
 	private static String existsAssertionLabel(@NonNull final JsonInventoryExpectation expectation)

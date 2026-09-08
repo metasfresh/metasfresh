@@ -20,7 +20,7 @@ class AssertMovementExpectationsCommand
 {
 	@NonNull private final AssertExpectationsCommandServices services;
 	@NonNull private final MasterdataContext context;
-	@NonNull final Map<String, JsonMovementExpectation> expectations;
+	@NonNull private final Map<String, JsonMovementExpectation> expectations;
 
 	void execute()
 	{
