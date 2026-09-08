@@ -191,8 +191,8 @@ const createPackageAssignedMasterdata = async ({ huQty, orderQty }) => {
  * non-empty. The refusal DOES exist on the write-off path; this is a normal test against it, not a
  * product-gap report.
  *
- * `AD_Message` `de.metas.handlingunits.impl.HUHasPackages` (en_US, verified via read-only psql against
- * task_force_uat :45432): "You can't destroy handling unit {0} because it's still linked to these
+ * `AD_Message` `de.metas.handlingunits.impl.HUHasPackages` (en_US, verified via read-only psql):
+ * "You can't destroy handling unit {0} because it's still linked to these
  * packages: {1}." — `{0}`/`{1}` are substituted with the raw `M_HU_ID`/`M_Package_ID` repo ids (not the
  * QR code or package name), so the test matches the stable, parameter-free portion of the sentence.
  */

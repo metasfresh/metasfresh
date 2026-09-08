@@ -97,6 +97,20 @@ export const GetQuantityDialog = {
         );
     }),
 
+    /**
+     * Presses Done and captures the POST request body it fires (matched by a URL substring) — for
+     * asserting a wire-level field with no visible UI counterpart (e.g.
+     * `issueTo.huWeightGrossBeforeIssue` on the manufacturing issue event).
+     * @returns {Promise<object>} the parsed JSON request body.
+     */
+    clickDoneAndCaptureRequestBody: async ({ urlFragment }) => await test.step(`${NAME} - Press OK (capture request '${urlFragment}')`, async () => {
+        const [request] = await Promise.all([
+            page.waitForRequest((req) => req.url().includes(urlFragment) && req.method() === 'POST'),
+            GetQuantityDialog.clickDone(),
+        ]);
+        return request.postDataJSON();
+    }),
+
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
         await page.getByTestId('cancel-button').tap();
         await GetQuantityDialog.expectComponentsDisabled();
