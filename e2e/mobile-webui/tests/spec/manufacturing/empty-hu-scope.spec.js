@@ -20,6 +20,8 @@ const EMPTIED_REASON = 'E';
 const NOT_FOUND_REASON_CAPTION = 'Not Found';
 const DAMAGED_REASON_CAPTION = 'Damaged';
 
+const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu ${documentNo} geleert`;
+
 /**
  * Same masterdata shape as empty-hu-core.spec.js (same customer, same screen), but with
  * `isAllowEmptyingHUs` parameterized: TC4 needs it off.
@@ -89,10 +91,11 @@ test('TC4: Unticking the offer flag restores today\'s screen', async ({ page }) 
     // Nothing can be booked from this screen: pick "Not Found" (today's pre-existing behaviour, no
     // confirmation prompt involved) and confirm the screen behaves exactly as it does today. A
     // qty-reject reason (existing functionality, unrelated to this feature) already fully consumes
-    // the scanned VHU regardless of the reason picked — no separate inventory booking is involved,
-    // so no `inventories` assertion is needed here (and a bare "an inventory document exists" would
-    // not be discriminating anyway: the masterdata harness itself stocks the HU via its own
-    // completed inventory count — same reasoning as empty-hu-core.spec.js's decline case).
+    // the scanned VHU regardless of the reason picked — no separate inventory booking is involved.
+    // The `inventories` assertion below scopes to the write-off's own description (rather than a bare
+    // "an inventory document exists", which would always be true regardless of a write-off: the
+    // masterdata harness itself stocks the HU via its own completed inventory count — same reasoning
+    // as empty-hu-core.spec.js's decline case) to confirm no write-off inventory was created.
     await GetQuantityDialog.clickQtyNotFoundReason({ reason: QTY_NOT_FOUND_REASON_NOT_FOUND });
     await GetQuantityDialog.clickDone();
 
@@ -104,6 +107,12 @@ test('TC4: Unticking the offer flag restores today\'s screen', async ({ page }) 
             [masterdata.handlingUnits.HU.qrCode]: {
                 huStatus: 'D',
                 storages: { COMP: '0 KGM' },
+            },
+        },
+        inventories: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                isExists: false,
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
             },
         },
     });
