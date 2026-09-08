@@ -20,7 +20,7 @@ import DialogButton from './DialogButton';
 import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
-import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
+import { QTY_REJECTED_REASON_EMPTIED_KEY, QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
 const GetQuantityDialog = ({
@@ -118,6 +118,17 @@ const GetQuantityDialog = ({
     [getConfirmationPromptForQty]
   );
 
+  // "Empty (auto. inventory)" write-off: always confirm before booking, naming the leftover
+  // quantity and its UOM. Declining leaves the operator on this dialog and posts nothing.
+  const getEmptyingConfirmationPrompt = useCallback(() => {
+    if (rejectedReason !== QTY_REJECTED_REASON_EMPTIED_KEY || qtyRejected <= 0) {
+      return null;
+    }
+    return trl('activities.manufacturing.confirmEmptyHUPrompt', {
+      qty: formatQtyToHumanReadableStr({ qty: qtyRejected, uom }),
+    });
+  }, [rejectedReason, qtyRejected, uom]);
+
   const fireOnQtyChange = useCallback(
     (payload) => {
       setProcessing(true);
@@ -155,7 +166,8 @@ const GetQuantityDialog = ({
       };
       uiTrace.putContext(onQtyChangePayload);
 
-      const confirmationPrompt = await getConfirmationPrompt(qtyEnteredAndValidated);
+      const confirmationPrompt =
+        (await getConfirmationPrompt(qtyEnteredAndValidated)) || getEmptyingConfirmationPrompt();
       if (confirmationPrompt) {
         setConfirmationDialogProps({
           promptQuestion: confirmationPrompt,
