@@ -563,8 +563,10 @@ public class NShiftGateway_StepDef
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>UseShippingRules</b> — (optional) expected boolean value (true/false/null-means-unset)<br>
-	 *   <b>ServiceLevel</b>     — (optional) expected service-level string, e.g. "EXPRESS"
+	 *   <b>UseShippingRules</b>   — (optional) expected boolean value (true/false/null-means-unset)<br>
+	 *   <b>ServiceLevel</b>       — (optional) expected service-level string, e.g. "EXPRESS"<br>
+	 *   <b>IsTestMode</b>         — (optional) expected {@code Carrier_Config.IsTestMode} value ("Y"/"N")<br>
+	 *   <b>TestMode_Attention</b> — (optional) expected {@code Carrier_Config.TestMode_Attention} value
 	 * @cucumber.example
 	 * <pre>
 	 * And validate the captured nShift shipment request options:
@@ -615,6 +617,30 @@ public class NShiftGateway_StepDef
 			else
 			{
 				softly.assertThat(actual).as("shipperConfig.ServiceLevel").isEqualTo(expected);
+			}
+		});
+
+		row.getAsOptionalString("IsTestMode").ifPresent(expected -> {
+			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("IsTestMode");
+			if (DataTableUtil.isNullPlaceholder(expected))
+			{
+				softly.assertThat(actual).as("shipperConfig.IsTestMode should be absent").isNull();
+			}
+			else
+			{
+				softly.assertThat(actual).as("shipperConfig.IsTestMode").isEqualTo(expected);
+			}
+		});
+
+		row.getAsOptionalString("TestMode_Attention").ifPresent(expected -> {
+			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("TestMode_Attention");
+			if (DataTableUtil.isNullPlaceholder(expected))
+			{
+				softly.assertThat(actual).as("shipperConfig.TestMode_Attention should be absent").isNull();
+			}
+			else
+			{
+				softly.assertThat(actual).as("shipperConfig.TestMode_Attention").isEqualTo(expected);
 			}
 		});
 
