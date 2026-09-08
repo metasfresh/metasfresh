@@ -8,33 +8,27 @@ import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/Manufa
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
 
-// Value-TYPE coverage for the mfg editable-attributes list: the generic case (receiving_generic_attributes.spec.js)
-// proves a LIST attribute end to end; this file proves the remaining input widgets and apply behaviours on the
-// REAL receive dialog, so the backend cucumber twins (Receive_with_CatchWeight.feature) are no longer needed:
-//   - a NUMBER attribute entered -> produced HU carries the number; left empty -> stays at its default (0);
-//   - a Production Date (producer-managed) entered -> stamped on the produced HU;
-//   - NUMBER + DATE + STRING filled together in one receive -> all three stamped;
-//   - a MANDATORY attribute left empty -> the mfg receive does NOT enforce it, the receive still completes.
-// (The "attribute stamped on every produced HU when a line yields MORE THAN ONE TU" case stays a cucumber
-//  scenario: the mobile receive aggregates the produced qty into a SINGLE HU, so multiple produced TUs are
-//  not reachable through the dialog - only via the backend receipt event.)
+// Value-TYPE coverage for the mfg editable-attributes list on the REAL receive dialog: a NUMBER entered ->
+// carried, left empty -> stays at default (0); a producer-managed Production Date -> stamped; NUMBER + DATE +
+// STRING together -> all three stamped; a MANDATORY attribute left empty -> not enforced, receive completes.
+// These supersede the backend cucumber twins (Receive_with_CatchWeight.feature) EXCEPT the multi-TU case
+// ("attribute stamped on every produced HU when a line yields MORE THAN ONE TU"), which stays cucumber: the
+// mobile receive aggregates the produced qty into a SINGLE HU, so multiple produced TUs are not dialog-reachable.
 //
-// Product attribute set: MaterialReceiptActivityHandler resolves the applicable attribute set from the product's
-// CATEGORY (IProductBL#getAttributeSetId), NOT from M_Product.M_AttributeSet_ID. So this file creates its OWN
-// per-run product category ('mfgCatVT') whose set ('mfgAttrSetVT') carries the attributes, and points every product
-// there - independent of the preloaded standard category, so it works on the vanilla CI DB (fresh-fixture rule).
-//
-// mobileConfig.manufacturing.editableAttributes is a GLOBAL, REPLACE-on-write list; the list below re-includes the
-// seeded Lot-Nummer / HU_BestBeforeDate so a spec that relies on the default pair (receiving_editable_attributes.spec.js)
-// is not left broken if it runs after this one (e2e/mobile-webui/CLAUDE.md "sticky mobileConfig fields").
+// Non-obvious: the applicable attribute set is resolved from the product CATEGORY (IProductBL#getAttributeSetId),
+// NOT from M_Product.M_AttributeSet_ID - so this file creates a per-run category ('mfgCatVT') + set
+// ('mfgAttrSetVT') and points every product at it (self-sufficient on vanilla CI).
 
-// Generic (non producer-managed) attribute codes must be declared on the TU's PI version (the writable
-// M_HU_PI_Attribute slot) for the value to land on the produced HU's own storage - see the PI 'attributes' below.
-const NUMBER_CODE = 'TestWeightGrams';
-const STRING_CODE = 'TestBatchNote';
-const DATE_CODE = 'TestInspectionDate';
-const MANDATORY_CODE = 'TestMandatoryNote';
-const PRODUCTION_DATE_CODE = 'ProductionDate'; // AttributeConstants.ProductionDate - producer-managed, no PI slot needed
+// Masterdata identifiers (the `attributes` map keys). Specs reference attributes by these identifiers
+// everywhere post-response - the screen object and Backend.expect resolve each to its response-reported
+// M_Attribute code (masterdata.attributes.<id>.attributeValue), so no per-run literal Value is hardcoded in a
+// call site or assertion. The literal codes live only request-side: each attribute's `value` (its definition)
+// and the PI writable-slot list, which the backend resolves by literal AttributeCode at request time.
+const NUMBER_ATTR = 'numberAttr';
+const STRING_ATTR = 'stringAttr';
+const DATE_ATTR = 'dateAttr';
+const MANDATORY_ATTR = 'mandatoryAttr';
+const PRODUCTION_DATE_ATTR = 'productionDateAttr';
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -44,42 +38,43 @@ const createMasterdata = async () => {
             productCategories: { 'mfgCatVT': { attributeSetName: 'mfgAttrSetVT' } },
             mobileConfig: {
                 manufacturing: {
+                    // Referenced by identifier - the backend resolves each to its per-run M_Attribute code.
                     editableAttributes: [
-                        'HU_BestBeforeDate', 'Lot-Nummer',
-                        NUMBER_CODE, STRING_CODE, DATE_CODE, PRODUCTION_DATE_CODE, MANDATORY_CODE,
+                        'bestBeforeDateAttr', 'lotNumberAttr',
+                        NUMBER_ATTR, STRING_ATTR, DATE_ATTR, PRODUCTION_DATE_ATTR, MANDATORY_ATTR,
                     ],
                 },
             },
             attributes: {
-                'numberAttr': {
-                    value: NUMBER_CODE, name: 'Test Weight (g)',
-                    attributeValueType: 'NUMBER', isInstanceAttribute: true,
+                [NUMBER_ATTR]: {
+                    value: 'TestWeightGrams', name: 'Test Weight (g)',
+                    attributeValueType: 'NUMBER',
                     attributeSetNames: ['mfgAttrSetVT'],
                 },
-                'stringAttr': {
-                    value: STRING_CODE, name: 'Test Batch Note',
-                    attributeValueType: 'STRING', isInstanceAttribute: true,
+                [STRING_ATTR]: {
+                    value: 'TestBatchNote', name: 'Test Batch Note',
+                    attributeValueType: 'STRING',
                     attributeSetNames: ['mfgAttrSetVT'],
                 },
-                'dateAttr': {
-                    value: DATE_CODE, name: 'Test Inspection Date',
-                    attributeValueType: 'DATE', isInstanceAttribute: true,
+                [DATE_ATTR]: {
+                    value: 'TestInspectionDate', name: 'Test Inspection Date',
+                    attributeValueType: 'DATE',
                     attributeSetNames: ['mfgAttrSetVT'],
                 },
                 // Configured mandatory - the mfg receive must NOT enforce it (v1 attributes are optional).
-                'mandatoryAttr': {
-                    value: MANDATORY_CODE, name: 'Test Mandatory Note',
-                    attributeValueType: 'STRING', isInstanceAttribute: true, isMandatory: true,
+                [MANDATORY_ATTR]: {
+                    value: 'TestMandatoryNote', name: 'Test Mandatory Note',
+                    attributeValueType: 'STRING', isMandatory: true,
                     attributeSetNames: ['mfgAttrSetVT'],
                 },
                 // Production date is a producer-managed standard attribute; upsert (by Value) and link into the set.
-                'productionDateAttr': {
-                    value: PRODUCTION_DATE_CODE, isInstanceAttribute: true,
+                [PRODUCTION_DATE_ATTR]: {
+                    value: 'ProductionDate', // AttributeConstants.ProductionDate - producer-managed, no PI slot needed
                     attributeSetNames: ['mfgAttrSetVT'],
                 },
                 // Re-link the seeded standard attributes so a follower relying on the default pair is not broken.
-                'lotNumberAttr': { value: 'Lot-Nummer', isInstanceAttribute: true, attributeSetNames: ['mfgAttrSetVT'] },
-                'bestBeforeDateAttr': { value: 'HU_BestBeforeDate', isInstanceAttribute: true, attributeSetNames: ['mfgAttrSetVT'] },
+                'lotNumberAttr': { value: 'Lot-Nummer', attributeSetNames: ['mfgAttrSetVT'] },
+                'bestBeforeDateAttr': { value: 'HU_BestBeforeDate', attributeSetNames: ['mfgAttrSetVT'] },
             },
             warehouses: { 'wh': {} },
             products: {
@@ -94,7 +89,10 @@ const createMasterdata = async () => {
                 // value to land on the produced HU. Lot/Best-before/Production-date go via the producer, no slot needed.
                 'PI': {
                     lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'BOM', qtyCUsPerTU: 4,
-                    attributes: [NUMBER_CODE, STRING_CODE, DATE_CODE, MANDATORY_CODE],
+                    // Writable M_HU_PI_Attribute slots - the backend resolves these by literal AttributeCode
+                    // (request-time), so they must be the M_Attribute Values, matching each attribute's `value`
+                    // above. Lot/Best-before/Production-date go via the producer, no slot needed.
+                    attributes: ['TestWeightGrams', 'TestBatchNote', 'TestInspectionDate', 'TestMandatoryNote'],
                 },
             },
             handlingUnits: {
@@ -141,8 +139,8 @@ test('Receive entering a NUMBER attribute — produced HU carries the number', a
 
     await page.getByTestId('receive-qty-button').tap();
     await GetQuantityDialog.waitForDialog();
-    await GetQuantityDialog.expectEditableAttributeVisible(NUMBER_CODE);
-    await GetQuantityDialog.typeEditableAttribute(NUMBER_CODE, '42.5');
+    await GetQuantityDialog.expectEditableAttributeVisible(NUMBER_ATTR);
+    await GetQuantityDialog.typeEditableAttribute(NUMBER_ATTR, '42.5');
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
 
     await ManufacturingJobScreen.complete();
@@ -150,7 +148,7 @@ test('Receive entering a NUMBER attribute — produced HU carries the number', a
     await Backend.expect({
         title: 'Produced HU carries the entered NUMBER attribute',
         manufacturings: { [jobId]: { receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }] } },
-        hus: { 'lu1': { storages: { 'BOM': '4 PCE' }, tus: [{ storages: { 'BOM': '4 PCE' }, attributes: { [NUMBER_CODE]: '42.50' } }] } },
+        hus: { 'lu1': { storages: { 'BOM': '4 PCE' }, tus: [{ storages: { 'BOM': '4 PCE' }, attributes: { [masterdata.attributes[NUMBER_ATTR].attributeValue]: '42.50' } }] } },
     });
 });
 
@@ -165,7 +163,7 @@ test('Receive leaving the NUMBER attribute empty — it stays at its default (0)
     await GetQuantityDialog.waitForDialog();
     // Offered (default-optional) but left empty -> no value is submitted, so the produced HU keeps the
     // NUMBER attribute's default (0) rather than any operator-entered number.
-    await GetQuantityDialog.expectEditableAttributeVisible(NUMBER_CODE);
+    await GetQuantityDialog.expectEditableAttributeVisible(NUMBER_ATTR);
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
 
     await ManufacturingJobScreen.complete();
@@ -173,7 +171,7 @@ test('Receive leaving the NUMBER attribute empty — it stays at its default (0)
     await Backend.expect({
         title: 'Produced HU keeps the NUMBER attribute at its default when left empty',
         manufacturings: { [jobId]: { receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }] } },
-        hus: { 'lu1': { storages: { 'BOM': '4 PCE' }, tus: [{ storages: { 'BOM': '4 PCE' }, attributes: { [NUMBER_CODE]: '0' } }] } },
+        hus: { 'lu1': { storages: { 'BOM': '4 PCE' }, tus: [{ storages: { 'BOM': '4 PCE' }, attributes: { [masterdata.attributes[NUMBER_ATTR].attributeValue]: '0' } }] } },
     });
 });
 
@@ -186,8 +184,8 @@ test('Receive entering a Production Date — producer-managed attribute stamped 
 
     await page.getByTestId('receive-qty-button').tap();
     await GetQuantityDialog.waitForDialog();
-    await GetQuantityDialog.expectEditableAttributeVisible(PRODUCTION_DATE_CODE);
-    await GetQuantityDialog.typeEditableAttributeDate(PRODUCTION_DATE_CODE, '15.06.2025');
+    await GetQuantityDialog.expectEditableAttributeVisible(PRODUCTION_DATE_ATTR);
+    await GetQuantityDialog.typeEditableAttributeDate(PRODUCTION_DATE_ATTR, '15.06.2025');
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
 
     await ManufacturingJobScreen.complete();
@@ -195,7 +193,7 @@ test('Receive entering a Production Date — producer-managed attribute stamped 
     await Backend.expect({
         title: 'Produced HU carries the entered Production Date',
         manufacturings: { [jobId]: { receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }] } },
-        hus: { 'lu1': { storages: { 'BOM': '4 PCE' }, attributes: { [PRODUCTION_DATE_CODE]: '2025-06-15' } } },
+        hus: { 'lu1': { storages: { 'BOM': '4 PCE' }, attributes: { [masterdata.attributes[PRODUCTION_DATE_ATTR].attributeValue]: '2025-06-15' } } },
     });
 });
 
@@ -208,9 +206,9 @@ test('Receive filling NUMBER + DATE + STRING attributes together — all three s
 
     await page.getByTestId('receive-qty-button').tap();
     await GetQuantityDialog.waitForDialog();
-    await GetQuantityDialog.typeEditableAttribute(NUMBER_CODE, '42.5');
-    await GetQuantityDialog.typeEditableAttributeDate(DATE_CODE, '20.08.2025');
-    await GetQuantityDialog.typeEditableAttribute(STRING_CODE, 'Fragile');
+    await GetQuantityDialog.typeEditableAttribute(NUMBER_ATTR, '42.5');
+    await GetQuantityDialog.typeEditableAttributeDate(DATE_ATTR, '20.08.2025');
+    await GetQuantityDialog.typeEditableAttribute(STRING_ATTR, 'Fragile');
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
 
     await ManufacturingJobScreen.complete();
@@ -221,7 +219,7 @@ test('Receive filling NUMBER + DATE + STRING attributes together — all three s
         hus: {
             'lu1': {
                 storages: { 'BOM': '4 PCE' },
-                tus: [{ storages: { 'BOM': '4 PCE' }, attributes: { [NUMBER_CODE]: '42.50', [DATE_CODE]: '2025-08-20', [STRING_CODE]: 'Fragile' } }],
+                tus: [{ storages: { 'BOM': '4 PCE' }, attributes: { [masterdata.attributes[NUMBER_ATTR].attributeValue]: '42.50', [masterdata.attributes[DATE_ATTR].attributeValue]: '2025-08-20', [masterdata.attributes[STRING_ATTR].attributeValue]: 'Fragile' } }],
             },
         },
     });
@@ -238,7 +236,7 @@ test('Receive with a MANDATORY attribute left empty — the mfg receive does not
     await GetQuantityDialog.waitForDialog();
     // The attribute is configured mandatory, but the mfg receive treats v1 attributes as optional:
     // leaving it empty must NOT block the receive (no error), and the HU is produced.
-    await GetQuantityDialog.expectEditableAttributeVisible(MANDATORY_CODE);
+    await GetQuantityDialog.expectEditableAttributeVisible(MANDATORY_ATTR);
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
 
     await ManufacturingJobScreen.complete();
@@ -246,6 +244,6 @@ test('Receive with a MANDATORY attribute left empty — the mfg receive does not
     await Backend.expect({
         title: 'Receive completes with the mandatory attribute left empty; HU produced without it',
         manufacturings: { [jobId]: { receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }] } },
-        hus: { 'lu1': { storages: { 'BOM': '4 PCE' }, tus: [{ storages: { 'BOM': '4 PCE' }, attributes: { [MANDATORY_CODE]: null } }] } },
+        hus: { 'lu1': { storages: { 'BOM': '4 PCE' }, tus: [{ storages: { 'BOM': '4 PCE' }, attributes: { [masterdata.attributes[MANDATORY_ATTR].attributeValue]: null } }] } },
     });
 });

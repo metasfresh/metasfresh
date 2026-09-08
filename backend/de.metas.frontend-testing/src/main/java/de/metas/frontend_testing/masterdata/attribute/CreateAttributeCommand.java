@@ -84,9 +84,13 @@ public class CreateAttributeCommand
 		{
 			record.setIsStorageRelevant(request.getIsStorageRelevant());
 		}
-		if (request.getIsInstanceAttribute() != null)
+		// Only set on a NEW record (defaulting to true) or when explicitly requested - mirroring the
+		// attributeValueType guard above. A new attribute defaults to an instance attribute so it is offered
+		// by the mobile Manufacturing receive's generic editable-attribute list; upserting an existing
+		// attribute with the flag omitted must NOT silently reset it.
+		if (existing == null || request.getIsInstanceAttribute() != null)
 		{
-			record.setIsInstanceAttribute(request.getIsInstanceAttribute());
+			record.setIsInstanceAttribute(request.getIsInstanceAttribute() != null ? request.getIsInstanceAttribute() : true);
 		}
 
 		InterfaceWrapperHelper.saveRecord(record);

@@ -104,13 +104,10 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | genericAttr        |
 
 
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
   @from:cucumber
   @Id:S31771
   Scenario: Receive HUs with catch weight, BestBeforeDate & LotNumber
+    ## KEEP-cucumber: exercises the DEDICATED CatchWeight/BestBeforeDate/LotNo ReceiveFrom REST fields (backward-compat for non-mobile callers) — the mobile UI only submits via the generic map, so Playwright cannot drive this path.
     And metasfresh contains PP_Product_BOM
       | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
       | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |
@@ -161,23 +158,10 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | Produced_LU | HU_BestBeforeDate    |             | 2025-03-03 |         |
       | Produced_LU | Lot-Nummer           |             |            | LotNo_1 |
 
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
   @from:cucumber
   @Id:S31771
   Scenario: A typed lot number from the mobile receipt event suppresses the BOM's lot-number sequence
-    ## The BOM has a LotNo_Sequence_ID configured, but the mobile receipt event carries its own typed Lot.
-    ## The typed Lot arrives through the GENERIC attributes map - exactly how the real mobile frontend now
-    ## submits it (it dropped the dedicated LotNo field in favour of the generic editable-attributes section).
-    ## ReceiveGoodsCommand must route the Lot-Nummer value out of that map to the IPPOrderReceiptHUProducer
-    ## setter, so AbstractPPOrderReceiptHUProducer stamps the typed value directly and never touches the
-    ## sequence (updateReceivedHUs consults the sequence only in the `else` branch, i.e. when no typed
-    ## lotNumber was provided). Guard: the produced HU carries the typed lot, and the sequence's CurrentNext
-    ## stays UNCONSUMED. Without that routing the map value bypasses the producer, so the auto-lot gate fires
-    ## and consumes the sequence (CurrentNext advances) even though an explicit Lot was typed - the regression
-    ## this scenario pins.
+    ## KEEP-cucumber: asserts AD_Sequence.CurrentNext stays UNCONSUMED when a Lot is typed — a DB counter with no UI surface.
     And metasfresh contains AD_Sequence:
       | AD_Sequence_ID.Identifier | Name                      | OPT.StartNo |
       | typedLotSequence          | TestTypedLotSuppressedSeq | 1000001     |
@@ -216,8 +200,7 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
       | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
 
-    ## Lot-Nummer is a standard attribute (not created in this feature's Background), so load it into the
-    ## step-def data to reference it by identifier in the generic Attribute column.
+    ## Load standard attribute Lot-Nummer so it can be referenced by identifier in the generic Attribute column.
     And load M_Attribute:
       | M_Attribute_ID.Identifier | Value      |
       | lotNumberAttr             | Lot-Nummer |
@@ -242,20 +225,10 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | AD_Sequence_ID.Identifier | CurrentNext |
       | typedLotSequence          | 1000001     |
 
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
   @from:cucumber
   @Id:S31771
   Scenario: A blank lot number at the mobile receipt event lets the BOM's lot-number sequence fire (auto-lot)
-    ## The other half of AC6 (F8041): with a LotNo_Sequence_ID configured and NO Lot submitted at all, the
-    ## producer's auto-lot gate fires - it draws the next value from the sequence, stamps it on the produced
-    ## HU, and advances CurrentNext. A plain AD_Sequence (no CustomSequenceNoProvider) hands out its counter
-    ## verbatim (see pporder/lotNumberSequenceProvider.feature), so StartNo=1000001 -> Lot "1000001" and
-    ## CurrentNext -> 1000002. This regression guard must stay green regardless of the producer-routing fix:
-    ## that fix only stops a TYPED lot (via the generic map) from bypassing the producer; it must not disturb
-    ## the blank-lot auto-lot path.
+    ## KEEP-cucumber: asserts the auto-lot AD_Sequence.CurrentNext actually ADVANCES when no Lot is submitted — a DB counter, not visible in the UI.
     And metasfresh contains AD_Sequence:
       | AD_Sequence_ID.Identifier | Name                    | OPT.StartNo |
       | autoLotSequence           | TestAutoLotFiresSeq     | 1000001     |
@@ -316,13 +289,10 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | AD_Sequence_ID.Identifier | CurrentNext |
       | autoLotSequence           | 1000002     |
 
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
   @from:cucumber
   @Id:S31771
   Scenario: A receive line producing more than one HU stamps the generic attribute on every produced HU
+    ## KEEP-cucumber: a receive line producing multiple HUs is only reachable via the raw receipt event — the mobile dialog always aggregates to a single HU.
     And metasfresh contains PP_Product_BOM
       | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
       | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |
@@ -359,8 +329,7 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | ReceiveFrom | TU        | genericAttr | 7.5             | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
     And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
-    ## (I_PP_Order_Qty carries one row per produced HU here, so the single-row "validate I_PP_Order_Qty"
-    ## step doesn't apply to a multi-HU line - the produced-HU count + stamped value are asserted below.)
+    ## Multi-HU line: I_PP_Order_Qty has one row per HU, so the single-row validate step is skipped; count + stamped value asserted below.
     And load manufactured HUs for PP_Order:
       | PP_Order_ID        | M_HU_ID                     |
       | manufacturingOrder | Produced_TU_1,Produced_TU_2 |
@@ -370,17 +339,10 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | Produced_TU_1 | GenericTestAttr      | 7.5         |
       | Produced_TU_2 | GenericTestAttr      | 7.5         |
 
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
   @from:cucumber
   @Id:S31771
   Scenario: A Lot submitted in both the dedicated field and the generic map is rejected
-    ## Fail-loud dual-channel guard: the generic map is the mobile frontend's channel; the dedicated
-    ## ReceiveFrom.lotNo field is only a backwards-compatible fallback for non-mobile callers. Submitting the SAME
-    ## code (Lot-Nummer) through BOTH channels with non-blank values is an ambiguous request, so the receive is now
-    ## rejected (HTTP 422) BEFORE any HU is written, instead of silently letting the map value win.
+    ## KEEP-cucumber: the dual-channel payload (dedicated field + generic map, same code) is REST-only — the mobile UI never submits both, so this 422 guard is unreachable via Playwright.
     And metasfresh contains PP_Product_BOM
       | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
       | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |
@@ -411,24 +373,16 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
       | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
 
-    ## Both the dedicated LotNo field (DedicatedLot) and a generic Lot-Nummer map entry (MapLot) carry the same
-    ## code with non-blank values - the conflicting dual-channel submission the guard rejects.
+    ## Dedicated LotNo (DedicatedLot) + generic Lot-Nummer map entry (MapLot): same code, both non-blank — the conflict the guard rejects.
     And create JsonManufacturingOrderEvent and store it in context as request payload:
       | Event       | LotNo        | Attribute     | AttributeValue | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
       | ReceiveFrom | DedicatedLot | lotNumberAttr | MapLot         | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
     Then the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '422' status code
 
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
   @from:cucumber
   @Id:S31771
   Scenario: A Best-before date submitted in both the dedicated field and the generic map is rejected
-    ## Same fail-loud dual-channel guard as the Lot scenario, for the HU_BestBeforeDate producer-managed code:
-    ## the generic map is the mobile frontend's channel and the dedicated ReceiveFrom.bestBeforeDate field is only
-    ## a backwards-compatible fallback for non-mobile callers. Submitting the same code through BOTH channels with
-    ## non-blank values is rejected (HTTP 422) before any HU is written.
+    ## KEEP-cucumber: dual-channel HU_BestBeforeDate (dedicated field + generic map) is REST-only — the mobile UI never submits both; 422 guard unreachable via Playwright.
     And metasfresh contains PP_Product_BOM
       | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
       | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |
@@ -459,24 +413,16 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
       | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
 
-    ## Both the dedicated BestBeforeDate field (2025-03-03) and a generic HU_BestBeforeDate map entry (2025-09-09)
-    ## carry the same code with non-blank values - the conflicting dual-channel submission the guard rejects.
+    ## Dedicated BestBeforeDate (2025-03-03) + generic HU_BestBeforeDate map entry (2025-09-09): same code, both non-blank — the conflict the guard rejects.
     And create JsonManufacturingOrderEvent and store it in context as request payload:
       | Event       | BestBeforeDate | Attribute          | AttributeValue | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
       | ReceiveFrom | 2025-03-03     | bestBeforeDateAttr | 2025-09-09     | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
     Then the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '422' status code
 
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
   @from:cucumber
   @Id:S31771
   Scenario: A Production date submitted in both the dedicated field and the generic map is rejected
-    ## Same fail-loud dual-channel guard as the Lot scenario, for the ProductionDate producer-managed code: the
-    ## generic map is the mobile frontend's channel and the dedicated ReceiveFrom.productionDate field is only a
-    ## backwards-compatible fallback for non-mobile callers. Submitting the same code through BOTH channels with
-    ## non-blank values is rejected (HTTP 422) before any HU is written.
+    ## KEEP-cucumber: dual-channel ProductionDate (dedicated field + generic map) is REST-only — the mobile UI never submits both; 422 guard unreachable via Playwright.
     And metasfresh contains PP_Product_BOM
       | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
       | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |
@@ -507,24 +453,16 @@ Feature: mobileUI Manufacturing - Receive finished goods with catch weight, Lot/
       | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
       | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
 
-    ## Both the dedicated ProductionDate field (2025-01-10) and a generic ProductionDate map entry (2025-11-20)
-    ## carry the same code with non-blank values - the conflicting dual-channel submission the guard rejects.
+    ## Dedicated ProductionDate (2025-01-10) + generic ProductionDate map entry (2025-11-20): same code, both non-blank — the conflict the guard rejects.
     And create JsonManufacturingOrderEvent and store it in context as request payload:
       | Event       | ReceiveTo | ProductionDate | Attribute          | AttributeValue | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
       | ReceiveFrom | TU        | 2025-01-10     | productionDateAttr | 2025-11-20     | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
     Then the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '422' status code
 
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
-# ######################################################################################################################
   @from:cucumber
   @Id:S31771
   Scenario: A generic attribute not in the configured editable list is rejected
-    ## Fail-loud allow-list guard: notEditableAttr is an instance attribute of the finished good's attribute set
-    ## (see Background) but is deliberately NOT in the MobileUI_MFG_Config editable list, so it is not on the
-    ## editable allow-list. Submitting it through the generic map must be rejected (HTTP 422) BEFORE any HU is
-    ## written - a code the mobile UI never offers is never silently accepted at receipt.
+    ## KEEP-cucumber: the backend 422 reject of a not-editable attribute is REST-only — the mobile UI never offers a non-configured attribute (Playwright proves non-render separately).
     And metasfresh contains PP_Product_BOM
       | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
       | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |

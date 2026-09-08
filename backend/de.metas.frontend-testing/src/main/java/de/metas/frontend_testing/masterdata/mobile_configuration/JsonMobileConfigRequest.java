@@ -135,10 +135,15 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean isAllowReceiveWithoutPackingItem;
 
 		/**
-		 * Ordered list of {@code M_Attribute.Value} codes to configure as the mfg editable-attribute list
+		 * Ordered list of attributes to configure as the mfg editable-attribute list
 		 * (global-only, v1 - see {@code de.metas.manufacturing.config.MobileUIManufacturingConfig#getEditableAttributeCodesInOrder()}).
 		 * When present (an empty list included), REPLACES the current global list; {@code null} leaves it untouched.
-		 * Each attribute must already exist (e.g. via the {@code attributes} masterdata section).
+		 * <p>
+		 * Each entry is resolved FIRST as a masterdata identifier (a map-key of an attribute created earlier in
+		 * the same request, e.g. via the {@code attributes} section - whose unique per-run {@code Value} differs
+		 * from that identifier); only when no such identifier is registered is the entry treated as a literal
+		 * {@code M_Attribute.Value} code (backward compatibility with pre-existing/seeded codes, e.g. {@code Lot-Nummer}).
+		 * Either way the attribute must already exist.
 		 */
 		@Nullable List<AttributeCode> editableAttributes;
 	}

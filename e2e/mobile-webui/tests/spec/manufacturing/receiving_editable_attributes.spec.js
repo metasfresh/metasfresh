@@ -6,6 +6,7 @@ import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScre
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
 import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
+import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
 
 // Lot + Best-Before editability on the mobile Produktion receive dialog is ON by default,
 // so the dialog offers both inputs without any config override (empty mobileConfig) - this spec
@@ -19,7 +20,9 @@ import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/rec
 // every product at that category - independent of the preloaded standard category, so it works on the
 // vanilla CI DB (fresh-fixture rule) as well as any local dump. (Earlier this spec relied on the seeded
 // Lot/Best-before links on the standard category's set, which differs on CI's vanilla DB - inert there.)
-const createMasterdata = async () => {
+// withCatchWeight gives the finished good a catch UOM (PCE->KGM), so the receive dialog also offers the
+// catch-weight field alongside the default-on Lot / Best-Before editable attributes.
+const createMasterdata = async ({ withCatchWeight = false } = {}) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -34,12 +37,10 @@ const createMasterdata = async () => {
                 // that carries Lot / Best-before, independent of the seeded standard category.
                 'lotNumberAttr': {
                     value: 'Lot-Nummer',
-                    isInstanceAttribute: true,
                     attributeSetNames: ['mfgAttrSet'],
                 },
                 'bestBeforeDateAttr': {
                     value: 'HU_BestBeforeDate',
-                    isInstanceAttribute: true,
                     attributeSetNames: ['mfgAttrSet'],
                 },
             },
@@ -49,6 +50,9 @@ const createMasterdata = async () => {
                 'BOM': {
                     productCategory: 'mfgCat',
                     bom: { lines: [{ product: 'COMP1', qty: 1 }] },
+                    ...(withCatchWeight
+                        ? { uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }] }
+                        : {}),
                 },
             },
             packingInstructions: {
@@ -160,6 +164,66 @@ test('Receive finished goods leaving Lot + Best-Before empty — no attribute is
                 attributes: {
                     'Lot-Nummer': null,
                     'HU_BestBeforeDate': null,
+                },
+            },
+        },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Receive finished goods with catch weight + Lot + Best-Before — produced HU carries all three', async ({ page }) => {
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');
+    allure.story('Editable Lot / Best-Before on the receive dialog');
+    allure.severity('critical');
+
+    // Catch-weight product: the receive dialog offers the catch-weight field next to the default-on
+    // Lot / Best-Before attributes, so one manual receive captures all three together. This closes the
+    // coverage gap left by the cucumber "Receive HUs with catch weight, BestBefore & LotNumber" scenario.
+    const masterdata = await createMasterdata({ withCatchWeight: true });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('mfg');
+    await ManufacturingJobsListScreen.waitForScreen();
+    const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    // Receive into a single new TU (qtyCUsPerTU 4) so the entered catch weight lands cleanly on one HU.
+    await MaterialReceiptLineScreen.selectNewTUTarget({ tuPIItemProductTestId: masterdata.packingInstructions.PI.tuPIItemProductTestId });
+
+    const lotNo = `LOT-${Date.now()}`;
+
+    // With catch weight the dialog opens in weigh/scan mode; the operator switches to manual to key the
+    // qty, so the catch-weight field + the Lot / Best-Before editable attributes render after that switch.
+    await page.getByTestId('receive-qty-button').tap();
+    await GetQuantityDialog.waitForDialog();
+    await GetQuantityDialog.clickManual();
+    await GetQuantityDialog.expectCatchWeightVisible();
+    await GetQuantityDialog.expectEditableAttributeVisible('lotNumberAttr');
+    await GetQuantityDialog.expectEditableAttributeVisible('bestBeforeDateAttr');
+    await GetQuantityDialog.typeEditableAttribute('lotNumberAttr', lotNo);
+    await GetQuantityDialog.typeEditableAttributeDate('bestBeforeDateAttr', '23.11.2031');
+    await GetQuantityDialog.fillAndPressDone({ qtyEntered: '4', catchWeight: 0.400 });
+    await ManufacturingJobScreen.waitForScreen();
+
+    await ManufacturingJobScreen.complete();
+
+    await Backend.expect({
+        title: 'Produced HU carries catch weight, Lot and Best-Before together',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ tu: 'tu1', qty: '4 PCE' }],
+            },
+        },
+        hus: {
+            'tu1': {
+                storages: { 'BOM': '4 PCE' },
+                attributes: {
+                    'WeightNet': '0.400',
+                    [masterdata.attributes.lotNumberAttr.attributeValue]: lotNo,
+                    [masterdata.attributes.bestBeforeDateAttr.attributeValue]: '2031-11-23',
                 },
             },
         },

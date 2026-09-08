@@ -1,4 +1,4 @@
-import { test } from "../../../../playwright.config";
+import { test, testContext } from "../../../../playwright.config";
 import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, BARCODE_HOOK_FLUSH_MS } from "../../common";
 import { expect } from "@playwright/test";
 import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
@@ -68,32 +68,40 @@ export const GetQuantityDialog = {
     // Generic editable-attributes section (EditableAttributesSection). Used by the mfg receive dialog,
     // where Lot / Best-before / any configured attribute render as attr-<code>-field inside
     // editable-attributes-section - NOT via the picking-only dedicated lotNo/bestBeforeDate rows above.
-    // <code> is the raw M_Attribute code (e.g. 'Lot-Nummer', 'HU_BestBeforeDate').
+    //
+    // Every method below accepts EITHER a raw M_Attribute code (e.g. a well-known system attribute like
+    // 'Lot-Nummer' / 'HU_BestBeforeDate') OR a masterdata identifier (a createMasterdata `attributes`
+    // map-key, e.g. 'sizeAttr'). A known identifier resolves to its response-reported per-run code
+    // (masterdata.attributes.<id>.attributeValue); anything else falls back to the raw code. This is the
+    // single resolution point, so specs reference attributes by identifier and never hardcode a per-run
+    // Value string. See resolveAttributeCode() at the bottom of this file.
     // ---------------------------------------------------------------------------------------------
-    expectEditableAttributeVisible: async (code) => await test.step(`${NAME} - Expect editable attribute '${code}' visible`, async () => {
+    expectEditableAttributeVisible: async (codeOrIdentifier) => await test.step(`${NAME} - Expect editable attribute '${codeOrIdentifier}' visible`, async () => {
+        const code = resolveAttributeCode(codeOrIdentifier);
         await expect(page.getByTestId(`attr-${code}-field`)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    expectEditableAttributeNotVisible: async (code) => await test.step(`${NAME} - Expect editable attribute '${code}' not visible`, async () => {
+    expectEditableAttributeNotVisible: async (codeOrIdentifier) => await test.step(`${NAME} - Expect editable attribute '${codeOrIdentifier}' not visible`, async () => {
+        const code = resolveAttributeCode(codeOrIdentifier);
         await expect(page.getByTestId(`attr-${code}-field`)).not.toBeVisible();
     }),
 
-    typeEditableAttribute: async (code, value) => await test.step(`${NAME} - Type editable attribute '${code}' = '${value}'`, async () => {
-        const field = page.getByTestId(`attr-${code}-field`);
+    typeEditableAttribute: async (codeOrIdentifier, value) => await test.step(`${NAME} - Type editable attribute '${codeOrIdentifier}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
         await clickAndType(field, value);
     }),
 
     // Date-type editable attribute (renders the DateInput component). Same DD.MM.YYYY display-format
     // contract as the dedicated best-before field; fill() sets the whole value in one event.
-    typeEditableAttributeDate: async (code, value) => await test.step(`${NAME} - Type editable date attribute '${code}' = '${value}'`, async () => {
-        const field = page.getByTestId(`attr-${code}-field`);
+    typeEditableAttributeDate: async (codeOrIdentifier, value) => await test.step(`${NAME} - Type editable date attribute '${codeOrIdentifier}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
         await field.tap();
         await field.fill(value);
     }),
 
     // LIST-type editable attribute (renders a native <select>). `value` is the M_AttributeValue.Value code.
-    selectEditableAttribute: async (code, value) => await test.step(`${NAME} - Select editable attribute '${code}' = '${value}'`, async () => {
-        const field = page.getByTestId(`attr-${code}-field`);
+    selectEditableAttribute: async (codeOrIdentifier, value) => await test.step(`${NAME} - Select editable attribute '${codeOrIdentifier}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
         await field.selectOption(value);
     }),
 
@@ -106,12 +114,14 @@ export const GetQuantityDialog = {
     }),
 
     // Asserts the rendered order of the editable-attributes section's rows (attr-<code>-row) equals the
-    // given attribute-code order — proves SeqNo (config order), not e.g. alphabetical, drives field order.
-    expectEditableAttributesOrder: async (codesInOrder) => await test.step(`${NAME} - Expect editable attributes in order '${codesInOrder.join(', ')}'`, async () => {
+    // given order — proves SeqNo (config order), not e.g. alphabetical, drives field order. Each entry may
+    // be a raw code or a masterdata identifier (resolved to its per-run code, same as the methods above).
+    expectEditableAttributesOrder: async (codesOrIdentifiersInOrder) => await test.step(`${NAME} - Expect editable attributes in order '${codesOrIdentifiersInOrder.join(', ')}'`, async () => {
+        const expectedCodes = codesOrIdentifiersInOrder.map(resolveAttributeCode);
         const rows = page.locator('[data-testid="editable-attributes-section"] [data-testid$="-row"]');
         const actualTestIds = await rows.evaluateAll((elements) => elements.map((el) => el.getAttribute('data-testid')));
         const actualCodes = actualTestIds.map((testId) => testId.replace(/^attr-/, '').replace(/-row$/, ''));
-        expect(actualCodes).toEqual(codesInOrder);
+        expect(actualCodes).toEqual(expectedCodes);
     }),
 
     expectSerialNoScanButtonVisible: async () => await test.step(`${NAME} - Expect SerialNo scan button visible`, async () => {
@@ -350,6 +360,13 @@ export const GetQuantityDialog = {
 //
 //
 //
+
+// Resolves a code-or-identifier to the actual M_Attribute code used in the attr-<code>-field testId.
+// A masterdata identifier (a createMasterdata `attributes` map-key registered in the last response)
+// resolves to its per-run Value (masterdata.attributes.<id>.attributeValue); anything else - notably a
+// well-known system code such as 'Lot-Nummer' or 'HU_BestBeforeDate' - is returned unchanged.
+const resolveAttributeCode = (codeOrIdentifier) =>
+    testContext.lastMasterdata?.attributes?.[codeOrIdentifier]?.attributeValue ?? codeOrIdentifier;
 
 const expectMissingOrDisabled = async (locator) => {
     // Element should either not exist (dialog already closed) or be disabled (dialog closing).

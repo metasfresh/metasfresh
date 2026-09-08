@@ -8,23 +8,13 @@ import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/Manufa
 import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
 
-// The mfg editable-attribute list generalizes beyond the fixed Lot/Best-before pair to ANY configured
-// M_Attribute (string/number/date/LIST). This spec proves the generic case end to end via a "size (cm)"
-// LIST attribute: configure + select + produced HU carries it (a not-configured attribute is not shown;
-// a co-product line offers the same configured attribute too; field order follows the config's order).
+// Generic mfg editable attributes (ANY configured M_Attribute, not just Lot/Best-before), proven via a
+// "size (cm)" LIST attribute: configure + select -> produced HU carries it; a not-configured attribute is
+// not shown; a co-product line offers it too; field order follows the config's order.
 //
-// Product attribute set: MaterialReceiptActivityHandler resolves the applicable attribute set from the
-// product's CATEGORY (IProductBL#getAttributeSetId(I_M_Product) - "take it from the product category,
-// never from the product itself"), NOT from M_Product.M_AttributeSet_ID (the `attributeSetName` request
-// field - that one only feeds IProductBL#getMasterDataSchemaAttributeSetId, a different consumer). So this
-// spec creates its OWN per-run product category ('mfgCat') whose attribute set ('mfgAttrSet') carries the
-// attributes, and points every product at that category - independent of the preloaded standard category,
-// so it works on the vanilla CI DB (fresh-fixture rule) as well as any local dump.
-//
-// mobileConfig.manufacturing.editableAttributes is a GLOBAL, REPLACE-on-write list (no per-test scoping) -
-// every attribute a test product may need across the WHOLE suite must be included here, or a spec that
-// relies on the seeded Lot-Nummer/HU_BestBeforeDate default (e.g. receiving_editable_attributes.spec.js)
-// breaks when it runs after this one (e2e/mobile-webui/CLAUDE.md "sticky mobileConfig fields").
+// Non-obvious: the applicable attribute set is resolved from the product CATEGORY
+// (IProductBL#getAttributeSetId), NOT from M_Product.M_AttributeSet_ID - so this spec creates a per-run
+// category ('mfgCat') + set ('mfgAttrSet') and points every product at it (self-sufficient on vanilla CI).
 
 // One shared masterdata builder for every test in this file (e2e/CLAUDE.md "shared createMasterdata" rule).
 const createMasterdata = async () => {
@@ -37,12 +27,14 @@ const createMasterdata = async () => {
             productCategories: { 'mfgCat': { attributeSetName: 'mfgAttrSet' } },
             mobileConfig: {
                 manufacturing: {
-                    // Ordered list of M_Attribute.Value codes (NOT the `attributes` map keys below).
+                    // Ordered list of masterdata attribute IDENTIFIERS (the `attributes` map keys below),
+                    // so this spec exercises MobileConfigManufacturingCommand.resolveEditableAttributeCodes'
+                    // identifier-first resolution (each key resolves to its M_Attribute.Value code).
                     // Order deliberately does NOT match alphabetical/pairing order, so the rendered field
                     // order proves it follows THIS list (SeqNo), not some other ordering.
-                    // 'TestNotConfiguredCM' is deliberately excluded - present on the attribute set
+                    // 'notConfiguredAttr' is deliberately excluded - present on the attribute set
                     // (isInstanceAttribute) but NOT configured as editable.
-                    editableAttributes: ['HU_BestBeforeDate', 'TestSizeCM', 'Lot-Nummer'],
+                    editableAttributes: ['bestBeforeDateAttr', 'sizeAttr', 'lotNumberAttr'],
                 },
             },
             attributes: {
@@ -51,7 +43,6 @@ const createMasterdata = async () => {
                     value: 'TestSizeCM',
                     name: 'Size (cm)',
                     attributeValueType: 'LIST',
-                    isInstanceAttribute: true,
                     listValues: [
                         { value: 'S', name: 'Small' },
                         { value: 'M', name: 'Medium' },
@@ -65,20 +56,17 @@ const createMasterdata = async () => {
                     value: 'TestNotConfiguredCM',
                     name: 'Not Configured Attr',
                     attributeValueType: 'STRING',
-                    isInstanceAttribute: true,
                     attributeSetNames: ['mfgAttrSet'],
                 },
                 // Upserts (by Value) the two pre-existing standard attributes and (re-)links them into the
-                // shared test attribute set - see the file-level comment. Without this, any spec run AFTER
-                // this one that relies on the seeded Lot/Best-before default would find them unconfigured.
+                // shared test attribute set. Without this, any spec run AFTER this one that relies on the
+                // seeded Lot/Best-before default would find them unconfigured.
                 'lotNumberAttr': {
                     value: 'Lot-Nummer',
-                    isInstanceAttribute: true,
                     attributeSetNames: ['mfgAttrSet'],
                 },
                 'bestBeforeDateAttr': {
                     value: 'HU_BestBeforeDate',
-                    isInstanceAttribute: true,
                     attributeSetNames: ['mfgAttrSet'],
                 },
             },
@@ -173,16 +161,18 @@ test('Receive selecting a LIST attribute — produced HU carries it; not-configu
 
     // Field order follows the config's given order (HU_BestBeforeDate, TestSizeCM, Lot-Nummer) - not
     // alphabetical, not the Lot-then-BestBefore pairing - proving SeqNo (the config's order) drives it.
+    // Attributes are referenced by their masterdata identifier; the screen object resolves each to its
+    // per-run code.
     await GetQuantityDialog.expectEditableAttributesSectionVisible();
-    await GetQuantityDialog.expectEditableAttributeVisible('TestSizeCM');
+    await GetQuantityDialog.expectEditableAttributeVisible('sizeAttr');
 
     // An attribute on the attribute set but NOT in the mfg config's editableAttributes list must not be
     // offered at all.
-    await GetQuantityDialog.expectEditableAttributeNotVisible('TestNotConfiguredCM');
-    await GetQuantityDialog.expectEditableAttributesOrder(['HU_BestBeforeDate', 'TestSizeCM', 'Lot-Nummer']);
+    await GetQuantityDialog.expectEditableAttributeNotVisible('notConfiguredAttr');
+    await GetQuantityDialog.expectEditableAttributesOrder(['bestBeforeDateAttr', 'sizeAttr', 'lotNumberAttr']);
 
     // Select the LIST value and complete the receive.
-    await GetQuantityDialog.selectEditableAttribute('TestSizeCM', 'M');
+    await GetQuantityDialog.selectEditableAttribute('sizeAttr', 'M');
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
 
     await ManufacturingJobScreen.complete();
@@ -200,7 +190,7 @@ test('Receive selecting a LIST attribute — produced HU carries it; not-configu
                 tus: [
                     {
                         storages: { 'BOM': '4 PCE' },
-                        attributes: { 'TestSizeCM': 'M' },
+                        attributes: { [masterdata.attributes.sizeAttr.attributeValue]: 'M' },
                     },
                 ],
             },
@@ -231,5 +221,5 @@ test('A co-product receive line also offers the configured attribute', async ({ 
 
     await page.getByTestId('receive-qty-button').tap();
     await GetQuantityDialog.waitForDialog();
-    await GetQuantityDialog.expectEditableAttributeVisible('TestSizeCM');
+    await GetQuantityDialog.expectEditableAttributeVisible('sizeAttr');
 });
