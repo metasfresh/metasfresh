@@ -17,6 +17,8 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/s
 
 const EMPTIED_REASON = 'E';
 
+const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu ${documentNo} geleert`;
+
 const startIssueStep = async (masterdata) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -227,7 +229,7 @@ const createPackingMaterialMasterdata = async ({ huQty, orderQty }) => {
                 manufacturing: { isAllowEmptyingHUs: true, isConfirmEmptyingHU: false },
             },
             uoms: { KGM: { precision: 5 } },
-            warehouses: { WHSTD: { existing: 'standard' } },
+            warehouses: { WHSTD: { existing: 'standard' }, WHEMPTIES: { existing: 'empties' } },
             products: {
                 COMP: { uom: 'KGM' },
                 PM: { uom: 'KGM' },
@@ -262,34 +264,33 @@ test('TC11: with packing material and a network line, the packaging is returned'
     await RawMaterialIssueLineScreen.goBack();
 
     // Expect: the HU's quantity is zero and its HUStatus is closed (Destroyed) — AC21's "standard
-    // behaviour" outcome. NOT asserted: a write-off inventory carrying the `emptiedHUInventoryDescription`
-    // message. Traced + confirmed via read-only psql (dev-time only, never part of this committed spec):
-    // unlike the plain-VHU core case (TC1), a TU produced via packing instructions is fully drained by
-    // the ordinary physical-issue step itself (`PPOrderIssueScheduleService.process`'s `HUsToNewCUs`
-    // allocation, same "complete cuHU" mechanism `empty-hu-regression.spec.js`'s TC6a/b trace names) BEFORE
-    // `bookEmptiedHUToZero` runs — so by the time it runs, `huStorage.getProductStorages()` is already
-    // empty and it no-ops (the same guard TC8 exercises), creating no inventory of its own. Verified: the
-    // ONE inventory this HU carries (`M_InventoryLine` QtyBook=0.5, QtyCount=0.498) has `Description=NULL`
-    // — not the write-off message. This is a real, reproducible difference from TC1, not a flake.
-    //
-    // The empties movement itself (AC21's actual subject) is NOT gated behind that inventory: it fires
-    // from the generic HU-destroy path (`HUStatusBL`'s `HUSTATUSES_MoveToEmptiesWarehouse` /
-    // `HUContextProcessorExecutor`'s packing-material collector) whenever HUStatus transitions to
-    // Destroyed — regardless of which mechanism drove the destroy. Confirmed via read-only psql: an
-    // `M_Movement`/`M_MovementLine` row moves the HU's packing-material product from the standard
-    // warehouse's locator (540007, Hauptlager) to the network's target locator (540013, Leergebindelager)
-    // at the same moment this action completes. NOT asserted here via `Backend.expect`:
-    // `de.metas.frontend_testing.expectations` has expectation types for
-    // HU/Manufacturing/Picking/PickingSlot/ShipmentSchedule/Inventory, but NONE for `M_Movement` (grepped
-    // the whole `expectations/` package) — adding one needs a backend rebuild + app-server restart, which
-    // this run's environment forbids. This is a genuine assertion GAP in the harness, not a fabricated
-    // pass — see the concern in the task report.
+    // behaviour" outcome — AND a completed write-off inventory carrying the AC4 description, same as
+    // the plain-VHU core case (TC1). On a PI-produced TU, the entered qty is routed through the HU's
+    // weight confirmation (`PPOrderIssueScheduleService.weightHU` -> `WeightHUCommand`, since a
+    // packing-material TU is weight-tracked) BEFORE the ordinary issue drains it the rest of the way,
+    // so the actual write-off is this weight-confirmation SingleHUInventory, not
+    // `bookEmptiedHUToZero`'s own (which by then finds the HU already empty and no-ops) — see the task
+    // report for the traced mechanism and the psql evidence.
     await Backend.expect({
         hus: {
             [masterdata.handlingUnits.HU.qrCode]: {
                 huStatus: 'D',
                 storages: { COMP: '0 KGM' },
             },
+        },
+        inventories: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                isExists: true,
+                docStatus: 'CO',
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+            },
+        },
+        // AC21's actual subject: the packing material returned to the empties warehouse. Fires from the
+        // generic HU-destroy path whenever HUStatus transitions to Destroyed, independent of the write-off
+        // inventory above (psql-confirmed in the 15B report: an M_Movement/M_MovementLine row moves the PM
+        // product from the standard warehouse to the empties one at the same moment this action completes).
+        movements: {
+            PM: { isExists: true, fromWarehouse: 'WHSTD', toWarehouse: 'WHEMPTIES' },
         },
     });
 });
