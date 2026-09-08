@@ -17,6 +17,7 @@ import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
+import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.weighting.WeightHUCommand;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -139,7 +140,16 @@ public class PPOrderIssueScheduleService
 	private void bookEmptiedHUToZero(@NonNull final HuId huId, @NonNull final PPOrderId ppOrderId)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
-		final Quantity qtyZero = handlingUnitsBL.getStorageFactory().getStorage(hu).getQtyForProductStorages().toZero();
+		final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
+		if (huStorage.getProductStorages().isEmpty())
+		{
+			// Nothing to write off: the HU already carries no product storage at all.
+			// HUQtyService.updateQty(huId=...) requires exactly one M_HU_Storage row (it throws "Empty HU is not handled"
+			// for zero storages), so calling it here would fail on an HU that is already effectively empty.
+			return;
+		}
+
+		final Quantity qtyZero = huStorage.getQtyForProductStorages().toZero();
 
 		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
 		final String description = msgBL.getMsg(Language.getBaseAD_Language(), MSG_EmptiedHUInventoryDescription, new Object[] { ppOrder.getDocumentNo() });
