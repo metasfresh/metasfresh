@@ -3,11 +3,13 @@ package de.metas.frontend_testing.masterdata.hu;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Value
 @Builder
@@ -30,6 +32,22 @@ public class JsonCreateHURequest
 	@Nullable String bestBeforeDate;
 	@Nullable String externalBarcode;
 
+	/**
+	 * Additional products to stock onto the SAME HU created by this request, on top of {@link #product}/{@link #qty}.
+	 * Each entry is loaded onto the already-created HU (not into a separate one), so the resulting {@code M_HU}
+	 * ends up with one {@code M_HU_Storage} row per distinct product.
+	 */
+	@Nullable List<AdditionalProduct> additionalProducts;
+
 	@JsonIgnore
 	public boolean isGenerateHUQRCode() {return generateHUQRCode != null ? generateHUQRCode : true;}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class AdditionalProduct
+	{
+		@NonNull Identifier product;
+		@NonNull BigDecimal qty;
+	}
 }

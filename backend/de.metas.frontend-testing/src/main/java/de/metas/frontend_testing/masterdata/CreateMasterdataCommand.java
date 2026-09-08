@@ -14,6 +14,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageRequest;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageResponse;
+import de.metas.frontend_testing.masterdata.hu_package.PackageCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.GenerateHUQRCodeCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
@@ -86,6 +89,7 @@ public class CreateMasterdataCommand
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
+		final ImmutableMap<String, JsonPackageResponse> packages = createPackages();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
@@ -106,6 +110,7 @@ public class CreateMasterdataCommand
 				.workplaces(workplaces)
 				.packingInstructions(packingInstructions)
 				.handlingUnits(hus)
+				.packages(packages)
 				.generatedHUQRCodes(generatedHUQRCodes)
 				.salesOrders(salesOrders)
 				.distributionOrders(distributionOrders)
@@ -293,6 +298,21 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPackageResponse> createPackages()
+	{
+		return process(request.getPackages(), this::createPackage);
+	}
+
+	private JsonPackageResponse createPackage(final String identifier, final JsonPackageRequest request)
+	{
+		return PackageCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}

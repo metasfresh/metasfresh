@@ -9,6 +9,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -52,6 +53,11 @@ public class WarehouseCommand
 
 	public JsonWarehouseResponse execute()
 	{
+		if (request.getExisting() != null)
+		{
+			return executeExisting(request.getExisting());
+		}
+
 		createWarehouse();
 
 		final JsonWarehouseResponse.JsonWarehouseResponseBuilder responseBuilder = JsonWarehouseResponse.builder()
@@ -72,6 +78,42 @@ public class WarehouseCommand
 		}
 
 		return responseBuilder.build();
+	}
+
+	/**
+	 * Resolves {@code request.existing} to a pre-seeded warehouse instead of creating a new one. Read-only:
+	 * does NOT rename the shared default locator (unlike {@link #createDefaultLocator()}), since that
+	 * locator is shared across every test run referencing this warehouse.
+	 */
+	private JsonWarehouseResponse executeExisting(@NonNull final String existing)
+	{
+		final WarehouseId warehouseId = resolveExistingWarehouseId(existing);
+		this.warehouseRecord = InterfaceWrapperHelper.load(warehouseId, I_M_Warehouse.class);
+		context.putIdentifier(identifier, warehouseId);
+
+		final I_M_Locator defaultLocator = warehouseBL.getOrCreateDefaultLocator(warehouseId);
+		context.putIdentifier(identifier, LocatorId.ofRecord(defaultLocator));
+
+		return JsonWarehouseResponse.builder()
+				.warehouseId(warehouseRecord.getM_Warehouse_ID())
+				.warehouseCode(warehouseRecord.getValue())
+				.warehouseName(warehouseRecord.getName())
+				.locatorId(defaultLocator.getM_Locator_ID())
+				.locatorCode(defaultLocator.getValue())
+				.locatorQRCode(LocatorQRCode.ofLocator(defaultLocator).toGlobalQRCodeJsonString())
+				.locators(ImmutableMap.of())
+				.build();
+	}
+
+	private static WarehouseId resolveExistingWarehouseId(@NonNull final String existing)
+	{
+		switch (existing)
+		{
+			case "standard":
+				return MasterdataContext.STANDARD_WAREHOUSE_ID;
+			default:
+				throw new AdempiereException("Unknown warehouses.<X>.existing value: " + existing + " (supported: 'standard')");
+		}
 	}
 
 	private WarehouseId getWarehouseId()

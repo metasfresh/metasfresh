@@ -45,6 +45,7 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class CreateHUCommand
 {
@@ -85,6 +86,7 @@ public class CreateHUCommand
 
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
+		addAdditionalProducts(huId);
 		final IAttributeStorage huAttributes = updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
@@ -302,6 +304,66 @@ public class CreateHUCommand
 
 		final I_M_HU newLU = producer.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("No LU was created"));
 		return HuId.ofRepoId(newLU.getM_HU_ID());
+	}
+
+	/**
+	 * Stocks each of {@link JsonCreateHURequest#getAdditionalProducts()} onto the already-created {@code targetHuId},
+	 * on top of its primary product — i.e. makes the HU carry storage of more than one distinct product.
+	 * <p>
+	 * Implemented the same way {@link de.metas.handlingunits.allocation.transfer.impl.HUDistributeBuilder} distributes
+	 * a VHU's content onto an existing TU: create a fresh virtual CU for the additional product, then
+	 * {@link HULoader} it directly onto {@code targetHuId} (an existing HU used as {@code destination}, not a
+	 * producer that would create a new one).
+	 */
+	private void addAdditionalProducts(final HuId targetHuId)
+	{
+		final List<JsonCreateHURequest.AdditionalProduct> additionalProducts = request.getAdditionalProducts();
+		if (additionalProducts == null || additionalProducts.isEmpty())
+		{
+			return;
+		}
+
+		additionalProducts.forEach(additionalProduct -> addAdditionalProduct(targetHuId, additionalProduct));
+	}
+
+	private void addAdditionalProduct(final HuId targetHuId, final JsonCreateHURequest.AdditionalProduct additionalProduct)
+	{
+		final WarehouseId warehouseId = getWarehouseId();
+		final ProductId additionalProductId = context.getId(additionalProduct.getProduct(), ProductId.class);
+		final I_C_UOM uom = productBL.getStockUOM(additionalProductId);
+		final Quantity qty = Quantity.of(additionalProduct.getQty(), uom);
+
+		final HuId sourceCuId = trxManager.callInThreadInheritedTrx(
+				() -> inventoryService.createInventoryForMissingQty(
+						CreateVirtualInventoryWithQtyReq.builder()
+								.clientId(ClientId.METASFRESH)
+								.orgId(MasterdataContext.ORG_ID)
+								.warehouseId(warehouseId)
+								.productId(additionalProductId)
+								.qty(qty)
+								.movementDate(SystemTime.asZonedDateTime())
+								.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+								.build()
+				)
+		);
+
+		huTrxBL.process(huContext -> {
+			final I_M_HU sourceCU = handlingUnitsBL.getById(sourceCuId);
+			final I_M_HU targetHu = handlingUnitsBL.getById(targetHuId);
+
+			HULoader.builder()
+					.source(HUListAllocationSourceDestination.of(sourceCU))
+					.destination(HUListAllocationSourceDestination.of(targetHu))
+					.load(AllocationUtils.builder()
+							.setHUContext(huContext)
+							.setProduct(additionalProductId)
+							.setQuantity(qty)
+							.setDateAsToday()
+							.setForceQtyAllocation(true)
+							.create());
+
+			handlingUnitsBL.destroyIfEmptyStorage(huContext, sourceCU);
+		});
 	}
 
 	private IAttributeStorage updateAttributes(final HuId huId)

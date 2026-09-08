@@ -12,6 +12,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceTypeId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
@@ -20,6 +21,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.jetbrains.annotations.NotNull;
@@ -50,6 +52,8 @@ public class MasterdataContext
 	public static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006); // test
 	public static final PPRoutingId DEFAULT_ROUTING_ID = PPRoutingId.ofRepoId(540118);  // Default Workflow for mobile UI Manufacturing
 	public static final ResourceTypeId DEFAULT_MANUFACTURING_RESOURCE_TYPE_ID = ResourceTypeId.ofRepoId(1000000);  // S_ResourceType.Name = Produktionsressource
+	public static final WarehouseId STANDARD_WAREHOUSE_ID = WarehouseId.ofRepoId(540008); // seeded "Hauptlager"; the one empties network 540011's seeded line (540008 -> 540012) covers
+	public static final ShipperId DEFAULT_SHIPPER_ID = ShipperId.ofRepoId(1000000); // seeded "Eigentransport"
 	public static final int STANDARD_AD_PRINTER_ID = 1000000;
 	public static final int PRINT_TO_DISK_AD_PRINTERHW_ID = 540331;
 

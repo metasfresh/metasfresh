@@ -17,6 +17,14 @@ public class JsonWarehouseRequest
 	@Nullable String locatorCode;
 	@Nullable Map<String, Locator> locators;
 
+	/**
+	 * When set, reference a pre-existing seeded warehouse by a stable name instead of creating a new one.
+	 * Supported value: {@code "standard"} — the seeded standard warehouse (the one empties network
+	 * 540011's seeded line covers). No new {@code M_Warehouse} row is created, and its default locator is
+	 * resolved read-only (never renamed), since it is shared across test runs.
+	 */
+	@Nullable String existing;
+
 	//
 	//
 	//
