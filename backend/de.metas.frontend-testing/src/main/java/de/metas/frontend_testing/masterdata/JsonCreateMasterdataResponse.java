@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
@@ -44,7 +45,7 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonWorkplaceResponse> workplaces;
 	@NonNull Map<String, JsonPackingInstructionsResponse> packingInstructions;
 	@NonNull Map<String, JsonCreateHUResponse> handlingUnits;
-	@NonNull Map<String, JsonPackageResponse> packages;
+	@NonNull @Builder.Default Map<String, JsonPackageResponse> packages = ImmutableMap.of();
 	@Nullable Map<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes;
 	@NonNull Map<String, JsonSalesOrderCreateResponse> salesOrders;
 	@NonNull Map<String, JsonDDOrderResponse> distributionOrders;

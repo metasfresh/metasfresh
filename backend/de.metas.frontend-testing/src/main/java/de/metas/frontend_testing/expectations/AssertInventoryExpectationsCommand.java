@@ -52,22 +52,25 @@ class AssertInventoryExpectationsCommand
 
 	private void assertInventory(@NonNull final List<I_M_InventoryLine> inventoryLines, @NonNull final JsonInventoryExpectation expectation)
 	{
+		final String description = expectation.getDescription();
+
+		// When a description is given, resolve THAT SPECIFIC inventory up front (the one whose
+		// description matches) so every check below (isExists, docStatus) uses the SAME record —
+		// never "any inventory referencing the HU" / "the latest one", which can silently pass
+		// against an unrelated (e.g. seed/weight-confirm) inventory that merely happens to be newest.
+		final I_M_Inventory describedInventory = description != null
+				? inventoryLines.stream().map(this::getInventoryOf).filter(inventory -> Objects.equals(inventory.getDescription(), description)).findFirst().orElse(null)
+				: null;
+
 		if (expectation.getIsExists() != null)
 		{
-			// When a description is also given, scope the existence check to inventories carrying that
-			// description ("is there an inventory whose description equals the given text"), rather than
-			// "does ANY inventory reference this HU" — lets a spec assert e.g. "no write-off inventory
-			// exists" on an HU that already carries an unrelated (seed/weight-confirm) inventory, which
-			// would otherwise always make the unscoped check true regardless of the write-off.
-			final boolean exists = expectation.getDescription() != null
-					? inventoryLines.stream().map(this::getInventoryOf).anyMatch(inventory -> Objects.equals(inventory.getDescription(), expectation.getDescription()))
-					: !inventoryLines.isEmpty();
+			final boolean exists = description != null ? describedInventory != null : !inventoryLines.isEmpty();
 			assertThat(exists).as(existsAssertionLabel(expectation)).isEqualTo(expectation.getIsExists());
 		}
 
 		// description-equals-latest-inventory's-description is the pre-existing behaviour, kept only when
 		// isExists isn't also asserted (isExists present switches description into the scoped-existence role above).
-		final boolean assertDescriptionOnLatest = expectation.getDescription() != null && expectation.getIsExists() == null;
+		final boolean assertDescriptionOnLatest = description != null && expectation.getIsExists() == null;
 
 		if (expectation.getDocStatus() != null || assertDescriptionOnLatest)
 		{
@@ -77,16 +80,24 @@ class AssertInventoryExpectationsCommand
 				return;
 			}
 
-			final I_M_Inventory inventory = getLatestInventory(inventoryLines);
+			// docStatus is asserted on the DESCRIBED inventory when a description was given (same-record
+			// guarantee with the isExists/description checks above); otherwise fall back to the latest
+			// inventory referencing the HU (pre-existing behaviour for a docStatus-only expectation).
+			final I_M_Inventory inventory = description != null ? describedInventory : getLatestInventory(inventoryLines);
 
 			if (expectation.getDocStatus() != null)
 			{
+				if (inventory == null)
+				{
+					fail("Expected an inventory document with description '" + description + "' to assert docStatus on, but none was found");
+					return;
+				}
 				assertThat(inventory.getDocStatus()).as("DocStatus").isEqualTo(expectation.getDocStatus());
 			}
 
 			if (assertDescriptionOnLatest)
 			{
-				assertThat(inventory.getDescription()).as("Description").isEqualTo(expectation.getDescription());
+				assertThat(getLatestInventory(inventoryLines).getDescription()).as("Description").isEqualTo(description);
 			}
 		}
 	}

@@ -1,10 +1,14 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -32,8 +36,17 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_MovementLine;
+import org.compiere.model.I_M_Product;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -52,6 +65,8 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	@NonNull private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -137,5 +152,56 @@ public class AssertExpectationsCommandServices
 	public I_M_Inventory getInventoryById(@NonNull final InventoryId inventoryId)
 	{
 		return inventoryDAO.getById(inventoryId);
+	}
+
+	/**
+	 * The product of the FIRST packing material carried by the given HU (e.g. the crate/pallet product
+	 * an {@code M_HU_PackingMaterial} attaches to a packing-instruction-produced TU).
+	 */
+	public ProductId getPackingMaterialProductId(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = getHUById(huId);
+		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterialAndQtys(hu)
+				.stream()
+				.findFirst()
+				.map(IPair::getLeft)
+				.orElseThrow(() -> new AdempiereException("HU has no packing material").setParameter("huId", huId));
+
+		final I_M_Product product = IHUPackingMaterialDAO.extractProductOrNull(packingMaterial);
+		if (product == null)
+		{
+			throw new AdempiereException("Packing material has no product").setParameter("huId", huId);
+		}
+		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
+	/**
+	 * Whether a completed {@code M_Movement} exists with an {@code M_MovementLine} moving the given
+	 * product from a locator of {@code fromWarehouseId} to a locator of {@code toWarehouseId}.
+	 */
+	public boolean hasCompletedMovementLine(
+			@NonNull final ProductId productId,
+			@NonNull final WarehouseId fromWarehouseId,
+			@NonNull final WarehouseId toWarehouseId)
+	{
+		final Set<Integer> fromLocatorRepoIds = toRepoIds(warehouseDAO.getLocatorIds(fromWarehouseId));
+		final Set<Integer> toLocatorRepoIds = toRepoIds(warehouseDAO.getLocatorIds(toWarehouseId));
+
+		final List<I_M_MovementLine> lines = queryBL.createQueryBuilder(I_M_MovementLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addInArrayFilter(I_M_MovementLine.COLUMNNAME_M_Locator_ID, fromLocatorRepoIds)
+				.addInArrayFilter(I_M_MovementLine.COLUMNNAME_M_LocatorTo_ID, toLocatorRepoIds)
+				.create()
+				.list();
+
+		return lines.stream()
+				.map(line -> InterfaceWrapperHelper.load(line.getM_Movement_ID(), I_M_Movement.class))
+				.anyMatch(movement -> "CO".equals(movement.getDocStatus()));
+	}
+
+	private static Set<Integer> toRepoIds(@NonNull final List<LocatorId> locatorIds)
+	{
+		return locatorIds.stream().map(LocatorId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 }

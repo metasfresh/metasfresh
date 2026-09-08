@@ -56,6 +56,7 @@ public class MasterdataContext
 	public static final PPRoutingId DEFAULT_ROUTING_ID = PPRoutingId.ofRepoId(540118);  // Default Workflow for mobile UI Manufacturing
 	public static final ResourceTypeId DEFAULT_MANUFACTURING_RESOURCE_TYPE_ID = ResourceTypeId.ofRepoId(1000000);  // S_ResourceType.Name = Produktionsressource
 	public static final WarehouseId STANDARD_WAREHOUSE_ID = WarehouseId.ofRepoId(540008); // seeded "Hauptlager"; the one empties network 540011's seeded line (540008 -> 540012) covers
+	public static final WarehouseId EMPTIES_WAREHOUSE_ID = WarehouseId.ofRepoId(540012); // seeded "Leergebindelager"; the target of empties network 540011's seeded line
 	public static final int STANDARD_AD_PRINTER_ID = 1000000;
 	public static final int PRINT_TO_DISK_AD_PRINTERHW_ID = 540331;
 

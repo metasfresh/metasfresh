@@ -111,8 +111,10 @@ public class WarehouseCommand
 		{
 			case "standard":
 				return MasterdataContext.STANDARD_WAREHOUSE_ID;
+			case "empties":
+				return MasterdataContext.EMPTIES_WAREHOUSE_ID;
 			default:
-				throw new AdempiereException("Unknown warehouses.<X>.existing value: " + existing + " (supported: 'standard')");
+				throw new AdempiereException("Unknown warehouses.<X>.existing value: " + existing + " (supported: 'standard', 'empties')");
 		}
 	}
 
