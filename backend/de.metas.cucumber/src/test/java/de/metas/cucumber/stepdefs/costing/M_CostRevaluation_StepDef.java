@@ -45,15 +45,12 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.util.Env;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,7 +70,6 @@ public class M_CostRevaluation_StepDef
 	@NonNull private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
@@ -246,29 +242,6 @@ public class M_CostRevaluation_StepDef
 			row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_Processed)
 					.ifPresent(expected -> assertThat(header.isProcessed()).as("Processed").isEqualTo(StringUtils.toBoolean(expected)));
 		});
-	}
-
-	/**
-	 * Asserts that every {@code Fact_Acct} row of the revaluation document carries a zero quantity:
-	 * a cost revaluation is an amount-only adjustment, it never moves stock.
-	 */
-	@And("^every Fact_Acct record for (.*) has zero Qty$")
-	public void everyFactAcctHasZeroQty(@NonNull final String identifier)
-	{
-		final I_M_CostRevaluation header = costRevaluationTable.get(identifier);
-		final int adTableId = adTableDAO.retrieveTableId(I_M_CostRevaluation.Table_Name);
-
-		final List<I_Fact_Acct> factAccts = queryBL.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, header.getM_CostRevaluation_ID())
-				.create()
-				.list(I_Fact_Acct.class);
-
-		assertThat(factAccts).as("Fact_Acct rows for the revaluation").isNotEmpty();
-		for (final I_Fact_Acct factAcct : factAccts)
-		{
-			assertThat(factAcct.getQty()).as("Fact_Acct.Qty").isEqualByComparingTo(BigDecimal.ZERO);
-		}
 	}
 
 	private CostElementId resolveSingleCostElementId(@NonNull final String costElementIdentifier)

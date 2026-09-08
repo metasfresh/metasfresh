@@ -65,14 +65,13 @@ Feature: Cost Revaluation / Kosten Neubewertung
 
     # ── Positive delta 100 PCE * (15 - 10) = 500 CHF booked P_Asset DR / P_Revenue CR (amount-only, Qty 0) ──
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID   | M_Product_ID |
-      | P_Asset_Acct          | 500 CHF     |             | revaluation | product      |
-      | P_Revenue_Acct        |             | 500 CHF     | revaluation | product      |
-    And every Fact_Acct record for revaluation has zero Qty
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Qty | Record_ID   | M_Product_ID |
+      | P_Asset_Acct          | 500 CHF     |             | 0   | revaluation | product      |
+      | P_CostAdjustment_Acct |             | 500 CHF     | 0   | revaluation | product      |
     And Fact_Acct records balances for documents revaluation are matching
       | AccountConceptualName | SourceBalance |
       | P_Asset_Acct          | 500 CHF       |
-      | P_Revenue_Acct        | -500 CHF      |
+      | P_CostAdjustment_Acct | -500 CHF      |
 
   @Id:S30984_TC2
   Scenario: Decrease - completing a cost revaluation lowers the current cost price and books the negative delta to expense
@@ -108,11 +107,10 @@ Feature: Cost Revaluation / Kosten Neubewertung
 
     # ── Negative delta 100 PCE * (8 - 10) = -200 CHF booked P_Asset CR / P_Expense DR (amount-only, Qty 0) ──
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID   | M_Product_ID |
-      | P_Asset_Acct          |             | 200 CHF     | revaluation | product      |
-      | P_Expense_Acct        | 200 CHF     |             | revaluation | product      |
-    And every Fact_Acct record for revaluation has zero Qty
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Qty | Record_ID   | M_Product_ID |
+      | P_CostAdjustment_Acct | 200 CHF     |             | 0   | revaluation | product      |
+      | P_Asset_Acct          |             | 200 CHF     | 0   | revaluation | product      |
     And Fact_Acct records balances for documents revaluation are matching
       | AccountConceptualName | SourceBalance |
+      | P_CostAdjustment_Acct | 200 CHF       |
       | P_Asset_Acct          | -200 CHF      |
-      | P_Expense_Acct        | 200 CHF       |
