@@ -23,8 +23,6 @@ package org.eevolution.process;
  */
 
 import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -43,6 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnable;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
@@ -60,7 +59,7 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 	private int countClosed = 0;
 	private int countFailed = 0;
@@ -169,8 +168,15 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 		{
 			trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
 				InterfaceWrapperHelper.refresh(ppOrder, localTrxName);
-				ppOrder.setDocAction(IDocument.ACTION_Close);
-				documentBL.processEx(ppOrder, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				ppOrderBL.closeOrder(ppOrder);
+
+				// closeOrder() runs the document action without asserting the outcome, so a close that
+				// silently did not take effect would otherwise be counted as a success.
+				final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
+				if (!docStatus.isClosed())
+				{
+					throw new AdempiereException("@Invalid@ @DocStatus@: " + docStatus);
+				}
 			});
 
 			countClosed++;

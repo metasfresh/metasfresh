@@ -67,11 +67,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
-import de.metas.security.IRoleDAO;
-import de.metas.security.Role;
-import de.metas.security.RoleId;
 import de.metas.uom.IUOMDAO;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
@@ -118,7 +114,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -136,7 +131,6 @@ public class PP_Order_StepDef
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -439,49 +433,6 @@ public class PP_Order_StepDef
 				.setRecord(TableRecordReference.of(orderRecord))
 				.buildAndPrepareExecution()
 				.executeSync();
-	}
-
-	/**
-	 * Runs {@code PP_Order_CloseSelection} over the given manufacturing orders, the way the cost-monitor
-	 * window's bulk action does: the orders are handed to the process as its user selection (a where clause on
-	 * PP_Order_ID), and the process itself decides which of them it is allowed to close.
-	 *
-	 * <p>Executed under the logged-in client and the {@code WebUI} role, because the process's selection query
-	 * applies that role's client/org restriction - the default cucumber System-role context matches no
-	 * business record.
-	 */
-	@And("^the manufacturing orders identified by (.*) are closed by selection$")
-	public void closeManufacturingOrdersBySelection(@NonNull final String orderIdentifiers)
-	{
-		final String ppOrderIdsCSV = StepDefUtil.extractIdentifiers(orderIdentifiers)
-				.stream()
-				.map(ppOrderTable::getId)
-				.map(ppOrderId -> String.valueOf(ppOrderId.getRepoId()))
-				.collect(Collectors.joining(","));
-
-		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue("PP_Order_CloseSelection");
-		assertThat(processId).as("AD_Process with Value=PP_Order_CloseSelection must exist").isNotNull();
-
-		final UserId loggedUserId = Env.getLoggedUserId();
-		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
-				.stream()
-				.filter(role -> "WebUI".equals(role.getName()))
-				.map(Role::getId)
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
-
-		ProcessInfo.builder()
-				.setAD_Process_ID(processId.getRepoId())
-				.setClientId(Env.getClientId())
-				.setRoleId(roleId)
-				.setCreateTemporaryCtx()
-				.setTableName(I_PP_Order.Table_Name)
-				.setWhereClause(I_PP_Order.COLUMNNAME_PP_Order_ID + " IN (" + ppOrderIdsCSV + ")")
-				.buildAndPrepareExecution()
-				.switchContextWhenRunning()
-				.executeSync()
-				.getResult()
-				.propagateErrorIfAny();
 	}
 
 	private void validatePP_Order_BomLine(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException

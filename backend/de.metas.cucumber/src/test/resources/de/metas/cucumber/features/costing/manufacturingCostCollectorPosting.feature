@@ -866,7 +866,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | ppOrderCompleted2 | CO        |
       | ppOrderDrafted    | DR        |
 
-    When the manufacturing orders identified by ppOrderCompleted1,ppOrderCompleted2,ppOrderDrafted are closed by selection
+    When the AD_Process with value 'PP_Order_CloseSelection' is run on the records identified by 'ppOrderCompleted1,ppOrderCompleted2,ppOrderDrafted'
 
     Then after not more than 60s, PP_Orders are found
       | Identifier        | DocStatus |
