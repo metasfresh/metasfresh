@@ -18,32 +18,14 @@ import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog
  *  - TC-CW1: entered in a non-kg WEIGHT uom (Gramm/GRM — weight-typed, so `isWeightable` stays true,
  *    isolating the `uom === 'kg'` half of the gate) -> `huWeightGrossBeforeIssue` is null on the wire,
  *    and exactly one inventory carries the AC4 write-off description.
- *  - TC-CW3 (negative): kg, whole-HU, NO rejection reason -> a weight-confirm inventory exists, but
- *    WITHOUT the AC4 description (nothing was written off).
- *
- * TC-CW2 (kg, entered short, reason E) — NOT IMPLEMENTED. BLOCKED on a genuine product defect found
- * while building it (`.superpowers/sdd/PLAN/task-16e-report.md` has the DB-row evidence). On a bare
- * VHU (no packing instruction — the same fixture shape as empty-hu-core.spec.js's core case, only
- * with `uom: 'KGM'`), entering 0.498 of a 0.5 KGM HU with reason E produces THREE inventory lines for
- * the HU, not the two (seed + one write-off) TC1/TC3 show:
- *   1. the masterdata harness's own seed inventory (QtyBook=0 -> QtyCount=0.5, undescribed)
- *   2. `weightHU`'s weight-confirmation inventory (QtyBook=0.5 -> QtyCount=0.498) — carries the AC4
- *      description (`PPOrderIssueScheduleService.issue` passes `emptiedHUInventoryDescription` into
- *      `weightHU` whenever the EMPTIED reason is set, per commit 50c3092416e)
- *   3. `bookEmptiedHUToZero`'s own inventory (QtyBook=0.498 -> QtyCount=0) — ALSO carries the SAME
- *      AC4 description
- * i.e. TWO inventories both carry the write-off description, where TC11 (empty-hu-refusals.spec.js,
- * a PI-produced weight-tracked TU) shows only ONE — `bookEmptiedHUToZero` there no-ops because the
- * ordinary "qty issued" step already drained the HU to zero before it runs. On this bare-VHU fixture
- * the HU's storage is still at 0.498 (not empty) when `bookEmptiedHUToZero` runs, so its no-op guard
- * (`huStorage.getProductStorages().isEmpty()`) does not fire and it books a SECOND, redundant,
- * identically-described write-off. Smallest proposed fixes (not applied here — production-behaviour
- * decision, out of this task's scope): (a) suppress the description on `bookEmptiedHUToZero`'s call
- * when `weightHU` already ran for this issue (the weight-confirmation is the real write-off; the
- * zero-out that follows it is bookkeeping, not a second write-off) — the smaller, more targeted
- * change; or (b) find out why the ordinary "qty issued" step does not drain a bare VHU's storage the
- * way it does a PI-produced TU's, and fix that so `bookEmptiedHUToZero`'s existing no-op guard covers
- * this fixture too, as it already does TC11's.
+ *  - TC-CW2: kg, whole-HU, entered short with reason E -> the "complete cuHU" issue branch consumes
+ *    the HU whole (HUStatus -> Issued) without touching its storage row, so `bookEmptiedHUToZero`
+ *    must not book a second write-off against an HU the issue already consumed; exactly one inventory
+ *    carries the AC4 description.
+ *  - TC-CW3 (negative): kg, whole-HU, NO rejection reason, entered qty == the HU's already-recorded
+ *    qty -> the weight-confirm is a zero-delta no-op (creates no inventory of its own; only the
+ *    harness's seed inventory references the HU) and, in particular, nothing carries the AC4
+ *    description (nothing was written off).
  */
 
 const EMPTIED_REASON = 'E';
@@ -121,6 +103,30 @@ test('TC-CW1: a non-kg weight UOM entered short does not send the weight', async
 });
 
 // noinspection JSUnusedLocalSymbols
+test('TC-CW2: a kg whole-HU issue entered short with the emptied reason books exactly one write-off', async ({ page }) => {
+    const masterdata = await createMasterdata({ uom: 'KGM' });
+
+    await startIssueStep(masterdata);
+    await GetQuantityDialog.expectQtyEntered('0.5');
+    await GetQuantityDialog.typeQtyEntered('0.498');
+    await GetQuantityDialog.clickQtyNotFoundReason({ reason: EMPTIED_REASON });
+
+    await GetQuantityDialog.clickDoneAndCaptureRequestBody({ urlFragment: MANUFACTURING_EVENT_URL_FRAGMENT });
+
+    await RawMaterialIssueLineScreen.waitForScreen();
+    await RawMaterialIssueLineScreen.goBack();
+
+    await Backend.expect({
+        inventories: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                count: 1,
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+            },
+        },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
 test('TC-CW3: a kg whole-HU issue with no rejection reason leaves the weight-confirm inventory undescribed', async ({ page }) => {
     const masterdata = await createMasterdata({ uom: 'KGM' });
 
@@ -136,10 +142,14 @@ test('TC-CW3: a kg whole-HU issue with no rejection reason leaves the weight-con
     await RawMaterialIssueLineScreen.waitForScreen();
     await RawMaterialIssueLineScreen.goBack();
 
-    // An inventory exists (the weight-confirm one)...
+    // Entering the full booked qty leaves the counted weight equal to the HU's already-recorded qty
+    // (0.5 -> 0.5), so `weightHU`'s own qty update is a zero-delta no-op and creates no inventory line
+    // of its own — only the harness's seed inventory references the HU. `count: 1` without a
+    // `description` filter pins that exact total, unlike a bare `isExists: true` check (which the seed
+    // inventory alone would already satisfy even if an extra, unwanted inventory had been created).
     await Backend.expect({
         inventories: {
-            [masterdata.handlingUnits.HU.qrCode]: { isExists: true },
+            [masterdata.handlingUnits.HU.qrCode]: { count: 1 },
         },
     });
     // ...but none of them carries the AC4 write-off description (nothing was written off).
