@@ -54,7 +54,7 @@ WHERE AD_Element_ID=585435 AND AD_Language='en_US'
 --    IsSelectionColumn stays 'N' on purpose: under a tab's default 'Auto' filter strategy the filter
 --    set is read from IsSelectionColumn, so setting it here would put this filter on every PP_Order
 --    window. The monitor tab (549352) is on 'Explicit' and reads AD_Field.IsFilterField instead.
---    FilterOperator='E' (Equals) and FilterDefaultValue='Y' are AD_Column-level and therefore only
+--    FilterOperator='E' (EqualsOrLike -- a YesNo widget resolves it to a strict EQUAL) and FilterDefaultValue='Y' are AD_Column-level and therefore only
 --    reach a tab that has an AD_Field for this column -- which is tab 549352 alone.
 INSERT INTO AD_Column (AD_Reference_ID,IsKey,IsParent,IsTranslated,IsIdentifier,AD_Client_ID,IsActive,CreatedBy,
                         AD_Element_ID,IsUpdateable,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAllowLogging,
