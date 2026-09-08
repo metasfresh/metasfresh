@@ -84,6 +84,13 @@ import java.time.Instant;
 @Service
 public class SourceDocumentLivenessService
 {
+	// IQueryBL rather than the owning DAOs, deliberately: no null-tolerant by-id lookup exists across all
+	// five source documents. ShipmentSchedulePA.getById and IForecastDAO.getById throw on a miss (in
+	// production, not just in tests); the receipt-schedule, PP_Order and DD_Order DAOs are bare
+	// InterfaceWrapperHelper.load(...) calls, which NPE on a miss in unit-test POJO mode; and DD_Order plus
+	// the M_ForecastLine hop offer no null-tolerant batch alternative either. A candidate referencing a
+	// purged document must degrade to NO_SOURCE_DOCUMENT, never abort the run — that dangling reference is
+	// precisely the drifted state this feature exists to find and report.
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@VisibleForTesting
