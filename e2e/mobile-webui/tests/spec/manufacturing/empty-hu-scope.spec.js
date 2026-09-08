@@ -1,3 +1,4 @@
+import { expect } from '@playwright/test';
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
@@ -115,6 +116,13 @@ test('TC4: Unticking the offer flag restores today\'s screen', async ({ page }) 
  * per-TU steps"). Built via `packingInstructions` with both `lu` and `tu` set, per the pattern in
  * `pick_from_LUs.spec.js` / `empty-hu-core.spec.js`'s own PI block (this one's `product` is the
  * pallet's own content, not the finished good).
+ *
+ * The pallet's total (13 KGM) is an explicit `qty`, deliberately LESS than the exact 3x5=15 KGM the
+ * packing instructions would otherwise fill: 2 TUs load to their full 5 KGM capacity each (and
+ * coalesce into a single aggregate row — `TUProducerDestination.loadHU` — with no individual QR), and
+ * the 3rd TU is under-filled to 3 KGM, which forces it to be created as a real, individually
+ * addressable (non-aggregate) HU (`CreateHUCommand.getTotalQtyCUs` / `getIncludedTUs`, this task's
+ * harness extension) — the only way to get a scannable QR for a genuine per-TU alternative step.
  */
 const createPalletMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -128,19 +136,24 @@ const createPalletMasterdata = async () => {
             warehouses: { wh: {} },
             products: {
                 COMP: { uom: 'KGM' },
-                BOM: { bom: { lines: [{ product: 'COMP', qty: 15, uom: 'KGM' }] } },
+                BOM: { bom: { lines: [{ product: 'COMP', qty: 13, uom: 'KGM' }] } },
             },
             packingInstructions: {
-                // 3 TUs x 5 KGM = 15 KGM total on the pallet, matching the order's own 15 KGM need
-                // exactly (all of it comes from this one pallet), so the pallet's own capacity caps
-                // the primary step's target. That is what makes the qty-rejected-reason radio group
-                // reachable at all here: it only renders when `isIssueWholeHU`
-                // (`qtyToIssueTarget >= qtyHUCapacity`), i.e. once the whole HU is being issued
-                // (`computeStepScanPropsFromActivity.js`).
+                // 3 TUs rated at 5 KGM each (15 KGM rated capacity), but the pallet is loaded with
+                // only 13 KGM (below) — matching the order's own 13 KGM need exactly (all of it comes
+                // from this one pallet; the order's need cannot exceed what stock actually exists, or
+                // manufacturing rejects the job upfront with "Not enough raw materials found"), so the
+                // pallet's own capacity caps the primary step's target. That is what makes the
+                // qty-rejected-reason radio group reachable at all here: it only renders when
+                // `isIssueWholeHU` (`qtyToIssueTarget >= qtyHUCapacity`), i.e. once the whole HU is
+                // being issued (`computeStepScanPropsFromActivity.js`).
                 PALLET_PI: { lu: 'PALLET_LU', qtyTUsPerLU: 3, tu: 'PALLET_TU', product: 'COMP', qtyCUsPerTU: 5 },
             },
             handlingUnits: {
-                PALLET: { product: 'COMP', warehouse: 'wh', packingInstructions: 'PALLET_PI' },
+                // qty: 13 (not the exact 3x5=15 the packing instructions would otherwise fill) — see
+                // the doc comment above: this under-fills the 3rd TU to 3 KGM, forcing it to be
+                // created as a real, separately-scannable TU.
+                PALLET: { product: 'COMP', warehouse: 'wh', packingInstructions: 'PALLET_PI', qty: 13 },
             },
             manufacturingOrders: {
                 PP1: { warehouse: 'wh', product: 'BOM', qty: 1, datePromised: '2026-03-30T00:00:00.000+02:00' },
@@ -152,6 +165,13 @@ const createPalletMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('TC5: A pallet-sourced line — primary LU step refuses the reason, pallet quantity untouched', async ({ page }) => {
     const masterdata = await createPalletMasterdata();
+
+    // This task's harness extension: the under-filled 3rd TU (3 KGM, below its 5 KGM rated capacity)
+    // is created as a real, individually addressable (non-aggregate) HU, and the masterdata response
+    // lists its own QR code — the 2 full TUs coalesce into one aggregate row with no individual QR
+    // (`CreateHUCommand.getIncludedTUs`), so exactly one entry is expected here.
+    expect(masterdata.handlingUnits.PALLET.tus).toHaveLength(1);
+    expect(masterdata.handlingUnits.PALLET.tus[0].qrCode).toEqual(expect.stringContaining('"huUnitType":"TU"'));
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -168,8 +188,8 @@ test('TC5: A pallet-sourced line — primary LU step refuses the reason, pallet 
 
     // Issue slightly less than the pallet's own (capping) capacity — the qty-rejected-reason radio
     // group only appears once a shortfall is entered, same trigger as the core case.
-    await GetQuantityDialog.expectQtyEntered('15');
-    await GetQuantityDialog.typeQtyEntered('14.998');
+    await GetQuantityDialog.expectQtyEntered('13');
+    await GetQuantityDialog.typeQtyEntered('12.998');
 
     // Expect: the new reason is absent on the LU (primary) step; the existing reasons are present.
     await GetQuantityDialog.expectQtyNotFoundReasonOffered({ reason: EMPTIED_REASON, offered: false });
@@ -185,7 +205,7 @@ test('TC5: A pallet-sourced line — primary LU step refuses the reason, pallet 
         hus: {
             [masterdata.handlingUnits.PALLET.qrCode]: {
                 huStatus: 'A',
-                storages: { COMP: '15 KGM' },
+                storages: { COMP: '13 KGM' },
             },
         },
     });
@@ -194,36 +214,55 @@ test('TC5: A pallet-sourced line — primary LU step refuses the reason, pallet 
 /**
  * TC5's second half — "open one of the alternative (per-TU) steps; expect the new reason IS
  * offered; using it empties that single TU only, and the pallet's other TUs are untouched"
- * (REQUIREMENTS.md §5) — is NOT implemented here. BLOCKED on a genuine, deeper masterdata-harness
- * gap than the one this task's harness extension closed.
+ * (REQUIREMENTS.md §5) — is NOT implemented here. BLOCKED on a genuine, deeper gap than the
+ * masterdata-harness one this task's round-2 fix closed.
  *
- * The harness now returns each included TU's QR code (`CreateHUCommand.getIncludedTUs`,
- * `JsonCreateHUResponse.tus`) — but only for TUs that are individually addressable at all. With
- * `createPalletMasterdata()`'s `PALLET_PI` (`qtyTUsPerLU: 3, qtyCUsPerTU: 5`, total exactly 15 = the
- * order's own need), every one of the 3 TUs is loaded to EXACTLY its rated capacity. Per
- * `TUProducerDestination.loadHU` (backend/de.metas.handlingunits.base/.../allocation/transfer/impl/
- * TUProducerDestination.java): a TU is only ever created as a "real" (individually addressable) HU
- * row when its load is a PARTIAL fill (`exceedingCapacityOfTU.isPositive()`) or the PI has infinite
- * capacity; an EXACT fill is coalesced into a single "aggregate HU" row that stands in for all N
- * identical TUs (confirmed empirically: `retrieveIncludedHUs` on the pallet returned exactly ONE row
- * with `getTUsCount() == 3`, and asking `HUQRCodesService.getQRCodeByHuId` for a single QR on that
- * row threw "Expected only one QR code to be generated ... but found [3 distinct codes]" — fixed
- * harness-side by skipping aggregate rows in `getIncludedTUs`, since an aggregate is not a real
- * single-TU write-off source anyway, same as AC9 excludes it from the reason).
+ * The harness fix works exactly as intended: `createPalletMasterdata()`'s under-filled 3rd TU (3 KGM,
+ * below its 5 KGM rated capacity) is created as a real, individually addressable (non-aggregate) HU,
+ * and the masterdata response lists its own QR code (asserted above, in TC5's first half —
+ * `masterdata.handlingUnits.PALLET.tus` has exactly one entry). Scanning that QR code DOES resolve to
+ * its plan's alternative (per-TU) step (confirmed empirically — the scan succeeds, `GetQuantityDialog`
+ * opens, no "not eligible HU barcode" error).
  *
- * So under the CURRENT masterdata request shape (`packingInstructions.lu`/`tu` +
- * `qtyTUsPerLU`/`qtyCUsPerTU`), the total is always derived as `qtyTUsPerTU * qtyTUsPerLU`
- * (`PackingInstructions.getQtyCUs()`) — an exact multiple by construction, so every TU is always
- * exactly filled and always coalesces into one aggregate row. There is no way, via this request
- * shape, to make `CreateHUCommand.getTotalQtyCUs()` load a partial (non-capacity) quantity into the
- * last TU, which is the only thing that would make `retrieveIncludedHUs` return a genuinely
- * individually-scannable TU row for this scenario. Per this task's instruction, this is reported
- * BLOCKED rather than driven through a debug/shortcut QR code or a fabricated state the real system
- * can't produce.
+ * But that alternative step's qty-input opens at **"0"**, not the TU's own 3 KGM content (confirmed
+ * empirically: a `GetQuantityDialog.expectQtyEntered('3')` assertion failed with `Received: "0"`).
+ * Root cause, traced through three source files:
  *
- * Minimal fix for a follow-up (out of scope here): let `JsonCreateHURequest`/`PackingInstructions`
- * accept an explicit total `qty` alongside a finite-capacity `packingInstructions` (today
- * `CreateHUCommand.getTotalQtyCUs()` throws "qty shall not be set when packingInstructions are set"
- * whenever `packingInstructions` has a finite `qtyCUsPerTU`), so a masterdata request can deliberately
- * under-fill the last TU and force it to be created as a real, separately-scannable row.
+ * - `PPOrderIssuePlanCreateCommand.createAndCollectSteps` (`:241`) builds every per-TU alternative
+ *   step with `.qtyToIssue(targetQty.toZero())` — a literal, permanent ZERO at plan-creation time,
+ *   regardless of what the TU actually holds (this is REQUIREMENTS.md §3's own "zero-quantity
+ *   alternative step" wording — confirmed to mean exactly zero, not merely "not yet computed").
+ * - That static zero is echoed verbatim onto the wire: `JsonRawMaterialsIssueLineStep.of` (`:55`) sets
+ *   `qtyToIssue(step.getQtyToIssue().toBigDecimal())` with no recomputation.
+ * - The ONLY place that ever overwrites a step's persisted `qtyToIssue` with something else,
+ *   `ManufacturingJobService.recomputeQtyToIssueForSteps` (`:663`), is called from exactly one call
+ *   site: `RawMaterialsIssueOnlyWhatWasReceivedActivityHandler` (`:143`) — a different manufacturing
+ *   routing/activity type (source-HU/receipt-linked) that this masterdata (and the standard
+ *   `RawMaterialsIssueActivityHandler` our BOM/routing uses) never engages. Even if it did, the
+ *   recompute's own loop (`qtyLeftToBeIssued.isGreaterThan(step.getQtyToIssue())`) can never cap a
+ *   step whose own static value is 0 — the comparison against a step's own zero is exactly what keeps
+ *   it at zero, for as long as any material remains to be issued.
+ *
+ * Consequence: `computeStepScanPropsFromActivity.js`'s `qtyToIssueTarget = Math.min(stepQtyToIssue,
+ * ...)` is pinned at 0 (the smallest of the four terms) for this step regardless of the TU's own
+ * capacity (3, correctly read live from real HU storage — `ManufacturingJobLoaderAndSaverSupport
+ * ingServices.getHUCapacity`). So `isIssueWholeHU = qtyToIssueTarget(0) >= qtyHUCapacity(3)` is always
+ * `false`, and `qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsForStep(...) : null` never
+ * renders — not just `E`, but the ALREADY-EXISTING `N`/`D` reasons too, for ANY per-TU alternative
+ * step, in the standard raw-materials-issue flow. This is a pre-existing mechanism, unrelated to this
+ * feature (`allowEmptying`/reason `E`) or to the masterdata harness, and out of scope for this task
+ * (no production-code change was authorized beyond the harness `qty`-with-`packingInstructions` fix).
+ *
+ * Minimal fix for a follow-up (out of scope here): either (a) have the standard
+ * `RawMaterialsIssueActivityHandler` flow also call (or inline the equivalent of)
+ * `ManufacturingJobService.recomputeQtyToIssueForSteps` when a step is scanned, so an alternative
+ * step's live target reflects its own real capacity capped by the line's remaining need — with the
+ * recompute's own comparison fixed to key off `step.getIssueFromHU().getHuCapacity()`, not the step's
+ * own (permanently zero) `qtyToIssue`, since that is the actual defect stopping it from ever capping
+ * an alternative step even where it IS called; or (b) reconsider whether `isIssueWholeHU`'s "target
+ * must reach capacity" gate is the right precondition for offering reject reasons on an alternative
+ * step at all, given its target is deliberately zero by design.
+ *
+ * **Decision needed**: whether to open a follow-up issue for that fix so TC5's second half can be
+ * written (per this workspace's deferral-needs-approval rule, not decided here).
  */
