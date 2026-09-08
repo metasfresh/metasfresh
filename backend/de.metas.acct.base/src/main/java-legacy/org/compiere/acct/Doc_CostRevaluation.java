@@ -109,7 +109,7 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 
 			fact.createLine()
 					.setDocLine(docLine)
-					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, acctSchema))
+					.setAccount(docLine.getAccount(ProductAcctType.P_Expense_Acct, acctSchema))
 					.setAmtSource(costs.negate(), null)
 					// .locatorId(line.getM_Locator_ID()) // N/A atm
 					.buildAndAdd();
