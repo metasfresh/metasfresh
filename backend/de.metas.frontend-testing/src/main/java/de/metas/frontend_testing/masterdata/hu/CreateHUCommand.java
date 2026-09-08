@@ -314,6 +314,8 @@ public class CreateHUCommand
 	 * a VHU's content onto an existing TU: create a fresh virtual CU for the additional product, then
 	 * {@link HULoader} it directly onto {@code targetHuId} (an existing HU used as {@code destination}, not a
 	 * producer that would create a new one).
+	 * <p>
+	 * Untested in combination with a packing-instruction-produced (possibly aggregate) {@code targetHuId}.
 	 */
 	private void addAdditionalProducts(final HuId targetHuId)
 	{

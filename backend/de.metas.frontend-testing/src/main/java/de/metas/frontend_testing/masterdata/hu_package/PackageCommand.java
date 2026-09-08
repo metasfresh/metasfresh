@@ -34,7 +34,7 @@ public class PackageCommand
 		final I_M_Package packageRecord = InterfaceWrapperHelper.newInstance(I_M_Package.class);
 		packageRecord.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
 		packageRecord.setDocumentNo(identifier.toUniqueString());
-		packageRecord.setM_Shipper_ID(MasterdataContext.DEFAULT_SHIPPER_ID.getRepoId());
+		packageRecord.setM_Shipper_ID(context.getDefaultShipperId().getRepoId());
 		saveRecord(packageRecord);
 		final PackageId packageId = PackageId.ofRepoId(packageRecord.getM_Package_ID());
 

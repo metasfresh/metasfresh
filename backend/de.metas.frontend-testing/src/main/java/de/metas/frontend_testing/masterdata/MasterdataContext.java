@@ -14,14 +14,17 @@ import de.metas.product.ResourceId;
 import de.metas.resource.ResourceTypeId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.jetbrains.annotations.NotNull;
@@ -53,14 +56,39 @@ public class MasterdataContext
 	public static final PPRoutingId DEFAULT_ROUTING_ID = PPRoutingId.ofRepoId(540118);  // Default Workflow for mobile UI Manufacturing
 	public static final ResourceTypeId DEFAULT_MANUFACTURING_RESOURCE_TYPE_ID = ResourceTypeId.ofRepoId(1000000);  // S_ResourceType.Name = Produktionsressource
 	public static final WarehouseId STANDARD_WAREHOUSE_ID = WarehouseId.ofRepoId(540008); // seeded "Hauptlager"; the one empties network 540011's seeded line (540008 -> 540012) covers
-	public static final ShipperId DEFAULT_SHIPPER_ID = ShipperId.ofRepoId(1000000); // seeded "Eigentransport"
 	public static final int STANDARD_AD_PRINTER_ID = 1000000;
 	public static final int PRINT_TO_DISK_AD_PRINTERHW_ID = 540331;
 
 	private final HashMap<TypeAndIdentifier, RepoIdAware> identifiers = new HashMap<>();
 	private final HashMap<Identifier, Object> objects = new HashMap<>();
 
+	private ShipperId defaultShipperId;
+
 	public @NonNull String getAdLanguage() {return Env.getADLanguageOrBaseLanguage();}
+
+	/**
+	 * Resolves the seeded default shipper lazily, instead of a literal {@code M_Shipper_ID}: no
+	 * masterdata command owns a "shipper" concept (grepped {@code masterdata/**}), and no seeded shipper
+	 * carries {@code IsDefault=Y}, so this picks the first active {@link I_M_Shipper} (ordered by id) for
+	 * {@link #CLIENT_ID} instead. Cached on this context, like other resolved defaults.
+	 */
+	public @NonNull ShipperId getDefaultShipperId()
+	{
+		if (defaultShipperId == null)
+		{
+			defaultShipperId = Services.get(IQueryBL.class)
+					.createQueryBuilderOutOfTrx(I_M_Shipper.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_Shipper.COLUMNNAME_AD_Client_ID, CLIENT_ID)
+					.orderBy(I_M_Shipper.COLUMNNAME_M_Shipper_ID)
+					.create()
+					// firstId (not firstIdOnly): several active shippers are seeded for this client,
+					// ordered ascending so this deterministically picks the lowest-id one; firstIdOnly
+					// would throw because more than one row matches.
+					.firstId(ShipperId::ofRepoIdOrNull);
+		}
+		return defaultShipperId;
+	}
 
 	public <T extends RepoIdAware> void putIdentifier(@NonNull final Identifier identifier, @NonNull final T id)
 	{
