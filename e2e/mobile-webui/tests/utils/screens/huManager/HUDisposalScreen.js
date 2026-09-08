@@ -29,4 +29,13 @@ export const HUDisposalScreen = {
         await ApplicationsListScreen.waitForScreen(); // not sure if is right to get here after disposal, but atm this is how behaves
     }),
 
+    expectReasonOffered: async ({ reason, offered = true }) => await test.step(`${NAME} - Expect disposal reason '${reason}' offered=${offered}`, async () => {
+        const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
+        if (offered) {
+            await expect(radioButton).toBeVisible();
+        } else {
+            await expect(radioButton).toHaveCount(0);
+        }
+    }),
+
 };

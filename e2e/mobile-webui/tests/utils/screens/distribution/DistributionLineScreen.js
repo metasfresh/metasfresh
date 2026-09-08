@@ -20,18 +20,22 @@ export const DistributionLineScreen = {
     }),
 
     scanHUToMove: async ({ huQRCode, qtyToMove, expectedQtyToMove, expectedError }) => await test.step(`${NAME} - Scan QR Code`, async () => {
-        await page.getByTestId('scanQRCode-button').tap(); // click Scan QR Code button
-        await DistributionLinePickFromScreen.waitForScreen();
+        await DistributionLineScreen.clickScanQRCodeButton();
         await DistributionLinePickFromScreen.typeHUQRCode(huQRCode);
         await DistributionLinePickFromScreen.fillQuantityDialog({
             qtyToMove,
             expectedQtyToMove,
             expectedError
         });
-        
+
         if (!expectedError) {
             await DistributionLineScreen.waitForScreen();
         }
+    }),
+
+    clickScanQRCodeButton: async () => await test.step(`${NAME} - Click Scan QR Code button`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+        await DistributionLinePickFromScreen.waitForScreen();
     }),
 
     clickStepButton: async ({ index }) => await test.step(`${NAME} - Click step ${index}`, async () => {
