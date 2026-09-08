@@ -12,8 +12,8 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Inventory;
 
-import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
@@ -42,14 +42,14 @@ class AssertInventoryExpectationsCommand
 			final HuId huId = getHUIdByMatcherString(huMatcherStr);
 			softlyPutContext("huId", context.describeId(huId));
 
-			final Collection<I_M_InventoryLine> inventoryLines = services.getInventoryLinesByHUId(huId);
+			final List<I_M_InventoryLine> inventoryLines = services.getInventoryLinesByHUId(huId);
 			softlyPutContext("inventoryLines", inventoryLines);
 
 			assertInventory(inventoryLines, expectation);
 		});
 	}
 
-	private void assertInventory(@NonNull final Collection<I_M_InventoryLine> inventoryLines, @NonNull final JsonInventoryExpectation expectation)
+	private void assertInventory(@NonNull final List<I_M_InventoryLine> inventoryLines, @NonNull final JsonInventoryExpectation expectation)
 	{
 		if (expectation.getIsExists() != null)
 		{
@@ -78,7 +78,7 @@ class AssertInventoryExpectationsCommand
 		}
 	}
 
-	private I_M_Inventory getLatestInventory(@NonNull final Collection<I_M_InventoryLine> inventoryLines)
+	private I_M_Inventory getLatestInventory(@NonNull final List<I_M_InventoryLine> inventoryLines)
 	{
 		final I_M_InventoryLine latestLine = inventoryLines.stream()
 				.max(Comparator.comparing(I_M_InventoryLine::getM_InventoryLine_ID))

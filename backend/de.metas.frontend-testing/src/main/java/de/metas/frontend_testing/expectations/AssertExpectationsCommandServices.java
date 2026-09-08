@@ -22,7 +22,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
@@ -52,7 +52,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	@NonNull private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
-	@NonNull private final InventoryRepository inventoryRepository;
+	@NonNull private final InventoryService inventoryService;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -125,12 +125,13 @@ public class AssertExpectationsCommandServices
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
 
 	/**
-	 * All inventory lines referencing the given HU — directly, via M_InventoryLine_HU, via an HU assignment,
-	 * or through one of its included HUs. The repository owns that resolution; do not hand-roll an M_HU_ID query.
+	 * Inventory lines booked on exactly this HU. Deliberately the narrow lookup, not
+	 * {@code retrieveAllLinesForHU}: an assertion must not be satisfied by an unrelated inventory that
+	 * touched an included HU or an HU assignment. The repository owns the query; do not hand-roll one here.
 	 */
-	public Collection<I_M_InventoryLine> getInventoryLinesByHUId(@NonNull final HuId huId)
+	public List<I_M_InventoryLine> getInventoryLinesByHUId(@NonNull final HuId huId)
 	{
-		return inventoryRepository.retrieveAllLinesForHU(huId);
+		return inventoryService.getInventoryRepository().retrieveLinesByHUId(huId);
 	}
 
 	public I_M_Inventory getInventoryById(@NonNull final InventoryId inventoryId)

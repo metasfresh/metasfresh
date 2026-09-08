@@ -262,6 +262,21 @@ public final class InventoryRepository
 		toInventory(inventory);
 	}
 
+	/**
+	 * Inventory lines whose own {@code M_HU_ID} is this HU — the link the write-off/internal-use booking
+	 * sets directly. Unlike {@link #retrieveAllLinesForHU(HuId)} this does NOT widen to included HUs,
+	 * {@code M_InventoryLine_HU} or HU assignments, so callers that must know whether a booking landed on
+	 * exactly THIS HU are not matched by an unrelated inventory elsewhere in the HU's graph.
+	 */
+	public List<I_M_InventoryLine> retrieveLinesByHUId(@NonNull final HuId huId)
+	{
+		return queryBL.createQueryBuilder(I_M_InventoryLine.class)
+				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_HU_ID, huId)
+				.orderBy(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID)
+				.create()
+				.list();
+	}
+
 	public Collection<I_M_InventoryLine> retrieveAllLinesForHU(@NonNull final HuId huId)
 	{
 		final InventoryAndLineIdSet inventoryAndLineIds = retrieveAllLineIdsForHU(huId);
