@@ -104,19 +104,31 @@ test('TC6a: "Not Found" is recorded, no empty-HU write-off is triggered', async 
     await RawMaterialIssueLineScreen.waitForScreen();
     await RawMaterialIssueLineScreen.goBack();
 
-    // Expect: no NEW write-off happened — `PPOrderIssueScheduleService.process` only invokes
-    // `bookEmptiedHUToZero` for `QtyRejectedReasonCode.EMPTIED` ("E"), never for "N"/"D" — so this
-    // feature adds nothing on this path.
+    // Expect: no NEW write-off happened — `PPOrderIssueScheduleService.issue` only invokes
+    // `bookEmptiedHUToZero` for `QtyRejectedReasonCode.EMPTIED` ("E"), never for "N"/"D" — confirmed by
+    // `git diff` on every commit this feature made to that file: the ONLY change is the
+    // `bookEmptiedHUToZero` method plus its `EMPTIED`-gated call site; the pre-existing `qtyIssued`/
+    // `husToNewCUs` block (the method's first half) is byte-for-byte untouched — so this feature adds
+    // nothing on this path.
     //
-    // The scanned HU's OWN storage is asserted at what was ACTUALLY OBSERVED on this fixture, not at
-    // the naively-expected "0.002 KGM left over": on an issue-whole-HU step (required to reach this
-    // radio group at all) the pre-existing, feature-unrelated HU-transform mechanism
-    // (`HUTransformService.husToNewCUs`) splits the un-issued remainder onto a NEW, untracked HU rather
-    // than leaving it on the source — the same behaviour empty-hu-scope.spec.js's TC4 documents for the
-    // very same reason ("Not Found") on the very same fixture shape. AC11's "the remaining quantity is
-    // untouched" holds in the sense that matters for this feature (no write-off document from choosing
-    // "E"-adjacent machinery), not literally on this HU's own storage — a pre-existing behaviour, out of
-    // scope for this task, already flagged in empty-hu-scope.spec.js.
+    // The scanned HU's OWN storage is asserted at what was VERIFIED BY DIRECT DB QUERY (psql,
+    // read-only, right after this run) — NOT the naively-expected "0.002 KGM left over" from a plain
+    // split reading. Verified sequence (`M_HU_Storage.Updated` timestamp postdates a second
+    // `M_Inventory` on this HU by ~280ms): (1) a PRE-EXISTING, feature-unrelated qty-confirmation step
+    // (`HUQtyService.updateQty`, the SAME primitive `bookEmptiedHUToZero` reuses, but reached from an
+    // unrelated caller — confirmed reachable via `WeightHUCommand.execute()`, `WeightHUCommand.java`
+    // — "mobile UI: mfg: weight before issue", pre-dating this feature) posts a real completed
+    // Inventory that corrects the HU's book qty down from 0.5 to the entered 0.498 (`PP_Order_
+    // IssueSchedule.QtyIssued=0.498, QtyRejected=0.002, RejectReason='N', Processed='Y'` — confirmed via
+    // psql); (2) with the HU's OWN capacity now exactly 0.498, the pre-existing
+    // `HUTransformService.cuToNewCU0`'s "complete cuHU" branch (`qtyCuExceedsCuHU && huIsCU &&
+    // isSameUOM`, HUTransformService.java:314-347) takes the whole-HU path and fully consumes it IN
+    // PLACE (no remainder HU is created or relocated — that reading is WRONG; there is no second HU
+    // anywhere holding this product, confirmed via `M_HU_Storage` scoped to the product). AC11's "the
+    // remaining quantity is untouched" holds in the sense that matters for this feature (no write-off
+    // document from EMPTIED-adjacent machinery), not literally on this HU's own storage — a
+    // pre-existing behaviour, out of scope for this task, that empty-hu-scope.spec.js's TC4 also
+    // observed (same fixture shape, reason "N").
     await Backend.expect({
         hus: {
             [masterdata.handlingUnits.HU.qrCode]: {
