@@ -63,7 +63,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-07 | product      | warehouse      | 100 | 15.0000        | 1500.00          |
 
-    # ── Positive delta 100 PCE * (15 - 10) = 500 CHF booked P_Asset DR / P_Revenue CR (amount-only, Qty 0) ──
+    # ── Positive delta 100 PCE * (15 - 10) = 500 CHF booked P_Asset DR / P_CostAdjustment CR (amount-only, Qty 0) ──
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Qty | Record_ID   | M_Product_ID |
       | P_Asset_Acct          | 500 CHF     |             | 0   | revaluation | product      |
@@ -74,7 +74,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | P_CostAdjustment_Acct | -500 CHF      |
 
   @Id:S30984_TC2
-  Scenario: Decrease - completing a cost revaluation lowers the current cost price and books the negative delta to expense
+  Scenario: Decrease - completing a cost revaluation lowers the current cost price and books the negative delta to the cost-adjustment account
     # ── Before: inventory value 1000 CHF, current cost 10 CHF / 100 PCE ──
     Then expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
@@ -105,7 +105,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-07 | product      | warehouse      | 100 | 8.0000         | 800.00           |
 
-    # ── Negative delta 100 PCE * (8 - 10) = -200 CHF booked P_Asset CR / P_Expense DR (amount-only, Qty 0) ──
+    # ── Negative delta 100 PCE * (8 - 10) = -200 CHF booked P_CostAdjustment DR / P_Asset CR (amount-only, Qty 0) ──
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Qty | Record_ID   | M_Product_ID |
       | P_CostAdjustment_Acct | 200 CHF     |             | 0   | revaluation | product      |
