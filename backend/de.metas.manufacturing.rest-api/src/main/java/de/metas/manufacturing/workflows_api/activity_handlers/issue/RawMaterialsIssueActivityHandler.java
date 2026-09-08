@@ -4,9 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ADRefList;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.generichumodel.HUType;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedReasonContext;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
@@ -53,7 +50,6 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.rawMaterialsIssue");
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/rawMaterialsIssue");
 
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	@NonNull private final ManufacturingJobService manufacturingJobService;
@@ -105,8 +101,11 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 
 	private JsonRawMaterialsIssueLine toJson(final @NonNull RawMaterialsIssueLine line, final @NonNull JsonOpts jsonOpts, final boolean offerEmptyingHUs)
 	{
+		// step.isAllowEmptying() already carries the HU-shape decision, computed once at job-load time
+		// (ManufacturingJobLoaderAndSaver.toRawMaterialsIssueStep). Here we only apply the client-config
+		// gate -- no DB access on this path.
 		final ImmutableList<RawMaterialsIssueStep> stepsWithAllowEmptying = line.getSteps().stream()
-				.map(step -> step.withAllowEmptying(isAllowEmptying(step, offerEmptyingHUs)))
+				.map(step -> step.withAllowEmptying(offerEmptyingHUs && step.isAllowEmptying()))
 				.collect(ImmutableList.toImmutableList());
 
 		// The per-step flag (above) is authoritative. This line-level flag is only a coarse hint
@@ -122,42 +121,6 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), jsonOpts.getAdLanguage()))
 				.allergens(getJsonAllergens(line.getProductId(), jsonOpts.getAdLanguage()))
 				.build();
-	}
-
-	/** @return {@code true} if the step's source HU may be written off via the "empty (auto. inventory)" reason. */
-	private boolean isAllowEmptying(@NonNull final RawMaterialsIssueStep step, final boolean offerEmptyingHUs)
-	{
-		if (!offerEmptyingHUs)
-		{
-			return false;
-		}
-
-		final I_M_HU hu = handlingUnitsBL.getById(step.getIssueFromHU().getId());
-		return isAllowEmptying(hu);
-	}
-
-	private boolean isAllowEmptying(@NonNull final I_M_HU hu)
-	{
-		if (handlingUnitsBL.isAggregateHU(hu)) { return false; }          // orthogonal to unit type
-
-		final HUType huType = HUType.ofCodeOrNull(handlingUnitsBL.getHU_UnitType(hu));
-		if (huType == null) { return false; }                             // getHU_UnitType is @Nullable
-
-		switch (huType)
-		{
-			case TransportUnit:
-			case VirtualPI:
-				return isSingleProductStorage(hu);
-			case LoadLogistiqueUnit:
-				return false;
-			default:
-				return false;                                             // a future unit type is not silently accepted
-		}
-	}
-
-	private boolean isSingleProductStorage(@NonNull final I_M_HU hu)
-	{
-		return handlingUnitsBL.getStorageFactory().getProductStorages(hu).size() <= 1;
 	}
 
 	private ImmutableList<JsonHazardSymbol> getJsonHazardSymbols(final @NonNull ProductId productId, final String adLanguage)
