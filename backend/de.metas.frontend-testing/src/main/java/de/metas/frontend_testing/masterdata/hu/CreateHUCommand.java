@@ -5,9 +5,11 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
@@ -49,6 +51,7 @@ public class CreateHUCommand
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -102,7 +105,50 @@ public class CreateHUCommand
 				.productId(getProductId())
 				.warehouseId(getWarehouseId())
 				.externalBarcode(huAttributes != null && huAttributes.hasAttribute(AttributeConstants.ATTR_ExternalBarcode) ? huAttributes.getValueAsString(AttributeConstants.ATTR_ExternalBarcode) : null)
+				.tus(getIncludedTUs(huId))
 				.build();
+	}
+
+	/**
+	 * When this HU was created as an LU with included TUs (request's packingInstructions has an
+	 * {@code luPIItem}), also resolve the included, individually-addressable TUs' own QR codes, so a
+	 * caller can scan one of them directly (e.g. to reach its per-TU alternative step) without a
+	 * separate lookup endpoint. Additive only — the top-level {@code qrCode} field keeps returning
+	 * the LU's own QR code.
+	 * <p>
+	 * An included row that is itself an <b>aggregate HU</b> (one DB row standing in for several
+	 * identical, exactly-capacity-filled TUs — {@code LUTUProducerDestination}/{@code
+	 * TUProducerDestination} coalesce same-content TUs this way whenever a TU is loaded to exactly
+	 * its rated capacity) is skipped: {@link HUQRCodesService#getQRCodeByHuId} would otherwise try to
+	 * generate one QR code per aggregated TU count and throw
+	 * ("Expected only one QR code ... but found [...]"), since an aggregate row has no single QR.
+	 * There is also nothing useful to scan there individually — same as a loading unit, an aggregate
+	 * HU is not a real single-TU write-off source.
+	 */
+	private ImmutableList<JsonCreateHUResponse.Tu> getIncludedTUs(final HuId huId)
+	{
+		if (!request.isGenerateHUQRCode() || request.getPackingInstructions() == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final PackingInstructions packingInstructions = context.getObjectNotNull(request.getPackingInstructions());
+		if (packingInstructions.getLuPIItem() == null)
+		{
+			return ImmutableList.of();
+		}
+
+		return handlingUnitsDAO.retrieveIncludedHUs(huId)
+				.stream()
+				.filter(tu -> !handlingUnitsBL.isAggregateHU(tu))
+				.map(tu -> {
+					final HuId tuId = HuId.ofRepoId(tu.getM_HU_ID());
+					return JsonCreateHUResponse.Tu.builder()
+							.huId(String.valueOf(tuId.getRepoId()))
+							.qrCode(huQRCodesService.getQRCodeByHuId(tuId).toGlobalQRCodeString())
+							.build();
+				})
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private @NonNull HuId createCU()
