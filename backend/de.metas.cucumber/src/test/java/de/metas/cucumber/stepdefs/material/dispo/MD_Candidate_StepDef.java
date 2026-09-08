@@ -804,44 +804,46 @@ public class MD_Candidate_StepDef
 	@And("^metasfresh receives a StockChangedEvent for the current MD_Stock$")
 	public void metasfresh_receives_stock_changed_event(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID");
-			final int productId = productTable.get(productIdentifier).getM_Product_ID();
-
-			final String changeDateStr = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ChangeDate");
-			final Instant changeDate = (changeDateStr == null || changeDateStr.trim().isEmpty())
-					? null
-					: Instant.parse(changeDateStr.trim());
-
-			final List<I_MD_Stock> stockRecords = queryBL.createQueryBuilderOutOfTrx(I_MD_Stock.class)
-					.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
-					.create()
-					.list(I_MD_Stock.class);
-			assertThat(stockRecords).as("MD_Stock rows for product %s", productIdentifier).isNotEmpty();
-
-			for (final I_MD_Stock stockRecord : stockRecords)
-			{
-				final AttributesKey attributesKey = AttributesKeys.pruneEmptyParts(AttributesKey.ofString(stockRecord.getAttributesKey()));
-				final AttributeSetInstanceId asiId = AttributesKeys.createAttributeSetInstanceFromAttributesKey(attributesKey);
-
-				final StockChangedEvent event = StockChangedEvent.builder()
-						.eventDescriptor(EventDescriptor.ofClientAndOrg(stockRecord.getAD_Client_ID(), stockRecord.getAD_Org_ID()))
-						.productDescriptor(ProductDescriptor.forProductAndAttributes(productId, attributesKey, asiId.getRepoId()))
-						.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
-						.qtyOnHand(stockRecord.getQtyOnHand())
-						.qtyOnHandOld(BigDecimal.ZERO)
-						.changeDate(changeDate)
-						.stockChangeDetails(StockChangedEvent.StockChangeDetails.builder()
-								.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(nextResetStockPInstanceRepoId()))
-								.stockId(stockRecord.getMD_Stock_ID())
-								.build())
-						.build();
-
-				postMaterialEventService.enqueueEventNow(event);
-			}
-		}
+		DataTableRows.of(dataTable).forEach(this::postStockChangedEventsForCurrentStock);
 	}
+
+	/**
+	 * Posts one reset-stock {@link StockChangedEvent} per {@code MD_Stock} row of the row's product.
+	 * See {@link #metasfresh_receives_stock_changed_event(DataTable)} for the {@code qtyOnHandOld} caveat.
+	 */
+	private void postStockChangedEventsForCurrentStock(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID);
+		final int productId = productTable.get(productIdentifier).getM_Product_ID();
+
+		final Instant changeDate = row.getAsOptionalInstant("ChangeDate").orElse(null);
+
+		final List<I_MD_Stock> stockRecords = queryBL.createQueryBuilderOutOfTrx(I_MD_Stock.class)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.list(I_MD_Stock.class);
+		assertThat(stockRecords).as("MD_Stock rows for product %s", productIdentifier).isNotEmpty();
+
+		for (final I_MD_Stock stockRecord : stockRecords)
+		{
+			final AttributesKey attributesKey = AttributesKeys.pruneEmptyParts(AttributesKey.ofString(stockRecord.getAttributesKey()));
+			final AttributeSetInstanceId asiId = AttributesKeys.createAttributeSetInstanceFromAttributesKey(attributesKey);
+
+			final StockChangedEvent event = StockChangedEvent.builder()
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(stockRecord.getAD_Client_ID(), stockRecord.getAD_Org_ID()))
+					.productDescriptor(ProductDescriptor.forProductAndAttributes(productId, attributesKey, asiId.getRepoId()))
+					.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
+					.qtyOnHand(stockRecord.getQtyOnHand())
+					.qtyOnHandOld(BigDecimal.ZERO)
+					.changeDate(changeDate)
+					.stockChangeDetails(StockChangedEvent.StockChangeDetails.builder()
+							.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(nextResetStockPInstanceRepoId()))
+							.stockId(stockRecord.getMD_Stock_ID())
+							.build())
+					.build();
+
+			postMaterialEventService.enqueueEventNow(event);
+		}	}
 
 	/**
 	 * Overwrites the running ATP of one candidate's STOCK record, to set up a chain that has drifted

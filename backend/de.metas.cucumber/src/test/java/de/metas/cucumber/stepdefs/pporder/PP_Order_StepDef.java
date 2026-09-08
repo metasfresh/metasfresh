@@ -388,6 +388,13 @@ public class PP_Order_StepDef
 		}
 	}
 
+	/**
+	 * Runs a document action on the manufacturing order behind the given identifier and waits for the
+	 * resulting doc status: {@code reactivated} to {@code IsInProgress}, {@code completed} to
+	 * {@code IsCompleted}, {@code closed} to {@code IsClosed}.
+	 * <p>
+	 * Gherkin: {@code the manufacturing order identified by <identifier> is <reactivated|completed|closed>}
+	 */
 	@And("^the manufacturing order identified by (.*) is (reactivated|completed|closed)$")
 	public void order_action(
 			@NonNull final String orderIdentifier,
