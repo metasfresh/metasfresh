@@ -14,6 +14,7 @@ import { waitForTabAllowsNew, getTabRows } from '../utils/WebAPIValidation';
  *
  * Features tested:
  * - F00100: Sales Order
+ * - F00101.10: Sales Order Quick Entry packing instruction
  *
  * Tests:
  * 1. Enter-key focus advance: Product → Enter → focus advances to Qty
@@ -23,6 +24,7 @@ import { waitForTabAllowsNew, getTabRows } from '../utils/WebAPIValidation';
  * 5. Regular form lookup regression: Customer selection in header (non-quick-input)
  * 6. Enter-key selects packing instruction on secondary sub-field (the reported bug)
  * 7. Mouse-click selects packing instruction on secondary sub-field (regression)
+ * (TESTs 6–7 are placed after TEST 3 in the file)
  */
 
 // ============================================================================
@@ -514,6 +516,7 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
 
       const { recordId } = await setupOrderWithBatchEntry(page, masterdata, language);
 
+      errors.length = 0; // contract: zero browser errors during the quick-input steps only (TC2/TC6 steps 3–5)
       await typeProductAndWaitForDropdown(page, masterdata.products.Product1.productCode);
       await page.keyboard.press('Enter');
       await page.waitForTimeout(1000);
@@ -529,10 +532,10 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       await page.keyboard.press('Enter');
       await page.waitForTimeout(2000);
 
+      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
       await expectSingleLineWithPackingInstruction(recordId, pi.tuPIItemProductTestId);
       await expect(page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field')).toHaveValue('');
       await expect(page.locator('#lookup_M_Product_ID input.input-field')).toHaveValue('');
-      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
     });
 
     // ------------------------------------------------------------------
@@ -556,11 +559,13 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
 
       const { recordId } = await setupOrderWithBatchEntry(page, masterdata, language);
 
+      errors.length = 0; // contract: zero browser errors during the quick-input steps only (TC2/TC6 steps 3–5)
       await typeProductAndWaitForDropdown(page, masterdata.products.Product1.productCode);
       await page.keyboard.press('Enter');
       await page.waitForTimeout(1000);
 
       await typePackingInstructionAndWaitForDropdown(page, pi.tuName);
+      // getByText on a masterdata-generated TU name (language-invariant), not a localized caption
       await page.locator('.input-dropdown-list-option').getByText(pi.tuName).first().click();
       await page.waitForTimeout(1000);
 
@@ -570,9 +575,10 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       await page.keyboard.press('Enter');
       await page.waitForTimeout(2000);
 
+      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
       await expectSingleLineWithPackingInstruction(recordId, pi.tuPIItemProductTestId);
       await expect(page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field')).toHaveValue('');
-      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
+      await expect(page.locator('#lookup_M_Product_ID input.input-field')).toHaveValue('');
     });
 
     // ------------------------------------------------------------------

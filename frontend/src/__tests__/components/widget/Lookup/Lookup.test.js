@@ -5,18 +5,18 @@ import { Lookup } from '../../../../components/widget/Lookup/Lookup';
 import RawLookup from '../../../../components/widget/Lookup/RawLookup';
 
 /**
- * A composite lookup (partner → location) renders one RawLookup per sub-field.
+ * A composite lookup (quick-input product → packing instruction) renders one RawLookup per sub-field.
  * Only index 0 may receive the real callback / forwarded ref; non-primary sub-fields
  * must receive `undefined` — never the boolean `false`.
  */
 describe('Lookup — props handed to composite sub-fields', () => {
   const properties = [
-    { field: 'C_BPartner_ID', source: 'lookup', caption: 'Partner' },
-    { field: 'C_BPartner_Location_ID', source: 'lookup', caption: 'Location' },
+    { field: 'M_Product_ID', source: 'lookup', caption: 'Product' },
+    { field: 'M_HU_PI_Item_Product_ID', source: 'lookup', caption: 'Packing instruction' },
   ];
   const widgetData = [
-    { field: 'C_BPartner_ID', value: null, readonly: false, mandatory: true },
-    { field: 'C_BPartner_Location_ID', value: null, readonly: false, mandatory: false },
+    { field: 'M_Product_ID', value: null, readonly: false, mandatory: true },
+    { field: 'M_HU_PI_Item_Product_ID', value: null, readonly: false, mandatory: false },
   ];
   const forwardedRef = React.createRef();
 
