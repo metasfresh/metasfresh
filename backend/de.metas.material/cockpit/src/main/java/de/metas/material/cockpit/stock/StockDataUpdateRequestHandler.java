@@ -8,9 +8,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,11 +48,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class StockDataUpdateRequestHandler
 {
 	private final PostMaterialEventService postMaterialEventService;
+	private final StockRepository stockRepository;
 
 	public StockDataUpdateRequestHandler(
-			@NonNull final PostMaterialEventService postMaterialEventService)
+			@NonNull final PostMaterialEventService postMaterialEventService,
+			@NonNull final StockRepository stockRepository)
 	{
 		this.postMaterialEventService = postMaterialEventService;
+		this.stockRepository = stockRepository;
 	}
 
 	public void handleDataUpdateRequest(@NonNull final StockDataUpdateRequest dataUpdateRequest)
@@ -73,7 +74,9 @@ public class StockDataUpdateRequestHandler
 
 	private I_MD_Stock retrieveOrCreateDataRecord(@NonNull final StockDataRecordIdentifier identifier)
 	{
-		final IQuery<I_MD_Stock> query = createQueryForIdentifier(identifier);
+		// the five-column key query lives in StockRepository, so that this writer and the readers of the same
+		// key (e.g. the ATP reconciliation) cannot end up filtering MD_Stock differently
+		final IQuery<I_MD_Stock> query = stockRepository.createQueryForIdentifier(identifier);
 
 		final I_MD_Stock existingDataRecord = query.firstOnly(I_MD_Stock.class);
 		if (existingDataRecord != null)
@@ -90,22 +93,6 @@ public class StockDataUpdateRequestHandler
 		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId().getRepoId());
 
 		return newDataRecord;
-	}
-
-	private IQuery<I_MD_Stock> createQueryForIdentifier(@NonNull final StockDataRecordIdentifier identifier)
-	{
-		final AttributesKey attributesKey = identifier.getStorageAttributesKey();
-		attributesKey.assertNotAllOrOther();
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_MD_Stock.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Org_ID, identifier.getOrgId())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, identifier.getProductId())
-				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, identifier.getWarehouseId())
-				.create();
 	}
 
 	private void fireStockChangedEvent(

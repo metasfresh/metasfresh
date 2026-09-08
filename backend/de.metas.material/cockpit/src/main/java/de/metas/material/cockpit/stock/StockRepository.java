@@ -74,6 +74,54 @@ public class StockRepository
 		return qtyOnHand != null ? qtyOnHand : BigDecimal.ZERO;
 	}
 
+	/**
+	 * Reads the physical on-hand quantity of one exact stock key.
+	 *
+	 * @return the {@code QtyOnHand} of the one {@code MD_Stock} record the given identifier addresses, or
+	 * {@link BigDecimal#ZERO} if there is no such record. A missing record is not an error: a key only
+	 * acquires its {@code MD_Stock} row once something has moved into it.
+	 */
+	public BigDecimal getQtyOnHand(@NonNull final StockDataRecordIdentifier identifier)
+	{
+		final I_MD_Stock record = createQueryForIdentifier(identifier).firstOnly(I_MD_Stock.class);
+		return record != null ? record.getQtyOnHand() : BigDecimal.ZERO;
+	}
+
+	/**
+	 * Builds the exact-key {@code MD_Stock} query, filtering the five columns that are exactly that table's
+	 * unique key.
+	 * <p>
+	 * Deliberately public, and deliberately the ONLY place this key query is built: it is shared with
+	 * {@link StockDataUpdateRequestHandler}, which needs the record itself (to create or update it) rather
+	 * than just its quantity, and with {@link #getQtyOnHand(StockDataRecordIdentifier)}, whose caller is the
+	 * ATP reconciliation in {@code de.metas.material.dispo.reconcile} — a module downstream of this one.
+	 * Copying a five-column key filter into a second reader is how a table acquires two readers that
+	 * silently drift apart: the same failure family as the {@code MD_Candidate_Get_Stock_Impact} (SQL) versus
+	 * {@code Candidate#getStockImpactPlannedQuantity()} (Java) divergence that the ATP reconciliation exists
+	 * to clean up, where two formulas write one column and nothing compares them.
+	 * <p>
+	 * Note that the identifier's constructor already rules out {@code AttributesKey.ALL}/{@code .OTHER}; the
+	 * assertion below is kept from the caller this method was extracted from, as a guard for identifiers
+	 * that might one day be built by other means.
+	 *
+	 * @return a query matching the at most one {@code MD_Stock} record of the given key
+	 */
+	public IQuery<I_MD_Stock> createQueryForIdentifier(@NonNull final StockDataRecordIdentifier identifier)
+	{
+		final AttributesKey attributesKey = identifier.getStorageAttributesKey();
+		attributesKey.assertNotAllOrOther();
+
+		return queryBL
+				.createQueryBuilder(I_MD_Stock.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Org_ID, identifier.getOrgId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, identifier.getProductId())
+				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, identifier.getWarehouseId())
+				.create();
+	}
+
 	/** Please use this stream within a try-with-resources statement, because it's supposed to do cleanup. */
 	public Stream<StockDataAggregateItem> streamStockDataAggregateItems(
 			@NonNull final StockDataAggregateQuery query)
