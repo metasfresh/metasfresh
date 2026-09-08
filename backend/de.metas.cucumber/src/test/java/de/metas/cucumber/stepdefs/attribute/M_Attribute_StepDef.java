@@ -68,6 +68,26 @@
 				 });
 	 }
 
+	 /**
+	  * Upserts {@code M_Attribute} records by {@code Value} (created if none exists).
+	  *
+	  * <p>Required columns: {@code Value} and/or {@code Name} (resolved via {@link ValueAndName}).
+	  * <p>Optional columns:
+	  * <ul>
+	  *   <li>{@code AttributeValueType} — one of {@link AttributeValueType} (e.g. {@code N}, {@code S}, {@code D}, {@code L})</li>
+	  *   <li>{@code IsStorageRelevant}, {@code IsMandatory}, {@code DefaultValueSQL}</li>
+	  *   <li>{@code IsInstanceAttribute} — {@code Y} makes the attribute instance-level (per-ASI, e.g. Lot / Best-before);
+	  *       required for a generic editable attribute to be part of a manufacturing-receipt product's editable
+	  *       allow-list, which resolves against instance-level attributes only.</li>
+	  * </ul>
+	  *
+	  * <p><b>Gherkin usage example</b>:
+	  * <pre>{@code
+	  * And metasfresh contains M_Attributes:
+	  *   | Identifier  | Value           | Name              | AttributeValueType | IsInstanceAttribute |
+	  *   | genericAttr | GenericTestAttr | Generic Test Attr | N                  | Y                   |
+	  * }</pre>
+	  */
 	 @And("metasfresh contains M_Attributes:")
 	 public void metasfresh_contains_M_Attributes(@NonNull final DataTable dataTable)
 	 {
@@ -102,6 +122,9 @@
 
 					 row.getAsOptionalBoolean(I_M_Attribute.COLUMNNAME_IsMandatory)
 							 .ifPresent(attributeRecord::setIsMandatory);
+
+					 row.getAsOptionalBoolean(I_M_Attribute.COLUMNNAME_IsInstanceAttribute)
+							 .ifPresent(attributeRecord::setIsInstanceAttribute);
 
 					 InterfaceWrapperHelper.saveRecord(attributeRecord);
 					 final Attribute attribute = AttributeDAO.fromRecord(attributeRecord);

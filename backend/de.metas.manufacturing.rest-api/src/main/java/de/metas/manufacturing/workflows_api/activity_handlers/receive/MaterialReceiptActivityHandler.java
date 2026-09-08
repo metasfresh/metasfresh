@@ -2,7 +2,6 @@ package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.handlingunits.HUPIItemProduct;
@@ -54,8 +53,6 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ClientId;
@@ -90,6 +87,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final MaterialReceiptEditableAttributes editableAttributes;
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -213,6 +211,10 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	 * order ({@link MobileUIManufacturingConfig#getEditableAttributeCodesInOrder()} is already ordered). Applies
 	 * uniformly to every line, main finished good or co-/by-product alike. No value is carried yet — nothing has
 	 * been entered by the operator at this stage.
+	 * <p>
+	 * The allow-list resolution itself lives in {@link MaterialReceiptEditableAttributes} so that the receive-time
+	 * fail-loud guard ({@code ManufacturingJobService#receiveGoods}) validates against the exact same list this
+	 * method offers — no drift between what the UI offers and what the server accepts.
 	 */
 	@NonNull
 	@VisibleForTesting
@@ -221,33 +223,10 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			@NonNull final MobileUIManufacturingConfig config,
 			@NonNull final String adLanguage)
 	{
-		final ImmutableList<AttributeCode> configuredCodes = config.getEditableAttributeCodesInOrder();
-		if (configuredCodes.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-		if (attributeSetId.isNone())
-		{
-			return ImmutableList.of();
-		}
-
-		final ImmutableMap<AttributeCode, Attribute> instanceAttributesByCode = attributeDAO
-				.retrieveAttributes(attributeSetId, /* isInstanceAttribute */true)
+		return editableAttributes.getEditableAttributes(productId, config)
 				.stream()
-				.collect(ImmutableMap.toImmutableMap(Attribute::getAttributeCode, attribute -> attribute));
-
-		final ImmutableList.Builder<JsonAttribute> result = ImmutableList.builder();
-		for (final AttributeCode code : configuredCodes)
-		{
-			final Attribute attribute = instanceAttributesByCode.get(code);
-			if (attribute != null)
-			{
-				result.add(toJsonAttribute(attribute, adLanguage));
-			}
-		}
-		return result.build();
+				.map(attribute -> toJsonAttribute(attribute, adLanguage))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull

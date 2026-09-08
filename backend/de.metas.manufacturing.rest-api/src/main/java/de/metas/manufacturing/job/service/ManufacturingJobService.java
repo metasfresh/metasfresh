@@ -51,6 +51,7 @@ import de.metas.manufacturing.job.service.commands.issue_what_was_received.Issue
 import de.metas.manufacturing.job.service.commands.receive.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.receive.ReceiveGoodsCommand.ReceiveGoodsCommandBuilder;
 import de.metas.manufacturing.job.service.commands.receive.SelectedReceivingTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptEditableAttributes;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
@@ -77,6 +78,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
@@ -100,6 +102,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -129,6 +132,7 @@ public class ManufacturingJobService
 	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final MaterialReceiptEditableAttributes materialReceiptEditableAttributes;
 
 	@VisibleForTesting
 	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
@@ -148,7 +152,8 @@ public class ManufacturingJobService
 						new DeviceWebsocketNamingStrategy("/test/"),
 						ManufacturingJobLoaderAndSaverSupportingServices.newInstanceForUnitTesting(),
 						new MobileUIManufacturingConfigRepository(),
-						SpringContextHolder.instance.getBean(HUQRCodesService.class)
+						SpringContextHolder.instance.getBean(HUQRCodesService.class),
+						new MaterialReceiptEditableAttributes()
 				)
 		);
 	}
@@ -520,6 +525,21 @@ public class ManufacturingJobService
 		@NonNull final ReceiveUnitType receiveUnitType = config.getReceiveUnitTypeEffective();
 
 		final FinishedGoodsReceiveLine receiveLine = job.getFinishedGoodsReceiveLineById(receiveFrom.getFinishedGoodsReceiveLineId());
+
+		// Validate the WHOLE submitted generic-attribute map ONCE, fail-loud, BEFORE any HU is written:
+		// (CHANGE 2) reject when the same producer-managed code is submitted through both the dedicated field
+		// and the generic map, then (CHANGE 1) reject any generic code not on the received product's editable
+		// allow-list. The dedicated scan fields themselves are never subject to the allow-list check.
+		final Map<AttributeCode, String> submittedAttributes = receiveFrom.getAttributesAsMap();
+		MaterialReceiptEditableAttributes.assertNoDualChannelConflict(
+				receiveFrom.getLotNo(),
+				receiveFrom.getBestBeforeDate(),
+				receiveFrom.getProductionDate(),
+				submittedAttributes);
+		materialReceiptEditableAttributes.assertOnlyEditableAttributesSubmitted(
+				receiveLine.getProductId(),
+				config,
+				submittedAttributes.keySet());
 
 		return newReceiveGoodsCommand()
 				.job(job)

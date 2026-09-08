@@ -57,7 +57,8 @@ class MaterialReceiptActivityHandlerTest
 				new ProductHazardSymbolService(new ProductHazardSymbolRepository(), new HazardSymbolRepository()),
 				new ProductAllergensService(new ProductAllergensRepository(), new AllergenRepository()),
 				ScannableCodeFormatService.newInstanceForUnitTesting(),
-				new MobileUIManufacturingConfigRepository());
+				new MobileUIManufacturingConfigRepository(),
+				new MaterialReceiptEditableAttributes());
 
 		productId = createProduct();
 		createVirtualPIItemProduct();
@@ -144,9 +145,10 @@ class MaterialReceiptActivityHandlerTest
 	}
 
 	/**
-	 * The per-line {@code editableAttributes} build: restriction to the product's {@code M_AttributeSet}, to
-	 * instance-level attributes only, ordering by the config's {@code SeqNo}, and independence per line
-	 * (including co-product lines with a different product).
+	 * The per-line {@code editableAttributes} build — here only the restriction to the product's own
+	 * {@code M_AttributeSet} (a configured code not on this product's set is excluded). The other facets
+	 * (instance-level filtering, {@code SeqNo} ordering, per-line / co-product independence) are
+	 * UI-observable and covered by the mobile Playwright suite, not here.
 	 */
 	@Nested
 	class buildEditableAttributes

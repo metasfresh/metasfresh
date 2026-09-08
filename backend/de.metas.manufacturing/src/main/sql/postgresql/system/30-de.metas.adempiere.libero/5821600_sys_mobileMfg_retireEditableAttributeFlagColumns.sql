@@ -45,24 +45,9 @@ DELETE FROM AD_User_SortPref_Line WHERE AD_Field_ID IN
 DELETE FROM AD_Field WHERE AD_Column_ID IN (592878,592879,592880,592881)
 ;
 
--- ============================================================================
--- SeqNo/SeqNoGrid gap-close on the two AD_UI_ElementGroup's siblings that shift up
--- (tab 546679 group 550042; tab 547483 group 551690 - both formerly had SeqNo 60..100
--- after the two retired fields at SeqNo 40/50; shift down by 20 to close the gap)
--- ============================================================================
-
--- 2026-09-01 11:05:00
-UPDATE AD_UI_Element SET SeqNo=40, SeqNoGrid=40, Updated=TO_TIMESTAMP('2026-09-01 11:05:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653173;
-UPDATE AD_UI_Element SET SeqNo=50, SeqNoGrid=50, Updated=TO_TIMESTAMP('2026-09-01 11:05:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653174;
-UPDATE AD_UI_Element SET SeqNo=60, SeqNoGrid=60, Updated=TO_TIMESTAMP('2026-09-01 11:05:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653175;
-UPDATE AD_UI_Element SET SeqNo=70, SeqNoGrid=70, Updated=TO_TIMESTAMP('2026-09-01 11:05:03','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653176;
-UPDATE AD_UI_Element SET SeqNo=80, SeqNoGrid=80, Updated=TO_TIMESTAMP('2026-09-01 11:05:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653686;
-
-UPDATE AD_UI_Element SET SeqNo=40, SeqNoGrid=40, Updated=TO_TIMESTAMP('2026-09-01 11:05:05','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653169;
-UPDATE AD_UI_Element SET SeqNo=50, SeqNoGrid=50, Updated=TO_TIMESTAMP('2026-09-01 11:05:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653170;
-UPDATE AD_UI_Element SET SeqNo=60, SeqNoGrid=60, Updated=TO_TIMESTAMP('2026-09-01 11:05:07','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653171;
-UPDATE AD_UI_Element SET SeqNo=70, SeqNoGrid=70, Updated=TO_TIMESTAMP('2026-09-01 11:05:08','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653172;
-UPDATE AD_UI_Element SET SeqNo=80, SeqNoGrid=80, Updated=TO_TIMESTAMP('2026-09-01 11:05:09','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_UI_Element_ID=653685;
+-- (No SeqNo "gap-close" renumber of the sibling AD_UI_Elements: SeqNo/SeqNoGrid are relative sort
+--  keys, so deleting the two retired fields leaves no visible gap — the survivors render in the same
+--  order. Renumbering by hardcoded AD_UI_Element_ID would be unnecessary risk on a differing instance.)
 
 -- ============================================================================
 -- AD_Column_Trl + AD_Column cleanup
