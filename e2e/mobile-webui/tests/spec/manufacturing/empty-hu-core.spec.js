@@ -75,7 +75,7 @@ const startIssueStep = async (masterdata) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC1: Clear the leftover on a gas-bottle TU — the core case', async ({ page }) => {
+test('Clear the leftover on a gas-bottle TU — the core case', async ({ page }) => {
     const masterdata = await createMasterdata({ huQty: 0.5, orderQty: 0.5, isConfirmEmptyingHU: true });
 
     await startIssueStep(masterdata);
@@ -122,7 +122,7 @@ test('TC1: Clear the leftover on a gas-bottle TU — the core case', async ({ pa
     });
 });
 
-test('TC2: Declining the confirmation changes nothing', async ({ page }) => {
+test('Declining the confirmation changes nothing', async ({ page }) => {
     const masterdata = await createMasterdata({ huQty: 0.5, orderQty: 0.5, isConfirmEmptyingHU: true });
 
     await startIssueStep(masterdata);
@@ -155,7 +155,7 @@ test('TC2: Declining the confirmation changes nothing', async ({ page }) => {
     });
 });
 
-test('TC2: Unticking the confirm flag skips the prompt', async ({ page }) => {
+test('Unticking the confirm flag skips the prompt', async ({ page }) => {
     const masterdata = await createMasterdata({ huQty: 0.5, orderQty: 0.5, isConfirmEmptyingHU: false });
 
     await startIssueStep(masterdata);
@@ -186,7 +186,7 @@ test('TC2: Unticking the confirm flag skips the prompt', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC3: An already-nearly-empty HU behaves the same', async ({ page }) => {
+test('An already-nearly-empty HU behaves the same', async ({ page }) => {
     // The dregs path is the common one and must not be treated as special or suspicious: the HU is
     // booked at a small fraction of a full one, and most of what remains is issued.
     const masterdata = await createMasterdata({ huQty: 0.003, orderQty: 0.003, isConfirmEmptyingHU: true });

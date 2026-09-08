@@ -133,10 +133,17 @@ public class MobileUIManufacturingConfigRepository
 	 * per-user profile is user-editable), but the frontend-testing masterdata harness needs one to
 	 * deterministically drive {@code IsAllowEmptyingHUs} / {@code IsConfirmEmptyingHU} for E2E specs
 	 * (see {@code MobileConfigManufacturingCommand}). Upserts the single row for the given client.
+	 * Mirrors the pre-existing {@link #saveUserConfig}, whose only caller is likewise that harness.
 	 */
 	public void saveGlobalConfig(@NonNull final MobileUIManufacturingConfig newConfig, @NonNull final ClientId clientId)
 	{
 		final I_MobileUI_MFG_Config record = retrieveGlobalConfigRecord(clientId).orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_MFG_Config.class));
+		// NOTE on client scoping: a new record's AD_Client_ID is assigned by the framework from the ambient
+		// context -- the generated model exposes getAD_Client_ID() but deliberately NO setter -- while the
+		// lookup above filters on the clientId parameter. So a caller whose ambient client differs from the
+		// clientId it passes would create a row that retrieveGlobalConfigRecord(clientId) can never find
+		// again. Both callers pass the session's own client, so this holds today; it cannot be defended
+		// here without going behind the model, hence stated rather than asserted.
 		record.setIsActive(true);
 		updateGlobalRecord(record, newConfig);
 		InterfaceWrapperHelper.save(record);
