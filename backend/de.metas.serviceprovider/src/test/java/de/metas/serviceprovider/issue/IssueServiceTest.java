@@ -53,14 +53,19 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class IssueServiceTest
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
-	private final TimeBookingRepository timeBookingRepository = new TimeBookingRepository(queryBL);
-	private final IssueService issueService = new IssueService(issueRepository, timeBookingRepository);
+	private IssueRepository issueRepository;
+	private TimeBookingRepository timeBookingRepository;
+	private IssueService issueService;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		// construct after init(): newInstanceForUnitTesting() requires JUnit test mode to be enabled
+		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
+		timeBookingRepository = new TimeBookingRepository(queryBL);
+		issueService = new IssueService(issueRepository, timeBookingRepository);
 	}
 
 	/**
