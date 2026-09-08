@@ -34,6 +34,10 @@ const EMPTIED_REASON = 'E';
 const NOT_FOUND_REASON_CAPTION = 'Not Found';
 const DAMAGED_REASON_CAPTION = 'Damaged';
 
+// Same helper as empty-hu-core.spec.js: the AD_Message text (system base language, de_DE) that
+// `PPOrderIssueScheduleService#bookEmptiedHUToZero` writes as the write-off inventory's Description.
+const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu ${documentNo} geleert`;
+
 // ---------------------------------------------------------------------------------------------
 // TC6: existing reasons ("not found", "damaged") and the do-nothing default ("no reason") leave
 // the manufacturing issue-from-HU quantity unchanged, with no new inventory document.
@@ -136,6 +140,15 @@ test('TC6a: "Not Found" is recorded, no empty-HU write-off is triggered', async 
                 storages: { COMP: '0 KGM' },
             },
         },
+        // The HU already carries real inventory documents unrelated to this feature (the masterdata
+        // seed, plus the pre-existing qty-confirmation inventory traced above) — `isExists` alone would
+        // always be true regardless of a write-off, so scope it to the write-off's own description.
+        inventories: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                isExists: false,
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+            },
+        },
     });
 });
 
@@ -161,6 +174,13 @@ test('TC6b: "Damaged" is recorded, no empty-HU write-off is triggered', async ({
             [masterdata.handlingUnits.HU.qrCode]: {
                 huStatus: 'D',
                 storages: { COMP: '0 KGM' },
+            },
+        },
+        // Same reasoning as TC6a: scope the "no write-off" check to the write-off's own description.
+        inventories: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                isExists: false,
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
             },
         },
     });
@@ -190,6 +210,13 @@ test('TC6c: picking no reason leaves a genuinely abundant HU\'s remaining quanti
             [masterdata.handlingUnits.HU.qrCode]: {
                 huStatus: 'A',
                 storages: { COMP: '1.5 KGM' },
+            },
+        },
+        // Same reasoning as TC6a/TC6b: scope the "no write-off" check to the write-off's own description.
+        inventories: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                isExists: false,
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
             },
         },
     });
