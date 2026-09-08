@@ -22,6 +22,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -29,6 +33,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_M_Inventory;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -46,6 +51,8 @@ public class AssertExpectationsCommandServices
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	@NonNull private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	@NonNull private final InventoryRepository inventoryRepository;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
@@ -116,4 +123,18 @@ public class AssertExpectationsCommandServices
 	}
 
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
+
+	/**
+	 * All inventory lines referencing the given HU — directly, via M_InventoryLine_HU, via an HU assignment,
+	 * or through one of its included HUs. The repository owns that resolution; do not hand-roll an M_HU_ID query.
+	 */
+	public Collection<I_M_InventoryLine> getInventoryLinesByHUId(@NonNull final HuId huId)
+	{
+		return inventoryRepository.retrieveAllLinesForHU(huId);
+	}
+
+	public I_M_Inventory getInventoryById(@NonNull final InventoryId inventoryId)
+	{
+		return inventoryDAO.getById(inventoryId);
+	}
 }
