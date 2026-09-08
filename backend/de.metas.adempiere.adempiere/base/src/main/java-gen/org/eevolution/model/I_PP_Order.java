@@ -896,6 +896,31 @@ public interface I_PP_Order
 	String COLUMNNAME_FloatBefored = "FloatBefored";
 
 	/**
+	 * Set Has cost difference.
+	 * Yes when the manufacturing order carries a cost difference other than zero.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setHasCostDifference (boolean HasCostDifference);
+
+	/**
+	 * Get Has cost difference.
+	 * Yes when the manufacturing order carries a cost difference other than zero.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isHasCostDifference();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_HasCostDifference = new ModelColumn<>(I_PP_Order.class, "HasCostDifference", null);
+	String COLUMNNAME_HasCostDifference = "HasCostDifference";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -1280,7 +1305,7 @@ public interface I_PP_Order
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1290,7 +1315,7 @@ public interface I_PP_Order
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
