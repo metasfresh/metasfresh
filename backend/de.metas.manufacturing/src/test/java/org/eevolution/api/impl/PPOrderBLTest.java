@@ -145,14 +145,12 @@ public class PPOrderBLTest
 	}
 
 	/**
-	 * Closing a selection of manufacturing orders closes each order in its own transaction and keeps going when one of
-	 * them fails. The all-orders-close path is covered end-to-end by the cucumber scenario that runs the
-	 * {@code PP_Order_CloseSelection} process; the failure split is only reachable here, because the per-order outcome
-	 * is carried by the returned {@link PPOrderCloseResult} and never surfaces as document state.
+	 * The failure split of {@link PPOrderBL#closeOrdersInSelection}, which is only reachable here: it is carried by
+	 * the returned {@link PPOrderCloseResult} and never surfaces as document state. The all-orders-close path is
+	 * covered by the cucumber scenario running the {@code PP_Order_CloseSelection} process.
 	 *
-	 * <p>The in-memory framework commits every save at once, so what these tests pin about a failed order is that the
-	 * loop writes nothing for it - rolling back a half-applied close is the transaction manager's job and out of reach
-	 * from here.
+	 * <p>The in-memory test framework commits every save immediately, so a failed order only proves that
+	 * nothing was written for it, not that a half-applied close was rolled back.
 	 */
 	@Nested
 	public class closeOrdersInSelection
@@ -169,9 +167,8 @@ public class PPOrderBLTest
 		{
 			final IDocumentBL documentBL = Mockito.mock(IDocumentBL.class);
 
-			// PPOrderBL calls the two-argument processEx, i.e. expectedDocStatus=null: the document engine is told to
-			// close and is never asked to confirm that it did. Stubbing that exact overload is what makes a close which
-			// quietly does nothing reproducible here.
+			// The two-argument processEx is the overload PPOrderBL calls (expectedDocStatus=null); stubbing exactly
+			// it is what makes a close that quietly does nothing reproducible.
 			Mockito.doAnswer(invocation -> {
 				final I_PP_Order ppOrder = invocation.getArgument(0);
 				closeOutcomeByDocumentNo.get(ppOrder.getDocumentNo()).accept(ppOrder);
@@ -260,7 +257,6 @@ public class PPOrderBLTest
 			return POJOLookupMap.get().createSelectionFromModels(ppOrders);
 		}
 
-		/** What the document engine does to an order it closes. */
 		private void closes(final I_PP_Order ppOrder)
 		{
 			ppOrder.setDocStatus(DocStatus.Closed.getCode());
@@ -268,16 +264,12 @@ public class PPOrderBLTest
 			saveRecord(ppOrder);
 		}
 
-		/**
-		 * A close that fails the way a real one does - an order whose components were issued short of what the BOM
-		 * line's issuing tolerance allows cannot be closed.
-		 */
 		private void failsToClose(final I_PP_Order ppOrder)
 		{
 			throw new AdempiereException(CLOSE_FAILURE_MESSAGE);
 		}
 
-		/** A close that comes back without an error and without having closed anything. */
+		/** A close that reports no error yet leaves the order open. */
 		private void doesNothing(final I_PP_Order ppOrder)
 		{
 		}

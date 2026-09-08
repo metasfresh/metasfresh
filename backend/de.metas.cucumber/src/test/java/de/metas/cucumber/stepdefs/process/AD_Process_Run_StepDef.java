@@ -54,9 +54,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>Rationale for direct invocation: in production this process is triggered by an {@code AD_Scheduler}
  * at a configurable interval. Invoking it directly via {@code ProcessInfo.executeSync()} keeps the test
  * deterministic — no dependency on scheduler timing or async queues.
- *
- * <p>The second step runs a process over a USER SELECTION of records, the way a WebUI view quick action
- * invokes a selection process.
  */
 @RequiredArgsConstructor
 public class AD_Process_Run_StepDef
@@ -86,12 +83,9 @@ public class AD_Process_Run_StepDef
 	}
 
 	/**
-	 * Runs the {@code AD_Process} identified by its {@code Value} over the given records as its USER SELECTION -
-	 * the way a WebUI view quick action invokes a selection process. The records are handed over as the process's
-	 * where clause, exactly as the WebUI does it, so a process that narrows the selection further (by DocStatus,
-	 * say) still gets to make that decision itself.
-	 *
-	 * <p>All identifiers must resolve to the same table.
+	 * Runs the {@code AD_Process} identified by its {@code Value} over the given records as its user selection,
+	 * handed over as the process's where clause the way a WebUI view quick action does it. All identifiers must
+	 * resolve to the same table.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -144,9 +138,8 @@ public class AD_Process_Run_StepDef
 				.setRoleId(roleId)
 				.setCreateTemporaryCtx();
 
-		// Only touch the table/selection setters on the selection path. setTableName(null) is NOT the same as
-		// never calling it: it pins AD_Table_ID to -1 and kills the AD_PInstance fallback that the plain
-		// no-selection step has always relied on.
+		// setTableName(null) is NOT the same as never calling it: it pins AD_Table_ID to -1 and kills the
+		// AD_PInstance fallback the no-selection path relies on.
 		if (tableName != null)
 		{
 			processInfo.setTableName(tableName).setWhereClause(whereClause);

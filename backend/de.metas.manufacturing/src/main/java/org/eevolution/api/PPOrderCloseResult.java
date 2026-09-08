@@ -28,9 +28,8 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * Outcome of closing a batch of manufacturing orders in which each order is closed independently of the
- * others. Only the FIRST failure's message is kept: it is what a caller puts in front of the user, while
- * the full list goes to the loggable, one line per order.
+ * Outcome of closing a batch of manufacturing orders, each one independently of the others. Only the FIRST
+ * failure's message is kept; the full list goes to the loggable.
  */
 @Value
 @Builder

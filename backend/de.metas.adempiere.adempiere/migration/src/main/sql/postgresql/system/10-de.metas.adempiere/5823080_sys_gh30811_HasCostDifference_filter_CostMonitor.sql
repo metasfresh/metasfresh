@@ -2,22 +2,11 @@
 -- (AD_Window 542175 / AD_Tab 549352) as its cost-difference filter, and retire the unusable filter
 -- on the decimal PP_Order.CostDifference.
 --
--- Tab 549352 is on IncludeFiltersStrategy='E' (Explicit), so its filter set is exactly the AD_Fields
--- carrying IsFilterField='Y'. HasCostDifference joins it; CostDifference leaves it -- an EQUALS box
--- on an amount is an exact-match search on a computed decimal, which no controller can type into.
--- CostDifference stays a grid column (SeqNoGrid 35): the Yes/No flag says which orders to work,
--- the amount says how much.
+-- This must stay the ONLY tab with an AD_Field for column 593510: that is what keeps the column-level
+-- filter attributes of 593510 from reaching any other PP_Order window.
 --
--- The tab is the ONLY tab with an AD_Field for column 593510, which is what keeps the column-level
--- FilterOperator='E' / FilterDefaultValue='Y' set in 5823070 from reaching any other window --
--- Produktionsauftrag (AD_Window 53009 / AD_Tab 53054) included.
---
--- The field is shown in the grid (rule: a filter column must be visible in the grid view) but not in
--- the single-record form, where the CostDifference amount already states the same fact with more
--- precision and a derived read-only checkbox would only repeat it. SeqNoGrid=37 places it directly
--- after CostDifference and is free on both grid layers (AD_Field and AD_UI_Element).
---
--- IDs allocated from idserver.metas.de: AD_Field 784959, AD_UI_Element 654725
+-- The field is shown in the grid (a filter column must be visible in the grid view) but not in the
+-- single-record form, where the CostDifference amount already states the same fact more precisely.
 
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,IsFilterField,Name,SeqNo,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,593510,784959 /*From ID Server*/,0,549352,
@@ -44,10 +33,7 @@ VALUES (0,784959,0,549352,555514,654725 /*From ID Server*/,'F',
         TO_TIMESTAMP('2026-09-08 15:10:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- CostDifference (AD_Field 781753) leaves the filter bar. It stays a grid column.
--- On a database built from this branch the field never became a filter field in the first place
--- (5823050 does not list it), so this UPDATE is a no-op there; it is written explicitly so that a
--- dev stack which applied an earlier draft of 5823050 converges to the same state.
+-- CostDifference (AD_Field 781753) leaves the filter bar; it stays a grid column.
 UPDATE AD_Field SET IsFilterField='N',
        Updated=TO_TIMESTAMP('2026-09-08 15:10:20','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Field_ID=781753

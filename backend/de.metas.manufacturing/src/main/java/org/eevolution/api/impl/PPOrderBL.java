@@ -425,17 +425,14 @@ public class PPOrderBL implements IPPOrderBL
 
 	private void closeInOwnTrx(@NonNull final I_PP_Order ppOrder)
 	{
-		// Own transaction so this one order's close commits - or fully rolls back - independently of every
-		// other order of the selection: a later order's failure must not undo the ones already closed, and a
-		// half-closed order must not survive. It could go away only if closing a manufacturing order stopped
-		// needing several statements to be atomic, which reversing its quantities and reporting its
-		// activities does need.
+		// Own transaction, so this order's close commits - or fully rolls back - independently of the others:
+		// a later order's failure must not undo the ones already closed, nor may a half-closed order survive.
 		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
 			InterfaceWrapperHelper.refresh(ppOrder, localTrxName);
 			closeOrder(ppOrder);
 
-			// closeOrder() runs the document action without asserting the outcome, so a close that silently
-			// did not take effect would otherwise be counted as a success.
+			// closeOrder() runs the document action without asserting the outcome, so without this check a
+			// close that silently did not take effect would count as a success.
 			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
 			if (!docStatus.isClosed())
 			{

@@ -43,12 +43,7 @@ import org.eevolution.api.PPOrderCloseResult;
 import org.eevolution.model.I_PP_Order;
 
 /**
- * Closes the completed manufacturing orders of the current selection.
- *
- * <p>The cost-monitor window lists completed-but-not-closed orders. The post-calculation action closes the
- * ones whose residual it posts, but an order that is already balanced has nothing left to post - closing it
- * is the only remaining action, and the tab carries no DocAction field to do it with. This is that action,
- * in bulk.
+ * Closes the completed manufacturing orders of the current selection, each one independently of the others.
  */
 public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrecondition
 {
@@ -103,9 +98,8 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 
 		return queryBL
 				.createQueryBuilder(I_PP_Order.class, getCtx(), ITrx.TRXNAME_None)
-				// The DocStatus guard belongs HERE, in the query that materializes the selection - not in the
-				// close loop. The user's selection comes from a view the client may have rendered a while ago,
-				// so a Drafted / Voided / already-Closed order can still be in it.
+				// The DocStatus guard belongs in the query that materializes the selection, not in the close
+				// loop: the user's selection comes from a client-side view that may be stale.
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.filter(userSelectionFilter)
 				.addOnlyActiveRecordsFilter();
@@ -129,15 +123,12 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 		final String summaryWithFirstFailure = summary + ": " + result.getFirstFailureMessage();
 		if (result.getCountClosed() > 0)
 		{
-			// Partial success is reported as a success carrying the counts and the first failure's message:
-			// the orders that did close are committed, so failing the process here would misreport them.
-			// Every failure is additionally in the process log, one line per order.
+			// Partial success stays a success: the orders that did close are committed already.
 			return summaryWithFirstFailure;
 		}
 
-		// Nothing closed at all - the run achieved nothing, so it must not come back as a green tick.
-		// Note that returning MSG_Error would NOT do it: JavaProcess only treats the result as an error when
-		// it equals "@Error@" exactly, so a message-carrying result has to be thrown.
+		// Thrown, not returned: a returned result counts as an error only when it is exactly "@Error@",
+		// which would drop the message.
 		throw new AdempiereException(summaryWithFirstFailure);
 	}
 }

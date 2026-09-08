@@ -1,23 +1,14 @@
 -- A dedicated virtual Yes/No column PP_Order.HasCostDifference, so the "Kostenüberwachung Fertigung"
 -- window can be narrowed to the orders that actually carry a cost difference.
 --
--- Why a NEW column instead of filtering the existing PP_Order.CostDifference (AD_Column 592970):
--- with AD_Column.FilterOperator unset the filter operator defaults to EQUALS, which on a decimal
--- amount is an exact-match box nobody can use. Setting 'B' (Between) would fix that, but
--- FilterOperator lives on AD_Column and is therefore shared by every window that shows PP_Order --
--- it would change the Produktionsauftrag window (AD_Window 53009) too. A column that only the
--- monitor window has an AD_Field for has no such reach: its column-level filter attributes are
--- invisible everywhere else. That is also what makes FilterDefaultValue='Y' below safe.
+-- A separate column rather than a filter on the decimal PP_Order.CostDifference (AD_Column 592970):
+-- the filter attributes that would make an amount filterable live on AD_Column and are therefore
+-- shared by every window showing PP_Order. Only the monitor tab has an AD_Field for the new column,
+-- so its column-level filter attributes reach nowhere else.
 --
--- The expression is the EXISTING CostDifference expression, reused verbatim and only wrapped in a
--- <> 0 test, so the two columns can never disagree: sum(cumulatedamt - postcalculationamt) over the
--- order's 'MR' PP_Order_Cost rows, restricted to the client's primary accounting schema and that
--- schema's active material cost element. Qualifying the host table as PP_Order.<col> is required
--- (unqualified AD_Client_ID / PP_Order_ID would bind against pp_order_cost inside the subquery) and
--- is alias-safe: SqlEntityBinding.replaceTableNameWithTableAlias rewrites the prefix at query time.
---
--- IDs allocated from idserver.metas.de: AD_Element 585435, AD_Column 593510,
---   AD_SQLColumn_SourceTableColumn 540240
+-- The expression is the CostDifference expression wrapped in a <> 0 test - keep it that way, so the
+-- two columns can never disagree. Qualifying the host table as PP_Order.<col> is required: unqualified
+-- AD_Client_ID / PP_Order_ID would bind against pp_order_cost inside the subquery.
 
 -- 1) AD_Element -- German in the base column, en_US as the translation override.
 INSERT INTO AD_Element (AD_Client_ID,IsActive,CreatedBy,PrintName,EntityType,ColumnName,AD_Element_ID,AD_Org_ID,Name,Description,UpdatedBy,Created,Updated)
@@ -51,11 +42,9 @@ WHERE AD_Element_ID=585435 AND AD_Language='en_US'
 ;
 
 -- 2) The virtual column (AD_Reference 20 = Yes/No).
---    IsSelectionColumn stays 'N' on purpose: under a tab's default 'Auto' filter strategy the filter
---    set is read from IsSelectionColumn, so setting it here would put this filter on every PP_Order
---    window. The monitor tab (549352) is on 'Explicit' and reads AD_Field.IsFilterField instead.
---    FilterOperator='E' (EqualsOrLike -- a YesNo widget resolves it to a strict EQUAL) and FilterDefaultValue='Y' are AD_Column-level and therefore only
---    reach a tab that has an AD_Field for this column -- which is tab 549352 alone.
+--    IsSelectionColumn must stay 'N': a tab on the 'Auto' filter strategy reads its filter set from it,
+--    so flipping it would put this filter on every PP_Order window. The monitor tab (549352) is on
+--    'Explicit' and reads AD_Field.IsFilterField instead.
 INSERT INTO AD_Column (AD_Reference_ID,IsKey,IsParent,IsTranslated,IsIdentifier,AD_Client_ID,IsActive,CreatedBy,
                         AD_Element_ID,IsUpdateable,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAllowLogging,
                         IsEncrypted,AD_Table_ID,ColumnSQL,ColumnName,AD_Column_ID,IsMandatory,AD_Org_ID,UpdatedBy,
@@ -90,8 +79,8 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Column_ID=593510
 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- 3) Same source-table dependency the sibling CostDifference column carries (AD_SQLColumn_SourceTableColumn
---    540223): refresh the value whenever a PP_Order_Cost row of the order changes.
+-- 3) Same source-table dependency the sibling CostDifference column carries: refresh the value
+--    whenever a PP_Order_Cost row of the order changes.
 INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Column_ID,Source_Table_ID,Updated,UpdatedBy)
 VALUES (0,593510,0,540240 /*From ID Server*/,53027,
         TO_TIMESTAMP('2026-09-08 15:02:00','YYYY-MM-DD HH24:MI:SS'),100,

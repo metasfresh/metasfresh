@@ -8,9 +8,8 @@ import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
 
 const COST_IMBALANCE_WINDOW_ID = 542175;
 
-// Language-invariant handles. The filter bar carries no data-testid, so the panel is addressed by the
-// structural classes the frontend derives from identifiers: `filter-<filterId>` on the panel body
-// (FiltersItem.js) and `form-field-<ColumnName>` on each parameter widget (RawWidget.js).
+// The filter bar carries no data-testid, so it is addressed by the language-invariant structural
+// classes the frontend derives from the identifiers (`form-field-<ColumnName>` per widget).
 const FILTER_TOGGLE = '.filters-not-frequent button';
 const FILTER_PANEL = '.filter-content.filter-default';
 const FILTER_APPLY = '.filter-btn-wrapper button.applyBtn';
@@ -27,10 +26,7 @@ const openFilterPanel = async ({ page }) => {
   return panel;
 };
 
-/**
- * Narrow the monitor to one order, optionally switching the HasCostDifference filter on.
- * Applying the panel closes it, so each call re-opens it.
- */
+/** Narrow the monitor to one order, optionally switching the HasCostDifference filter on. */
 const applyMonitorFilter = async ({ page, documentNo, withHasCostDifference = false }) =>
   await test.step(
     `Filter the monitor by DocumentNo=${documentNo}` +
@@ -44,7 +40,7 @@ const applyMonitorFilter = async ({ page, documentNo, withHasCostDifference = fa
         await expect(panel.locator('.form-field-HasCostDifference input[type="checkbox"]')).toBeChecked();
       }
 
-      // Applying builds a NEW view server-side; await that response instead of sleeping.
+      // Applying builds a NEW view server-side; await it instead of sleeping.
       const viewCreated = page.waitForResponse(
         (response) =>
           response.request().method() === 'POST' &&
@@ -117,14 +113,12 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     const costDifferenceColumn = page.locator('th[data-testid="column-CostDifference"]');
     expect(await costDifferenceColumn.count()).toBeGreaterThan(0);
 
-    // The Yes/No flag sits next to the amount in the grid: the flag says which orders to work on,
-    // the amount says how much.
     const hasCostDifferenceColumn = page.locator('th[data-testid="column-HasCostDifference"]');
     expect(await hasCostDifferenceColumn.count()).toBeGreaterThan(0);
 
     // The seeded order is completed, so the tab's DocStatus='CO' filter must let it through. It is also
-    // balanced (no cost collectors yet), so this doubles as the guard that the window does NOT open
-    // pre-filtered on HasCostDifference: a pre-applied cost filter would hide exactly this order.
+    // balanced, so finding it doubles as the guard that the window does not open pre-filtered on
+    // HasCostDifference.
     const row = page.locator('tr').filter({ hasText: documentNo });
     expect(await row.count()).toBeGreaterThan(0);
 
@@ -138,8 +132,7 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
       await expect(panel.locator('.form-field-HasCostDifference')).toHaveCount(1);
       await expect(panel.locator('.form-field-HasCostDifference input[type="checkbox"]')).not.toBeChecked();
 
-      // CostDifference is a decimal whose filter would default to an exact-match EQUALS box, so it was
-      // deliberately dropped from the filter set. It stays a grid column (asserted above).
+      // A decimal filter would default to an exact-match EQUALS box, hence dropped from the filter set.
       await expect(panel.locator('.form-field-CostDifference')).toHaveCount(0);
     });
 
@@ -147,8 +140,7 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     await applyMonitorFilter({ page, documentNo });
     await expect(page.locator(TABLE_ROWS)).toHaveCount(1);
 
-    // Switch the cost filter on and the same order is gone -- the filter really narrows, on this very
-    // order, and nothing else about the query changed.
+    // Switch the cost filter on and the same order is gone -- nothing else about the query changed.
     await applyMonitorFilter({ page, documentNo, withHasCostDifference: true });
     await expect(page.locator(EMPTY_RESULT)).toBeVisible();
     await expect(page.locator(TABLE_ROWS).filter({ hasText: documentNo })).toHaveCount(0);
@@ -213,29 +205,21 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
         'quick-action-WEBUI_PP_Order_IssueReceipt_Launcher'
       );
 
-      // Only the DEMOTION half of the default-quick-action change is asserted, on purpose -- the
-      // promotion of PP_Order_PostCalculation is not reachable from here and its absence below is not
-      // an oversight. That process hides itself (an INTERNAL precondition rejection, so it is dropped
-      // from the action list rather than shown disabled) unless exactly one row is selected AND the
-      // accounting schema accumulates order costs (AveragePO / LastPOPrice / MovingAverageInvoice --
-      // the core preloaded DB is Standard costing) AND the order already has issued components, which
-      // the frontend-testing masterdata API cannot produce. Even where it does appear without issued
-      // components it is rejected WITH a reason, i.e. disabled, and disabled actions sort last -- so it
-      // would still not be actions[0]. Its behaviour is covered by the costing cucumber scenarios.
+      // Only the DEMOTION half is asserted, deliberately: the matching promotion of
+      // PP_Order_PostCalculation needs an accounting schema that accumulates order costs and an order
+      // with issued components, neither of which this masterdata API can produce, so that process is
+      // simply absent here. It is covered by the costing cucumber scenarios.
     });
 
     await test.step('Run Close selection', async () => {
-      // Running a quick action is two calls: POST /process/<id> only creates the pinstance, the
-      // process is EXECUTED by the follow-up GET /process/<id>/<pinstanceId>/start
-      // (ProcessActions.createProcess -> api/process.startProcess). Awaiting the POST would let the
-      // test read the result back before the close has committed.
+      // Running a quick action is two calls: the POST only creates the pinstance, the follow-up
+      // /start executes the process. Awaiting the POST would read the result back before it commits.
       const processExecuted = page.waitForResponse((response) => response.url().endsWith('/start'));
       await closeSelection.click();
       await processExecuted;
     });
 
-    // The outcome, read back from a FRESH view: the monitor's tab is scoped to DocStatus='CO', so an
-    // order that really got closed can no longer be found here.
+    // Read back from a FRESH view: the tab is scoped to DocStatus='CO', so a closed order is gone.
     await MasterWindowPage.goto(COST_IMBALANCE_WINDOW_ID);
     await MasterWindowPage.expectWindowLoaded();
     await applyMonitorFilter({ page, documentNo });
