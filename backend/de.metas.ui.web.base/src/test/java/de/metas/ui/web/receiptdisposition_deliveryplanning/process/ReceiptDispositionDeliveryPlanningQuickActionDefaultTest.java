@@ -56,6 +56,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * anywhere is what the platform then does with that classification for exactly THIS window's five reachability
  * rows - that is what this test pins.
  * <p>
+ * <b>What this test cannot see.</b> It SUPPLIES the resolutions, so it says nothing about whether the platform
+ * ever asks for them - and for a while it did not, which left every guard on this window dead while this test
+ * stayed green. That seam is pinned separately, by
+ * {@link ReceiptDispositionDeliveryPlanningPreconditionSeamTest}; the two are complements, not overlaps.
+ * <p>
  * <b>AC7a/AC7b (REQUIREMENTS 3.4).</b> "HUs annehmen Voreinst." is the default quick action; where its precondition
  * rejects with an INTERNAL reason - the packing-instruction default genuinely does not resolve - it must not just
  * be disabled, it must vanish from the quick-actions array entirely, so the platform's own quick-action-first

@@ -32,6 +32,7 @@ import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -63,8 +64,16 @@ import java.util.Objects;
  * Deliberately NOT extending {@code PickingJobScheduleViewBasedProcess}: that class is the shape this one is
  * modelled on, not a base to inherit - it resolves picking-job schedules and injects a picking service this
  * window has no use for.
+ * <p>
+ * <b>{@link IProcessPrecondition} is declared here, and is load-bearing.</b> {@code ProcessPreconditionChecker}
+ * looks a process' preconditions up by {@code IProcessPrecondition.class.isAssignableFrom(processClass)} and,
+ * finding nothing, falls through to {@code accept()} - so without the interface every override of
+ * {@link #checkPreconditionsApplicable()} below this class is dead code and every action is offered on every
+ * row and every selection size, exactly as {@code ViewBasedProcessTemplate}'s own javadoc warns. Declared once
+ * on the shared base rather than on each of the ten actions, for the same reason the precondition itself lives
+ * here: an action that had to remember it is an action that could forget it.
  */
-public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends ViewBasedProcessTemplate
+public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@NonNull protected final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
