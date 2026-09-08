@@ -20,7 +20,7 @@ import DialogButton from './DialogButton';
 import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
-import { QTY_REJECTED_REASON_EMPTIED_KEY, QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
+import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
 import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
 const GetQuantityDialog = ({
@@ -111,23 +111,18 @@ const GetQuantityDialog = ({
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
 
+  // `getConfirmationPromptForQty` is generic: callers (e.g. the manufacturing issue step-scan screen,
+  // mirroring the picking over-pick prompt) decide whether/what to prompt, using the qty entered plus
+  // the rejected-qty context this dialog alone knows about (the selected rejection reason and its qty).
   const getConfirmationPrompt = useCallback(
     async (qtyInput) => {
-      return getConfirmationPromptForQty && (await getConfirmationPromptForQty(qtyInput));
+      return (
+        getConfirmationPromptForQty &&
+        (await getConfirmationPromptForQty(qtyInput, { qtyRejected, rejectedReason, uom }))
+      );
     },
-    [getConfirmationPromptForQty]
+    [getConfirmationPromptForQty, qtyRejected, rejectedReason, uom]
   );
-
-  // "Empty (auto. inventory)" write-off: always confirm before booking, naming the leftover
-  // quantity and its UOM. Declining leaves the operator on this dialog and posts nothing.
-  const getEmptyingConfirmationPrompt = useCallback(() => {
-    if (rejectedReason !== QTY_REJECTED_REASON_EMPTIED_KEY || qtyRejected <= 0) {
-      return null;
-    }
-    return trl('activities.manufacturing.confirmEmptyHUPrompt', {
-      qty: formatQtyToHumanReadableStr({ qty: qtyRejected, uom }),
-    });
-  }, [rejectedReason, qtyRejected, uom]);
 
   const fireOnQtyChange = useCallback(
     (payload) => {
@@ -166,8 +161,7 @@ const GetQuantityDialog = ({
       };
       uiTrace.putContext(onQtyChangePayload);
 
-      const confirmationPrompt =
-        (await getConfirmationPrompt(qtyEnteredAndValidated)) || getEmptyingConfirmationPrompt();
+      const confirmationPrompt = await getConfirmationPrompt(qtyEnteredAndValidated);
       if (confirmationPrompt) {
         setConfirmationDialogProps({
           promptQuestion: confirmationPrompt,

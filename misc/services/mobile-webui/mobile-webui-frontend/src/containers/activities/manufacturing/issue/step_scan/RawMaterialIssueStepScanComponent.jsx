@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { toastError } from '../../../../../utils/toast';
@@ -9,8 +9,13 @@ import { toQRCodeString } from '../../../../../utils/qrCode/hu';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
-import { getActivityById, getStepByIdFromActivity } from '../../../../../reducers/wfProcesses';
+import {
+  getActivityById,
+  getStepByIdFromActivity,
+  QTY_REJECTED_REASON_EMPTIED_KEY,
+} from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
+import { formatQtyToHumanReadableStr } from '../../../../../utils/qtys';
 import { useBooleanSetting } from '../../../../../reducers/settings';
 import { useMobileNavigation } from '../../../../../hooks/useMobileNavigation';
 import {
@@ -26,6 +31,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
+  const isConfirmEmptyingHU = activity?.dataStored?.isConfirmEmptyingHU;
 
   const eligibleBarcode =
     stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
@@ -84,6 +90,17 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     };
   };
 
+  // "Empty (auto. inventory)" write-off: on `isConfirmEmptyingHU`, confirm before booking, naming the
+  // leftover quantity and its UOM. Declining leaves the operator on this dialog and posts nothing.
+  const getEmptyingConfirmationPrompt = useCallback((qtyInput, { qtyRejected, rejectedReason, uom } = {}) => {
+    if (rejectedReason !== QTY_REJECTED_REASON_EMPTIED_KEY || !(qtyRejected > 0)) {
+      return undefined;
+    }
+    return trl('activities.manufacturing.confirmEmptyHUPrompt', {
+      qty: formatQtyToHumanReadableStr({ qty: qtyRejected, uom }),
+    });
+  }, []);
+
   const dispatch = useDispatch();
   const history = useMobileNavigation();
   const onResult = ({ qty = 0, qtyRejected = 0, reason = null, resolvedBarcodeData }) => {
@@ -123,6 +140,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       // scaleDevice={scaleDevice}
       //
       // Callbacks:
+      getConfirmationPromptForQty={isConfirmEmptyingHU ? getEmptyingConfirmationPrompt : undefined}
       onResult={onResult}
     />
   );

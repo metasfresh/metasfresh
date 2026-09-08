@@ -69,13 +69,19 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
 		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
-		final boolean offerEmptyingHUs = isOfferEmptyingHUs(job);
+		final MobileUIManufacturingConfig emptyingHUsConfig = resolveEmptyingHUsConfig(job);
+		final boolean offerEmptyingHUs = emptyingHUsConfig.getIsAllowEmptyingHUs().isTrue();
+		final boolean confirmEmptyingHU = emptyingHUsConfig.getIsConfirmEmptyingHU().isTrue();
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("scaleDevice", getCurrentScaleDevice(job, jsonOpts))
 						.valueObj("lines", getLines(job, wfActivity.getId(), jsonOpts, offerEmptyingHUs))
 						.valueObj("qtyRejectedReasons", getJsonRejectReasonsList(jsonOpts, offerEmptyingHUs))
+						// Literal key (Params.valueObj, not a getter-derived name): the client reads
+						// componentProps.confirmEmptyingHU. Gates whether the mobile UI prompts before
+						// booking the "empty (auto. inventory)" write-off (cf. isShowPromptWhenOverPicking).
+						.valueObj("confirmEmptyingHU", confirmEmptyingHU)
 						.build())
 				.build();
 	}
@@ -185,10 +191,11 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	}
 
 	/**
-	 * Resolved once per request (from the job's own {@code AD_Client_ID}) and threaded into both the per-step
-	 * {@code isAllowEmptying} computation and the reject-reasons list, so both derive from the same decision.
+	 * Resolved once per request (from the job's own {@code AD_Client_ID}) and threaded into the per-step
+	 * {@code isAllowEmptying} computation, the reject-reasons list and the confirmation flag, so all three
+	 * derive from the same decision.
 	 */
-	private boolean isOfferEmptyingHUs(@NonNull final ManufacturingJob job)
+	private MobileUIManufacturingConfig resolveEmptyingHUsConfig(@NonNull final ManufacturingJob job)
 	{
 		// getConfig(), not getGlobalConfig(): the merged chain falls back to DEFAULT_CONFIG, which carries
 		// the flag's 'on' default. getGlobalConfig() returns null when the client has no active
@@ -201,8 +208,7 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 		// fall back to the currently logged-in user rather than fail the whole request on a config lookup.
 		final UserId responsibleId = job.getResponsibleId() != null ? job.getResponsibleId() : Env.getLoggedUserId();
 
-		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(responsibleId, clientId);
-		return config.getIsAllowEmptyingHUs().isTrue();
+		return mobileUIManufacturingConfigRepository.getConfig(responsibleId, clientId);
 	}
 
 	@Override
