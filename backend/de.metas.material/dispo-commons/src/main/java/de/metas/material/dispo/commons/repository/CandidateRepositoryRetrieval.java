@@ -3,6 +3,7 @@ package de.metas.material.dispo.commons.repository;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.DimensionService;
@@ -57,6 +58,7 @@ import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
@@ -108,6 +110,34 @@ public class CandidateRepositoryRetrieval
 		candidateId.assertRegular();
 		return retrieveLatestMatch(CandidatesQuery.fromId(candidateId))
 				.orElseThrow(() -> new AdempiereException("No candidate found for " + candidateId));
+	}
+
+	/**
+	 * Reads {@code QtyFulfilled} for the given candidates in ONE query. That column is not part of the
+	 * {@link Candidate} value object, so a caller that needs it has to come back here for it; doing so per
+	 * candidate via {@link #retrieveById(CandidateId)} would turn one candidate chain into as many round
+	 * trips as it has positions.
+	 *
+	 * @return the {@code QtyFulfilled} per candidate id. An id without a matching record is simply absent
+	 * from the map, so callers have to decide themselves what a missing id means (usually
+	 * {@link BigDecimal#ZERO}).
+	 */
+	public ImmutableMap<CandidateId, BigDecimal> getQtyFulfilledByCandidateIds(@NonNull final Collection<CandidateId> candidateIds)
+	{
+		if (candidateIds.isEmpty())
+		{
+			// short-circuit *before* querying: an empty addInArrayFilter would be no filter at all, and the
+			// query would then select the whole MD_Candidate table
+			return ImmutableMap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addInArrayFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> CandidateId.ofRepoId(record.getMD_Candidate_ID()),
+						I_MD_Candidate::getQtyFulfilled));
 	}
 
 	/**
