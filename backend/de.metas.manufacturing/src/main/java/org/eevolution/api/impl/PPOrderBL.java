@@ -68,6 +68,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -77,6 +78,7 @@ import org.compiere.model.I_AD_WF_Node_Template;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnable;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
@@ -84,6 +86,7 @@ import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderCloseResult;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
@@ -111,6 +114,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 public class PPOrderBL implements IPPOrderBL
@@ -378,6 +382,63 @@ public class PPOrderBL implements IPPOrderBL
 		// ppOrdersRepo.save(ppOrder);
 
 		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
+	}
+
+	@Override
+	public PPOrderCloseResult closeOrdersInSelection(@NonNull final PInstanceId selectionId)
+	{
+		final AtomicInteger countClosed = new AtomicInteger(0);
+		final AtomicInteger countFailed = new AtomicInteger(0);
+		final AtomicReference<String> firstFailureMessage = new AtomicReference<>(null);
+
+		queryBL.createQueryBuilder(I_PP_Order.class)
+				.setOnlySelection(selectionId)
+				// predictable order, so which failure is reported as "the first" is reproducible
+				.orderBy(I_PP_Order.COLUMNNAME_PP_Order_ID)
+				.create()
+				.iterateAndStream()
+				.forEach(ppOrder -> {
+					try
+					{
+						closeInOwnTrx(ppOrder);
+
+						countClosed.incrementAndGet();
+						Loggables.withLogger(logger, Level.INFO).addLog("PP_Order {}: closed", ppOrder.getDocumentNo());
+					}
+					catch (final RuntimeException e)
+					{
+						countFailed.incrementAndGet();
+
+						final String failureMessage = AdempiereException.extractMessage(e);
+						firstFailureMessage.compareAndSet(null, ppOrder.getDocumentNo() + ": " + failureMessage);
+
+						Loggables.withLogger(logger, Level.WARN).addLog("PP_Order {}: failed - {}", ppOrder.getDocumentNo(), failureMessage);
+					}
+				});
+
+		return PPOrderCloseResult.builder()
+				.countClosed(countClosed.get())
+				.countFailed(countFailed.get())
+				.firstFailureMessage(firstFailureMessage.get())
+				.build();
+	}
+
+	private void closeInOwnTrx(@NonNull final I_PP_Order ppOrder)
+	{
+		// Own transaction, so this order's close commits - or fully rolls back - independently of the others:
+		// a later order's failure must not undo the ones already closed, nor may a half-closed order survive.
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
+			InterfaceWrapperHelper.refresh(ppOrder, localTrxName);
+			closeOrder(ppOrder);
+
+			// closeOrder() runs the document action without asserting the outcome, so without this check a
+			// close that silently did not take effect would count as a success.
+			final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus());
+			if (!docStatus.isClosed())
+			{
+				throw new AdempiereException("@Invalid@ @DocStatus@: " + docStatus);
+			}
+		});
 	}
 
 	@Override
