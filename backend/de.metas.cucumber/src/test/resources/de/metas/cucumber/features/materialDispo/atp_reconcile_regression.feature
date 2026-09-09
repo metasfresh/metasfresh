@@ -242,7 +242,7 @@ Feature: ATP reconciliation regression coverage
 
   @Id:ATPREG_004
   @from:cucumber
-  Scenario: A real reconciliation run's log names the candidate it changed
+  Scenario: A real reconciliation run's audit trail names the candidate it changed
 
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID | C_UOM_ID.X12DE355 |
@@ -264,12 +264,19 @@ Feature: ATP reconciliation regression coverage
       | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | cand_reg4  | INVENTORY_UP      | p_reg4       | 2024-09-20T06:00:00Z | 0   | 0   | WH_REG         |
 
-    # --- a real (non-dry) run: the log must name the candidate it changed and its new value, not just
-    # report a count ---------------------------------------------------------------------------------
+    # --- a real (non-dry) run: the audit trail must name the candidate it changed and its new value, not
+    # just report a count. It is read from the durable MD_ATP_Reconciliation_Backup rather than from the
+    # process log, because a real run is enqueued and reconciled in the app server: the process returns as
+    # soon as the work package exists, so its own log cannot contain what the run went on to change. ------
     When metasfresh has date and time 2024-09-21T08:00:00+01:00[Europe/Berlin]
     And the MD_Candidate_Reconcile_ATP process is run with parameters, storing the run id as "log_naming_run":
       | M_Product_ID | IsDryRun |
       | p_reg4       | false    |
 
-    Then the ATP reconciliation process log for the run id "log_naming_run" contains "STOCK candidate"
-    And the ATP reconciliation process log for the run id "log_naming_run" contains "to 60"
+    Then the ATP reconciliation process log for the run id "log_naming_run" contains "Enqueued work package"
+    # QtyBefore "null" = the STOCK candidate the correction itself created, so there was no earlier value to
+    # back up; QtyAfter 60 is the physical stock the projection was brought back onto
+    And after not more than 60s, the persisted ATP reconciliation backup for M_Product_ID "p_reg4" contains a row with QtyBefore "null" and QtyAfter "60"
+    And after not more than 60s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_reg4   | INVENTORY_UP      | p_reg4       | 2024-09-21T06:00:00Z | 60  | 60  | WH_REG         |

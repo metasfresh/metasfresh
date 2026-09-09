@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
@@ -41,6 +42,7 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
@@ -51,6 +53,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -68,6 +71,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class AtpReconciliationBackup_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(AtpReconciliationBackup_StepDef.class);
+
 	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
@@ -134,22 +139,73 @@ public class AtpReconciliationBackup_StepDef
 				.create()
 				.list();
 
-		final BigDecimal expectedQtyAfter = new BigDecimal(qtyAfterText);
-		final boolean expectNoQtyBefore = "null".equalsIgnoreCase(qtyBeforeText);
-
-		final boolean matchFound = backedUpRows.stream().anyMatch(row ->
-		{
-			final boolean qtyAfterMatches = row.getQtyAfter().compareTo(expectedQtyAfter) == 0;
-			final boolean qtyBeforeMatches = expectNoQtyBefore
-					? InterfaceWrapperHelper.isNull(row, I_MD_ATP_Reconciliation_Backup.COLUMNNAME_QtyBefore)
-					: row.getQtyBefore().compareTo(new BigDecimal(qtyBeforeText)) == 0;
-			return qtyAfterMatches && qtyBeforeMatches;
-		});
+		final boolean matchFound = backedUpRows.stream()
+				.anyMatch(row -> matchesQuantities(row, qtyBeforeText, qtyAfterText));
 
 		assertThat(matchFound)
 				.as("no persisted MD_ATP_Reconciliation_Backup row for run '%s' with QtyBefore=%s QtyAfter=%s among %s",
 						runUuid, qtyBeforeText, qtyAfterText, backedUpRows)
 				.isTrue();
+	}
+
+	/**
+	 * The asynchronous sibling of {@link #assertBackupRow}: reads {@code MD_ATP_Reconciliation_Backup} fresh from
+	 * the database by <b>product</b> rather than by run id, retrying until the row shows up.
+	 * <p>
+	 * Needed because a real {@link MD_Candidate_Reconcile_ATP} run no longer reconciles inline - it enqueues a
+	 * {@code C_Queue_WorkPackage} that the app server drains, so the caller never sees the run's
+	 * {@code ReconciliationRunUUID}, and the row appears some time after the process step returned. This step is
+	 * therefore how a scenario proves what an <i>operator-launched</i> real run actually changed: which candidate,
+	 * from which quantity to which. (The synchronous, run-id-keyed assertion above stays the stronger check
+	 * wherever the reconciliation is invoked directly.)
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 60s, the persisted ATP reconciliation backup for M_Product_ID "p_reg4" contains a row with QtyBefore "null" and QtyAfter "60"
+	 * </pre>
+	 */
+	@Then("^after not more than (.*)s, the persisted ATP reconciliation backup for M_Product_ID \"([^\"]*)\" contains a row with QtyBefore \"([^\"]*)\" and QtyAfter \"([^\"]*)\"$")
+	public void assertBackupRowByProduct(
+			final int timeoutSec,
+			@NonNull final String productIdentifier,
+			@NonNull final String qtyBeforeText,
+			@NonNull final String qtyAfterText) throws InterruptedException
+	{
+		final ProductId productId = productTable.getId(productIdentifier);
+
+		StepDefUtil.tryAndWait(
+				timeoutSec,
+				500,
+				() -> retrieveBackupRowsByProduct(productId).stream()
+						.anyMatch(row -> matchesQuantities(row, qtyBeforeText, qtyAfterText)),
+				() -> logger.warn("*** no matching MD_ATP_Reconciliation_Backup row yet for M_Product_ID={}; rows so far: {}",
+						productId, retrieveBackupRowsByProduct(productId)));
+	}
+
+	private static List<I_MD_ATP_Reconciliation_Backup> retrieveBackupRowsByProduct(@NonNull final ProductId productId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_ATP_Reconciliation_Backup.class)
+				.addEqualsFilter(I_MD_ATP_Reconciliation_Backup.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.list();
+	}
+
+	/**
+	 * @param qtyBeforeText the literal {@code null} matches a row this run created (no earlier value to back up)
+	 */
+	private static boolean matchesQuantities(
+			@NonNull final I_MD_ATP_Reconciliation_Backup row,
+			@NonNull final String qtyBeforeText,
+			@NonNull final String qtyAfterText)
+	{
+		final boolean qtyAfterMatches = row.getQtyAfter().compareTo(new BigDecimal(qtyAfterText)) == 0;
+		final boolean qtyBeforeMatches = "null".equalsIgnoreCase(qtyBeforeText)
+				? InterfaceWrapperHelper.isNull(row, I_MD_ATP_Reconciliation_Backup.COLUMNNAME_QtyBefore)
+				: row.getQtyBefore().compareTo(new BigDecimal(qtyBeforeText)) == 0;
+
+		return qtyAfterMatches && qtyBeforeMatches;
 	}
 
 	/**

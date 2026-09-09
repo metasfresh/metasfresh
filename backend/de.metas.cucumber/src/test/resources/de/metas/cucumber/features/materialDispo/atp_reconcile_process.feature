@@ -126,7 +126,7 @@ Feature: ATP reconciliation process - dry run and selection filter
 
   @Id:ATPBASE_012
   @from:cucumber
-  Scenario: A liveness cutoff excludes an open demand dated before it from the target
+  Scenario: A liveness cutoff excludes an open demand dated before it from the target, previewed and applied
 
     Given metasfresh contains M_PricingSystems
       | Identifier |
@@ -201,3 +201,17 @@ Feature: ATP reconciliation process - dry run and selection filter
       | M_Product_ID | IsDryRun | LivenessCutoffDate |
       | p_cut_a      | true     | 2024-09-23         |
     Then the ATP reconciliation process log for the run id "with_cutoff_run" contains "would change to 80"
+
+    # --- the same cutoff on a REAL run. A real run is not performed by the process at all: it is enqueued as
+    # a work package and reconciled by the app server, so the cutoff has to survive that round trip - the two
+    # dry runs above prove nothing about it. Target 80 against the still-stored 50 => an INVENTORY_UP of 30 at
+    # the run date, leaving the projection at 80 instead of the 50 an uncut run would have left it at. -------
+    When metasfresh has date and time 2024-09-26T08:00:00+01:00[Europe/Berlin]
+    And the MD_Candidate_Reconcile_ATP process is run with parameters, storing the run id as "real_cutoff_run":
+      | M_Product_ID | IsDryRun | LivenessCutoffDate |
+      | p_cut_a      | false    | 2024-09-23         |
+    Then the ATP reconciliation process log for the run id "real_cutoff_run" contains "Enqueued work package"
+    And after not more than 60s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_cut_a  | INVENTORY_UP      | p_cut_a      | 2024-09-26T06:00:00Z | 30  | 80  | WH_BASE        |
+    And after not more than 60s, the persisted ATP reconciliation backup for M_Product_ID "p_cut_a" contains a row with QtyBefore "null" and QtyAfter "80"
