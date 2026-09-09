@@ -76,6 +76,13 @@ import java.util.Properties;
 @Service
 public class AtpReconciliationEnqueueService
 {
+	/**
+	 * Resolved on first use by {@link #workPackageQueueFactory()}, never in a field initializer - the lazy
+	 * accessor shape {@code docs/coding-rules/service-injection.md} §3 prescribes for a service that cannot be
+	 * resolved at construction time. See that method for the concrete failure.
+	 */
+	@Nullable private IWorkPackageQueueFactory _workPackageQueueFactory;
+
 	/** Work-package parameter names - deliberately the {@code AD_Process_Para} column names of the process. */
 	private static final String WP_PARAM_M_Warehouse_ID = I_MD_Stock.COLUMNNAME_M_Warehouse_ID;
 	private static final String WP_PARAM_M_Product_ID = I_MD_Stock.COLUMNNAME_M_Product_ID;
@@ -102,16 +109,7 @@ public class AtpReconciliationEnqueueService
 	public I_C_Queue_WorkPackage enqueue(@NonNull final AtpReconciliationRunRequest request)
 	{
 		final Properties ctx = Env.getCtx();
-		// Resolved here and NEVER in a field initializer. Concrete failure that prevents: the app server
-		// creates this @Service while its own spring context is still being refreshed, and
-		// WorkPackageQueueFactory's constructor reaches back into that context
-		// (QueueProcessorDescriptorIndex.getInstance() -> SpringContextHolder). Resolving the factory at
-		// construction time therefore aborts app-server startup outright with "SpringApplicationContext not
-		// configured yet" - the whole application, not just this feature. Reproduced by the cucumber suite,
-		// which boots ServerBoot for real; no unit test can see it, because SpringContextHolder is satisfied
-		// differently in unit-test mode. (DDOrderCandidateEnqueueService does hold the factory in a field and
-		// happens to survive - it depends purely on bean-creation order, so do not copy it.)
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class)
+		final IWorkPackageQueue queue = workPackageQueueFactory()
 				.getQueueForEnqueuing(ctx, AtpReconciliationWorkpackageProcessor.class);
 		final AtpKeySelection selection = request.getSelection();
 
@@ -169,6 +167,33 @@ public class AtpReconciliationEnqueueService
 				.runDate(runDate)
 				.livenessCutoff(livenessCutoffOrNull(params))
 				.build();
+	}
+
+	/**
+	 * @return the work-package queue factory, resolved on first use and then cached for the life of this bean.
+	 * <p>
+	 * Concrete failure this prevents: the app server creates this {@code @Service} while its own spring context
+	 * is still being refreshed, and {@code WorkPackageQueueFactory}'s constructor reaches back into that context
+	 * ({@code QueueProcessorDescriptorIndex.getInstance()} -> {@code SpringContextHolder}). Resolving the factory
+	 * from a <i>field initializer</i> therefore aborted app-server startup outright with
+	 * "SpringApplicationContext not configured yet" - the whole application down, not just this feature.
+	 * Deferring it to first use puts the lookup after the refresh, where the context is live. Reproduced and
+	 * verified by the cucumber suite, which boots {@code ServerBoot} for real; no unit test can see it, because
+	 * {@code SpringContextHolder} is satisfied differently in unit-test mode.
+	 * <p>
+	 * ({@code DDOrderCandidateEnqueueService} does hold this factory in a field and happens to survive - that
+	 * depends purely on bean-creation order, so do not copy it. And this is the {@code @Nullable}-field-plus-
+	 * memoizing-accessor shape {@code docs/coding-rules/service-injection.md} §3 prescribes, not a bare
+	 * per-call {@code Services.get}, which that file's own review-rule flags.)
+	 */
+	private IWorkPackageQueueFactory workPackageQueueFactory()
+	{
+		IWorkPackageQueueFactory result = _workPackageQueueFactory;
+		if (result == null)
+		{
+			result = _workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+		}
+		return result;
 	}
 
 	@Nullable
