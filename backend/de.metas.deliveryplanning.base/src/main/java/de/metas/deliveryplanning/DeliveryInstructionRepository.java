@@ -51,24 +51,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/**
- * Repository Tables: M_ShipperTransportation, M_ShippingPackage
- * Repository Cluster: DeliveryInstructionRepository (this class), ShipperTransportationDAO and
- * PurchaseOrderToShipperTransportationRepository (the legacy, record-handing-back transport-order role, which
- * knows nothing of delivery planning and coexists with this class through the transition),
- * DeliveryPlanningRepository (M_Delivery_Planning), DeliveryPlanningAllocRepository
- * (M_Delivery_Planning_Alloc), MPackageRepository (M_Package).
- * <p>
- * The two tables are ONE aggregate, and the dictionary says so: {@code M_ShippingPackage.M_ShipperTransportation_ID}
- * is {@code IsMandatory='Y'} AND {@code IsParent='Y'}, and both windows exposing the pair - 540020
- * <i>Transport Auftrag</i> and 541657 <i>Lieferanweisungen</i> - put the header at tab level 0 and the package at
- * level 1. The package's other references are NOT part of it: {@code M_Package_ID} is mandatory but
- * {@code IsParent='N'}, and {@code C_OrderLine_ID}/{@code M_InOut_ID} are optional and non-parent, so they are
- * references to other aggregates that {@link DeliveryInstructionService} composes.
- * <p>
- * Injected collaborator: {@link DimensionService}, which copies a dimension from the source row onto the
- * instruction as that row is written - persistence rather than a delivery-planning decision.
- */
 @Repository
 @RequiredArgsConstructor
 public class DeliveryInstructionRepository
@@ -82,11 +64,6 @@ public class DeliveryInstructionRepository
 		return load(deliveryInstructionId, I_M_ShipperTransportation.class);
 	}
 
-	/**
-	 * Creates the delivery instruction HEADER from the given request. The plannings it carries are allocated to
-	 * it afterwards by {@link DeliveryInstructionService#generateDeliveryInstruction}, which is also where the
-	 * shipping-package lines are built - a repository never reaches into another aggregate's repository.
-	 */
 	public I_M_ShipperTransportation create(@NonNull final DeliveryInstructionCreateRequest request)
 	{
 		final I_M_ShipperTransportation deliveryInstructionRecord = newInstance(I_M_ShipperTransportation.class);
@@ -129,8 +106,7 @@ public class DeliveryInstructionRepository
 	}
 
 	/**
-	 * Writes the given dates onto the instruction header field for field, unconditionally. Saved only when at
-	 * least one field actually differs, so a no-op resolution costs no write and fires no {@code AFTER_CHANGE}.
+	 * Saved only when at least one field actually differs, so a no-op resolution fires no {@code AFTER_CHANGE}.
 	 */
 	public void updateDates(@NonNull final I_M_ShipperTransportation record, @NonNull final DeliveryInstructionDates dates)
 	{
@@ -156,11 +132,6 @@ public class DeliveryInstructionRepository
 		saveRecord(record);
 	}
 
-	/**
-	 * Stores the given instruction's {@code DeliveredState}. Which state that is, is derived by
-	 * {@link DeliveryInstructionService#recomputeDeliveredState} from the plannings the instruction carries -
-	 * records of another aggregate, hence the derivation lives in the composing service.
-	 */
 	public void setDeliveredState(
 			@NonNull final ShipperTransportationId deliveryInstructionId,
 			@NonNull final DeliveryInstructionDeliveredState deliveredState)
@@ -170,10 +141,6 @@ public class DeliveryInstructionRepository
 		saveRecord(deliveryInstructionRecord);
 	}
 
-	/**
-	 * The {@code DocStatus} of each of the given delivery instructions, in one round trip - read from the
-	 * instruction because the allocation carries no {@code DocStatus} of its own.
-	 */
 	public ImmutableMap<ShipperTransportationId, DocStatus> getDocStatuses(@NonNull final Collection<ShipperTransportationId> deliveryInstructionIds)
 	{
 		if (deliveryInstructionIds.isEmpty())
@@ -200,9 +167,6 @@ public class DeliveryInstructionRepository
 		return DocStatus.ofNullableCodeOrUnknown(deliveryInstructionRecord.getDocStatus());
 	}
 
-	/**
-	 * The given instructions, as records - the caller has already resolved which ids those are.
-	 */
 	public Iterator<I_M_ShipperTransportation> iterateByIds(@NonNull final Collection<ShipperTransportationId> deliveryInstructionIds)
 	{
 		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
@@ -211,9 +175,6 @@ public class DeliveryInstructionRepository
 				.iterate(I_M_ShipperTransportation.class);
 	}
 
-	/**
-	 * Whether any of the given instructions is completed.
-	 */
 	public boolean hasCompletedAmong(@NonNull final Collection<ShipperTransportationId> deliveryInstructionIds)
 	{
 		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
@@ -222,11 +183,6 @@ public class DeliveryInstructionRepository
 				.anyMatch();
 	}
 
-	/**
-	 * Creates ONE {@code M_ShippingPackage} line of the given instruction. The {@code M_Package} it points at is
-	 * created by {@code MPackageRepository} first and handed in - it belongs to another aggregate
-	 * ({@code M_Package_ID} is mandatory but {@code IsParent='N'}).
-	 */
 	public ShippingPackageId createShippingPackage(
 			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
 			@NonNull final DeliveryPlanningAllocCreateRequest.ShippingPackageData packageData,
@@ -241,10 +197,8 @@ public class DeliveryInstructionRepository
 		shippingPackageRecord.setIsToBeFetched(packageData.isToBeFetched());
 		shippingPackageRecord.setM_Product_ID(packageData.getProductId().getRepoId());
 
-		// The four quantity figures (planned load, planned discharge, actual load, actual
-		// discharge) are a ColumnSQL read-through of the planning, reached through the
-		// M_Delivery_Planning_Alloc allocation - so there is nothing to write here, and a written copy
-		// would freeze the package's "actual" at whatever the planning said at creation time.
+		// the four quantity figures are a ColumnSQL read-through of the planning, so there is nothing to write here -
+		// a written copy would freeze the package's "actual" at whatever the planning said at creation time
 		shippingPackageRecord.setBatch(packageData.getBatchNo());
 		shippingPackageRecord.setC_UOM_ID(packageData.getUomId().getRepoId());
 
@@ -259,10 +213,6 @@ public class DeliveryInstructionRepository
 		return ShippingPackageId.ofRepoId(shippingPackageRecord.getM_ShippingPackage_ID());
 	}
 
-	/**
-	 * Deactivates the given shipping packages, so the record of what was once packed survives the deallocation
-	 * of the planning that produced it.
-	 */
 	public void deactivateShippingPackages(@NonNull final Collection<ShippingPackageId> shippingPackageIds)
 	{
 		for (final I_M_ShippingPackage shippingPackageRecord : getShippingPackagesByIds(shippingPackageIds))
@@ -272,9 +222,6 @@ public class DeliveryInstructionRepository
 		}
 	}
 
-	/**
-	 * Clears the given shipping packages' order-line reference.
-	 */
 	public void unlinkShippingPackages(@NonNull final Collection<ShippingPackageId> shippingPackageIds)
 	{
 		for (final I_M_ShippingPackage shippingPackageRecord : getShippingPackagesByIds(shippingPackageIds))
@@ -285,8 +232,7 @@ public class DeliveryInstructionRepository
 	}
 
 	/**
-	 * The given shipping packages in ONE round trip; {@code IsActive} is deliberately not filtered, because the
-	 * caller that unlinks a package has just deactivated it.
+	 * {@code IsActive} is deliberately not filtered: the caller that unlinks a package has just deactivated it.
 	 */
 	private List<I_M_ShippingPackage> getShippingPackagesByIds(@NonNull final Collection<ShippingPackageId> shippingPackageIds)
 	{

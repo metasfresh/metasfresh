@@ -36,13 +36,11 @@ import javax.annotation.Nullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Which side {@code DeliveryPlanningRepository#getShipmentOrReceiptInfo} resolves a planning to.
- * <p>
- * {@code isIncomingOrDropship()} and {@code isOutgoingOrDropship()} both hold for {@link TransportDirection#Dropship},
- * so the {@code if / else if} ordering alone decides that case - nothing in the code states the choice. Today a
- * dropship planning carries a receipt schedule and no shipment schedule of its own, so receipt-side is the correct
- * answer; this test pins it. Should a later change give dropship plannings a shipment schedule, that branch would go
- * on silently answering receipt - this test fails instead and forces the choice to be made explicitly.
+ * {@code isIncomingOrDropship()} and {@code isOutgoingOrDropship()} both hold for
+ * {@link TransportDirection#Dropship}, so the {@code if / else if} ordering in
+ * {@code DeliveryPlanningRepository#getShipmentOrReceiptInfo} alone decides that case - nothing in the code
+ * states the choice. Should dropship plannings ever get a shipment schedule, that branch would go on silently
+ * answering receipt; this test fails instead.
  */
 class DeliveryPlanningShipmentOrReceiptResolutionTest
 {
@@ -70,8 +68,7 @@ class DeliveryPlanningShipmentOrReceiptResolutionTest
 	}
 
 	/**
-	 * The counterpart that proves the shipment branch is reachable at all - without it the dropship assertion above
-	 * would also pass if the shipment mapper were simply broken.
+	 * Proves the shipment branch is reachable at all - without it the dropship assertion above would also pass if the shipment mapper were broken.
 	 */
 	@Test
 	void outgoing_resolvesShipmentSide()

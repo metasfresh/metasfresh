@@ -85,9 +85,8 @@ public class M_InOut
 				deliveryPlanningRepository.clearActualQtyOnReverse(deliveryPlanningId, true);
 			}
 
-			// DeliveredState recompute wiring: the reversal case a stored implementation would get
-			// wrong (spec 5.7) if this call were missing - the planning's IsDelivered just went back to false,
-			// so an instruction previously FullyDelivered must fall back to PartlyDelivered (or NotDelivered).
+			// the planning's IsDelivered just went back to false, so an instruction previously FullyDelivered must fall
+			// back to PartlyDelivered (or NotDelivered) - the reversal case a stored implementation gets wrong
 			deliveryInstructionService.recomputeDeliveredStateForAllocatedInstructions(deliveryPlanningId);
 		}
 	}

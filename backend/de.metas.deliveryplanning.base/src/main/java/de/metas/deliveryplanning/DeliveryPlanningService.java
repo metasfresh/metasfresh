@@ -124,19 +124,8 @@ public class DeliveryPlanningService
 	/** Rejects acting on a closed planning; also the per-row skip report of {@link #cancelDelivery}. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Closed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Closed");
 
-	/**
-	 * The per-row report of {@link #cancelDelivery} for a planning that was still allocated when the cancel ran:
-	 * it IS cancelled (voided, closed, cancelled order status) same as any other row, but its planned figures are
-	 * committed cargo and are named here instead of being silently left as they were.
-	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_CancelAllocated = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.CancelAllocated");
 
-	/**
-	 * Rejects a receive action on an already-processed planning - one that was closed, or that already carries
-	 * its single receipt or shipment. Deliberately NOT {@link #MSG_M_Delivery_Planning_Closed}: that one says
-	 * "closed", which is a false statement about a delivered planning, and the two states are indistinguishable
-	 * through {@code Processed} anyway (the invariant), so the wording has to cover both.
-	 */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Processed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Processed");
 
 	/** The mirror of {@link #MSG_M_Delivery_Planning_Closed}: rejects RE-OPENING a planning that is still open. */
@@ -362,15 +351,9 @@ public class DeliveryPlanningService
 
 		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(deliveryPlanningRecord);
 
-		// D22: a split-created planning is a CREATED planning, not a copy of the target - it is
-		// seeded exactly as GenerateIncomingDeliveryPlanningCommand seeds a fresh one, never by copying the
-		// target's actuals (that fabricated a received/loaded quantity nothing was ever received or loaded
-		// against, and multiplied it across every sibling). Inbound/dropship: ActualLoadQty starts equal to
-		// this NEW planning's own planned load, because nothing ever reports the vendor's load - same rule
-		// as at creation, kept in step afterwards by the interceptor in interceptor/M_Delivery_Planning.java.
-		// Outgoing is unspecified by this task, so it keeps the zero a fresh planning has always started
-		// with. ActualDischargeQuantity always starts empty - the receipt owns it, and the new planning has
-		// received nothing.
+		// D22: a split-created planning is seeded exactly as GenerateIncomingDeliveryPlanningCommand seeds a fresh
+		// one, never by copying the target's actuals - that fabricated a received quantity nothing was received
+		// against, and multiplied it across every sibling.
 		final Quantity actualLoadedQty = transportDirection.isIncomingOrDropship()
 				? plannedLoadedQty
 				: Quantity.zero(uomToUse);
@@ -431,11 +414,8 @@ public class DeliveryPlanningService
 
 		Check.assumeGreaterThanZero(additionalLines, PARAM_AdditionalLines);
 
-		// Quantity allocated to a delivery instruction is committed cargo (D8/AC12/TC12): once the target is
-		// allocated, its own planned figures are a FIXED POINT of the split - never rewritten as a side effect -
-		// and the new plannings share only what the order line still has uncommitted overall. The unallocated
-		// branch's divide (target gets a share too, from its own current figure) is the single exception to
-		// that rule, reserved for the unallocated case.
+		// Quantity allocated to a delivery instruction is committed cargo (D8/AC12/TC12): an allocated target's own
+		// planned figures are a FIXED POINT of the split, never rewritten as a side effect.
 		final boolean targetIsAllocated = deliveryPlanningAllocRepository.hasActiveAllocation(deliveryPlanningId);
 
 		final Quantity openQty = getOpenQty(deliveryPlanningId, targetIsAllocated);
@@ -447,21 +427,12 @@ public class DeliveryPlanningService
 
 		if (targetIsAllocated)
 		{
-			// The target's own planned figures are untouched (D8) - no repository write here. The new plannings
-			// split whatever remains uncommitted on the order line as a whole, floored at 0 by getOpenQty; "nothing
-			// remains" still creates the requested plannings, carrying 0, rather than refusing or erroring.
+			// "nothing remains" still creates the requested plannings, carrying 0, rather than refusing or erroring
 			newPlanningLoadedQty = openQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
-			// The target is untouchable here (unlike the unallocated branch below, which folds its remainder back
-			// into the target), so the DOWN-rounding remainder would otherwise vanish - e.g. openQty=10 over 3 new
-			// plannings gives 3+3+3=9, one unit silently lost off the order line. Handed to the LAST planning
-			// created by the loop below.
+			// the target is untouchable here, so the DOWN-rounding remainder would otherwise vanish off the order line
+			// (openQty=10 over 3 new plannings gives 3+3+3=9). Handed to the LAST planning created by the loop below.
 			newPlanningLoadedQtyRemainder = openQty.subtract(newPlanningLoadedQty.multiply(additionalLines));
 
-			// The discharge pair follows the SAME pool rule as load - a discharge pool exists exactly
-			// like the load one (an earlier reading that there is no order-line-relative pool on the discharge
-			// side is superseded). The
-			// target's own discharge figure is committed cargo and stays untouched, same as its load figure; the
-			// new plannings share what remains, DOWN-rounded with the remainder on the last one, same as load.
 			final Quantity openDischargeQty = getPlannedDischargeQty(deliveryPlanningId, true);
 			newPlanningDischargeQty = openDischargeQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
 			newPlanningDischargeQtyRemainder = openDischargeQty.subtract(newPlanningDischargeQty.multiply(additionalLines));
@@ -471,9 +442,6 @@ public class DeliveryPlanningService
 			final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines + 1), 0, RoundingMode.DOWN);
 
 			final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines + 1));
-			// Two round-trips (getById+save each): DeliveryPlanningRepository has no single-record "set several
-			// columns at once" method, and adding one just to merge these two writes would widen its API for a
-			// non-hot-path call - left as-is per review.
 			deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, fraction.add(remainder));
 			newPlanningLoadedQty = fraction;
 
@@ -482,18 +450,15 @@ public class DeliveryPlanningService
 			final Quantity dischargeRemainder = dischargeQty.subtract(dischargeFraction.multiply(additionalLines + 1));
 			deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, dischargeFraction.add(dischargeRemainder));
 			newPlanningDischargeQty = dischargeFraction;
-			// Unallocated: the target itself absorbs the DOWN-rounding remainder above, so every new planning gets
-			// the plain fraction and there is nothing left over to hand to any of them here.
+			// unallocated: the target itself absorbed the DOWN-rounding remainder, so nothing is left over here
 			newPlanningLoadedQtyRemainder = Quantity.zero(openQty.getUOM());
 			newPlanningDischargeQtyRemainder = Quantity.zero(openQty.getUOM());
 		}
 
 		for (int i = 0; i < additionalLines; i++)
 		{
-			// The last planning created carries the allocated branch's remainder (zero on the unallocated branch)
-			// so the new plannings' figures still sum to the distributed pool - both ends, not just load:
-			// with more than one additional line, a dropped discharge remainder would be exactly as
-			// invisible as the load-side defect fix round 1 caught.
+			// the last planning created carries the remainder (zero on the unallocated branch), so the new plannings'
+			// figures still sum to the distributed pool - both ends, not just load
 			final boolean isLastNewPlanning = i == additionalLines - 1;
 			final Quantity loadedQtyForThisPlanning = isLastNewPlanning
 					? newPlanningLoadedQty.add(newPlanningLoadedQtyRemainder)
@@ -508,32 +473,14 @@ public class DeliveryPlanningService
 		}
 	}
 
-	/**
-	 * The discharge-pair sibling of {@link #getOpenQty}: the order line's remaining distributable pool for the
-	 * DISCHARGE pair, following the SAME rule (owner, 2026-09-02, "The distributable pool") - a split
-	 * distributes what is left of the order line, and a sibling consumes its effective quantity: its actual once
-	 * one is recorded, otherwise its planned figure.
-	 * <p>
-	 * Supersedes an earlier comment here claiming "there is no order-line-relative pool on the discharge side" -
-	 * a discharge pool exists, exactly like the load one; that earlier reasoning was correct under the narrower
-	 * scope it was written for, and is superseded by this per-end rule.
-	 */
 	private Quantity getPlannedDischargeQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
 	{
 		return resolveDistributablePool(deliveryPlanningId, targetIsAllocated, DeliveryPlanningList.PoolEnd.DISCHARGE);
 	}
 
 	/**
-	 * The order line's remaining distributable pool for {@code deliveryPlanningId}'s split (D8/AC12), for the
-	 * LOAD pair: {@code QtyOrdered} minus what every OTHER planning of the line already claims, minus the
-	 * target's own claim TOO once it is allocated - committed cargo is excluded from what a split may hand out,
-	 * same as any other planning's share. Unallocated, the target is excluded from the sum instead, exactly as
-	 * its own share is still up for redistribution, which is what lets
-	 * {@link #createAdditionalDeliveryPlannings} give it a slice of this same pool.
-	 * <p>
-	 * {@code targetIsAllocated} is handed in rather than queried here so the caller - which already needs the same
-	 * fact to decide whether to rewrite the target's own figure - pays for {@link
-	 * DeliveryPlanningAllocRepository#hasActiveAllocation} once, not twice.
+	 * The target's OWN claim is excluded from the pool too once it is allocated - committed cargo is not
+	 * distributable. Unallocated, its share is still up for redistribution and is excluded from the sum instead.
 	 */
 	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId, final boolean targetIsAllocated)
 	{
@@ -541,13 +488,8 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * The ONE pool rule (owner, 2026-09-02, "The distributable pool"), shared by {@link #getOpenQty} (load) and
-	 * {@link #getPlannedDischargeQty} (discharge): the arithmetic itself lives in
-	 * {@link DeliveryPlanningList#openPlanQty}, loaded once per call via
-	 * {@link DeliveryPlanningRepository#getByOrderLineId} - unit-tested there without a database. Floored at 0
-	 * HERE, not in the shared calculation: a negative pool is not distributable (D16), so the clamp belongs to
-	 * this split-facing use of the figure, never to a display column that may legitimately show a negative
-	 * (over-planned/over-delivered signals the line's state, per D16).
+	 * Floored at 0 HERE, not in the shared calculation: a negative pool is not distributable (D16), while the
+	 * display columns may legitimately show a negative.
 	 */
 	private Quantity resolveDistributablePool(
 			final DeliveryPlanningId deliveryPlanningId,
@@ -570,12 +512,6 @@ public class DeliveryPlanningService
 		return orderLinePlannings.openPlanQty(excludePlanningId, end).toZeroIfNegative();
 	}
 
-	/**
-	 * Keeps {@code QtyTotalOpen}/{@code QtyTotalOpenPlanned} live for the order line the given planning
-	 * sits on - called from the {@code M_Delivery_Planning} interceptor on every write path that changes a
-	 * planned/actual figure or adds a planning to the line, so every such path recomputes through this ONE
-	 * choke point rather than each caller repeating the arithmetic.
-	 */
 	public void recomputeOpenQuantitiesForOrderLine(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanning.getC_OrderLine_ID());
@@ -588,10 +524,8 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * Pushes a quantity change on ONE planning out to the delivery instruction line(s) that mirror it, so an
-	 * already-open Lieferanweisungen document refreshes its Versandpaket row with no manual reload
-	 * (TC11). See {@link DeliveryInstructionLineCacheInvalidation} for why the generic
-	 * {@code AD_SQLColumn_SourceTableColumn} invalidation cannot reach that row.
+	 * The generic {@code AD_SQLColumn_SourceTableColumn} invalidation cannot reach an already-open document's row
+	 * - see {@link DeliveryInstructionLineCacheInvalidation}.
 	 */
 	public void invalidateDeliveryInstructionLinesFor(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
@@ -599,41 +533,22 @@ public class DeliveryPlanningService
 				DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
 	}
 
-	/**
-	 * Write-back for the generate-receipt process: a receipt reads/occupies the discharge end, so the qty the
-	 * operator confirmed at generation time becomes the planning's new {@code PlannedDischargeQuantity} (spec
-	 * direction rule). Kept as a thin passthrough on the service so the generate processes reach this
-	 * repository write through their one existing collaborator, never the repository directly.
-	 */
 	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
 		deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, quantity);
 	}
 
 	/**
-	 * This planning's OWN planned discharge quantity - what it plans to receive, as opposed to what its receipt
-	 * schedule still has outstanding. The two differ exactly where it matters: a split copies
-	 * {@code M_ReceiptSchedule_ID} onto every new planning, so N plannings share ONE schedule and the schedule's
-	 * remaining quantity is the whole line's, not any single planning's. A receive that read the schedule for a
-	 * planned row would therefore let the first planning consume the whole line and starve its siblings.
-	 * <p>
-	 * A bare {@link BigDecimal} rather than a {@link Quantity}, matching what
-	 * {@code M_Delivery_Planning_GenerateReceipt} already passes: the figure is interpreted in the RECEIPT
-	 * SCHEDULE's UOM by whoever receives it, and inventing a conversion here would be a second convention.
-	 * <p>
-	 * Zero for a planning nobody has given a discharge figure yet - the value a freshly generated planning
-	 * carries ({@code plannedDischargeQty} is {@code Quantity.zero} at creation). The caller decides what to do
-	 * with that; it is not an error.
+	 * This planning's OWN planned discharge quantity, NOT its receipt schedule's outstanding one: a split copies
+	 * {@code M_ReceiptSchedule_ID} onto every new planning, so reading the schedule would let the first planning
+	 * consume the whole line and starve its siblings. The bare {@code BigDecimal} is interpreted in the RECEIPT
+	 * SCHEDULE's UOM by whoever receives it.
 	 */
 	public BigDecimal getPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return deliveryPlanningRepository.getById(deliveryPlanningId).getPlannedDischargeQuantity();
 	}
 
-	/**
-	 * Write-back for the generate-shipment process: the load-side sibling of
-	 * {@link #setPlannedDischargeQuantity} - a shipment reads/occupies the load end.
-	 */
 	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
 		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, quantity);
@@ -1162,26 +1077,14 @@ public class DeliveryPlanningService
 		return Optional.empty();
 	}
 
-	/**
-	 * The given plannings as the in-memory list the receive actions' shared precondition is answered against -
-	 * one round trip for the whole selection.
-	 */
 	public DeliveryPlanningList getProcessedStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
 		return deliveryPlanningRepository.getProcessedStatePlannings(deliveryPlanningIds);
 	}
 
 	/**
-	 * Why the given selection may not RECEIVE, or empty when it may. The ONE definition of the precondition every
-	 * receive action started from the receipt-disposition delivery-planning window shares - the actions call this, they never restate
-	 * the rule.
-	 * <p>
-	 * ALL-or-nothing, like {@link #getCloseRejectionReason(DeliveryPlanningList)} and every sibling
-	 * selection-shaped action: a single processed row refuses the whole selection rather than being skipped, so
-	 * the planner is never handed a partial result they did not ask for. It names every offending row, so they
-	 * can deselect exactly those in one go.
-	 * <p>
-	 * One predicate covers both refusals - see {@link DeliveryPlanningList#anyProcessed()}.
+	 * ALL-or-nothing, like every sibling selection-shaped action: a single processed row refuses the whole
+	 * selection rather than being skipped, and the rejection names every offending row.
 	 */
 	public Optional<ITranslatableString> getReceiveRejectionReason(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
 	{
@@ -2042,20 +1945,9 @@ public class DeliveryPlanningService
 	 * is cancelled. That is the normal case under aggregation, and it is deliberate: the closed planning's cargo
 	 * would otherwise be released along with the open one's.
 	 * <p>
-	 * An open planning still allocated to a delivery instruction when this runs (D8/D19 - the same
-	 * committed-cargo rule the split applies, via {@link DeliveryPlanningAllocRepository#hasActiveAllocation}) is
-	 * fully cancelled the same as any other row - voided, closed, cancelled order status - but its
-	 * {@code PlannedLoadedQuantity}/{@code PlannedDischargeQuantity} are left untouched and it is named in
-	 * {@link DeliveryPlanningCancelResult#getSkippedAllocatedIds()} instead of being silently rewritten.
-	 * <p>
-	 * The allocation state is snapshotted for the WHOLE selection BEFORE any row is voided - not read per row
-	 * right before that row's own void. Two selected plannings sharing one instruction (the aggregation case
-	 * this method's own Javadoc above already describes) both go through {@link #voidLinkedDeliveryInstructions}
-	 * once each is reached in the loop, and voiding the shared instruction deactivates BOTH plannings'
-	 * allocations at once (the AFTER_VOID unlink cascade). A per-row "check right before voiding THIS row" would
-	 * therefore see the second-processed sibling as already unallocated - a side effect of iteration order the
-	 * first-processed row's void introduced - and zero its planned figures despite it being just as committed
-	 * as the first. The batch snapshot fixes what cancel actually found before it touched anything.
+	 * The allocation state is snapshotted for the WHOLE selection BEFORE any row is voided: voiding a shared
+	 * instruction deactivates its siblings' allocations too, so a per-row read would see a later sibling as
+	 * unallocated and zero its committed planned figures.
 	 */
 	public DeliveryPlanningCancelResult cancelDelivery(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{

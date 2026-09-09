@@ -29,17 +29,10 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 /**
- * The two source ids ONE receipt-disposition delivery-planning row stands for: the receipt schedule it is always about, and the
- * delivery planning that plans it - when one exists.
- * <p>
- * The nullable half IS the window's two branches. {@code RV_ReceiptDisposition_DeliveryPlanning} unions a <b>planned</b> row (an
- * active {@code Incoming} planning carrying a receipt schedule) with an <b>unplanned</b> one (a receipt schedule
- * no active planning refers to), so a receive action started from the grid gets a planning id for some selected
- * rows and none for others. Carrying that as {@code null} rather than as two collections keeps the two branches
- * one selection, which is what lets a single action serve both.
- * <p>
- * The receipt schedule is MANDATORY, on both branches: it is what the receipt is ultimately generated from, and
- * both branches of the view read it off {@code M_ReceiptSchedule}'s own primary key.
+ * The two source ids ONE receipt-disposition delivery-planning row stands for. The nullable planning half IS the
+ * window's two branches - the view unions a planned row (an active {@code Incoming} planning carrying a receipt
+ * schedule) with an unplanned one - carried as {@code null} rather than as two collections, which is what lets a
+ * single action serve both.
  */
 @Value(staticConstructor = "of")
 public class ReceiptScheduleAndDeliveryPlanningId

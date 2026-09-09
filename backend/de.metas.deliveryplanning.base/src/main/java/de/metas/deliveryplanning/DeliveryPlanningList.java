@@ -122,13 +122,9 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * The one {@link PoolEnd} the whole selection nets, or empty when it spans both ends or is empty.
-	 * <p>
-	 * Deliberately WEAKER than {@link #getSingleTransportDirection()}: {@code Incoming} and {@code Dropship} are
-	 * two directions that {@link PoolEnd#forDirection} maps onto the same DISCHARGE end, so a selection holding
-	 * both has no single direction yet still nets one well-defined end. Callers that only need to know which pair
-	 * of quantity columns to net must ask this, not the direction - asking the direction would reject a mix that
-	 * is perfectly computable.
+	 * Deliberately WEAKER than {@link #getSingleTransportDirection()}: {@code Incoming} and {@code Dropship} map
+	 * onto the same DISCHARGE end, so a selection holding both has no single direction yet nets one well-defined
+	 * end. Asking the direction instead would reject a mix that is perfectly computable.
 	 */
 	public Optional<PoolEnd> getSinglePoolEnd()
 	{
@@ -169,25 +165,14 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	public DeliveryPlanningList openOnes() {return filter(deliveryPlanning -> !deliveryPlanning.isClosed());}
 
 	/**
-	 * Whether ANY planning in this selection is already processed - the shared precondition of every receive
-	 * action started from the receipt-disposition delivery-planning window.
+	 * ONE predicate rather than {@code anyClosed() || anyDelivered()}: the invariant
+	 * {@code Processed == (IsClosed || IsDelivered)} makes them the same question.
 	 * <p>
-	 * ONE predicate rather than {@code anyClosed() || anyDelivered()}, because the invariant
-	 * {@code Processed == (IsClosed || IsDelivered)} makes them the same question: a closed planning was called
-	 * off, a delivered one already carries the single receipt or shipment a planning may have, and neither may
-	 * receive again.
-	 * <p>
-	 * Affordable over a whole selection precisely because {@code Processed} is a STORED column (see
-	 * {@link DeliveryPlanning#isProcessed()}): it is read with the row. Deliberately NOT the shape of
-	 * {@link #anyAllocated()}, whose {@code IsAllocated} is a lazy-loading virtual column today and therefore
-	 * costs one query per row.
+	 * Affordable over a whole selection because {@code Processed} is a STORED column - deliberately NOT the shape
+	 * of {@link #anyAllocated()}, whose {@code IsAllocated} is a lazy-loading virtual column and costs a query per row.
 	 */
 	public boolean anyProcessed() {return list.stream().anyMatch(DeliveryPlanning::isProcessed);}
 
-	/**
-	 * WHICH rows {@link #anyProcessed()} is true of - so a rejection can name every one of them at once and the
-	 * planner can deselect exactly those, instead of retrying row by row.
-	 */
 	public DeliveryPlanningList processedOnes() {return filter(DeliveryPlanning::isProcessed);}
 
 	public boolean anyAllocated() {return list.stream().anyMatch(DeliveryPlanning::isAllocated);}
@@ -203,17 +188,10 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	public DeliveryPlanningList withoutShipper() {return filter(DeliveryPlanning::isWithoutShipper);}
 
 	/**
-	 * The three-state delivered indicator of the delivery instruction this selection is the active allocations
-	 * of (spec &sect; 5.7): {@code NotDelivered} when none of them is, {@code FullyDelivered} when every one is,
-	 * {@code PartlyDelivered} otherwise - the normal intermediate state of a consolidated instruction, not an
-	 * edge case. An empty selection (an instruction with no active allocation) answers {@code NotDelivered},
-	 * vacuously - the same "no allocation's planning is delivered" condition a non-empty all-open selection
-	 * answers.
+	 * An empty selection - an instruction with no active allocation - answers {@code NotDelivered}, vacuously.
 	 * <p>
-	 * The ONE place this is computed (rule 6): every write point that can change which plannings are
-	 * delivered, or which plannings are actively allocated to the instruction, loads this list and calls this
-	 * method, rather than re-deriving the three states inline - so a stored {@code DeliveredState} column
-	 * cannot drift from this definition by having a second copy of it.
+	 * The ONE place this is computed, so the stored {@code DeliveredState} column cannot drift from a second copy
+	 * of the derivation.
 	 */
 	public DeliveryInstructionDeliveredState getDeliveredState()
 	{
@@ -238,22 +216,15 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * The ONE distributable-pool rule (owner, 2026-09-02, "The distributable pool" - see the plan's Global
-	 * Constraints), applied to whichever {@code end} the caller asks about: {@code QtyOrdered} minus what every
-	 * OTHER planning of this order line claims - {@code coalesce(nullif(actual, 0), planned)} - so a zero actual
-	 * (nothing recorded yet) falls back to the sibling's planned share instead of being read as a real zero that
-	 * would inflate the pool by that sibling's whole planned amount.
+	 * {@code coalesce(nullif(actual, 0), planned)}: a zero actual (nothing recorded yet) falls back to the
+	 * sibling's planned share, instead of being read as a real zero that would inflate the pool by that sibling's
+	 * whole planned amount.
 	 * <p>
-	 * {@code excludePlanningId} is the split's own target: {@code null} to include every planning in the sum
-	 * (the target's own claim counts too, once it is allocated and therefore committed cargo), or that
-	 * planning's id to leave its own claim out (unallocated: its share is still up for redistribution).
-	 * <p>
-	 * NOT floored at zero here - see {@link DeliveryPlanning} class javadoc and the caller: the clamp belongs to
-	 * the SPLIT's use of this figure (a negative pool is not distributable), not to this shared calculation,
-	 * which a display column may also read unclamped (an over-planned line legitimately shows a negative).
-	 * <p>
-	 * Pure in-memory arithmetic over already-loaded {@link DeliveryPlanning} rows - unit-tested without a
-	 * database, which is the whole reason this pool lives here rather than inline in the service.
+	 * NOT floored at zero here - the clamp belongs to the SPLIT's use of this figure, not to this shared
+	 * calculation, which a display column also reads unclamped.
+	 *
+	 * @param excludePlanningId {@code null} to count every planning, including the split target's own claim; the
+	 * 		target's id to leave its claim out because that share is still up for redistribution.
 	 */
 	public Quantity openPlanQty(@Nullable final DeliveryPlanningId excludePlanningId, @NonNull final PoolEnd end)
 	{
@@ -277,11 +248,9 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * {@code QtyTotalOpen} (owner, 2026-09-02, "the open quantity is a PAIR of fields"): {@code QtyOrdered} minus
-	 * what has ACTUALLY been delivered so far on this order line, summed straight - unlike {@link #openPlanQty}
-	 * there is no nullif/coalesce fallback here, because a zero actual for this figure means exactly what it
-	 * says: nothing delivered yet. NOT floored at zero: an over-delivered line legitimately shows negative
-	 * (D16) - the caller displays it, never clamps it.
+	 * Summed straight - unlike {@link #openPlanQty} there is no nullif/coalesce fallback here, because a zero
+	 * actual means exactly what it says: nothing delivered yet. NOT floored at zero: an over-delivered line
+	 * legitimately shows negative (D16).
 	 */
 	public Quantity qtyTotalOpen(@NonNull final PoolEnd end)
 	{
@@ -300,9 +269,8 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * {@code QtyTotalOpen}'s sibling figure: {@code QtyOrdered} minus the PLANNED quantities of every planning of
-	 * this order line, summed straight - "how much of the order line nobody has planned yet". Not floored at
-	 * zero for the same reason as {@link #qtyTotalOpen}: an over-planned line legitimately shows negative (D16).
+	 * {@code QtyTotalOpen}'s sibling figure, over the PLANNED quantities. Not floored at zero for the same reason:
+	 * an over-planned line legitimately shows negative (D16).
 	 */
 	public Quantity qtyTotalOpenPlanned(@NonNull final PoolEnd end)
 	{
@@ -320,10 +288,6 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 		return qtyOrdered.subtract(plannedSum);
 	}
 
-	/**
-	 * Which pair of quantity columns {@link #openPlanQty} nets - the load pair or the discharge pair (see the
-	 * plan's Global Constraints, "The distributable pool", "Applied per end").
-	 */
 	public enum PoolEnd
 	{
 		LOAD(DeliveryPlanning::getPlannedLoadedQty, DeliveryPlanning::getActualLoadedQty),
@@ -341,8 +305,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 		}
 
 		/**
-		 * A sibling's effective claim on the pool: its actual once one is recorded ({@code nullif(actual, 0)}),
-		 * otherwise its planned figure.
+		 * A sibling's effective claim: its actual once one is recorded ({@code nullif(actual, 0)}), otherwise its planned figure.
 		 */
 		private Quantity effectiveQty(@NonNull final DeliveryPlanning deliveryPlanning)
 		{
@@ -364,9 +327,7 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 		}
 
 		/**
-		 * Which end a planning's own {@code QtyTotalOpen}/{@code QtyTotalOpenPlanned} follow, decided by
-		 * DIRECTION (owner, 2026-09-02, "receipt based unload, ship based load"): a receipt (incoming or
-		 * dropship - the dropship purchase leg's own receipt) nets discharge, a shipment nets load.
+		 * Decided by DIRECTION: a receipt (incoming or dropship) nets discharge, a shipment nets load.
 		 */
 		public static PoolEnd forDirection(@NonNull final TransportDirection transportDirection)
 		{

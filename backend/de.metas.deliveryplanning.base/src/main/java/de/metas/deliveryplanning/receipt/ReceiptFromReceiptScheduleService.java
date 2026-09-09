@@ -94,20 +94,9 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * The ONE way a material receipt is created out of a receipt schedule in this branch - for a delivery planning
- * and for a bare receipt schedule alike.
- * <p>
- * It exists because there are two windows that receive the same goods: the delivery-planning window, whose
- * generate-receipt process has always carried the planning id, and the receipt-disposition delivery-planning window, whose grid
- * unions planned and unplanned rows and therefore has to do <b>both</b> from one action. Written twice, the
- * planning id is a thing one of the two copies forgets - which is exactly what the HU-editor path does today,
- * producing a receipt whose {@code M_Delivery_Planning_ID} is never set. Written once, here, the id is simply a
- * nullable field of {@link CreateReceiptFromReceiptScheduleRequest} and the caller cannot skip it by accident.
- * <p>
- * Why it lives in {@code de.metas.deliveryplanning.base}: it is the only module that both sees
- * {@link DeliveryPlanningId} (so the request can be typed rather than passing a bare repo id) and is visible
- * from every caller - the delivery-planning generate process, the receipt-disposition delivery-planning window's actions, and the
- * cucumber test classpath.
+ * The ONE way a material receipt is created out of a receipt schedule here, for a delivery planning and for a
+ * bare receipt schedule alike - so that the nullable {@code M_Delivery_Planning_ID} cannot be forgotten by one
+ * of two copies, as the HU-editor path does today.
  */
 @Service
 public class ReceiptFromReceiptScheduleService
@@ -131,18 +120,6 @@ public class ReceiptFromReceiptScheduleService
 	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	@NonNull private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
-	/**
-	 * The WHOLE of a "receive CUs" action, for either row type of the receipt-disposition delivery-planning grid: one planning VHU
-	 * carrying {@code qtyToReceiveOverride} (or, when none is given, the row's own quantity as
-	 * {@link #getQtyToReceive} resolves it - the planning's share on a planned row, the schedule's remainder on
-	 * an unplanned one), the receipt booked against it, and - on a planned row - the planning's quantity rules
-	 * applied.
-	 * <p>
-	 * It lives here rather than in the action so that the action is a thin adapter over behaviour that can be
-	 * driven, and asserted, without a WebUI view: {@code de.metas.cucumber} deliberately excludes
-	 * {@code de.metas.ui.web.base}, so a scenario proving AC10 - receiving a planned row leaves the same state
-	 * as receiving that planning from the delivery-planning window - has to reach the behaviour at this level.
-	 */
 	public CreateReceiptFromReceiptScheduleResult receiveCUs(
 			@NonNull final ReceiptScheduleAndDeliveryPlanningId sourceIds,
 			@Nullable final BigDecimal qtyToReceiveOverride)
@@ -172,28 +149,13 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * The WHOLE of the receipt-disposition delivery-planning window's MULTI-ROW receive: a selection that may hold planned rows,
-	 * unplanned rows, or both, received in one gesture.
+	 * Rows are grouped by their delivery planning FIRST - every unplanned row in one group, each planning in its
+	 * own - because {@code CreateReceiptsParameters#deliveryPlanningId} stamps every receipt header the call
+	 * creates and a header holds ONE planning.
 	 * <p>
-	 * <b>Routing is per ROW, on the nullable planning id</b> - the same discriminator the single-row actions
-	 * use, which is what lets one action serve a grid that unions two row types, mixed selection included.
-	 * Nothing extra is built for the mixed case; it is what per-row routing already produces.
-	 * <p>
-	 * <b>Grouping, and why it is what it is.</b> Rows are grouped by their delivery planning FIRST - every
-	 * unplanned row in one group, each planning in its own - and each group is then handed to
-	 * {@link #generateReceipts} as a single call, which splits it into receipts by
-	 * {@code InOutProducer#isNewReceiptRequired}: header aggregation key plus an unchanged {@code C_Order_ID}.
-	 * The outer grouping is not a preference: {@code CreateReceiptsParameters#deliveryPlanningId} stamps every
-	 * receipt header the call creates, and a receipt header holds ONE planning, so two plannings cannot share a
-	 * header. Within each group the aggregation rule is reused rather than reinvented, so a row produces the same
-	 * receipt shape whichever half of the view it came from.
-	 * <p>
-	 * <b>Groups are processed in order and each sees the previous one's effect.</b> That is what keeps the split
-	 * case honest: a split copies {@code M_ReceiptSchedule_ID} onto every new planning, so several rows can point
-	 * at ONE schedule and one order line. Receiving them together must not receive that line twice, so every row's
-	 * quantity is computed from the schedule's LIVE remaining quantity at the moment its group is built (see
-	 * {@link #getQtyToReceive}), and a row with nothing left simply contributes nothing instead of failing
-	 * the batch.
+	 * Groups are processed in order and each sees the previous one's effect: several rows can point at ONE
+	 * schedule (a split shares it), so every row's quantity is computed from the schedule's LIVE remaining
+	 * quantity at the moment its group is built, and a row with nothing left contributes nothing.
 	 *
 	 * @return the receipts created, in creation order; empty when the whole selection had nothing left to receive.
 	 */
@@ -210,9 +172,7 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * The selection split into the groups that may share a receipt header: one group per delivery planning, plus
-	 * ONE group holding every unplanned row. Order of first appearance is kept, so a selection produces the same
-	 * receipts every time it is received - and the split case in particular resolves deterministically.
+	 * Order of first appearance is kept, so a selection produces the same receipts every time it is received.
 	 */
 	private static ImmutableList<List<ReceiptScheduleAndDeliveryPlanningId>> groupByDeliveryPlanning(
 			@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> rows)
@@ -227,10 +187,6 @@ public class ReceiptFromReceiptScheduleService
 		return ImmutableList.copyOf(groups.values());
 	}
 
-	/**
-	 * One group - i.e. one delivery planning, or all the unplanned rows - received as ONE call, so its schedules
-	 * are grouped into receipts by the producer's own rule.
-	 */
 	private ImmutableList<InOutId> receiveOneGroup(@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> group)
 	{
 		final DeliveryPlanningId deliveryPlanningId = group.get(0).getDeliveryPlanningId();
@@ -277,26 +233,10 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * How much ONE row contributes when nobody states a quantity - the ONE rule, for a single-row receive and a
-	 * multi-row one alike.
-	 * <p>
-	 * <b>Unplanned row</b> - the schedule's own remaining quantity: nobody has planned this schedule, so there is
-	 * no other figure to respect.
-	 * <p>
-	 * <b>Planned row</b> - the PLANNING's own share ({@link #getPlannedShareToReceive}), capped at what the
-	 * schedule still has left. This is what "the planning's quantity rules apply" means here, and the cap is what
-	 * a shared schedule makes necessary.
-	 * <p>
-	 * <b>Why both paths MUST ask this and not the schedule.</b> A split copies {@code M_ReceiptSchedule_ID} onto
-	 * every new planning, so N plannings share ONE schedule and the schedule's remaining quantity is the whole
-	 * order line's. A receive that read the schedule for a planned row would let the first planning consume the
-	 * entire line and starve its siblings - they would show as receivable and refuse with "nothing to receive",
-	 * with no receipt, no delivered state and no way to get one from this window (see
-	 * {@link DeliveryPlanningService#getPlannedDischargeQuantity}). Two entry points resolving this differently is
-	 * the same defect wearing one button's clothes, so there is one method and both call it.
-	 * <p>
-	 * A receipt occupies the DISCHARGE end, which is why the discharge figure is the one read (spec direction
-	 * rule: "receipt based unload, ship based load").
+	 * A split copies {@code M_ReceiptSchedule_ID} onto every new planning, so N plannings share ONE schedule and
+	 * the schedule's remaining quantity is the whole ORDER LINE's: reading the schedule for a planned row would
+	 * let the first planning consume the entire line and starve its siblings. A receipt occupies the DISCHARGE
+	 * end, which is why the discharge figure is the one read.
 	 */
 	public Quantity getQtyToReceive(
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
@@ -310,17 +250,9 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * The share the ROW itself imposes, or empty when it imposes none.
-	 * <p>
-	 * Empty for an <b>unplanned</b> row - it has no planning to read - and for a planning that carries no
-	 * discharge figure yet (zero: the value a freshly generated planning has, before anyone split or edited it),
-	 * which is not an error but "the planning has not said". Callers then fall back to whatever they would have
-	 * received anyway, so a freshly generated planning receives exactly what an unplanned row does and one row
-	 * received alone yields the same receipt as the same row received in a batch.
-	 * <p>
-	 * Kept apart from {@link #getQtyToReceive} because the two callers need different fallbacks: a CU receive
-	 * falls back to the schedule's remainder, an HU receive to the packing's own total (which legitimately rounds
-	 * up over the remainder, as the receipt-schedule window's does). Only the SHARE is shared.
+	 * Empty for an unplanned row, and for a planning that carries no discharge figure yet (zero, the value a
+	 * freshly generated planning has) - not an error but "the planning has not said". The caller picks the
+	 * fallback: the schedule's remainder for a CU receive, the packing's own total for an HU receive.
 	 */
 	public Optional<Quantity> getPlannedShareToReceive(
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
@@ -341,8 +273,8 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * The schedule's own remaining quantity to move - the whole ORDER LINE's remainder, which is why it is only
-	 * ever the FALLBACK of {@link #getQtyToReceive} and never the answer for a planned row.
+	 * The whole ORDER LINE's remainder, which is why it is only ever the FALLBACK of {@link #getQtyToReceive} and
+	 * never the answer for a planned row.
 	 */
 	public Quantity getDefaultQtyToReceive(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
@@ -355,13 +287,8 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * On a PLANNED row only: the quantity received becomes the planning's planned discharge quantity, because a
-	 * receipt occupies the DISCHARGE end. This is what {@code M_Delivery_Planning_GenerateReceipt} does after
-	 * generating, and it is half of what AC10 means by "the same result" - the other half, the actual discharge
-	 * quantity and the {@code Processed} flag, is derived by the completion interceptor from the planning id the
-	 * request carried.
-	 * <p>
-	 * An unplanned row has no planning to write to; that is the whole of the {@code null} branch.
+	 * A receipt occupies the DISCHARGE end, so the quantity received becomes the planning's planned discharge
+	 * quantity. An unplanned row has no planning to write to - that is the whole of the {@code null} branch.
 	 */
 	public void applyPlanningQuantityRules(
 			@Nullable final DeliveryPlanningId deliveryPlanningId,
@@ -374,11 +301,9 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * Creates and COMPLETES the receipt for the request's schedule, booking exactly the request's HUs.
-	 * <p>
 	 * {@link CreateReceiptFromReceiptScheduleRequest#getDeliveryPlanningId()} is handed to
-	 * {@code CreateReceiptsParameters} rather than written onto the finished document, because this call
-	 * completes the receipt before returning; see the request's javadoc for why the ordering is load-bearing.
+	 * {@code CreateReceiptsParameters} rather than written onto the finished document, because this call completes
+	 * the receipt before returning.
 	 */
 	public CreateReceiptFromReceiptScheduleResult createReceipt(@NonNull final CreateReceiptFromReceiptScheduleRequest request)
 	{
@@ -400,17 +325,8 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * The ONE call into the HU-aware receipt generation, for one schedule or many.
-	 * <p>
-	 * Handing SEVERAL schedules to a single call is what produces grouped receipts:
-	 * {@code InOutProducer#isNewReceiptRequired} starts a new receipt only when the header aggregation key
-	 * changes or the {@code C_Order_ID} does, so schedules that agree on both end up as lines of ONE receipt.
-	 * That grouping is not re-implemented here - it is reused, which is the point: one gesture must not yield
-	 * differently-grouped receipts depending on which half of the union view a row came from.
-	 * <p>
-	 * {@code deliveryPlanningId} is stamped on EVERY receipt header this call creates, which is why the
-	 * multi-row receive groups its rows by planning first: a receipt header holds one planning, so two plannings
-	 * cannot share one header. See {@link #receiveRows}.
+	 * {@code deliveryPlanningId} is stamped on EVERY receipt header this call creates - which is why
+	 * {@link #receiveRows} groups its rows by planning first: a receipt header holds one planning.
 	 */
 	private InOutGenerateResult generateReceipts(
 			@NonNull final List<I_M_ReceiptSchedule> receiptSchedules,
@@ -432,11 +348,8 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * Creates a single planning VHU carrying {@code qtyToReceive} for the given receipt schedule - the "receive
-	 * CUs" shape, i.e. bare units with no packing instruction.
-	 * <p>
-	 * Returns {@code null} when there is nothing to receive, so that a caller receiving a whole selection can
-	 * skip an exhausted line instead of failing the batch.
+	 * Returns {@code null} when there is nothing to receive, so a caller receiving a whole selection can skip an
+	 * exhausted line instead of failing the batch.
 	 */
 	@Nullable
 	public HuId createPlanningVHU(
@@ -510,13 +423,8 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * Copies the receipt schedule's Lot number, Best-Before-Date and Vendor attributes onto the freshly created
-	 * planning HUs. Mirrors {@code ReceiptScheduleBasedProcess.updateAttributes} - which lives in
-	 * {@code de.metas.ui.web.base} and is therefore not reachable as an API from here.
-	 * <p>
-	 * Takes the whole batch rather than one HU at a time because the lot number drawn from the doc-type
-	 * sequence is drawn ONCE per receive and shared by every HU of it - the memo the process base keeps in an
-	 * instance field, which a shared service cannot. Called per HU it would burn one sequence number each and
+	 * Takes the whole batch rather than one HU at a time: the lot number drawn from the doc-type sequence is drawn
+	 * ONCE per receive and shared by every HU of it. Called per HU it would burn one sequence number each and
 	 * label the HUs of one receive with different lots.
 	 */
 	public void updatePlanningHUAttributes(

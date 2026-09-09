@@ -36,21 +36,12 @@ import javax.annotation.Nullable;
 
 /**
  * The ONE request every receive in this domain is made of: a receipt schedule, the planning HUs to book against
- * it, and - <b>nullable</b> - the delivery planning the receipt belongs to.
+ * it, and - nullable - the delivery planning the receipt belongs to.
  * <p>
- * <b>The nullable planning id is the whole design.</b> There is one receive path, not two:
- * <ul>
- *     <li><b>present</b> - the planning-aware path. The id travels all the way into
- *     {@code CreateReceiptsParameters#deliveryPlanningId}, so the receipt header carries it while still a draft;
- *     the completion that happens inside the same call then fires {@code de.metas.deliveryplanning}'s
- *     {@code TIMING_AFTER_COMPLETE} interceptor, which is what derives the planning's delivered state, its
- *     actual discharge quantity, its {@code Processed} flag and the receipt back-link. Setting the id on the
- *     finished receipt instead is too late and silently produces an unlinked planning.</li>
- *     <li><b>absent</b> - the plain receipt against the schedule, exactly as the receipt-schedule window
- *     produces it. Nothing is stamped, nothing is derived.</li>
- * </ul>
- * That is why the receipt-disposition delivery-planning window, whose grid unions planned and unplanned rows, can serve both row
- * types with a single action: the row decides whether the id is there, not the action.
+ * When present, the id travels into {@code CreateReceiptsParameters#deliveryPlanningId} so the receipt header
+ * carries it while still a DRAFT: the completion inside the same call is what derives the planning's delivered
+ * state, actual discharge quantity, {@code Processed} flag and receipt back-link. Setting the id on the finished
+ * receipt instead is too late and silently produces an unlinked planning.
  */
 @Value
 public class CreateReceiptFromReceiptScheduleRequest

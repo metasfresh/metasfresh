@@ -335,9 +335,8 @@ class DeliveryPlanningCloseSemanticsTest
 	// ------------------------------------------------------------------ Processed follows closed-or-delivered
 
 	/**
-	 * A planning is "delivered" the same way E3's {@code IsDelivered} virtual column defines it - an
-	 * {@code M_InOut_ID} is set - without going through the real receipt/shipment flow (that interceptor is
-	 * the completion write-back's territory, deliberately untouched here).
+	 * Marks "delivered" the way {@code IsDelivered} defines it - an {@code M_InOut_ID} is set - without going
+	 * through the real receipt/shipment flow.
 	 */
 	private static void markDelivered(@NonNull final I_M_Delivery_Planning record)
 	{
@@ -346,12 +345,9 @@ class DeliveryPlanningCloseSemanticsTest
 	}
 
 	/**
-	 * The invariant enforced here: {@code Processed == (IsClosed || IsDelivered)}. Reads
-	 * {@code M_InOut_ID} directly rather than the generated {@code isDelivered()} getter - that getter proxies a
-	 * DB-side virtual column ({@code CASE WHEN M_InOut_ID IS NOT NULL}), which the POJO in-memory test
-	 * infrastructure this test class uses does not evaluate, so it would misreport "delivered" as false here even
-	 * with {@code M_InOut_ID} set. Reading the column the virtual one is defined from is equally correct and is
-	 * what production the invariant statement means - see the plan's Global Constraints on this choice.
+	 * Reads {@code M_InOut_ID} directly rather than the generated {@code isDelivered()} getter: that getter proxies
+	 * a DB-side virtual column, which this POJO in-memory test infrastructure does not evaluate, so it would
+	 * misreport "delivered" as false even with {@code M_InOut_ID} set.
 	 */
 	private static void assertInvariantHolds(@NonNull final I_M_Delivery_Planning record)
 	{
@@ -406,10 +402,8 @@ class DeliveryPlanningCloseSemanticsTest
 		final I_M_Delivery_Planning planning = deliveryPlanning();
 		markDelivered(planning);
 
-		// closed once, then reopened while still delivered: leaves IsClosed=false, Processed=true - the ONLY
-		// reachable state in which a SECOND close finds isProcessed() already true, i.e. the ONLY state that
-		// exercises closeSelectedDeliveryPlannings' skip branch. Every other test in this class starts each
-		// close from an unprocessed planning, so only the "set" branch ever ran before this test existed.
+		// closed once, then reopened while still delivered: the ONLY reachable state in which a SECOND close finds
+		// isProcessed() already true, i.e. the only state that exercises the skip branch
 		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
 		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(planning));
 		final I_M_Delivery_Planning reopened = reload(planning);
@@ -417,12 +411,8 @@ class DeliveryPlanningCloseSemanticsTest
 		assertThat(reopened.isClosed()).isFalse();
 		assertThat(reopened.isProcessed()).as("delivered, so still Processed going into the second close").isTrue();
 
-		// The skip branch's own save() still runs unconditionally (IsClosed itself is changing false->true),
-		// so an "Updated timestamp changed" or "save call count" check would pass regardless of whether the
-		// guarded setProcessed(true) executed - it is not an observable proxy for the skip, and a mock built
-		// solely to intercept that one setter call would test the mock, not the behaviour. The state assertion
-		// below IS discriminating, though: a regression that inverted the guard (e.g. skip-when-true became
-		// clear-when-true) would flip Processed to false here, and the invariant assertion would fail too.
+		// the skip branch's own save() still runs unconditionally (IsClosed is changing false->true), so a save-count
+		// check would pass either way; the state assertion below is the discriminating one
 		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
 		final I_M_Delivery_Planning closedAgain = reload(planning);
 		assertInvariantHolds(closedAgain);

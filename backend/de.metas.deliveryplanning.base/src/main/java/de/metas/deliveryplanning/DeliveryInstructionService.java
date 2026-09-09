@@ -51,21 +51,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Everything about a delivery instruction that spans MORE THAN ONE aggregate, and therefore cannot live in a
- * repository: allocating a planning to an instruction touches
- * {@code M_Delivery_Planning_Alloc}, {@code M_ShippingPackage}, {@code M_Package} and {@code M_Delivery_Planning}
- * in one operation, and a repository must never call another repository. This class is where that composition
- * happens, over {@link DeliveryInstructionRepository}, {@link DeliveryPlanningAllocRepository},
- * {@link DeliveryPlanningRepository} and {@link MPackageRepository}.
- * <p>
- * It is also the ONE door to the delivery instruction for everything outside this package: a collaborator holds
- * either this service or {@link DeliveryInstructionRepository}, never both, so a guard added to a read here
- * (a permission filter, a {@code DocStatus} check, a cache) reaches every caller instead of half of them
- * (docs/coding-rules/service-injection.md, "Don't dual-source"). Reads that are pure single-aggregate
- * pass-throughs - {@link #getById}, {@link #getDocStatus}, {@link #getDocStatuses} - are therefore delegated
- * rather than withheld.
- */
 @Service
 @RequiredArgsConstructor
 public class DeliveryInstructionService
@@ -93,10 +78,6 @@ public class DeliveryInstructionService
 		return deliveryInstructionRepository.getDocStatuses(deliveryInstructionIds);
 	}
 
-	/**
-	 * Creates ONE delivery instruction from the given request, with the request's own planning already allocated
-	 * to it.
-	 */
 	public I_M_ShipperTransportation generateDeliveryInstruction(@NonNull final DeliveryInstructionCreateRequest request)
 	{
 		final I_M_ShipperTransportation deliveryInstructionRecord = deliveryInstructionRepository.create(request);
@@ -118,18 +99,13 @@ public class DeliveryInstructionService
 						.orderId(request.getOrderId())
 						.toBeFetched(request.isToBeFetched())
 						.build())
-				// the header's ETD/ETA/LoadingTime/DeliveryTime are already set by the repository above, directly
-				// from this same request, before this method calls createAllocations with resolvedDates=null - so
-				// this single-request list has nothing left to contribute to the fill-if-empty defaulting
+				// the header's dates are already set by the repository above, from this same request, so this
+				// single-request list has nothing left to contribute to the fill-if-empty defaulting
 				.headerDateCandidate(DeliveryPlanningAllocCreateRequest.HeaderDateCandidate.none())
 				.build();
 	}
 
 	/**
-	 * Allocates the given delivery plannings to the given delivery instruction, each with its own
-	 * {@code M_ShippingPackage}. The allocations are created in the order of {@code requests}, so their ids
-	 * follow that order - a caller that wants a particular order hands them over sorted.
-	 *
 	 * @param resolvedDates the instruction header's date fields, written verbatim; {@code null} leaves the
 	 * 		header's current dates untouched.
 	 */
@@ -141,9 +117,6 @@ public class DeliveryInstructionService
 		return createAllocations(deliveryInstructionRepository.getById(deliveryInstructionId), requests, resolvedDates);
 	}
 
-	/**
-	 * Creates the allocations and leaves the instruction header's dates exactly as they are.
-	 */
 	public ImmutableList<DeliveryPlanningAllocId> createAllocations(
 			@NonNull final ShipperTransportationId deliveryInstructionId,
 			@NonNull final List<DeliveryPlanningAllocCreateRequest> requests)
@@ -151,9 +124,6 @@ public class DeliveryInstructionService
 		return createAllocations(deliveryInstructionId, requests, null);
 	}
 
-	/**
-	 * Package-private for the caller that already holds the instruction record, so it is not loaded twice.
-	 */
 	ImmutableList<DeliveryPlanningAllocId> createAllocations(
 			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
 			@NonNull final List<DeliveryPlanningAllocCreateRequest> requests,
@@ -172,21 +142,16 @@ public class DeliveryInstructionService
 			allocIds.add(createAllocation(deliveryInstructionRecord, request));
 		}
 
-		// DeliveredState: ONCE per batch call, not once per request - every request here targets the
-		// SAME instruction (the method's single deliveryInstructionRecord parameter), so recomputing inside the
-		// loop above would cost one query round trip per row for a result that only the LAST iteration's answer
-		// survives. Combine's 3-planning case measured this: per-row would have tripled combine's getByIds calls
-		// (2 -> 5); once here keeps it at the pre-existing 2 (see DeliveryPlanningBatchLoadingTest).
+		// ONCE per batch call, not once per request: every request here targets the SAME instruction, so recomputing
+		// inside the loop above would cost a round trip per row for a result only the last iteration's survives
 		recomputeDeliveredState(ShipperTransportationId.ofRepoId(deliveryInstructionRecord.getM_ShipperTransportation_ID()));
 
 		return allocIds.build();
 	}
 
 	/**
-	 * The three-table composition an allocation is: the {@code M_Package} first (it is a reference of the
-	 * shipping package, owned by {@link MPackageRepository}), then the instruction's {@code M_ShippingPackage}
-	 * line, then the allocation row itself - {@code M_ShippingPackage_ID} is mandatory on the allocation and
-	 * uniquely indexed, so the package has to exist first.
+	 * The {@code M_Package} first, then the instruction's {@code M_ShippingPackage} line, then the allocation row:
+	 * {@code M_ShippingPackage_ID} is mandatory on the allocation and uniquely indexed, so the package must exist first.
 	 */
 	private DeliveryPlanningAllocId createAllocation(
 			@NonNull final I_M_ShipperTransportation deliveryInstructionRecord,
@@ -217,9 +182,8 @@ public class DeliveryInstructionService
 	}
 
 	/**
-	 * Deactivates - rather than deletes - the given plannings' ACTIVE allocations and the shipping packages they
-	 * point at, so the record of what was once planned survives. A deactivated allocation is left alone: it
-	 * records an instruction the planning was taken off earlier, which is not what the caller is undoing.
+	 * Deactivates rather than deletes, so the record of what was once planned survives. An already-deactivated
+	 * allocation is left alone: it records an instruction the planning was taken off earlier.
 	 *
 	 * @return the planning ids ACTUALLY deactivated - a subset of the input when one had no active allocation.
 	 */
@@ -232,9 +196,8 @@ public class DeliveryInstructionService
 	}
 
 	/**
-	 * On void or cancel of the delivery instruction: the allocations and their shipping packages are deactivated
-	 * rather than deleted. {@code IsActive='N'} also releases both partial unique indexes on the allocation, so
-	 * the plannings can be allocated again afterwards.
+	 * {@code IsActive='N'} also releases both partial unique indexes on the allocation, so the plannings can be
+	 * allocated again afterwards.
 	 */
 	public ImmutableSet<DeliveryPlanningId> deactivateAllocations(
 			@NonNull final ShipperTransportationId deliveryInstructionId,
@@ -245,9 +208,8 @@ public class DeliveryInstructionService
 	}
 
 	/**
-	 * The other two aggregates a deactivation reaches: the shipping packages the retired allocations pointed at
-	 * go inactive with them, and every instruction that lost an allocation recomputes its {@code DeliveredState}
-	 * ONCE - deduplicated across allocations, since a deactivation by planning ids can span several instructions.
+	 * Every instruction that lost an allocation recomputes its {@code DeliveredState} ONCE - deduplicated, since a
+	 * deactivation by planning ids can span several instructions.
 	 */
 	private DeactivatedAllocations afterDeactivation(@NonNull final DeactivatedAllocations deactivated)
 	{
@@ -262,11 +224,9 @@ public class DeliveryInstructionService
 	}
 
 	/**
-	 * Takes every planning off the given instruction: their allocations and shipping packages are deactivated,
-	 * their {@code ReleaseNo} and instruction reference are cleared, and the packages behind the JUST-DEACTIVATED
-	 * allocations - never the instruction's whole package set - lose their order-line reference. A planning
-	 * removed earlier left a retired package still carrying this instruction's id, and re-querying by instruction
-	 * id would wipe its {@code C_OrderLine_ID} too.
+	 * The packages that lose their order-line reference are those behind the JUST-DEACTIVATED allocations, never
+	 * the instruction's whole package set: a planning removed earlier left a retired package still carrying this
+	 * instruction's id, and re-querying by instruction id would wipe its {@code C_OrderLine_ID} too.
 	 *
 	 * @return the planning ids whose allocation was deactivated.
 	 */
@@ -284,13 +244,6 @@ public class DeliveryInstructionService
 		return deactivated.getDeallocatedPlanningIds();
 	}
 
-	/**
-	 * Recomputes {@code M_ShipperTransportation.DeliveredState} for every delivery instruction the given planning
-	 * is currently ACTIVELY allocated to (spec &sect; 5.7) - the entry point
-	 * {@code interceptor/M_InOut#afterComplete}/{@code #afterReverseCorrect} routes through after a receipt or
-	 * shipment completes or is reversed, since that is the write that can change ONE planning's
-	 * {@code IsDelivered} and therefore every instruction it sits on.
-	 */
 	public void recomputeDeliveredStateForAllocatedInstructions(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		for (final ShipperTransportationId deliveryInstructionId : deliveryPlanningAllocRepository.getAllocatedInstructionIdsOf(deliveryPlanningId))
@@ -300,16 +253,8 @@ public class DeliveryInstructionService
 	}
 
 	/**
-	 * Recomputes and stores {@code M_ShipperTransportation.DeliveredState} for ONE delivery instruction, from
-	 * {@link DeliveryPlanningList#getDeliveredState()} over its currently ACTIVE allocations - the single
-	 * derivation every write point that can change which plannings are delivered, or which plannings are
-	 * actively allocated to the instruction, routes through (rule 6): {@link #createAllocations},
-	 * {@link #afterDeactivation} and {@link #recomputeDeliveredStateForAllocatedInstructions}. An instruction
-	 * with no active allocation is {@code NotDelivered} - the same vacuous case the ADD COLUMN DEFAULT already
-	 * gives a freshly-created instruction, so this is never a special case, only the general one.
-	 * <p>
-	 * Composed rather than owned by either repository: the state is a property of the INSTRUCTION, derived from
-	 * the PLANNINGS its allocations name - three tables, one per repository.
+	 * An instruction with no active allocation is {@code NotDelivered} - the same vacuous case a freshly-created
+	 * one starts in, so this is never a special case.
 	 */
 	public void recomputeDeliveredState(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
@@ -333,20 +278,10 @@ public class DeliveryInstructionService
 	}
 
 	/**
-	 * Makes every delivery instruction the given planning is ACTIVELY allocated to refresh its
-	 * {@code M_ShippingPackage} line in an already-open WebUI document: the four quantity figures on that line
-	 * are a {@code ColumnSQL} read-through of this planning, so an operator who has the instruction open while
-	 * the planning's quantities are edited must see the new figures without reopening the document.
-	 * <p>
-	 * The reason a hand-written invalidation is needed at all, and why the request is rooted at the INSTRUCTION
-	 * rather than at the package, is spelled out on {@link DeliveryInstructionLineCacheInvalidation}. Broadcast
-	 * on transaction commit (not immediately), the same way {@code de.metas.acct.interceptor.GL_JournalLine}
-	 * pushes a line change up to its {@code GL_Journal} document: the frontend must re-read committed data.
-	 * <p>
-	 * Cost: one {@code SELECT} over {@code M_Delivery_Planning_Alloc} per quantity-changing save of a planning,
-	 * and nothing at all for a planning that is on no instruction (the overwhelmingly common case while a
-	 * planning is still being planned) - {@code requestForAllocationsOrNull} returns {@code null} and no
-	 * broadcast is sent.
+	 * The instruction's {@code M_ShippingPackage} line is a {@code ColumnSQL} read-through of the planning, so an
+	 * already-open document must be told to re-read it - see {@link DeliveryInstructionLineCacheInvalidation} for
+	 * why a hand-written invalidation is needed and why it is rooted at the INSTRUCTION. Broadcast on commit, not
+	 * immediately: the frontend must re-read committed data.
 	 */
 	public void invalidateDeliveryInstructionLinesFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
@@ -360,11 +295,6 @@ public class DeliveryInstructionService
 		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, request);
 	}
 
-	/**
-	 * Stamps the given plannings' {@code ReleaseNo}, instruction reference and date fields from the given delivery
-	 * instruction, overwriting whatever they carried - a move off another instruction requires it, or two records
-	 * would disagree about where the cargo is.
-	 */
 	public void updateDeliveryPlanningsFromInstruction(
 			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
 			@NonNull final ShipperTransportationId deliveryInstructionId)
@@ -379,17 +309,11 @@ public class DeliveryInstructionService
 				deliveryInstructionRepository.getById(deliveryInstructionId));
 	}
 
-	/**
-	 * The delivery instructions the given planning is currently allocated to, as records.
-	 */
 	public Iterator<I_M_ShipperTransportation> retrieveForDeliveryPlanning(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return deliveryInstructionRepository.iterateByIds(deliveryPlanningAllocRepository.getAllocatedInstructionIdsOf(deliveryPlanningId));
 	}
 
-	/**
-	 * Whether the given planning sits on a COMPLETED delivery instruction.
-	 */
 	public boolean hasCompleteDeliveryInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return deliveryInstructionRepository.hasCompletedAmong(deliveryPlanningAllocRepository.getAllocatedInstructionIdsOf(deliveryPlanningId));

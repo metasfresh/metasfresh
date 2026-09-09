@@ -32,11 +32,8 @@ import lombok.Value;
  * it was already closed ({@code Cancel} refuses only the closed rows, not the whole selection).
  * <p>
  * {@link #getSkippedAllocatedIds()} is a NARROWER skip than {@link #getSkippedClosedIds()}: a planning listed
- * there is still fully cancelled - voided, and its {@code IsClosed}/{@code Processed}/{@code OrderStatus} set
- * same as any other cancelled row - it is named only because it was still allocated to a delivery instruction
- * when the cancel ran, so its {@code PlannedLoadedQuantity}/{@code PlannedDischargeQuantity} are committed
- * cargo and cancel leaves them untouched rather than zeroing them. A planning can appear in both
- * {@link #getCancelledIds()} and here.
+ * there IS fully cancelled, and is named only because its planned quantities were committed cargo and were left
+ * untouched. Such a planning appears in both {@link #getCancelledIds()} and there.
  */
 @Value
 @Builder

@@ -1,142 +1,37 @@
 --
--- RV_ReceiptDisposition_DeliveryPlanning -- the single inbound list behind the receipt-disposition delivery-planning window.
+-- RV_ReceiptDisposition_DeliveryPlanning -- the single inbound list behind the receipt-disposition
+-- delivery-planning window: active Incoming delivery plannings (branch one, "planned") UNIONed with the
+-- receipt schedules no active planning refers to (branch two, "unplanned"). The two branches are exact
+-- complements, so a schedule never appears on both; a schedule shared by N plannings (what a SPLIT produces)
+-- yields N rows.
 --
--- The dispatcher planning inbound receipts today has to read two lists: the delivery plannings
--- (what somebody already planned) and the receipt schedules nobody has planned yet. This view is
--- those two lists, unioned, so the window can show one.
+-- KEY. RV_ReceiptDisposition_DeliveryPlanning_ID = M_Delivery_Planning_ID on branch one,
+-- 1000000000 + M_ReceiptSchedule_ID on branch two.
+--   * Arithmetic, never ROW_NUMBER(): a window function blocks predicate push-down, so a filtered open would
+--     compute the whole view first.
+--   * Branch one keys on the PLANNING, not the schedule: a split shares one schedule, so a schedule-derived id
+--     would repeat and the window would lose grid identity, selection and zoom.
+--   * Both source ids must stay <= 1,147,483,647 for the sum to fit a Java int.
 --
--- ONE ROW =
---   branch one ("planned")   -- one active Incoming delivery planning that carries a receipt schedule;
---   branch two ("unplanned") -- one receipt schedule that no active delivery planning refers to.
--- The two branches are exact complements over the receipt schedules: branch one requires an active
--- planning, branch two requires that none exists. Hence a schedule never appears on both branches,
--- and a schedule shared by N plannings (the shape a SPLIT produces -- every new planning copies
--- M_ReceiptSchedule_ID) legitimately yields N rows, one per planning.
+-- LAZY-LOADING SOURCE COLUMNS. M_ReceiptSchedule.M_Shipper_ID, IsBLReceived, IsBookingConfirmed and IsWENotice
+-- are IsLazyLoading='Y' -- AD-level ColumnSQL with NO physical value on the table, so a plain SQL view cannot
+-- select them. The shipper is read off the already-joined C_Order (o.m_shipper_id) and the three flags replicate
+-- the source ColumnSQL subquery, correlated on rs.c_order_id, on both branches.
 --
--- KEY. RV_ReceiptDisposition_DeliveryPlanning_ID is arithmetic and deterministic, never ROW_NUMBER() (a window function
--- blocks predicate push-down, so a filtered open would compute the whole view first):
---   branch one   = M_Delivery_Planning_ID
---   branch two   = 1000000000 + M_ReceiptSchedule_ID
--- Branch one keys on the PLANNING, not on the schedule, precisely because of the split: N plannings
--- share one schedule, so a schedule-derived id would repeat and the window would lose grid identity,
--- selection and zoom. Ceiling: both source ids must stay <= 1,147,483,647 for the sum to fit a Java int.
+-- PER-BRANCH vs SHARED. Identity and context (product, partner, warehouse, order, order line) are read off the
+-- SCHEDULE on BOTH branches, one expression, no CASE - the generate command copies them onto the planning at
+-- creation, so the two agree by construction. Dates, quantities and C_UOM_ID are read per branch, because they
+-- stay planning-editable after creation and could otherwise silently disagree with each other.
+--   * M_Warehouse_ID is the schedule's PLAIN column, deliberately not M_Warehouse_Effective_ID: the planning
+--     stores the plain one, so the effective one would make the column's two halves disagree.
+--   * ATA (branch two) is the EARLIEST movement date over the schedule's receipts, and needs all three
+--     conditions - allocation active, receipt completed, aggregate min - or it reports something false.
+--   * CalendarWeek is EXTRACT(week from <that branch's ETA expression>), not from a bare source column, so the
+--     week cannot disagree with the ETA shown beside it. ISO week, so a year-end date reports its ISO year's week.
 --
--- WHICH SIDE EACH COLUMN COMES FROM.
---   dates and quantities  -- the planning on branch one (it is the plan of record, the thing the
---                            operator edits and the split divides); the schedule/order on branch two.
---   identity and context  -- the SCHEDULE on BOTH branches, one expression, no CASE. The generate
---                            command copies product, partner, warehouse, order and order line from the
---                            schedule onto the planning at creation, so the two agree by construction;
---                            writing them once removes the class of bug where the two halves of a
---                            column silently drift apart.
---
--- UOM. C_UOM_ID follows the SAME rule as QtyOrdered -- the unit that actually goes with the quantity
--- shown on that branch, not a single expression like identity/context above: the planning's unit on
--- branch one, the schedule's on branch two. Unlike product/partner/warehouse, QtyOrdered is
--- planning-editable after creation, so its unit has to be read from wherever the quantity itself is
--- read, or the two could silently disagree. There is no DB constraint tying M_Delivery_Planning.C_UOM_ID
--- to M_ReceiptSchedule.C_UOM_ID -- on the data behind this view today the two agree on every one of the
--- 67 planned rows (0 disagreements, verified by direct query), because the generate command copies the
--- schedule's unit onto the planning at creation like it does product/partner/warehouse -- but nothing
--- stops a later edit to the planning's unit from breaking that agreement, which is exactly why this
--- column is read per-branch instead of picked once.
---   M_Warehouse_ID is the schedule's plain column, deliberately NOT M_Warehouse_Effective_ID -- the
---   planning stores the plain one, so using the effective one on branch two only would make the
---   column's two halves disagree.
---
--- DATES. Every date column follows one rule -- the planning's value when it has one, the
--- schedule-derived value as the fallback:
---   ETA = COALESCE(planning ETA, schedule DatePromised_Effective).  M_Delivery_Planning.ETA is
---         nullable, so without the fallback a planning created without a date would show an empty
---         arrival on a row whose order promise is perfectly well known.
---   ETD = COALESCE(planning ETD, order PreparationDate) -- Bereitstellungsdatum, the earliest the
---         goods can leave. The receipt schedule has no departure-side date of its own, which is why
---         this fallback comes from the order.
---   ATD = the order's PreparationDate on branch two, which is the very value the generate command
---         prefills into the planning's ATD at creation -- so both branches agree by construction.
---   ATA = read from the receipts themselves on branch two: the EARLIEST movement date over the
---         schedule's completed receipts. That is "when goods first arrived"; the latest would answer
---         a different question and would be a second column, not a redefinition of this one.
---         Three conditions, or it reports something false: the allocation must be active (a reversal
---         deactivates it, and a reversed receipt is not an arrival), the receipt must be completed
---         (a drafted or voided one is not an arrival either), and the aggregate must be min.
---   DatePromised_Effective is shown in its own right on both branches -- the ORDER's promise next to
---         the PLAN. Seeing that a planning says one date while the order promised another is the point.
---
--- COLUMN TYPES. The two sides genuinely differ in the source schema -- M_Delivery_Planning's four
--- date columns are naked "timestamp", while M_ReceiptSchedule.MovementDate/DatePromised_Override and
--- C_Order.PreparationDate are "timestamptz". Postgres therefore resolves ETA/ETD/ATD and
--- DatePromised_Effective to timestamptz and ATA (both sides naked) to timestamp. Both kinds already
--- coexist in delivery-planning windows today and round-trip identically under one session timezone.
---
--- CALENDAR WEEK. CalendarWeek = EXTRACT(week from <the same expression that computes ETA on that
--- branch>) -- not from either bare source column (M_ReceiptSchedule.CalendarWeek does that already,
--- on window 541954, and stays untouched), because ETA itself is a COALESCE and reading a source column
--- directly would let the week disagree with the ETA shown right next to it. EXTRACT(week from ...) is
--- the ISO week (1-53), so a date whose ISO week crosses a year end reports the week of the ISO year
--- it actually belongs to, not the calendar year -- e.g. 2023-01-01 (a Sunday) is week 52 of ISO year
--- 2022, not week 1 of 2023. No separate ISO-year column is added: the grid sorts by ETA (see below),
--- it does not group by week, so a bare week number is unambiguous here.
---
--- DROPSHIP AND OUTGOING are out of scope for this view: branch one is strictly Incoming. Note the
--- consequence, so it is not read as a bug: branch two excludes a schedule that has ANY active
--- planning, so a schedule whose only active planning is a Dropship one appears on NEITHER branch.
---
--- ISPLANNED. A plain literal per branch, not a derived expression -- the two branches are already the
--- exact complement that decides it (see KEY above), so branch one is always 'Y' and branch two is
--- always 'N'. Distinguishes a delivery-planning row from a receipt-schedule row for legibility and
--- filtering only; it carries no statement about whether the row is currently actionable -- that stays
--- with the receipt process's own preconditions.
---
--- PROCESSED. Sourced per branch, identity/context style, same reasoning as QtyToMove /
--- IsConfirmedBySupplier above -- the planning's own Processed on branch one (dp.processed), the
--- schedule's own Processed on branch two (rs.processed). Both tables already carry a real, stored
--- Processed column. This is the shared blocker on both row types: it is set 'Y' for a planning once
--- it is fully received (delivered), and for a schedule once it is closed -- never a derived
--- expression, never read across branches.
---
--- SHIPPER. M_Shipper_ID reads from the already-JOINed C_Order alias (o.m_shipper_id), on BOTH
--- branches -- one expression, no CASE, the same identity/context rule as product/partner/warehouse
--- above. It does NOT read M_ReceiptSchedule.M_Shipper_ID (AD_Column 593496): that column is
--- IsLazyLoading='Y', i.e. it has no physical value on the table -- it is an AD-level ColumnSQL
--- ('select o.M_Shipper_ID from c_order o where o.C_Order_ID = M_ReceiptSchedule.C_Order_ID') that only
--- the framework's lazy-column fetch machinery evaluates, not something a plain SQL view can select
--- from m_receiptschedule. Reading o.m_shipper_id directly is the exact same value (same join key,
--- c_order_id = rs.c_order_id) without depending on that indirection. Also does NOT read
--- M_Delivery_Planning.M_Shipper_ID on branch one: that column is copied once, at creation, from
--- C_OrderLine.M_Shipper_ID (GenerateIncomingDeliveryPlanningCommand), which can differ from the
--- order HEADER's shipper (C_OrderLine.M_Shipper_ID defaults from the order at line-creation time but
--- is never re-synced later) -- reading the order header uniformly on both branches avoids the two
--- branches disagreeing about what "the shipper" means for the same concept.
---
--- QTYTOMOVE (the open-quantity figure). rs.qtytomove on BOTH branches -- M_ReceiptSchedule's own,
--- already-maintained "how much is still outstanding to receive" (ReceiptScheduleQtysBL, clamped at
--- zero, recalculated on every receipt). Every planned row has the same underlying schedule joined in,
--- so this is identity/context, not plan-editable: M_Delivery_Planning.QtyTotalOpen is NOT used here
--- because it is presently a stub that never recomputes after creation (it simply equals QtyOrdered
--- until a separate, unrelated task gives it real behaviour) -- using the schedule's live figure on
--- both branches shows the dispatcher the true outstanding amount instead of a frozen one. The
--- order-line-level "how much is unplanned" figure (QtyTotalOpenPlanned on the planning window) is
--- deliberately NOT mirrored here: this view's IsPlanned flag already answers "does a planning exist
--- for this row" at the row grain that matters for a per-schedule dispatch list, and an order-line
--- aggregate belongs to the sibling window that reasons about all of an order line's plannings.
---
--- BATCH. dp.batch on branch one (the planning's own, real column), NULL on branch two: a batch
--- number is a fact about physical goods movement (HU tracking), which does not exist before a
--- delivery planning -- let alone a receipt -- has been created for the schedule. This mirrors how
--- M_Delivery_Planning_ID itself is already NULL on branch two: a per-branch column that legitimately
--- carries no value on one side, not a "cannot be sourced" gap.
---
--- TRANSPORT CONFIRMATION FLAGS. IsConfirmedBySupplier reads the schedule's own real column
--- (rs.isconfirmedbysupplier) on both branches -- identity/context, same reasoning as QtyToMove.
--- IsBLReceived / IsBookingConfirmed / IsWENotice are NOT physical columns either (same lazy-loading
--- shape as M_Shipper_ID): M_ReceiptSchedule's own AD_Column.ColumnSQL for each is
--- '(SELECT max(st.<Flag>) FROM m_shippertransportation st JOIN m_shippingpackage sp ON
--- sp.m_shippertransportation_id = st.m_shippertransportation_id WHERE sp.c_order_id =
--- M_ReceiptSchedule.C_Order_ID)'. This view replicates that exact subquery, correlated on
--- rs.c_order_id, on both branches -- the identical shape already used for containerno two paragraphs
--- below, not a new join pattern. max() over char(1) is lexicographic (Y > N), matching the source
--- column's own semantics: 'Y' the moment any attached shipper-transportation confirms it.
+-- OUT OF SCOPE: branch one is strictly Incoming. Consequence, so it is not read as a bug: branch two excludes a
+-- schedule that has ANY active planning, so a schedule whose only active planning is a Dropship one appears on
+-- NEITHER branch.
 --
 
 DROP VIEW IF EXISTS RV_ReceiptDisposition_DeliveryPlanning$new

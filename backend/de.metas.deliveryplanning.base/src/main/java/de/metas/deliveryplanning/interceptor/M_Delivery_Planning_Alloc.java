@@ -33,11 +33,10 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 /**
- * Keeps {@code M_Delivery_Planning.IsAllocated} in step with the allocation table it mirrors - structurally,
- * via the model-change framework, rather than by trusting every write path to remember an inline call. An
- * INSERT, an {@code IsActive} flip, or a hard DELETE of an allocation row can all change which plannings have
- * an active allocation, so all three are covered; a bulk fix or a future import routine that writes this table
- * therefore keeps {@code IsAllocated} correct automatically, without needing to know the column exists.
+ * Keeps {@code M_Delivery_Planning.IsAllocated} in step with the allocation table it mirrors - structurally, via
+ * the model-change framework, rather than by trusting every write path to remember an inline call. An INSERT, an
+ * {@code IsActive} flip and a hard DELETE can each change which plannings have an active allocation, so all
+ * three are covered.
  */
 @Interceptor(I_M_Delivery_Planning_Alloc.class)
 @Component

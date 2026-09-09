@@ -36,23 +36,11 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The shape of the cache-invalidation request that makes a delivery instruction's Versandpaket line show a
- * planning's new quantity without a manual reload (TC11).
- * <p>
- * The four figures are {@code ColumnSQL} on {@code M_ShippingPackage}, and the generic
- * {@code AD_SQLColumn_SourceTableColumn} machinery answers a planning change with
- * {@code CacheInvalidateRequest.rootRecord("M_ShippingPackage", id)}
- * ({@code ColumnSqlCacheInvalidateRequestFactories}). That request cannot reach the WebUI document:
- * {@code DocumentCollection#invalidate} resolves the request's ROOT table name through
- * {@code tableName2windowIds}, which is filled only from ROOT entity descriptors, and
- * {@code M_ShippingPackage} is the root table of no window - it is tabLevel 1 in both windows that carry it
- * (540020 "Transport Auftrag" and 541657 "Lieferanweisungen"). The request is therefore dropped.
- * <p>
- * So these tests pin the two properties the request must have, both of which the generic path lacks: the ROOT
- * record is the delivery INSTRUCTION (the shape {@code DocumentCollection} can route), and the CHILD record is
- * the shipping package (so only that included row is marked stale, rather than the whole document being
- * evicted) - the same {@code rootRecord(...).childRecord(...)} pairing
- * {@code ParentChildModelCacheInvalidateRequestFactory} produces for an ordinary child-record change.
+ * Pins the two properties the request must have, both of which the generic
+ * {@code AD_SQLColumn_SourceTableColumn} path lacks: the ROOT record is the delivery INSTRUCTION (the only shape
+ * {@code DocumentCollection#invalidate} can route - {@code M_ShippingPackage} is the root table of no window, so
+ * its own {@code rootRecord} request is silently dropped), and the CHILD record is the shipping package, so only
+ * that included row is marked stale.
  */
 public class DeliveryInstructionLineCacheInvalidationTest
 {
@@ -89,9 +77,7 @@ public class DeliveryInstructionLineCacheInvalidationTest
 	}
 
 	/**
-	 * A planning may sit on more than one delivery instruction ({@code getAllocationsByPlanningId} returns a
-	 * multimap for exactly that reason), and every one of them displays the planning's figures - so each gets
-	 * its own request rather than only the first.
+	 * A planning may sit on more than one delivery instruction, so each gets its own request rather than only the first.
 	 */
 	@Test
 	void twoAllocations_yieldOneRequestPerInstruction()

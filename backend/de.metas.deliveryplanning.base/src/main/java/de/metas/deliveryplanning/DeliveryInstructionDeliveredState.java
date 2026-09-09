@@ -29,13 +29,9 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * The three-state delivered indicator of a delivery instruction ({@code M_ShipperTransportation.DeliveredState}),
- * spec &sect; 5.7: a boolean would collapse "nothing has moved" and "six of seven plannings have moved" into a
- * single "not fully", which is exactly the distinction an operator needs to act on a consolidated instruction.
- * <p>
- * Defined over the instruction's ACTIVELY allocated plannings' own {@link DeliveryPlanning#isDelivered()} - see
- * {@link DeliveryPlanningList#getDeliveredState()}, the one place this is computed. Never re-derived from
- * {@code M_InOut} directly, so the two levels (planning and instruction) cannot disagree.
+ * A boolean would collapse "nothing has moved" and "six of seven plannings have moved" into a single "not
+ * fully". Computed in one place only, {@link DeliveryPlanningList#getDeliveredState()}, over the instruction's
+ * ACTIVELY allocated plannings - never re-derived from {@code M_InOut}, so the two levels cannot disagree.
  */
 public enum DeliveryInstructionDeliveredState implements ReferenceListAwareEnum
 {

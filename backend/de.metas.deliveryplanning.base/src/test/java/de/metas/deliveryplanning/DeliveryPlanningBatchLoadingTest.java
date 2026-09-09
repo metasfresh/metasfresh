@@ -254,10 +254,8 @@ class DeliveryPlanningBatchLoadingTest
 		// a draft, which is the default: a combined instruction is assembled over days
 		final ShipperTransportationId deliveryInstructionId = deliveryPlanningService.combine(selection, false);
 
-		// one batch for the allocation requests of the plannings behind the seed, one for the ReleaseNo stamping,
-		// plus TWO for DeliveredState: createAllocations recomputes ONCE per call, and combine makes
-		// two calls here - the seed's (inside generateDeliveryInstruction) and the other two plannings' - not
-		// once per planning (that would have been 3, one per row; batched per call it is 2) -
+		// one batch for the allocation requests, one for the ReleaseNo stamping, plus TWO for DeliveredState
+		// (createAllocations recomputes ONCE per call and combine makes two calls here, not once per planning),
 		// plus the single-row load of the ONE seed planning the header is built from
 		assertBatchLoadedExactly(4, 1);
 

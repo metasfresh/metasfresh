@@ -121,9 +121,8 @@ class DeliveryInstructionDateDefaultsTest
 	}
 
 	/**
-	 * A real, persisted row - not a fabricated id - because {@code createAllocations} now reads the
-	 * planning back to recompute the instruction's {@code DeliveredState}, so a request naming an id with no
-	 * backing row fails there instead of silently "succeeding" as it used to.
+	 * A real, persisted row - not a fabricated id - because {@code createAllocations} reads the planning back to
+	 * recompute the instruction's {@code DeliveredState}.
 	 */
 	private static DeliveryPlanningId createDeliveryPlanning()
 	{
@@ -265,11 +264,8 @@ class DeliveryInstructionDateDefaultsTest
 	}
 
 	/**
-	 * Pins the instant that travels instruction ETA -> {@code MPackageCreateRequest} -> {@code M_Package.ShipDate}.
 	 * The request carries an {@code Instant} while both ends are {@code java.sql.Timestamp} columns, so the
-	 * conversion happens twice; this asserts the point in time is identical on both sides - no zone applied, no
-	 * truncation - and, because the ETA asserted here is one the add itself filled, that the header is still
-	 * written before the packages are built.
+	 * conversion happens twice; this asserts the point in time is identical on both sides - no zone, no truncation.
 	 */
 	@Test
 	@DisplayName("the allocation's M_Package carries the instruction's ETA as its ShipDate - the same instant, unshifted")
@@ -299,9 +295,8 @@ class DeliveryInstructionDateDefaultsTest
 	}
 
 	/**
-	 * Counts the saves that actually reach the instruction header. {@code POJOLookupMap.save} fires
-	 * {@code BEFORE_CHANGE} on every save of an ALREADY-PERSISTED row - whether or not any column value differs -
-	 * so a fire here means {@code saveRecord} was really called, which is exactly what the no-op guard suppresses.
+	 * {@code POJOLookupMap.save} fires {@code BEFORE_CHANGE} on every save of an ALREADY-PERSISTED row - whether or
+	 * not any column value differs - so a fire here means {@code saveRecord} was really called.
 	 */
 	@Interceptor(I_M_ShipperTransportation.class)
 	static class M_ShipperTransportation_WriteCounter
@@ -341,11 +336,9 @@ class DeliveryInstructionDateDefaultsTest
 	}
 
 	/**
-	 * The no-op guard in {@code DeliveryInstructionRepository#updateDates}. It matters beyond saving a round trip:
-	 * a header save fires the {@code M_ShipperTransportation} interceptor chain, which syncs the header's dates back
-	 * DOWN onto every allocated planning. The guard therefore has to compare both sides in the SAME type - compare a
-	 * resolved date against the record's own in DIFFERENT types and every field answers "differs", the guard is
-	 * permanently open, and every resolution writes.
+	 * The no-op guard in {@code DeliveryInstructionRepository#updateDates} has to compare both sides in the SAME
+	 * type: compare a resolved date against the record's own in DIFFERENT types and every field answers "differs",
+	 * so the guard stays permanently open and every resolution writes.
 	 */
 	@Test
 	@DisplayName("updateDates writes nothing when every resolved date already equals the one on the instruction")

@@ -86,26 +86,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/**
- * Repository Tables: M_Delivery_Planning
- * Repository Cluster: DeliveryPlanningRepository (primary owner of M_Delivery_Planning, which
- * DeliveryPlanningImportProcess also writes directly), DeliveryPlanningAllocRepository
- * (M_Delivery_Planning_Alloc), DeliveryInstructionRepository (M_ShipperTransportation and its M_ShippingPackage
- * lines), MPackageRepository (M_Package). Anything spanning more than one of those is composed by
- * {@link DeliveryInstructionService}, never by a repository calling another repository.
- * <p>
- * Injected collaborators: {@link DimensionService} (a dimension is copied from the source row onto the target row
- * as that row is written - persistence rather than a delivery-planning decision), plus {@code IInOutBL} and
- * {@code IUOMConversionBL} (via {@code Services.get}), used to resolve the booked quantity a completed receipt or
- * shipment writes onto the planning and to branch that write by {@link TransportDirection} / {@code IsClosed}
- * ({@code recordActualQtyOnComplete} / {@code clearActualQtyOnReverse}).
- */
 @Repository
 public class DeliveryPlanningRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	/** Resolving the booked quantity a completed receipt or shipment writes onto the planning. */
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
@@ -303,26 +287,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Writes the actual quantity onto the end(s) THIS receipt or shipment occupies (the plan's
-	 * write-by-the-END table), and marks the planning {@code Processed} - it is now delivered.
-	 * <p>
-	 * A shipment is the only document a strictly {@link TransportDirection#Outgoing} planning ever gets, so
-	 * nobody else ever reports the customer's unload: completion books the SAME booked quantity onto BOTH
-	 * ends (the "arrives as shipped unless told otherwise" assumption) - {@link #hasOwnShipment} is exactly
-	 * that condition.
-	 * <p>
-	 * A receipt ALWAYS writes discharge, {@link TransportDirection#Dropship} included: today a Dropship
-	 * planning is created and driven exactly like {@link TransportDirection#Incoming} (only
-	 * {@code GenerateIncomingDeliveryPlanningCommand} creates it, seeding {@code ActualLoadQty} from the
-	 * planned load the same way, and {@code PoolEnd.forDirection} groups it with Incoming) - it IS the
-	 * purchase leg until the consolidated planning lands. {@code ActualLoadQty} is a derived
-	 * placeholder for the never-reported vendor load and must never be touched by a receipt's completion,
-	 * for either direction.
-	 * <p>
-	 * A shipment on a {@link TransportDirection#Dropship} planning is unreachable today - no generate process
-	 * ever creates a Dropship planning's OWN shipment ({@code GenerateOutgoingDeliveryPlanningCommand} hardcodes
-	 * {@link TransportDirection#Outgoing}) - so the branch below refuses rather than guess which end such a
-	 * shipment would occupy; see its own comment.
+	 * A receipt writes the discharge end only - {@code ActualLoadQty} is a placeholder for the never-reported
+	 * vendor load and must not be overwritten, {@link TransportDirection#Dropship} included. A shipment books the
+	 * same quantity onto BOTH ends: nobody else ever reports the customer's unload.
 	 *
 	 * @param isReceipt {@code true} for a receipt (a purchase-side {@code M_InOut}), {@code false} for a shipment
 	 */
@@ -346,10 +313,8 @@ public class DeliveryPlanningRepository
 		}
 		else
 		{
-			// Dropship shipment: unreachable today (see the Javadoc above), and not safe to guess at - a receipt
-			// owns this planning's discharge end, so a shipment writing to it here would silently overwrite the
-			// wrong end. Pending the consolidated-planning design that would give a Dropship planning its own
-			// shipment; refuse rather than repeat that bug.
+			// a receipt owns this planning's discharge end, so a shipment writing to it here would silently overwrite
+			// the wrong end
 			throw new AdempiereException("Dropship planning with its own shipment is not supported yet: " + record);
 		}
 
@@ -362,15 +327,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The reversal mirror of {@link #recordActualQtyOnComplete}: clears every end completion wrote back to
-	 * empty, and clears {@code Processed} unless the planning is closed - the mirror of ReOpen's rule,
-	 * so the invariant {@code Processed == (IsClosed || IsDelivered)} keeps holding here too.
-	 * Without this, a reversed receipt/shipment would leave the planning permanently {@code Processed} with
-	 * no route back except Close-then-ReOpen. Direction handling mirrors {@link #recordActualQtyOnComplete}
-	 * exactly - see its Javadoc for why a receipt always clears discharge, Dropship included.
-	 *
-	 * @param isReceipt {@code true} for a receipt, {@code false} for a shipment - same meaning as {@link
-	 * 		#recordActualQtyOnComplete}
+	 * Clears {@code Processed} unless the planning is closed, so the invariant
+	 * {@code Processed == (IsClosed || IsDelivered)} keeps holding; without it a reversal would leave the planning
+	 * permanently {@code Processed}.
 	 */
 	public void clearActualQtyOnReverse(@NonNull final DeliveryPlanningId deliveryPlanningId, final boolean isReceipt)
 	{
@@ -401,49 +360,11 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The lines of the receipt or shipment that belong to THIS planning, summed into the planning's UOM - what
-	 * {@link #recordActualQtyOnComplete} writes onto the end(s) it occupies. {@link IInOutBL#getMovementQty}
-	 * (not the raw column) keeps a return's negated sign.
-	 * <p>
-	 * <b>The document is NOT the planning.</b> A shipment schedule whose partner allows consolidation
-	 * ({@code C_BPartner.AllowConsolidateInOut}, the default) is put onto an already-drafted shipment of the same
-	 * org / partner / partner-location / warehouse / consolidation period rather than onto a fresh one - see
-	 * {@code InOutProducerFromShipmentScheduleWithHU#getCreateShipmentHeader}. Summing the whole document would
-	 * then book the OTHER schedules' lines onto this planning as its own actual quantity (and drive
-	 * {@code QtyTotalOpen} negative). So the sum is scoped, by the attribution and under the assumption spelled
-	 * out below.
-	 * <p>
-	 * <b>Scoped by {@code C_OrderLine_ID}</b>, because that is the only attribution a line carries at the moment
-	 * this runs. Both producers copy their schedule's order line onto every line they create, before the document
-	 * is completed ({@code ShipmentLineBuilder#createShipmentLine}, {@code InOutProducer#updateReceiptLine}).
-	 * The schedule-to-line allocation tables ({@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID}, written by
-	 * {@code ShipmentScheduleWithHU#setM_InOut}) are NOT usable here: they are written AFTER
-	 * {@code processEx(ACTION_Complete)}, i.e. after this {@code TIMING_AFTER_COMPLETE} handler has already run,
-	 * so they would still be empty and every planning would book zero.
-	 * <p>
-	 * <b>The guarantee is therefore "this planning's ORDER LINE", not "this planning"</b> - a schedule is 1:1
-	 * with its ORDER LINE, not with the planning, so two plannings SPLIT from one order line share both. What
-	 * makes the order line nevertheless yield this planning's own share is that <b>a delivery-planning document
-	 * carries exactly one line of that order line</b>: each generate run completes its own document before it
-	 * returns ({@code DeliveryPlanningGenerateProcessesHelper#generateShipment} passes
-	 * {@code isCompleteShipment=TRUE} with {@code waitForShipments=true}; {@code generateReceipt} goes through
-	 * {@code processReceiptSchedules}), and consolidation only ever joins a line onto a header that is still
-	 * {@code DocStatus='DR'} ({@code HUShipmentScheduleBL#getOpenShipmentOrNull}) - receipts never consolidate at
-	 * all ({@code InOutProducer#newChunk} always creates a fresh header). So a split sibling's document is never
-	 * a consolidation target for the next sibling's, and the quantity on the one line found here is the
-	 * caller-supplied {@code Qty} of THIS planning's own generate run. Pinned by the cucumber scenario
-	 * {@code S31789_TC_Q11_SplitSiblingsBookOnlyTheirOwnShare}.
-	 * <p>
-	 * Residual, and deliberately not guessed at: a shipment DRAFTED outside delivery planning on the same order
-	 * line, still open when a planning's generate run consolidates onto it, would be summed in here. Nothing on
-	 * a line distinguishes it at this timing (see the allocation tables above), so there is no attribution that
-	 * would separate it; widening the scope back to the whole document would be strictly worse.
-	 * <p>
-	 * A planning without an order line cannot be scoped this way; it also cannot reach a generate process
-	 * ({@code DeliveryPlanningGenerateProcessesHelper#checkEligibleToCreateReceipt}/{@code ...Shipment} reject a
-	 * planning that is not order based), so such a document was stamped by hand and is not a consolidation
-	 * target - the unscoped sum stays the best available answer there rather than a throw in the middle of a
-	 * document's completion.
+	 * Scoped by {@code C_OrderLine_ID}, not by document: a consolidating shipment carries other schedules' lines,
+	 * and summing the whole document would book those onto this planning. The schedule-to-line allocation tables
+	 * ({@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID}) cannot be used instead - they are written after
+	 * {@code ACTION_Complete}, i.e. after this {@code TIMING_AFTER_COMPLETE} handler, so every planning would book
+	 * zero. {@link IInOutBL#getMovementQty} rather than the raw column keeps a return's negated sign.
 	 */
 	private Quantity resolveBookedQty(@NonNull final I_M_InOut inout, @NonNull final I_M_Delivery_Planning planningRecord)
 	{
@@ -459,7 +380,6 @@ public class DeliveryPlanningRepository
 				.reduce(Quantity.zero(uom), Quantity::add);
 	}
 
-	/** @see #resolveBookedQty for why the order line is the attribution used here, and why a planning without one is not scoped. */
 	private static boolean belongsToPlanning(@NonNull final I_M_InOutLine line, @Nullable final OrderLineId planningOrderLineId)
 	{
 		return planningOrderLineId == null || line.getC_OrderLine_ID() == planningOrderLineId.getRepoId();
@@ -583,14 +503,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Every planning of the given order line, as the in-memory value objects
-	 * {@link de.metas.deliveryplanning.DeliveryPlanningList#openPlanQty} is answered against - unlike
-	 * {@link #retrieveForOrderLine}, which returns records, not value objects.
-	 * <p>
-	 * Carries only the quantity fields the pool needs ({@code id}, {@code qtyOrdered} and the two load/discharge
-	 * pairs) plus the {@code id}/{@code orgId}/{@code transportDirection} the shared {@link DeliveryPlanning}
-	 * value object requires - no addresses, no allocations, unlike {@link DeliveryPlanningService}'s own mapper,
-	 * which this deliberately does not reuse (that one batch-loads addresses this caller never needs).
+	 * Carries only the quantity fields the pool needs - every other {@link DeliveryPlanning} field is a placeholder.
 	 */
 	public DeliveryPlanningList getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
@@ -616,15 +529,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The write-point every path that changes a planning's planned/actual figures, or adds a planning to an
-	 * order line, owes: recomputes {@code QtyTotalOpen} ({@code QtyOrdered - actual}, summed over every
-	 * planning of the line) and {@code QtyTotalOpenPlanned} ({@code QtyOrdered - planned}, summed the same way)
-	 * and writes both onto EVERY planning of the line - they are order-line totals redundantly displayed on each
-	 * row, not a per-row figure, so a planning created or edited elsewhere on the line must move every sibling's
-	 * copy too, not just its own.
-	 * <p>
-	 * Not floored at zero (unlike {@link #getByOrderLineId}'s pool use in the split): these are DISPLAY columns,
-	 * and a negative one is the over-planned/over-delivered signal D16 calls for, not an error to hide.
+	 * Writes both totals onto EVERY planning of the line: they are order-line totals redundantly displayed per
+	 * row, not per-row figures. Not floored at zero - a negative one is the over-planned/over-delivered signal
+	 * (D16), not an error to hide.
 	 */
 	public void recomputeOpenQuantitiesForOrderLine(@NonNull final OrderLineId orderLineId)
 	{
@@ -635,12 +542,9 @@ public class DeliveryPlanningRepository
 		}
 
 		final DeliveryPlanningList plannings = records.stream().map(DeliveryPlanningRepository::toPoolPlanning).collect(DeliveryPlanningList.collect());
-		// What this computation needs is a single POOL END, not a single TransportDirection: Incoming and
-		// Dropship are different directions that both net DISCHARGE, so a line mixing them is still perfectly
-		// computable and must not be rejected - this runs from M_Delivery_Planning's AFTER_NEW/AFTER_CHANGE
-		// interceptors, so a throw here would make every planning on such a line unsavable. retrieveForOrderLine
-		// has no ORDER BY, so asserting the end is single-valued - rather than reading records.get(0) from an
-		// unordered query - is what actually pins the invariant, not a query-ordering fix.
+		// Incoming and Dropship both net DISCHARGE, so a line mixing them is computable and must not be rejected:
+		// this runs from M_Delivery_Planning's AFTER_* interceptors, where a throw makes such a line unsavable.
+		// Asserting one pool end - rather than reading records.get(0) - is what pins it: the query has no ORDER BY.
 		final DeliveryPlanningList.PoolEnd end = Check.assumePresent(plannings.getSinglePoolEnd(),
 				"Expected every M_Delivery_Planning of orderLineId={} to net one PoolEnd: {}", orderLineId, plannings);
 
@@ -687,8 +591,6 @@ public class DeliveryPlanningRepository
 			deliveryPlanningRecord.setIsClosed(true);
 			if (!deliveryPlanningRecord.isProcessed())
 			{
-				// skip the redundant write when it is already set (e.g. a delivered planning) - no-op change-log
-				// row avoided, and the invariant (Processed == IsClosed || IsDelivered) holds either way
 				deliveryPlanningRecord.setProcessed(true);
 			}
 			save(deliveryPlanningRecord);
@@ -699,13 +601,8 @@ public class DeliveryPlanningRepository
 	 * The counterpart of {@link #closeSelectedDeliveryPlannings}, all-or-nothing in the same way: a planning that
 	 * is still open is refused by name, before anything is written.
 	 * <p>
-	 * {@code Processed} is cleared only when the planning is NOT delivered: a delivered planning stays
-	 * {@code Processed} through a reopen, so the invariant {@code Processed == (IsClosed || IsDelivered)} keeps
-	 * holding - reopening only ever lifts the {@code IsClosed} half of that OR, it never overrides the
-	 * {@code IsDelivered} half. Reads {@code M_InOut_ID} directly rather than the generated (virtual-column)
-	 * {@code isDelivered()} getter - the two are equally correct (E3 defines {@code IsDelivered} as exactly this
-	 * check) and this form is unit-testable without a real DB, since a virtual column only evaluates against
-	 * Postgres.
+	 * Reads {@code M_InOut_ID} rather than the virtual-column {@code isDelivered()} getter, which only evaluates
+	 * against Postgres and would answer {@code false} in a unit test.
 	 *
 	 * @param stillOpenMessage what to raise for a still-open row - the caller passes the message
 	 * 		{@code M_Delivery_Planning_ReOpen}'s precondition uses to keep the button off a mixed selection, so both
@@ -796,9 +693,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The given plannings, carrying just enough for {@link DeliveryPlanning#isDelivered()} - what
-	 * {@link DeliveryInstructionService#recomputeDeliveredState} derives an instruction's {@code DeliveredState}
-	 * from. ONE round trip, via {@link #getByIds(Collection)}.
+	 * Carries only what {@link DeliveryPlanning#isDelivered()} reads - every other field is a placeholder.
 	 */
 	public DeliveryPlanningList getDeliveredStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -807,19 +702,12 @@ public class DeliveryPlanningRepository
 				.collect(DeliveryPlanningList.collect());
 	}
 
-	/**
-	 * The minimal {@link DeliveryPlanning} {@link #getDeliveredStatePlannings} needs: just enough for
-	 * {@link DeliveryPlanning#isDelivered()} - unlike {@link #toPoolPlanning}, which carries the quantity pool's
-	 * fields instead and is used by an unrelated caller.
-	 */
 	private static DeliveryPlanning toDeliveredStatePlanning(@NonNull final I_M_Delivery_Planning record)
 	{
 		return DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				// isDelivered() below never reads transportDirection - it exists only to satisfy the shared
-				// value object's @NonNull contract, so a blank/unset column (a real persisted row always has
-				// one; this covers a caller whose fixture record does not) falls back rather than throwing.
+				// never read by isDelivered(); only satisfies the shared value object's @NonNull contract
 				.transportDirection(TransportDirection.ofNullableCode(record.getTransportDirection(), TransportDirection.Outgoing))
 				.processed(record.isProcessed())
 				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
@@ -827,15 +715,7 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The given plannings, carrying just enough for {@link DeliveryPlanning#isProcessed()} - what the receive
-	 * actions' shared precondition ({@link DeliveryPlanningList#anyProcessed()}) is answered against. ONE round
-	 * trip, via {@link #getByIds(Collection)}.
-	 * <p>
-	 * Distinct from {@link #getDeliveredStatePlannings} even though {@code Processed} implies delivered-or-closed:
-	 * that one answers an INSTRUCTION's three-state delivered indicator and must therefore read
-	 * {@code M_InOut_ID} per planning, while this one only has to decide whether a selected row may still receive.
-	 * Both are kept, rather than merged into a "loads a bit of everything" mapper, so each caller's cost stays
-	 * visible at its call site.
+	 * Carries only what {@link DeliveryPlanning#isProcessed()} reads - every other field is a placeholder.
 	 */
 	public DeliveryPlanningList getProcessedStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
@@ -844,20 +724,12 @@ public class DeliveryPlanningRepository
 				.collect(DeliveryPlanningList.collect());
 	}
 
-	/**
-	 * The minimal {@link DeliveryPlanning} {@link #getProcessedStatePlannings} needs. It carries {@code closed}
-	 * and {@code inOutId} beside {@code processed} although the guard reads only the latter: they are the two
-	 * halves of the invariant {@code Processed == (IsClosed || IsDelivered)}, they are free (the record is
-	 * already in hand), and carrying them keeps the value object from asserting {@code processed} while silently
-	 * claiming to be neither closed nor delivered.
-	 */
 	private static DeliveryPlanning toProcessedStatePlanning(@NonNull final I_M_Delivery_Planning record)
 	{
 		return DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				// same reason as toDeliveredStatePlanning: the guard never reads the direction, this only
-				// satisfies the shared value object's @NonNull contract
+				// never read by the guard; only satisfies the shared value object's @NonNull contract
 				.transportDirection(TransportDirection.ofNullableCode(record.getTransportDirection(), TransportDirection.Outgoing))
 				.closed(record.isClosed())
 				.processed(record.isProcessed())
@@ -868,11 +740,7 @@ public class DeliveryPlanningRepository
 	/**
 	 * Stamps the given plannings' {@code ReleaseNo}, instruction reference and date fields from the given delivery
 	 * instruction, overwriting whatever they carried - a move off another instruction requires it, or two records
-	 * would disagree about where the cargo is. The plannings are loaded in ONE round trip.
-	 * <p>
-	 * The instruction record is handed in by {@link DeliveryInstructionService}, which owns it: this repository
-	 * reads its fields but never queries {@code M_ShipperTransportation} itself. An id-taking counterpart lives
-	 * on that service.
+	 * would disagree about where the cargo is.
 	 */
 	public void updateDeliveryPlanningsFromInstruction(
 			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
@@ -898,10 +766,6 @@ public class DeliveryPlanningRepository
 		}
 	}
 
-	/**
-	 * Clears the {@code ReleaseNo} and instruction reference of every planning currently pointing at the given
-	 * delivery instruction - what a void of that instruction owes the plannings it was carrying.
-	 */
 	public void clearInstructionReferenceOfInstruction(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForDeliveryInstructionId(deliveryInstructionId);
@@ -964,14 +828,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Cancels ONE delivery planning: closes it, marks it processed and sets its order status to {@code Canceled} -
-	 * unconditionally, on every row the caller passes in. The planned quantities are zeroed only when
-	 * {@code zeroPlannedQuantities} says the planning is NOT currently committed to a delivery instruction
-	 * (D8/D19): a planning still allocated when cancel runs has its {@code PlannedLoadedQuantity}/
-	 * {@code PlannedDischargeQuantity} left exactly as they were, the same committed-cargo rule the split
-	 * applies. The actual quantities ({@code ActualLoadQty}/{@code ActualDischargeQuantity}) are NEVER written
-	 * here, allocated or not: once a receipt or shipment happened, that figure is history, not a plan cancel
-	 * gets to erase.
+	 * Zeroes the planned quantities only when the planning is not currently allocated to a delivery instruction
+	 * (D8/D19). The actual quantities are never written here, allocated or not - a booked receipt or shipment is
+	 * history, not a plan.
 	 */
 	public void cancelDeliveryPlanning(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord, final boolean zeroPlannedQuantities)
 	{
@@ -1024,10 +883,6 @@ public class DeliveryPlanningRepository
 		save(deliveryPlanning);
 	}
 
-	/**
-	 * The discharge-side sibling of {@link #setPlannedLoadedQuantity}: overwrites the planning's own
-	 * {@code PlannedDischargeQuantity} with its remainder share after a split.
-	 */
 	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
 		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
