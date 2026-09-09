@@ -129,8 +129,8 @@ test('TC9: a multi-product HU does not offer the empty reason', async ({ page })
  *    Network Distribution: Gebinde"
  * — the SAME `AD_Message`-driven text AC17 describes (names the warehouse and the network), just
  * surfacing at HU PRODUCTION time rather than at write-off/booking time. The identical shape succeeds
- * (HTTP 200) when the warehouse is the seeded `existing: "standard"` one (540008), which network
- * 540011's one seeded line covers — see TC11 below.
+ * (HTTP 200) when the warehouse carries an `empties` line in the client's empties distribution network
+ * — see TC11 below.
  *
  * Consequence: an HU that carries packing material can only ever exist in a warehouse the network
  * already covers — the harness (and, per the traced mechanism, real production) cannot put one into an
@@ -163,6 +163,7 @@ const createPackageAssignedMasterdata = async ({ huQty, orderQty }) => {
                 manufacturing: { isAllowEmptyingHUs: true, isConfirmEmptyingHU: false },
             },
             uoms: { KGM: { precision: 5 } },
+            shippers: { SHIPPER: { name: 'Shipper' } },
             warehouses: { wh: {} },
             products: {
                 COMP: { uom: 'KGM' },
@@ -171,7 +172,7 @@ const createPackageAssignedMasterdata = async ({ huQty, orderQty }) => {
             handlingUnits: {
                 HU: { product: 'COMP', warehouse: 'wh', qty: huQty },
             },
-            packages: { PKG1: { hu: 'HU' } },
+            packages: { PKG1: { hu: 'HU', shipper: 'SHIPPER' } },
             manufacturingOrders: {
                 PP1: { warehouse: 'wh', product: 'BOM', qty: 1, datePromised: '2026-03-30T00:00:00.000+02:00' },
             },
@@ -241,9 +242,9 @@ test('TC10b: an HU assigned to an M_Package refuses the write-off', async ({ pag
 // ---------------------------------------------------------------------------------------------
 
 /**
- * The HU sits in the seeded `existing: "standard"` warehouse (540008 — this task's harness extension,
- * e7fa2b1), which empties network 540011's one seeded line (540008 -> 540012, "Leergebindelager")
- * covers. `qty` matches `qtyCUsPerTU` exactly (a full TU, no split) so the produced HU is a plain,
+ * The HU sits in a freshly created warehouse `WHSTD` whose `empties` section adds a line
+ * (WHSTD -> WHEMPTIES, shipper SHIPPER) to the client's single empties distribution network — the
+ * coverage `HUEmptiesService.getEmptiesWarehouse` looks up by the HU's own warehouse. `qty` matches `qtyCUsPerTU` exactly (a full TU, no split) so the produced HU is a plain,
  * individually-addressable TU carrying its own `M_HU_PackingMaterial` item (verified in the 15A report's
  * own psql check).
  */
@@ -256,7 +257,11 @@ const createPackingMaterialMasterdata = async ({ huQty, orderQty }) => {
                 manufacturing: { isAllowEmptyingHUs: true, isConfirmEmptyingHU: false },
             },
             uoms: { KGM: { precision: 5 } },
-            warehouses: { WHSTD: { existing: 'standard' }, WHEMPTIES: { existing: 'empties' } },
+            shippers: { SHIPPER: { name: 'Shipper' } },
+            warehouses: {
+                WHEMPTIES: {},
+                WHSTD: { empties: { toWarehouse: 'WHEMPTIES', shipper: 'SHIPPER' } },
+            },
             products: {
                 COMP: { uom: 'KGM' },
                 PM: { uom: 'KGM' },
