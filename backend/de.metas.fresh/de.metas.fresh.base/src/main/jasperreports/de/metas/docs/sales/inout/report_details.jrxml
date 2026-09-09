@@ -79,6 +79,10 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<property name="com.jaspersoft.studio.field.name" value="description"/>
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
 	</field>
+	<field name="descriptionaboveline" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="descriptionaboveline"/>
+		<property name="com.jaspersoft.studio.field.label" value="descriptionaboveline"/>
+	</field>
 	<field name="bp_product_no" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="bp_product_no"/>
 		<property name="com.jaspersoft.studio.field.label" value="bp_product_no"/>
@@ -250,6 +254,23 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		</band>
 	</columnHeader>
 	<detail>
+		<band height="12">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean($F{descriptionaboveline} != null && !$F{descriptionaboveline}.trim().isEmpty())]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-descAboveLine" mode="Transparent" x="37" y="0" width="516" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6874028a-5dab-41c4-9503-4f21c6cb38f8"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{descriptionaboveline}]]></textFieldExpression>
+			</textField>
+		</band>
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
