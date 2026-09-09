@@ -100,7 +100,7 @@ UPDATE AD_Element SET Description='Fragt den Nutzer vor dem Ausbuchen der Restme
 UPDATE AD_Element_Trl SET Description='Fragt den Nutzer vor dem Ausbuchen der Restmenge des Gebindes zur Bestätigung und zeigt dabei die auszubuchende Menge und ihre Maßeinheit an.', Help='Gilt nur für den Grund "leer (autom. Inventur)". Ohne Häkchen wird die Ausbuchung sofort und ohne Rückfrage gebucht.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-07 08:00:02.710000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Element_ID=585429
 ;
 
-UPDATE AD_Element_Trl SET Description='Fragt den Nutzer vor dem Ausbuchen der Restmenge des Gebindes zur Bestätigung und zeigt dabei die auszubuchende Menge und ihre Maßeinheit an.', Help='Gilt nur für den Grund "leer (autom. Inventur)". Ohne Häkchen wird die Ausbuchung sofort und ohne Rückfrage gebucht.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-07 08:00:02.720000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=585429
+UPDATE AD_Element_Trl SET Description='Fragt den Nutzer vor dem Ausbuchen der Restmenge des Gebindes zur Bestätigung und zeigt dabei die auszubuchende Menge und ihre Masseinheit an.', Help='Gilt nur für den Grund "leer (autom. Inventur)". Ohne Häkchen wird die Ausbuchung sofort und ohne Rückfrage gebucht.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-07 08:00:02.720000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=585429
 ;
 
 -- Column: MobileUI_MFG_Config.IsConfirmEmptyingHU

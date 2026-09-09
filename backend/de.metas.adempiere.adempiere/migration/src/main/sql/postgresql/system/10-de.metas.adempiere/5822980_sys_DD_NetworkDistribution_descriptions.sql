@@ -268,7 +268,7 @@ UPDATE AD_Element SET Description='Der Anteil dieser Linie am Transfer. Die Such
 UPDATE AD_Element_Trl SET Description='Der Anteil dieser Linie am Transfer. Die Suche im Leergebindenetzwerk berücksichtigt diesen Wert nicht — sie verwendet ausschließlich die Linie mit der höchsten Priorität.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-08 09:00:06.500000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Element_ID=585434
 ;
 
-UPDATE AD_Element_Trl SET Description='Der Anteil dieser Linie am Transfer. Die Suche im Leergebindenetzwerk berücksichtigt diesen Wert nicht — sie verwendet ausschließlich die Linie mit der höchsten Priorität.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-08 09:00:06.600000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=585434
+UPDATE AD_Element_Trl SET Description='Der Anteil dieser Linie am Transfer. Die Suche im Leergebindenetzwerk berücksichtigt diesen Wert nicht — sie verwendet ausschliesslich die Linie mit der höchsten Priorität.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-08 09:00:06.600000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=585434
 ;
 
 -- wire the field to its own name element (per-field override -- the shared column element
