@@ -22,9 +22,12 @@ package de.metas.material.dispo.reconcile;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
@@ -36,10 +39,13 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Brings a reconciliation key's stored projected ATP back onto {@link AtpTargetCalculator#computeTarget}, without
@@ -72,12 +78,27 @@ import java.time.Instant;
  * implementations that merely happen to agree, so they cannot disagree.
  */
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class AtpReconciliationCommand
 {
 	@NonNull private final AtpTargetCalculator atpTargetCalculator;
 	@NonNull private final CandidateChangeService candidateChangeHandler;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepository;
+	@NonNull private final AtpReconciliationBackupRepository backupRepository;
+
+	/**
+	 * Convenience overload matching this class's original 3-arg constructor, kept so that
+	 * {@code AtpReconciliationCommandTest} - which only ever exercises {@link #reconcile}, never
+	 * {@link #reconcileAndLog} - keeps compiling and passing unchanged: {@link #reconcile} never touches the backup
+	 * repository, so a real one is all this overload needs to supply.
+	 */
+	public AtpReconciliationCommand(
+			@NonNull final AtpTargetCalculator atpTargetCalculator,
+			@NonNull final CandidateChangeService candidateChangeHandler,
+			@NonNull final CandidateRepositoryRetrieval candidateRepository)
+	{
+		this(atpTargetCalculator, candidateChangeHandler, candidateRepository, new AtpReconciliationBackupRepositoryImpl());
+	}
 
 	/**
 	 * @param date the run date {@code D}
@@ -93,26 +114,137 @@ public class AtpReconciliationCommand
 			final boolean dryRun)
 	{
 		final AtpDivergence divergence = atpTargetCalculator.computeDivergence(key, date);
-		final BigDecimal delta = divergence.getDifference();
-		// dryRun: see above. delta == 0: the stored projection already matches computeTarget, so there is nothing to
-		// correct - writing a candidate anyway would insert a redundant zero-qty INVENTORY_UP/STOCK pair on every
-		// no-op run. The operator restricts a run by warehouse/product/category filters, not by an exact,
-		// non-overlapping partition of keys - so a caller replaying the same selection repeatedly (or overlapping
-		// selections covering the same key) must not accumulate phantom candidates each time. This IS what makes a
-		// second, no-op run of this method idempotent - not
-		// "write it anyway", which nextSeqNo's fresh-per-call seqNo (see its Javadoc) guarantees would never even
-		// natural-key-match the previous write, so it would keep piling up rows instead of being absorbed by one.
-		if (dryRun || delta.signum() == 0)
+		if (isNoOpCorrection(divergence, dryRun))
 		{
 			return divergence;
 		}
 
+		writeCorrectionCandidate(key, date, divergence.getDifference());
+
+		return divergence;
+	}
+
+	/**
+	 * @return {@code true} when this run has nothing to correct: a dry run (see {@link #reconcile}'s Javadoc), or a
+	 * zero delta - the stored projection already matches {@code computeTarget}, so writing a candidate anyway would
+	 * insert a redundant zero-qty INVENTORY_UP/STOCK pair on every no-op run. The operator restricts a run by
+	 * warehouse/product/category filters, not by an exact, non-overlapping partition of keys - so a caller replaying
+	 * the same selection repeatedly (or overlapping selections covering the same key) must not accumulate phantom
+	 * candidates each time. This IS what makes a second, no-op run of {@link #reconcile} idempotent - not "write it
+	 * anyway", which {@link #nextSeqNo}'s fresh-per-call seqNo (see its Javadoc) guarantees would never even
+	 * natural-key-match the previous write, so it would keep piling up rows instead of being absorbed by one.
+	 */
+	private static boolean isNoOpCorrection(@NonNull final AtpDivergence divergence, final boolean dryRun)
+	{
+		return dryRun || divergence.getDifference().signum() == 0;
+	}
+
+	private void writeCorrectionCandidate(
+			@NonNull final StockDataRecordIdentifier key,
+			@NonNull final Instant date,
+			@NonNull final BigDecimal delta)
+	{
 		final CandidateType type = delta.signum() > 0 ? CandidateType.INVENTORY_UP : CandidateType.INVENTORY_DOWN;
 		final Candidate candidate = buildCandidate(key, date, type, delta.abs());
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
+	}
 
-		return divergence;
+	/**
+	 * Same correction as {@link #reconcile}, plus a durable audit trail: every {@code STOCK} candidate this call
+	 * actually changes is backed up in {@link AtpReconciliationBackupRepository} - its pre-change {@code Qty}
+	 * persisted <b>before</b> {@link #writeCorrectionCandidate} touches anything, so the value stays recoverable
+	 * even if the process ends right after - and then completed with its after value once the change is known, in
+	 * both the persisted rows and the returned {@link AtpReconciliationRunLog}.
+	 * <p>
+	 * Kept as a separate method rather than folded into {@link #reconcile} itself so that every existing caller of
+	 * {@link #reconcile} keeps its exact contract - return exactly the {@link AtpDivergence}, nothing else -
+	 * unchanged.
+	 *
+	 * @return the run's audit trail: the {@link AtpDivergence} this call acted on, plus one
+	 * {@link AtpReconciliationRunLog.Entry} per {@code STOCK} candidate this call actually changed, and the
+	 * {@code runUuid} under which the same rows are durably persisted. Empty on a dry run, or when there was nothing
+	 * to correct - nothing was written, so there is nothing to back up or log.
+	 */
+	public AtpReconciliationRunLog reconcileAndLog(
+			@NonNull final StockDataRecordIdentifier key,
+			@NonNull final Instant date,
+			final boolean dryRun)
+	{
+		final AtpDivergence divergence = atpTargetCalculator.computeDivergence(key, date);
+		if (isNoOpCorrection(divergence, dryRun))
+		{
+			return AtpReconciliationRunLog.empty(divergence);
+		}
+
+		final String runUuid = UUID.randomUUID().toString();
+
+		// the pre-write snapshot IS the backup: persisted before writeCorrectionCandidate changes anything, so it
+		// survives even a crash right after this call
+		final List<Candidate> stockCandidatesBeforeWrite = retrieveGeneralStockCandidatesFrom(key, date);
+		backupRepository.backupBeforeWrite(runUuid, key, stockCandidatesBeforeWrite);
+
+		writeCorrectionCandidate(key, date, divergence.getDifference());
+
+		final List<Candidate> stockCandidatesAfterWrite = retrieveGeneralStockCandidatesFrom(key, date);
+		final ImmutableList<AtpReconciliationRunLog.Entry> entries = buildEntries(stockCandidatesBeforeWrite, stockCandidatesAfterWrite);
+		backupRepository.recordAfterWrite(runUuid, key, entries);
+
+		return new AtpReconciliationRunLog(divergence, entries, runUuid);
+	}
+
+	/**
+	 * @return every general (i.e. not customer-reserved - see {@link #buildCandidate}) {@code STOCK} candidate of
+	 * {@code key} dated at or after {@code date}: exactly the set {@link #reconcile} can possibly touch, since it
+	 * only ever writes at {@code date} and {@code CandidateChangeService} only ever propagates forward from there.
+	 */
+	private List<Candidate> retrieveGeneralStockCandidatesFrom(
+			@NonNull final StockDataRecordIdentifier key,
+			@NonNull final Instant date)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
+				.warehouseId(key.getWarehouseId())
+				.productId(key.getProductId().getRepoId())
+				.storageAttributesKey(key.getStorageAttributesKey())
+				.customer(BPartnerClassifier.none())
+				.timeRangeStart(DateAndSeqNo.atTimeNoSeqNo(date).withOperator(DateAndSeqNo.Operator.INCLUSIVE))
+				.build();
+
+		return candidateRepository.retrieveOrderedByDateAndSeqNo(
+				CandidatesQuery.builder()
+						.materialDescriptorQuery(materialDescriptorQuery)
+						.matchExactStorageAttributesKey(true)
+						.type(CandidateType.STOCK)
+						.build());
+	}
+
+	/**
+	 * Pairs each after-write candidate with whatever {@code Qty} it carried before the write - {@code null} when the
+	 * candidate did not exist yet, i.e. this run created it - and keeps only the ones that actually changed, which
+	 * is exactly "a candidate this run touched".
+	 */
+	private static ImmutableList<AtpReconciliationRunLog.Entry> buildEntries(
+			@NonNull final List<Candidate> stockCandidatesBeforeWrite,
+			@NonNull final List<Candidate> stockCandidatesAfterWrite)
+	{
+		final ImmutableMap<CandidateId, BigDecimal> qtyBeforeByCandidateId = stockCandidatesBeforeWrite.stream()
+				.collect(ImmutableMap.toImmutableMap(Candidate::getId, Candidate::getQuantity));
+
+		final ImmutableList.Builder<AtpReconciliationRunLog.Entry> entries = ImmutableList.builder();
+		for (final Candidate candidateAfterWrite : stockCandidatesAfterWrite)
+		{
+			final BigDecimal qtyBefore = qtyBeforeByCandidateId.get(candidateAfterWrite.getId());
+			final BigDecimal qtyAfter = candidateAfterWrite.getQuantity();
+			if (qtyBefore == null || qtyBefore.compareTo(qtyAfter) != 0)
+			{
+				entries.add(new AtpReconciliationRunLog.Entry(
+						candidateAfterWrite.getId(),
+						candidateAfterWrite.getMaterialDescriptor().getDate(),
+						qtyBefore,
+						qtyAfter));
+			}
+		}
+		return entries.build();
 	}
 
 	/**
