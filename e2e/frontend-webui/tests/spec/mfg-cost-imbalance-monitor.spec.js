@@ -219,7 +219,12 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
       await processExecuted;
     });
 
-    // Read back from a FRESH view: the tab is scoped to DocStatus='CO', so a closed order is gone.
+    // Read back from a FRESH view. That proves the tab's DocStatus='CO' filter excludes the closed
+    // order - and only that: it is NOT evidence that the list already on screen drops the row, and it
+    // would pass either way. It does not drop it: the action's refresh re-reads the rows of the view's
+    // already-materialized selection, and nothing re-creates that selection, so the row stays (with
+    // up-to-date values) until the view is rebuilt. Re-creating it needs the view's
+    // invalidateSelection(), which a plain JavaProcess cannot reach.
     await MasterWindowPage.goto(COST_IMBALANCE_WINDOW_ID);
     await MasterWindowPage.expectWindowLoaded();
     await applyMonitorFilter({ page, documentNo });
