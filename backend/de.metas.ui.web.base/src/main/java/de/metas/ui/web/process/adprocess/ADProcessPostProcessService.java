@@ -130,7 +130,7 @@ public class ADProcessPostProcessService
 
 		//
 		// Refresh all
-		boolean viewInvalidateAllCalled = false;
+		boolean viewFullyInvalidated = false;
 
 		final boolean recreateViewSelection = processExecutionResult.isRecreateViewSelectionAfterExecution();
 
@@ -153,7 +153,7 @@ public class ADProcessPostProcessService
 					ViewChangesCollector.getCurrentOrAutoflush()
 							.collectFullyChanged(view);
 				}
-				viewInvalidateAllCalled = true;
+				viewFullyInvalidated = true;
 
 				documentsCollection.invalidateDocumentsByWindowId(view.getViewId().getWindowId());
 			}
@@ -173,7 +173,7 @@ public class ADProcessPostProcessService
 			documentsCollection.invalidateDocumentByRecordId(recordToRefresh.getTableName(), recordToRefresh.getRecord_ID());
 
 			final IView view = viewSupplier.get();
-			if (!viewInvalidateAllCalled && view != null)
+			if (!viewFullyInvalidated && view != null)
 			{
 				final boolean watchedByFrontend = viewsRepo.isWatchedByFrontend(view.getViewId());
 				view.notifyRecordsChanged(TableRecordReferenceSet.of(recordToRefresh), watchedByFrontend);
