@@ -87,7 +87,7 @@ const EditableAttributesSection = ({ attributes, disabled, onFieldChange }) => {
   };
 
   return (
-    <table className="table view-header is-size-6" data-testid="editable-attributes-section">
+    <table className="table" data-testid="editable-attributes-section">
       <tbody>
         {attributes.map(({ code, caption, valueType, listValues }) => (
           <tr key={code} data-testid={`attr-${code}-row`}>

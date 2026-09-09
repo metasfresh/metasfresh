@@ -62,12 +62,11 @@ const GetQuantityDialog = ({
   const isShowLotNo = readAttributes.includes(PickAttribute.LotNo);
   const isShowSerialNo = readAttributes.includes(PickAttribute.SerialNo);
 
-  // Manufacturing-receipt case: the dialog additionally renders editable-attribute rows, so the qty
-  // table and the EditableAttributesSection table are unified into ONE professional label/value grid
-  // (shared `view-header` typography + fixed column grid — see get-qty-dialog.scss). This unification
-  // is scoped to this case ONLY: the SAME GetQuantityDialog is shared by picking (UnpickPanel,
-  // ScanHUAndGetQtyComponent, catch-weight/serial-no capture), which passes no editableAttributes and
-  // must keep its original plain-`.table` rendering unchanged.
+  // Manufacturing-receipt case: the dialog additionally renders editable-attribute rows (below the
+  // qty rows, in the same `.table-container`). Both render as plain `.table`s — identical to how the
+  // SAME GetQuantityDialog renders for picking (UnpickPanel, ScanHUAndGetQtyComponent,
+  // catch-weight/serial-no capture) — so the mfg labels match picking's exactly. This flag only gates
+  // whether the editable-attribute values are included in the confirm payload.
   const hasEditableAttributes = editableAttributes.length > 0;
 
   const [isProcessing, setProcessing] = useState(false);
@@ -424,15 +423,16 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form onSubmit={() => onDialogYes({ isCloseTarget: false })}>
-            {/* Manufacturing-receipt case only (hasEditableAttributes): the qty rows and the
-                editable-attribute rows render as two tables inside ONE `.table-container`, both with
-                the same `table view-header is-size-6` classes and a shared fixed column grid
-                (get-qty-dialog.scss) — so Qty / Best-Before / Lot and the editable-attribute labels
-                line up as one uniform, professional key/value grid with identical label typography,
-                column widths and input widths. In the SHARED picking case (no editableAttributes) the
-                qty table stays a plain `.table`, keeping picking's original rendering unchanged. */}
+            {/* The qty rows and (mfg-receipt case) the editable-attribute rows render inside ONE
+                `.table-container` as plain `.table`s — the SAME rendering picking uses. Label
+                typography must be IDENTICAL to picking: a plain Bulma `.table` (~1rem, regular
+                weight), NOT the bumped-up `view-header is-size-6` (1.5rem bold) an earlier iteration
+                applied here. Shared `.table-container .table` base rules (get-qty-dialog.scss:
+                width, 45% label column, label wrap) already apply to both picking and mfg, so the
+                qty labels, the editable-attribute labels and picking's labels all line up as one
+                uniform grid with identical typography. */}
             <div className="table-container">
-              <table className={cx('table', { 'view-header is-size-6': hasEditableAttributes })}>
+              <table className="table">
                 <tbody>
                   {qtyTargetCaption && (
                     <tr>
@@ -600,8 +600,9 @@ const GetQuantityDialog = ({
                   )}
                 </tbody>
               </table>
-              {/* Second table in the SAME container: shares the container's fixed column grid and
-                  view-header typography, so its rows continue the qty grid seamlessly. */}
+              {/* Second table in the SAME container: a plain `.table` sharing the container's base
+                  rules (width, 45% label column, label wrap), so its labels render with the same
+                  ~1rem typography as the qty rows above and as picking. */}
               <EditableAttributesSection
                 attributes={editableAttributes}
                 disabled={readOnly}

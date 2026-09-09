@@ -10,32 +10,15 @@ $serialno-extra-orange: #e67e22;
     // buttons to the bottom of the dialog (the "huge gap" defect). It also inflated the dialog past
     // the viewport so the flex-centered card clipped its own top ("Qty to Receive" cut off).
     // `max-height` lets the container shrink to its content (no gap, card fits and centers) while
-    // still scrolling a genuinely tall grid. This container now holds BOTH the qty table AND the
-    // EditableAttributesSection table (they share one fixed column grid — see `.table` below).
+    // still scrolling a genuinely tall grid. In the mfg-receipt case this container holds BOTH the
+    // qty table AND the EditableAttributesSection table; both are plain `.table`s (no `view-header`),
+    // so they render with the SAME base rules below as picking's qty table — identical typography.
     max-height: 70vh;
     overflow-x: auto;
     overflow-y: auto;
 
     .table {
       width: 100%;
-
-      // Manufacturing-receipt grid unification — scoped to `.view-header` so it applies ONLY to the
-      // mfg case, where BOTH the qty table and the EditableAttributesSection table carry
-      // `view-header` (GetQuantityDialog only adds `view-header` when editable attributes are
-      // present). The SHARED picking dialog renders a plain `.table` (no `view-header`), so it keeps
-      // its original auto-layout rendering unchanged — no fixed column widths leaking in, no removed
-      // bottom margin.
-      &.view-header {
-        // Fixed column layout so BOTH tables in this container — the qty table and the
-        // EditableAttributesSection table — resolve the SAME 45%/55% label/value columns regardless
-        // of each table's own content. The qty labels (Qty / Best-Before / Lot) and the
-        // editable-attribute labels (Size (cm), Lot-Nummer, …) then line up as one uniform grid with
-        // equal-width inputs. Long labels wrap (overflow-wrap below) instead of widening the column.
-        table-layout: fixed;
-        // No gap between the two stacked tables so their rows read as one continuous key/value grid
-        // (Bulma's default table margin would otherwise split them into two visual blocks).
-        margin-bottom: 0;
-      }
 
       tbody {
         tr {
