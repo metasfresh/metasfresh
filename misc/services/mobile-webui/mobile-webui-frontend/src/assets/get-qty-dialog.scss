@@ -18,15 +18,24 @@ $serialno-extra-orange: #e67e22;
 
     .table {
       width: 100%;
-      // Fixed column layout so BOTH tables in this container — the qty table and the
-      // EditableAttributesSection table — resolve the SAME 45%/55% label/value columns regardless
-      // of each table's own content. The qty labels (Qty / Best-Before / Lot) and the
-      // editable-attribute labels (Size (cm), Lot-Nummer, …) then line up as one uniform grid with
-      // equal-width inputs. Long labels wrap (overflow-wrap below) instead of widening the column.
-      table-layout: fixed;
-      // No gap between the two stacked tables so their rows read as one continuous key/value grid
-      // (Bulma's default table margin would otherwise split them into two visual blocks).
-      margin-bottom: 0;
+
+      // Manufacturing-receipt grid unification — scoped to `.view-header` so it applies ONLY to the
+      // mfg case, where BOTH the qty table and the EditableAttributesSection table carry
+      // `view-header` (GetQuantityDialog only adds `view-header` when editable attributes are
+      // present). The SHARED picking dialog renders a plain `.table` (no `view-header`), so it keeps
+      // its original auto-layout rendering unchanged — no fixed column widths leaking in, no removed
+      // bottom margin.
+      &.view-header {
+        // Fixed column layout so BOTH tables in this container — the qty table and the
+        // EditableAttributesSection table — resolve the SAME 45%/55% label/value columns regardless
+        // of each table's own content. The qty labels (Qty / Best-Before / Lot) and the
+        // editable-attribute labels (Size (cm), Lot-Nummer, …) then line up as one uniform grid with
+        // equal-width inputs. Long labels wrap (overflow-wrap below) instead of widening the column.
+        table-layout: fixed;
+        // No gap between the two stacked tables so their rows read as one continuous key/value grid
+        // (Bulma's default table margin would otherwise split them into two visual blocks).
+        margin-bottom: 0;
+      }
 
       tbody {
         tr {

@@ -62,6 +62,14 @@ const GetQuantityDialog = ({
   const isShowLotNo = readAttributes.includes(PickAttribute.LotNo);
   const isShowSerialNo = readAttributes.includes(PickAttribute.SerialNo);
 
+  // Manufacturing-receipt case: the dialog additionally renders editable-attribute rows, so the qty
+  // table and the EditableAttributesSection table are unified into ONE professional label/value grid
+  // (shared `view-header` typography + fixed column grid — see get-qty-dialog.scss). This unification
+  // is scoped to this case ONLY: the SAME GetQuantityDialog is shared by picking (UnpickPanel,
+  // ScanHUAndGetQtyComponent, catch-weight/serial-no capture), which passes no editableAttributes and
+  // must keep its original plain-`.table` rendering unchanged.
+  const hasEditableAttributes = editableAttributes.length > 0;
+
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
     promptQuestion: '',
@@ -186,7 +194,7 @@ const GetQuantityDialog = ({
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
         serialNos: isShowSerialNo ? serialNos : null,
-        attributeValues: editableAttributes.length > 0 ? attributeValues : null,
+        attributeValues: hasEditableAttributes ? attributeValues : null,
         isCloseTarget: !!isCloseTarget,
       };
       uiTrace.putContext(onQtyChangePayload);
@@ -416,13 +424,15 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form onSubmit={() => onDialogYes({ isCloseTarget: false })}>
-            {/* Qty rows and the editable-attribute rows render as two tables inside ONE
-                `.table-container`, both with the same `table view-header is-size-6` classes and a
-                shared fixed column grid (get-qty-dialog.scss) — so Qty / Best-Before / Lot and the
-                editable-attribute labels line up as one uniform, professional key/value grid with
-                identical label typography, column widths and input widths. */}
+            {/* Manufacturing-receipt case only (hasEditableAttributes): the qty rows and the
+                editable-attribute rows render as two tables inside ONE `.table-container`, both with
+                the same `table view-header is-size-6` classes and a shared fixed column grid
+                (get-qty-dialog.scss) — so Qty / Best-Before / Lot and the editable-attribute labels
+                line up as one uniform, professional key/value grid with identical label typography,
+                column widths and input widths. In the SHARED picking case (no editableAttributes) the
+                qty table stays a plain `.table`, keeping picking's original rendering unchanged. */}
             <div className="table-container">
-              <table className="table view-header is-size-6">
+              <table className={cx('table', { 'view-header is-size-6': hasEditableAttributes })}>
                 <tbody>
                   {qtyTargetCaption && (
                     <tr>
