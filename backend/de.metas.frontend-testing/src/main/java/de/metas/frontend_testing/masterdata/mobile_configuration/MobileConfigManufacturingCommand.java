@@ -52,14 +52,10 @@ class MobileConfigManufacturingCommand
 
 	private void updateGlobalEmptyingHUsConfig()
 	{
-		final MobileUIManufacturingConfig currentGlobal = mobileManufacturingConfigRepository.getGlobalConfig(ClientId.METASFRESH);
-		final MobileUIManufacturingConfig.MobileUIManufacturingConfigBuilder globalConfigBuilder = currentGlobal != null
-				? currentGlobal.toBuilder()
-				: MobileUIManufacturingConfig.builder()
-						.isScanResourceRequired(OptionalBoolean.FALSE)
-						.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
-						.isAllowEmptyingHUs(OptionalBoolean.TRUE)
-						.isConfirmEmptyingHU(OptionalBoolean.TRUE);
+		// getGlobalConfigOrDefault, not a local copy of the defaults: the harness must create the global record
+		// with exactly the values production falls back to.
+		final MobileUIManufacturingConfig.MobileUIManufacturingConfigBuilder globalConfigBuilder =
+				mobileManufacturingConfigRepository.getGlobalConfigOrDefault(ClientId.METASFRESH).toBuilder();
 
 		if (request.getIsAllowEmptyingHUs() != null)
 		{

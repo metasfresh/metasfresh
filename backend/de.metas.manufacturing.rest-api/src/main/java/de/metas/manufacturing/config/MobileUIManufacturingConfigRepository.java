@@ -46,6 +46,14 @@ public class MobileUIManufacturingConfigRepository
 				.orElse(DEFAULT_CONFIG);
 	}
 
+	/** The client-wide config, or the built-in default when the client has none yet. */
+	@NonNull
+	public MobileUIManufacturingConfig getGlobalConfigOrDefault(@NonNull final ClientId clientId)
+	{
+		final MobileUIManufacturingConfig globalConfig = getGlobalConfig(clientId);
+		return globalConfig != null ? globalConfig : DEFAULT_CONFIG;
+	}
+
 	private MobileUIManufacturingConfig getUserConfig(@NonNull final UserId userId)
 	{
 		//noinspection DataFlowIssue
