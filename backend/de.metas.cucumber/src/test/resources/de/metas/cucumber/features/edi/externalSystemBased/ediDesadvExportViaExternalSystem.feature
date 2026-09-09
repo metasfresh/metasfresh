@@ -898,6 +898,24 @@ Feature: EDI DESADV export via External System
       | EDI_DesadvLine_ID | EDI_Desadv_ID | M_Product_ID | OPT.QtyEntered | OPT.QtyDeliveredInUOM | OPT.QtyDeliveredInStockingUOM |
       | d_l_80            | d_80          | product        | 3              | 3                     | 3                             |
 
+    # ─── CORE ASSERTION (regression guard) ──────────────────────────────────
+    # The bug this scenario guards against: the retro-created DESADV reached the clearing centre with
+    # delivered quantities but ZERO EDI_Desadv_Pack rows (root cause: the second
+    # addInOutLinesToDesadvLines walk in DesadvBL was never invoked for this path). o_80 has a single
+    # order line, so d_80 has exactly one EDI_DesadvLine (d_l_80) — the pack below must belong to d_80,
+    # and its single item must carry the shipment line (s_l_80) that fulfils d_l_80.
+    And validate the created shipment lines
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
+      | s_l_80                    | s_80                  | product                 | 3           | true      | ol_80_1                       |
+
+    And after not more than 60s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID.Identifier | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 | SeqNo |
+      | d_p_80                        | d_80                     | true                | 1     |
+
+    And after not more than 60s, the EDI_Desadv_Pack_Item has only the following records:
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | M_InOutLine_ID | QtyItemCapacity | OPT.QtyTU |
+      | d_pi_80                 | d_p_80             | 3           | s_l_80         | 0               | 1         |
+
 
   @from:cucumber
   @allure.label.epic:E0292_EDI
