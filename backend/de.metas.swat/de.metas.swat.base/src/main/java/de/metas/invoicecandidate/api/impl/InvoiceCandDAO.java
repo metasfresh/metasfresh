@@ -387,6 +387,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
 				//
+				// Ordered so the caller takes C_Invoice_Candidate row locks in the same sequence as the async
+				// recompute (fetchInvalidInvoiceCandidates), which already ends on C_Invoice_Candidate_ID.
+				// Unordered, the two transactions could take the same rows in opposite order and deadlock.
+				.orderBy()
+				.addColumnAscending(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
+				.endOrderBy()
+				//
 				.create()
 				.list(I_C_Invoice_Candidate.class);
 	}
