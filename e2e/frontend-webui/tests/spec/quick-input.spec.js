@@ -668,57 +668,89 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
        * packing-instruction sub-field. Quantity is typed WITHOUT clicking, so the assertion
        * that it lands in Menge is the proof that focus advanced (TC8 step 5).
        */
-      const enterOneLine = async (escapeKeys, qty) => {
-        await typeProductAndWaitForDropdown(page, productCode);
-        await page.keyboard.press('Enter');
-        await page.waitForTimeout(1500);
+      const enterOneLine = async (escapeKeys, qty, label) => {
+        await test.step(`Line ${qty}: ${label}`, async () => {
+          await test.step('Type the product code, press Enter', async () => {
+            await typeProductAndWaitForDropdown(page, productCode);
+            await page.keyboard.press('Enter');
+            await page.waitForTimeout(1500);
+            await expect(piInput).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+          });
 
-        await expect(piInput).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
-        for (const key of escapeKeys) {
-          if (key.startsWith('type:')) {
-            await page.keyboard.type(key.slice('type:'.length));
-          } else {
-            await page.keyboard.press(key);
-          }
-          await page.waitForTimeout(500);
-        }
-        await page.waitForTimeout(1000);
+          await test.step(
+            `Packvorschrift has no value - press ${label}`,
+            async () => {
+              for (const key of escapeKeys) {
+                if (key.startsWith('type:')) {
+                  await page.keyboard.type(key.slice('type:'.length));
+                } else {
+                  await page.keyboard.press(key);
+                }
+                await page.waitForTimeout(500);
+              }
+              await page.waitForTimeout(1000);
+            }
+          );
 
-        // Focus must now be on Menge: type the quantity blind and assert it landed there.
-        await page.keyboard.type(String(qty));
-        await page.waitForTimeout(400);
-        await expect(quantityInput).toHaveValue(String(qty), {
-          timeout: SLOW_ACTION_TIMEOUT,
+          // Focus must now be on Menge: type the quantity blind and assert it landed there.
+          await test.step(
+            `Type quantity ${qty} blind - it must land in Menge, not in Packvorschrift`,
+            async () => {
+              await page.keyboard.type(String(qty));
+              await page.waitForTimeout(400);
+              await expect(quantityInput).toHaveValue(String(qty), {
+                timeout: SLOW_ACTION_TIMEOUT,
+              });
+              await expect(piInput).toHaveValue('');
+            }
+          );
+
+          await test.step('Press Enter - the order line is created', async () => {
+            await page.keyboard.press('Enter');
+            await page.waitForTimeout(2500);
+          });
         });
-        await expect(piInput).toHaveValue('');
-
-        await page.keyboard.press('Enter');
-        await page.waitForTimeout(2500);
       };
 
       // CONTROL: Tab — the pre-existing escape that already worked.
-      await enterOneLine(['Tab'], 3);
+      await enterOneLine(['Tab'], 3, 'Tab (control: already worked before the fix)');
       // Bare Enter on the empty field (dropdown closed).
-      await enterOneLine(['Enter'], 4);
+      await enterOneLine(['Enter'], 4, 'Enter on the empty field');
       // ArrowDown twice (first opens the list, second highlights the empty row), then Enter.
-      await enterOneLine(['ArrowDown', 'ArrowDown', 'Enter'], 5);
+      await enterOneLine(
+        ['ArrowDown', 'ArrowDown', 'Enter'],
+        5,
+        'ArrowDown x2 then Enter (the reported case)'
+      );
       // Typed text matching nothing, then Enter — Tab-identical by decision 2026-09-09.
-      await enterOneLine(['type:xyzzy', 'Enter'], 6);
+      await enterOneLine(
+        ['type:xyzzy', 'Enter'],
+        6,
+        'type text matching nothing, then Enter'
+      );
 
       expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
 
       const rows = await getTabRows(SALES_ORDER_WINDOW_ID, recordId, 'AD_Tab-187');
       expect(rows).toHaveLength(4);
 
+      // NOTE: fieldsByName.<X> is the field WRAPPER; the lookup id lives at .value.key
+      // (same accessor as expectSingleLineWithPackingInstruction above).
       const byQty = {};
       for (const row of rows) {
-        byQty[String(row.fieldsByName.QtyEntered.value)] =
-          row.fieldsByName.M_HU_PI_Item_Product_ID;
+        const piField = row.fieldsByName.M_HU_PI_Item_Product_ID;
+        byQty[String(row.fieldsByName.QtyEntered.value)] = piField && piField.value;
       }
       expect(Object.keys(byQty).sort()).toEqual(['3', '4', '5', '6']);
 
       // The Tab line defines the expected packing instruction; the three Enter lines must match it.
       const tabLinePi = byQty['3'];
+      // Pin the control itself: without this, a regression that dropped the packing instruction
+      // from EVERY line would let the loop below pass by mutual absence (undefined === undefined).
+      expect(
+        tabLinePi && tabLinePi.key,
+        'the Tab control line must itself carry a packing instruction'
+      ).toBeTruthy();
       for (const qty of ['4', '5', '6']) {
         expect(
           byQty[qty] && byQty[qty].key,
