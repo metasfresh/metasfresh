@@ -25,6 +25,7 @@ package de.metas.material.dispo;
 import de.metas.Profiles;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.reconcile.AtpKeySelectionDrainer;
 import de.metas.material.dispo.reconcile.AtpReconciliationCommand;
 import de.metas.material.dispo.reconcile.AtpTargetCalculator;
 import de.metas.material.dispo.reconcile.UncoveredSourceDocumentService;
@@ -129,6 +130,11 @@ class AtpReconcileContextStartupTest
 					.as("the read-only uncovered-open-document report needs nothing from dispo-service either, so"
 							+ " it must be resolvable in the same webapi-like context that the divergence report"
 							+ " process runs in")
+					.isNotEmpty();
+
+			assertThat(context.getBeanNamesForType(AtpKeySelectionDrainer.class))
+					.as("the key drain needs nothing from dispo-service either, so it must be resolvable in the"
+							+ " webapi-like context the operator's process runs in")
 					.isNotEmpty();
 		}
 	}

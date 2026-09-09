@@ -26,8 +26,9 @@ import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
-import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.dispo.reconcile.AtpDivergence;
+import de.metas.material.dispo.reconcile.AtpKeySelection;
+import de.metas.material.dispo.reconcile.AtpKeySelectionDrainer;
 import de.metas.material.dispo.reconcile.AtpReconciliationCommand;
 import de.metas.material.dispo.reconcile.AtpReconciliationRunLog;
 import de.metas.process.JavaProcess;
@@ -45,7 +46,6 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * The operator-invocable entry point for {@link AtpReconciliationCommand}: selects reconciliation keys by an
@@ -53,10 +53,9 @@ import java.util.List;
  * <p>
  * Structured after the sibling
  * {@code de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs}: a plain {@link JavaProcess} with
- * {@link RunOutOfTrx} on {@link #doIt()}, a batched drain of the matching keys (a {@link #BATCH_SIZE} per round and
- * a {@link #MAX_LOOPS} backstop against a pagination bug that never terminates), and package-private methods so the
- * per-key reconciliation step can be exercised from a test in this package without going through the process
- * framework.
+ * {@link RunOutOfTrx} on {@link #doIt()} and a batched drain of the matching keys - the drain itself living in
+ * {@link AtpKeySelectionDrainer}, so its page size, pagination and runaway backstop are stated once rather than
+ * per caller.
  * <p>
  * <b>Dry run:</b> {@code IsDryRun} is passed straight through to
  * {@link AtpReconciliationCommand#reconcileAndLog(StockDataRecordIdentifier, Instant, boolean, Instant)} - on a dry
@@ -73,18 +72,8 @@ import java.util.List;
  */
 public class MD_Candidate_Reconcile_ATP extends JavaProcess
 {
-	/** How many matching keys are fetched and reconciled per round. */
-	private static final int BATCH_SIZE = 500;
-
-	/**
-	 * Backstop against a pagination bug that never converges (e.g. an {@code OFFSET} that stops advancing): the
-	 * selection this process filters on is static, so a healthy run always drains it in a small, bounded number of
-	 * rounds. {@link #BATCH_SIZE} * {@link #MAX_LOOPS} = 5,000,000 keys, far past any real selection size for this
-	 * feature (the largest real candidate chain measured for this issue was 913 rows for a single product).
-	 */
-	private static final int MAX_LOOPS = 10_000;
-
-	private final StockRepository stockRepository = SpringContextHolder.getBeanOrSupply(StockRepository.class, StockRepository::new);
+	private final AtpKeySelectionDrainer keyDrainer =
+			SpringContextHolder.getBeanOrSupply(AtpKeySelectionDrainer.class, AtpKeySelectionDrainer::newInstanceForUnitTesting);
 
 	/** Resolved once, on first use, by {@link #reconciliationCommand()} - never in a field initializer. */
 	@Nullable private AtpReconciliationCommand reconciliationCommand;
@@ -118,43 +107,18 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 		// an operator the engine is present when it is not. Failing here makes that answer impossible.
 		reconciliationCommand();
 
-		int offset = 0;
-		int loops = 0;
-		int keysProcessed = 0;
-		int keysChanged = 0;
-
-		List<StockDataRecordIdentifier> batch;
-		do
-		{
-			loops++;
-			if (loops > MAX_LOOPS)
-			{
-				// concrete failure this prevents: a pagination bug (e.g. an OFFSET that never advances) turning
-				// this into an infinite loop instead of a bounded, reportable failure
-				throw new AdempiereException("MD_Candidate_Reconcile_ATP aborted after " + MAX_LOOPS
-						+ " rounds of " + BATCH_SIZE + " keys each - the selection never shrank below a full batch");
-			}
-
-			batch = retrieveKeys(offset);
-			for (final StockDataRecordIdentifier key : batch)
-			{
-				keysProcessed++;
-				if (reconcileOneKey(key, runDate, livenessCutoff))
-				{
-					keysChanged++;
-				}
-			}
-			offset += BATCH_SIZE;
-		}
-		while (batch.size() == BATCH_SIZE);
+		final AtpKeySelectionDrainer.DrainSummary summary = keyDrainer.drain(
+				createKeySelection(),
+				key -> reconcileOneKey(key, runDate, livenessCutoff));
 
 		if (p_IsDryRun)
 		{
-			addLog("Dry run: {} of {} matching key(s) would change; nothing was written", keysChanged, keysProcessed);
+			addLog("Dry run: {} of {} matching key(s) would change; nothing was written",
+					summary.getKeysChanged(), summary.getKeysProcessed());
 		}
 		else
 		{
-			addLog("Reconciled {} of {} matching key(s)", keysChanged, keysProcessed);
+			addLog("Reconciled {} of {} matching key(s)", summary.getKeysChanged(), summary.getKeysProcessed());
 		}
 
 		return MSG_OK;
@@ -228,21 +192,14 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 		return true;
 	}
 
-	/**
-	 * @return the reconciliation keys matching this run's warehouse/product/product-category filters, one
-	 * page of at most {@link #BATCH_SIZE} starting at {@code offset}, ordered by {@code MD_Stock_ID} for a stable
-	 * pagination across rounds. Delegates the actual persistence-primitive query to {@link StockRepository} - see
-	 * {@code docs/REVIEW.md} on keeping {@code IQueryBL}/{@code IQueryBuilder} out of a {@link JavaProcess}.
-	 */
-	List<StockDataRecordIdentifier> retrieveKeys(final int offset)
+	/** @return this run's warehouse/product/product-category filter; an unset parameter is not restricted on */
+	private AtpKeySelection createKeySelection()
 	{
-		final WarehouseId warehouseId = p_M_Warehouse_ID > 0 ? WarehouseId.ofRepoId(p_M_Warehouse_ID) : null;
-		final ProductId productId = p_M_Product_ID > 0 ? ProductId.ofRepoId(p_M_Product_ID) : null;
-		final ProductCategoryId productCategoryId = p_M_Product_Category_ID > 0
-				? ProductCategoryId.ofRepoId(p_M_Product_Category_ID)
-				: null;
-
-		return stockRepository.retrieveKeys(warehouseId, productId, productCategoryId, BATCH_SIZE, offset);
+		return AtpKeySelection.builder()
+				.warehouseId(WarehouseId.ofRepoIdOrNull(p_M_Warehouse_ID))
+				.productId(ProductId.ofRepoIdOrNull(p_M_Product_ID))
+				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(p_M_Product_Category_ID))
+				.build();
 	}
 
 	@Nullable
