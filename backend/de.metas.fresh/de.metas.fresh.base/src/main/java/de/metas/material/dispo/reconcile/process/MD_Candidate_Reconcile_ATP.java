@@ -186,8 +186,10 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 				throw new AdempiereException("MD_Candidate_Reconcile_ATP needs the material disposition engine,"
 						+ " which is not present in this application: the spring profile "
 						+ Profiles.PROFILE_MaterialDispo + " is not active here."
-						+ " Run this process on the metasfresh app server, where that profile is activated by the"
-						+ " de.metas.spring.profiles.active sysconfigs.", e);
+						+ " This process is not invocable from the WebUI in this deployment: the app server reads its"
+						+ " active profiles from the de.metas.spring.profiles.active sysconfigs, while the webapi -"
+						+ " where a WebUI-launched process actually runs - reads a different prefix,"
+						+ " de.metas.ui.web.spring.profiles.active.", e);
 			}
 		}
 		return reconciliationCommand;

@@ -23,6 +23,7 @@ package de.metas.material.dispo.reconcile.process;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.Profiles;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -48,6 +49,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
@@ -149,6 +151,81 @@ class MD_Candidate_Reconcile_ATPTest
 		assertThat(processedKeys).hasSize(allKeys.size());
 		assertThat(new HashSet<>(processedKeys)).hasSize(allKeys.size()); // no duplicates
 		assertThat(processedKeys).containsExactlyInAnyOrderElementsOf(allKeys); // nothing missing, nothing foreign
+	}
+
+	/**
+	 * Pins the regression the previous commit fixed: a run in a JVM without the material disposition engine must
+	 * fail fast even when the selection matches no key at all - never report the misleading "Reconciled 0 of 0
+	 * matching key(s)" success that a per-key-only bean resolution would produce (the loop body never executes, so
+	 * the bean would never be resolved and the missing engine would never surface).
+	 * <p>
+	 * Neither of the two tests above can reproduce this: both register a fake {@link AtpReconciliationCommand} as a
+	 * JUnit bean before calling {@code doIt()} (see {@link SpringContextHolder#registerJUnitBean(Class, Object)}), so
+	 * the bean is always present. Reproducing the actual defect needs {@link SpringContextHolder#instance}{@code
+	 * .getBean(AtpReconciliationCommand.class)} to hit its {@code catch (NoSuchBeanDefinitionException e)} branch in
+	 * {@code reconciliationCommand()} - and {@link SpringContextHolder#getBean} only ever throws that specific
+	 * exception when a real, non-null {@link org.springframework.context.ApplicationContext} is registered on the
+	 * holder and genuinely lacks the bean; with no context registered at all it throws a plain,
+	 * uncaught {@link AdempiereException} instead ("This unit test requires a spring ApplicationContext"), which
+	 * would escape {@code doIt()} without ever exercising the fix.
+	 * <p>
+	 * So this test builds a real, profile-less {@link AnnotationConfigApplicationContext} scanning
+	 * {@code de.metas.material.dispo.reconcile} - the webapi's actual situation, exactly as
+	 * {@link de.metas.material.dispo.AtpReconcileContextStartupTest#webapiLikeContext_startsWithoutTheMaterialDispoEngine()}
+	 * proves it for the package as a whole - and registers it on {@link SpringContextHolder#instance} for the
+	 * duration of the call. {@link AtpReconciliationCommand} is {@code @Profile}-guarded, so that context genuinely
+	 * has no such bean, and {@code context.getBean(AtpReconciliationCommand.class)} throws Spring's own
+	 * {@code NoSuchBeanDefinitionException} - the exact branch {@code reconciliationCommand()} is written to catch.
+	 * <p>
+	 * <b>Why the mocks are registered as plain singletons, not via a {@code @Configuration} class of this test's
+	 * own.</b> {@link de.metas.material.dispo.AtpReconcileContextStartupTest}'s Javadoc records that its first
+	 * version placed such a config <i>inside</i> the scanned package, where the recursive
+	 * {@link org.springframework.context.annotation.ComponentScan} picked it up and silently supplied the very bean
+	 * whose absence the test exists to prove. This test class sits in {@code
+	 * de.metas.material.dispo.reconcile.process} - itself under the scanned package, because {@code doIt()} is only
+	 * callable from the same package - so a {@code @Configuration}/{@code @Component} class declared here would fall
+	 * into exactly that trap. Registering the collaborator mocks as plain (unannotated) singleton beans instead means
+	 * nothing in this file carries an annotation the scan could ever find.
+	 */
+	@Test
+	void profileLessJvm_failsFastEvenWhenSelectionMatchesNothing() throws Exception
+	{
+		when(stockRepository.retrieveKeys(any(), any(), any(), anyInt(), anyInt()))
+				.thenReturn(ImmutableList.of());
+
+		try (final AnnotationConfigApplicationContext profileLessContext = newProfileLessReconcilePackageContext())
+		{
+			SpringContextHolder.instance.setApplicationContext(profileLessContext);
+			try
+			{
+				final MD_Candidate_Reconcile_ATP process = newProcess();
+
+				assertThatThrownBy(process::doIt)
+						.as("a profile-less JVM must fail fast even on an empty selection - never reach the"
+								+ " '0 of 0' success return")
+						.isInstanceOf(AdempiereException.class)
+						.hasMessageContaining(Profiles.PROFILE_MaterialDispo);
+			}
+			finally
+			{
+				SpringContextHolder.instance.clearApplicationContext();
+			}
+		}
+	}
+
+	/**
+	 * @return a real, profile-less context scanning {@code de.metas.material.dispo.reconcile} - see this test's own
+	 * Javadoc for why its two collaborator mocks are registered as plain singletons rather than through a
+	 * {@code @Configuration} class of this test's own.
+	 */
+	private static AnnotationConfigApplicationContext newProfileLessReconcilePackageContext()
+	{
+		final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+		context.getBeanFactory().registerSingleton("stockRepository", Mockito.mock(StockRepository.class));
+		context.getBeanFactory().registerSingleton("candidateRepositoryRetrieval", Mockito.mock(CandidateRepositoryRetrieval.class));
+		context.scan("de.metas.material.dispo.reconcile");
+		context.refresh();
+		return context;
 	}
 
 	@Test
