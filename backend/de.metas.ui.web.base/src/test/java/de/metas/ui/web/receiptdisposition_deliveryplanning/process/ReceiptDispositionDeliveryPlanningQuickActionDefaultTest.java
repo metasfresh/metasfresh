@@ -42,31 +42,17 @@ import java.util.function.Supplier;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * What the WebUI actually does with the receipt-disposition delivery-planning window's reachability flags (AD_Table_Process rows on
- * AD_Table 542644, migration {@code 5822600_sys_RV_ReceiptDisposition_DeliveryPlanning_receive_actions.sql} and
- * {@code 5822620_sys_RV_ReceiptDisposition_DeliveryPlanning_multirow_receive.sql}) once a row's actual preconditions are known.
+ * What the WebUI does with the receipt-disposition delivery-planning window's reachability flags
+ * (AD_Table_Process rows on AD_Table 542644) once a row's actual preconditions are known - pinned at the
+ * PLATFORM seam ({@link WebuiRelatedProcessDescriptor} plus the two filters
+ * {@code ViewRestController#getRowsQuickActions}/{@code #getRowsActions} apply).
  * <p>
- * This is deliberately at the PLATFORM seam - {@link WebuiRelatedProcessDescriptor} plus the exact two filters
- * {@code ViewRestController#getRowsQuickActions}/{@code #getRowsActions} apply, feeding the real
- * {@link JSONDocumentActionsList} sort - rather than driving a browser: the window's own process classes
- * (`WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveHUs_UsingDefaults` et al.) already state, and mirror byte for byte, that they
- * reject via {@link ProcessPreconditionsResolution#rejectWithInternalReason} on the same two conditions as their
- * receipt-schedule counterparts (window 541954) - a class this module cannot construct a live receipt schedule
- * for without a large HU/LUTU fixture this window does not otherwise need. What was NOT independently proven
- * anywhere is what the platform then does with that classification for exactly THIS window's five reachability
- * rows - that is what this test pins.
+ * What this test cannot see: it SUPPLIES the resolutions, so it says nothing about whether the platform ever
+ * asks for them - that seam is pinned separately by {@link
+ * ReceiptDispositionDeliveryPlanningPreconditionSeamTest}.
  * <p>
- * <b>What this test cannot see.</b> It SUPPLIES the resolutions, so it says nothing about whether the platform
- * ever asks for them - and for a while it did not, which left every guard on this window dead while this test
- * stayed green. That seam is pinned separately, by
- * {@link ReceiptDispositionDeliveryPlanningPreconditionSeamTest}; the two are complements, not overlaps.
- * <p>
- * <b>AC7a/AC7b (REQUIREMENTS 3.4).</b> "HUs annehmen Voreinst." is the default quick action; where its precondition
- * rejects with an INTERNAL reason - the packing-instruction default genuinely does not resolve - it must not just
- * be disabled, it must vanish from the quick-actions array entirely, so the platform's own quick-action-first
- * comparator promotes the next accepted one ("CUs annehmen") to the one-click slot a real user presses. A
- * NON-internal rejection would leave it in the array (merely greyed out) and is exactly the defect class this
- * pins against - see {@link #aNonInternalRejectionWouldLeaveTheDefaultVisibleButDisabled_MUTATION()}.
+ * AC7b: where "HUs annehmen Voreinst."'s precondition rejects with an INTERNAL reason it must vanish from the
+ * quick-actions array entirely, so the platform's comparator promotes "CUs annehmen" into the one-click slot.
  */
 class ReceiptDispositionDeliveryPlanningQuickActionDefaultTest
 {
@@ -204,17 +190,9 @@ class ReceiptDispositionDeliveryPlanningQuickActionDefaultTest
 	}
 
 	/**
-	 * MUTATION PROOF for the central scenario (AC7b), permanently pinned as its own test. A NON-internal
-	 * {@code reject(...)} - the mistake this design guards against - leaves the disabled default IN the
-	 * quick-actions array (merely sorted last, since {@link JSONDocumentAction#ORDERBY_QuickActionFirst_Caption}
-	 * puts disabled actions after enabled ones), rather than making it vanish. "Genuinely hides itself"
-	 * (REQUIREMENTS 3.4) requires the INTERNAL form specifically - this documents why, with the contrast case.
-	 * <p>
-	 * The actual RED/GREEN mutation proof for {@link #rowWithoutPackingInstruction_fallbackIsCUs()} was run by hand
-	 * (not left in the tree): with that test's rejection temporarily changed from
-	 * {@code rejectWithInternalReason(...)} to plain {@code accept()} (simulating a dropped guard), the module's
-	 * suite went RED on {@code doesNotContain(HUS_VOREINST)} - "HUs annehmen Voreinst." appeared in the array
-	 * alongside the other three captions; reverted, it is GREEN (see the commit message for both quoted runs).
+	 * MUTATION PROOF for AC7b: a NON-internal {@code reject(...)} leaves the disabled default IN the quick-actions
+	 * array (merely sorted last), rather than making it vanish. "Genuinely hides itself" requires the INTERNAL
+	 * form specifically.
 	 */
 	@Test
 	@DisplayName("mutation check: a NON-internal rejection would leave \"HUs annehmen Voreinst.\" visible-but-disabled instead of hidden")

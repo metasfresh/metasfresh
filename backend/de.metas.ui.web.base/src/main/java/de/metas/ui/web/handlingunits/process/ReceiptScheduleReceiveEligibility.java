@@ -30,11 +30,8 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /**
- * Whether a receipt schedule may be received at all - the ONE definition, so that a second window offering the
- * same actions cannot grow a second, drifting one.
- * <p>
- * Extracted unchanged from {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_Base}, whose package-private class made the
- * rule unreachable from the receipt-disposition delivery-planning window's actions even though the method itself was public.
+ * Whether a receipt schedule may be received at all - the ONE definition, so a second window offering the same
+ * actions cannot grow a drifting copy.
  */
 @UtilityClass
 public class ReceiptScheduleReceiveEligibility

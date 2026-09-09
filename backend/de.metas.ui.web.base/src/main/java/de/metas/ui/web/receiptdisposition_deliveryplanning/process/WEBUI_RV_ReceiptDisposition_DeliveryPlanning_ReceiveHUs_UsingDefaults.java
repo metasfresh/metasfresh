@@ -36,12 +36,11 @@ import org.springframework.context.annotation.Profile;
 import javax.annotation.Nullable;
 
 /**
- * "HUs annehmen Voreinst." on the receipt-disposition delivery-planning window - the one-click primary path, and the window's
- * default quick action.
+ * "HUs annehmen Voreinst." on the receipt-disposition delivery-planning window - the one-click primary path and
+ * the window's default quick action.
  * <p>
- * Rejects on the same two conditions as {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults} and shows the
- * same packing caption on the button, so a row where no packing instruction resolves hides this action and
- * "CUs annehmen" stays as the one-click fallback (AC7b).
+ * Rejects on the same two conditions as {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults}, so a row where
+ * no packing instruction resolves hides this action and "CUs annehmen" stays the one-click fallback.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveHUs_UsingDefaults extends ReceiptDispositionDeliveryPlanningReceiveHUsProcess

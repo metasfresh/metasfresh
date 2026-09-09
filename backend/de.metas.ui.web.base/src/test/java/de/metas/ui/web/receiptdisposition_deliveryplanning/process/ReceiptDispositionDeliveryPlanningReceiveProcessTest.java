@@ -45,15 +45,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * What the window's "CUs annehmen" actions must do with the row they were given: hand BOTH its ids to the
  * shared receive, planning id included.
  * <p>
- * This is the defect class the whole design exists to prevent. The receipt-schedule window's HU path also
- * "receives the row" and also produces a receipt, but the planning id never travels with it, so a planned row
- * received that way ends up with a receipt nothing links back to. An adapter that dropped the id here - or
- * hard-coded it away, or looked it up from the receipt schedule instead of the row (which would be wrong the
- * moment a split gives one schedule several plannings) - would look correct and silently reproduce exactly
- * that. So the pass-through is asserted, per row shape.
- * <p>
- * The receive itself is proven end-to-end in cucumber ({@code receiptDispositionDeliveryPlanning.feature}, S31789_TC7/TC8),
- * which this module is not on the classpath of; here only the adapter's own step is under test.
+ * An adapter that dropped the id - or hard-coded it away, or looked it up from the receipt schedule instead of
+ * the row (wrong the moment a split gives one schedule several plannings) - would look correct and silently
+ * produce a receipt nothing links back to. So the pass-through is asserted, per row shape.
  */
 class ReceiptDispositionDeliveryPlanningReceiveProcessTest
 {
@@ -126,15 +120,10 @@ class ReceiptDispositionDeliveryPlanningReceiveProcessTest
 		new WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs()
 				.receive(ReceiptScheduleAndDeliveryPlanningId.of(RECEIPT_SCHEDULE_ID, DELIVERY_PLANNING_ID));
 
-		// The corrected contract. This row is PLANNED, and "no override" must NOT mean "the receipt schedule's
-		// whole remaining quantity": a split copies M_ReceiptSchedule_ID onto every new planning, so that
-		// remainder is the whole order line's and the first planning received would consume it, leaving its
-		// siblings unable to receive. Passing null hands the decision to
-		// ReceiptFromReceiptScheduleService#getQtyToReceive, the ONE rule the multi-row receive already used -
-		// the planning's own share here, the schedule's remainder only on an unplanned row. What correct code
-		// produces at THIS layer is therefore still null; asserting a number here would move the rule into the
-		// adapter and give the window a second definition of it. The resolution itself is pinned end-to-end by
-		// cucumber S31789_TC9e (one row of a split planning received alone; its sibling still receives).
+		// This row is PLANNED, and "no override" must NOT mean "the receipt schedule's whole remaining quantity": a
+		// split shares one schedule across plannings, so the first planning received would consume the order line.
+		// Passing null hands the decision to ReceiptFromReceiptScheduleService#getQtyToReceive - asserting a number
+		// here would move the rule into the adapter and give the window a second definition of it.
 		assertThat(capturedQtyOverride())
 				.as("null means: let the shared receive resolve the row's own quantity")
 				.isNull();

@@ -37,18 +37,12 @@ import org.springframework.context.annotation.Profile;
 import java.util.List;
 
 /**
- * "Wareneingangsdispo zu Wareneingang" on the receipt-disposition delivery-planning window: receive the WHOLE selection in one
- * gesture - planned rows, unplanned rows, or a mixture.
+ * "Wareneingangsdispo zu Wareneingang" on the receipt-disposition delivery-planning window: receive the WHOLE
+ * selection in one gesture - planned rows, unplanned rows, or a mixture.
  * <p>
- * The heavy action of the set, and deliberately NOT a quick action (`WEBUI_ViewQuickAction='N'`, mirroring
- * window 541954's own multi-row entry): it books goods for every selected row at once, which is not something to
- * put one careless click away.
- * <p>
- * <b>It decides nothing itself.</b> Routing per row on the nullable planning id, the grouping, and the quantity
- * each row contributes all live in {@link ReceiptFromReceiptScheduleService#receiveRows} - the ONE receive this
- * domain has, which the single-row actions and the delivery-planning window's generate also go through. This
- * class turns the selected GRID ROWS into their source ids (which is how it can see the plannings at all),
- * applies the shared precondition, and hands them over.
+ * Deliberately NOT a quick action ({@code WEBUI_ViewQuickAction='N'}): it books goods for every selected row at
+ * once. The routing, grouping and per-row quantity all live in {@link
+ * ReceiptFromReceiptScheduleService#receiveRows}.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_Generate_M_InOuts extends ReceiptDispositionDeliveryPlanningViewBasedProcess
@@ -64,12 +58,9 @@ public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_Generate_M_InOuts exte
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		// A planning may hold AT MOST ONE receipt or shipment. Asked of the WHOLE selection, of the one
-		// definition, exactly as the single-row receive asks it - never re-implemented here.
-		//
-		// The receipt schedule's own eligibility is deliberately NOT asked per row: a row with nothing left to
-		// receive contributes nothing and the rest of the selection still goes through, which is the batch
-		// behaviour the underlying generate already has (REQUIREMENTS 3.4 - no new precondition messaging).
+		// The receipt schedule's own eligibility is deliberately NOT asked per row: a row with nothing left to receive
+		// contributes nothing and the rest of the selection still goes through, which is the batch behaviour the
+		// underlying generate already has.
 		return checkNoneProcessed(getSelectedDeliveryPlannings());
 	}
 

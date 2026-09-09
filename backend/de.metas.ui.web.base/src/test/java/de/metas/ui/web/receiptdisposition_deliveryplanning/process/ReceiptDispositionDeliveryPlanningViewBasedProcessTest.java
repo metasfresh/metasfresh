@@ -66,16 +66,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * The shared base every receipt-disposition delivery-planning action sits on, on its two jobs.
  * <p>
- * <b>Turning a selected row back into its source records.</b> {@code RV_ReceiptDisposition_DeliveryPlanning} unions a PLANNED
- * branch (an active {@code Incoming} planning carrying a receipt schedule) with an UNPLANNED one (a receipt
- * schedule no active planning refers to), so the same selection hands an action both row shapes. Reading the
- * planning id off an unplanned row must yield {@code null} rather than a zero, a {@code -1} or an exception -
- * that {@code null} is what later tells the action which of the two paths a row takes.
+ * Reading the planning id off an UNPLANNED row must yield {@code null} rather than a zero, a {@code -1} or an
+ * exception - that {@code null} is what later tells the action which of the two paths a row takes.
  * <p>
- * <b>Refusing an ineligible selection before anything is produced.</b> A planning may hold AT MOST ONE receipt
- * or shipment; {@code Processed} says it already does (or that it was closed). The refusal has to be
- * all-or-nothing and has to name every offending row, because the alternative - skipping the bad rows - hands
- * the planner a partial result they never asked for and no indication of which rows were dropped.
+ * The refusal of an ineligible selection has to be all-or-nothing and has to name every offending row: skipping
+ * the bad rows hands the planner a partial result with no indication of what was dropped.
  */
 class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 {
@@ -115,9 +110,8 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 	}
 
 	/**
-	 * One grid row as the WebUI hands it to a process: field values keyed by column name, read back through the
-	 * same JSON-value path production uses. {@code null} for the planning id is how the view's unplanned branch
-	 * arrives - {@code M_Delivery_Planning_ID} is {@code NULL::numeric(10)} there.
+	 * One grid row as the WebUI hands it to a process. {@code null} for the planning id is how the view's unplanned
+	 * branch arrives - {@code M_Delivery_Planning_ID} is {@code NULL::numeric(10)} there.
 	 */
 	private static IViewRow row(final int receiptScheduleRepoId, @Nullable final Integer deliveryPlanningRepoId)
 	{
@@ -257,9 +251,8 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 	}
 
 	/**
-	 * The minimal shape of a real receive action: guard the WHOLE selection, then produce per row. It records
-	 * what it produced so a refusal can be shown to produce nothing - a guard moved into the per-row loop, or
-	 * degraded into a per-row skip, would leave {@code received} non-empty.
+	 * Records what it produced, so a refusal can be shown to produce nothing: a guard moved into the per-row loop,
+	 * or degraded into a per-row skip, would leave {@code received} non-empty.
 	 */
 	private static class ReceivingTestProcess extends ReceiptDispositionDeliveryPlanningViewBasedProcess
 	{

@@ -33,23 +33,13 @@ import org.compiere.SpringContextHolder;
 
 
 /**
- * What the receipt-disposition delivery-planning window's four single-row receive actions share: ONE receive, whether the selected
- * row is planned or not.
+ * What the receipt-disposition delivery-planning window's four single-row receive actions share: ONE receive,
+ * whether the selected row is planned or not.
  * <p>
- * <b>The row decides, not the action.</b> A planned row hands the action a delivery planning id, an unplanned one
- * hands it {@code null}, and either way the id goes into the same
- * {@link CreateReceiptFromReceiptScheduleRequest} - the shared request whose nullable planning id IS the two
- * paths. With the id present the receipt carries {@code M_Delivery_Planning_ID} while still a draft, so the
- * completion inside the same call fires the delivery-planning interceptor that derives the planning's delivered
- * state, actual discharge quantity, {@code Processed} flag and receipt back-link; with it absent the result is
- * the plain receipt against the schedule that window 541954 produces. This is why the four actions do NOT reuse
- * the receipt-schedule window's process classes: those resolve their record as {@code M_ReceiptSchedule} and
- * have no way to learn which planning - if any - a row stands for, and the HU-editor path they end in never
- * sets the planning id at all.
- * <p>
- * Subclasses differ in exactly one thing: {@link #createPlanningHUs}, i.e. what is received into (bare CUs or a
- * LU/TU packing) and how much. Everything else - the two guards, the request, the write-back and the view
- * invalidation - is here, once.
+ * The row decides, not the action: a planned row hands over a planning id, an unplanned one {@code null}, and
+ * either way it goes into the same {@link CreateReceiptFromReceiptScheduleRequest}. With the id present the
+ * receipt carries {@code M_Delivery_Planning_ID} while still a DRAFT, so the completion inside the same call
+ * derives the planning's delivered state, actual discharge quantity, {@code Processed} flag and back-link.
  */
 public abstract class ReceiptDispositionDeliveryPlanningReceiveProcess extends ReceiptDispositionDeliveryPlanningViewBasedProcess
 {
@@ -57,8 +47,7 @@ public abstract class ReceiptDispositionDeliveryPlanningReceiveProcess extends R
 			SpringContextHolder.instance.getBean(ReceiptFromReceiptScheduleService.class);
 
 	/**
-	 * Books the row's goods: what is received into, how much, and - for a planned row - the planning id going
-	 * with it. The only thing the four actions differ in. Called after both guards have passed.
+	 * Books the row's goods - the only thing the four actions differ in. Called after both guards have passed.
 	 */
 	protected abstract void receive(@NonNull ReceiptScheduleAndDeliveryPlanningId sourceIds);
 

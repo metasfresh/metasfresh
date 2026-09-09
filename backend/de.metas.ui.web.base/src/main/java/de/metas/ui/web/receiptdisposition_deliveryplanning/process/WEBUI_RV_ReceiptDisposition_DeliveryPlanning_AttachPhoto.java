@@ -28,10 +28,9 @@ import de.metas.process.ProcessPreconditionsResolution;
 import org.springframework.context.annotation.Profile;
 
 /**
- * "Foto" on the receipt-disposition delivery-planning window: attaches an image to the selected row's receipt schedule, exactly as
- * {@code WEBUI_M_ReceiptSchedule_AttachPhoto} does on window 541954 - same parameter, same body (shared), and the
- * same single-selection rule. Offered on both row types, because the photo belongs to the receipt schedule and
- * both branches of the view have one.
+ * "Foto" on the receipt-disposition delivery-planning window - the counterpart of
+ * {@code WEBUI_M_ReceiptSchedule_AttachPhoto}. Offered on both row types, the photo belonging to the receipt
+ * schedule that both branches of the view have.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_AttachPhoto extends ReceiptDispositionDeliveryPlanningPassThroughProcess

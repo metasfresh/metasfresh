@@ -61,28 +61,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * That the window's precondition guards are REACHED AT ALL - the platform seam every other test in this package
  * takes for granted.
  * <p>
- * <b>The defect this exists for.</b> {@link ProcessPreconditionChecker#setProcess(String)} evaluates a process'
- * preconditions only when its class {@code implements} {@link IProcessPrecondition}
- * ({@code ProcessPreconditionChecker:146}); with the interface absent, {@code resolution} stays {@code null} and
- * {@code checkApplies()} falls through to {@link ProcessPreconditionsResolution#accept()}. So an action can
- * override {@code checkPreconditionsApplicable()}, be byte-for-byte correct, be covered by unit tests that call
- * that override directly - and still be offered and accepted on every row, because nothing ever calls it. That
- * is what happened here: the shared base extended {@code ViewBasedProcessTemplate} without the interface, and
- * ALL ten actions' guards - not-single-selection, receipt-schedule eligibility, at-most-one-receipt-per-planning,
- * "no default LU/TU configuration", HUs-to-reverse - were dead on window 542190. Measured against a live stack:
- * with BOTH grid rows selected, {@code ReceiveHUs_UsingDefaults} and {@code SelectHUsToReverse} were served
- * ACCEPTED in 22-38 microseconds, i.e. without a single database read.
+ * {@link ProcessPreconditionChecker#setProcess(String)} evaluates a process' preconditions only when its class
+ * {@code implements} {@link IProcessPrecondition}; without it {@code checkApplies()} falls through to
+ * {@link ProcessPreconditionsResolution#accept()}. So an action can override
+ * {@code checkPreconditionsApplicable()}, be byte-for-byte correct and be unit-tested by calling that override
+ * directly - and still be accepted on every row, because nothing ever calls it.
  * <p>
- * <b>Why this test is shaped the way it is.</b> It goes through {@link ProcessPreconditionChecker} <b>by
- * classname</b>, which is exactly and only what {@link ProcessDescriptor#checkPreconditionsApplicable} does in
- * production - it never touches the process objects itself. Constructing a process and calling its
- * {@code checkPreconditionsApplicable()} (or supplying a resolution to a
- * {@code WebuiRelatedProcessDescriptor}, as {@code ReceiptDispositionDeliveryPlanningQuickActionDefaultTest}
- * does) proves the guard's LOGIC while bypassing the very lookup that was broken; both stayed green through the
- * whole defect. The classname detour is the seam, so the test has to take it.
- * <p>
- * A two-row selection is the lever because it is the one condition every single-row action refuses without
- * reading anything - no receipt schedule, no planning, no HU. A guard that is never invoked cannot refuse it.
+ * Hence the shape: this test goes through {@link ProcessPreconditionChecker} BY CLASSNAME, which is exactly and
+ * only what production does. Constructing a process and calling its {@code checkPreconditionsApplicable()}
+ * proves the guard's LOGIC while bypassing the very lookup that can be broken.
  */
 class ReceiptDispositionDeliveryPlanningPreconditionSeamTest
 {
@@ -115,9 +102,8 @@ class ReceiptDispositionDeliveryPlanningPreconditionSeamTest
 	}
 
 	/**
-	 * Asks the platform whether the action applies, the ONE way the WebUI asks it: by AD_Process classname,
-	 * through {@link ProcessPreconditionChecker}. Mirrors {@link ProcessDescriptor#checkPreconditionsApplicable}
-	 * line for line - nothing here reaches into the process object, because production cannot either.
+	 * Asks the platform whether the action applies the ONE way the WebUI asks it: by AD_Process classname, through
+	 * {@link ProcessPreconditionChecker} - nothing here reaches into the process object, because production cannot.
 	 */
 	private static ProcessPreconditionsResolution askThePlatform(final Class<?> processClass, final ViewAsPreconditionsContext context)
 	{

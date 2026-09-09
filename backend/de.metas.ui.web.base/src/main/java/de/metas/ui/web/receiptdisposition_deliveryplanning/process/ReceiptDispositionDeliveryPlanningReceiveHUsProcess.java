@@ -47,14 +47,11 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * The "receive HUs" half of the receipt-disposition delivery-planning window's receive actions: goods arrive in a packing (TUs, and
- * usually LUs), not as bare units.
+ * The "receive HUs" half of the receipt-disposition delivery-planning window's receive actions.
  * <p>
- * Mirrors {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_Base} step for step - the same generator, the same LU/TU
- * configuration, the same infinite-quantity guard - with exactly one difference at the end: where that class
- * hands the generated HUs to the HU editor and lets a later, separate process turn them into a receipt, this one
- * books them through the shared receive right away, so the row's delivery planning id reaches the receipt. That
- * is the whole reason it cannot simply extend it: the HU-editor path drops the planning on the floor.
+ * Mirrors {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_Base} step for step with one difference at the end: it books
+ * the generated HUs through the shared receive right away instead of handing them to the HU editor, which is why
+ * it cannot simply extend that class - the HU-editor path never sets the planning id.
  */
 abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends ReceiptDispositionDeliveryPlanningReceiveProcess
 {
@@ -68,8 +65,7 @@ abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends Recei
 
 	/**
 	 * Whether the quantity in the LU/TU configuration is the OPERATOR's own statement rather than a default this
-	 * process derived. Every subclass must answer, because it decides whether a planned row's share caps it (see
-	 * {@link #getQtyToAllocate}).
+	 * process derived - it decides whether a planned row's share caps it (see {@link #getQtyToAllocate}).
 	 */
 	protected abstract boolean isQtyToReceiveOperatorStated();
 
@@ -114,22 +110,11 @@ abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends Recei
 	}
 
 	/**
-	 * How many CUs are actually booked out of the packing the configuration describes.
-	 * <p>
-	 * <b>An operator-stated packing is booked as stated</b> - "HUs annehmen" asks for the LU/TU/CU counts and
-	 * honours them, exactly as the CU receive honours a typed quantity and as
-	 * {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig} does; narrowing it behind the operator's back would
-	 * be a different action than the one pressed.
-	 * <p>
-	 * <b>A DERIVED default on a PLANNED row is capped at that planning's share.</b> This is the same defect the
-	 * single-row CU receive had: {@code ReceiptScheduleLUTUConfigurations.adjustToDefaults} derives its LU/TU
-	 * quantities from the SCHEDULE ({@code getQtyToMoveTU} and {@code QtyToMove}), and a split copies
-	 * {@code M_ReceiptSchedule_ID} onto every new planning, so the schedule's outstanding quantity is the whole
-	 * order line's. One-click receiving one row of a split would otherwise consume the line and leave the sibling
-	 * plannings unable to receive at all.
-	 * <p>
-	 * <b>An UNPLANNED row is left alone</b> - no planning, no share, and its receive must stay byte-for-byte what
-	 * window 541954 produces, packing rounding over the schedule's remainder included.
+	 * An operator-stated packing is booked as stated. A DERIVED default on a PLANNED row is capped at that
+	 * planning's share: {@code ReceiptScheduleLUTUConfigurations.adjustToDefaults} derives its LU/TU quantities
+	 * from the SCHEDULE, and a split copies {@code M_ReceiptSchedule_ID} onto every new planning - so one-click
+	 * receiving one row of a split would otherwise consume the whole order line and leave its siblings unable to
+	 * receive. An UNPLANNED row is left alone.
 	 */
 	private Quantity getQtyToAllocate(
 			@NonNull final Quantity qtyCUsFromPacking,

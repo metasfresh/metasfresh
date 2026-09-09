@@ -35,13 +35,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 /**
- * The receipt schedule's LU/TU packing configuration, as the "receive HUs" actions read and default it - the ONE
- * definition, so the receipt-disposition delivery-planning window's actions receive into exactly the packing the receipt-schedule
- * window's do.
- * <p>
- * Extracted unchanged from {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_Base} and
- * {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults}, whose package-private / private members made both
- * steps unreachable from another package.
+ * The receipt schedule's LU/TU packing configuration as the "receive HUs" actions read and default it - the ONE
+ * definition, so both windows receive into exactly the same packing.
  */
 @UtilityClass
 public class ReceiptScheduleLUTUConfigurations
@@ -63,9 +58,6 @@ public class ReceiptScheduleLUTUConfigurations
 	}
 
 	/**
-	 * A NEW, unsaved copy of {@code template}, adjusted to the one-click defaults ({@link #adjustToDefaults}) -
-	 * what "receive HUs using defaults" receives into.
-	 * <p>
 	 * Takes the template rather than deriving it: {@link #getCurrent} can CREATE the schedule's configuration
 	 * record, so calling it a second time for the same receive is not a free re-read.
 	 */

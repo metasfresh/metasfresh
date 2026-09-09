@@ -27,9 +27,9 @@ import de.metas.process.ProcessPreconditionsResolution;
 import org.springframework.context.annotation.Profile;
 
 /**
- * "Drucken Produktanlieferung" on the receipt-disposition delivery-planning window: runs the material-receipt Jasper for the selected
- * row's receipt schedule, exactly as {@code WEBUI_M_ReceiptSchedule_RunMaterialReceiptJasper} does on window
- * 541954. Offered on both row types - the report is about the schedule, which both branches have.
+ * "Drucken Produktanlieferung" on the receipt-disposition delivery-planning window - the counterpart of
+ * {@code WEBUI_M_ReceiptSchedule_RunMaterialReceiptJasper}. Offered on both row types, the report being about
+ * the receipt schedule.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_RunMaterialReceiptJasper extends ReceiptDispositionDeliveryPlanningPassThroughProcess

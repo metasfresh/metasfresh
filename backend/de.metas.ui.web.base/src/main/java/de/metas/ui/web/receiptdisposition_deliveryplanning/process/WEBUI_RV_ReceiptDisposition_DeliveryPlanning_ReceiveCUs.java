@@ -33,12 +33,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /**
- * "CUs annehmen" on the receipt-disposition delivery-planning window: receive the selected row's remaining quantity as bare units.
- * <p>
- * The counterpart of {@code WEBUI_M_ReceiptSchedule_ReceiveCUs} - same quantity rule, same VHU - but it reads
- * its receipt schedule off the grid ROW rather than out of a record reference, which is what lets it also see
- * the row's delivery planning and hand it to the shared receive. Single-selection: the batch receive is its own
- * action.
+ * "CUs annehmen" on the receipt-disposition delivery-planning window - the counterpart of
+ * {@code WEBUI_M_ReceiptSchedule_ReceiveCUs}, reading its receipt schedule off the grid ROW so that it also
+ * sees the row's delivery planning. Single-selection: the batch receive is its own action.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs extends ReceiptDispositionDeliveryPlanningReceiveProcess
@@ -67,9 +64,7 @@ public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs extends Rec
 
 	/**
 	 * Whether the precondition can already tell how much would be received. False for the variant that takes the
-	 * quantity as a parameter: there the operator has not typed anything yet, so an exhausted line must still
-	 * offer the action (as {@code WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam} does with
-	 * {@code setAllowNoQuantityAvailable(true)}).
+	 * quantity as a parameter: the operator has typed nothing yet, so an exhausted line must still offer the action.
 	 */
 	protected boolean isQtyToReceiveKnownUpfront()
 	{
@@ -83,8 +78,7 @@ public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs extends Rec
 	}
 
 	/**
-	 * What the selected row would receive with no quantity stated - resolved by the receive's own rule, so the
-	 * precondition, the operator-facing default and the booking cannot drift apart.
+	 * Resolved by the receive's own rule, so the precondition, the operator-facing default and the booking cannot drift apart.
 	 */
 	protected final Quantity getQtyToReceive()
 	{
@@ -95,10 +89,7 @@ public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs extends Rec
 
 	/**
 	 * {@code null} - this action states no quantity of its own, so the receive resolves it by the one rule
-	 * {@link #getQtyToReceive()} also reports: where the row's delivery planning imposes a share, that share
-	 * capped at what the schedule still has outstanding; otherwise (an unplanned row, or a planning that
-	 * carries no discharge figure yet) the schedule's remainder. The variant that asks the operator
-	 * overrides it.
+	 * {@link #getQtyToReceive()} also reports. The variant that asks the operator overrides it.
 	 */
 	@Nullable
 	protected BigDecimal getQtyToReceiveOverrideOrNull()

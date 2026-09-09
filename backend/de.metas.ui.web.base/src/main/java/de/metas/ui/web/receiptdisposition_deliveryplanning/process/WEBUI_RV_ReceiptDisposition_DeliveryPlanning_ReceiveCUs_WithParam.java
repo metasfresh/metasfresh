@@ -32,10 +32,9 @@ import org.springframework.context.annotation.Profile;
 import java.math.BigDecimal;
 
 /**
- * "CUs annehmen mit Menge" on the receipt-disposition delivery-planning window: the operator types how much arrived.
- * <p>
- * Differs from its parent in the quantity only, so an exhausted line still offers it - the counterpart of
- * {@code WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam}'s {@code setAllowNoQuantityAvailable(true)}.
+ * "CUs annehmen mit Menge" on the receipt-disposition delivery-planning window: the operator types how much
+ * arrived. Differs from its parent in the quantity only, so an exhausted line still offers it - the counterpart
+ * of {@code WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam}'s {@code setAllowNoQuantityAvailable(true)}.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs_WithParam extends WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveCUs

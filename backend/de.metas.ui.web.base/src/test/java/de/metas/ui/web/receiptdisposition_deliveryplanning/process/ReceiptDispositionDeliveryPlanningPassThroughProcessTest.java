@@ -55,18 +55,12 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * What the five PASS-THROUGH actions must do with the row they were given: act on <b>that row's receipt
- * schedule</b>.
+ * What the five PASS-THROUGH actions must do with the row they were given: act on THAT row's receipt schedule.
  * <p>
- * That is the whole of the adapters' own job, and it is the one thing that can silently go wrong. On this window
- * a process' record resolves as {@code RV_ReceiptDisposition_DeliveryPlanning}, not as {@code M_ReceiptSchedule} - which is why
- * these classes exist at all - so an adapter that resolved its record any other way (through
- * {@code getRecord_ID()}, through the row id, through the planning) would compile, would look right, and would
- * attach the photo to, print, reverse or return empties for the WRONG record. Each test below therefore pins the
- * receipt schedule that actually reaches the shared {@link ReceiptScheduleActions}, on both row shapes.
- * <p>
- * The action bodies themselves are NOT re-tested here: they are the receipt-schedule window's, unchanged and
- * shared - {@code ReceiptScheduleActions} is the single copy both windows call.
+ * On this window a process' record resolves as {@code RV_ReceiptDisposition_DeliveryPlanning}, not as
+ * {@code M_ReceiptSchedule}, so an adapter that resolved its record any other way (through
+ * {@code getRecord_ID()}, the row id, the planning) would compile, would look right, and would act on the WRONG
+ * record. Each test pins the receipt schedule that actually reaches {@link ReceiptScheduleActions}.
  */
 class ReceiptDispositionDeliveryPlanningPassThroughProcessTest
 {
@@ -109,14 +103,10 @@ class ReceiptDispositionDeliveryPlanningPassThroughProcessTest
 	}
 
 	/**
-	 * One grid row as the WebUI hands it to a process - the planned branch when a planning id is given.
-	 * <p>
-	 * The row ID follows {@code RV_ReceiptDisposition_DeliveryPlanning}'s own synthetic key and is therefore deliberately NOT the
-	 * receipt schedule id: the planned branch is keyed by the planning, the unplanned one by
-	 * {@code 1000000000 + M_ReceiptSchedule_ID} so the two stay disjoint. That is what makes these tests able to
-	 * catch an adapter that resolved its record from the ROW rather than from the row's
-	 * {@code M_ReceiptSchedule_ID} column - which is exactly what the platform's default record resolution does,
-	 * and the whole reason these adapter classes exist.
+	 * The row ID follows {@code RV_ReceiptDisposition_DeliveryPlanning}'s own synthetic key and is therefore
+	 * deliberately NOT the receipt schedule id (the unplanned branch is keyed {@code 1000000000 +
+	 * M_ReceiptSchedule_ID}) - which is what makes these tests able to catch an adapter that resolved its record
+	 * from the ROW, i.e. what the platform's default record resolution does.
 	 */
 	private static IViewRow row(final int receiptScheduleRepoId, @Nullable final Integer deliveryPlanningRepoId)
 	{
@@ -132,9 +122,8 @@ class ReceiptDispositionDeliveryPlanningPassThroughProcessTest
 	}
 
 	/**
-	 * Puts the given rows in front of the process exactly as the platform does: a view holding them, and a
-	 * selection naming them. Anything less would let a test pass while the adapter read its record from
-	 * somewhere other than the selected row - the very defect these tests exist for.
+	 * Puts the given rows in front of the process exactly as the platform does - a view holding them and a
+	 * selection naming them. Anything less lets a test pass while the adapter reads its record from elsewhere.
 	 */
 	private static <T extends ReceiptDispositionDeliveryPlanningPassThroughProcess> T withSelection(
 			final T process,

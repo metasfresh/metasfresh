@@ -47,31 +47,14 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
- * What every action started from the receipt-disposition delivery-planning window shares: how a selected grid row is turned back
- * into the records it stands for, and the ONE precondition all of them refuse on.
+ * What every action started from the receipt-disposition delivery-planning window shares: how a selected grid
+ * row is turned back into the records it stands for, and the ONE precondition all of them refuse on.
  * <p>
- * {@code RV_ReceiptDisposition_DeliveryPlanning} is a UNION of two branches - a <b>planned</b> row (an active {@code Incoming}
- * delivery planning carrying a receipt schedule) and an <b>unplanned</b> one (a receipt schedule no active
- * planning refers to) - so a selection routinely spans both. Every action therefore needs the same two things
- * from a row: the receipt schedule it is always about, and the planning that plans it when there is one.
- * <p>
- * <b>The precondition lives here, not in each action</b> (owner, 2026-09-02). A planning may hold AT MOST ONE
- * receipt or shipment, and the actions this window adds are NEW callers of the receive path - a guard each
- * action re-implemented would be a guard one of them could forget, and booking a second receipt against one
- * planning is exactly what that would allow. So the rule is asked once, of the whole selection, before anything
- * is produced.
- * <p>
- * Deliberately NOT extending {@code PickingJobScheduleViewBasedProcess}: that class is the shape this one is
- * modelled on, not a base to inherit - it resolves picking-job schedules and injects a picking service this
- * window has no use for.
- * <p>
- * <b>{@link IProcessPrecondition} is declared here, and is load-bearing.</b> {@code ProcessPreconditionChecker}
- * looks a process' preconditions up by {@code IProcessPrecondition.class.isAssignableFrom(processClass)} and,
- * finding nothing, falls through to {@code accept()} - so without the interface every override of
- * {@link #checkPreconditionsApplicable()} below this class is dead code and every action is offered on every
- * row and every selection size, exactly as {@code ViewBasedProcessTemplate}'s own javadoc warns. Declared once
- * on the shared base rather than on each of the ten actions, for the same reason the precondition itself lives
- * here: an action that had to remember it is an action that could forget it.
+ * {@link IProcessPrecondition} is declared HERE, and is load-bearing: {@code ProcessPreconditionChecker} looks
+ * a process' preconditions up by {@code IProcessPrecondition.class.isAssignableFrom(processClass)} and, finding
+ * nothing, falls through to {@code accept()} - so without the interface every {@link
+ * #checkPreconditionsApplicable()} override below this class is dead code and every action is offered on every
+ * row and every selection size.
  */
 public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
@@ -80,9 +63,8 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	@NonNull protected final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 	/**
-	 * Puts a view and a row selection in front of this process the way the platform does, so a unit test can
-	 * assert WHICH records a selected row resolves to - the one thing these adapters own. {@code init} itself is
-	 * {@code protected final} on {@code ViewBasedProcessTemplate} and therefore unreachable from a test class.
+	 * {@code init} is {@code protected final} on {@code ViewBasedProcessTemplate} and therefore unreachable from a
+	 * test class.
 	 */
 	@VisibleForTesting
 	final void initForTesting(@NonNull final ViewAsPreconditionsContext context)
@@ -90,10 +72,6 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 		init(context);
 	}
 
-	/**
-	 * The source ids of every selected row, in the view's own order, one entry per row - planned rows carrying
-	 * their planning id, unplanned ones carrying {@code null} for it.
-	 */
 	protected final ImmutableList<ReceiptScheduleAndDeliveryPlanningId> getReceiptScheduleAndPlanningIds()
 	{
 		return getView().streamByIds(getSelectedRowIds())
@@ -102,12 +80,10 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	}
 
 	/**
-	 * The two ids ONE row stands for. The receipt schedule is read with {@code ofRepoId} - MANDATORY, not
-	 * skipped: both branches of the view select {@code M_ReceiptSchedule}'s own primary key, so a row without one
-	 * cannot legitimately occur, and a later change to the view or to the window's field set that stopped
-	 * exposing the column would otherwise make every selected row vanish silently and the action produce nothing
-	 * while reporting success. The planning id is read with {@code ofRepoIdOrNull} because its absence is a real
-	 * row shape - the unplanned branch - not a fault.
+	 * The receipt schedule is read with {@code ofRepoId} - MANDATORY: both branches of the view select
+	 * {@code M_ReceiptSchedule}'s own primary key, and a view change that stopped exposing the column would
+	 * otherwise make every selected row vanish silently while the action reports success. The planning id is
+	 * {@code ofRepoIdOrNull} because its absence is a real row shape, not a fault.
 	 */
 	@VisibleForTesting
 	static ReceiptScheduleAndDeliveryPlanningId extractReceiptScheduleAndPlanningId(@NonNull final IViewRow row)
@@ -118,12 +94,8 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	}
 
 	/**
-	 * The plannings behind the selected rows, loaded ONCE so the precondition and the execution guard both read
-	 * the same in-memory list instead of firing a query each.
-	 * <p>
-	 * Unplanned rows contribute nothing - they have no planning, and a receipt schedule nobody has planned yet
-	 * carries no state that could refuse. An all-unplanned selection therefore yields
-	 * {@link DeliveryPlanningList#EMPTY} without touching the database.
+	 * Loaded ONCE, so the precondition and the execution guard read the same in-memory list. Unplanned rows
+	 * contribute nothing, so an all-unplanned selection yields {@link DeliveryPlanningList#EMPTY} with no query.
 	 */
 	protected final DeliveryPlanningList getSelectedDeliveryPlannings()
 	{
@@ -137,11 +109,6 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 				: deliveryPlanningService.getProcessedStatePlannings(deliveryPlanningIds);
 	}
 
-	/**
-	 * The shared precondition: accepted unless some planning in the selection is already processed, in which case
-	 * the whole selection is refused and every offending row named. Shown on the disabled button, so the planner
-	 * reads which rows to deselect before pressing anything.
-	 */
 	protected final ProcessPreconditionsResolution checkNoneProcessed(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
 	{
 		return deliveryPlanningService.getReceiveRejectionReason(selectedDeliveryPlannings)
@@ -150,14 +117,9 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	}
 
 	/**
-	 * The runtime backstop of {@link #checkNoneProcessed}, to be called BEFORE the action produces anything: a
-	 * process can be invoked past its precondition, and an action that discovered the problem halfway through
-	 * would leave part of the selection received and part not.
-	 * <p>
-	 * Raises the very message the precondition rejects with, so a planner who reaches this far reads the same
-	 * sentence naming the same rows - the pattern
-	 * {@code ReceiptScheduleDeliveryStopGuard#assertNoneBlocked} sets for the receipt-schedule path, which the
-	 * actions on this window converge with rather than duplicate.
+	 * The runtime backstop of {@link #checkNoneProcessed}, called BEFORE the action produces anything: a process
+	 * can be invoked past its precondition, and discovering the problem halfway through would leave part of the
+	 * selection received and part not.
 	 */
 	protected final void assertNoneProcessed(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
 	{
@@ -168,8 +130,7 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	}
 
 	/**
-	 * The two source ids of the ONE selected row - every action on this window except the multi-row receive is
-	 * single-selection, so a selection of any other size is a programmer error rather than something to iterate.
+	 * Single-selection: every action here except the multi-row receive rejects any other selection size as a programmer error.
 	 */
 	@VisibleForTesting
 	protected final ReceiptScheduleAndDeliveryPlanningId getSelectedSourceIds()
@@ -183,8 +144,8 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	}
 
 	/**
-	 * The receipt schedule of the ONE selected row - the record every pass-through action acts on, read off the
-	 * GRID ROW rather than out of a record reference (which on this window resolves as {@code RV_ReceiptDisposition_DeliveryPlanning}).
+	 * Read off the GRID ROW rather than out of a record reference, which on this window resolves as
+	 * {@code RV_ReceiptDisposition_DeliveryPlanning}.
 	 */
 	protected final I_M_ReceiptSchedule getSelectedReceiptSchedule()
 	{
@@ -192,9 +153,7 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	}
 
 	/**
-	 * As {@link #getSelectedReceiptSchedule()}, but {@code null} when nothing is selected - for the one action
-	 * that is offered on an empty selection too ("Leergut Ausgabe" / "Leergut Rücknahme", which then create an
-	 * empty draft rather than one derived from a row).
+	 * {@code null} when nothing is selected - for the one action that is offered on an empty selection too.
 	 */
 	@Nullable
 	protected final I_M_ReceiptSchedule getSelectedReceiptScheduleOrNull()

@@ -38,11 +38,9 @@ import org.springframework.context.annotation.Profile;
 import java.math.BigDecimal;
 
 /**
- * "HUs annehmen" on the receipt-disposition delivery-planning window: the operator states the packing - which TU, how many CUs per
- * TU, how many TUs, and optionally which LU and how many.
- * <p>
- * Parameters, defaults and validation are those of {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig}, so
- * the same {@code AD_Process_Para} set applies.
+ * "HUs annehmen" on the receipt-disposition delivery-planning window: the operator states the packing.
+ * Parameters, defaults and validation are those of {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig}, so the
+ * same {@code AD_Process_Para} set applies.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveHUs_UsingConfig extends ReceiptDispositionDeliveryPlanningReceiveHUsProcess
