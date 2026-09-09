@@ -132,15 +132,28 @@ public class ADProcessPostProcessService
 		// Refresh all
 		boolean viewInvalidateAllCalled = false;
 
-		if (processExecutionResult.isRefreshAllAfterExecution())
+		final boolean recreateViewSelection = processExecutionResult.isRecreateViewSelectionAfterExecution();
+
+		if (processExecutionResult.isRefreshAllAfterExecution() || recreateViewSelection)
 		{
 			final IView view = viewSupplier.get();
 
 			if (view != null)
 			{ // multiple rows selected
-				view.invalidateAll();
-				ViewChangesCollector.getCurrentOrAutoflush()
-						.collectFullyChanged(view);
+				if (recreateViewSelection)
+				{
+					// Builds the row selection again, so records the process moved out of the view's scope
+					// actually leave it. Resets the row cache and collects the change event by itself, so
+					// it also covers a plain refresh asked for at the same time - hence the branch below
+					// must not run as well.
+					view.invalidateSelection();
+				}
+				else
+				{
+					view.invalidateAll();
+					ViewChangesCollector.getCurrentOrAutoflush()
+							.collectFullyChanged(view);
+				}
 				viewInvalidateAllCalled = true;
 
 				documentsCollection.invalidateDocumentsByWindowId(view.getViewId().getWindowId());

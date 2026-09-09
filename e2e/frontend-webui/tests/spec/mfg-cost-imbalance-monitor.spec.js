@@ -157,14 +157,16 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     allure.epic('E0226: Costing');
     allure.tag('F1500: Costing');
     allure.tag('F1500');
-    allure.story('PP_Order_CloseSelection is a quick action of the cost-imbalance monitor');
+    allure.story('PP_Order_CloseSelection is a quick action of the cost-imbalance monitor and refreshes it in place');
     allure.severity('normal');
     allure.description(
       'The monitor lists completed-but-not-closed manufacturing orders and its tab carries no DocAction ' +
         'field, so a balanced order could not be closed from it at all. Verifies the new ' +
         '"Auswahl schliessen" / "Close selection" quick action end to end: it is offered on this window, ' +
         'running it on the selected order closes it, and the closed order consequently drops out of the ' +
-        'monitor. Also guards the window-scoped demotion of the Issue/Receipt launcher: it is still ' +
+        'monitor in place -- with no reload and no re-navigation, so the assertion covers the view ' +
+        'refresh and not merely the tab filter. Also guards the window-scoped demotion of the ' +
+        'Issue/Receipt launcher: it is still ' +
         'offered here but is no longer the default quick action -- a default action always sorts to the ' +
         'front of the action list, so the launcher not being first proves the demotion in any language.'
     );
@@ -214,6 +216,14 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
       // simply absent here. It is covered by the costing cucumber scenarios.
     });
 
+    // Survives an SPA re-render but not a reload or a re-navigation, so it is what turns the assertions
+    // below into refresh coverage: reading the list back from a freshly opened window would prove only
+    // that the tab's DocStatus='CO' filter excludes a closed order, and would pass either way.
+    const pageLoadMarker = await page.evaluate(() => {
+      window.__pageLoadMarker = Math.random().toString(36);
+      return window.__pageLoadMarker;
+    });
+
     await test.step('Run Close selection', async () => {
       // Running a quick action is two calls: the POST only creates the pinstance, the follow-up
       // /start executes the process. Awaiting the POST would read the result back before it commits.
@@ -222,20 +232,16 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
       await processExecuted;
     });
 
-    // Read back from a FRESH view. That proves the tab's DocStatus='CO' filter excludes the closed
-    // order - and only that: it is NOT evidence that the list already on screen drops the row, and it
-    // would pass either way. It does not drop it: the action's refresh re-reads the rows of the view's
-    // already-materialized selection, and nothing re-creates that selection, so the row stays (with
-    // up-to-date values) until the view is rebuilt. Re-creating it needs the view's
-    // invalidateSelection(), which a plain JavaProcess cannot reach.
-    await MasterWindowPage.goto(COST_IMBALANCE_WINDOW_ID);
-    await MasterWindowPage.expectWindowLoaded();
-    await applyMonitorFilter({ page, documentNo });
-    await expect(page.locator(EMPTY_RESULT)).toBeVisible();
-    await expect(page.locator(TABLE_ROWS).filter({ hasText: documentNo })).toHaveCount(0);
+    await test.step('The closed order leaves the monitor in place, without reloading the page', async () => {
+      // The process asks the view to build its row selection again, so the order it just closed stops
+      // matching the tab and the list the user is looking at drops it on its own.
+      await expect(page.locator(EMPTY_RESULT)).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator(TABLE_ROWS).filter({ hasText: documentNo })).toHaveCount(0);
+      expect(await page.evaluate(() => window.__pageLoadMarker)).toBe(pageLoadMarker);
+    });
 
     console.log(
-      `Manufacturing order ${documentNo} closed via PP_Order_CloseSelection and left the cost-imbalance monitor`
+      `Manufacturing order ${documentNo} closed via PP_Order_CloseSelection and left the cost-imbalance monitor in place`
     );
   });
 

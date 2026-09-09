@@ -162,6 +162,14 @@ public class ProcessExecutionResult
 	 */
 	@Setter @Getter private boolean refreshAllAfterExecution = false;
 
+	/**
+	 * Tells that the view's row selection has to be built again, not merely re-read, because the process
+	 * changed whether its records still belong to the view at all. Off unless a process asks for it.
+	 * Only a view that materializes a selection implements this; on any other one it throws after the
+	 * process has already committed, so set it only on a process that runs on an AD-window view.
+	 */
+	@Setter @Getter private boolean recreateViewSelectionAfterExecution = false;
+
 	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToRefreshAfterExecution = null;
 

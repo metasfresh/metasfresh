@@ -130,6 +130,10 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 	@RunOutOfTrx
 	protected String doIt()
 	{
+		// Closing takes the orders out of a monitor scoped to completed ones, so re-reading their rows is
+		// not enough - the view has to build its row selection again for them to leave it.
+		getResult().setRecreateViewSelectionAfterExecution(true);
+
 		final PPOrderCloseResult result = ppOrderBL.closeOrdersInSelection(getPinstanceId());
 
 		final String summary = "@Processed@ (OK=#" + result.getCountClosed() + ", Error=#" + result.getCountFailed() + ")";
