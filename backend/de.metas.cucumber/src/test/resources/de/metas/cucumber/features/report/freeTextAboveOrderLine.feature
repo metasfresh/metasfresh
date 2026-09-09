@@ -3,7 +3,9 @@
 Feature: Free text above an order line
   A sales order line can carry a free text.
   It prints as a standalone block directly above that line's own article row on the order confirmation.
-  No text means no block: an unset value and a whitespace-only value both print nothing.
+  No text means no block: an unset value prints nothing and a whitespace-only value prints nothing.
+  A blank band emits no glyphs whether it printed or was suppressed.
+  So the whitespace-only scenario also compares vertical positions, where extra space would show up.
   A long text wraps onto as many lines as it needs instead of being clipped.
 
   Background:
@@ -16,20 +18,19 @@ Feature: Free text above an order line
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
     And set sys config boolean value false for sys config de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
-    # keep the archived PDF in AD_Archive.BinaryData instead of on the app server's file system
+    # another feature in this suite flips this flag; pin it so this scenario cannot depend on suite order
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |
       | 1000000    | false                    |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID |
       | wh             |
-    # one product per order line: the article rows are told apart by their product name in the PDF
+    # Value differs from Name on purpose: the article row shows the Name, the line below it the Value
     And metasfresh contains M_Products:
-      | Identifier | Name      |
-      | productA   | AlphaItem |
-      | productB   | BetaItem  |
-      | productC   | GammaItem |
-      | productD   | DeltaItem |
+      | Identifier | Value    | Name      |
+      | productA   | ALPHA-NR | AlphaItem |
+      | productB   | BETA-NR  | BetaItem  |
+      | productC   | GAMMA-NR | GammaItem |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps         |
@@ -44,7 +45,6 @@ Feature: Free text above an order line
       | ppA        | plv                    | productA     | 10.0     | PCE      |
       | ppB        | plv                    | productB     | 10.0     | PCE      |
       | ppC        | plv                    | productC     | 10.0     | PCE      |
-      | ppD        | plv                    | productD     | 10.0     | PCE      |
     # dev-note: pin the payment term, so the order does not depend on the branch's default
     And metasfresh contains C_PaymentTerm
       | Identifier          |
@@ -61,38 +61,85 @@ Feature: Free text above an order line
       | ch_ch_tax  | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
 
   @Id:S27486_10
-  Scenario: The free text of an order line prints above that line on the order confirmation
+  Scenario: A free text prints as the line directly above its own position
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
       | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
-    # WHITESPACE_ONLY is a sentinel: gherkin trims an all-spaces cell to empty, so the value
-    # cannot be written literally -- see C_OrderLine_StepDef
+    # position 10 carries no free text and only serves as the anchor above position 20
     And metasfresh contains C_OrderLines:
-      | Identifier        | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine   |
-      | lineWithText      | order      | productA     | 1          | Bitte gekuehlt liefern |
-      | lineWithBlankText | order      | productB     | 1          | WHITESPACE_ONLY        |
-      | lineWithLongText  | order      | productC     | 1          | Diese Position wird in mehreren Teillieferungen versandt. Bitte die Ware bei Anlieferung sofort auf Vollstaendigkeit pruefen und Abweichungen innerhalb von drei Werktagen melden |
-    # this table has no DescriptionAboveLine column at all, so the column stays NULL on that line
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lineLeadIn | order      | productA     | 1          |
     And metasfresh contains C_OrderLines:
-      | Identifier      | C_Order_ID | M_Product_ID | QtyEntered |
-      | lineWithoutText | order      | productD     | 1          |
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine   |
+      | lineWithText | order      | productB     | 1          | Bitte gekuehlt liefern |
     When the order identified by order is completed
     And The jasper process is run
       | Value            | Record_ID |
       | Auftrag (Jasper) | order     |
-
-    # the text is printed, and it is the line immediately above its own article row
     Then the PDF archived for the record identified by "order" contains text "Bitte gekuehlt liefern"
-    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Bitte gekuehlt liefern" and text "AlphaItem"
+    # nothing between position 10's product number and the block, and none between block and article row
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "Bitte gekuehlt liefern"
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Bitte gekuehlt liefern" and text "BetaItem"
 
-    # A whitespace-only value prints nothing. Two article rows are always separated by exactly one
-    # line -- the earlier position's own ProductDescription -- so 1 is the untouched baseline here,
-    # and a printed block would make it 2. The unset line below is measured the very same way.
-    And in the PDF archived for the record identified by "order", exactly 1 lines appear between text "AlphaItem" and text "BetaItem"
+  @Id:S27486_20
+  Scenario: An unset free text prints no block above its position
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    # neither table carries a DescriptionAboveLine column, so the column stays NULL on both lines
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lineLeadIn | order      | productA     | 1          |
+      | lineUnset  | order      | productB     | 1          |
+    When the order identified by order is completed
+    And The jasper process is run
+      | Value            | Record_ID |
+      | Auftrag (Jasper) | order     |
+    # position 20's article row follows position 10's product number with nothing in between
+    Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "BetaItem"
 
-    # the long text wraps onto further lines instead of being clipped, and its end is still printed
-    And in the PDF archived for the record identified by "order", at least 1 lines appear between text "Diese Position wird" and text "GammaItem"
-    And the PDF archived for the record identified by "order" contains text "drei Werktagen melden"
+  @Id:S27486_30
+  Scenario: A whitespace-only free text prints no block and takes no vertical space
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    # position 20 is whitespace-only; position 30 has no free text at all and is the control
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lineLeadIn | order      | productA     | 1          |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine                 |
+      | lineWithBlank | order      | productB     | 1          | DescriptionAboveLine:WHITESPACE_ONLY |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
+      | lineControl | order      | productC     | 1          |
+    When the order identified by order is completed
+    And The jasper process is run
+      | Value            | Record_ID |
+      | Auftrag (Jasper) | order     |
+    # no text was printed above position 20 ...
+    Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "BetaItem"
+    # ... and position 20 sits as far below its predecessor as the control position 30 does
+    And in the PDF archived for the record identified by "order", the vertical distance from text "ALPHA-NR" to text "BetaItem" equals the distance from text "BETA-NR" to text "GammaItem"
 
-    # an unset value prints nothing either -- same baseline separation as above
-    And in the PDF archived for the record identified by "order", exactly 1 lines appear between text "GammaItem" and text "DeltaItem"
+  @Id:S27486_40
+  Scenario: A long free text wraps onto further lines instead of being clipped
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lineLeadIn | order      | productA     | 1          |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine |
+      | lineWithLongText | order      | productB     | 1          | Diese Position wird in mehreren Teillieferungen versandt. Bitte die Ware bei Anlieferung sofort auf Vollstaendigkeit pruefen und jede Abweichung innerhalb von drei Werktagen schriftlich melden. Die fehlende Menge liefern wir dann als Nachlieferung |
+    When the order identified by order is completed
+    And The jasper process is run
+      | Value            | Record_ID |
+      | Auftrag (Jasper) | order     |
+    # the block starts right below position 10's product number
+    Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "Diese Position"
+    # and it occupies at least three lines before position 20's article row
+    And in the PDF archived for the record identified by "order", at least 2 lines appear between text "Diese Position" and text "BetaItem"
+    # the last word is still on the page, so nothing was clipped off the end
+    And the PDF archived for the record identified by "order" contains text "Nachlieferung"

@@ -131,8 +131,11 @@ public class C_OrderLine_StepDef
 {
 	private static final String COLUMNNAME_PREFIX_ATTRIBUTE = "attribute:";
 
-	/** See {@link #resolveDescriptionAboveLine(String)}. */
-	private static final String DESCRIPTION_ABOVE_LINE_WHITESPACE_ONLY_SENTINEL = "WHITESPACE_ONLY";
+	/**
+	 * See {@link #resolveDescriptionAboveLine(String)}. Namespaced with the column name on purpose: an
+	 * unqualified {@code WHITESPACE_ONLY} would make that word unusable as a real free text.
+	 */
+	private static final String DESCRIPTION_ABOVE_LINE_WHITESPACE_ONLY_SENTINEL = "DescriptionAboveLine:WHITESPACE_ONLY";
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
