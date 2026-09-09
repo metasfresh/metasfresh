@@ -7,6 +7,7 @@ import de.metas.acct.accounts.AccountProvider;
 import de.metas.acct.accounts.AccountProviderFactory;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.DocumentPostMultiRequest;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.IAccountDAO;
@@ -20,8 +21,8 @@ import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.acct.vatcode.IVATCodeDAO;
-import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.acct.vatcode.VATCodeMatchingResponse;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
@@ -470,9 +471,21 @@ public class AcctDocRequiredServicesFacade
 		return warehouseBL.getOrgIdByLocatorRepoId(locatorId);
 	}
 
-	public Optional<VATCode> findVATCode(final VATCodeMatchingRequest request)
+	public Optional<VATCodeMatchingResponse> findVATCode(final VATCodeMatchingRequest request)
 	{
 		return vatCodeDAO.findVATCode(request);
+	}
+
+	public Optional<Boolean> findIsSOTrxByCode(
+			@Nullable final String vatCode,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final TaxId taxId)
+	{
+		if (vatCode == null || vatCode.isEmpty())
+		{
+			return Optional.empty();
+		}
+		return vatCodeDAO.findIsSOTrxByCode(vatCode, acctSchemaId, taxId);
 	}
 
 	public Dimension extractDimensionFromModel(final Object model)
@@ -522,6 +535,7 @@ public class AcctDocRequiredServicesFacade
 		//
 		record.setC_Tax_ID(TaxId.toRepoId(factLine.getTaxId()));
 		record.setVATCode(factLine.getVatCode());
+		record.setVATCodeAmountType(factLine.getVatCodeAmountType() != null ? factLine.getVatCodeAmountType().getCode() : null);
 		//
 		record.setAD_Table_ID(factLine.getDocRecordRef().getAD_Table_ID());
 		record.setRecord_ID(factLine.getDocRecordRef().getRecord_ID());

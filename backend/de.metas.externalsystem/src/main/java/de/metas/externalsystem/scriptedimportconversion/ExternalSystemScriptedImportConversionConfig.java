@@ -24,6 +24,7 @@ package de.metas.externalsystem.scriptedimportconversion;
 
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,10 +39,10 @@ public class ExternalSystemScriptedImportConversionConfig implements IExternalSy
 	@NonNull ExternalSystemScriptedImportConversionConfigId id;
 	@NonNull ExternalSystemParentConfigId parentId;
 	@NonNull String value;
-	@NonNull String endpointName;
 	@NonNull String scriptIdentifier;
 	@NonNull UserId userImportId;
 	@Nullable String description;
+	@NonNull ExternalSystemEndpointId externalSystemEndpointId;
 
 	public static ExternalSystemScriptedImportConversionConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{

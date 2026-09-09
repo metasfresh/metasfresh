@@ -1,16 +1,20 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.externalsystem.ExternalSystemId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -289,5 +293,45 @@ public class PurchaseOrderItem implements PurchaseItem
 	public String getPOReference()
 	{
 		return purchaseCandidate.getPOReference();
+	}
+
+	public boolean isDropShip()
+	{
+		return purchaseCandidate.isDropShip();
+	}
+
+	@Nullable
+	public BPartnerId getDropShipBPartnerId()
+	{
+		return purchaseCandidate.getDropShipBPartnerId();
+	}
+
+	@Nullable
+	public BPartnerLocationId getDropShipLocationId()
+	{
+		return purchaseCandidate.getDropShipLocationId();
+	}
+
+	@Nullable
+	public UserId getDropShipUserId()
+	{
+		return purchaseCandidate.getDropShipUserId();
+	}
+
+	@Nullable
+	public HUPIItemProductId getHuPIItemProductId()
+	{
+		return purchaseCandidate.getHuPIItemProductId();
+	}
+
+	public AttributeSetInstanceId getAttributeSetInstanceId()
+	{
+		return purchaseCandidate.getAttributeSetInstanceId();
+	}
+
+	@Nullable
+	public BigDecimal getQtyEnteredTU()
+	{
+		return purchaseCandidate.getQtyEnteredTU();
 	}
 }

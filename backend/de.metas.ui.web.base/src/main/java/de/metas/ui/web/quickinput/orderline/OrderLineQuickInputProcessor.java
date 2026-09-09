@@ -35,6 +35,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.order.OrderGroupPIInheritanceService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -51,6 +52,7 @@ import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -72,7 +74,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -85,7 +86,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -98,7 +98,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final OrderGroupPIInheritanceService piInheritanceService = new OrderGroupPIInheritanceService();
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
@@ -138,6 +138,11 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.groupTemplate(groupTemplate)
 				.qty(extractQty(quickInput))
 				.createGroup(orderId, contractConditionsId);
+
+		if (groupTemplate.isInheritPackingInstruction())
+		{
+			applyPackingInstructionFromQuickInput(quickInput, group);
+		}
 
 		final HashSet<OrderLineId> newOrderLineIds = new HashSet<>();
 		group.getRegularLines()
@@ -193,6 +198,19 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		return orderLineQuickInput.getQty();
 	}
 
+	private void applyPackingInstructionFromQuickInput(final QuickInput quickInput, final Group group)
+	{
+		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(quickInputModel.getM_HU_PI_Item_Product_ID());
+		if (!HUPIItemProductId.isRegular(piItemProductId))
+		{
+			return;
+		}
+
+		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		piInheritanceService.applyPackingInstructionInheritance(order, group, piItemProductId);
+	}
+
 	private void validateInput(final OrderLineCandidate candidate)
 	{
 		final BPartnerId bpartnerId = candidate.getBpartnerId();
@@ -237,10 +255,13 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final boolean isLUFieldsUsed = QuickInputConstants.isLUFieldsEnabled(soTrx);
 		if (isLUFieldsUsed)
 		{
+			Check.assumeNotNull(quickInputLUQty, "LU quantity shouldn't be null, if Quick Input with LU is used");
 			checkValidQty(IOrderLineQuickInput.COLUMNNAME_QtyLU, quickInputLUQty, orderLineQuickInput);
-			final Optional<I_M_HU_PI_Item> tuPIItem = handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, Objects.requireNonNull(luPIId), Objects.requireNonNull(piItemProductId));
+			final Optional<I_M_HU_PI_Item> tuPIItem = luPIId != null && piItemProductId != null ?
+					handlingUnitsDAO.getTUPIItemForLUPIAndItemProduct(bpartnerId, luPIId, piItemProductId)
+					: Optional.empty();
 			final BigDecimal tuPiItemCapacity = tuPIItem.map(I_M_HU_PI_Item::getQty).orElse(BigDecimal.ONE);
-			quickInputTUQty = Objects.requireNonNull(quickInputLUQty).multiply(tuPiItemCapacity);
+			quickInputTUQty = quickInputLUQty.multiply(tuPiItemCapacity);
 		}
 		else
 		{
@@ -250,7 +271,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(orderLineQuickInput.getM_Product_ID());
 		final UomId uomId = productBL.getStockUOMId(productAndAttributes.getProductId());
-		final Quantity luQty = quickInputLUQty == null ? null : Quantitys.of(quickInputLUQty, uomId);
+		final Quantity luQty = quickInputLUQty == null || luPIId == null ? null : Quantitys.of(quickInputLUQty, uomId);
 
 		return OrderLineCandidate.builder()
 				.orderId(orderId)

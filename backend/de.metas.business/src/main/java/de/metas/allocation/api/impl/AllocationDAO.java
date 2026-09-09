@@ -79,7 +79,7 @@ public class AllocationDAO implements IAllocationDAO
 			final boolean isCreditMemoAdjust)
 	{
 		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-		if (invoice.isPaid())
+		if (invoice.isPaid() || !invoice.isFinancial())
 		{
 			return Money.zero(invoiceCurrencyId);
 		}
@@ -128,9 +128,9 @@ public class AllocationDAO implements IAllocationDAO
 
 	@Cached(cacheName = I_C_AllocationLine.Table_Name + "#By#" + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID + "#retrieveAll")
 		/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
-															 final int allocationHdrId,
-															 final boolean retrieveAll,
-															 final @CacheTrx String trxName)
+		                                                     final int allocationHdrId,
+		                                                     final boolean retrieveAll,
+		                                                     final @CacheTrx String trxName)
 	{
 		final IQueryBuilder<I_C_AllocationLine> builder = queryBL
 				.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
@@ -183,6 +183,10 @@ public class AllocationDAO implements IAllocationDAO
 	@Override
 	public Money retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull final I_C_Invoice invoice, @Nullable final Set<PaymentId> paymentIDsToIgnore)
 	{
+		if (!invoice.isFinancial())
+		{
+			return Money.zero(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		}
 		final InvoiceOpenResult result = retrieveInvoiceOpen(InvoiceOpenRequest.builder()
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.dateColumn(InvoiceOpenRequest.DateColumn.DateTrx)
@@ -229,7 +233,7 @@ public class AllocationDAO implements IAllocationDAO
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		Object[] resultParts = null;
+		final Object[] resultParts = null;
 		try
 		{
 
@@ -264,12 +268,12 @@ public class AllocationDAO implements IAllocationDAO
 					.hasAllocations(hasAllocations)
 					.build();
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			throw new DBException(ex, sql, sqlParams)
 					.setParameter("resultParts", resultParts);
 		}
-		catch (Exception otherEx)
+		catch (final Exception otherEx)
 		{
 			throw new AdempiereException("Cannot determine open amount for " + request, otherEx)
 					.setParameter("sql", sql)
@@ -418,4 +422,22 @@ public class AllocationDAO implements IAllocationDAO
 				.create()
 				.firstOnlyNotNull();
 	}
+
+	@Override
+	public boolean hasActiveAllocationBetween(@NonNull final InvoiceId invoiceId, @NonNull final PaymentId paymentId)
+	{
+		final IQuery<I_C_AllocationHdr> activeHdrs = queryBL.createQueryBuilder(I_C_AllocationHdr.class)
+				.addInArrayFilter(I_C_AllocationHdr.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID, I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, activeHdrs)
+				.create()
+				.anyMatch();
+	}
+
 }

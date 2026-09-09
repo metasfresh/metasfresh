@@ -1,0 +1,4 @@
+Method <org.compiere.server.AdempiereServer.runNow0()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object, java.lang.String)> in (AdempiereServer.java:227)
+Method <org.compiere.server.AdempiereServer.setDateNextRun(java.sql.Timestamp)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object, java.lang.String)> in (AdempiereServer.java:432)
+Method <org.compiere.server.Scheduler$1.run(java.lang.String)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object, java.lang.String)> in (Scheduler.java:167)
+Method <org.compiere.server.Scheduler.saveLogs(de.metas.process.PInstanceId, java.lang.String)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (Scheduler.java:197)

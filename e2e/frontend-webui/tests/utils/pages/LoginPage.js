@@ -33,6 +33,7 @@ export class LoginPage {
 
   /**
    * Perform login with username and password.
+   * Handles role selection when multiple roles are available.
    * @param {Object} credentials
    * @param {string} credentials.username - Username
    * @param {string} credentials.password - Password
@@ -64,9 +65,34 @@ export class LoginPage {
       await submitButton.click();
 
       const response = await responsePromise;
-      const responseBody = await response.json();
+      let responseBody = await response.json();
 
       console.log('Login response:', responseBody);
+
+      // Handle role selection if login is not complete
+      // When loginComplete=false and roles are provided, user must select a role
+      if (responseBody.loginComplete === false && responseBody.roles && responseBody.roles.length > 0) {
+        console.log('Role selection required, clicking Send button...');
+
+        // Wait for role selection UI to be visible
+        await page.waitForTimeout(500);
+
+        // The role is usually pre-selected, just need to click Send
+        const sendButton = page.locator('.btn-meta-success');
+        await sendButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+        // Wait for the second authenticate response
+        const roleResponsePromise = page.waitForResponse(
+          (response) => response.url().includes('/login/authenticate')
+        );
+
+        await sendButton.click();
+
+        const roleResponse = await roleResponsePromise;
+        responseBody = await roleResponse.json();
+
+        console.log('Role selection response:', responseBody);
+      }
 
       // Wait for redirect away from login page
       // Note: url parameter is a URL object, need to convert to string

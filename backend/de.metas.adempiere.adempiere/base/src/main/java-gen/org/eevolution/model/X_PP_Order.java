@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1908409784L;
+	private static final long serialVersionUID = 2126020309L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -725,6 +725,17 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FloatBefored);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setHasCostDifference (final boolean HasCostDifference)
+	{
+		throw new IllegalArgumentException ("HasCostDifference is virtual column");	}
+
+	@Override
+	public boolean isHasCostDifference() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_HasCostDifference);
 	}
 
 	@Override
@@ -1484,5 +1495,17 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Yield);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setIsFixedProductionDate (final boolean IsFixedProductionDate)
+	{
+		set_Value (COLUMNNAME_IsFixedProductionDate, IsFixedProductionDate);
+	}
+
+	@Override
+	public boolean isFixedProductionDate()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedProductionDate);
 	}
 }

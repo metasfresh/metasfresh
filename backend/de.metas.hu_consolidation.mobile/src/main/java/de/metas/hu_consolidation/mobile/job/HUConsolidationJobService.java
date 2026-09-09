@@ -1,6 +1,7 @@
 package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
@@ -26,6 +27,7 @@ public class HUConsolidationJobService
 {
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final PickingJobBPartnerService pickingJobBPartnerService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final HUConsolidationAvailableTargetsFinder availableTargetsFinder;
 	@NonNull private final HUConsolidationTargetCloser targetCloser;
@@ -135,6 +137,7 @@ public class HUConsolidationJobService
 				.jobRepository(jobRepository)
 				.huQRCodesService(huQRCodesService)
 				.pickingSlotService(pickingSlotService)
+				.pickingJobBPartnerService(pickingJobBPartnerService)
 				.jobId(jobId)
 				.pickingSlotId(pickingSlotId)
 				.build()

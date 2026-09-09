@@ -79,6 +79,36 @@ public class M_HU_PI_Item_Product_StepDef
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final TestContext restTestContext;
 
+	/**
+	 * Creates or updates {@link I_M_HU_PI_Item_Product} records.
+	 * Looks up an existing record by (M_Product_ID, M_HU_PI_Item_ID, IsActive, Qty/UOM) before creating a new one.
+	 *
+	 * <h3>Required columns:</h3>
+	 * <ul>
+	 *   <li>{@code Identifier} — step-def identifier for cross-step references</li>
+	 *   <li>{@code M_Product_ID} — product identifier (references M_Product_StepDefData)</li>
+	 *   <li>{@code M_HU_PI_Item_ID} — packing instruction item identifier (references M_HU_PI_Item_StepDefData, or raw ID)</li>
+	 *   <li>{@code Qty} + {@code C_UOM_ID.X12DE355} — quantity per TU and UOM (required unless IsInfiniteCapacity=true)</li>
+	 * </ul>
+	 *
+	 * <h3>Optional columns:</h3>
+	 * <ul>
+	 *   <li>{@code GTIN} — Global Trade Item Number</li>
+	 *   <li>{@code EAN_TU} — EAN code of the TU</li>
+	 *   <li>{@code UPC} — Universal Product Code</li>
+	 *   <li>{@code C_BPartner_ID} — business partner identifier (references C_BPartner_StepDefData)</li>
+	 *   <li>{@code ValidFrom} — valid-from date (default: {@link StepDefConstants#DEFAULT_ValidFrom})</li>
+	 *   <li>{@code ValidTo} — valid-to date</li>
+	 *   <li>{@code IsActive} — active flag (default: true)</li>
+	 *   <li>{@code IsAllowAnyProduct} — allow any product flag (default: false)</li>
+	 *   <li>{@code IsDefaultForProduct} — default for product flag (default: false)</li>
+	 *   <li>{@code IsInfiniteCapacity} — infinite capacity flag (default: false); when true, Qty is set to 0</li>
+	 *   <li>{@code IsOrderInTuUomWhenMatched} — order in TU UOM when matched</li>
+	 *   <li>{@code Name} — display name</li>
+	 *   <li>{@code M_HU_PackagingCode_LU_Fallback_ID} — fallback LU packaging code (references M_HU_PackagingCode_StepDefData)</li>
+	 *   <li>{@code GTIN_LU_PackingMaterial_Fallback} — fallback GTIN for LU packing material</li>
+	 * </ul>
+	 */
 	@Given("metasfresh contains M_HU_PI_Item_Product:")
 	public void metasfresh_contains_m_hu_pi_item_product(@NonNull final DataTable dataTable)
 	{
@@ -105,12 +135,23 @@ public class M_HU_PI_Item_Product_StepDef
 				: null;
 
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
+		final Integer bpartnerIdFilter = tableRow.getAsOptionalIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID)
+				.map(bpIdentifier -> bpIdentifier.lookupNotNullIdIn(bpartnerTable).getRepoId())
+				.orElse(null);
 		final I_M_HU_PI_Item_Product huPiItemProductRecord = huPiItemProductTable.getOptional(identifier)
 				.orElseGet(() -> {
 					final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 							.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, productId)
 							.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemId)
 							.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsActive, active);
+					if (bpartnerIdFilter != null)
+					{
+						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, bpartnerIdFilter);
+					}
+					else
+					{
+						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, null);
+					}
 					if (isInfiniteCapacity)
 					{
 						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsInfiniteCapacity, true);
@@ -132,7 +173,10 @@ public class M_HU_PI_Item_Product_StepDef
 		huPiItemProductRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		huPiItemProductRecord.setIsActive(active);
 		tableRow.getAsOptionalString(COLUMNNAME_GTIN).ifPresent(huPiItemProductRecord::setGTIN);
+		tableRow.getAsOptionalString(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU).ifPresent(huPiItemProductRecord::setEAN_TU);
 		tableRow.getAsOptionalBoolean(COLUMNNAME_IsOrderInTuUomWhenMatched).ifPresent(huPiItemProductRecord::setIsOrderInTuUomWhenMatched);
+		tableRow.getAsOptionalLocalDate(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo)
+				.ifPresent(validTo -> huPiItemProductRecord.setValidTo(TimeUtil.asTimestamp(validTo)));
 
 		huPiItemProductRecord.setIsInfiniteCapacity(isInfiniteCapacity);
 		if (isInfiniteCapacity)

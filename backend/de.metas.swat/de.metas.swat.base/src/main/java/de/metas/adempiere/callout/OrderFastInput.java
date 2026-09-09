@@ -27,7 +27,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.freighcost.FreightCostRule;
@@ -91,6 +91,8 @@ public class OrderFastInput extends CalloutEngine
 
 	private static final CompositeOrderFastInputHandler handlers = new CompositeOrderFastInputHandler(new ProductQtyOrderFastInputHandler());
 
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@VisibleForTesting
 	static final Logger logger = LogManager.getLogger(OrderFastInput.class);
 
@@ -115,7 +117,7 @@ public class OrderFastInput extends CalloutEngine
 		if (order.getC_BPartner_ID() > 0)
 		{
 			final ICalloutRecord calloutRecord = calloutField.getCalloutRecord();
-			if (setShipperId(order, true) && !Check.isEmpty(order.getReceivedVia()) && calloutRecord.dataSave(false))
+			if (setShipperId(order) && !Check.isEmpty(order.getReceivedVia()) && calloutRecord.dataSave(false))
 			{
 				calloutRecord.dataRefresh();
 			}
@@ -140,23 +142,13 @@ public class OrderFastInput extends CalloutEngine
 		return NO_ERROR;
 	}
 
-	private boolean setShipperId(final I_C_Order order, final boolean force)
+	private boolean setShipperId(final I_C_Order order)
 	{
-		if (!force && order.getM_Shipper_ID() > 0)
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		if (bPartnerLocationId != null)
 		{
-			return true;
-		}
-
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
-		if (bpartnerId != null)
-		{
-			// try to set the shipperId using BPartner
-			final ShipperId shipperId = Services.get(IBPartnerDAO.class).getShipperId(bpartnerId);
-			if (shipperId != null)
-			{
-				order.setM_Shipper_ID(shipperId.getRepoId());
-				return true;
-			}
+			orderBL.setShipperId(order);
+			return ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID()) != null;
 		}
 		return false;
 	}
@@ -341,8 +333,6 @@ public class OrderFastInput extends CalloutEngine
 	/**
 	 * Checks if the Weight of the given Product is zero or less and shows a warning if so.
 	 *
-	 * @param product
-	 * @param WindowNo
 	 */
 	void checkWeight(final Set<Integer> productIds, final int windowNo)
 	{

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_PI_Version, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 960875732L;
+	private static final long serialVersionUID = -354333785L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Version (final Properties ctx, final int M_HU_PI_Version_ID, @Nullable final String trxName)
@@ -160,5 +160,28 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * PackageDimensionCalcMethod AD_Reference_ID=542122
+	 * Reference name: PackageDimensionCalcMethod
+	 */
+	public static final int PACKAGEDIMENSIONCALCMETHOD_AD_Reference_ID=542122;
+	/** Strapping = S */
+	public static final String PACKAGEDIMENSIONCALCMETHOD_Strapping = "S";
+	/** Repacking = R */
+	public static final String PACKAGEDIMENSIONCALCMETHOD_Repacking = "R";
+	/** Nesting = N */
+	public static final String PACKAGEDIMENSIONCALCMETHOD_Nesting = "N";
+	@Override
+	public void setPackageDimensionCalcMethod (final @Nullable java.lang.String PackageDimensionCalcMethod)
+	{
+		set_Value (COLUMNNAME_PackageDimensionCalcMethod, PackageDimensionCalcMethod);
+	}
+
+	@Override
+	public java.lang.String getPackageDimensionCalcMethod() 
+	{
+		return get_ValueAsString(COLUMNNAME_PackageDimensionCalcMethod);
 	}
 }

@@ -46,12 +46,36 @@ $P{ExcludeYearEndBooking}
 	<field name="parentvalue2" class="java.lang.String"/>
 	<field name="parentname3" class="java.lang.String"/>
 	<field name="parentvalue3" class="java.lang.String"/>
+	<field name="parentname4" class="java.lang.String"/>
+	<field name="parentvalue4" class="java.lang.String"/>
+	<field name="parentname5" class="java.lang.String"/>
+	<field name="parentvalue5" class="java.lang.String"/>
+	<field name="parentname6" class="java.lang.String"/>
+	<field name="parentvalue6" class="java.lang.String"/>
+	<field name="parentname7" class="java.lang.String"/>
+	<field name="parentvalue7" class="java.lang.String"/>
+	<field name="parentname8" class="java.lang.String"/>
+	<field name="parentvalue8" class="java.lang.String"/>
+	<field name="parentname9" class="java.lang.String"/>
+	<field name="parentvalue9" class="java.lang.String"/>
 	<field name="name" class="java.lang.String"/>
 	<field name="namevalue" class="java.lang.String"/>
 	<field name="accounttype" class="java.lang.String"/>
 	<field name="sameyearsum" class="java.math.BigDecimal"/>
 	<field name="lastyearsum" class="java.math.BigDecimal"/>
 	<field name="eurosaldo" class="java.math.BigDecimal"/>
+	<field name="l9_sameyearsum" class="java.math.BigDecimal"/>
+	<field name="l9_lastyearsum" class="java.math.BigDecimal"/>
+	<field name="l8_sameyearsum" class="java.math.BigDecimal"/>
+	<field name="l8_lastyearsum" class="java.math.BigDecimal"/>
+	<field name="l7_sameyearsum" class="java.math.BigDecimal"/>
+	<field name="l7_lastyearsum" class="java.math.BigDecimal"/>
+	<field name="l6_sameyearsum" class="java.math.BigDecimal"/>
+	<field name="l6_lastyearsum" class="java.math.BigDecimal"/>
+	<field name="l5_sameyearsum" class="java.math.BigDecimal"/>
+	<field name="l5_lastyearsum" class="java.math.BigDecimal"/>
+	<field name="l4_sameyearsum" class="java.math.BigDecimal"/>
+	<field name="l4_lastyearsum" class="java.math.BigDecimal"/>
 	<field name="l3_sameyearsum" class="java.math.BigDecimal"/>
 	<field name="l3_lastyearsum" class="java.math.BigDecimal"/>
 	<field name="l2_sameyearsum" class="java.math.BigDecimal"/>
@@ -215,6 +239,270 @@ $P{ExcludeYearEndBooking}
 				<printWhenExpression><![CDATA[$F{parentname3}!=null]]></printWhenExpression>
 			</band>
 		</groupFooter>
+	</group>
+	<group name="lvl4">
+		<groupExpression><![CDATA[$F{parentvalue4}]]></groupExpression>
+		<groupHeader>
+			<band height="13">
+				<printWhenExpression><![CDATA[$F{parentname4}!=null && !$F{parentvalue4}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="0eac2fd2-a58c-429e-afdd-655ecfb29900">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue4}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="88" y="0" width="259" height="12" uuid="ea651f86-8a3a-47db-8d8f-ec9ecb416456">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname4}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="348" y="0" width="102" height="12" uuid="832fe899-06ed-4cc7-808f-47c9c6e55f58">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l4_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="451" y="0" width="102" height="12" uuid="6a170c02-de90-43a7-acae-15dbee98f929">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l4_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="lvl5">
+		<groupExpression><![CDATA[$F{parentvalue5}]]></groupExpression>
+		<groupHeader>
+			<band height="13">
+				<printWhenExpression><![CDATA[$F{parentname5}!=null && !$F{parentvalue5}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="e8369fa7-485a-457a-9202-485b188e6bc1">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue5}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="88" y="0" width="259" height="12" uuid="7a3bfe42-dcbd-47f5-a299-9e0900bc3565">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname5}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="348" y="0" width="102" height="12" uuid="b7c2d478-afa2-4699-b6f4-3597c20403fb">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l5_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="451" y="0" width="102" height="12" uuid="c89c1d92-70f5-46a1-8968-c9a984f9080f">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l5_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="lvl6">
+		<groupExpression><![CDATA[$F{parentvalue6}]]></groupExpression>
+		<groupHeader>
+			<band height="13">
+				<printWhenExpression><![CDATA[$F{parentname6}!=null && !$F{parentvalue6}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="f87892ec-fd88-4417-b735-9849d9e5e2f4">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue6}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="88" y="0" width="259" height="12" uuid="276564a2-6d14-4314-85ea-be6a86cb627e">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname6}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="348" y="0" width="102" height="12" uuid="db8ca4d0-333c-4626-8dcc-abc40c9573b7">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l6_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="451" y="0" width="102" height="12" uuid="7e1eb3ac-c770-4a70-bc7e-c9412f1bcd32">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l6_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="lvl7">
+		<groupExpression><![CDATA[$F{parentvalue7}]]></groupExpression>
+		<groupHeader>
+			<band height="13">
+				<printWhenExpression><![CDATA[$F{parentname7}!=null && !$F{parentvalue7}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="8c351d8c-425f-4109-bb11-9e418f3e7c42">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue7}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="88" y="0" width="259" height="12" uuid="8539e8de-9478-4bdf-86ce-2b41811b48d6">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname7}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="348" y="0" width="102" height="12" uuid="15ec5fc4-eadf-491d-950b-9c693c365f58">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l7_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="451" y="0" width="102" height="12" uuid="40fa99d7-d67e-4a4e-82ef-5efc9e72a88a">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l7_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="lvl8">
+		<groupExpression><![CDATA[$F{parentvalue8}]]></groupExpression>
+		<groupHeader>
+			<band height="13">
+				<printWhenExpression><![CDATA[$F{parentname8}!=null && !$F{parentvalue8}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="1095beda-b421-46c5-9fd1-38932c0d44dd">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue8}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="88" y="0" width="259" height="12" uuid="cd3cae32-9ed6-405f-9f44-9266e6b4a04a">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname8}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="348" y="0" width="102" height="12" uuid="c0af8886-5648-4f10-a871-87afb95d59a2">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l8_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="451" y="0" width="102" height="12" uuid="fa0d2ed8-fc55-4060-8c43-ad8edc9feefb">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l8_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="lvl9">
+		<groupExpression><![CDATA[$F{parentvalue9}]]></groupExpression>
+		<groupHeader>
+			<band height="13">
+				<printWhenExpression><![CDATA[$F{parentname9}!=null && !$F{parentvalue9}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="44f8303d-96c3-4611-95fe-3cefb6231b5a">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue9}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="88" y="0" width="259" height="12" uuid="9f8c61d0-75f4-4f22-8fdf-7ff0085a5c92">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement>
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname9}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="348" y="0" width="102" height="12" uuid="f19eef3c-ff9c-4c4e-b2d8-8de775d5e4c2">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l9_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="451" y="0" width="102" height="12" uuid="0e2fc1eb-aacd-421d-8e98-b63abb90eb99">
+						<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" fontName="Arial" isBold="true" />
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l9_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
 	</group>
 	<background>
 		<band splitType="Stretch"/>

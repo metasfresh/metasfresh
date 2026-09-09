@@ -37,6 +37,36 @@ import javax.annotation.Nullable;
 @EqualsAndHashCode
 public final class DocumentSaveStatus
 {
+	/**
+	 * Maximum number of chars rendered for {@code reason} inside {@link #toString()} (and inside
+	 * {@link DocumentValidStatus#toString()}, which uses the same cap).
+	 *
+	 * <p>Bounds the toString output so an exception message built from {@code Document.toString()}
+	 * (which embeds save status / valid status) cannot grow exponentially when that message then
+	 * becomes the next {@code reason}. Without the cap each successive error doubles the stored
+	 * reason — easily reaching 100+ MB JSON responses.
+	 *
+	 * <p>5000 chars is a balance: enough headroom for a normal exception message that includes a
+	 * one-level {@code Document{...}} snapshot for debugging, yet small enough that even a fully
+	 * nested toString output stays under ~5 KB and the doubling chain is severed.
+	 */
+	public static final int TOSTRING_REASON_MAX_CHARS = 5000;
+
+	@Nullable
+	static String truncateReasonForToString(@Nullable final ITranslatableString reason)
+	{
+		if (reason == null)
+		{
+			return null;
+		}
+		final String s = String.valueOf(reason);
+		if (s.length() <= TOSTRING_REASON_MAX_CHARS)
+		{
+			return s;
+		}
+		return s.substring(0, TOSTRING_REASON_MAX_CHARS) + "...(+" + (s.length() - TOSTRING_REASON_MAX_CHARS) + " chars)";
+	}
+
 	public static DocumentSaveStatus unknown(boolean isPresentInDatabase)
 	{
 		return builder().hasChangesToBeSaved(true).isPresentInDatabase(isPresentInDatabase).error(false).reason(TranslatableStrings.anyLanguage("not yet checked")).build();
@@ -86,6 +116,13 @@ public final class DocumentSaveStatus
 
 	private final boolean saved; // computed
 
+	/**
+	 * Computed: this save error is a user-fixable business rejection (e.g. a unique-constraint violation),
+	 * not a system/technical fault. Lets {@link DocumentCollection} keep such an error visible to the user
+	 * instead of self-healing it away on the next child-record cache invalidation.
+	 */
+	private final boolean userValidationError;
+
 	@Builder
 	private DocumentSaveStatus(
 			final boolean hasChangesToBeSaved,
@@ -103,6 +140,7 @@ public final class DocumentSaveStatus
 		this.exception = exception;
 
 		this.saved = !this.hasChangesToBeSaved && this.isPresentInDatabase && !this.error && !this.deleted;
+		this.userValidationError = AdempiereException.isUserValidationError(exception);
 	}
 
 	@Override
@@ -115,7 +153,7 @@ public final class DocumentSaveStatus
 				.add("deleted", deleted ? true : null)
 				.add("hasChangesToBeSaved", hasChangesToBeSaved ? true : null)
 				.add("error", error ? true : null)
-				.add("reason", reason)
+				.add("reason", truncateReasonForToString(reason))
 				.toString();
 	}
 

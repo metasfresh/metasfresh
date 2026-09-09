@@ -27,6 +27,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,6 +52,11 @@ public class ShipperTransportationQuery
 	@NonNull @Singular Collection<OrderId> orderIds;
 	@NonNull @Singular Collection<OrderLineId> orderLineIds;
 	@Nullable Boolean processed;
+
+	/**
+	 * Unset matches any direction.
+	 */
+	@Nullable TransportDirection transportDirection;
 
 	public boolean isAny()
 	{

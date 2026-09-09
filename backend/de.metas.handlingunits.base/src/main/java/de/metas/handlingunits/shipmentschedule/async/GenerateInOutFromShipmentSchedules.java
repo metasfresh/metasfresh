@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
@@ -22,6 +23,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackagePa
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.logging.LogManager;
@@ -58,6 +60,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	// Services
 	private static final Logger logger = LogManager.getLogger(GenerateInOutFromShipmentSchedules.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 	private final PickingJobScheduleService pickingJobScheduleService = SpringContextHolder.instance.getBean(PickingJobScheduleService.class);
@@ -206,8 +209,22 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		// FIXME: find a better solution. If nothing else, then "split" the undelivered remainder of a partially delivered schedule off into a new schedule (we do that with ICs too).
 		final TableRecordReferenceSet recordRefs = queueDAO.retrieveQueueElementRecordRefs(getQueueWorkPackageId(), skipAlreadyProcessedItems);
 
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = recordRefs.getRecordIdsByTableName(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId);
+		ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = recordRefs.getRecordIdsByTableName(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId);
 		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = recordRefs.getRecordIdsByTableName(I_M_Picking_Job_Schedule.Table_Name, PickingJobScheduleId::ofRepoId);
+
+		// Guard against stale QtyToDeliver: check if QtyPickList already includes
+		// draft-shipment allocations from a prior workpackage (duplicate trigger race condition).
+		final ImmutableSet<ShipmentScheduleId> schedulesWithDraftAllocations =
+				shipmentScheduleAllocDAO.getScheduleIdsWithDraftShipmentAllocations(shipmentScheduleIds);
+		if (!schedulesWithDraftAllocations.isEmpty())
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"Skipping {} schedule(s) that already have draft-shipment allocations in QtyPickList "
+							+ "(stale QtyToDeliver, likely duplicate trigger): {}",
+					schedulesWithDraftAllocations.size(), schedulesWithDraftAllocations);
+
+			shipmentScheduleIds = Sets.difference(shipmentScheduleIds, schedulesWithDraftAllocations).immutableCopy();
+		}
 
 		return pickingJobScheduleService.getShipmentScheduleAndJobSchedulesCollection(shipmentScheduleIds, jobScheduleIds);
 	}
@@ -227,11 +244,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		pickingJobScheduleService.markAsProcessed(schedules.getJobScheduleIds());
 
-		final HashSet<ShipmentScheduleId> shipmentScheduleIdsToClose = new HashSet<>();
-		shipmentScheduleIdsToClose.addAll(schedules.getShipmentScheduleIdsWithoutJobSchedules());
-		shipmentScheduleIdsToClose.addAll(pickingJobScheduleService.getShipmentScheduleIdsWithAllJobSchedulesProcessedOrMissing(schedules.getShipmentScheduleIdsWithJobSchedules()));
-
-		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIdsToClose);
+		// we exclude the ones with pickingJobSchedules, as they might be split onto multiple workplaces,
+		// and it shouldn't be closed after the first one is done
+		shipmentScheduleBL.closeShipmentSchedules(schedules.getShipmentScheduleIdsWithoutJobSchedules());
 	}
 
 }

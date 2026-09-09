@@ -38,9 +38,11 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
+import org.adempiere.warehouse.WarehouseId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -81,6 +83,7 @@ public final class OLCandFactory
         final PaymentTermId paymentTermId = olCandBL.getPaymentTermId(params, orderDefaults, olCandRecord);
         final PricingSystemId pricingSystemId = olCandBL.getPricingSystemId(olCandRecord, params, orderDefaults);
         final ShipperId shipperId = olCandBL.getShipperId(params, orderDefaults, olCandRecord);
+        final WarehouseId warehouseId = olCandBL.getWarehouseId(olCandRecord, orderDefaults);
         final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
         final Quantity qtyItemCapacity = olCandEffectiveValuesBL.getQtyItemCapacity_Effective(olCandRecord);
         final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
@@ -110,6 +113,7 @@ public final class OLCandFactory
 				.freightCostRule(freightCostRule)
 				.invoiceRule(invoiceRule)
                 .shipperId(shipperId)
+                .warehouseId(warehouseId)
                 .paymentRule(paymentRule)
                 .paymentTermId(paymentTermId)
                 .salesRepId(salesRepId)
@@ -124,7 +128,11 @@ public final class OLCandFactory
                 .phone(olCandRecord.getPhone())
                 .presetDateShipped(presetDateShipped)
                 .presetDateInvoiced(presetDateInvoiced)
-				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()));
+				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
+                .promotionCodeId(PromotionCodeId.ofRepoIdOrNull(olCandRecord.getC_PromotionCode_ID()))
+                .promotionCode2Id(PromotionCodeId.ofRepoIdOrNull(olCandRecord.getC_PromotionCode2_ID()))
+                .isWithoutCharge(olCandRecord.isWithoutCharge())
+                .reason(olCandRecord.getReason());
 
         final boolean useDateCandidate = sysConfigBL.getBooleanValue(SYSCONFIG_USE_DATE_CANDIDATE_AS_DATE_ORDERED, false, olCandRecord.getAD_Client_ID(), olCandRecord.getAD_Org_ID());
         if (useDateCandidate)

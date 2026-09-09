@@ -95,7 +95,7 @@ public class HU2PackingItemsAllocator
 	private final PackingItemsMap packingItems;
 	private final OnOverDelivery onOverDelivery;
 
-	private ImmutableList<I_M_HU> _pickFromHUs;
+	private final ImmutableList<I_M_HU> _pickFromHUs;
 	private final IAllocationDestination _packToDestination;
 	private final boolean _qtyToPackEnforced;
 
@@ -544,7 +544,7 @@ public class HU2PackingItemsAllocator
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
 				.shipmentSchedule(shipmentSchedule)
 				.qtyPicked(CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU))
-				.tuOrVHU(pickFromVHU)
+				.hu(pickFromVHU)
 				.huContext(_huContext)
 				.anonymousHuPickedOnTheFly(false)
 				.build());
@@ -585,7 +585,7 @@ public class HU2PackingItemsAllocator
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
 				.shipmentSchedule(shipmentSchedulesSupplier.getShipmentScheduleById(packedPart.getShipmentScheduleId()))
 				.qtyPicked(CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huReceived))
-				.tuOrVHU(huReceived)
+				.hu(huReceived)
 				.huContext(_huContext)
 				.anonymousHuPickedOnTheFly(false)
 				.build());

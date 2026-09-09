@@ -39,7 +39,7 @@ public class JsonResponseBPartnerCompositeUpsertItem
 {
 	@ApiModelProperty(position = 10)
 	@JsonInclude(Include.NON_NULL)
-	JsonResponseUpsertItem responseBPartnerItem;
+	JsonResponseBPartnerUpsertItem responseBPartnerItem;
 
 	@ApiModelProperty(position = 20)
 	@JsonInclude(Include.NON_EMPTY)
@@ -56,7 +56,7 @@ public class JsonResponseBPartnerCompositeUpsertItem
 	@Builder
 	@JsonCreator
 	public JsonResponseBPartnerCompositeUpsertItem(
-			@JsonProperty("responseBPartnerItem") @Nullable final JsonResponseUpsertItem responseBPartnerItem,
+			@JsonProperty("responseBPartnerItem") @Nullable final JsonResponseBPartnerUpsertItem responseBPartnerItem,
 			@JsonProperty("responseLocationItems") @Singular final List<JsonResponseUpsertItem> responseLocationItems,
 			@JsonProperty("responseContactItems") @Singular final List<JsonResponseUpsertItem> responseContactItems,
 			@JsonProperty("responseBankAccountItems") @Singular final List<JsonResponseUpsertItem> responseBankAccountItems)

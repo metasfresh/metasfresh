@@ -216,6 +216,11 @@ public class DocTypeDAO implements IDocTypeDAO
 			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_IsDefault, query.getDefaultDocType());
 		}
 
+		if (query.getIsPartialInvoice() != null)
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_IsPartialInvoice, query.getIsPartialInvoice());
+		}
+
 		if (!Check.isEmpty(query.getName(), true))
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, query.getName());

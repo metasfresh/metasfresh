@@ -245,6 +245,7 @@ public class MediatedOrderFactoryTest
 
 		//currency
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setDescription("EUR");
 		saveRecord(currency);
 
 		//order

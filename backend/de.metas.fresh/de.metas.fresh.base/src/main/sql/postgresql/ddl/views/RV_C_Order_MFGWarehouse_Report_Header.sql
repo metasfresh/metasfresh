@@ -14,7 +14,8 @@ SELECT
 	report.M_Warehouse_ID,
 	report.PP_Plant_ID,
 	o.C_BPartner_ID,
-	o.DatePromised
+	o.DatePromised,
+	o.email
 FROM
 	C_Order_MFGWarehouse_Report report
 	INNER JOIN C_Order o on (report.C_Order_ID=o.C_Order_ID) AND o.isActive = 'Y'

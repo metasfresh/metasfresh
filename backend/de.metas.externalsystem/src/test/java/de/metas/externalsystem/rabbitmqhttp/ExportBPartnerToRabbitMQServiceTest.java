@@ -27,17 +27,15 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemConfigTestUtil;
 import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
-import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.organization.OrgId;
-import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupRepository;
 import org.adempiere.test.AdempiereTestHelper;
@@ -57,7 +55,7 @@ import java.util.Optional;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExportBPartnerToRabbitMQServiceTest
 {
@@ -74,7 +72,7 @@ public class ExportBPartnerToRabbitMQServiceTest
 
 		AdempiereTestHelper.get().init();
 
-		exportBPartnerToRabbitMQService = new ExportBPartnerToRabbitMQService(ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+		exportBPartnerToRabbitMQService = new ExportBPartnerToRabbitMQService(ExternalSystemConfigRepository.newInstanceForUnitTesting(),
 																			  new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 																					  new DataExportAuditLogRepository(),
 																			  new DataExportAuditRepository(),

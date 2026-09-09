@@ -62,6 +62,24 @@ export class RawWidget extends PureComponent {
     this.mounted = false;
   }
 
+  componentDidUpdate(prevProps) {
+    // Reset cachedValue when the field value changes from an external source
+    // (PATCH response, modal sync via mapDataToState, etc.) but NOT from the
+    // user's own typing. When the user is actively editing, isFocused is true
+    // and the value change comes from their handleChange → updatePropertyValue.
+    if (
+      !this.state.isFocused &&
+      this.props.widgetData &&
+      this.props.widgetData[0] &&
+      prevProps.widgetData &&
+      prevProps.widgetData[0] &&
+      JSON.stringify(this.props.widgetData[0].value) !==
+        JSON.stringify(prevProps.widgetData[0].value)
+    ) {
+      this.resetCachedValue();
+    }
+  }
+
   focus = () => {
     const { rawWidget } = this;
 
@@ -185,9 +203,18 @@ export class RawWidget extends PureComponent {
 
     listenOnKeysFalse && listenOnKeysFalse();
 
+    // Mark the widget focused synchronously (like `focus()` does). Otherwise, on the
+    // single-click "type to edit" path, the first keystroke's value change is processed
+    // while isFocused is still false, so componentDidUpdate misreads the user's own typing
+    // as an external change and resets cachedValue to it — which makes the on-blur change
+    // detection (shouldPatch) conclude nothing changed and skip the PATCH, silently dropping
+    // the edit (most visible on single-token values such as a one-digit quantity).
+    this.setState({ isFocused: true });
+
+    // Defer only the parent focus callback, to avoid re-entrancy during the focus event.
     setTimeout(() => {
       if (this.mounted) {
-        this.setState({ isFocused: true }, () => handleFocus && handleFocus());
+        handleFocus && handleFocus();
       }
     }, 0);
   };

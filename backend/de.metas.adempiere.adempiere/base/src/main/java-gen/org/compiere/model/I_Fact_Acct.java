@@ -1670,6 +1670,29 @@ public interface I_Fact_Acct
     public static final String COLUMNNAME_VATCode = "VATCode";
 
 	/**
+	 * Set VAT Code Amount Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setVATCodeAmountType (java.lang.String VATCodeAmountType);
+
+	/**
+	 * Get VAT Code Amount Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVATCodeAmountType();
+
+    /** Column definition for VATCodeAmountType */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct, Object> COLUMN_VATCodeAmountType = new org.adempiere.model.ModelColumn<>(I_Fact_Acct.class, "VATCodeAmountType", null);
+    /** Column name VATCodeAmountType */
+    public static final String COLUMNNAME_VATCodeAmountType = "VATCodeAmountType";
+
+	/**
 	 * Set UserElementString1.
 	 *
 	 * <br>Type: String

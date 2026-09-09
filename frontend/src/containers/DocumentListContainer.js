@@ -28,9 +28,11 @@ import {
   deleteTable,
   deselectTableRows,
   updateGridTableData,
+  updateTableSelection,
 } from '../actions/TableActions';
 import {
   setListId,
+  setListSelected,
   setPagination as setListPagination,
   setSorting as setListSorting,
 } from '../actions/ListActions';
@@ -566,6 +568,8 @@ class DocumentListContainer extends Component {
               headerProperties,
             });
           }
+
+          this.restoreCachedSelection(id);
         }
       })
       .catch((e) => {
@@ -611,6 +615,42 @@ class DocumentListContainer extends Component {
         this.setState({ panelsState: GEO_PANEL_STATES[1] });
       }
     });
+  };
+
+  /**
+   * @method restoreCachedSelection
+   * @summary Restore previously selected row after navigating back from detail view.
+   * Only restores if the cached selection matches the current window and view.
+   */
+  restoreCachedSelection = (viewId) => {
+    const {
+      windowId,
+      isModal,
+      listSelectedRow,
+      setListSelected,
+      updateTableSelection,
+    } = this.props;
+
+    if (
+      !listSelectedRow ||
+      listSelectedRow.windowType !== windowId ||
+      listSelectedRow.viewId !== viewId
+    ) {
+      return;
+    }
+
+    const tableId = getTableId({ windowId, viewId });
+
+    updateTableSelection({
+      id: tableId,
+      selection: [listSelectedRow.rowId],
+      windowId,
+      viewId,
+      isModal,
+    });
+
+    // Clear the cached selection so it's not reused on fresh navigation
+    setListSelected(null, null, null);
   };
 
   /**
@@ -688,6 +728,7 @@ class DocumentListContainer extends Component {
       setListPagination,
       setListId,
       requestRedirect,
+      setListSelected,
     } = this.props;
 
     if (isModal) {
@@ -701,6 +742,7 @@ class DocumentListContainer extends Component {
       setListPagination(page, windowId);
       setListSorting(sort, windowId);
       setListId(viewData.viewId, windowId);
+      setListSelected(id, viewData.viewId, windowId);
     }
   };
 
@@ -812,6 +854,8 @@ export default connect(
     setListPagination,
     setListSorting,
     setListId,
+    setListSelected,
+    updateTableSelection,
     showIncludedView,
     updateRawModal,
     deselectTableRows,

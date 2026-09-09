@@ -7,10 +7,11 @@ import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStep
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { expectErrorToast } from '../../utils/common';
+import { expectErrorToast, VERY_SLOW_ACTION_TIMEOUT } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
-import { expect } from '@playwright/test';
 import { SelectPickTargetLUScreen } from '../../utils/screens/picking/ReopenLUScreen';
+import { ConfirmActivityErrorPanel } from '../../utils/components/ConfirmActivityErrorPanel';
+import { expect } from '@playwright/test';
 import { InventoryJobsListScreen } from '../../utils/screens/inventory/InventoryJobsListScreen';
 import { InventoryJobScreen } from '../../utils/screens/inventory/InventoryJobScreen';
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
@@ -20,8 +21,17 @@ const createMasterdata = async ({
                                     allowCompletingPartialPickingJob = false,
                                     shipOnCloseLU = false,
                                     salesOrdersQty = 12,
+                                    shipperConfig = null,
                                     extraSysconfigs,
                                 } = {}) => {
+    const shippers = shipperConfig ? {
+        "SHP": {
+            name: "DHL Mock",
+            gateway: "dhl",
+            dhlConfig: shipperConfig,
+        }
+    } : undefined;
+
     return await Backend.createMasterdata({
         language,
         request: {
@@ -38,6 +48,7 @@ const createMasterdata = async ({
                     allowCompletingPartialPickingJob: allowCompletingPartialPickingJob ?? false,
                 }
             },
+            shippers,
             bpartners: { "BP1": {} },
             warehouses: {
                 "wh": {},
@@ -58,6 +69,7 @@ const createMasterdata = async ({
                 "SO1": {
                     bpartner: 'BP1',
                     warehouse: 'wh',
+                    shipper: shipperConfig ? 'SHP' : undefined,
                     datePromised: '2025-03-01T00:00:00.000+02:00',
                     lines: [{ product: 'P1', qty: salesOrdersQty, piItemProduct: 'TU' }]
                 }
@@ -118,7 +130,10 @@ test('Simple picking test', async ({ page }) => {
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU is not yet closed
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            // The picked LU carries the consignee (bpartner + delivery location) stamped at pick time.
+            // BP1 is declared without an explicit location, so bpartnerLocation resolves to its single
+            // default ship-to via the _singleBPLocationI fallback (same identifier as the bpartner).
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -135,7 +150,7 @@ test('Simple picking test', async ({ page }) => {
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU everything is shipped now
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -327,6 +342,11 @@ test.describe('Picking Job Completion', () => {
                         }
                     }
                 }
+            },
+            // The partially-picked LU still carries the consignee stamped at pick time (BP1 has no
+            // explicit location → single default ship-to via the _singleBPLocationI fallback).
+            hus: {
+                lu1: { huStatus: 'S', storages: { P1: '8 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
@@ -358,6 +378,121 @@ test.describe('Picking Job Completion', () => {
             qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
         });
         await PickingJobScreen.complete()
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('Network failure on complete shows retry panel; Retry then succeeds', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');
+        allure.story('Picking job completion recovers from network flake');
+        allure.severity('normal');
+
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+
+        const confirmationRoute = '**/userWorkflows/wfProcess/**/userConfirmation';
+        await test.step('Block userConfirmation to simulate a network failure', async () => {
+            await page.route(confirmationRoute, route => route.abort('failed'));
+        });
+
+        await PickingJobScreen.completeExpectingNetworkError();
+
+        await test.step('Release the block and retry', async () => {
+            await page.unroute(confirmationRoute);
+        });
+        await ConfirmActivityErrorPanel.clickRetry();
+        await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    });
+
+    // Regression guard for flaky-test registry case 05 (recreate_shipment_after_void.spec.js): the
+    // ORDINARY complete() must recover on its own from a single slow/lost confirmation response — the
+    // real cause of the complete->jobs-list flake — without the caller doing anything special. Here the
+    // FIRST userConfirmation is aborted at the network layer (the same signal a timed-out response
+    // produces: the inline retry panel), then released; settleCompleteToJobsList must tap Retry itself
+    // and land on the jobs list. Distinct from the test above, which drives the retry manually.
+    //
+    // noinspection JSUnusedLocalSymbols
+    test('complete() recovers on its own from a transient confirmation network failure', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');
+        allure.story('Picking job completion recovers from network flake');
+        allure.severity('normal');
+
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+
+        const confirmationRoute = '**/userWorkflows/wfProcess/**/userConfirmation';
+        let failedOnce = false;
+        await test.step('Fail ONLY the first userConfirmation, then let the retry through', async () => {
+            await page.route(confirmationRoute, async (route) => {
+                if (!failedOnce) {
+                    failedOnce = true;
+                    await route.abort('failed');
+                } else {
+                    await route.continue();
+                }
+            });
+        });
+
+        // complete() must ride out the first failure via its own bounded Retry and reach the jobs list.
+        await PickingJobScreen.complete();
+        expect(failedOnce, 'the confirmation route should have fired (first attempt failed)').toBe(true);
+
+        await page.unroute(confirmationRoute);
+    });
+
+    // noinspection JSUnusedLocalSymbols
+    test('Cancel on retry panel hides it and leaves the job resumable', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');
+        allure.story('Picking job completion recovers from network flake');
+        allure.severity('normal');
+
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+
+        const confirmationRoute = '**/userWorkflows/wfProcess/**/userConfirmation';
+        await page.route(confirmationRoute, route => route.abort('failed'));
+
+        await PickingJobScreen.completeExpectingNetworkError();
+        await ConfirmActivityErrorPanel.clickCancel();
+        await ConfirmActivityErrorPanel.waitForPanelDetached();
+
+        // Clean up the route interception so it doesn't affect follow-on steps if the test is extended later.
+        await page.unroute(confirmationRoute);
     });
 
 });
@@ -399,7 +534,9 @@ test('Ship on close LU', async ({ page }) => {
             pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because the current target LU is not yet closed
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-                lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+                // The picked LU carries the consignee stamped at pick time (BP1 has no explicit
+                // location → single default ship-to via the _singleBPLocationI fallback).
+                lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
@@ -419,7 +556,7 @@ test('Ship on close LU', async ({ page }) => {
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU was shipped after LU target was closed
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -573,7 +710,12 @@ test('Unpick wrong HU, repick correct one', async ({ page }) => {
 // Scan a non-existent HU QR code → error toast → verify screen still functional → pick real HU → complete.
 //
 // noinspection JSUnusedLocalSymbols
-test('Scan invalid HU QR code and recover', async ({ page }) => {
+test('Scan invalid HU QR code and recover', async ({ page }, testInfo) => {
+    // Extended timeout: this test does error toast recovery + full pick cycle.
+    // Since GRAI validation was added to picking (gh#23119), the total time
+    // occasionally exceeds the default 120s on slower CI runners.
+    testInfo.setTimeout(180_000);
+
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
@@ -1119,6 +1261,203 @@ test('Partial pick blocked, recover by picking remaining', async ({ page }) => {
     });
     await PickingJobScreen.complete();
 });
+
+// noinspection JSUnusedLocalSymbols
+test('Pick and ship with DHL label (via mock)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.tag('F00230.1');
+    allure.story('DHL label generation during picking (QA scenario 11)');
+    allure.severity('critical');
+
+    // Setup with DHL shipper pointing to WireMock
+    // CI: http://wiremock:8080 (Docker internal), Local: http://localhost:18080
+    const wiremockUrl = process.env.WIREMOCK_BASE_URL || 'http://localhost:18080';
+    const masterdata = await createMasterdata({
+        shipOnCloseLU: true,
+        shipperConfig: {
+            apiUrl: wiremockUrl,
+            applicationID: 'mock_app',
+            applicationToken: 'mock_token',
+            accountNumber: '22222222220104',
+            username: 'mock_user',
+            signature: 'mock_sig',
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    // Pick all 3 TUs
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        isScanDirectly: true,
+        expectQtyEntered: '3',
+    });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+    // While the job is still open, the picked target LU already carries the consignee (bpartner +
+    // delivery location), stamped on the shipping target at pick time. BP1 is declared without an
+    // explicit location, so bpartnerLocation resolves to its single default ship-to via the
+    // _singleBPLocationI fallback (same identifier as the bpartner). The pickings block binds the
+    // lu1 alias (via M_LU_HU_ID) AND gates on the shipment schedule becoming valid, so the hus read
+    // below is not a pre-commit race.
+    await Backend.expect({
+        title: 'DHL picking: picked target LU carries consignee before close',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                    }
+                }
+            }
+        },
+        hus: {
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+
+    // Close LU — this triggers DHL label generation via WireMock
+    await PickingJobScreen.closeTargetLU();
+
+    // Complete the job
+    await PickingJobScreen.complete();
+
+    // Verify shipment was created and LU shipped
+    await Backend.expect({
+        title: 'DHL picking: shipment created, LU shipped',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' }]
+                    }
+                }
+            }
+        },
+        hus: {
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('DHL + catch weight picking (QA scenario 14)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230.1: MobileUI Order-based Picking');
+    allure.tag('F00230.1');
+    allure.story('DHL label + catch weight combined picking (QA scenario 14)');
+    allure.severity('critical');
+
+    // Setup: catch weight product with DHL shipper
+    const wiremockUrl = process.env.WIREMOCK_BASE_URL || 'http://localhost:18080';
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    allowPickingAnyHU: true,
+                    createShipmentPolicy: 'CL',
+                    shipOnCloseLU: true,
+                    pickTo: ['LU_TU'],
+                    allowCompletingPartialPickingJob: true,
+                }
+            },
+            shippers: {
+                SHP: {
+                    name: 'DHL CatchWeight',
+                    gateway: 'dhl',
+                    dhlConfig: {
+                        apiUrl: wiremockUrl,
+                        applicationID: 'mock_app',
+                        applicationToken: 'mock_token',
+                        accountNumber: '22222222220104',
+                        username: 'mock_user',
+                        signature: 'mock_sig',
+                    }
+                }
+            },
+            bpartners: { BP1: {} },
+            warehouses: { wh: {} },
+            pickingSlots: { slot1: {} },
+            products: {
+                P1: {
+                    uom: 'PCE',
+                    uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
+                    prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }],
+                },
+            },
+            packingInstructions: {
+                PI: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                HU1: { product: 'P1', warehouse: 'wh', qty: 100, weightNet: 10, lotNo: 'lot1', bestBeforeDate: '2031-11-23' },
+            },
+            salesOrders: {
+                SO1: {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    shipper: 'SHP',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }],
+                },
+            },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    // Pick with catch weight — manual input mode, pick 1 CU
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        switchToManualInput: true,
+        qtyEntered: '1',
+        catchWeight: '0.789',
+        qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
+    });
+
+    // Close LU — triggers DHL label via WireMock
+    await PickingJobScreen.closeTargetLU();
+
+    // Complete
+    await PickingJobScreen.complete();
+
+    // Verify shipment created with catch weight
+    await Backend.expect({
+        title: 'DHL + catch weight: shipment created',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '1 PCE', qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1', catchWeight: '0.789 KGM' }]
+                    }
+                }
+            }
+        },
+    });
+});
+
 
 //
 // Scan HU containing a different product than the picking job expects:

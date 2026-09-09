@@ -224,6 +224,20 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- ZUGFeRD E2E: Mustang validator for asserting factur-x.xml embedding in Mailpit PDFs -->
+        <dependency>
+            <groupId>org.mustangproject</groupId>
+            <artifactId>validator</artifactId>
+            <version>2.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.einvoice</groupId>
+            <artifactId>de.metas.einvoice.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

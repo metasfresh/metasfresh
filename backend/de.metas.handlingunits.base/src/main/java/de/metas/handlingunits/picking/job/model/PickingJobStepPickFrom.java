@@ -84,6 +84,16 @@ public class PickingJobStepPickFrom
 
 	public PickingJobStepPickFrom withUnPickedEvent(@NonNull PickingJobStepUnpickInfo unpickEvent)
 	{
-		return withPickedTo(pickedTo != null ? pickedTo.removing(unpickEvent.getUnpickedHUs()) : null);
+		if (pickedTo == null)
+		{
+			return withPickedTo(null);
+		}
+
+		// First reduce the (split) boundary HU's qty, then remove the fully-unpicked HUs.
+		final PickingJobStepPickedTo reducedPickedTo = unpickEvent.getHuToReduce() != null && unpickEvent.getReducedQtyPicked() != null
+				? pickedTo.reducingHuQty(unpickEvent.getHuToReduce(), unpickEvent.getReducedQtyPicked())
+				: pickedTo;
+
+		return withPickedTo(reducedPickedTo.removing(unpickEvent.getUnpickedHUs()));
 	}
 }

@@ -41,6 +41,7 @@ public class C_OrderLine
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IHUPackingAwareBL packingAwareBL = Services.get(IHUPackingAwareBL.class);
 
 	@Init
 	public void setupCallouts()
@@ -103,6 +104,30 @@ public class C_OrderLine
 		}
 	}
 
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU })
+	public void updateQtyCUFromQtyTU(final I_C_OrderLine orderLine)
+	{
+		if (InterfaceWrapperHelper.isValueChanged(orderLine, I_C_OrderLine.COLUMNNAME_QtyEntered))
+		{
+			return; // QtyEntered is the driver; add_M_HU_PI_Item_Product handles CU→TU
+		}
+		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
+		packingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU().intValue()); // mirrors callout; intValue() matches callout truncation
+		packingAwareBL.setQtyLUFromQtyTU(packingAware);
+		orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+
+		// QtyEnteredTU is in assertChangeAllowed's ignoreColumnsChanged, so a TU-only edit does not
+		// pass through that receipt-exists guard. Enforce the same QtyEntered >= QtyDelivered
+		// invariant here for received purchase lines, against the QtyEntered we just recomputed.
+		if (orderLine.getQtyDelivered().signum() > 0
+				&& !orderBL.isSalesOrder(OrderId.ofRepoId(orderLine.getC_Order_ID())))
+		{
+			validateQtyEntered(orderLine);
+		}
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
 			ignoreColumnsChanged = {
 					I_C_OrderLine.COLUMNNAME_Updated,
@@ -120,7 +145,8 @@ public class C_OrderLine
 					I_C_OrderLine.COLUMNNAME_DateInvoiced,
 					I_C_OrderLine.COLUMNNAME_QtyEnteredInPriceUOM,
 					I_C_OrderLine.COLUMNNAME_IsDeliveryClosed,
-					I_C_OrderLine.COLUMNNAME_PackDescription })
+					I_C_OrderLine.COLUMNNAME_PackDescription,
+					de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU })
 	public void assertChangeAllowed(@NonNull final I_C_OrderLine orderLine)
 	{
 		// dev-note: do not impact the performance, check only lines with some quantity delivered
@@ -134,7 +160,9 @@ public class C_OrderLine
 		{
 			validateQtyEntered(orderLine);
 		}
-		else
+		// the lock is a policy for user edits only; background writers (e.g. the invoicing run updating
+		// the order line) must not be aborted by it
+		else if (InterfaceWrapperHelper.isUIAction(orderLine))
 		{
 			throw new AdempiereException(ERR_ORDER_MODIFICATION_NOT_ALLOWED_RECEIPT_EXISTS)
 					.markAsUserValidationError();
@@ -156,6 +184,7 @@ public class C_OrderLine
 	private void updateQtyPacks(final de.metas.handlingunits.model.I_C_OrderLine orderLine)
 	{
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
+		packingAwareBL.setQtyTU(packingAware);
+		packingAwareBL.setQtyLUFromQtyTU(packingAware);
 	}
 }

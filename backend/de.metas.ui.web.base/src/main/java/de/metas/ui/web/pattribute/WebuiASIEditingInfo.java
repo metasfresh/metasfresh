@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -54,10 +55,11 @@ public class WebuiASIEditingInfo
 				//
 				.attributeSetInstanceId(info.getAttributeSetInstanceId() != null ? info.getAttributeSetInstanceId() : AttributeSetInstanceId.NONE)
 				.productId(info.getProductId())
-				.soTrx(info.getSOTrx())
+				.soTrx(info.getSoTrx())
 				//
 				.callerTableName(info.getCallerTableName())
-				.callerAdColumnId(info.getCallerColumnId())
+				.callerColumnName(info.getCallerColumnName())
+				.callerColumnId(info.getCallerColumnId())
 				//
 				.attributes(info.getAvailableAttributes());
 	}
@@ -103,7 +105,8 @@ public class WebuiASIEditingInfo
 	@NonNull
 	SOTrx soTrx;
 	String callerTableName;
-	int callerAdColumnId;
+	String callerColumnName;
+	AdColumnId callerColumnId;
 
 	@NonNull
 	@Singular

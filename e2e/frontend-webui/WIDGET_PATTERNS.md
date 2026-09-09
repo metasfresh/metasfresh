@@ -28,29 +28,140 @@ The metasfresh Web UI uses a **layout-driven architecture**. Window layouts (fet
 
 **Rendered HTML Pattern**:
 ```html
-<div class="lookup-widget-wrapper">
-  <div class="input-dropdown input-primary">
-    <input class="input-dropdown-focused input-editable-field" />
+<!-- Container ID uses field name: #lookup_{FIELD_NAME} -->
+<div id="lookup_C_BPartner_ID" class="raw-lookup-wrapper">
+  <div class="lookup-widget-wrapper lookup-widget-wrapper-bcg">
+    <div class="input-dropdown input-block">
+      <div class="input-editable">
+        <input class="input-field js-input-field font-weight-semibold" type="text" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dropdown list (appears when typing/clicking) -->
+<div class="input-dropdown-list">
+  <div class="input-dropdown-list-option ignore-react-onclickoutside"
+       onMouseDown="handleSelect">
+    Caption Text
   </div>
 </div>
 ```
 
-**Playwright Selectors**:
-- **By field name attribute**: `input[name="C_BPartner_ID"]` (if available)
-- **By placeholder**: `input[placeholder*="Business Partner"]`
-- **By parent class**: `.lookup-widget-wrapper input`
-- **By role**: `role=combobox`
+**CRITICAL: The dropdown options use `onMouseDown` NOT `onClick`!**
 
-**Interaction Pattern**:
+The React component `SelectionDropdown.js` handles selection via:
 ```javascript
-// Type to search
-await page.locator('.lookup-widget-wrapper input').fill('partner name');
+// Source: frontend/src/components/widget/SelectionDropdown.js:224-226
+handleMouseDown(option) {
+  this.props.onSelect(option, true);  // true = isMouseEvent
+}
+```
 
-// Wait for dropdown
-await page.locator('.input-dropdown-list').waitFor();
+**Playwright Selectors**:
+- **Container by field ID** (RECOMMENDED): `#lookup_C_BPartner_ID`
+- **Input field**: `#lookup_C_BPartner_ID input.input-field`
+- **Dropdown list**: `.input-dropdown-list`
+- **Dropdown options**: `.input-dropdown-list-option`
+- **Loading spinner**: `#lookup_C_BPartner_ID .rotating`
 
-// Select first item
-await page.locator('.input-dropdown-list-option').first().click();
+**Working Interaction Pattern**:
+```javascript
+// CORRECT PATTERN - Verified against frontend source code
+static async selectLookupValue(fieldName, searchText, optionText) {
+  const page = getPage();
+
+  // 1. Locate the input within the lookup container
+  const lookupInput = page.locator(`#lookup_${fieldName} input.input-field`);
+  await lookupInput.waitFor({ state: 'visible', timeout: 10000 });
+
+  // 2. Click to focus the field
+  await lookupInput.click();
+
+  // 3. Wait for any initial loading to complete
+  await page.locator(`#lookup_${fieldName} .rotating`).waitFor({
+    state: 'detached',
+    timeout: 10000,
+  }).catch(() => {});
+
+  // 4. Clear and type search text
+  await lookupInput.fill('');
+  await page.waitForTimeout(200);
+  await lookupInput.fill(searchText);
+
+  // 5. Wait for dropdown to load (debounce + API call)
+  await page.waitForTimeout(500);
+  await page.locator(`#lookup_${fieldName} .rotating`).waitFor({
+    state: 'detached',
+    timeout: 10000,
+  }).catch(() => {});
+
+  // 6. Wait for dropdown options to appear
+  const dropdownList = page.locator('.input-dropdown-list');
+  await dropdownList.waitFor({ state: 'visible', timeout: 10000 });
+
+  // 7. Find the specific option (use filter for partial match)
+  const option = page.locator('.input-dropdown-list-option')
+    .filter({ hasText: optionText })
+    .first();
+
+  // 8. Verify option exists
+  const optionCount = await option.count();
+  if (optionCount === 0) {
+    const allOptions = await page.locator('.input-dropdown-list-option').allTextContents();
+    throw new Error(`Option "${optionText}" not found. Available: ${allOptions.join(', ')}`);
+  }
+
+  // 9. Click the option (triggers onMouseDown → handleSelect)
+  await option.click();
+
+  // 10. Wait for dropdown to close
+  await dropdownList.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+
+  // 11. Press Tab to confirm and trigger save
+  await page.keyboard.press('Tab');
+
+  // 12. Wait for save to complete
+  await page.waitForTimeout(300);
+  await page.locator('.rotating, .indicator-pending').waitFor({
+    state: 'detached',
+    timeout: 10000,
+  }).catch(() => {});
+
+  // 13. Wait for network idle (auto-save)
+  await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+}
+```
+
+**Common Pitfalls**:
+1. **Not waiting for spinner**: The lookup makes API calls - always wait for `.rotating` to detach
+2. **Clicking too fast**: Allow 500ms debounce after typing before clicking option
+3. **Not pressing Tab**: Selection commits on blur - Tab ensures the save triggers
+4. **Wrong selector scope**: Dropdown list is NOT inside `#lookup_X`, it's a separate element
+
+**Composite Lookups (BPartner + Location + Contact)**:
+Some lookup fields are "composed" - multiple related fields in one widget.
+**IMPORTANT**: Each sub-field has its OWN container ID, NOT indexed wrappers:
+```html
+<!-- Each sub-field gets its own #lookup_{fieldName} container -->
+<div class="input-dropdown-container lookup-wrapper">
+  <div id="lookup_C_BPartner_ID" class="raw-lookup-wrapper">
+    <div class="lookup-widget-wrapper">...</div>
+  </div>
+  <div id="lookup_C_BPartner_Location_ID" class="raw-lookup-wrapper">
+    <div class="lookup-widget-wrapper">...</div>
+  </div>
+  <div id="lookup_AD_User_ID" class="raw-lookup-wrapper">
+    <div class="lookup-widget-wrapper">...</div>
+  </div>
+</div>
+```
+
+For composed lookups, target by the specific field's container ID:
+```javascript
+const partnerInput = page.locator('#lookup_C_BPartner_ID input.input-field');
+const locationInput = page.locator('#lookup_C_BPartner_Location_ID input.input-field');
+const contactInput = page.locator('#lookup_AD_User_ID input.input-field');
 ```
 
 ### Date Widget
@@ -105,20 +216,51 @@ await page.locator('.input-date input').fill('2025-01-15');
     <input readonly />
   </div>
 </div>
+
+<!-- Dropdown options include language-independent data-testid -->
+<div class="input-dropdown-list">
+  <div class="input-dropdown-list-option" data-testid="option-1000009">
+    Zahlungsausgang
+  </div>
+</div>
 ```
 
 **Playwright Selectors**:
 - **By parent class**: `.input-dropdown input`
 - **Click to open dropdown**: `.input-dropdown`
+- **By ID (RECOMMENDED)**: `[data-testid="option-{ID}"]` - Language-independent!
 
 **Interaction Pattern**:
 ```javascript
 // Click to open dropdown
 await page.locator('.input-dropdown').click();
 
-// Select from list
+// RECOMMENDED: Select by ID (language-independent)
+// Use constants from DocTypeIds.js, WindowIds.js, etc.
+import { DOCTYPE_AP_PAYMENT } from '../utils/DocTypeIds';
+await page.locator(`[data-testid="option-${DOCTYPE_AP_PAYMENT}"]`).click();
+
+// FALLBACK: Select by text (language-dependent - avoid in multi-language tests)
 await page.locator('.input-dropdown-list-option').filter({ hasText: 'Main Warehouse' }).click();
 ```
+
+**Language-Independent Selection Pattern**:
+
+For dropdown options that need to work across languages (German, English, etc.),
+use the `data-testid` attribute which contains the record ID:
+
+```javascript
+// Document Type selection example
+import { DOCTYPE_AP_PAYMENT, DOCTYPE_AR_RECEIPT } from '../utils/DocTypeIds';
+
+// For vendor payments (Zahlungsausgang / AP Payment)
+await page.locator(`[data-testid="option-${DOCTYPE_AP_PAYMENT}"]`).click();
+
+// For customer receipts (Zahlungseingang / AR Receipt)
+await page.locator(`[data-testid="option-${DOCTYPE_AR_RECEIPT}"]`).click();
+```
+
+See `tests/utils/DocTypeIds.js` for document type constants and their meanings.
 
 ### Text Widget
 
@@ -443,11 +585,12 @@ await page.locator('.input-dropdown-list-option').first().waitFor();
 
 ### 4. Multiple Lookup Fields
 
-Composed lookups (e.g., partner + location + contact) have multiple inputs:
+Composed lookups (e.g., partner + location + contact) have separate container IDs:
 ```javascript
-// Target specific field within composed lookup
-const partnerInput = page.locator('.lookup-widget-wrapper').nth(0).locator('input');
-const locationInput = page.locator('.lookup-widget-wrapper').nth(1).locator('input');
+// Each sub-field has its own container ID - use specific IDs, NOT indices
+const partnerInput = page.locator('#lookup_C_BPartner_ID input.input-field');
+const locationInput = page.locator('#lookup_C_BPartner_Location_ID input.input-field');
+const contactInput = page.locator('#lookup_AD_User_ID input.input-field');
 ```
 
 ## Resources

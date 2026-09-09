@@ -1,3 +1,7 @@
+@import 'variables';
+
+$serialno-extra-orange: #e67e22;
+
 .get-qty-dialog {
 
   .table-container {
@@ -11,23 +15,132 @@
       tbody {
         tr {
           th {
-            min-width: 38vw !important;
+            // Sized to the label, not the longest scanned value: a fixed share of the
+            // narrow handheld width so the label column gets room, but capped so the value
+            // column (qty input, date, lot, weight) keeps usable width.
+            width: 45%;
 
             text-align: left !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            // Wrap the full label onto multiple lines instead of clipping it — the longer
+            // German captions ("Mindesthaltbarkeitsdatum", "Gewicht/Fanggewicht") otherwise
+            // overflowed the old nowrap+ellipsis cell and showed as "efore" / "g".
+            // Use break-word (not "anywhere"): "anywhere" also collapses the cell's min-content
+            // width, letting this 45% column shrink and break the long German words at arbitrary
+            // points; break-word breaks a too-long word only when needed and keeps the column at
+            // its 45%, so the labels wrap at "/" and word boundaries rather than mid-word. hyphens
+            // adds clean hyphenation where the document language supports it.
+            white-space: normal;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            vertical-align: middle;
           }
 
           td {
             text-align: right;
             white-space: pre-wrap;
+            vertical-align: middle;
 
             input {
               text-align: right
             }
           }
         }
+      }
+    }
+  }
+
+  // Multi-serial cell: "X of N" count + scanned-serial chips + full-width scan button, stacked.
+  .serialNo-scanned {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  // Serial-no scan sub-view: scanner on top, then count + chips + Done (not vertically centered —
+  // the live multi-scan accumulates chips below the scanner).
+  .serialNo-scan-view {
+    .barcode-scanner {
+      width: 100%;
+    }
+  }
+
+  // "X of N scanned" progress; extras (beyond N) flagged in orange — same convention as GRAI.
+  .serialNo-count {
+    text-align: center;
+    font-weight: bold;
+    padding: 0.4rem 0;
+  }
+
+  .serialNo-count-extra {
+    color: $serialno-extra-orange;
+    font-weight: normal;
+  }
+
+  // Scanned-serial chips — mirror the GRAI chip list (vertical, removable, rtl-ellipsis on overflow).
+  .serialNo-chip-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .serialNo-chip {
+    display: flex;
+    align-items: center;
+    background-color: rgba($base-mf-green, 0.1);
+    border: 1px solid $base-mf-green;
+    border-radius: 20px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    color: #333;
+
+    .serialNo-chip-text {
+      flex: 1;
+      min-width: 0;
+      margin-right: 0.4rem;
+      display: flex;
+      white-space: nowrap;
+
+      // leading part shrinks + ellipsises; trailing 4 chars stay pinned (middle truncation)
+      .serialNo-chip-text-head {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .serialNo-chip-text-tail {
+        flex: 0 0 auto;
+      }
+    }
+
+    .serialNo-chip-remove {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.1);
+      border: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      line-height: 1;
+      padding: 0;
+      color: #666;
+
+      &:active {
+        background-color: rgba($red, 0.2);
+        color: $red;
+      }
+    }
+
+    &--extra {
+      background-color: rgba($serialno-extra-orange, 0.1);
+      border-color: $serialno-extra-orange;
+
+      .serialNo-chip-remove:active {
+        background-color: rgba($serialno-extra-orange, 0.2);
+        color: $serialno-extra-orange;
       }
     }
   }

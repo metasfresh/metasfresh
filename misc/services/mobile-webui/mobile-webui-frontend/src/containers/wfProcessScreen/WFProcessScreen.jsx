@@ -195,15 +195,41 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
   }
 };
 
+//
+//
+//
+//
+//
+
+const getHeaderProperties = (wfProcess) => wfProcess?.headerProperties?.entries ?? [];
+
 const getPropsFromState = ({ state, wfProcessId }) => {
   const wfProcess = getWfProcess(state, wfProcessId);
-
   return {
     parentUrl: wfProcess?.parent?.url,
-    headerProperties: wfProcess?.headerProperties?.entries ?? [],
+    headerProperties: getHeaderProperties(wfProcess),
     activities: wfProcess ? getActivitiesInOrder(wfProcess) : [],
     isAllowAbort: !!wfProcess?.isAllowAbort,
   };
 };
+
+//
+//
+//
+//
+//
+
+export const useWFProcessHeaders = ({ wfProcessId }) => {
+  return useSelector((state) => {
+    const wfProcess = getWfProcess(state, wfProcessId);
+    return getHeaderProperties(wfProcess);
+  }, shallowEqual);
+};
+
+//
+//
+//
+//
+//
 
 export default WFProcessScreen;

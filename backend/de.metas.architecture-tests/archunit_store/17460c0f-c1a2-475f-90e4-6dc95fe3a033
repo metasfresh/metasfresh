@@ -1,0 +1,4 @@
+Field <de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest$CreateEDIDesadvPackItemRequestBuilder.bestBeforeDate> has raw type java.sql.Timestamp in (CreateEDIDesadvPackItemRequest.java:0)
+Field <de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest.bestBeforeDate> has raw type java.sql.Timestamp in (CreateEDIDesadvPackItemRequest.java:0)
+Field <de.metas.edi.api.impl.pack.EDIDesadvPack$EDIDesadvPackItem$EDIDesadvPackItemBuilder.bestBeforeDate> has raw type java.sql.Timestamp in (EDIDesadvPack.java:0)
+Field <de.metas.edi.api.impl.pack.EDIDesadvPack$EDIDesadvPackItem.bestBeforeDate> has raw type java.sql.Timestamp in (EDIDesadvPack.java:0)

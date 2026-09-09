@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -11,10 +12,12 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MOrderLine;
@@ -61,6 +64,8 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(OrderId orderId);
 
+	Set<ShipmentScheduleId> retrieveUnprocessedIdsByShipperId(@NonNull final ShipperId shipperId);
+
 	/**
 	 * @return the shipment schedule entries that refer to given record
 	 */
@@ -77,9 +82,12 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 * <b>IMPORTANT:</b> even if a shipment schedule is locked (by a <code>T_Lock</code>) record, then that schedule is still retrieved and its <code>M_SipmentSchedule_Recompute</code> record is
 	 * marked with the given <code>adPinstanceId</code>.
 	 *
+	 * @param maxToProcess bounds the underlying tagging to whole products (see {@link IShipmentScheduleInvalidateRepository#markAllToRecomputeOutOfTrx(PInstanceId, QueryLimit)});
+	 *                      the number of schedules actually retrieved can therefore exceed {@code maxToProcess} by up to one product's worth of schedules.
+	 *                      {@link QueryLimit#NO_LIMIT} keeps the previous unbounded behavior.
 	 * @return the {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
-	List<OlAndSched> retrieveInvalid(PInstanceId pinstanceId);
+	List<OlAndSched> retrieveInvalid(PInstanceId pinstanceId, QueryLimit maxToProcess);
 
 	void setIsDiplayedForProduct(ProductId productId, boolean displayed);
 

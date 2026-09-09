@@ -50,6 +50,10 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.isCaptureCatchWeightAtReceipt(OptionalBoolean.ofBoolean(request.getIsCaptureCatchWeightAtReceipt()));
 		}
+		if (request.getIsAllowReceiveWithoutPackingItem() != null)
+		{
+			newConfigBuilder.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofBoolean(request.getIsAllowReceiveWithoutPackingItem()));
+		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
 		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
@@ -62,6 +66,7 @@ class MobileConfigManufacturingCommand
 				.isAllowFinishedGoodsReceiveToTU(newConfig.getIsAllowFinishedGoodsReceiveToTU().toBooleanOrNull())
 				.isSkipFinishedGoodsReceiveTargetStep(newConfig.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanOrNull())
 				.isCaptureCatchWeightAtReceipt(newConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
+				.isAllowReceiveWithoutPackingItem(newConfig.getIsAllowReceiveWithoutPackingItem().toBooleanOrNull())
 				.build();
 	}
 

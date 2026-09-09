@@ -290,3 +290,15 @@ export function leftTrim(str) {
 export const isBlank = (str) => {
   return !str || str.length === 0 || str.trim().length === 0;
 };
+
+/**
+ * If `promise` is thenable, call `callback` after it resolves (both on success and failure).
+ * Otherwise call `callback` synchronously.
+ */
+export const doThen = (promise, callback) => {
+  if (promise && typeof promise.then === 'function') {
+    promise.then(callback, callback);
+  } else {
+    callback();
+  }
+};

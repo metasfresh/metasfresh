@@ -67,7 +67,7 @@ public class JsonLine
 	@JsonProperty("Loadmeter")
 	Integer loadmeter;
 
-	@JsonProperty("GoodsType")
+	@JsonProperty("GoodsTypeID")
 	Integer goodsTypeID;
 
 	@JsonProperty("GoodsTypeName")
@@ -89,13 +89,16 @@ public class JsonLine
 	String recycleTypeName;
 
 	@JsonProperty("LineUnits")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<JsonLineUnit> lineUnits;
 
 	@JsonProperty("Pkgs")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
 	List<JsonPackage> pkgs;
 
 	@JsonProperty("References")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Singular
 	List<JsonReference> references;
 }

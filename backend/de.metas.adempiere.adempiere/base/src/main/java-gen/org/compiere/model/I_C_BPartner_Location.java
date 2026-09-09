@@ -97,6 +97,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
 
 	/**
+	 * Set Attention.
+	 * Attention, door code or additional mandatory information for the shipping label (max. 30 characters)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAttention (@Nullable java.lang.String Attention);
+
+	/**
+	 * Get Attention.
+	 * Attention, door code or additional mandatory information for the shipping label (max. 30 characters)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAttention();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Attention = new ModelColumn<>(I_C_BPartner_Location.class, "Attention", null);
+	String COLUMNNAME_Attention = "Attention";
+
+	/**
 	 * Set Partner Name.
 	 *
 	 * <br>Type: String
@@ -116,6 +139,27 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_BPartner_Location.class, "BPartnerName", null);
 	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
+	 * Set Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName2 (@Nullable java.lang.String BPartnerName2);
+
+	/**
+	 * Get Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName2();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_BPartnerName2 = new ModelColumn<>(I_C_BPartner_Location.class, "BPartnerName2", null);
+	String COLUMNNAME_BPartnerName2 = "BPartnerName2";
 
 	/**
 	 * Set Business Partner.
@@ -370,6 +414,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_GLN = "GLN";
 
 	/**
+	 * Set GLN-GCP Length.
+	 * Length of the GCP (GS1 Company Prefix) in the GLN
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGLN_GCPLength (int GLN_GCPLength);
+
+	/**
+	 * Get GLN-GCP Length.
+	 * Length of the GCP (GS1 Company Prefix) in the GLN
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getGLN_GCPLength();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_GLN_GCPLength = new ModelColumn<>(I_C_BPartner_Location.class, "GLN_GCPLength", null);
+	String COLUMNNAME_GLN_GCPLength = "GLN_GCPLength";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -488,7 +555,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDefaultVisitorAddress(boolean IsDefaultVisitorAddress);
+	void setIsDefaultVisitorAddress (boolean IsDefaultVisitorAddress);
 
 	/**
 	 * Get Default Visitor Address.
@@ -615,6 +682,27 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsPayFrom = new ModelColumn<>(I_C_BPartner_Location.class, "IsPayFrom", null);
 	String COLUMNNAME_IsPayFrom = "IsPayFrom";
+
+	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (@Nullable java.lang.String IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	@Nullable java.lang.String getIsPreAdviceRequired();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_BPartner_Location.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
 
 	/**
 	 * Set Remit-To Address.
@@ -999,6 +1087,102 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxID = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxID", null);
 	String COLUMNNAME_VATaxID = "VATaxID";
+
+	/**
+	 * Set VAT-ID Last Checked On.
+	 * Point in time of the most recent VAT-ID check (request or response).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDCheckedAt (@Nullable java.sql.Timestamp VATaxIDCheckedAt);
+
+	/**
+	 * Get VAT-ID Last Checked On.
+	 * Point in time of the most recent VAT-ID check (request or response).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getVATaxIDCheckedAt();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxIDCheckedAt = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxIDCheckedAt", null);
+	String COLUMNNAME_VATaxIDCheckedAt = "VATaxIDCheckedAt";
+
+	/**
+	 * Set VAT-ID Check Log.
+	 * Log of individual VAT-ID online check attempts against VIES.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxID_CheckLog_ID (int VATaxID_CheckLog_ID);
+
+	/**
+	 * Get VAT-ID Check Log.
+	 * Log of individual VAT-ID online check attempts against VIES.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getVATaxID_CheckLog_ID();
+
+	@Nullable org.compiere.model.I_VATaxID_CheckLog getVATaxID_CheckLog();
+
+	void setVATaxID_CheckLog(@Nullable org.compiere.model.I_VATaxID_CheckLog VATaxID_CheckLog);
+
+	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_VATaxID_CheckLog> COLUMN_VATaxID_CheckLog_ID = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxID_CheckLog_ID", org.compiere.model.I_VATaxID_CheckLog.class);
+	String COLUMNNAME_VATaxID_CheckLog_ID = "VATaxID_CheckLog_ID";
+
+	/**
+	 * Set VAT-ID Last Attempted On.
+	 * Point in time of the most recent VAT-ID check attempt, regardless of outcome (internal scheduling only).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDLastAttemptedAt (@Nullable java.sql.Timestamp VATaxIDLastAttemptedAt);
+
+	/**
+	 * Get VAT-ID Last Attempted On.
+	 * Point in time of the most recent VAT-ID check attempt, regardless of outcome (internal scheduling only).
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getVATaxIDLastAttemptedAt();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxIDLastAttemptedAt = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxIDLastAttemptedAt", null);
+	String COLUMNNAME_VATaxIDLastAttemptedAt = "VATaxIDLastAttemptedAt";
+
+	/**
+	 * Set VAT-ID Check Status.
+	 * Result of the VAT-ID check.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setVATaxIDStatus (java.lang.String VATaxIDStatus);
+
+	/**
+	 * Get VAT-ID Check Status.
+	 * Result of the VAT-ID check.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getVATaxIDStatus();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_VATaxIDStatus = new ModelColumn<>(I_C_BPartner_Location.class, "VATaxIDStatus", null);
+	String COLUMNNAME_VATaxIDStatus = "VATaxIDStatus";
 
 	/**
 	 * Set Visitors Address.

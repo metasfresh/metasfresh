@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { page, step, SLOW_ACTION_TIMEOUT } from "../../common";
+import { page, SLOW_ACTION_TIMEOUT, step } from "../../common";
 import { expect } from '@playwright/test';
 import { InventoryJobScreen } from './InventoryJobScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';

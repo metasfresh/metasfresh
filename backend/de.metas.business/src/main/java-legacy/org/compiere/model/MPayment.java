@@ -284,15 +284,19 @@ public final class MPayment extends X_C_Payment
 				throw new AdempiereException("@NotFound@: @C_BPartner_ID@");
 			}
 		}
-		// Prepayment: No charge and order or project (not as acct dimension)
+		// Prepayment: no charge and (order, or project without invoice, or proforma invoice).
+		// Proforma_Invoice_ID covers the reversal case where C_Order_ID/C_Invoice_ID are cleared
+		// but the payment must remain a prepayment.
 		if (newRecord
 				|| is_ValueChanged("C_Charge_ID") || is_ValueChanged("C_Invoice_ID")
-				|| is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID"))
+				|| is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID")
+				|| is_ValueChanged("Proforma_Invoice_ID"))
 		{
 			setIsPrepayment(getC_Charge_ID() == 0
 					&& getC_BPartner_ID() != 0
 					&& (getC_Order_ID() != 0
-					|| (getC_Project_ID() != 0 && getC_Invoice_ID() == 0)));
+					|| (getC_Project_ID() != 0 && getC_Invoice_ID() == 0)
+					|| getProforma_Invoice_ID() > 0));
 			// metas: commented - Write off amount must not be set to 0.
 			/*
 			 * if (isPrepayment()) { if (newRecord || is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID")) { setWriteOffAmt(Env.ZERO); setDiscountAmt(Env.ZERO); setIsOverUnderPayment(false);

@@ -10,12 +10,16 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 // Self-contained guard: a dead deep-link still redirects home.
 //
-// The upstream sibling suite ApplicationLayout.bounceHome.test.js CANNOT LOAD on these branches: it
+// The sibling suite ApplicationLayout.bounceHome.test.js cannot load on the hotfix/release branches
+// this fix originated on (soft_panda_hotfix, soft_panda_release, deep_tundra_release): it
 // jest.mocks apps/picking/ShelfLifeConfirmDialogHost, a module that only exists further upstream, so the
-// whole suite dies with "Cannot find module" and reports `Tests: 0 total`, so it cannot be met by citing
-// it. This file therefore pins the same two behaviours here, and must stay loadable on these branches:
-// do NOT add an import or a jest.mock for anything outside containers/applicationRoot/,
-// reducers/wfProcesses/ and actions/WorkflowActions.
+// whole suite dies there with "Cannot find module" and reports `Tests: 0 total`, and the criterion could
+// not be met by citing it. This file therefore pins the same two behaviours independently, and must stay
+// loadable on every branch it reaches: do NOT add an import or a jest.mock for anything outside
+// containers/applicationRoot/, reducers/wfProcesses/ and actions/WorkflowActions.
+//
+// On new_dawn_uat that module DOES exist, so the sibling suite loads and passes here — the two suites
+// deliberately overlap while this fix propagates. Do not delete either on the assumption the other is dead.
 //
 // Both halves of the guarantee live below:
 //
@@ -66,7 +70,16 @@ jest.mock('../../../reducers/headers', () => ({
 }));
 
 // Non-fullscreen layout (the real WF screens render the #WFProcessScreen container the e2e gate waits on).
-jest.mock('../../../apps', () => ({ isApplicationFullScreen: () => false }));
+jest.mock('../../../apps', () => ({
+  isApplicationFullScreen: () => false,
+  // Upstream branches mount apps/picking/ShelfLifeConfirmDialogHost inside ApplicationLayout, and its
+  // selector reads getApplicationState from this module. Stub it here rather than jest.mock-ing the
+  // host itself: the host does not exist on the hotfix/release branches, and mocking a missing module
+  // kills the whole suite with "Cannot find module" (which is exactly what happened to the sibling
+  // ApplicationLayout.bounceHome.test.js). src/apps/index.js exists on every branch, so this stays
+  // loadable everywhere.
+  getApplicationState: () => undefined,
+}));
 
 jest.mock('../../../utils/ui_trace/useUITraceLocationChange', () => ({
   useUITraceLocationChange: jest.fn(),

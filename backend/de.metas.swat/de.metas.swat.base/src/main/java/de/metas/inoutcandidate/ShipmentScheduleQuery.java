@@ -66,6 +66,7 @@ public class ShipmentScheduleQuery
 	boolean fromCompleteOrderOrNullOrder;
 	boolean orderByOrderId;
 	boolean onlyNonZeroReservedQty;
+	@Nullable Boolean isScheduledForPicking;
 	@Nullable LocalDate preparationDate;
 
 	/**

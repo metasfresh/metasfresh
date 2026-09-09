@@ -5,7 +5,7 @@ import { expect } from "@playwright/test";
 
 export const DistributionJobsListFiltersScreen = {
     waitForScreen: async () => await test.step('Wait for distribution jobs list filters screen', async () => {
-        await page.locator('#WFLaunchersFiltersScreen').waitFor();
+        await page.locator('#WFLaunchersFiltersScreen').waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await DistributionJobsListFiltersScreen.waitLoadComplete();
     }),
 

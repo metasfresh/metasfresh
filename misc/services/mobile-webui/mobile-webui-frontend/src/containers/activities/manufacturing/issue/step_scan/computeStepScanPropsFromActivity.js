@@ -39,8 +39,8 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
   // in the stocking UOM, while lineQtyToIssueRemaining is in the (different) BOM line UOM — mixing it in
   // would wrongly cap the target (e.g. undo the round-up to a whole stocking unit).
   const qtyToIssueTarget = isWeightable
-    ? Math.min(stepQtyToIssue, lineQtyToIssueRemaining, qtyToIssueMax)
-    : Math.min(stepQtyToIssue, qtyToIssueMax);
+    ? Math.min(stepQtyToIssue, lineQtyToIssueRemaining, qtyToIssueMax, qtyHUCapacity)
+    : Math.min(stepQtyToIssue, qtyToIssueMax, qtyHUCapacity);
 
   const isIssueWholeHU = qtyToIssueTarget >= qtyHUCapacity;
 

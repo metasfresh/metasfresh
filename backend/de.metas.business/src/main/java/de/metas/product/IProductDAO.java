@@ -240,4 +240,15 @@ public interface IProductDAO extends ISingletonService
 
 	@NonNull
 	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
+
+	/**
+	 * Like {@link #getByIdsInTrx(Set)}, but does <b>not</b> filter out inactive records — mirroring
+	 * {@link #getByIdInTrx(ProductId)}, which also loads a product regardless of its {@code IsActive} flag.
+	 * <p>
+	 * Use this where a batch check has to behave exactly like N single-product checks; a product can be
+	 * deactivated while documents still reference it, and dropping it from the batch would silently skip it.
+	 * Ids with no product at all are simply absent from the result.
+	 */
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrxIncludingInactive(@NonNull Set<ProductId> productIds);
 }

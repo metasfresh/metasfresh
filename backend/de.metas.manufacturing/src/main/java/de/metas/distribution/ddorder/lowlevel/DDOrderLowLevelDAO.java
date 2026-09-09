@@ -1,5 +1,6 @@
 package de.metas.distribution.ddorder.lowlevel;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
@@ -9,6 +10,7 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -33,6 +35,7 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
+import org.eevolution.model.X_DD_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Repository;
@@ -40,6 +43,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -88,6 +92,115 @@ public class DDOrderLowLevelDAO
 		return InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
 	}
 
+	/**
+	 * The batch flavour of {@link #getById(DDOrderId)}.
+	 */
+	public List<I_DD_Order> getByIds(@NonNull final Set<DDOrderId> ddOrderIds)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ddOrderIds, I_DD_Order.class);
+	}
+
+	/** This DAO owns the DD_Order side only; the caller's service composes the cross-model join. */
+	public IQuery<I_DD_Order> queryCompletedDDOrders()
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addOnlyActiveRecordsFilter()
+				.create();
+	}
+
+	/**
+	 * This DAO owns the DD_Order/DD_OrderLine side only; the caller's service joins the result to whatever else it needs.
+	 */
+	public IQuery<I_DD_OrderLine> queryCompletedDDOrderLines()
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						queryCompletedDDOrders())
+				.create();
+	}
+
+	/**
+	 * {@code replenishmentLineIdsQuery} restricts to actual replenishment lines — the group-key columns alone could also match a foreign manual/MRP DD_Order, which this reconcile must never void.
+	 */
+	public List<I_DD_Order> findActiveDDOrdersForReplenishmentGroup(
+			@NonNull final ProductId productId,
+			@NonNull final LocatorId locatorToId,
+			@NonNull final UomId uomId,
+			@NonNull final IQuery<?> replenishmentLineIdsQuery)
+	{
+		final IQuery<I_DD_OrderLine> groupLinesQuery = queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, locatorToId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_C_UOM_ID, uomId)
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						replenishmentLineIdsQuery)
+				.create();
+
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				// A disconnected order is a standalone replenishment the worker still finishes; the guard and the
+				// reconcile must not see it, or they re-block the close-out.
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						groupLinesQuery)
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.create()
+				.list(I_DD_Order.class);
+	}
+
+	/**
+	 * The group's DISCONNECTED ({@code IsPickingDisconnected=Y}) replenishment lines — the ones {@link #findActiveDDOrdersForReplenishmentGroup} hides; their contributor shares are netted off the group's remaining demand.
+	 */
+	public ImmutableSet<DDOrderLineId> findDisconnectedLineIdsForReplenishmentGroup(
+			@NonNull final ProductId productId,
+			@NonNull final LocatorId locatorToId,
+			@NonNull final UomId uomId,
+			@NonNull final IQuery<?> replenishmentLineIdsQuery)
+	{
+		final IQuery<I_DD_Order> disconnectedGroupOrders = queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, true)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, locatorToId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_C_UOM_ID, uomId)
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						replenishmentLineIdsQuery)
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						disconnectedGroupOrders)
+				.create()
+				.listDistinctAsImmutableSet(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, DDOrderLineId.class);
+	}
+
 	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)
 	{
 		final List<I_DD_OrderLine> ddOrderLines = queryBL
@@ -103,6 +216,41 @@ public class DDOrderLowLevelDAO
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
 			ddOrderLine.setDD_Order(ddOrder);
+		}
+
+		return ddOrderLines;
+	}
+
+	/**
+	 * The batch flavour of {@link #retrieveLines(I_DD_Order)}: the result equals the concatenation of the per-order results taken in ascending order id.
+	 */
+	public List<I_DD_OrderLine> retrieveLines(@NonNull final Set<I_DD_Order> ddOrders)
+	{
+		final ImmutableSet<DDOrderId> ddOrderIds = ddOrders.stream()
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		if (ddOrderIds.isEmpty())
+		{
+			// An empty IN-array filter would match every line, so the query must not be run at all.
+			return ImmutableList.of();
+		}
+
+		final List<I_DD_OrderLine> ddOrderLines = queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_Order_ID)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_Line)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.create()
+				.list();
+
+		// Optimization: set DD_Order_ID link, as the single-order flavour does.
+		final HashMap<Integer, I_DD_Order> ddOrderById = new HashMap<>();
+		ddOrders.forEach(ddOrder -> ddOrderById.putIfAbsent(ddOrder.getDD_Order_ID(), ddOrder));
+		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
+		{
+			ddOrderLine.setDD_Order(ddOrderById.get(ddOrderLine.getDD_Order_ID()));
 		}
 
 		return ddOrderLines;
@@ -229,6 +377,19 @@ public class DDOrderLowLevelDAO
 		return record;
 	}
 
+	/**
+	 * The batch flavour of {@link #getLineById(DDOrderLineId)}; unlike it, a missing id is silently absent from the result.
+	 */
+	public List<I_DD_OrderLine> getLinesByIds(@NonNull final Set<DDOrderLineId> ddOrderLineIds)
+	{
+		if (ddOrderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ddOrderLineIds, I_DD_OrderLine.class);
+	}
+
 	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)
 	{
 		final IQueryBuilder<I_DD_Order> sqlQuery = toSqlQuery(query);
@@ -335,6 +496,19 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
+		// Locator To — exclude (packing places)
+		if (query.getExcludeLocatorToIds() != null && !query.getExcludeLocatorToIds().isEmpty())
+		{
+			queryBuilder.addNotInSubQueryFilter(
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					queryBL.createQueryBuilder(I_DD_OrderLine.class)
+							.addOnlyActiveRecordsFilter()
+							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getExcludeLocatorToIds())
+							.create());
+		}
+
+		//
 		// Sales Order
 		if (query.getSalesOrderIds() != null && !query.getSalesOrderIds().isEmpty())
 		{
@@ -434,6 +608,10 @@ public class DDOrderLowLevelDAO
 		if (field == DDOrderQuery.OrderByField.PriorityRule)
 		{
 			sqlColumnName = I_DD_Order.COLUMNNAME_PriorityRule;
+		}
+		else if (field == DDOrderQuery.OrderByField.LocatorPriority)
+		{
+			sqlColumnName = I_DD_Order.COLUMNNAME_LocatorPriorityNo;
 		}
 		else if (field == DDOrderQuery.OrderByField.DatePromised)
 		{

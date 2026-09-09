@@ -1,0 +1,1 @@
+Method <de.metas.acct.AcctModuleInterceptor.onUserLogin(int, int, int)> calls method <org.compiere.util.Env.getClientId(java.util.Properties)> in (AcctModuleInterceptor.java:215)

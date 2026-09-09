@@ -77,10 +77,15 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isCallOrder(DocTypeId docTypeId);
 
+	boolean isFinancial(@NonNull DocTypeId docTypeId);
+
 	void save(I_C_DocType dt);
 
 	@NonNull
 	ImmutableList<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
 
 	DocTypeId cloneToOrg(@NonNull I_C_DocType dt, @NonNull OrgId toOrgId);
+
+	@NonNull
+	DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull DocTypeId docTypeId);
 }

@@ -55,7 +55,7 @@ public class TaxAccountsRepository
 				.T_Liability_Acct(Account.of(AccountId.ofRepoId(record.getT_Liability_Acct()), TaxAcctType.TaxLiability))
 				.T_Credit_Acct(Account.of(AccountId.ofRepoId(record.getT_Credit_Acct()), TaxAcctType.TaxCredit))
 				.T_Receivables_Acct(Account.of(AccountId.ofRepoId(record.getT_Receivables_Acct()), TaxAcctType.TaxReceivables))
-				.T_Expense_Acct(Account.of(AccountId.ofRepoId(record.getT_Expense_Acct()), TaxAcctType.TaxExpense))
+				.T_Expense_Acct(Account.optionalOfRepoId(record.getT_Expense_Acct(), TaxAcctType.TaxExpense))
 				.T_Revenue_Acct(Account.optionalOfRepoId(record.getT_Revenue_Acct(), TaxAcctType.T_Revenue_Acct))
 				.T_PayDiscount_Exp_Acct(Account.optionalOfRepoId(record.getT_PayDiscount_Exp_Acct(), TaxAcctType.T_PayDiscount_Exp_Acct))
 				.T_PayDiscount_Rev_Acct(Account.optionalOfRepoId(record.getT_PayDiscount_Rev_Acct(), TaxAcctType.T_PayDiscount_Rev_Acct))

@@ -1,11 +1,14 @@
 package de.metas.invoicecandidate.modelvalidator;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -21,8 +24,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.InvoiceRule;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.pricing.InvoicableQtyBasedOn;
-import de.metas.tax.api.Tax;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -32,6 +36,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -52,6 +57,8 @@ public class C_Invoice_Candidate
 {
 	private static final Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
 
+	private static final AdMessageKey MSG_INVOICE_RULE_MANUAL_IS_AUTO_INVOICE_CONFLICT = AdMessageKey.of("ERR_INVOICERULE_MANUAL_AUTO_INVOICE");
+
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -59,6 +66,7 @@ public class C_Invoice_Candidate
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
 	private final IDocumentLocationBL documentLocationBL;
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	public C_Invoice_Candidate(
 			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
@@ -75,6 +83,61 @@ public class C_Invoice_Candidate
 		this.documentLocationBL = documentLocationBL;
 	}
 
+	@VisibleForTesting
+	public static C_Invoice_Candidate newInstanceForUnitTesting()
+	{
+		return new C_Invoice_Candidate(
+				new InvoiceCandidateRecordService(),
+				new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory()),
+				AttachmentEntryService.createInstanceForUnitTesting(),
+				DocumentLocationBL.newInstanceForUnitTesting());
+	}
+
+	/**
+	 * Forbid the contradictory combination of an effective {@code InvoiceRule = Manual}
+	 * with {@code IsAutoInvoice = Y} on the candidate itself.
+	 *
+	 * <p>The same conflict is already blocked at {@code C_Order} level by
+	 * {@link de.metas.invoicecandidate.modelvalidator.C_Order#preventInvoiceRuleManualWithIsAutoInvoice},
+	 * but the candidate can re-enter the bad state via:
+	 * <ul>
+	 *   <li>The user setting {@code InvoiceRule_Override = Manual} on an existing IC whose {@code IsAutoInvoice = Y}
+	 *       was inherited from the order at creation.</li>
+	 *   <li>The user toggling {@code IsAutoInvoice = Y} on an IC whose effective rule is already Manual.</li>
+	 * </ul>
+	 *
+	 * <p>The effective rule is computed as {@code COALESCE(InvoiceRule_Override, InvoiceRule)}, matching the
+	 * runtime semantics used by {@code InvoiceCandBL.getInvoiceRule(ic)}.
+	 */
+	@ModelChange( //
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = {
+					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule,
+					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
+					I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice })
+	public void preventInvoiceRuleManualWithIsAutoInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (!icRecord.isAutoInvoice())
+		{
+			return;
+		}
+
+		// An IC with no rule yet (early-stage record) cannot conflict with IsAutoInvoice.
+		// invoiceCandBL.getInvoiceRule(ic) eventually calls InvoiceRule.ofCode (@NonNull) — guard before that.
+		if (Check.isBlank(icRecord.getInvoiceRule()) && Check.isBlank(icRecord.getInvoiceRule_Override()))
+		{
+			return;
+		}
+
+		final InvoiceRule effectiveRule = invoiceCandBL.getInvoiceRule(icRecord);
+
+		if (effectiveRule.isManual())
+		{
+			throw new AdempiereException(MSG_INVOICE_RULE_MANUAL_IS_AUTO_INVOICE_CONFLICT)
+					.markAsUserValidationError();
+		}
+	}
+
 	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
 			ifColumnsChanged = {
@@ -86,7 +149,6 @@ public class C_Invoice_Candidate
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 		{
-			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 			if (invoiceCandBL.isUpdateProcessInProgress())
 			{
 				logger.debug("Change was performed by scheduler process. No need to update the receord again: {}", icRecord);
@@ -158,8 +220,6 @@ public class C_Invoice_Candidate
 
 	private void invalidateCandidates0(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		if (invoiceCandBL.isUpdateProcessInProgress())
 		{
 			logger.debug("Change was performed by scheduler process. No need to invalidate: {}", ic);
@@ -190,8 +250,6 @@ public class C_Invoice_Candidate
 			I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void updateNetAmtToInvoice(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		// first check priceActual
 		invoiceCandBL.setPriceActual_Override(ic);
 		// note: we don't need to do this "BEFORE_NEW", because a new record doesn't have a "QtyToInvoice" yet.
@@ -215,7 +273,6 @@ public class C_Invoice_Candidate
 	})
 	public void updateProcessedFlag(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 		invoiceCandBL.updateProcessedFlag(ic);
 	}
 
@@ -265,7 +322,7 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updatePOReference(final I_C_Invoice_Candidate ic)
 	{
-		Services.get(IInvoiceCandBL.class).updatePOReferenceFromOrder(ic);
+		invoiceCandBL.updatePOReferenceFromOrder(ic);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -303,7 +360,7 @@ public class C_Invoice_Candidate
 		{
 			return; // the IC is not yet ready for this
 		}
-		Services.get(IInvoiceCandBL.class).setPriceActualNet(candidate);
+		invoiceCandBL.setPriceActualNet(candidate);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_IsError })
@@ -311,7 +368,7 @@ public class C_Invoice_Candidate
 	{
 		if (!ic.isError())
 		{
-			Services.get(IInvoiceCandBL.class).resetError(ic);
+			invoiceCandBL.resetError(ic);
 		}
 	}
 
@@ -427,8 +484,6 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setHeaderAggregationKey(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
 
 		if (ic.isProcessed()

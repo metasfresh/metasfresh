@@ -84,8 +84,8 @@ public class DATEVExportLinesRepository
 
 		final IQueryBuilder<I_RV_DATEV_Export_Fact_Acct_Invoice> queryBuilder = queryBL.createQueryBuilder(I_RV_DATEV_Export_Fact_Acct_Invoice.class)
 				.orderBy(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_DateAcct)
-				.orderBy(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_C_Invoice_ID)
-				.orderBy(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_RV_DATEV_Export_Fact_Acct_Invoice_ID)
+				.orderBy(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_DocumentNo)
+				.orderBy(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_C_Tax_Rate)
 				.addEqualsFilter(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_AD_Org_ID, datevExport.getAD_Org_ID());
 
 		if (datevExport.getDateAcctFrom() != null)

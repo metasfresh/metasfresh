@@ -1,0 +1,139 @@
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { pickingJobsListLocation } from '../../../routes/picking';
+import { trl } from '../../../utils/translations';
+import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
+import * as uiTrace from '../../../utils/ui_trace';
+import { postMassPrintingScan } from '../../../api/picking';
+
+const MassPrintingScanScreen = () => {
+  const { history, applicationId } = useScreenDefinition({
+    screenId: 'MassPrintingScanScreen',
+    captionKey: 'activities.picking.massPrinting.scanCaption',
+    back: pickingJobsListLocation,
+  });
+
+  const [result, setResult] = useState(null);
+  const [networkErrorMessage, setNetworkErrorMessage] = useState(null);
+
+  const onResolvedResult = ({ scannedBarcode }) => {
+    setNetworkErrorMessage(null);
+    postMassPrintingScan({ scannedCode: scannedBarcode })
+      .then((data) => setResult(data))
+      .catch((axiosError) => {
+        const isNetworkFailure = !axiosError?.response;
+        const message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError });
+        uiTrace.trace({
+          eventName: 'massPrintingScanFailed',
+          httpStatus: axiosError?.response?.status ?? null,
+          axiosCode: axiosError?.code ?? null,
+          isNetworkFailure,
+          message,
+        });
+        if (isNetworkFailure) {
+          setNetworkErrorMessage(message);
+        } else {
+          toastError({ axiosError });
+        }
+      });
+  };
+
+  const onDone = () => {
+    history.replace(pickingJobsListLocation({ applicationId }));
+  };
+
+  if (result) {
+    return (
+      <div className="mt-5" data-testid="mass-printing-result">
+        <MassPrintingResult result={result} onDone={onDone} />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {networkErrorMessage && (
+        <p className="has-text-danger mt-3" data-testid="mass-printing-network-error">
+          {networkErrorMessage}
+        </p>
+      )}
+      <BarcodeScannerComponent onResolvedResult={onResolvedResult} />
+    </>
+  );
+};
+
+//
+//
+// ----------------------------------------------------------
+//
+//
+
+const MassPrintingResult = ({ result, onDone }) => {
+  const { productResults = [], skippedNonSelfPackedProductIds = [] } = result;
+
+  return (
+    <div className="mass-printing-result">
+      {productResults.length === 0 && skippedNonSelfPackedProductIds.length === 0 && (
+        <p data-testid="mass-printing-result-empty">{trl('activities.picking.massPrinting.noResults')}</p>
+      )}
+
+      {productResults.map((pr, idx) => (
+        <div key={idx} className="mass-printing-product-result" data-testid="mass-printing-product-result">
+          <p className="mass-printing-product-id" data-testid="mass-printing-product-id">
+            {trl('activities.picking.massPrinting.product')} {pr.productId}
+          </p>
+          <p data-testid="mass-printing-units-packed">
+            {trl('activities.picking.massPrinting.unitsPacked')}: {pr.unitsPacked}
+          </p>
+          {pr.unitsLeftOnLU > 0 && (
+            <p data-testid="mass-printing-units-left">
+              {trl('activities.picking.massPrinting.unitsLeftOnLU')}: {pr.unitsLeftOnLU}
+            </p>
+          )}
+          {pr.unitsOfOpenDemandRemaining > 0 && (
+            <p data-testid="mass-printing-demand-remaining">
+              {trl('activities.picking.massPrinting.unitsOfOpenDemandRemaining')}: {pr.unitsOfOpenDemandRemaining}
+            </p>
+          )}
+        </div>
+      ))}
+
+      {skippedNonSelfPackedProductIds.length > 0 && (
+        <div data-testid="mass-printing-skipped">
+          <p>
+            {trl('activities.picking.massPrinting.skippedProducts')}: {skippedNonSelfPackedProductIds.length}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-4">
+        <ButtonWithIndicator
+          captionKey="activities.picking.massPrinting.doneButton"
+          testId="mass-printing-done-button"
+          onClick={onDone}
+          additionalCssClass="action-button"
+        />
+      </div>
+    </div>
+  );
+};
+
+MassPrintingResult.propTypes = {
+  result: PropTypes.shape({
+    productResults: PropTypes.arrayOf(
+      PropTypes.shape({
+        productId: PropTypes.number.isRequired,
+        unitsPacked: PropTypes.number.isRequired,
+        unitsLeftOnLU: PropTypes.number.isRequired,
+        unitsOfOpenDemandRemaining: PropTypes.number.isRequired,
+      })
+    ),
+    skippedNonSelfPackedProductIds: PropTypes.arrayOf(PropTypes.number),
+  }).isRequired,
+  onDone: PropTypes.func.isRequired,
+};
+
+export default MassPrintingScanScreen;

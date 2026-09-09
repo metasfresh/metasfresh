@@ -110,7 +110,7 @@ public class DistributeAndMoveReceiptCreatorTest
 		saveRecord(receiptWarehouse);
 
 		final I_M_Locator receiptLineLocator = newInstance(I_M_Locator.class);
-		receiptLineLocator.setM_Warehouse(receiptWarehouse);
+		receiptLineLocator.setM_Warehouse_ID(receiptWarehouse.getM_Warehouse_ID());
 		save(receiptLineLocator);
 
 		final I_M_InOutLine receiptLineRecord = newInstance(I_M_InOutLine.class);

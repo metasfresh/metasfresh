@@ -11,6 +11,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
@@ -70,6 +71,7 @@ public class NullVendorGatewayInvokerTest
 				.productId(ProductId.ofRepoId(20))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(21))
 				.vendorProductNo("vendorProductNo_20")
+				.source(PurchaseCandidateSource.SalesOrder)
 				.qtyToPurchase(Quantity.of(TEN, EACH))
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(40, 50))
 				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())

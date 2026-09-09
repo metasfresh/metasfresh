@@ -22,11 +22,14 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -35,9 +38,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_PackageLine;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +59,17 @@ public class HUPackageDAO implements IHUPackageDAO
 		return queryBL
 				.createQueryBuilder(I_M_Package_HU.class, mpackage)
 				.filter(new EqualsQueryFilter<>(I_M_Package_HU.COLUMN_M_Package_ID, mpackage.getM_Package_ID()))
+				.create()
+				.list(I_M_Package_HU.class);
+	}
+
+	@Override
+	public List<I_M_Package_HU> retrievePackageHUs(@NonNull final PackageId packageId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Package_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Package_HU.COLUMN_M_Package_ID, packageId)
 				.create()
 				.list(I_M_Package_HU.class);
 	}
@@ -138,14 +153,42 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
-	public List<I_M_Package> retrievePackagesForShipment(final I_M_InOut shipment)
+	public List<I_M_Package> retrievePackagesForShipment(@NonNull final InOutId inOutId)
 	{
-		Check.assumeNotNull(shipment, "shipment not null");
-
-		return queryBL.createQueryBuilder(I_M_Package.class, shipment)
-				.addEqualsFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
+		return queryBL.createQueryBuilder(I_M_Package.class)
+				.addEqualsFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
 				.create()
 				.list(I_M_Package.class);
+	}
+
+	@Override
+	public void deletePackageLines(@NonNull final PackageId packageId)
+	{
+		queryBL.createQueryBuilder(I_M_PackageLine.class)
+				.addEqualsFilter(I_M_PackageLine.COLUMNNAME_M_Package_ID, packageId)
+				.create()
+				.delete();
+	}
+
+	@Override
+	public void createPackageLine(@NonNull final I_M_Package mpackage, @NonNull final InOutLineId inOutLineId, @NonNull final BigDecimal qty)
+	{
+		final I_M_PackageLine packageLine = InterfaceWrapperHelper.newInstance(I_M_PackageLine.class);
+		packageLine.setAD_Org_ID(mpackage.getAD_Org_ID());
+		packageLine.setM_Package_ID(mpackage.getM_Package_ID());
+		packageLine.setM_InOutLine_ID(inOutLineId.getRepoId());
+		packageLine.setQty(qty);
+		InterfaceWrapperHelper.save(packageLine);
+	}
+
+	@Override
+	public List<InOutLineId> retrieveInOutLineIdsForPackage(@NonNull final PackageId packageId)
+	{
+		return queryBL.createQueryBuilder(I_M_PackageLine.class)
+				.addEqualsFilter(I_M_PackageLine.COLUMNNAME_M_Package_ID, packageId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_M_PackageLine.COLUMNNAME_M_InOutLine_ID, InOutLineId.class);
 	}
 
 	@Override

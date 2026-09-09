@@ -25,6 +25,9 @@ import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -61,6 +64,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 {
 	private static final Logger logger = LogManager.getLogger(StockChangedEventHandler.class);
 
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final CandidateChangeService candidateChangeHandler;
 
@@ -85,6 +89,16 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	@Override
 	public void handleEvent(@NonNull final StockChangedEvent event)
 	{
+		final WarehouseId warehouseId = event.getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
+			return;
+		}
+
 		if (event.getStockChangeDetails() == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("The event has no stockChangeDetails; -> nothing to do");

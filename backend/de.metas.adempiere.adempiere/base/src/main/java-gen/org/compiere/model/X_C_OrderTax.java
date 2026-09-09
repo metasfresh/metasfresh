@@ -111,9 +111,21 @@ public class X_C_OrderTax extends org.compiere.model.PO implements I_C_OrderTax,
 	}
 
 	@Override
-	public boolean isPackagingTax() 
+	public boolean isPackagingTax()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPackagingTax);
+	}
+
+	@Override
+	public void setIsReverseCharge (final boolean IsReverseCharge)
+	{
+		set_Value (COLUMNNAME_IsReverseCharge, IsReverseCharge);
+	}
+
+	@Override
+	public boolean isReverseCharge()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReverseCharge);
 	}
 
 	@Override
@@ -147,9 +159,22 @@ public class X_C_OrderTax extends org.compiere.model.PO implements I_C_OrderTax,
 	}
 
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setReverseChargeTaxAmt (final BigDecimal ReverseChargeTaxAmt)
+	{
+		set_Value (COLUMNNAME_ReverseChargeTaxAmt, ReverseChargeTaxAmt);
+	}
+
+	@Override
+	public BigDecimal getReverseChargeTaxAmt()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ReverseChargeTaxAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

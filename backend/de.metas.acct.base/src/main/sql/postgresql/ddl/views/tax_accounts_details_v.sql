@@ -43,12 +43,25 @@ SELECT fa.vatcode,
        fa.taxname,
        fa.taxrate,
        fa.bpName,
-       fa.taxamt,
+       -- RC symmetric reporting: on reverse-charge taxes, the output (T_Due_Acct) leg mirrors
+       -- the input (T_Credit_Acct) leg. §13b UStG + §17(1) UStG require both KZ 84/85 and KZ 67
+       -- to show the same (signed) tax amount after any adjustment.
+       (CASE
+            WHEN fa.accountconceptualname = 'T_Due_Acct' AND fa.isreversecharge = 'Y'
+                THEN -fa.taxamt
+                ELSE  fa.taxamt
+        END) AS taxamt,
        fa.currency,
        (CASE
             WHEN DocBaseType IN ('APC', 'ARI') THEN -TaxBaseAmt
             WHEN DocBaseType IN ('ARC', 'API') THEN  TaxBaseAmt
-                                               ELSE SIGN(TaxAmt) * ABS(TaxBaseAmt) -- we need the absolut value in order to be able to enforce tax sign
+            -- Allocation (CMA) rows land here. Under the default ledger-sign convention the
+            -- back-computed base would diverge between the two RC legs (one positive, one
+            -- negative). Flip sign on the RC output leg so the declaration base mirrors the
+            -- input leg.
+            WHEN fa.accountconceptualname = 'T_Due_Acct' AND fa.isreversecharge = 'Y'
+                THEN -SIGN(TaxAmt) * ABS(TaxBaseAmt)
+                ELSE  SIGN(TaxAmt) * ABS(TaxBaseAmt) -- we need the absolut value in order to be able to enforce tax sign
         END) AS TaxBaseAmt,
        fa.source_currency,
        fa.C_Tax_ID,
@@ -59,7 +72,10 @@ SELECT fa.vatcode,
        fa.source_currency_id,
        fa.ad_table_id,
        fa.record_id,
-       fa.ad_org_id
+       fa.ad_org_id,
+       -- Exposed so downstream consumers (e.g. de_metas_acct.report_taxaccounts)
+       -- can branch on reverse-charge without having to join C_Tax again.
+       fa.isreversecharge
 FROM (SELECT fa.vatcode                    AS vatcode,
              ev.value                      AS accountno,
              ev.name                       AS accountname,
@@ -97,6 +113,7 @@ FROM (SELECT fa.vatcode                    AS vatcode,
              c.iso_code                    AS source_currency,
              cr.iso_code                   AS currency,
              fa.DocBaseType,
+             tax.IsReverseCharge           AS isreversecharge,
              fa.C_Tax_ID,
              fa.account_id,
              fa.postingtype,

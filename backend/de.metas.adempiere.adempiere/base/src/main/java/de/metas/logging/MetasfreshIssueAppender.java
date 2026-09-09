@@ -7,6 +7,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;
 import de.metas.util.Services;
@@ -230,13 +231,21 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 		}
 
 		final IErrorManager errorManager = Services.get(IErrorManager.class);
-		errorManager.createIssue(IssueCreateRequest.builder()
-				.summary(event.getMessage())
+		errorManager.createIssue(toIssueCreateRequest(event));
+	}
+
+	/** Maps the event without needing a database connection, unlike {@link #reportAD_Issue(ILoggingEvent)}. */
+	@VisibleForTesting
+	static IssueCreateRequest toIssueCreateRequest(final ILoggingEvent event)
+	{
+		return IssueCreateRequest.builder()
+				// NOT getMessage(): that returns the raw SLF4J template, storing literal {} and dropping every argument
+				.summary(event.getFormattedMessage())
 				.sourceClassname(extractSourceClassName(event))
 				.sourceMethodName(extractSourceMethodName(event))
 				.loggerName(event.getLoggerName())
 				.throwable(extractThrowable(event))
-				.build());
+				.build();
 	}
 
 	private static final String extractSourceClassName(final ILoggingEvent event)
