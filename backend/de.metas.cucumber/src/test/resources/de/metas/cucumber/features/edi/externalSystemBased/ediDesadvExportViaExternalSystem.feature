@@ -844,6 +844,14 @@ Feature: EDI DESADV export via External System
   ## at shipment completion, by DesadvBL.addToDesadvCreateForInOutIfNotExist via its C_Order fallback.
   ## That fallback creates the EDI_DesadvLines only at that moment, so the delivered quantities have to
   ## be derived AFTER they exist — otherwise the recipient receives a DESADV announcing zero delivered.
+    # Eleven scenarios before this one complete shipments for the Background's shared EDI-recipient
+    # customer1, silently creating EDI_Desadv_Pack / EDI_Desadv_Pack_Item rows as a side effect of the
+    # M_InOut before-complete interceptor (nothing in those scenarios asserts packs, so nothing cleans
+    # them up). Reset both tables here, before anything else in this scenario runs, so the pack
+    # assertions below see only what THIS scenario creates.
+    And metasfresh initially has no EDI_Desadv_Pack_Item data
+    And metasfresh initially has no EDI_Desadv_Pack data
+
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     # POReference is deliberately absent here: that is what keeps the order out of the DESADV at
