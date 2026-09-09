@@ -29,6 +29,7 @@ import de.metas.material.dispo.reconcile.AtpKeySelectionDrainer;
 import de.metas.material.dispo.reconcile.AtpReconciliationCommand;
 import de.metas.material.dispo.reconcile.AtpTargetCalculator;
 import de.metas.material.dispo.reconcile.UncoveredSourceDocumentService;
+import de.metas.material.dispo.reconcile.async.AtpReconciliationEnqueueService;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -135,6 +136,11 @@ class AtpReconcileContextStartupTest
 			assertThat(context.getBeanNamesForType(AtpKeySelectionDrainer.class))
 					.as("the key drain needs nothing from dispo-service either, so it must be resolvable in the"
 							+ " webapi-like context the operator's process runs in")
+					.isNotEmpty();
+
+			assertThat(context.getBeanNamesForType(AtpReconciliationEnqueueService.class))
+					.as("a real run is enqueued FROM the webapi (that is where a WebUI-launched AD_Process runs),"
+							+ " so the enqueue service is the one write-path bean that must exist there")
 					.isNotEmpty();
 		}
 	}

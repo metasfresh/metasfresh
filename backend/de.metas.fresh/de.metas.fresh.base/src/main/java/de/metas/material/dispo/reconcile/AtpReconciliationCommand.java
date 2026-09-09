@@ -96,18 +96,19 @@ import java.util.UUID;
  * whereas this class simply cannot have its constructor satisfied outside the profile. Same instrument, same
  * convention, different reason.
  * <p>
- * Consequence for callers: in a JVM without that profile this bean does not exist, so
- * {@code MD_Candidate_Reconcile_ATP} fails fast there with an explicit message instead of half-reconciling - see
- * that process's {@code reconciliationCommand()}. <b>That applies to a dry run too</b>: the process resolves this
- * whole bean at the top of its {@code doIt()}, before it inspects its dry-run parameter and before it looks at its
- * selection, so the operator gets the explicit failure whether or not the preview box is ticked and whether or not
- * the filter matches anything. (Resolving it only per key would let an empty selection finish as a misleading
- * "0 of 0" success in a JVM that has no engine at all.)
+ * <b>Consequence for callers: this bean is never reached from the webapi at all.</b> The operator-facing
+ * {@code MD_Candidate_Reconcile_ATP} runs in the webapi (that is where a WebUI-launched {@code AD_Process}
+ * executes), so it does not call this class directly: a real run is enqueued as a {@code C_Queue_WorkPackage} and
+ * this class is invoked from {@code de.metas.material.dispo.reconcile.async.AtpReconciliationWorkpackageProcessor},
+ * which the app server drains - the one JVM where the profile is active. A deployment whose app server has not
+ * activated the profile is therefore the only remaining way to reach this bean and not find it, and that
+ * processor's {@code reconciliationCommand()} turns that into an explicit, actionable message instead of a bare
+ * {@code NoSuchBeanDefinitionException} in the queue.
  * <p>
  * {@link AtpTargetCalculator} is a separate matter and is deliberately left unguarded: it needs nothing from
- * {@code dispo-service}, so a caller that holds it directly can compute a divergence anywhere. That does not make
- * the process above universally runnable - the process does not use the calculator directly - it only means the
- * read-only computation is available to code that wants it.
+ * {@code dispo-service}, so a caller that holds it directly can compute a divergence anywhere. That is what makes
+ * the process's <i>dry run</i> possible in the webapi - it previews straight off the calculator and never asks for
+ * this bean - while a real run has to travel to the app server.
  */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)

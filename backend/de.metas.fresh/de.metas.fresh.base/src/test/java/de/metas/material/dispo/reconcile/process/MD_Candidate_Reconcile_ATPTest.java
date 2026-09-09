@@ -24,42 +24,90 @@ package de.metas.material.dispo.reconcile.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.async.api.IWorkPackageBuilder;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.common.util.time.SystemTime;
+import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.reconcile.AtpDivergence;
 import de.metas.material.dispo.reconcile.AtpReconciliationCommand;
+import de.metas.material.dispo.reconcile.AtpTargetCalculator;
+import de.metas.material.dispo.reconcile.SourceDocumentLivenessService;
+import de.metas.material.dispo.reconcile.SourceDocumentRepository;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.user.UserId;
-import org.adempiere.exceptions.AdempiereException;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
- * Exercises {@link MD_Candidate_Reconcile_ATP#doIt()} directly. {@code doIt()} is {@code protected}, which a test
- * in the same package may call directly; {@link StockRepository} is swapped for a Mockito mock registered via
- * {@link SpringContextHolder#registerJUnitBean(Class, Object)} so no real DB or Spring context is needed - this
- * mirrors the JavaProcess unit-test pattern already used in this codebase (see
+ * Pins the fork in {@link MD_Candidate_Reconcile_ATP#doIt()}: a dry run previews inline, a real run is enqueued -
+ * and neither path may ever need {@link AtpReconciliationCommand} in the JVM this process actually executes in.
+ * <p>
+ * {@code doIt()} is {@code protected}, which a test in the same package may call directly; the collaborators are
+ * supplied through {@link SpringContextHolder#registerJUnitBean(Class, Object)} and {@link Services}, so no real
+ * DB is needed. This mirrors the {@code JavaProcess} unit-test pattern already used in this codebase (see
  * {@code de.metas.bpartner.process.CBPartnerUpdateMemoTest}: {@code process.init(ProcessInfo...)} then reflection
  * onto the {@code @Param} field, then {@code doIt()} called directly).
  * <p>
- * The pagination of the key selection is no longer asserted here: the drain moved into
- * {@code AtpKeySelectionDrainer}, and so did its coverage - see {@code AtpKeySelectionDrainerTest}.
+ * <b>What moved out of this class with the split.</b> The batched key drain now lives in
+ * {@code AtpKeySelectionDrainer}, so its pagination and {@code MAX_LOOPS} coverage moved verbatim to
+ * {@code AtpKeySelectionDrainerTest}; and the "no material disposition engine" fail-fast moved to
+ * {@code AtpReconciliationWorkpackageProcessorTest}, because after the split that failure can only happen where
+ * the work package is drained - this process needs the bean on neither path.
  */
 class MD_Candidate_Reconcile_ATPTest
 {
+	private static final ClientId CLIENT_ID = ClientId.ofRepoId(1000000);
+	private static final OrgId ORG_ID = OrgId.ofRepoId(1000001);
+	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(1000002);
+	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(1000003);
+	private static final ProductCategoryId PRODUCT_CATEGORY_ID = ProductCategoryId.ofRepoId(1000004);
+
+	/**
+	 * The frozen clock of the tests below, so the {@code RunDate} the process derives from {@link SystemTime} is
+	 * a value the test can name. Europe/Berlin, i.e. UTC+2 on that date.
+	 */
+	private static final ZonedDateTime RUN_TIME = ZonedDateTime.parse("2024-09-25T08:00:00+02:00[Europe/Berlin]");
+
 	private StockRepository stockRepository;
 
 	@BeforeEach
@@ -72,88 +120,255 @@ class MD_Candidate_Reconcile_ATPTest
 		SpringContextHolder.registerJUnitBean(StockRepository.class, stockRepository);
 	}
 
+	@AfterEach
+	void afterEach()
+	{
+		SystemTime.resetTimeSource();
+	}
+
 	/**
-	 * A run in a JVM without the material disposition engine must fail fast even when the selection matches no key
-	 * at all - never report the misleading "Reconciled 0 of 0 matching key(s)" success that a per-key-only bean
-	 * resolution would produce (the drain's per-key callback never runs, so the bean would never be resolved and
-	 * the missing engine would never surface).
+	 * The headline of the write-path split: a <b>dry run</b> must produce its whole preview in the JVM a
+	 * WebUI-launched process actually executes in - the webapi, which does not activate
+	 * {@link Profiles#PROFILE_MaterialDispo} - and must therefore never touch
+	 * {@link AtpReconciliationCommand}, which only exists where that profile is active.
 	 * <p>
-	 * Reproducing the defect needs {@link SpringContextHolder#instance}{@code
-	 * .getBean(AtpReconciliationCommand.class)} to hit its {@code catch (NoSuchBeanDefinitionException e)} branch in
-	 * {@code reconciliationCommand()} - and {@link SpringContextHolder#getBean} only ever throws that specific
-	 * exception when a real, non-null {@link org.springframework.context.ApplicationContext} is registered on the
-	 * holder and genuinely lacks the bean; with no context registered at all it throws a plain,
-	 * uncaught {@link AdempiereException} instead ("This unit test requires a spring ApplicationContext"), which
-	 * would escape {@code doIt()} without ever exercising the fix.
+	 * Before the split this was impossible: the process resolved {@link AtpReconciliationCommand} at the top of
+	 * {@code doIt()} regardless of the dry-run flag, so the preview an operator asks for died with
+	 * "the spring profile material-dispo is not active here" instead of reporting anything. The preview needs
+	 * nothing from that bean - {@link AtpTargetCalculator#computeDivergence} already returns expected, stored and
+	 * difference, and is deliberately un-{@code @Profile}-guarded - so it is computed inline here.
 	 * <p>
-	 * So this test builds a real, profile-less {@link AnnotationConfigApplicationContext} scanning
-	 * {@code de.metas.material.dispo.reconcile} - the webapi's actual situation, exactly as
-	 * {@link de.metas.material.dispo.AtpReconcileContextStartupTest#webapiLikeContext_startsWithoutTheMaterialDispoEngine()}
-	 * proves it for the package as a whole - and registers it on {@link SpringContextHolder#instance} for the
-	 * duration of the call. {@link AtpReconciliationCommand} is {@code @Profile}-guarded, so that context genuinely
-	 * has no such bean, and {@code context.getBean(AtpReconciliationCommand.class)} throws Spring's own
-	 * {@code NoSuchBeanDefinitionException} - the exact branch {@code reconciliationCommand()} is written to catch.
-	 * <p>
-	 * <b>Why the mocks are registered as plain singletons, not via a {@code @Configuration} class of this test's
-	 * own.</b> {@link de.metas.material.dispo.AtpReconcileContextStartupTest}'s Javadoc records that its first
-	 * version placed such a config <i>inside</i> the scanned package, where the recursive
-	 * {@link org.springframework.context.annotation.ComponentScan} picked it up and silently supplied the very bean
-	 * whose absence the test exists to prove. This test class sits in {@code
-	 * de.metas.material.dispo.reconcile.process} - itself under the scanned package, because {@code doIt()} is only
-	 * callable from the same package - so a {@code @Configuration}/{@code @Component} class declared here would fall
-	 * into exactly that trap. Registering the collaborator mocks as plain (unannotated) singleton beans instead means
-	 * nothing in this file carries an annotation the scan could ever find.
+	 * Reproducing the webapi's situation needs a real, scanned, profile-less
+	 * {@link AnnotationConfigApplicationContext} - see
+	 * {@code de.metas.material.dispo.AtpReconcileContextStartupTest}, which proves that same absence for the
+	 * package as a whole, and whose Javadoc records why a {@code @Configuration} class declared under the scanned
+	 * package silently blinds such a test.
 	 */
 	@Test
-	void profileLessJvm_failsFastEvenWhenSelectionMatchesNothing() throws Exception
+	void dryRunInProfileLessJvm_reportsThePreviewWithoutTheReconciliationCommand() throws Exception
 	{
+		SystemTime.setFixedTimeSource(RUN_TIME);
+
+		final List<StockDataRecordIdentifier> keys = distinctKeys(1);
 		when(stockRepository.retrieveKeys(any(), any(), any(), anyInt(), anyInt()))
-				.thenReturn(ImmutableList.of());
+				.thenAnswer(invocation -> (int)invocation.getArgument(4) == 0 ? ImmutableList.copyOf(keys) : ImmutableList.of());
+
+		// stored 0 against a target of 100, i.e. a key that diverges. Registered as a JUnit bean so it wins over
+		// the real, scanned calculator (SpringContextHolder#getBeanOrSupply consults the JUnit registry first),
+		// which would otherwise answer out of the mocked repositories with a meaningless 0.
+		final RecordingAtpTargetCalculator atpTargetCalculator =
+				new RecordingAtpTargetCalculator(AtpDivergence.of(new BigDecimal("100"), BigDecimal.ZERO));
+		SpringContextHolder.registerJUnitBean(AtpTargetCalculator.class, atpTargetCalculator);
+
+		// a real queue factory, so that "the dry run enqueued nothing" is asserted rather than merely implied by
+		// the absence of one
+		final IWorkPackageQueueFactory queueFactory = Mockito.mock(IWorkPackageQueueFactory.class);
+		Services.registerService(IWorkPackageQueueFactory.class, queueFactory);
 
 		try (final AnnotationConfigApplicationContext profileLessContext = newProfileLessReconcilePackageContext())
 		{
 			SpringContextHolder.instance.setApplicationContext(profileLessContext);
 			try
 			{
-				final MD_Candidate_Reconcile_ATP process = newProcess();
+				assertThat(profileLessContext.getBeanNamesForType(AtpReconciliationCommand.class))
+						.as("precondition: this context must genuinely lack the write-path bean, or it cannot"
+								+ " stand in for the webapi")
+						.isEmpty();
 
-				assertThatThrownBy(process::doIt)
-						.as("a profile-less JVM must fail fast even on an empty selection - never reach the"
-								+ " '0 of 0' success return")
-						.isInstanceOf(AdempiereException.class)
-						.hasMessageContaining(Profiles.PROFILE_MaterialDispo);
+				final ProcessInfo processInfo = ProcessInfo.builder().setCtx(Env.getCtx()).build();
+				final MD_Candidate_Reconcile_ATP process = newProcess(processInfo, true, LocalDate.of(2024, 9, 23));
+
+				// before the split this line threw: the command bean was resolved at the top of doIt() whatever
+				// the dry-run flag said, and it does not exist in this context
+				assertThat(process.doIt()).isEqualTo(JavaProcess.MSG_OK);
 			}
 			finally
 			{
 				SpringContextHolder.instance.clearApplicationContext();
 			}
 		}
+
+		assertThat(atpTargetCalculator.getKeysSeen())
+				.as("the preview must be computed off the un-@Profile-guarded target calculator, for every key of"
+						+ " the selection")
+				.containsExactlyElementsOf(keys);
+		assertThat(atpTargetCalculator.getDatesSeen())
+				.as("the preview date is the run date the process pinned to now")
+				.containsOnly(RUN_TIME.toInstant());
+		assertThat(atpTargetCalculator.getLivenessCutoffsSeen())
+				.as("the operator's liveness cutoff has to reach the preview too, or the preview would show a"
+						+ " different divergence from the run it previews")
+				.containsOnly(LocalDate.of(2024, 9, 23).atStartOfDay(SystemTime.zoneId()).toInstant());
+
+		verifyNoInteractions(queueFactory);
 	}
 
 	/**
-	 * @return a real, profile-less context scanning {@code de.metas.material.dispo.reconcile} - see this test's own
-	 * Javadoc for why its two collaborator mocks are registered as plain singletons rather than through a
-	 * {@code @Configuration} class of this test's own.
+	 * The other half of the split: a <b>real</b> run does not reconcile in the webapi at all - it hands the run to
+	 * the async queue, which the app server drains, where {@link Profiles#PROFILE_MaterialDispo} <i>is</i> active.
+	 * So the process must enqueue exactly one work package carrying the whole run - every selection filter, the
+	 * liveness cutoff and the run date - and must itself read and write nothing.
+	 * <p>
+	 * The parameter names are asserted as plain string literals on purpose: they are the wire format between the
+	 * two JVMs, so a rename on the producing side that is not matched on the consuming side must fail here rather
+	 * than silently drop a filter and reconcile the whole database.
 	 */
-	private static AnnotationConfigApplicationContext newProfileLessReconcilePackageContext()
+	@Test
+	void realRun_enqueuesExactlyOneWorkpackageCarryingTheRunsSelectionAndOptions() throws Exception
+	{
+		SystemTime.setFixedTimeSource(RUN_TIME);
+
+		final IWorkPackageQueueFactory queueFactory = Mockito.mock(IWorkPackageQueueFactory.class);
+		final IWorkPackageQueue queue = Mockito.mock(IWorkPackageQueue.class);
+		final IWorkPackageBuilder workPackageBuilder = Mockito.mock(IWorkPackageBuilder.class, Mockito.RETURNS_SELF);
+		final I_C_Queue_WorkPackage enqueuedWorkPackage = InterfaceWrapperHelper.newInstance(I_C_Queue_WorkPackage.class);
+		InterfaceWrapperHelper.save(enqueuedWorkPackage);
+
+		Services.registerService(IWorkPackageQueueFactory.class, queueFactory);
+		when(queueFactory.getQueueForEnqueuing(any(Properties.class), ArgumentMatchers.<Class<? extends IWorkpackageProcessor>>any()))
+				.thenReturn(queue);
+		when(queue.newWorkPackage()).thenReturn(workPackageBuilder);
+		when(workPackageBuilder.buildAndEnqueue()).thenReturn(enqueuedWorkPackage);
+
+		final ProcessInfo processInfo = ProcessInfo.builder().setCtx(Env.getCtx()).build();
+		final MD_Candidate_Reconcile_ATP process = newProcess(processInfo, false, LocalDate.of(2024, 9, 23));
+		setParamField(process, "p_M_Warehouse_ID", WAREHOUSE_ID.getRepoId());
+		setParamField(process, "p_M_Product_ID", PRODUCT_ID.getRepoId());
+		setParamField(process, "p_M_Product_Category_ID", PRODUCT_CATEGORY_ID.getRepoId());
+
+		assertThat(process.doIt()).isEqualTo(JavaProcess.MSG_OK);
+
+		verify(queue, times(1)).newWorkPackage();
+		verify(workPackageBuilder, times(1)).buildAndEnqueue();
+
+		verify(workPackageBuilder).parameter("M_Warehouse_ID", WAREHOUSE_ID.getRepoId());
+		verify(workPackageBuilder).parameter("M_Product_ID", PRODUCT_ID.getRepoId());
+		verify(workPackageBuilder).parameter("M_Product_Category_ID", PRODUCT_CATEGORY_ID.getRepoId());
+		verify(workPackageBuilder).parameter("LivenessCutoffDate", LocalDate.of(2024, 9, 23).atStartOfDay(SystemTime.zoneId()).toInstant());
+		verify(workPackageBuilder).parameter("RunDate", RUN_TIME.toInstant());
+
+		// the enqueuing JVM must not have touched the selection at all: draining it is the work package's job,
+		// in the JVM that can actually reconcile
+		verifyNoInteractions(stockRepository);
+	}
+
+	/**
+	 * @return a real, profile-less context scanning {@code de.metas.material.dispo.reconcile}. The collaborator
+	 * mocks are registered as plain (unannotated) singletons rather than through a {@code @Configuration} class of
+	 * this test's own: this test class sits in {@code de.metas.material.dispo.reconcile.process} - itself under
+	 * the scanned package, because {@code doIt()} is only callable from the same package - so a
+	 * {@code @Configuration}/{@code @Component} class declared here would be picked up by the recursive
+	 * {@link org.springframework.context.annotation.ComponentScan} and could supply the very bean whose absence
+	 * is the point.
+	 */
+	private AnnotationConfigApplicationContext newProfileLessReconcilePackageContext()
 	{
 		final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		context.getBeanFactory().registerSingleton("stockRepository", Mockito.mock(StockRepository.class));
+		// the very mock this test stubs: whatever bean of the scanned package the context builds must page
+		// through THIS test's selection, not an unstubbed second mock that always answers "no keys"
+		context.getBeanFactory().registerSingleton("stockRepository", stockRepository);
 		context.getBeanFactory().registerSingleton("candidateRepositoryRetrieval", Mockito.mock(CandidateRepositoryRetrieval.class));
 		context.scan("de.metas.material.dispo.reconcile");
 		context.refresh();
 		return context;
 	}
 
-	private static MD_Candidate_Reconcile_ATP newProcess() throws Exception
+	/**
+	 * @param processInfo kept by the caller so it can read the run's resolved process log afterwards via
+	 * {@link ProcessInfo#getResult()} - {@code JavaProcess.getResult()} itself is {@code protected}, hence
+	 * unreachable from a test outside {@code de.metas.process}
+	 * @param dryRun the value of the process's {@code IsDryRun} parameter
+	 * @param livenessCutoffDate the value of the process's optional {@code LivenessCutoffDate} parameter
+	 */
+	private static MD_Candidate_Reconcile_ATP newProcess(
+			@NonNull final ProcessInfo processInfo,
+			final boolean dryRun,
+			@Nullable final LocalDate livenessCutoffDate) throws Exception
 	{
 		final MD_Candidate_Reconcile_ATP process = new MD_Candidate_Reconcile_ATP();
-		process.init(ProcessInfo.builder().setCtx(Env.getCtx()).build());
+		process.init(processInfo);
 
-		final Field isDryRunField = MD_Candidate_Reconcile_ATP.class.getDeclaredField("p_IsDryRun");
-		isDryRunField.setAccessible(true);
-		isDryRunField.set(process, false);
+		setParamField(process, "p_IsDryRun", dryRun);
+		if (livenessCutoffDate != null)
+		{
+			setParamField(process, "p_LivenessCutoffDate", livenessCutoffDate);
+		}
 
 		return process;
+	}
+
+	private static void setParamField(
+			@NonNull final MD_Candidate_Reconcile_ATP process,
+			@NonNull final String fieldName,
+			@NonNull final Object value) throws Exception
+	{
+		final Field field = MD_Candidate_Reconcile_ATP.class.getDeclaredField(fieldName);
+		field.setAccessible(true);
+		field.set(process, value);
+	}
+
+	private static List<StockDataRecordIdentifier> distinctKeys(final int count)
+	{
+		final List<StockDataRecordIdentifier> keys = new ArrayList<>(count);
+		for (int i = 0; i < count; i++)
+		{
+			keys.add(StockDataRecordIdentifier.builder()
+					.clientId(CLIENT_ID)
+					.orgId(ORG_ID)
+					.warehouseId(WAREHOUSE_ID)
+					.productId(ProductId.ofRepoId(2_000_000 + i))
+					.storageAttributesKey(AttributesKey.NONE)
+					.build());
+		}
+		return keys;
+	}
+
+	/**
+	 * A plain (non-Mockito) test double for {@link AtpTargetCalculator} that returns one fixed divergence and
+	 * records what it was asked - the same device {@code MD_Candidate_ATP_Divergence_ReportTest} uses. The
+	 * constructor args are never exercised, since both {@code computeDivergence} overloads are fully overridden
+	 * below.
+	 */
+	private static final class RecordingAtpTargetCalculator extends AtpTargetCalculator
+	{
+		private final AtpDivergence divergenceToReturn;
+		private final List<StockDataRecordIdentifier> keysSeen = new ArrayList<>();
+		private final List<Instant> datesSeen = new ArrayList<>();
+		private final List<Instant> livenessCutoffsSeen = new ArrayList<>();
+
+		RecordingAtpTargetCalculator(@NonNull final AtpDivergence divergenceToReturn)
+		{
+			super(
+					Mockito.mock(StockRepository.class),
+					Mockito.mock(CandidateRepositoryRetrieval.class),
+					new SourceDocumentLivenessService(Mockito.mock(SourceDocumentRepository.class)));
+			this.divergenceToReturn = divergenceToReturn;
+		}
+
+		@Override
+		public AtpDivergence computeDivergence(
+				@NonNull final StockDataRecordIdentifier key,
+				@NonNull final Instant date)
+		{
+			return computeDivergence(key, date, null);
+		}
+
+		@Override
+		public AtpDivergence computeDivergence(
+				@NonNull final StockDataRecordIdentifier key,
+				@NonNull final Instant date,
+				@Nullable final Instant livenessCutoff)
+		{
+			keysSeen.add(key);
+			datesSeen.add(date);
+			livenessCutoffsSeen.add(livenessCutoff);
+			return divergenceToReturn;
+		}
+
+		List<StockDataRecordIdentifier> getKeysSeen() {return keysSeen;}
+
+		List<Instant> getDatesSeen() {return datesSeen;}
+
+		List<Instant> getLivenessCutoffsSeen() {return livenessCutoffsSeen;}
 	}
 }

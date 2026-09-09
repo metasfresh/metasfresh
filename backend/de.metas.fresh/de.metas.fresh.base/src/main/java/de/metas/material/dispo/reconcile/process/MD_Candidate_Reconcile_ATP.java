@@ -22,7 +22,7 @@ package de.metas.material.dispo.reconcile.process;
  * #L%
  */
 
-import de.metas.Profiles;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.common.util.time.SystemTime;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
@@ -30,37 +30,44 @@ import de.metas.material.dispo.reconcile.AtpDivergence;
 import de.metas.material.dispo.reconcile.AtpKeySelection;
 import de.metas.material.dispo.reconcile.AtpKeySelectionDrainer;
 import de.metas.material.dispo.reconcile.AtpReconciliationCommand;
-import de.metas.material.dispo.reconcile.AtpReconciliationRunLog;
+import de.metas.material.dispo.reconcile.AtpReconciliationRunRequest;
+import de.metas.material.dispo.reconcile.AtpTargetCalculator;
+import de.metas.material.dispo.reconcile.async.AtpReconciliationEnqueueService;
+import de.metas.material.dispo.reconcile.async.AtpReconciliationWorkpackageProcessor;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
 
 /**
- * The operator-invocable entry point for {@link AtpReconciliationCommand}: selects reconciliation keys by an
- * optional warehouse/product/product-category filter and reconciles each one, in dry-run mode when asked.
+ * The operator-invocable entry point into the ATP reconciliation: selects reconciliation keys by an optional
+ * warehouse/product/product-category filter and either previews or performs the reconciliation of each one.
  * <p>
- * Structured after the sibling
- * {@code de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs}: a plain {@link JavaProcess} with
- * {@link RunOutOfTrx} on {@link #doIt()} and a batched drain of the matching keys - the drain itself living in
- * {@link AtpKeySelectionDrainer}, so its page size, pagination and runaway backstop are stated once rather than
- * per caller.
+ * <b>The two paths are deliberately different, and this is the class where they part.</b>
+ * <ul>
+ * <li><b>Dry run</b> ({@code IsDryRun = 'Y'}) is computed here, synchronously, and reported in this process's own
+ * log. It needs only {@link AtpTargetCalculator#computeDivergence}, which is un-{@code @Profile}-guarded on
+ * purpose (see that class), so the preview works in the webapi - the JVM a WebUI-launched {@code AD_Process}
+ * actually executes in. Nothing is written, and {@link AtpReconciliationCommand} is never touched.</li>
+ * <li><b>A real run</b> is <i>enqueued</i>: this process writes a {@code C_Queue_WorkPackage} carrying the whole
+ * run and returns, and {@link AtpReconciliationWorkpackageProcessor} performs the reconciliation in the app
+ * server. It has to: the reconciliation needs {@link AtpReconciliationCommand}, which is
+ * {@code @Profile(Profiles.PROFILE_MaterialDispo)}, and that profile is active only in the app server. (
+ * {@code AD_Process.IsServerProcess} is not an escape hatch - it only affects Swing class loading.) So a real
+ * run's result is <b>asynchronous</b> and is reported on the work package, not in this process's log.</li>
+ * </ul>
+ * The consequence the two paths must not suffer is drifting apart. The batched key drain - page size, pagination
+ * and the runaway backstop - therefore lives once, in {@link AtpKeySelectionDrainer}, and both paths call it.
  * <p>
- * <b>Dry run:</b> {@code IsDryRun} is passed straight through to
- * {@link AtpReconciliationCommand#reconcileAndLog(StockDataRecordIdentifier, Instant, boolean, Instant)} - on a dry
- * run nothing is written (see that method's own contract), and this process reports the {@link AtpDivergence} it
- * would have corrected instead of the {@link AtpReconciliationRunLog.Entry} rows a real run actually changed.
  * {@code IsDryRun} defaults to {@code 'N'} (off) - matching the house convention for comparable process-level
  * preview/simulation parameters (e.g. {@code IsSimulation} on the Commission Overview process, {@code IsTest} on
  * {@code DLM_Partition_Migrate}, both default {@code 'N'}) - so an operator who launches this process and accepts
@@ -72,11 +79,12 @@ import java.time.LocalDate;
  */
 public class MD_Candidate_Reconcile_ATP extends JavaProcess
 {
+	private final AtpTargetCalculator atpTargetCalculator =
+			SpringContextHolder.getBeanOrSupply(AtpTargetCalculator.class, AtpTargetCalculator::newInstanceForUnitTesting);
 	private final AtpKeySelectionDrainer keyDrainer =
 			SpringContextHolder.getBeanOrSupply(AtpKeySelectionDrainer.class, AtpKeySelectionDrainer::newInstanceForUnitTesting);
-
-	/** Resolved once, on first use, by {@link #reconciliationCommand()} - never in a field initializer. */
-	@Nullable private AtpReconciliationCommand reconciliationCommand;
+	private final AtpReconciliationEnqueueService enqueueService =
+			SpringContextHolder.getBeanOrSupply(AtpReconciliationEnqueueService.class, AtpReconciliationEnqueueService::new);
 
 	@Param(parameterName = I_MD_Stock.COLUMNNAME_M_Warehouse_ID, mandatory = false)
 	private int p_M_Warehouse_ID;
@@ -97,108 +105,88 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final Instant runDate = SystemTime.asInstant();
-		final Instant livenessCutoff = toInstantOrNull(p_LivenessCutoffDate);
-
-		// Resolved up front, and deliberately not only inside the loop below: the concrete failure this
-		// prevents is a run in a JVM without the material-disposition profile whose selection happens to
-		// match no key at all. The loop body would then never execute, the command bean would never be
-		// resolved, and the process would report "Reconciled 0 of 0 matching key(s)" as a success - telling
-		// an operator the engine is present when it is not. Failing here makes that answer impossible.
-		reconciliationCommand();
-
-		final AtpKeySelectionDrainer.DrainSummary summary = keyDrainer.drain(
-				createKeySelection(),
-				key -> reconcileOneKey(key, runDate, livenessCutoff));
+		final AtpReconciliationRunRequest request = createRunRequest();
 
 		if (p_IsDryRun)
 		{
-			addLog("Dry run: {} of {} matching key(s) would change; nothing was written",
-					summary.getKeysChanged(), summary.getKeysProcessed());
+			previewInline(request);
 		}
 		else
 		{
-			addLog("Reconciled {} of {} matching key(s)", summary.getKeysChanged(), summary.getKeysProcessed());
+			enqueueForTheAppServer(request);
 		}
 
 		return MSG_OK;
 	}
 
 	/**
-	 * @return the {@link AtpReconciliationCommand} bean, resolved on first use and then cached for the rest of this
-	 * run.
+	 * Reports, per key of the selection, the divergence a real run would correct - and writes nothing.
 	 * <p>
-	 * Concrete failure this prevents: {@link AtpReconciliationCommand} is
-	 * {@code @Profile(Profiles.PROFILE_MaterialDispo)} - see its Javadoc for why it has to be - and that profile is
-	 * active only in the app server, not in the webapi, which is where a process launched from the WebUI actually
-	 * runs. Without this method the bean was resolved in a <i>field initializer</i>, so such a run died while the
-	 * process object was still being constructed, with Spring's bare {@code NoSuchBeanDefinitionException} naming
-	 * only the type - nothing about the profile, and nothing an operator or a support engineer could act on.
-	 * Resolving here instead puts the failure inside {@link #doIt()}, on the process framework's ordinary
-	 * error-reporting path, and names both the missing profile and the JVM that has it.
+	 * Deliberately computed from {@link AtpTargetCalculator#computeDivergence} rather than from
+	 * {@link AtpReconciliationCommand#reconcileAndLog} with its {@code dryRun} flag set: the two produce the same
+	 * numbers (that flag makes {@code reconcileAndLog} return exactly the divergence and nothing else), but going
+	 * through the command would require the command <i>bean</i>, which does not exist in the webapi - so the
+	 * preview an operator asks for would fail there instead of previewing.
 	 */
-	private AtpReconciliationCommand reconciliationCommand()
+	private void previewInline(@NonNull final AtpReconciliationRunRequest request)
 	{
-		if (reconciliationCommand == null)
-		{
-			try
-			{
-				reconciliationCommand = SpringContextHolder.instance.getBean(AtpReconciliationCommand.class);
-			}
-			catch (final NoSuchBeanDefinitionException e)
-			{
-				throw new AdempiereException("MD_Candidate_Reconcile_ATP needs the material disposition engine,"
-						+ " which is not present in this application: the spring profile "
-						+ Profiles.PROFILE_MaterialDispo + " is not active here."
-						+ " This process is not invocable from the WebUI in this deployment: the app server reads its"
-						+ " active profiles from the de.metas.spring.profiles.active sysconfigs, while the webapi -"
-						+ " where a WebUI-launched process actually runs - reads a different prefix,"
-						+ " de.metas.ui.web.spring.profiles.active.", e);
-			}
-		}
-		return reconciliationCommand;
+		final AtpKeySelectionDrainer.DrainSummary summary = keyDrainer.drain(
+				request.getSelection(),
+				key -> previewOneKey(request, key));
+
+		addLog("Dry run: {} of {} matching key(s) would change; nothing was written",
+				summary.getKeysChanged(), summary.getKeysProcessed());
 	}
 
 	/**
-	 * @return {@code true} when {@code key}'s stored projection diverged from the target - i.e. this call either
-	 * reconciled it (real run) or found a value it would have reconciled (dry run) - and logged what changed/would
-	 * change; {@code false} when the key was already correct, so there is nothing to report for it.
+	 * @return {@code true} when this key's stored projection diverges from the target, i.e. a real run would
+	 * change it - and logs by how much; {@code false} when the key is already correct, so there is nothing to
+	 * report for it
 	 */
-	boolean reconcileOneKey(
-			@NonNull final StockDataRecordIdentifier key,
-			@NonNull final Instant runDate,
-			@Nullable final Instant livenessCutoff)
+	private boolean previewOneKey(
+			@NonNull final AtpReconciliationRunRequest request,
+			@NonNull final StockDataRecordIdentifier key)
 	{
-		final AtpReconciliationRunLog runLog = reconciliationCommand().reconcileAndLog(key, runDate, p_IsDryRun, livenessCutoff);
-		final AtpDivergence divergence = runLog.getDivergence();
+		final AtpDivergence divergence = atpTargetCalculator.computeDivergence(
+				key, request.getRunDate(), request.getLivenessCutoff());
+
 		if (divergence.getDifference().signum() == 0)
 		{
 			return false;
 		}
 
-		if (p_IsDryRun)
-		{
-			addLog("{}: stored ATP {} would change to {} (difference {})",
-					key, divergence.getStoredAtp(), divergence.getExpectedAtp(), divergence.getDifference());
-		}
-		else
-		{
-			for (final AtpReconciliationRunLog.Entry entry : runLog.getEntries())
-			{
-				addLog("{}: STOCK candidate {} changed from {} to {}",
-						key, entry.getCandidateId(), entry.getQtyBefore(), entry.getQtyAfter());
-			}
-		}
+		addLog("{}: stored ATP {} would change to {} (difference {})",
+				key, divergence.getStoredAtp(), divergence.getExpectedAtp(), divergence.getDifference());
 		return true;
 	}
 
-	/** @return this run's warehouse/product/product-category filter; an unset parameter is not restricted on */
-	private AtpKeySelection createKeySelection()
+	/**
+	 * Hands the run to the async queue and tells the operator where its result will appear.
+	 * <p>
+	 * The selection is deliberately <i>not</i> drained here: one work package carries the filter itself, so the
+	 * keys are read in the JVM that can also reconcile them. Reading them here would only produce a snapshot that
+	 * is already stale by the time the app server picks the package up.
+	 */
+	private void enqueueForTheAppServer(@NonNull final AtpReconciliationRunRequest request)
 	{
-		return AtpKeySelection.builder()
-				.warehouseId(WarehouseId.ofRepoIdOrNull(p_M_Warehouse_ID))
-				.productId(ProductId.ofRepoIdOrNull(p_M_Product_ID))
-				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(p_M_Product_Category_ID))
+		final I_C_Queue_WorkPackage workPackage = enqueueService.enqueue(request);
+
+		addLog("Enqueued work package {} for the reconciliation - it runs in the application server, where the"
+						+ " material disposition engine is, and reports what it changed on that work package",
+				workPackage.getC_Queue_WorkPackage_ID());
+	}
+
+	/** @return this run exactly as the operator parameterised it, with the run date pinned to now */
+	private AtpReconciliationRunRequest createRunRequest()
+	{
+		return AtpReconciliationRunRequest.builder()
+				.selection(AtpKeySelection.builder()
+						.warehouseId(WarehouseId.ofRepoIdOrNull(p_M_Warehouse_ID))
+						.productId(ProductId.ofRepoIdOrNull(p_M_Product_ID))
+						.productCategoryId(ProductCategoryId.ofRepoIdOrNull(p_M_Product_Category_ID))
+						.build())
+				.runDate(SystemTime.asInstant())
+				.livenessCutoff(toInstantOrNull(p_LivenessCutoffDate))
 				.build();
 	}
 
