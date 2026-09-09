@@ -122,7 +122,7 @@ test('TC9: a multi-product HU does not offer the empty reason', async ({ page })
  * warehouse regardless of direction, and throws when none exists.
  *
  * Confirmed live: POSTing a masterdata request for `packingInstructions: { PI: { tu, product,
- * qtyCUsPerTU, packingMaterial } }` + `handlingUnits: { HU: { packingInstructions: 'PI', warehouse:
+ * qtyCUsPerTU, tuPackingMaterial } }` + `handlingUnits: { HU: { packingInstructions: 'PI', warehouse:
  * 'whExtra' (a freshly created, non-standard warehouse — no line in network 540011) } }` fails
  * `Backend.createMasterdata` itself with HTTP 422:
  *   "* Not found * Warehouse (Empties network=Yes): whExtra_20260908T133203807
@@ -263,7 +263,7 @@ const createPackingMaterialMasterdata = async ({ huQty, orderQty }) => {
                 BOM: { bom: { lines: [{ product: 'COMP', qty: orderQty, uom: 'KGM' }] } },
             },
             packingInstructions: {
-                PI: { tu: 'TU', product: 'COMP', qtyCUsPerTU: huQty, packingMaterial: 'PM' },
+                PI: { tu: 'TU', product: 'COMP', qtyCUsPerTU: huQty, tuPackingMaterial: 'PM' },
             },
             handlingUnits: {
                 HU: { product: 'COMP', warehouse: 'WHSTD', packingInstructions: 'PI', qty: huQty },
