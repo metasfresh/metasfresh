@@ -18,6 +18,27 @@ public interface I_RV_ReceiptDisposition_DeliveryPlanning
 
 
 	/**
+	 * Set Actual Discharge Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setActualDischargeQuantity (@Nullable BigDecimal ActualDischargeQuantity);
+
+	/**
+	 * Get Actual Discharge Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getActualDischargeQuantity();
+
+	ModelColumn<I_RV_ReceiptDisposition_DeliveryPlanning, Object> COLUMN_ActualDischargeQuantity = new ModelColumn<>(I_RV_ReceiptDisposition_DeliveryPlanning.class, "ActualDischargeQuantity", null);
+	String COLUMNNAME_ActualDischargeQuantity = "ActualDischargeQuantity";
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
@@ -566,6 +587,27 @@ public interface I_RV_ReceiptDisposition_DeliveryPlanning
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Planned Discharge Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPlannedDischargeQuantity (@Nullable BigDecimal PlannedDischargeQuantity);
+
+	/**
+	 * Get Planned Discharge Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPlannedDischargeQuantity();
+
+	ModelColumn<I_RV_ReceiptDisposition_DeliveryPlanning, Object> COLUMN_PlannedDischargeQuantity = new ModelColumn<>(I_RV_ReceiptDisposition_DeliveryPlanning.class, "PlannedDischargeQuantity", null);
+	String COLUMNNAME_PlannedDischargeQuantity = "PlannedDischargeQuantity";
+
+	/**
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
@@ -631,27 +673,6 @@ public interface I_RV_ReceiptDisposition_DeliveryPlanning
 
 	ModelColumn<I_RV_ReceiptDisposition_DeliveryPlanning, Object> COLUMN_QtyOrdered = new ModelColumn<>(I_RV_ReceiptDisposition_DeliveryPlanning.class, "QtyOrdered", null);
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
-
-	/**
-	 * Set Quantity to move.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyToMove (@Nullable BigDecimal QtyToMove);
-
-	/**
-	 * Get Quantity to move.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyToMove();
-
-	ModelColumn<I_RV_ReceiptDisposition_DeliveryPlanning, Object> COLUMN_QtyToMove = new ModelColumn<>(I_RV_ReceiptDisposition_DeliveryPlanning.class, "QtyToMove", null);
-	String COLUMNNAME_QtyToMove = "QtyToMove";
 
 	/**
 	 * Set Receipt Disposition including Delivery Planning.

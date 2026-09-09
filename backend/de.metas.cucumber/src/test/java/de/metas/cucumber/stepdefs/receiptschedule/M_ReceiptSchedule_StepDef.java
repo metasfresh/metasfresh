@@ -226,6 +226,10 @@ public class M_ReceiptSchedule_StepDef
 	 *   <b>M_ReceiptSchedule_ID</b> — (required, identifier-ref) the receipt schedule to update<br>
 	 *   <b>OPT.DatePromised_Override</b> — (optional) the date the operator promises instead of the one the
 	 *   order carries; it is what {@code DatePromised_Effective} resolves to from then on<br>
+	 *   <b>OPT.QtyMoved</b> — (optional) the quantity already received, i.e. a partial receipt stated directly -
+	 *   these scenarios drive no receipt process. Saving it recomputes {@code QtyToMove} as
+	 *   {@code QtyOrdered - QtyMoved} through the schedule's own interceptor, so the two figures diverge exactly
+	 *   as they would after a real partial receipt<br>
 	 * @cucumber.depends StepDefData: M_ReceiptSchedule_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -242,6 +246,9 @@ public class M_ReceiptSchedule_StepDef
 
 			row.getAsOptionalLocalDateTimestamp(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override)
 					.ifPresent(receiptSchedule::setDatePromised_Override);
+
+			row.getAsOptionalBigDecimal(I_M_ReceiptSchedule.COLUMNNAME_QtyMoved)
+					.ifPresent(receiptSchedule::setQtyMoved);
 
 			saveRecord(receiptSchedule);
 		});

@@ -1,49 +1,35 @@
+-- Source DDL: backend/de.metas.deliveryplanning.base/src/main/sql/postgresql/ddl/views/RV_ReceiptDisposition_DeliveryPlanning.sql
 --
--- RV_ReceiptDisposition_DeliveryPlanning -- the single inbound list behind the receipt-disposition
--- delivery-planning window: active Incoming delivery plannings (branch one, "planned") UNIONed with the
--- receipt schedules no active planning refers to (branch two, "unplanned"). The two branches are exact
--- complements, so a schedule never appears on both; a schedule shared by N plannings (what a SPLIT produces)
--- yields N rows.
+-- Renames RV_ReceiptDisposition_DeliveryPlanning's open-quantity column QtyToMove ->
+-- PlannedDischargeQuantity and adds the missing ActualDischargeQuantity beside it. Two owner rulings
+-- (2026-09-09).
 --
--- KEY. RV_ReceiptDisposition_DeliveryPlanning_ID = M_Delivery_Planning_ID on branch one,
--- 1000000000 + M_ReceiptSchedule_ID on branch two.
---   * Arithmetic, never ROW_NUMBER(): a window function blocks predicate push-down, so a filtered open would
---     compute the whole view first.
---   * Branch one keys on the PLANNING, not the schedule: a split shares one schedule, so a schedule-derived id
---     would repeat and the window would lose grid identity, selection and zoom.
---   * Both source ids must stay <= 1,147,483,647 for the sum to fit a Java int.
+-- Ruling A - the column carried a SCHEDULE term for a PLANNING value. 5823300 made a planned row's value
+-- right (dp.planneddischargequantity, the planning's own share) but left the column named QtyToMove and
+-- captioned "Menge zu bewegen" - M_ReceiptSchedule's term. This window's stated vocabulary is the other way
+-- round: the columns carry the delivery-planning terms, and a receipt schedule supplies values INTO those
+-- columns without its own labels appearing. The owner reads the view column name, not the caption, so name,
+-- caption and content have to agree. Branch two goes on serving rs.qtytomove into the planning-named column -
+-- which is exactly what that vocabulary rule prescribes, not an exception to it.
 --
--- LAZY-LOADING SOURCE COLUMNS. M_ReceiptSchedule.M_Shipper_ID, IsBLReceived, IsBookingConfirmed and IsWENotice
--- are IsLazyLoading='Y' -- AD-level ColumnSQL with NO physical value on the table, so a plain SQL view cannot
--- select them. The shipper is read off the already-joined C_Order (o.m_shipper_id) and the three flags replicate
--- the source ColumnSQL subquery, correlated on rs.c_order_id, on both branches.
+-- Ruling B - the actual discharge was missing entirely. A planned row serves the planning's own
+-- dp.actualdischargequantity; an unplanned row serves M_ReceiptSchedule.QtyMoved, the owner's confirmed
+-- counterpart ("ActualDischargeQuantity; the natural counterpart is M_ReceiptSchedule.QtyMoved pairing sounds
+-- right"). For Incoming the two figures agree until a partial receipt splits them apart, which is precisely
+-- when the second column starts earning its place.
 --
--- PER-BRANCH vs SHARED. Identity and context (product, partner, warehouse, order, order line) are read off the
--- SCHEDULE on BOTH branches, one expression, no CASE - the generate command copies them onto the planning at
--- creation, so the two agree by construction. Dates, quantities and C_UOM_ID are read per branch, because they
--- stay planning-editable after creation and could otherwise silently disagree with each other.
---   * The two quantity columns carry DELIVERY-PLANNING names on BOTH branches: PlannedDischargeQuantity and
---     ActualDischargeQuantity. The window's vocabulary is the planning's, and a receipt schedule supplies values
---     INTO those columns without its own terms appearing - so branch two serves rs.qtytomove as the planned
---     discharge and rs.qtymoved as the actual one, a bare schedule having no planning to ask. Branch one reads
---     the PLANNING's own dp.planneddischargequantity / dp.actualdischargequantity, never the schedule's: a split
---     shares one schedule, so the schedule carries a single figure for the whole order line while each planning
---     plans its own share - reading the schedule shows the same order-line-wide number on every sibling row and
---     reports a quantity nobody plans to receive.
---   * Only the DISCHARGE pair appears. The planning also carries PlannedLoadedQuantity and ActualLoadQty, the
---     vendor's end of the movement; this is a receipt window, so what is discharged here is what belongs on it.
---     For Incoming the actual equals the planned figure until a partial receipt splits the two apart.
---   * M_Warehouse_ID is the schedule's PLAIN column, deliberately not M_Warehouse_Effective_ID: the planning
---     stores the plain one, so the effective one would make the column's two halves disagree.
---   * ATA (branch two) is the EARLIEST movement date over the schedule's receipts, and needs all three
---     conditions - allocation active, receipt completed, aggregate min - or it reports something false.
---   * CalendarWeek is EXTRACT(week from <that branch's ETA expression>), not from a bare source column, so the
---     week cannot disagree with the ETA shown beside it. ISO week, so a year-end date reports its ISO year's week.
+-- Only the DISCHARGE pair is added. The planning carries four quantity figures - PlannedLoadedQuantity and
+-- ActualLoadQty are the vendor's end of the movement, and this is a receipt window, so the load pair is
+-- deliberately left off.
 --
--- OUT OF SCOPE: branch one is strictly Incoming. Consequence, so it is not read as a bug: branch two excludes a
--- schedule that has ANY active planning, so a schedule whose only active planning is a Dropship one appears on
--- NEITHER branch.
+-- Grain/key are unaffected: dp.actualdischargequantity and rs.qtymoved are existing scalar columns on
+-- m_delivery_planning and m_receiptschedule, tables both branches already select from - no new join, no new
+-- table, no fan-out possible. Re-verified after applying: 1054 rows, 744 planned + 310 unplanned, 1054
+-- distinct keys, and "GROUP BY RV_ReceiptDisposition_DeliveryPlanning_ID HAVING count(*) > 1" returns zero
+-- rows.
 --
+-- The AD metadata - the AD_Column rename onto the planning's element, and the new column's AD_Column /
+-- AD_Field / AD_UI_Element - is the next script, 5823320.
 
 DROP VIEW IF EXISTS RV_ReceiptDisposition_DeliveryPlanning$new
 ;
