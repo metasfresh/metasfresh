@@ -826,6 +826,7 @@ public class ProcessExecutionResult
 		reportData = otherResult.reportData;
 
 		refreshAllAfterExecution = otherResult.refreshAllAfterExecution;
+		recreateViewSelectionAfterExecution = otherResult.recreateViewSelectionAfterExecution;
 
 		recordToSelectAfterExecution = otherResult.recordToSelectAfterExecution;
 		recordsToOpen = otherResult.recordsToOpen;

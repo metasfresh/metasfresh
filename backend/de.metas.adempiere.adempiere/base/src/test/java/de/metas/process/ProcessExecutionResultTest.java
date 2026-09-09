@@ -75,6 +75,7 @@ public class ProcessExecutionResultTest
 	{
 		final ProcessExecutionResult result = ProcessExecutionResult.newInstanceForADPInstanceId(PInstanceId.ofRepoId(12345));
 		result.setRecordToSelectAfterExecution(createDummyTableRecordReference());
+		result.setRecreateViewSelectionAfterExecution(true);
 		result.markAsError("error summary1");
 		result.setReportData(new ByteArrayResource(new byte[] { 1, 2, 3 }), "report.pdf", "application/pdf");
 		//
@@ -129,6 +130,7 @@ public class ProcessExecutionResultTest
 		Assertions.assertEquals(result.isErrorWasReportedToUser(), resultFromJson.isErrorWasReportedToUser());
 		Assertions.assertEquals(result.isShowProcessLogs(), resultFromJson.isShowProcessLogs());
 		Assertions.assertEquals(result.isRefreshAllAfterExecution(), resultFromJson.isRefreshAllAfterExecution());
+		Assertions.assertEquals(result.isRecreateViewSelectionAfterExecution(), resultFromJson.isRecreateViewSelectionAfterExecution());
 		//
 		Assertions.assertEquals(result.getReportData(), resultFromJson.getReportData());
 		Assertions.assertEquals(result.getReportFilename(), resultFromJson.getReportFilename());

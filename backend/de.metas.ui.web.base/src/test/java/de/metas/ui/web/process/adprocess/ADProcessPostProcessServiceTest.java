@@ -33,6 +33,8 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.websocket.sender.WebsocketSender;
 import de.metas.user.UserId;
 import lombok.NonNull;
+
+import java.util.function.Consumer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -109,7 +111,7 @@ class ADProcessPostProcessServiceTest
 		Mockito.verify(view, Mockito.never()).invalidateSelection();
 	}
 
-	private void postProcess(@NonNull final java.util.function.Consumer<ProcessExecutionResult> resultCustomizer)
+	private void postProcess(@NonNull final Consumer<ProcessExecutionResult> resultCustomizer)
 	{
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
