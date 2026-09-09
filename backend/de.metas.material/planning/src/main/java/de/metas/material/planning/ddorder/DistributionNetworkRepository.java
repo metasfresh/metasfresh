@@ -37,6 +37,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -44,6 +45,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collector;
 
 @Repository
@@ -59,6 +61,39 @@ public class DistributionNetworkRepository
 	public DistributionNetwork getById(@NonNull final DistributionNetworkId id)
 	{
 		return getMap().getById(id);
+	}
+
+	public DistributionNetworkId createNetwork(@NonNull final CreateDistributionNetworkRequest request)
+	{
+		final I_DD_NetworkDistribution networkRecord = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistribution.class);
+		networkRecord.setAD_Org_ID(request.getOrgId().getRepoId());
+		networkRecord.setValue(request.getName());
+		networkRecord.setName(request.getName());
+		networkRecord.setIsHUDestroyed(request.isHuDestroyed());
+		InterfaceWrapperHelper.saveRecord(networkRecord);
+
+		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoId(networkRecord.getDD_NetworkDistribution_ID());
+
+		for (final CreateDistributionNetworkRequest.Line line : request.getLines())
+		{
+			addLine(networkId, line);
+		}
+
+		return networkId;
+	}
+
+	public void addLine(@NonNull final DistributionNetworkId networkId, @NonNull final CreateDistributionNetworkRequest.Line line)
+	{
+		final I_DD_NetworkDistribution networkRecord = InterfaceWrapperHelper.load(networkId, I_DD_NetworkDistribution.class);
+
+		final I_DD_NetworkDistributionLine lineRecord = InterfaceWrapperHelper.newInstance(I_DD_NetworkDistributionLine.class);
+		lineRecord.setAD_Org_ID(networkRecord.getAD_Org_ID());
+		lineRecord.setDD_NetworkDistribution_ID(networkId.getRepoId());
+		lineRecord.setM_WarehouseSource_ID(line.getSourceWarehouseId().getRepoId());
+		lineRecord.setM_Warehouse_ID(line.getTargetWarehouseId().getRepoId());
+		lineRecord.setM_Shipper_ID(line.getShipperId().getRepoId());
+		lineRecord.setPercent(Percent.ONE_HUNDRED.toBigDecimal());
+		InterfaceWrapperHelper.saveRecord(lineRecord);
 	}
 
 	/**
@@ -78,6 +113,12 @@ public class DistributionNetworkRepository
 	public DistributionNetwork getEmptiesDistributionNetwork()
 	{
 		return getMap().getEmptiesDistributionNetwork();
+	}
+
+	/** Like {@link #getEmptiesDistributionNetwork()}, but empty instead of throwing when there is none. Still throws if there is more than one. */
+	public Optional<DistributionNetwork> getEmptiesDistributionNetworkIfExists()
+	{
+		return getMap().getEmptiesDistributionNetworkIfExists();
 	}
 
 	private DistributionNetworksMap getMap()
@@ -179,9 +220,15 @@ public class DistributionNetworkRepository
 
 		public DistributionNetwork getEmptiesDistributionNetwork()
 		{
+			return getEmptiesDistributionNetworkIfExists()
+					.orElseThrow(() -> new AdempiereException("No empties distribution network found"));
+		}
+
+		public Optional<DistributionNetwork> getEmptiesDistributionNetworkIfExists()
+		{
 			if (emptiesDistributionNetworks.isEmpty())
 			{
-				throw new AdempiereException("No empties distribution network found");
+				return Optional.empty();
 			}
 			else if (emptiesDistributionNetworks.size() > 1)
 			{
@@ -189,7 +236,7 @@ public class DistributionNetworkRepository
 			}
 			else
 			{
-				return emptiesDistributionNetworks.get(0);
+				return Optional.of(emptiesDistributionNetworks.get(0));
 			}
 		}
 
