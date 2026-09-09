@@ -37,6 +37,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.process.ReceiptScheduleLUTUConfigurations;
 import de.metas.util.Services;
@@ -68,6 +69,23 @@ abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends Recei
 	 * process derived - it decides whether a planned row's share caps it (see {@link #getQtyToAllocate}).
 	 */
 	protected abstract boolean isQtyToReceiveOperatorStated();
+
+	/**
+	 * The direction guard runs BEFORE the shared receive preconditions, and the order is the point: those start by
+	 * loading the selected row's receipt schedule, which an outgoing delivery planning has not got. Only these two
+	 * actions are reachable from the delivery-planning window, so only they need it.
+	 */
+	@Override
+	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+	{
+		final ProcessPreconditionsResolution noneOutgoing = checkNoneOutgoing(getSelectedDeliveryPlannings());
+		if (!noneOutgoing.isAccepted())
+		{
+			return noneOutgoing;
+		}
+
+		return super.checkPreconditionsApplicable();
+	}
 
 	@Override
 	protected final void receive(@NonNull final ReceiptScheduleAndDeliveryPlanningId sourceIds)

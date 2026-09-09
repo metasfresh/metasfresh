@@ -41,14 +41,15 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
+import org.compiere.model.I_M_Delivery_Planning;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
- * What every action started from the receipt-disposition delivery-planning window shares: how a selected grid
- * row is turned back into the records it stands for, and the ONE precondition all of them refuse on.
+ * What every action started from the receipt-disposition delivery-planning window - or, for the receive-HUs
+ * pair, from the delivery-planning window - shares: how a selected grid row is turned back into the records it
+ * stands for, and the preconditions they refuse on.
  * <p>
  * {@link IProcessPrecondition} is declared HERE, and is load-bearing: {@code ProcessPreconditionChecker} looks
  * a process' preconditions up by {@code IProcessPrecondition.class.isAssignableFrom(processClass)} and, finding
@@ -80,17 +81,28 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	}
 
 	/**
-	 * The receipt schedule is read with {@code ofRepoId} - MANDATORY: both branches of the view select
-	 * {@code M_ReceiptSchedule}'s own primary key, and a view change that stopped exposing the column would
-	 * otherwise make every selected row vanish silently while the action reports success. The planning id is
+	 * The receipt schedule is read with {@code ofRepoId} - MANDATORY: every row this is called for selects
+	 * {@code M_ReceiptSchedule}'s own primary key, and a change that stopped exposing the column would otherwise
+	 * make every selected row vanish silently while the action reports success. The planning id is
 	 * {@code ofRepoIdOrNull} because its absence is a real row shape, not a fault.
+	 * <p>
+	 * The two column names are taken from {@code M_Delivery_Planning} although the row may equally be a
+	 * {@code RV_ReceiptDisposition_DeliveryPlanning} one: both tables spell the two columns identically, and the
+	 * delivery-planning window is the only caller whose rows can lack a receipt schedule - see
+	 * {@link #checkNoneOutgoing}.
 	 */
 	@VisibleForTesting
 	static ReceiptScheduleAndDeliveryPlanningId extractReceiptScheduleAndPlanningId(@NonNull final IViewRow row)
 	{
 		return ReceiptScheduleAndDeliveryPlanningId.of(
-				row.getFieldValueAsRepoId(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_M_ReceiptSchedule_ID, ReceiptScheduleId::ofRepoId),
-				row.getFieldValueAsNullableRepoId(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_M_Delivery_Planning_ID, DeliveryPlanningId::ofRepoId));
+				row.getFieldValueAsRepoId(I_M_Delivery_Planning.COLUMNNAME_M_ReceiptSchedule_ID, ReceiptScheduleId::ofRepoId),
+				extractDeliveryPlanningIdOrNull(row));
+	}
+
+	@Nullable
+	private static DeliveryPlanningId extractDeliveryPlanningIdOrNull(@NonNull final IViewRow row)
+	{
+		return row.getFieldValueAsNullableRepoId(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, DeliveryPlanningId::ofRepoId);
 	}
 
 	/**
@@ -99,14 +111,37 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 	 */
 	protected final DeliveryPlanningList getSelectedDeliveryPlannings()
 	{
-		final ImmutableSet<DeliveryPlanningId> deliveryPlanningIds = getReceiptScheduleAndPlanningIds().stream()
-				.map(ReceiptScheduleAndDeliveryPlanningId::getDeliveryPlanningId)
+		// Read straight off the rows rather than via getReceiptScheduleAndPlanningIds(): that one insists on a
+		// receipt schedule, which an outgoing delivery planning has not got - and this list is what
+		// checkNoneOutgoing asks the direction of, i.e. it runs BEFORE anything may insist.
+		final ImmutableSet<DeliveryPlanningId> deliveryPlanningIds = getView().streamByIds(getSelectedRowIds())
+				.map(ReceiptDispositionDeliveryPlanningViewBasedProcess::extractDeliveryPlanningIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return deliveryPlanningIds.isEmpty()
 				? DeliveryPlanningList.EMPTY
 				: deliveryPlanningService.getProcessedStatePlannings(deliveryPlanningIds);
+	}
+
+	/**
+	 * Refuses a selection holding an OUTGOING delivery planning - the shape only the delivery-planning window can
+	 * produce, where the grid lists all three transport directions instead of the receipt-disposition view's
+	 * incoming/dropship rows. Such a planning has no {@code M_ReceiptSchedule_ID}, so without this guard the
+	 * receive would not merely be inapplicable: {@link #extractReceiptScheduleAndPlanningId} would fail its
+	 * assumption and the frontend would show the action refused with THAT message.
+	 * <p>
+	 * INTERNAL reason: on an outgoing planning the action is not "temporarily unavailable" but nonsense, so it
+	 * disappears rather than sitting disabled in the quick-action slot.
+	 */
+	protected final ProcessPreconditionsResolution checkNoneOutgoing(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
+	{
+		return selectedDeliveryPlannings.stream()
+				.filter(deliveryPlanning -> !deliveryPlanning.getTransportDirection().isIncomingOrDropship())
+				.findFirst()
+				.map(deliveryPlanning -> ProcessPreconditionsResolution.rejectWithInternalReason(
+						"outgoing delivery planning " + deliveryPlanning.getId().getRepoId() + " has nothing to receive"))
+				.orElseGet(ProcessPreconditionsResolution::accept);
 	}
 
 	protected final ProcessPreconditionsResolution checkNoneProcessed(@NonNull final DeliveryPlanningList selectedDeliveryPlannings)
