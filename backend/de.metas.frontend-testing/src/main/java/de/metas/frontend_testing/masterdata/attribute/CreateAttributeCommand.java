@@ -65,8 +65,20 @@ public class CreateAttributeCommand
 
 		final I_M_Attribute record = existing != null ? existing : InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 		record.setValue(value);
+		// Set the Name on a NEW record (defaulting to Value) or when explicitly requested - mirroring the
+		// attributeValueType / isInstanceAttribute guards below. Upserting an existing attribute (e.g. re-linking
+		// a seeded standard attribute like HU_BestBeforeDate by Value across scenarios) with the name omitted must
+		// NOT clobber its seeded Name back to the technical Value - that both breaks the mobile receive dialog's
+		// caption (which renders the translated M_Attribute.Name) and mutates the shared attribute for other runs.
 		final String name = StringUtils.trimBlankToNull(request.getName());
-		record.setName(name != null ? name : value);
+		if (name != null)
+		{
+			record.setName(name);
+		}
+		else if (existing == null)
+		{
+			record.setName(value);
+		}
 		// Only set on a NEW record (defaulting to STRING) or when explicitly requested - upserting an existing
 		// attribute (e.g. a shared fixture referenced by Value across scenarios) with an omitted type must NOT
 		// silently downgrade it back to STRING, matching how the sibling isMandatory/isStorageRelevant fields

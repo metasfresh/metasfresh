@@ -88,6 +88,35 @@ public class CreateAttributeCommandTest
 	}
 
 	@Test
+	public void newAttribute_withoutName_defaultsToValue()
+	{
+		final I_M_Attribute record = execute(
+				JsonCreateAttributeRequest.builder().value("ATTR_NO_NAME").build(),
+				"attrNoName");
+
+		assertThat(record.getName()).isEqualTo("ATTR_NO_NAME");
+	}
+
+	@Test
+	public void upsertExistingAttribute_withoutName_preservesExistingName()
+	{
+		// given an existing attribute with a proper (translated) Name, e.g. a seeded standard attribute
+		// re-linked by Value (like HU_BestBeforeDate whose seeded Name is "Mindesthaltbarkeit")
+		execute(
+				JsonCreateAttributeRequest.builder().value("HU_BestBeforeDate").name("Mindesthaltbarkeit").build(),
+				"bbd1");
+
+		// when upserting the same attribute (by Value) with the name omitted
+		final I_M_Attribute record = execute(
+				JsonCreateAttributeRequest.builder().value("HU_BestBeforeDate").build(),
+				"bbd2");
+
+		// then the existing Name must be preserved, NOT clobbered back to the technical Value - otherwise the
+		// mobile receive dialog shows the raw code "HU_BestBeforeDate" instead of the human label.
+		assertThat(record.getName()).isEqualTo("Mindesthaltbarkeit");
+	}
+
+	@Test
 	public void upsertExistingAttribute_withoutIsInstanceAttribute_doesNotDowngrade()
 	{
 		// given an existing attribute explicitly created with IsInstanceAttribute=false

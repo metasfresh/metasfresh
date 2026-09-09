@@ -24,7 +24,12 @@ public class JsonCreateAttributeRequest
 	/** {@code M_Attribute.Value}. When omitted, a unique value is derived from the request's map-key identifier. */
 	@Nullable String value;
 
-	/** {@code M_Attribute.Name}. Defaults to {@link #value} when omitted. */
+	/**
+	 * {@code M_Attribute.Name}. On a NEW attribute, defaults to {@link #value} when omitted. On an upsert
+	 * (an existing attribute matched by {@link #value}), an omitted name leaves the existing Name untouched -
+	 * so re-linking a seeded standard attribute (e.g. {@code HU_BestBeforeDate}) by Value keeps its proper
+	 * seeded Name rather than resetting it to the technical Value.
+	 */
 	@Nullable String name;
 
 	/**
