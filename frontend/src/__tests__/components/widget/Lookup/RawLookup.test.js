@@ -45,6 +45,7 @@ const createDummyProps = (props = {}) => {
     onDropdownListToggle: jest.fn(),
     onChange: jest.fn(),
     enableAutofocus: jest.fn(),
+    setNextProperty: jest.fn(() => false),
     //
     // Overrides:
     ...props,
@@ -160,6 +161,58 @@ describe('RawLookup component', () => {
       });
       expect(handleValueSpy).toHaveBeenCalled();
       expect(wrapper.state().list.length).toEqual(2);
+    });
+  });
+
+  describe('handleInputEmptyStatus guard (non-primary sub-fields receive no function)', () => {
+    const item = { key: '1000123', caption: 'KT x 18 KG' };
+
+    // Lookup.js hands non-primary sub-fields `false` (pre-fix) / `undefined` (post-fix);
+    // primary sub-fields get the real callback. All three notification sites must cope.
+    const propValues = [
+      ['false', false],
+      ['undefined', undefined],
+      ['a function', 'FN'], // replaced by a fresh jest.fn() per test
+    ];
+
+    const mountWith = (handleInputEmptyStatus) => {
+      const onChange = jest.fn(); // returns undefined → doThen runs the callback synchronously
+      const props = createDummyProps({
+        subentity: 'quickInput',
+        onChange,
+        handleInputEmptyStatus,
+      });
+      const wrapper = mount(<RawLookup {...props} />);
+      return { wrapper, onChange, instance: wrapper.instance() };
+    };
+
+    describe.each(propValues)('handleInputEmptyStatus = %s', (_label, value) => {
+      let fn;
+      const resolve = () => (value === 'FN' ? (fn = jest.fn()) : value);
+
+      it('handleAutoSelectAndAdvance (quick-input Enter path) does not throw and PATCHes', () => {
+        const { instance, onChange } = mountWith(resolve());
+        expect(() => instance.handleAutoSelectAndAdvance(item)).not.toThrow();
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith('someField', item);
+        expect(instance.inputSearch.value).toBe('KT x 18 KG');
+        if (fn) expect(fn).toHaveBeenCalledWith(false);
+      });
+
+      it('handleSelect_RegularItem (mouse / regular form) does not throw and PATCHes', () => {
+        const { instance, onChange } = mountWith(resolve());
+        expect(() => instance.handleSelect_RegularItem(item)).not.toThrow();
+        expect(onChange).toHaveBeenCalledTimes(1);
+        expect(onChange).toHaveBeenCalledWith('someField', item);
+        if (fn) expect(fn).toHaveBeenCalledWith(false);
+      });
+
+      it('componentDidUpdate (value arrives from the server) does not throw', () => {
+        const { wrapper } = mountWith(resolve());
+        expect(() => wrapper.setProps({ defaultValue: item })).not.toThrow();
+        expect(wrapper.instance().inputSearch.value).toBe('KT x 18 KG');
+        if (fn) expect(fn).toHaveBeenCalledWith(false);
+      });
     });
   });
 });
