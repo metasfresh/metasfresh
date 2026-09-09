@@ -6,8 +6,8 @@
 -- Process registration for MD_Candidate_Reconcile_ATP -- an operator-invocable run of
 -- AtpReconciliationCommand restricted by an optional warehouse/product/product-category
 -- filter, with a dry-run mode and an optional liveness-cutoff date.
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value)
-VALUES ('3',0,0,585674 /*From ID Server*/,'Y','de.metas.material.dispo.reconcile.process.MD_Candidate_Reconcile_ATP','N',TO_TIMESTAMP('2026-09-09 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Gleicht das gespeicherte Zusagbare (ATP) mit dem physischen Bestand und offenen Positionen ab, ohne den Bestand zu verändern.','de.metas.material.dispo','Y','Y','N','N','Y','Y','N','Y','Y',0,'ATP abgleichen','json','Y','Y','Java',TO_TIMESTAMP('2026-09-09 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'MD_Candidate_Reconcile_ATP')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,Help,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value)
+VALUES ('3',0,0,585674 /*From ID Server*/,'Y','de.metas.material.dispo.reconcile.process.MD_Candidate_Reconcile_ATP','N',TO_TIMESTAMP('2026-09-09 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Gleicht das gespeicherte Zusagbare (ATP) mit dem physischen Bestand und offenen Positionen ab, ohne den Bestand zu verändern.','Ein Testlauf wird sofort ausgeführt und zeigt nur an, was sich ändern würde. Ein echter Lauf wird stattdessen als Arbeitspaket zur Verarbeitung im Application-Server eingeplant - das Ergebnis steht deshalb nicht in diesem Prozessprotokoll, sondern am Arbeitspaket.','de.metas.material.dispo','Y','Y','N','N','Y','Y','N','Y','Y',0,'ATP abgleichen','json','Y','Y','Java',TO_TIMESTAMP('2026-09-09 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'MD_Candidate_Reconcile_ATP')
 ;
 
 INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID,Description,Help,Name,IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -17,7 +17,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
 ;
 
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Reconcile ATP', Description='Reconciles the stored Available-to-Promise (ATP) with physical stock and still-open positions, without moving stock.', Updated=TO_TIMESTAMP('2026-09-09 09:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Reconcile ATP', Description='Reconciles the stored Available-to-Promise (ATP) with physical stock and still-open positions, without moving stock.', Help='A dry run is carried out immediately and only reports what would change. A real run is instead queued as a work package for processing in the application server - so its result is reported on that work package, not in this process log.', Updated=TO_TIMESTAMP('2026-09-09 09:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Language='en_US' AND AD_Process_ID=585674
 ;
 
