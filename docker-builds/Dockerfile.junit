@@ -3,7 +3,7 @@ ARG REGISTRY=ghcr.io/
 FROM ${REGISTRY}metasfresh/metas-mvn-common:$REFNAME AS common
 FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
-FROM maven:3.8.4-jdk-8 as junit
+FROM maven:3.8.8-eclipse-temurin-8 as junit
 
 ARG SKIP_MIGRATION_SCRIPTS_TEST=false
 
