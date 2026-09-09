@@ -70,9 +70,9 @@ public class CreatePackingInstructionsCommand
 			final HuPackingInstructionsItemId tuPIItemId = createPIItem_Material(tu);
 			tuPIItemProductTestId = createPIItemProduct(tuPIItemId);
 
-			if (request.getPackingMaterial() != null)
+			if (request.getTuPackingMaterial() != null)
 			{
-				createPIItem_PackingMaterial(tu, request.getPackingMaterial());
+				createPIItem_PackingMaterial(tu, request.getTuPackingMaterial());
 			}
 		}
 

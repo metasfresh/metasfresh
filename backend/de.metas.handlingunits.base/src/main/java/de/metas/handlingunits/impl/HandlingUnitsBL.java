@@ -1503,6 +1503,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public List<I_M_HU> retrieveIncludedHUs(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<LocatorId> getLocatorIds(@NonNull final Collection<HuId> huIds)
 	{

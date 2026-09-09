@@ -332,6 +332,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	List<I_M_HU> retrieveIncludedHUs(I_M_HU huId);
 
+	List<I_M_HU> retrieveIncludedHUs(@NonNull HuId huId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery

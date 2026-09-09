@@ -310,6 +310,7 @@ public class CreateMasterdataCommand
 	private JsonPackageResponse createPackage(final String identifier, final JsonPackageRequest request)
 	{
 		return PackageCommand.builder()
+				.inOutPackageRepository(services.inOutPackageRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
