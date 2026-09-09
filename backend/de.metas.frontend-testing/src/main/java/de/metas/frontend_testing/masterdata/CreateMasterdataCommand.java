@@ -267,7 +267,10 @@ public class CreateMasterdataCommand
 	 */
 	private void configureWarehouseEmpties()
 	{
-		if (request.getWarehouses() == null) {return;}
+		if (request.getWarehouses() == null)
+		{
+			return;
+		}
 
 		ConfigureWarehouseEmptiesCommand.builder()
 				.distributionNetworkRepository(services.distributionNetworkRepository)

@@ -20,7 +20,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.jetbrains.annotations.NotNull;
