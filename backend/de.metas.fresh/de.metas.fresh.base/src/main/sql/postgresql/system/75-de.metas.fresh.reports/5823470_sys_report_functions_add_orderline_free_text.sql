@@ -1,6 +1,7 @@
 -- Expose C_OrderLine.DescriptionAboveLine (the free text printed above an order line) as
 -- "descriptionaboveline" to every core sales line-detail report source that already
--- reaches C_OrderLine, and add the join for the three sources that did not yet reach it.
+-- reaches C_OrderLine, and add the join for the two sources that did not yet reach it
+-- (Docs_Sales_InOut_Details_HU in section 4, and the PickingList view in section 8).
 --
 -- Source DDL:
 --   backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Docs_Sales_Order_Details.sql
@@ -12,9 +13,9 @@
 --   backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Docs_Sales_Picking_Details_HU.sql
 --   backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/views/PickingList.sql
 --
--- Docs_Sales_Invoice_Details_HU is intentionally NOT touched: its only jrxml consumer
--- (invoice/report_details_hu.jrxml) is guarded by a literal printWhenExpression=false band
--- in invoice/report.jrxml and never renders.
+-- Docs_Sales_Invoice_Details_HU is NOT part of this script -- it gets the same column in its
+-- own sibling migration (5823580), because it does have a live consumer (a customer overriding
+-- template reads it), contrary to an earlier reading of core alone.
 
 -- ============================================================================
 -- 1) Docs_Sales_Order_Details -- FROM C_OrderLine directly, column appended
@@ -996,7 +997,7 @@ FROM m_picking_candidate pc
 	JOIN C_Uom u on u.C_Uom_id = v.C_Uom_id
 	LEFT JOIN M_HU hu on hu.M_hu_id = pc.pickfrom_hu_id
 	LEFT JOIN m_locator l on l.m_locator_id = hu.m_locator_id
-	LEFT JOIN C_OrderLine ol on ol.C_OrderLine_ID = v.c_orderlineso_id
+	LEFT JOIN C_OrderLine ol on ol.C_OrderLine_ID = v.c_orderlineso_id AND ol.isActive = 'Y'
 ORDER BY l.value, l.x, l.y, l.z, l.x1;
 
 SELECT public.db_alter_view(

@@ -256,7 +256,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	<detail>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean($F{descriptionaboveline} != null && !$F{descriptionaboveline}.trim().isEmpty())]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 ) && $F{descriptionaboveline} != null && !$F{descriptionaboveline}.trim().isEmpty()]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-descAboveLine" mode="Transparent" x="37" y="0" width="516" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6874028a-5dab-41c4-9503-4f21c6cb38f8"/>
 				<box rightPadding="3">

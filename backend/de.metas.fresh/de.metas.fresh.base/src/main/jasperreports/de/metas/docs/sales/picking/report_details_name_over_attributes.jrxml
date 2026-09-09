@@ -138,7 +138,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 	<detail>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean($F{descriptionaboveline} != null && !$F{descriptionaboveline}.trim().isEmpty())]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 ) && $F{descriptionaboveline} != null && !$F{descriptionaboveline}.trim().isEmpty()]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-descAboveLine" mode="Transparent" x="37" y="0" width="541" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="f0363bf7-58bc-4048-8516-552802a00073"/>
 				<box rightPadding="3">
