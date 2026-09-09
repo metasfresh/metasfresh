@@ -24,6 +24,7 @@ package de.metas.material.dispo.reconcile;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.Profiles;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -40,6 +41,7 @@ import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -77,8 +79,28 @@ import java.util.UUID;
  * {@code Candidate.getStockImpactPlannedQuantity()} - the same authoritative formula {@link AtpTargetCalculator}
  * used to compute the target - the two are one calculation invoked from two call sites, not two separate
  * implementations that merely happen to agree, so they cannot disagree.
+ * <p>
+ * <b>Why this bean is {@link Profiles#PROFILE_MaterialDispo}-only.</b> Its collaborator
+ * {@link CandidateChangeService} - and the whole engine behind it: {@code StockCandidateService} and every
+ * {@code CandidateHandler} it aggregates - carries that same profile, so the dispo engine is instantiated in exactly
+ * <i>one</i> JVM and material events are never processed twice. That profile is added only by the app server
+ * ({@code ServerBoot} reads it from the {@code de.metas.spring.profiles.active} sysconfigs); the webapi
+ * ({@code WebRestApiApplication}) reads a different sysconfig prefix and so never activates it. Both applications
+ * component-scan {@code de.metas}, so an <i>unconditional</i> {@code @Service} here is picked up by the webapi too,
+ * where its constructor cannot be satisfied - which aborts webapi startup outright with "required a bean of type
+ * CandidateChangeService that could not be found". The same guard on the same grounds is carried by every other
+ * bean outside {@code dispo-service} that collaborates with the engine, e.g.
+ * {@code de.metas.material.cockpit.view.mainrecord.MaterialCandidateChangedHandler} and
+ * {@code de.metas.material.planning.event.SupplyRequiredDecreasedHandler}.
+ * <p>
+ * Consequence for callers: in a JVM without that profile this bean does not exist, so
+ * {@code MD_Candidate_Reconcile_ATP} fails fast there with an explicit message instead of half-reconciling - see
+ * that process's {@code reconciliationCommand()}. {@link AtpTargetCalculator}, which needs nothing from
+ * {@code dispo-service}, is deliberately left unguarded, so the read-only divergence computation stays available
+ * everywhere.
  */
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 @RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class AtpReconciliationCommand
 {

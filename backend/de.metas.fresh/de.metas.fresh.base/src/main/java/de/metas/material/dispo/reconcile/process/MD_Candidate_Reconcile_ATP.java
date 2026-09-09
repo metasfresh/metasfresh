@@ -22,6 +22,7 @@ package de.metas.material.dispo.reconcile.process;
  * #L%
  */
 
+import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
@@ -39,6 +40,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -83,7 +85,9 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 	private static final int MAX_LOOPS = 10_000;
 
 	private final StockRepository stockRepository = SpringContextHolder.getBeanOrSupply(StockRepository.class, StockRepository::new);
-	private final AtpReconciliationCommand reconciliationCommand = SpringContextHolder.instance.getBean(AtpReconciliationCommand.class);
+
+	/** Resolved once, on first use, by {@link #reconciliationCommand()} - never in a field initializer. */
+	@Nullable private AtpReconciliationCommand reconciliationCommand;
 
 	@Param(parameterName = I_MD_Stock.COLUMNNAME_M_Warehouse_ID, mandatory = false)
 	private int p_M_Warehouse_ID;
@@ -150,6 +154,39 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 	}
 
 	/**
+	 * @return the {@link AtpReconciliationCommand} bean, resolved on first use and then cached for the rest of this
+	 * run.
+	 * <p>
+	 * Concrete failure this prevents: {@link AtpReconciliationCommand} is
+	 * {@code @Profile(Profiles.PROFILE_MaterialDispo)} - see its Javadoc for why it has to be - and that profile is
+	 * active only in the app server, not in the webapi, which is where a process launched from the WebUI actually
+	 * runs. Without this method the bean was resolved in a <i>field initializer</i>, so such a run died while the
+	 * process object was still being constructed, with Spring's bare {@code NoSuchBeanDefinitionException} naming
+	 * only the type - nothing about the profile, and nothing an operator or a support engineer could act on.
+	 * Resolving here instead puts the failure inside {@link #doIt()}, on the process framework's ordinary
+	 * error-reporting path, and names both the missing profile and the JVM that has it.
+	 */
+	private AtpReconciliationCommand reconciliationCommand()
+	{
+		if (reconciliationCommand == null)
+		{
+			try
+			{
+				reconciliationCommand = SpringContextHolder.instance.getBean(AtpReconciliationCommand.class);
+			}
+			catch (final NoSuchBeanDefinitionException e)
+			{
+				throw new AdempiereException("MD_Candidate_Reconcile_ATP needs the material disposition engine,"
+						+ " which is not present in this application: the spring profile "
+						+ Profiles.PROFILE_MaterialDispo + " is not active here."
+						+ " Run this process on the metasfresh app server, where that profile is activated by the"
+						+ " de.metas.spring.profiles.active sysconfigs.", e);
+			}
+		}
+		return reconciliationCommand;
+	}
+
+	/**
 	 * @return {@code true} when {@code key}'s stored projection diverged from the target - i.e. this call either
 	 * reconciled it (real run) or found a value it would have reconciled (dry run) - and logged what changed/would
 	 * change; {@code false} when the key was already correct, so there is nothing to report for it.
@@ -159,7 +196,7 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 			@NonNull final Instant runDate,
 			@Nullable final Instant livenessCutoff)
 	{
-		final AtpReconciliationRunLog runLog = reconciliationCommand.reconcileAndLog(key, runDate, p_IsDryRun, livenessCutoff);
+		final AtpReconciliationRunLog runLog = reconciliationCommand().reconcileAndLog(key, runDate, p_IsDryRun, livenessCutoff);
 		final AtpDivergence divergence = runLog.getDivergence();
 		if (divergence.getDifference().signum() == 0)
 		{
