@@ -1,3 +1,14 @@
+-- Expose C_OrderLine.DescriptionAboveLine (the free text printed above an order line) as
+-- "descriptionaboveline" on the HU invoice line-detail report source. The function did not
+-- reach C_OrderLine at all, so the column comes with a new LEFT OUTER JOIN via
+-- c_invoiceline.c_orderline_id -- LEFT so invoice lines without an order line (manually added
+-- lines) are kept.
+--
+-- Source DDL:
+--   backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Docs_Sales_Invoice_Details_HU.sql
+--
+-- The RETURNS TABLE output signature changes, so the function is dropped before it is created
+-- (a bare CREATE OR REPLACE cannot change the output signature).
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_HU ( IN p_C_Invoice_ID numeric, IN p_AD_Language Character Varying (6) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details_HU ( IN p_C_Invoice_ID numeric, IN p_AD_Language Character Varying (6) )
