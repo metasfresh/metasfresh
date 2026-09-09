@@ -81,16 +81,18 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | c_od_1b    | INVENTORY_UP      | p_od_1       | 2024-09-22T06:00:00Z | 100 | 170 | WH_OD          |
     And the ATP of the STOCK candidate of c_od_1b is manually set to 1000
 
-    # 4) post the reset-stock event; MD_Stock is still 200
-    When metasfresh receives a StockChangedEvent for the current MD_Stock
-      | M_Product_ID | OPT.ChangeDate       |
-      | p_od_1       | 2024-09-23T06:00:00Z |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    # 4) the reconciliation point is the mechanism this scenario is actually about: a reset-stock event
+    # re-baselines onto bare physical stock and would land here at 200, silently absorbing the still-open
+    # demand - the reconciliation is the mechanism that must not do that.
+    When metasfresh has date and time 2024-09-23T08:00:00+01:00[Europe/Berlin]
+    And the MD_Candidate_Reconcile_ATP process is run with parameters, storing the run id as "reconcile_od_1":
+      | M_Product_ID | IsDryRun |
+      | p_od_1       | false    |
 
     # business-correct expectation: stock 200 minus the still-open demand 30 = 170
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty  | ATP | M_Warehouse_ID |
-      | base_od_1  | INVENTORY_DOWN    | p_od_1       | 2024-09-23T06:00:00Z | -800 | 170 | WH_OD          |
+      | base_od_1  | INVENTORY_DOWN    | p_od_1       | 2024-09-23T06:00:00Z | -830 | 170 | WH_OD          |
 
   @Id:ATPBASE_004
   @from:cucumber
@@ -195,13 +197,17 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | ship_od_3             | ss_od_3                          | D                 | Y                  |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # the invariant: stock dropped to 70, ATP is UNCHANGED at 70
+    # the invariant: stock dropped to 70, ATP is UNCHANGED at 70. The full shipment fulfils the open
+    # demand (its own remaining qty goes to 0) and books the actual movement as a separate certain
+    # decrease - the "expected decrease becomes certain decrease" this scenario is titled for - so ATP
+    # never moves a second time for the same physical consumption.
     Then after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | p_od_3                  | 70        |
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | d_od_3     | DEMAND            | SHIPMENT                  | p_od_3       | 2024-09-21T21:00:00Z | -30 | 70  | WH_OD          |
+      | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | d_od_3     | DEMAND              | SHIPMENT                  | p_od_3       | 2024-09-21T21:00:00Z | 0   | 70  | WH_OD          |
+      | ud_od_3    | UNEXPECTED_DECREASE | SHIPMENT                  | p_od_3       | 2024-09-20T22:00:00Z | -30 | 70  | WH_OD          |
 
   @Id:ATPBASE_007
   @from:cucumber

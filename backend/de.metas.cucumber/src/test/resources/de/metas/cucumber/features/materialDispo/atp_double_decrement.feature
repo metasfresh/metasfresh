@@ -91,10 +91,23 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
     And the inventory identified by inv_dd_2 is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # --- stock is correct at 80; the business-correct ATP is ALSO 80 ---------------------
+    # --- stock is correct at 80, but the never-issued BOM demand still decrements a second time: today's
+    # behaviour lands ATP at 60, not the physically correct 80 -----------------------------
     Then after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | comp_dd                 | 80        |
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected           | Qty | ATP | M_Warehouse_ID |
-      | invc_dd_2  | INVENTORY_DOWN    | comp_dd      | 2024-09-22T06:00:00Z    | -20 | 80  | WH_DD          |
+      | invc_dd_2  | INVENTORY_DOWN    | comp_dd      | 2024-09-22T06:00:00Z    | -20 | 60  | WH_DD          |
+
+    # --- the reconciliation point is where this is actually fixed: once the manufacturing order is
+    # closed, its never-issued demand no longer counts, so the target is the physical stock alone -------
+    When metasfresh has date and time 2024-09-23T08:00:00+01:00[Europe/Berlin]
+    And the MD_Candidate_Reconcile_ATP process is run with parameters, storing the run id as "reconcile_dd":
+      | M_Product_ID | IsDryRun |
+      | comp_dd      | false    |
+
+    # --- business-correct result: ATP is now 80, matching the physical stock --------------
+    Then after not more than 60s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_dd     | INVENTORY_UP      | comp_dd      | 2024-09-23T06:00:00Z | 20  | 80  | WH_DD          |
