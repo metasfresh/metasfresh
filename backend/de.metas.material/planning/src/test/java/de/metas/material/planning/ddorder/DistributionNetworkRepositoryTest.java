@@ -2,8 +2,11 @@ package de.metas.material.planning.ddorder;
 
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.util.lang.Percent;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +18,8 @@ import static org.assertj.core.groups.Tuple.tuple;
 
 public class DistributionNetworkRepositoryTest
 {
+	private static final OrgId ORG_ID = OrgId.ofRepoId(1000000);
+
 	private DistributionNetworkRepository repository;
 
 	@BeforeEach
@@ -27,7 +32,7 @@ public class DistributionNetworkRepositoryTest
 	private CreateDistributionNetworkRequest.CreateDistributionNetworkRequestBuilder network(final String name)
 	{
 		return CreateDistributionNetworkRequest.builder()
-				.orgId(OrgId.ofRepoId(1000000))
+				.orgId(ORG_ID)
 				.name(name);
 	}
 
@@ -68,6 +73,9 @@ public class DistributionNetworkRepositoryTest
 		assertThat(line.getSourceWarehouseId()).isEqualTo(WarehouseId.ofRepoId(100));
 		assertThat(line.getTargetWarehouseId()).isEqualTo(WarehouseId.ofRepoId(200));
 		assertThat(line.getShipperId()).isEqualTo(ShipperId.ofRepoId(540001));
+		// without 100% the empties movement would allocate nothing of the packing material
+		assertThat(line.getTransferPercent()).isEqualTo(Percent.ONE_HUNDRED);
+		assertThat(orgIdOf(line)).isEqualTo(ORG_ID);
 	}
 
 	@Test
@@ -79,8 +87,17 @@ public class DistributionNetworkRepositoryTest
 		repository.addLine(networkId, line(300, 400));
 
 		assertThat(repository.getById(networkId).getLines())
-				.extracting(DistributionNetworkLine::getSourceWarehouseId, DistributionNetworkLine::getTargetWarehouseId)
-				.containsExactly(tuple(WarehouseId.ofRepoId(300), WarehouseId.ofRepoId(400)));
+				.extracting(DistributionNetworkLine::getSourceWarehouseId, DistributionNetworkLine::getTargetWarehouseId, DistributionNetworkLine::getTransferPercent)
+				.containsExactly(tuple(WarehouseId.ofRepoId(300), WarehouseId.ofRepoId(400), Percent.ONE_HUNDRED));
+
+		// the line inherits the org of the network it is added to
+		assertThat(orgIdOf(repository.getById(networkId).getLines().get(0))).isEqualTo(ORG_ID);
+	}
+
+	private static OrgId orgIdOf(final DistributionNetworkLine line)
+	{
+		final I_DD_NetworkDistributionLine lineRecord = InterfaceWrapperHelper.load(line.getId(), I_DD_NetworkDistributionLine.class);
+		return OrgId.ofRepoId(lineRecord.getAD_Org_ID());
 	}
 
 	@Test
