@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -100,6 +101,9 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 	 *   <b>OPT.M_Product_ID</b> — (optional, identifier-ref) expected product<br>
 	 *   <b>OPT.M_Warehouse_ID</b> — (optional, identifier-ref) expected warehouse<br>
 	 *   <b>OPT.POReference</b> — (optional) expected {@code POReference}<br>
+	 *   <b>OPT.ContainerNo</b> — (optional, null-allowed) expected {@code ContainerNo} - the container of the
+	 *   transport order this ONE row is on, never every container on the order; a literal {@code null} asserts
+	 *   the row shows none<br>
 	 *   <b>OPT.IsPlanned</b> — (optional) expected {@code IsPlanned} - true for a row backed by a delivery
 	 *   planning, false for a row backed only by a receipt schedule<br>
 	 *   <b>OPT.Processed</b> — (optional) expected {@code Processed} - the planning's own flag on a planned
@@ -240,6 +244,11 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 				.ifPresent(poReference -> softly.assertThat(actual.getPOReference())
 						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_POReference)
 						.isEqualTo(poReference));
+
+		expected.getAsOptionalString(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_ContainerNo)
+				.ifPresent(containerNo -> softly.assertThat(actual.getContainerNo())
+						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_ContainerNo)
+						.isEqualTo(DataTableUtil.nullToken2Null(containerNo)));
 
 		expected.getAsOptionalBoolean(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsPlanned)
 				.ifPresent(isPlanned -> softly.assertThat(actual.isPlanned())

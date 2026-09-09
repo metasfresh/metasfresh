@@ -447,6 +447,7 @@ public class M_ShipperTransportation_StepDef
 	 *   <b>ETD</b> — (optional) new estimated departure<br>
 	 *   <b>ETA</b> — (optional) new estimated arrival<br>
 	 *   <b>BLDate</b> — (optional) new bill-of-lading date<br>
+	 *   <b>ContainerNo</b> — (optional) new container number<br>
 	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -477,6 +478,10 @@ public class M_ShipperTransportation_StepDef
 
 		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_BLDate)
 				.ifPresent(expected -> record.setBLDate(Timestamp.from(expected)));
+
+		tableRow.getAsOptionalString(I_M_ShipperTransportation.COLUMNNAME_ContainerNo)
+				.ifPresent(record::setContainerNo);
+
 		saveRecord(record);
 
 		deliveryInstructionTable.putOrReplace(tableRow.getAsIdentifier(), record);

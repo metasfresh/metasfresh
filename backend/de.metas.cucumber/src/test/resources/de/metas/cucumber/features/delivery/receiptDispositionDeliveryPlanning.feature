@@ -845,3 +845,62 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
     And after not more than 60s, the C_Order identified by orderQtyPlain_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
       | rowQtyPlain_RL         | null                   | scheduleQtyPlain_RL  | false         | 8              | 3                            | 5                           |
+
+  @Id:S31789_TC15
+  Scenario: Each row's ContainerNo is its own transport order's, not every container on the order
+
+    Given metasfresh contains C_Orders:
+      | Identifier              | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderContainer_RL       | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC15A     |
+      | orderContainerPlain_RL  | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC15B     |
+    And metasfresh contains C_OrderLines:
+      | Identifier                 | C_Order_ID.Identifier  | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineContainer_RL      | orderContainer_RL      | product_RL              | 10         | shipperPlanning_RL          |
+      | orderLineContainerPlain_RL | orderContainerPlain_RL | product_RL              | 8          | shipperPlain_RL             |
+
+    When the order identified by orderContainer_RL is completed
+    And the order identified by orderContainerPlain_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier  | C_OrderLine_ID.Identifier  | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleContainer_RL            | orderContainer_RL      | orderLineContainer_RL      | vendor_RL                | vendorLocation_RL                 | product_RL              | 10         | warehouse_RL              |
+      | scheduleContainerPlain_RL       | orderContainerPlain_RL | orderLineContainerPlain_RL | vendor_RL                | vendorLocation_RL                 | product_RL              | 8          | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID        |
+      | planningContainer1_RL  | orderLineContainer_RL |
+
+    When generate 1 additional M_Delivery_Planning records for: planningContainer1_RL
+    Then after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                      | C_OrderLine_ID        |
+      | planningContainer1_RL,planningContainer2_RL | orderLineContainer_RL |
+
+    # generateDeliveryInstructions creates ONE instruction PER planning, so the two siblings of the split end up
+    # on two DIFFERENT transport orders while sharing one receipt schedule - the case that tells an own-row read
+    # apart from an order-wide one.
+    And generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID |
+      | transportContainer1_RL     | planningContainer1_RL  |
+      | transportContainer2_RL     | planningContainer2_RL  |
+    And update transport order
+      | M_ShipperTransportation_ID | ContainerNo |
+      | transportContainer1_RL     | CONT-RL-001 |
+      | transportContainer2_RL     | CONT-RL-002 |
+
+    # The unplanned control reaches a transport order through the order-line AddTo process - the only route a row
+    # with no planning has, and the one the schedule's own ContainerNo column reads.
+    And metasfresh contains Transport Order
+      | Identifier                 | M_Shipper_ID    | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | transportContainerPlain_RL | shipperPlain_RL | vendor_RL           | vendorLocation_RL   | Incoming           |
+    And C_Order_AddTo_M_ShipperTransportation is invoked for order orderContainerPlain_RL and transportation order: transportContainerPlain_RL
+    And update transport order
+      | M_ShipperTransportation_ID | ContainerNo |
+      | transportContainerPlain_RL | CONT-RL-003 |
+
+    Then after not more than 60s, the C_Order identified by orderContainer_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.ContainerNo |
+      | rowContainer1_RL                          | planningContainer1_RL  | scheduleContainer_RL | true          | CONT-RL-001     |
+      | rowContainer2_RL                          | planningContainer2_RL  | scheduleContainer_RL | true          | CONT-RL-002     |
+
+    And after not more than 60s, the C_Order identified by orderContainerPlain_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID      | OPT.IsPlanned | OPT.ContainerNo |
+      | rowContainerPlain_RL                      | null                   | scheduleContainerPlain_RL | false         | CONT-RL-003     |
