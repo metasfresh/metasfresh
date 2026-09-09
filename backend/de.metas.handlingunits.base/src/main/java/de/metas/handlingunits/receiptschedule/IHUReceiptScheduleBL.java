@@ -114,12 +114,17 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 		@Nullable Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
 
 		/**
-		 * Stamped onto every receipt header this call creates; {@code null} for every caller that is not the
-		 * delivery-planning generate-receipt process. It travels with the REQUEST because this call completes the
-		 * receipt before returning - an id written afterwards is invisible to the {@code TIMING_AFTER_COMPLETE}
-		 * interceptor that derives the planning's delivered state.
+		 * The delivery planning each selected HU is being received for, keyed by the HU handed over in
+		 * {@link #getSelectedHuIds()}; {@code null} or absent for every caller and every HU that is not receiving
+		 * for a planning. It travels with the REQUEST because this call completes the receipt before returning -
+		 * an id written afterwards is invisible to the {@code TIMING_AFTER_COMPLETE} interceptor that derives the
+		 * planning's delivered state.
+		 * <p>
+		 * Keyed by HU rather than by receipt schedule because a split copies {@code M_ReceiptSchedule_ID} onto
+		 * every sibling planning: several plannings share ONE schedule, and the HU created for each is the only
+		 * thing that tells them apart.
 		 */
-		@Nullable DeliveryPlanningId deliveryPlanningId;
+		@Nullable Map<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId;
 	}
 
 	/**

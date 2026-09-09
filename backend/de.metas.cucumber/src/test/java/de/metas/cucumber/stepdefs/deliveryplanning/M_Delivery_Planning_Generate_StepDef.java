@@ -41,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -184,9 +185,9 @@ public class M_Delivery_Planning_Generate_StepDef
 	/**
 	 * Stores the document the process just generated under the row's optional {@code M_InOut_ID} alias.
 	 * <p>
-	 * Looked up by {@code M_Delivery_Planning_ID} (newest first) rather than through the planning's own
-	 * {@code M_InOut_ID}, because that back-link is written by the interceptor under test - a lookup through it
-	 * would silently find nothing exactly when the interceptor is broken.
+	 * Looked up through the LINES carrying {@code M_Delivery_Planning_ID} (newest document first) rather than
+	 * through the planning's own {@code M_InOut_ID}, because that back-link is written by the interceptor under
+	 * test - a lookup through it would silently find nothing exactly when the interceptor is broken.
 	 */
 	private void storeGeneratedInOut(
 			@NonNull final DataTableRow row,
@@ -196,11 +197,17 @@ public class M_Delivery_Planning_Generate_StepDef
 		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).ifPresent(identifier -> {
 			final I_M_InOut generated = queryBL.createQueryBuilder(I_M_InOut.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_InOut.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
 					.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, isSOTrx)
-					// newest first: the highest M_InOut_ID carrying this planning id is always the document this
-					// call just created - reversal copies included, since MInOut#reverseCorrectIt copies the FK
-					// onto a reversal whose id is still lower than the next generated document's
+					.addInSubQueryFilter(
+							I_M_InOut.COLUMNNAME_M_InOut_ID,
+							I_M_InOutLine.COLUMNNAME_M_InOut_ID,
+							queryBL.createQueryBuilder(I_M_InOutLine.class)
+									.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
+									.create())
+					// newest first: the highest M_InOut_ID whose lines carry this planning id is always the
+					// document this call just created - reversal copies included, since MInOut#reverseCorrectIt
+					// copies the line FK onto a reversal whose id is still lower than the next generated
+					// document's
 					.orderByDescending(I_M_InOut.COLUMNNAME_M_InOut_ID)
 					.create()
 					.first();

@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -33,17 +35,24 @@ import de.metas.deliveryplanning.receipt.CreateReceiptFromReceiptScheduleResult;
 import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,6 +72,9 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 	@NonNull private final RV_ReceiptDisposition_DeliveryPlanning_StepDefData receiptDispositionDeliveryPlanningTable;
 	@NonNull private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final ReceiptFromReceiptScheduleService receiptFromReceiptScheduleService =
 			SpringContextHolder.instance.getBean(ReceiptFromReceiptScheduleService.class);
@@ -154,38 +166,85 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 	}
 
 	/**
-	 * Asserts which delivery planning a receipt is stamped with - the link the HU-editor receive path silently
-	 * omits, and the one AC10 turns on.
+	 * Asserts which delivery planning each of a receipt's LINES is stamped with - the grain the link lives at, so
+	 * that one receipt aggregating several plannings can be asserted at all.
+	 * <p>
+	 * EXACT per receipt: for every {@code M_InOut_ID} the data table mentions, the receipt's order-line-bearing
+	 * lines must be exactly the rows given for it - so a line that gained or lost a planning, and a receipt that
+	 * gained or lost a line, both fail. Packing-material lines are out of scope: they carry no order line and no
+	 * planning.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the receipt to check<br>
-	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning it must carry, or the
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the receipt the line belongs to<br>
+	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) the line's order line<br>
+	 *   <b>M_Delivery_Planning_ID</b> — (required, identifier-ref) the planning the line must carry, or the
 	 *   {@code null} placeholder when it must carry none<br>
-	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_Delivery_Planning_StepDefData
+	 *   <b>OPT.MovementQty</b> — (optional, number) the line's quantity<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_OrderLine_StepDefData, M_Delivery_Planning_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * Then validate the delivery planning link of M_InOut:
-	 *   | M_InOut_ID | M_Delivery_Planning_ID |
-	 *   | receipt_1  | planningPlanned_RL     |
-	 *   | receipt_2  | null                   |
+	 * Then validate the delivery planning link of the material receipt lines:
+	 *   | M_InOut_ID | C_OrderLine_ID | M_Delivery_Planning_ID | OPT.MovementQty |
+	 *   | receipt_1  | orderLine_1    | planning_1             | 4               |
+	 *   | receipt_1  | orderLine_1    | planning_2             | 3               |
 	 * </pre>
 	 */
-	@Then("^validate the delivery planning link of M_InOut:$")
-	public void validateDeliveryPlanningLink(@NonNull final DataTable dataTable)
+	@Then("^validate the delivery planning link of the material receipt lines:$")
+	public void validateDeliveryPlanningLinkOfLines(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final I_M_InOut receipt = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inOutTable);
-			InterfaceWrapperHelper.refresh(receipt);
+		final LinkedHashMap<StepDefDataIdentifier, List<DataTableRow>> rowsByReceipt = new LinkedHashMap<>();
+		DataTableRows.of(dataTable).forEach(row -> rowsByReceipt
+				.computeIfAbsent(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID), k -> new ArrayList<>())
+				.add(row));
 
-			final StepDefDataIdentifier expected = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_Delivery_Planning_ID);
-			final int expectedRepoId = expected.isNullPlaceholder()
-					? 0
-					: expected.lookupNotNullIn(deliveryPlanningTable).getM_Delivery_Planning_ID();
+		rowsByReceipt.forEach(this::validateDeliveryPlanningLinkOfOneReceipt);
+	}
 
-			assertThat(receipt.getM_Delivery_Planning_ID())
-					.as("%s of receipt %s", I_M_InOut.COLUMNNAME_M_Delivery_Planning_ID, receipt.getDocumentNo())
-					.isEqualTo(expectedRepoId);
-		});
+	private void validateDeliveryPlanningLinkOfOneReceipt(
+			@NonNull final StepDefDataIdentifier receiptIdentifier,
+			@NonNull final List<DataTableRow> expectedRows)
+	{
+		final I_M_InOut receipt = receiptIdentifier.lookupNotNullIn(inOutTable);
+
+		final ImmutableMap<OrderLineAndDeliveryPlanning, DataTableRow> expectedByKey = expectedRows.stream()
+				.collect(ImmutableMap.toImmutableMap(this::extractExpectedKey, row -> row));
+
+		final ImmutableMap<OrderLineAndDeliveryPlanning, I_M_InOutLine> actualByKey = queryBL
+				.createQueryBuilder(I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, receipt.getM_InOut_ID())
+				.create()
+				.stream()
+				// Packing-material lines are out of scope: they carry neither an order line nor a planning.
+				.filter(line -> line.getC_OrderLine_ID() > 0)
+				.collect(ImmutableMap.toImmutableMap(
+						line -> new OrderLineAndDeliveryPlanning(line.getC_OrderLine_ID(), line.getM_Delivery_Planning_ID()),
+						line -> line));
+
+		assertThat(actualByKey.keySet())
+				.as("(C_OrderLine_ID, M_Delivery_Planning_ID) of the lines of receipt %s", receipt.getDocumentNo())
+				.containsExactlyInAnyOrderElementsOf(expectedByKey.keySet());
+
+		expectedByKey.forEach((key, expectedRow) -> expectedRow.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty)
+				.ifPresent(expectedMovementQty -> assertThat(actualByKey.get(key).getMovementQty())
+						.as("MovementQty of the line %s of receipt %s", key, receipt.getDocumentNo())
+						.isEqualByComparingTo(expectedMovementQty)));
+	}
+
+	private OrderLineAndDeliveryPlanning extractExpectedKey(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier expectedPlanning = row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_Delivery_Planning_ID);
+		return new OrderLineAndDeliveryPlanning(
+				row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable).getC_OrderLine_ID(),
+				expectedPlanning.isNullPlaceholder()
+						? 0
+						: expectedPlanning.lookupNotNullIn(deliveryPlanningTable).getM_Delivery_Planning_ID());
+	}
+
+	@Value
+	private static class OrderLineAndDeliveryPlanning
+	{
+		int orderLineRepoId;
+		int deliveryPlanningRepoId;
 	}
 }

@@ -24,6 +24,7 @@ package de.metas.deliveryplanning.receipt;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
@@ -90,7 +91,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -149,57 +152,28 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * Rows are grouped by their delivery planning FIRST - every unplanned row in one group, each planning in its
-	 * own - because {@code CreateReceiptsParameters#deliveryPlanningId} stamps every receipt header the call
-	 * creates and a header holds ONE planning.
+	 * Every row of the selection is received in ONE call, so the receipts come out grouped by the STANDARD
+	 * criteria - {@code InOutProducer#isNewReceiptRequired}'s header aggregation key plus an unchanged
+	 * {@code C_Order_ID} - exactly as the receipt-schedule window's batch would group them. The delivery
+	 * planning does not enter the grouping: it lives on the receipt LINE, so one receipt can carry several.
 	 * <p>
-	 * Groups are processed in order and each sees the previous one's effect: several rows can point at ONE
-	 * schedule (a split shares it), so every row's quantity is computed from the schedule's LIVE remaining
-	 * quantity at the moment its group is built, and a row with nothing left contributes nothing.
+	 * Several rows can point at ONE schedule (a split shares it), so each row draws only its own planning's
+	 * share, and a row with nothing left contributes nothing.
 	 *
 	 * @return the receipts created, in creation order; empty when the whole selection had nothing left to receive.
 	 */
 	public ImmutableList<InOutId> receiveRows(@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> rows)
 	{
-		final ImmutableList.Builder<InOutId> receiptIds = ImmutableList.builder();
-
-		for (final List<ReceiptScheduleAndDeliveryPlanningId> group : groupByDeliveryPlanning(rows))
-		{
-			receiptIds.addAll(receiveOneGroup(group));
-		}
-
-		return receiptIds.build();
-	}
-
-	/**
-	 * Order of first appearance is kept, so a selection produces the same receipts every time it is received.
-	 */
-	private static ImmutableList<List<ReceiptScheduleAndDeliveryPlanningId>> groupByDeliveryPlanning(
-			@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> rows)
-	{
-		final LinkedHashMap<Optional<DeliveryPlanningId>, List<ReceiptScheduleAndDeliveryPlanningId>> groups = new LinkedHashMap<>();
+		final List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<>();
+		final LinkedHashMap<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId = new LinkedHashMap<>();
+		final ImmutableSet.Builder<HuId> huIdsToReceive = ImmutableSet.builder();
+		final LinkedHashMap<DeliveryPlanningId, Quantity> qtyReceivedByDeliveryPlanningId = new LinkedHashMap<>();
 
 		for (final ReceiptScheduleAndDeliveryPlanningId row : rows)
 		{
-			groups.computeIfAbsent(Optional.ofNullable(row.getDeliveryPlanningId()), k -> new ArrayList<>()).add(row);
-		}
-
-		return ImmutableList.copyOf(groups.values());
-	}
-
-	private ImmutableList<InOutId> receiveOneGroup(@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> group)
-	{
-		final DeliveryPlanningId deliveryPlanningId = group.get(0).getDeliveryPlanningId();
-
-		final ImmutableList.Builder<I_M_ReceiptSchedule> receiptSchedules = ImmutableList.builder();
-		final ImmutableSet.Builder<HuId> huIdsToReceive = ImmutableSet.builder();
-		Quantity qtyReceivedTotal = null;
-
-		for (final ReceiptScheduleAndDeliveryPlanningId row : group)
-		{
 			final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(row.getReceiptScheduleId());
-			// The previous group may just have received against this very schedule - the split case, where several
-			// plannings share one. Without this the second row would draw the quantity the first one already took.
+			// An earlier receive may have booked against this very schedule - the split case, where several
+			// plannings share one. Without this the row would draw the quantity that receive already took.
 			InterfaceWrapperHelper.refresh(receiptSchedule);
 
 			final Quantity qtyToReceive = getQtyToReceive(receiptSchedule, row.getDeliveryPlanningId());
@@ -211,9 +185,20 @@ public class ReceiptFromReceiptScheduleService
 				continue;
 			}
 
-			receiptSchedules.add(receiptSchedule);
+			// Deduplicated because a split's siblings hand over the SAME schedule: the HUs carry the
+			// quantities, so the schedule only has to be processed once.
+			if (receiptSchedules.stream().noneMatch(alreadyThere -> alreadyThere.getM_ReceiptSchedule_ID() == receiptSchedule.getM_ReceiptSchedule_ID()))
+			{
+				receiptSchedules.add(receiptSchedule);
+			}
 			huIdsToReceive.add(vhuId);
-			qtyReceivedTotal = qtyReceivedTotal == null ? qtyToReceive : qtyReceivedTotal.add(qtyToReceive);
+
+			final DeliveryPlanningId deliveryPlanningId = row.getDeliveryPlanningId();
+			if (deliveryPlanningId != null)
+			{
+				deliveryPlanningIdByHuId.put(vhuId, deliveryPlanningId);
+				qtyReceivedByDeliveryPlanningId.merge(deliveryPlanningId, qtyToReceive, Quantity::add);
+			}
 		}
 
 		final ImmutableSet<HuId> huIds = huIdsToReceive.build();
@@ -223,9 +208,11 @@ public class ReceiptFromReceiptScheduleService
 		}
 
 		final InOutGenerateResult result = generateReceipts(
-				receiptSchedules.build(), huIds, deliveryPlanningId, ReceiptMovementDateRule.CURRENT_DATE);
+				receiptSchedules, huIds, deliveryPlanningIdByHuId, ReceiptMovementDateRule.CURRENT_DATE);
 
-		applyPlanningQuantityRules(deliveryPlanningId, Check.assumeNotNull(qtyReceivedTotal, "qtyReceivedTotal is set"));
+		// Per planning, with that planning's OWN quantity - a selection's total would land the whole gesture on
+		// whichever planning was written last.
+		qtyReceivedByDeliveryPlanningId.forEach(this::applyPlanningQuantityRules);
 
 		return result.getInOuts().stream()
 				.map(receipt -> InOutId.ofRepoId(receipt.getM_InOut_ID()))
@@ -312,7 +299,7 @@ public class ReceiptFromReceiptScheduleService
 		final InOutGenerateResult result = generateReceipts(
 				ImmutableList.of(receiptSchedule),
 				request.getHuIdsToReceive(),
-				request.getDeliveryPlanningId(),
+				deliveryPlanningIdByHuId(request.getHuIdsToReceive(), request.getDeliveryPlanningId()),
 				request.getMovementDateRule());
 
 		final I_M_InOut receipt = result.getSingleInOut(I_M_InOut.class);
@@ -325,13 +312,13 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * {@code deliveryPlanningId} is stamped on EVERY receipt header this call creates - which is why
-	 * {@link #receiveRows} groups its rows by planning first: a receipt header holds one planning.
+	 * Every HU in {@code deliveryPlanningIdByHuId} gets its planning stamped onto the receipt LINE it lands on,
+	 * so one receipt can carry several plannings.
 	 */
 	private InOutGenerateResult generateReceipts(
 			@NonNull final List<I_M_ReceiptSchedule> receiptSchedules,
 			@NonNull final ImmutableSet<HuId> huIdsToReceive,
-			@Nullable final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final Map<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId,
 			@NonNull final ReceiptMovementDateRule movementDateRule)
 	{
 		return huReceiptScheduleBL.processReceiptSchedules(
@@ -343,8 +330,23 @@ public class ReceiptFromReceiptScheduleService
 						.printReceiptLabels(true)
 						.receiptSchedules(receiptSchedules)
 						.selectedHuIds(huIdsToReceive)
-						.deliveryPlanningId(deliveryPlanningId)
+						.deliveryPlanningIdByHuId(deliveryPlanningIdByHuId)
 						.build());
+	}
+
+	/**
+	 * The single-planning shape of the map: every HU of this receive belongs to the one planning the request
+	 * names, and an unplanned request maps none.
+	 */
+	private static ImmutableMap<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId(
+			@NonNull final Set<HuId> huIds,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		if (deliveryPlanningId == null)
+		{
+			return ImmutableMap.of();
+		}
+		return huIds.stream().collect(ImmutableMap.toImmutableMap(huId -> huId, huId -> deliveryPlanningId));
 	}
 
 	/**

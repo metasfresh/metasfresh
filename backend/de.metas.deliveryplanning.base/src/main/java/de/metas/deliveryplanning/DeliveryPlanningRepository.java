@@ -63,7 +63,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -360,29 +359,30 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Scoped by {@code C_OrderLine_ID}, not by document: a consolidating shipment carries other schedules' lines,
-	 * and summing the whole document would book those onto this planning. The schedule-to-line allocation tables
+	 * Scoped by the LINE's own {@code M_Delivery_Planning_ID}, not by document and no longer by
+	 * {@code C_OrderLine_ID}: a document can carry other schedules' lines (a consolidating shipment) and even
+	 * other PLANNINGS' lines of the very same order line (siblings of a split received together), so both wider
+	 * scopes book quantities that are not this planning's. The schedule-to-line allocation tables
 	 * ({@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID}) cannot be used instead - they are written after
 	 * {@code ACTION_Complete}, i.e. after this {@code TIMING_AFTER_COMPLETE} handler, so every planning would book
 	 * zero. {@link IInOutBL#getMovementQty} rather than the raw column keeps a return's negated sign.
+	 * <p>
+	 * The product filter stays: the same header's packing-material lines carry this planning too on documents
+	 * whose lines were stamped by the backfill of the retired header column, and their quantity is not this
+	 * planning's product's.
 	 */
 	private Quantity resolveBookedQty(@NonNull final I_M_InOut inout, @NonNull final I_M_Delivery_Planning planningRecord)
 	{
 		final ProductId productId = ProductId.ofRepoId(planningRecord.getM_Product_ID());
 		final I_C_UOM uom = uomDAO.getById(planningRecord.getC_UOM_ID());
-		final OrderLineId planningOrderLineId = OrderLineId.ofRepoIdOrNull(planningRecord.getC_OrderLine_ID());
+		final int planningRepoId = planningRecord.getM_Delivery_Planning_ID();
 
 		return inOutDAO.retrieveLines(inout).stream()
 				.filter(line -> line.getM_Product_ID() == productId.getRepoId())
-				.filter(line -> belongsToPlanning(line, planningOrderLineId))
+				.filter(line -> line.getM_Delivery_Planning_ID() == planningRepoId)
 				.map(inOutBL::getMovementQty)
 				.map(qty -> uomConversionBL.convertQuantityTo(qty, productId, uom))
 				.reduce(Quantity.zero(uom), Quantity::add);
-	}
-
-	private static boolean belongsToPlanning(@NonNull final I_M_InOutLine line, @Nullable final OrderLineId planningOrderLineId)
-	{
-		return planningOrderLineId == null || line.getC_OrderLine_ID() == planningOrderLineId.getRepoId();
 	}
 
 	public <T> T getShipmentOrReceiptInfo(

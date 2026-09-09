@@ -360,10 +360,11 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | M_InOut_ID          | DocStatus |
       | receiptUnplanned_RL | CO        |
 
-    # The row carried no planning id, so the receipt carries none either - the null branch of the shared request.
-    And validate the delivery planning link of M_InOut:
-      | M_InOut_ID          | M_Delivery_Planning_ID |
-      | receiptUnplanned_RL | null                   |
+    # The row carried no planning id, so the receipt's line carries none either - the null branch of the shared
+    # request.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID          | C_OrderLine_ID           | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptUnplanned_RL | orderLineRcvUnplanned_RL | null                   | 7               |
 
     # ... and the goods are booked on the schedule, which is what "the same receipt as window 541954" means.
     And after not more than 60s, M_ReceiptSchedule are found:
@@ -410,9 +411,9 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | receiptPlanned_RL | CO        |
 
     # The link the HU-editor path silently omits.
-    And validate the delivery planning link of M_InOut:
-      | M_InOut_ID        | M_Delivery_Planning_ID |
-      | receiptPlanned_RL | planningRcvPlanned_RL  |
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID        | C_OrderLine_ID         | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptPlanned_RL | orderLineRcvPlanned_RL | planningRcvPlanned_RL  | 5               |
 
     # ... and everything the interceptor derives from it, plus the planned-discharge write-back that
     # M_Delivery_Planning_GenerateReceipt performs - i.e. exactly the state the delivery-planning window leaves.
@@ -486,11 +487,12 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | receiptMultiA_RL | CO        |
       | receiptMultiB_RL | CO        |
 
-    # No row carried a planning, so no receipt carries one - the null branch of the shared request, N times.
-    And validate the delivery planning link of M_InOut:
-      | M_InOut_ID       | M_Delivery_Planning_ID |
-      | receiptMultiA_RL | null                   |
-      | receiptMultiB_RL | null                   |
+    # No row carried a planning, so no line carries one - the null branch of the shared request, N times.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID       | C_OrderLine_ID      | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptMultiA_RL | orderLineMultiA1_RL | null                   | 4               |
+      | receiptMultiA_RL | orderLineMultiA2_RL | null                   | 6               |
+      | receiptMultiB_RL | orderLineMultiB1_RL | null                   | 3               |
 
     # WHICH rows landed together, and with what quantity - the grouping assertion proper.
     And validate the created material receipt lines
@@ -506,12 +508,12 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | scheduleMultiB1_RL              | orderMultiB_RL        | orderLineMultiB1_RL       | vendor_RL                | vendorLocation_RL                 | product_RL              | 3          | warehouse_RL              | 3            |
 
   @Id:S31789_TC9b
-  Scenario: Several planned rows received together produce one receipt per planning, each carrying its own
+  Scenario: Several planned rows received together share ONE receipt, each planning on its own line
 
-    # Two planned rows of the SAME order - so the aggregation key and the C_Order_ID agree, and an
-    # aggregation-only implementation would put them on one receipt. They must NOT share one: a receipt header
-    # holds a single M_Delivery_Planning_ID, so grouping is per planning FIRST and by aggregation key second.
-    # Merging them would leave one of the two plannings with no receipt and no delivered state at all.
+    # Two planned rows of the SAME order - so the aggregation key and the C_Order_ID agree, which is exactly
+    # what the receipt-schedule window's batch would put on ONE receipt. The planning does not split them,
+    # because the planning lives on the LINE: each gets its own line, each line names its own planning, and
+    # both plannings get their delivered state from that one document.
     Given metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
       | orderPlanTwo_RL | false | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC9B2     |
@@ -535,41 +537,52 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | rowPlanTwo1_RL         | planningPlanTwo1_RL    | schedulePlanTwo1_RL  | true          |
       | rowPlanTwo2_RL         | planningPlanTwo2_RL    | schedulePlanTwo2_RL  | true          |
 
+
+    # Completing the order above leaves its invoice candidates flagged 'to recompute', and the async
+    # UpdateInvalidInvoiceCandidatesWorkpackageProcessor updates those same candidates in its own transaction.
+    # The receive below writes them synchronously too, via M_InOutLine.createC_InvoiceCandidate_InOutLines - so
+    # while the recompute is still in flight the two transactions take c_invoice_candidate row locks in opposite
+    # order and Postgres kills one of them (DBDeadLockDetectedException). Waiting for the flag to clear is
+    # commit-visible, not a sleep: the flag is only gone once the updater's transaction committed and dropped its
+    # row locks. Purely a precondition - no assertion is relaxed. Same guard as S31789_TC9.
+    And after not more than 60s locate invoice candidates by order id:
+      | C_Invoice_Candidate_ID.Identifier | C_Order_ID.Identifier |
+      | icPlanTwo1_RL, icPlanTwo2_RL        | orderPlanTwo_RL        |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | icPlanTwo1_RL                     |
+      | icPlanTwo2_RL                     |
+
     When the receipt-disposition delivery-planning rows identified by rowPlanTwo1_RL, rowPlanTwo2_RL are received together:
-      | M_InOut_ID          |
-      | receiptPlanTwo1_RL  |
-      | receiptPlanTwo2_RL  |
+      | M_InOut_ID         |
+      | receiptPlanTwo_RL  |
 
     Then validate M_In_Out status
-      | M_InOut_ID         | DocStatus |
-      | receiptPlanTwo1_RL | CO        |
-      | receiptPlanTwo2_RL | CO        |
+      | M_InOut_ID        | DocStatus |
+      | receiptPlanTwo_RL | CO        |
 
-    # Each receipt carries ITS OWN planning - the link the HU-editor path silently omits, here N times over.
-    And validate the delivery planning link of M_InOut:
-      | M_InOut_ID         | M_Delivery_Planning_ID |
-      | receiptPlanTwo1_RL | planningPlanTwo1_RL    |
-      | receiptPlanTwo2_RL | planningPlanTwo2_RL    |
+    # Each LINE carries ITS OWN planning - the link the HU-editor path silently omits, here N times over on one
+    # document.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID        | C_OrderLine_ID       | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptPlanTwo_RL | orderLinePlanTwo1_RL | planningPlanTwo1_RL    | 4               |
+      | receiptPlanTwo_RL | orderLinePlanTwo2_RL | planningPlanTwo2_RL    | 6               |
 
-    And validate the created material receipt lines
-      | M_InOut_ID         | C_OrderLine_ID       | MovementQty |
-      | receiptPlanTwo1_RL | orderLinePlanTwo1_RL | 4           |
-      | receiptPlanTwo2_RL | orderLinePlanTwo2_RL | 6           |
-
-    # ... and everything the completion interceptor derives from that id, for BOTH plannings - i.e. exactly what
-    # receiving each of them from the delivery-planning window one at a time would have left.
+    # ... and everything the completion interceptor derives from those ids, for BOTH plannings - i.e. exactly what
+    # receiving each of them from the delivery-planning window one at a time would have left, except that both
+    # now name the same receipt.
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity | M_InOut_ID         | IsClosed | Processed |
-      | planningPlanTwo1_RL    | 4          | 0            | Incoming           | 4                        | 4                       | receiptPlanTwo1_RL | false    | true      |
-      | planningPlanTwo2_RL    | 6          | 0            | Incoming           | 6                        | 6                       | receiptPlanTwo2_RL | false    | true      |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity | M_InOut_ID        | IsClosed | Processed |
+      | planningPlanTwo1_RL    | 4          | 0            | Incoming           | 4                        | 4                       | receiptPlanTwo_RL | false    | true      |
+      | planningPlanTwo2_RL    | 6          | 0            | Incoming           | 6                        | 6                       | receiptPlanTwo_RL | false    | true      |
 
   @Id:S31789_TC9c
-  Scenario: A mixed selection routes per row, so one gesture yields a linked receipt and a plain one
+  Scenario: A mixed selection routes per row, so one gesture yields a linked line beside a plain one
 
     # Not an expected operator use case - but routing is PER ROW, so it works anyway, and behaviour that ships
     # untested is a liability. Nothing extra is built for it: this asserts what per-row routing already produces.
-    # The two rows sit on ONE order, so they agree on the aggregation key; they still cannot share a receipt,
-    # because one of them carries a planning and a receipt header holds only one.
+    # The two rows sit on ONE order and agree on the aggregation key, so they DO share a receipt; what the
+    # planned row gets that the unplanned one does not is the planning on its own line.
     Given metasfresh contains C_Orders:
       | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
       | orderMixed_RL  | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC9C      |
@@ -592,30 +605,41 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | rowMixedPlan_RL        | planningMixed_RL       | scheduleMixedPlan_RL  | true          |
       | rowMixedPlain_RL       | null                   | scheduleMixedPlain_RL | false         |
 
+
+    # Completing the order above leaves its invoice candidates flagged 'to recompute', and the async
+    # UpdateInvalidInvoiceCandidatesWorkpackageProcessor updates those same candidates in its own transaction.
+    # The receive below writes them synchronously too, via M_InOutLine.createC_InvoiceCandidate_InOutLines - so
+    # while the recompute is still in flight the two transactions take c_invoice_candidate row locks in opposite
+    # order and Postgres kills one of them (DBDeadLockDetectedException). Waiting for the flag to clear is
+    # commit-visible, not a sleep: the flag is only gone once the updater's transaction committed and dropped its
+    # row locks. Purely a precondition - no assertion is relaxed. Same guard as S31789_TC9.
+    And after not more than 60s locate invoice candidates by order id:
+      | C_Invoice_Candidate_ID.Identifier | C_Order_ID.Identifier |
+      | icMixed1_RL, icMixed2_RL        | orderMixed_RL        |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | icMixed1_RL                       |
+      | icMixed2_RL                       |
+
     When the receipt-disposition delivery-planning rows identified by rowMixedPlan_RL, rowMixedPlain_RL are received together:
-      | M_InOut_ID           |
-      | receiptMixedPlan_RL  |
-      | receiptMixedPlain_RL |
+      | M_InOut_ID      |
+      | receiptMixed_RL |
 
     Then validate M_In_Out status
-      | M_InOut_ID           | DocStatus |
-      | receiptMixedPlan_RL  | CO        |
-      | receiptMixedPlain_RL | CO        |
+      | M_InOut_ID      | DocStatus |
+      | receiptMixed_RL | CO        |
 
-    # The planned row's receipt is linked, the unplanned row's is not - one gesture, two paths, decided per row.
-    And validate the delivery planning link of M_InOut:
-      | M_InOut_ID           | M_Delivery_Planning_ID |
-      | receiptMixedPlan_RL  | planningMixed_RL       |
-      | receiptMixedPlain_RL | null                   |
+    # The planned row's LINE is linked, the unplanned row's is not - one gesture, two paths, decided per row.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID      | C_OrderLine_ID         | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptMixed_RL | orderLineMixedPlan_RL  | planningMixed_RL       | 5               |
+      | receiptMixed_RL | orderLineMixedPlain_RL | null                   | 7               |
 
-    And validate the created material receipt lines
-      | M_InOut_ID           | C_OrderLine_ID         | MovementQty |
-      | receiptMixedPlan_RL  | orderLineMixedPlan_RL  | 5           |
-      | receiptMixedPlain_RL | orderLineMixedPlain_RL | 7           |
-
+    # 5, not 12: the planning books its OWN line, never the whole document - which is what the unplanned line
+    # sharing this receipt puts to the test.
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity | M_InOut_ID          | IsClosed | Processed |
-      | planningMixed_RL       | 5          | 0            | Incoming           | 5                       | receiptMixedPlan_RL | false    | true      |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity | M_InOut_ID      | IsClosed | Processed |
+      | planningMixed_RL       | 5          | 0            | Incoming           | 5                       | receiptMixed_RL | false    | true      |
 
   @Id:S31789_TC9d
   Scenario: Two plannings of ONE order line are received together without receiving that line twice
@@ -623,7 +647,8 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
     # The sharpest case, and the one a naive "one row -> the schedule's whole remaining quantity" implementation
     # gets wrong. A split copies M_ReceiptSchedule_ID onto every new planning, so these two rows point at the
     # SAME receipt schedule and the SAME order line. Received together they must consume that line exactly once:
-    # each planning receives ITS OWN planned share, and the schedule's QtyMoved ends at QtyOrdered, not above it.
+    # each planning receives ITS OWN planned share onto ITS OWN line of the one receipt, and the schedule's
+    # QtyMoved ends at QtyOrdered, not above it.
     Given metasfresh contains C_Orders:
       | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
       | orderSplit_RL  | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC9D      |
@@ -657,25 +682,19 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | rowSplit2_RL           | planningSplit2_RL      | scheduleSplit_RL     | true          |
 
     When the receipt-disposition delivery-planning rows identified by rowSplit1_RL, rowSplit2_RL are received together:
-      | M_InOut_ID        |
-      | receiptSplit1_RL  |
-      | receiptSplit2_RL  |
+      | M_InOut_ID       |
+      | receiptSplit_RL  |
 
     Then validate M_In_Out status
-      | M_InOut_ID       | DocStatus |
-      | receiptSplit1_RL | CO        |
-      | receiptSplit2_RL | CO        |
+      | M_InOut_ID      | DocStatus |
+      | receiptSplit_RL | CO        |
 
-    And validate the delivery planning link of M_InOut:
-      | M_InOut_ID       | M_Delivery_Planning_ID |
-      | receiptSplit1_RL | planningSplit1_RL      |
-      | receiptSplit2_RL | planningSplit2_RL      |
-
-    # 5 and 5 against the ONE order line, never 10 and 10.
-    And validate the created material receipt lines
-      | M_InOut_ID       | C_OrderLine_ID    | MovementQty |
-      | receiptSplit1_RL | orderLineSplit_RL | 5           |
-      | receiptSplit2_RL | orderLineSplit_RL | 5           |
+    # 5 and 5 against the ONE order line, never 10 and 10 - and the two lines are told apart by nothing but
+    # their planning, which is the whole reason the link is on the line.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID      | C_OrderLine_ID    | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptSplit_RL | orderLineSplit_RL | planningSplit1_RL      | 5               |
+      | receiptSplit_RL | orderLineSplit_RL | planningSplit2_RL      | 5               |
 
     # The line is consumed exactly once: QtyMoved equals QtyOrdered, and each planning carries its own half.
     And after not more than 60s, M_ReceiptSchedule are found:
@@ -685,9 +704,84 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
     # both plannings read 0 once the two halves together have consumed the line exactly once. It reading
     # anything else is the over-receive this scenario exists to catch.
     And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | M_InOut_ID      | IsClosed | Processed |
+      | planningSplit1_RL      | 10         | 0            | 5                        | 5                       | Incoming           | receiptSplit_RL | false    | true      |
+      | planningSplit2_RL      | 10         | 0            | 5                        | 5                       | Incoming           | receiptSplit_RL | false    | true      |
+
+  @Id:S31789_TC9f
+  Scenario: Three plannings of ONE order line received together land on ONE receipt, one line per planning
+
+    # A receipt LINE corresponds to a receipt schedule and therefore to a planning; a receipt HEADER aggregates
+    # lines by the standard criteria. So three plannings of one order line, received in one gesture, are one
+    # receipt with three lines - which is also what the receipt-schedule window would produce for that order.
+    # Three rather than two: 10 over three plannings distributes 4/3/3, so the selection contains both a line no
+    # other line's quantity can be confused with AND two lines of equal quantity that only their own planning
+    # tells apart.
+    Given metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderTriple_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC9F      |
+    And metasfresh contains C_OrderLines:
+      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineTriple_RL | orderTriple_RL        | product_RL              | 10         | shipperPlanning_RL          |
+
+    When the order identified by orderTriple_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleTriple_RL               | orderTriple_RL        | orderLineTriple_RL        | vendor_RL                | vendorLocation_RL                 | product_RL              | 10         | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID     |
+      | planningTriple1_RL     | orderLineTriple_RL |
+
+    # The split: the order line's 10 goes 4/3/3 over the three plannings - the target absorbs the down-rounding
+    # remainder.
+    When generate 2 additional M_Delivery_Planning records for: planningTriple1_RL
+    Then after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                                   | C_OrderLine_ID     |
+      | planningTriple1_RL,planningTriple2_RL,planningTriple3_RL | orderLineTriple_RL |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | TransportDirection | Processed |
+      | planningTriple1_RL     | 10         | 10           | 4                        | Incoming           | false     |
+      | planningTriple2_RL     | 10         | 10           | 3                        | Incoming           | false     |
+      | planningTriple3_RL     | 10         | 10           | 3                        | Incoming           | false     |
+
+    # All three rows carry the SAME receipt schedule - that is the shape under test.
+    And after not more than 60s, the C_Order identified by orderTriple_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned |
+      | rowTriple1_RL          | planningTriple1_RL     | scheduleTriple_RL    | true          |
+      | rowTriple2_RL          | planningTriple2_RL     | scheduleTriple_RL    | true          |
+      | rowTriple3_RL          | planningTriple3_RL     | scheduleTriple_RL    | true          |
+
+    # ONE row in the table, so ONE receipt: the three rows agree on the header aggregation key and on the order,
+    # so nothing keeps them apart.
+    When the receipt-disposition delivery-planning rows identified by rowTriple1_RL, rowTriple2_RL, rowTriple3_RL are received together:
+      | M_InOut_ID       |
+      | receiptTriple_RL |
+
+    Then validate M_In_Out status
+      | M_InOut_ID       | DocStatus |
+      | receiptTriple_RL | CO        |
+
+    # Three lines on the one receipt, each naming its own planning - and the two 3s are told apart by nothing
+    # but that.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID       | C_OrderLine_ID     | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptTriple_RL | orderLineTriple_RL | planningTriple1_RL     | 4               |
+      | receiptTriple_RL | orderLineTriple_RL | planningTriple2_RL     | 3               |
+      | receiptTriple_RL | orderLineTriple_RL | planningTriple3_RL     | 3               |
+
+    # The line is consumed exactly once: QtyMoved reaches QtyOrdered, never above it.
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved |
+      | scheduleTriple_RL               | orderTriple_RL        | orderLineTriple_RL        | vendor_RL                | vendorLocation_RL                 | product_RL              | 10         | warehouse_RL              | 10           |
+
+    # Every planning gets its OWN discharge actual off its OWN line, and every planning is delivered - the state
+    # a per-header derivation cannot produce for more than one of them.
+    And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | M_InOut_ID       | IsClosed | Processed |
-      | planningSplit1_RL      | 10         | 0            | 5                        | 5                       | Incoming           | receiptSplit1_RL | false    | true      |
-      | planningSplit2_RL      | 10         | 0            | 5                        | 5                       | Incoming           | receiptSplit2_RL | false    | true      |
+      | planningTriple1_RL     | 10         | 0            | 4                        | 4                       | Incoming           | receiptTriple_RL | false    | true      |
+      | planningTriple2_RL     | 10         | 0            | 3                        | 3                       | Incoming           | receiptTriple_RL | false    | true      |
+      | planningTriple3_RL     | 10         | 0            | 3                        | 3                       | Incoming           | receiptTriple_RL | false    | true      |
 
   @Id:S31789_TC9e
   Scenario: One row of a SPLIT planning received ALONE takes only its own share, so its sibling can still receive
@@ -737,9 +831,9 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
     Then validate M_In_Out status
       | M_InOut_ID      | DocStatus |
       | receiptSolo1_RL | CO        |
-    And validate the delivery planning link of M_InOut:
-      | M_InOut_ID      | M_Delivery_Planning_ID |
-      | receiptSolo1_RL | planningSolo1_RL       |
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID      | C_OrderLine_ID        | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptSolo1_RL | orderLineSplitSolo_RL | planningSolo1_RL       | 5               |
     And validate the created material receipt lines
       | M_InOut_ID      | C_OrderLine_ID        | MovementQty |
       | receiptSolo1_RL | orderLineSplitSolo_RL | 5           |
@@ -761,9 +855,9 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
     Then validate M_In_Out status
       | M_InOut_ID      | DocStatus |
       | receiptSolo2_RL | CO        |
-    And validate the delivery planning link of M_InOut:
-      | M_InOut_ID      | M_Delivery_Planning_ID |
-      | receiptSolo2_RL | planningSolo2_RL       |
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID      | C_OrderLine_ID        | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptSolo2_RL | orderLineSplitSolo_RL | planningSolo2_RL       | 5               |
     And validate the created material receipt lines
       | M_InOut_ID      | C_OrderLine_ID        | MovementQty |
       | receiptSolo2_RL | orderLineSplitSolo_RL | 5           |

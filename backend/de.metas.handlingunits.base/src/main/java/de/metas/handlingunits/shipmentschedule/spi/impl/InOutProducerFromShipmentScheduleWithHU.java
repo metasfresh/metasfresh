@@ -176,7 +176,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
 
 	/**
-	 * {@code M_Delivery_Planning_ID} to stamp onto each shipment header, or {@code 0} for none.
+	 * {@code M_Delivery_Planning_ID} to stamp onto each shipment LINE this producer creates, or {@code 0} for
+	 * none. Every candidate of one run belongs to the one planning the request names, so the run-level scalar is
+	 * the line-level value.
 	 *
 	 * @see #setDeliveryPlanningId(int)
 	 */
@@ -296,15 +298,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 		if (shipment == null)
 		{
 			shipment = createShipmentHeader(candidate, shipmentDate);
-		}
-
-		// The delivery-planning back-link goes onto the DRAFT (both for a header just created and for one we
-		// consolidated onto), because this producer completes the shipment further down: stamping it after
-		// generation would be invisible to de.metas.deliveryplanning's TIMING_AFTER_COMPLETE interceptor.
-		if (deliveryPlanningId > 0 && shipment.getM_Delivery_Planning_ID() != deliveryPlanningId)
-		{
-			shipment.setM_Delivery_Planning_ID(deliveryPlanningId);
-			InterfaceWrapperHelper.save(shipment);
 		}
 
 		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, Integer.toString(shipment.getM_InOut_ID()));
@@ -706,6 +699,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment, shipmentLineNoInfo);
+			currentShipmentLineBuilder.setDeliveryPlanningId(deliveryPlanningId);
 			currentShipmentLineBuilder.setManualPackingMaterial(candidate.isAdviseManualPackingMaterial());
 			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);

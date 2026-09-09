@@ -153,6 +153,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	// Manual packing materials related:
 	private boolean _manualPackingMaterial = false;
 
+	/** The planning this line is shipped out of, or {@code 0} for none. */
+	private int _deliveryPlanningId = 0;
+
 	private final TreeSet<I_M_HU_PI_Item_Product> packingMaterial_huPIItemProducts = new TreeSet<>(Comparator.comparing(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
 
 	private final TreeSet<IAttributeValue> //
@@ -528,6 +531,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				.map(FlatrateTermId::getRepoId)
 				.ifPresent(shipmentLine::setC_Flatrate_Term_ID);
 
+		shipmentLine.setM_Delivery_Planning_ID(_deliveryPlanningId);
+
 		// Save Shipment Line
 		inoutDAO.save(shipmentLine);
 
@@ -756,6 +761,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	public void setAlreadyAssignedTUIds(final Set<HuId> alreadyAssignedTUIds)
 	{
 		this.alreadyAssignedTUIds = alreadyAssignedTUIds;
+	}
+
+	/**
+	 * On the LINE rather than the header because a shipment can aggregate lines of several plannings - and,
+	 * when it consolidates onto an already-drafted document, lines of no planning at all.
+	 */
+	public void setDeliveryPlanningId(final int deliveryPlanningId)
+	{
+		this._deliveryPlanningId = deliveryPlanningId;
 	}
 
 	public void setQtyTypeToUse(final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse)

@@ -543,27 +543,10 @@ public class InOutProducer implements IInOutProducer
 
 		receiptHeader.setPOReference(rs.getPOReference());
 
-		customizeNewReceiptHeader(receiptHeader, rs);
-
 		//
 		// Save & Return
 		InterfaceWrapperHelper.save(receiptHeader);
 		return receiptHeader;
-	}
-
-	/**
-	 * Called on each freshly created receipt header, after this class has filled it from the receipt schedule and
-	 * BEFORE the header is saved, its lines are created and it is completed - i.e. the only point early enough for
-	 * the document's own {@code TIMING_AFTER_COMPLETE} interceptors to see a caller-supplied header value. Setting
-	 * such a value on the finished receipt after the generation call returned is too late.
-	 * <p>
-	 * Does nothing at this level.
-	 */
-	protected void customizeNewReceiptHeader(
-			@SuppressWarnings("unused") final I_M_InOut receiptHeader,
-			@SuppressWarnings("unused") final I_M_ReceiptSchedule receiptSchedule)
-	{
-		// nothing
 	}
 
 	/**

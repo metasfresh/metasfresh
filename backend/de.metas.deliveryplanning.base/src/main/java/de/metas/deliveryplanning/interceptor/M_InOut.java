@@ -1,23 +1,31 @@
 package de.metas.deliveryplanning.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.deliveryplanning.DeliveryInstructionService;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @Interceptor(I_M_InOut.class)
 @Component
 @RequiredArgsConstructor
 public class M_InOut
 {
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+
 	@NonNull private final DeliveryPlanningService deliveryPlanningService;
 	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
 	@NonNull private final DeliveryInstructionService deliveryInstructionService;
@@ -25,10 +33,14 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(final I_M_InOut inout)
 	{
-		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(inout.getM_Delivery_Planning_ID());
-		if (deliveryPlanningId != null && inout.getReversal_ID() <= 0)
+		if (inout.getReversal_ID() > 0)
 		{
-			final InOutId inoutId = InOutId.ofRepoId(inout.getM_InOut_ID());
+			return;
+		}
+
+		final InOutId inoutId = InOutId.ofRepoId(inout.getM_InOut_ID());
+		for (final DeliveryPlanningId deliveryPlanningId : extractDeliveryPlanningIds(inout))
+		{
 			if (inout.isSOTrx())
 			{
 				deliveryPlanningService.updateShipmentInfoById(deliveryPlanningId, shipmentInfo -> shipmentInfo.setShipmentId(inoutId));
@@ -53,10 +65,9 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void afterReverseCorrect(final I_M_InOut inout)
 	{
-		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(inout.getM_Delivery_Planning_ID());
-		if (deliveryPlanningId != null)
+		final InOutId inoutId = InOutId.ofRepoId(inout.getM_InOut_ID());
+		for (final DeliveryPlanningId deliveryPlanningId : extractDeliveryPlanningIds(inout))
 		{
-			final InOutId inoutId = InOutId.ofRepoId(inout.getM_InOut_ID());
 			if (inout.isSOTrx())
 			{
 				deliveryPlanningService.updateShipmentInfoById(
@@ -91,4 +102,17 @@ public class M_InOut
 		}
 	}
 
+	/**
+	 * Read off the LINES, because that is where the grain is: a line corresponds to one schedule and therefore to
+	 * one planning, while this document may aggregate several. A reversal's lines are copies of the original's and
+	 * carry the same ids, so the same read serves both timings.
+	 */
+	private ImmutableSet<DeliveryPlanningId> extractDeliveryPlanningIds(@NonNull final I_M_InOut inout)
+	{
+		return inOutDAO.retrieveLines(inout).stream()
+				.map(I_M_InOutLine::getM_Delivery_Planning_ID)
+				.map(DeliveryPlanningId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

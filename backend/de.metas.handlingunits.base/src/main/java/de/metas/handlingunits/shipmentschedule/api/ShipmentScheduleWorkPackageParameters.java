@@ -88,7 +88,7 @@ public class ShipmentScheduleWorkPackageParameters
 	@Nullable QtyToDeliverMap qtysToDeliverOverride;
 
 	/**
-	 * {@code M_Delivery_Planning_ID} to stamp onto every shipment header this workpackage creates, or
+	 * {@code M_Delivery_Planning_ID} to stamp onto every shipment LINE this workpackage creates, or
 	 * {@code 0} for none.
 	 *
 	 * @see GenerateShipmentsRequest#getDeliveryPlanningId()

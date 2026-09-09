@@ -43,7 +43,6 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.cucumber.stepdefs.deliveryplanning.M_Delivery_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
@@ -162,7 +161,6 @@ public class M_InOut_StepDef
 	private final C_DocType_StepDefData docTypeTable;
 	private final M_HU_StepDefData huTable;
 	private final C_Project_StepDefData projectTable;
-	private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -727,12 +725,6 @@ public class M_InOut_StepDef
 
 	/**
 	 * Update fields on an existing M_InOut record (e.g. MovementDate before completion).
-	 *
-	 * @cucumber.columns <b>M_Delivery_Planning_ID</b> — (optional, identifier-ref) links this manually-created
-	 * 		M_InOut to a delivery planning BEFORE it is completed, so {@code interceptor/M_InOut#afterComplete}
-	 * 		finds the FK set and stamps the planning / recomputes the instruction's delivered state -
-	 * 		the same shape production code produces via the generate-receipt/-shipment processes, which stamp
-	 * 		the FK before completion.
 	 */
 	@And("update M_InOut:")
 	public void update_M_InOut(@NonNull final DataTable dataTable)
@@ -742,10 +734,6 @@ public class M_InOut_StepDef
 
 			row.getAsOptionalLocalDateTimestamp(I_M_InOut.COLUMNNAME_MovementDate)
 					.ifPresent(inOut::setMovementDate);
-
-			row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_Delivery_Planning_ID)
-					.ifPresent(deliveryPlanningIdentifier -> inOut.setM_Delivery_Planning_ID(
-							deliveryPlanningIdentifier.lookupNotNullIn(deliveryPlanningTable).getM_Delivery_Planning_ID()));
 
 			InterfaceWrapperHelper.saveRecord(inOut);
 		});

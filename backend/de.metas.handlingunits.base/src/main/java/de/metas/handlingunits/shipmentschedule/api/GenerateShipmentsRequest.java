@@ -73,7 +73,7 @@ public class GenerateShipmentsRequest
 	@Builder.Default boolean waitForShipments = true;
 
 	/**
-	 * {@code M_Delivery_Planning_ID} to stamp onto every shipment header created for this request, or {@code 0} for
+	 * {@code M_Delivery_Planning_ID} to stamp onto every shipment LINE created for this request, or {@code 0} for
 	 * none. It has to travel with the REQUEST rather than being set on the finished shipment, because the shipment
 	 * is completed inside the generation workpackage: an id written afterwards is invisible to the document's
 	 * {@code TIMING_AFTER_COMPLETE} interceptor, which is what derives the planning's state from the completion.
