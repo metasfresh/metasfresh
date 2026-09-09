@@ -408,6 +408,24 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned |
       | rowMultiB1_RL          | null                   | scheduleMultiB1_RL   | false         |
 
+    # Completing the two orders above leaves their invoice candidates flagged 'to recompute', and the async
+    # UpdateInvalidInvoiceCandidatesWorkpackageProcessor updates those same candidates in its own transaction.
+    # The receive gesture below writes them synchronously too, via
+    # M_InOutLine.createC_InvoiceCandidate_InOutLines - so while the recompute is still in flight the two
+    # transactions take c_invoice_candidate row locks in opposite order and Postgres kills one of them
+    # (DBDeadLockDetectedException). Waiting for the flag to clear is commit-visible, not a sleep: the flag is
+    # only gone once the updater's transaction committed and dropped its row locks, so the second writer is
+    # removed rather than merely re-timed. Purely a precondition - no assertion is relaxed.
+    And after not more than 60s locate invoice candidates by order id:
+      | C_Invoice_Candidate_ID.Identifier | C_Order_ID.Identifier |
+      | icMultiA1_RL, icMultiA2_RL        | orderMultiA_RL        |
+      | icMultiB1_RL                      | orderMultiB_RL        |
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
+      | C_Invoice_Candidate_ID.Identifier |
+      | icMultiA1_RL                      |
+      | icMultiA2_RL                      |
+      | icMultiB1_RL                      |
+
     # Three rows in, TWO receipts out: the two rows of order A share one, order B's cannot join them.
     When the receipt-disposition delivery-planning rows identified by rowMultiA1_RL, rowMultiA2_RL, rowMultiB1_RL are received together:
       | M_InOut_ID       |
