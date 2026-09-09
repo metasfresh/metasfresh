@@ -700,6 +700,27 @@ public interface I_RV_ReceiptDisposition_DeliveryPlanning
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
+	 * Set Quantity to move.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToMove (@Nullable BigDecimal QtyToMove);
+
+	/**
+	 * Get Quantity to move.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToMove();
+
+	ModelColumn<I_RV_ReceiptDisposition_DeliveryPlanning, Object> COLUMN_QtyToMove = new ModelColumn<>(I_RV_ReceiptDisposition_DeliveryPlanning.class, "QtyToMove", null);
+	String COLUMNNAME_QtyToMove = "QtyToMove";
+
+	/**
 	 * Set Receipt Disposition including Delivery Planning.
 	 *
 	 * <br>Type: ID

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_ReceiptDisposition_DeliveryPlanning extends org.compiere.model.PO implements I_RV_ReceiptDisposition_DeliveryPlanning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -900471658L;
+	private static final long serialVersionUID = -1333404955L;
 
     /** Standard Constructor */
     public X_RV_ReceiptDisposition_DeliveryPlanning (final Properties ctx, final int RV_ReceiptDisposition_DeliveryPlanning_ID, @Nullable final String trxName)
@@ -384,6 +384,19 @@ public class X_RV_ReceiptDisposition_DeliveryPlanning extends org.compiere.model
 	public BigDecimal getQtyOrdered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyToMove (final @Nullable BigDecimal QtyToMove)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyToMove, QtyToMove);
+	}
+
+	@Override
+	public BigDecimal getQtyToMove() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToMove);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

@@ -167,8 +167,8 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | planningDropship_RL    | 5          | 5            | Dropship           | orderDropship_RL | orderLineDropship_RL | scheduleDropship_RL  |
 
     Then after not more than 60s, the C_Order identified by orderDropship_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
-      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
-      | rowDropship_RL         | planningDropship_RL    | scheduleDropship_RL  | true          | 5              | 5                            | 0                           |
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.QtyToMove | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
+      | rowDropship_RL         | planningDropship_RL    | scheduleDropship_RL  | true          | 5              | 5             | 5                            | 0                           |
 
   @Id:S31789_TC4
   Scenario: Each row type carries its ETA from its own source
@@ -871,6 +871,75 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | planningSolo1_RL       | 10         | 0            | 5                        | 5                       | Incoming           | receiptSolo1_RL | false    | true      |
       | planningSolo2_RL       | 10         | 0            | 5                        | 5                       | Incoming           | receiptSolo2_RL | false    | true      |
 
+  @Id:S31789_TC9g
+  Scenario: A short receive leaves the PLAN standing, so the shortfall stays visible
+
+    # A planning is exactly ONE receipt - getReceiveRejectionReason rejects a second one, and the receive marks
+    # the planning Processed - so a shortfall does not stay open on it; the remainder becomes a NEW planning,
+    # because it will be a new transport. That only works if the plan survives the receive: planned 4 against
+    # actual 3 says "4 was expected, 3 arrived". Overwriting the plan with what arrived collapses it to 3/3 and
+    # destroys the very fact the operator needs to see.
+    Given metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderShort_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC9G      |
+    And metasfresh contains C_OrderLines:
+      | Identifier        | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineShort_RL | orderShort_RL         | product_RL              | 8          | shipperPlanning_RL          |
+
+    When the order identified by orderShort_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleShort_RL                | orderShort_RL         | orderLineShort_RL         | vendor_RL                | vendorLocation_RL                 | product_RL              | 8          | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID    |
+      | planningShort1_RL      | orderLineShort_RL |
+
+    # 8 over two plannings: 4 planned each. The second one is the untouched control.
+    When generate 1 additional M_Delivery_Planning records for: planningShort1_RL
+    Then after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID              | C_OrderLine_ID    |
+      | planningShort1_RL,planningShort2_RL | orderLineShort_RL |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | Processed |
+      | planningShort1_RL      | 8          | 8            | 4                        | 0                       | Incoming           | false     |
+      | planningShort2_RL      | 8          | 8            | 4                        | 0                       | Incoming           | false     |
+
+    # Nothing received yet, so each row still has its whole plan to move.
+    And after not more than 60s, the C_Order identified by orderShort_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyToMove | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
+      | rowShort1_RL           | planningShort1_RL      | scheduleShort_RL     | true          | 4             | 4                            | 0                           |
+      | rowShort2_RL           | planningShort2_RL      | scheduleShort_RL     | true          | 4             | 4                            | 0                           |
+
+    # 3 of the 4 planned arrive - a short delivery, the case the whole rule exists for.
+    When the receipt-disposition delivery-planning row identified by rowShort1_RL is received:
+      | OPT.Qty | OPT.M_InOut_ID  |
+      | 3       | receiptShort_RL |
+
+    Then validate M_In_Out status
+      | M_InOut_ID      | DocStatus |
+      | receiptShort_RL | CO        |
+
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID      | C_OrderLine_ID    | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptShort_RL | orderLineShort_RL | planningShort1_RL      | 3               |
+
+    # PLANNED STAYS 4. Actual is the 3 that arrived, and the planning is Processed - so the missing 1 is not
+    # outstanding on this planning, it is a new transport somebody has to plan. The untouched sibling shows the
+    # same plan with nothing against it yet.
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | M_InOut_ID      | IsClosed | Processed |
+      | planningShort1_RL      | 8          | 5            | 4                        | 3                       | Incoming           | receiptShort_RL | false    | true      |
+      | planningShort2_RL      | 8          | 5            | 4                        | 0                       | Incoming           | null            | false    | false     |
+
+    # And the grid says the same in its own three columns: the received row has NOTHING left to move even
+    # though only 3 of the 4 planned arrived - a planning is one receipt - while the untouched sibling still
+    # has its whole 4 to move.
+    And after not more than 60s, the C_Order identified by orderShort_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyToMove | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
+      | rowShort1_RL           | planningShort1_RL      | scheduleShort_RL     | true          | 0             | 4                            | 3                           |
+      | rowShort2_RL           | planningShort2_RL      | scheduleShort_RL     | true          | 4             | 4                            | 0                           |
+
   @Id:S31789_TC10
   Scenario: Processed is read from the row's own source - the planning on a planned row, the schedule on an unplanned one
 
@@ -997,15 +1066,20 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyToMove | OPT.QtyMoved |
       | scheduleQtyPlain_RL             | orderQtyPlain_RL      | orderLineQtyPlain_RL      | vendor_RL                | vendorLocation_RL                 | product_RL              | 8          | warehouse_RL              | 3             | 5            |
 
+    # None of the three is Processed - the actuals above were set directly - so each still has its whole
+    # planned share to move.
     Then after not more than 60s, the C_Order identified by orderQtySplit_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
-      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
-      | rowQty1_RL             | planningQty1_RL        | scheduleQtySplit_RL  | true          | 10             | 4                            | 2                           |
-      | rowQty2_RL             | planningQty2_RL        | scheduleQtySplit_RL  | true          | 10             | 3                            | 1                           |
-      | rowQty3_RL             | planningQty3_RL        | scheduleQtySplit_RL  | true          | 10             | 3                            | 3                           |
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.QtyToMove | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
+      | rowQty1_RL             | planningQty1_RL        | scheduleQtySplit_RL  | true          | 10             | 4             | 4                            | 2                           |
+      | rowQty2_RL             | planningQty2_RL        | scheduleQtySplit_RL  | true          | 10             | 3             | 3                            | 1                           |
+      | rowQty3_RL             | planningQty3_RL        | scheduleQtySplit_RL  | true          | 10             | 3             | 3                            | 3                           |
 
+    # The unplanned control keeps THREE distinct non-zero numbers from three different schedule columns, so no
+    # view column can pass by reading another: QtyToMove is the schedule's own stored remainder (3), the
+    # planned figure is what was ordered (8), and the actual is what has moved (5).
     And after not more than 60s, the C_Order identified by orderQtyPlain_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
-      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
-      | rowQtyPlain_RL         | null                   | scheduleQtyPlain_RL  | false         | 8              | 3                            | 5                           |
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.QtyToMove | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
+      | rowQtyPlain_RL         | null                   | scheduleQtyPlain_RL  | false         | 8              | 3             | 8                            | 5                           |
 
   @Id:S31789_TC15
   Scenario: Each row's ContainerNo and BL / booking / WE-notice flags are its own transport order's, not the order's
