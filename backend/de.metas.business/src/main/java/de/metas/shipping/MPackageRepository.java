@@ -34,6 +34,12 @@ import org.springframework.stereotype.Repository;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+/**
+ * Repository Tables: M_Package
+ * Repository Cluster: MPackageRepository (sole owner of M_Package). A caller that needs a package alongside
+ * records of another aggregate - {@code M_ShippingPackage}, say - composes the two rather than creating the
+ * package itself.
+ */
 @Repository
 public class MPackageRepository
 {
