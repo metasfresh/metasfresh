@@ -50,6 +50,7 @@ import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
+import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseEmptiesCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
@@ -87,6 +88,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
+		configureWarehouseEmpties();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
@@ -255,6 +257,22 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	/**
+	 * Post-pass: needs every warehouse (the empties target is named by identifier) and the shippers
+	 * (the DD_NetworkDistributionLine requires one).
+	 */
+	private void configureWarehouseEmpties()
+	{
+		if (request.getWarehouses() == null) {return;}
+
+		ConfigureWarehouseEmptiesCommand.builder()
+				.distributionNetworkRepository(services.distributionNetworkRepository)
+				.context(context)
+				.requests(request.getWarehouses())
 				.build()
 				.execute();
 	}

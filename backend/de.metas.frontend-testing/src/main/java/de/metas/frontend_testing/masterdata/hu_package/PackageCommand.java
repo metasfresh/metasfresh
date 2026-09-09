@@ -5,6 +5,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
@@ -36,7 +37,7 @@ public class PackageCommand
 
 		final I_M_Package packageRecord = inOutPackageRepository.createM_Package(
 				MasterdataContext.ORG_ID,
-				context.getDefaultShipperId(),
+				context.getId(request.getShipper(), ShipperId.class),
 				identifier.toUniqueString());
 		final PackageId packageId = PackageId.ofRepoId(packageRecord.getM_Package_ID());
 

@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.warehouse;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -18,18 +19,27 @@ public class JsonWarehouseRequest
 	@Nullable Map<String, Locator> locators;
 
 	/**
-	 * When set, reference a pre-existing seeded warehouse by a stable name instead of creating a new one.
-	 * Supported value: {@code "standard"} — the seeded standard warehouse (the one empties network
-	 * 540011's seeded line covers). No new {@code M_Warehouse} row is created, and its default locator is
-	 * resolved read-only (never renamed), since it is shared across test runs.
+	 * Packing material emptied/issued in THIS warehouse is moved to {@link Empties#getToWarehouse()}: adds a line
+	 * (this warehouse -> {@code toWarehouse}, {@link Empties#getShipper()}) to the client's single empties
+	 * distribution network ({@code DD_NetworkDistribution.IsHUDestroyed}), creating that network if the client has
+	 * none. Applied after {@code shippers} and all {@code warehouses}.
 	 */
-	@Nullable String existing;
+	@Nullable Empties empties;
 
 	//
 	//
 	//
 	//
 	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Empties
+	{
+		@NonNull Identifier toWarehouse;
+		@NonNull Identifier shipper;
+	}
 
 	@Value
 	@Builder

@@ -13,4 +13,7 @@ public class JsonPackageRequest
 {
 	/** Identifier of an HU previously created under {@code handlingUnits}. */
 	@NonNull Identifier hu;
+
+	/** Identifier of a shipper previously created under {@code shippers}; {@code M_Package.M_Shipper_ID} is mandatory. */
+	@NonNull Identifier shipper;
 }
