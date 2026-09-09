@@ -77,6 +77,22 @@ export const GetQuantityDialog = {
         }
     }),
 
+    /**
+     * `offered: false` on a single reason (above) passes even if only that one reason were filtered
+     * out of an otherwise-rendered group. Use this alongside it when the scenario expects the WHOLE
+     * reason group to be absent (e.g. a zero-target step, where the group only renders once
+     * `qtyRejected > 0` — `GetQuantityDialog.jsx`), so the test documents "no reasons at all" rather
+     * than "at least this one is filtered".
+     */
+    expectQtyRejectedReasonsGroupVisible: async ({ visible }) => await test.step(`${NAME} - Expect qty-rejected-reasons group visible=${visible}`, async () => {
+        const group = page.locator('#qty-rejected');
+        if (visible) {
+            await expect(group).toBeVisible();
+        } else {
+            await expect(group).toHaveCount(0);
+        }
+    }),
+
     expectQtyNotFoundReasonCaption: async ({ reason, caption }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' caption '${caption}'`, async () => {
         const label = page.getByTestId(`qty-reason-radio-${reason}`).locator('xpath=..');
         await expect(label).toContainText(caption);

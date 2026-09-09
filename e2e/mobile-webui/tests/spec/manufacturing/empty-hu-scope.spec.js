@@ -13,6 +13,10 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND, QTY_NOT_FOUND_REASON
  * Empty HU write-off — scope tests: the client-level flag off (AC2), and the pallet-sourced line
  * (AC3, AC9, AC10) from REQUIREMENTS.md §5, TC4 and TC5.
  *
+ * AC10 (corrected 2026-09-09): on a pallet-sourced line NO step offers the reason — neither the LU's
+ * primary step (TC5) nor a per-TU alternative step (TC5b). An HU standing on a pallet is emptied by
+ * issuing it as its own line, never from the pallet line.
+ *
  * TC1-TC3 (core case, decline/untick-confirm, dregs case) live in empty-hu-core.spec.js.
  */
 
@@ -220,58 +224,65 @@ test('TC5: A pallet-sourced line — primary LU step refuses the reason, pallet 
     });
 });
 
-/**
- * TC5's second half — "open one of the alternative (per-TU) steps; expect the new reason IS
- * offered; using it empties that single TU only, and the pallet's other TUs are untouched"
- * (REQUIREMENTS.md §5) — is NOT implemented here. BLOCKED on a genuine, deeper gap than the
- * masterdata-harness one this task's round-2 fix closed.
- *
- * The harness fix works exactly as intended: `createPalletMasterdata()`'s under-filled 3rd TU (3 KGM,
- * below its 5 KGM rated capacity) is created as a real, individually addressable (non-aggregate) HU,
- * and the masterdata response lists its own QR code (asserted above, in TC5's first half —
- * `masterdata.handlingUnits.PALLET.tus` has exactly one entry). Scanning that QR code DOES resolve to
- * its plan's alternative (per-TU) step (confirmed empirically — the scan succeeds, `GetQuantityDialog`
- * opens, no "not eligible HU barcode" error).
- *
- * But that alternative step's qty-input opens at **"0"**, not the TU's own 3 KGM content (confirmed
- * empirically: a `GetQuantityDialog.expectQtyEntered('3')` assertion failed with `Received: "0"`).
- * Root cause, traced through three source files:
- *
- * - `PPOrderIssuePlanCreateCommand.createAndCollectSteps` (`:241`) builds every per-TU alternative
- *   step with `.qtyToIssue(targetQty.toZero())` — a literal, permanent ZERO at plan-creation time,
- *   regardless of what the TU actually holds (this is REQUIREMENTS.md §3's own "zero-quantity
- *   alternative step" wording — confirmed to mean exactly zero, not merely "not yet computed").
- * - That static zero is echoed verbatim onto the wire: `JsonRawMaterialsIssueLineStep.of` (`:55`) sets
- *   `qtyToIssue(step.getQtyToIssue().toBigDecimal())` with no recomputation.
- * - The ONLY place that ever overwrites a step's persisted `qtyToIssue` with something else,
- *   `ManufacturingJobService.recomputeQtyToIssueForSteps` (`:663`), is called from exactly one call
- *   site: `RawMaterialsIssueOnlyWhatWasReceivedActivityHandler` (`:143`) — a different manufacturing
- *   routing/activity type (source-HU/receipt-linked) that this masterdata (and the standard
- *   `RawMaterialsIssueActivityHandler` our BOM/routing uses) never engages. Even if it did, the
- *   recompute's own loop (`qtyLeftToBeIssued.isGreaterThan(step.getQtyToIssue())`) can never cap a
- *   step whose own static value is 0 — the comparison against a step's own zero is exactly what keeps
- *   it at zero, for as long as any material remains to be issued.
- *
- * Consequence: `computeStepScanPropsFromActivity.js`'s `qtyToIssueTarget = Math.min(stepQtyToIssue,
- * ...)` is pinned at 0 (the smallest of the four terms) for this step regardless of the TU's own
- * capacity (3, correctly read live from real HU storage — `ManufacturingJobLoaderAndSaverSupport
- * ingServices.getHUCapacity`). So `isIssueWholeHU = qtyToIssueTarget(0) >= qtyHUCapacity(3)` is always
- * `false`, and `qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsForStep(...) : null` never
- * renders — not just `E`, but the ALREADY-EXISTING `N`/`D` reasons too, for ANY per-TU alternative
- * step, in the standard raw-materials-issue flow. This is a pre-existing mechanism, unrelated to this
- * feature (`allowEmptying`/reason `E`) or to the masterdata harness, and out of scope for this task
- * (no production-code change was authorized beyond the harness `qty`-with-`packingInstructions` fix).
- *
- * Minimal fix for a follow-up (out of scope here): either (a) have the standard
- * `RawMaterialsIssueActivityHandler` flow also call (or inline the equivalent of)
- * `ManufacturingJobService.recomputeQtyToIssueForSteps` when a step is scanned, so an alternative
- * step's live target reflects its own real capacity capped by the line's remaining need — with the
- * recompute's own comparison fixed to key off `step.getIssueFromHU().getHuCapacity()`, not the step's
- * own (permanently zero) `qtyToIssue`, since that is the actual defect stopping it from ever capping
- * an alternative step even where it IS called; or (b) reconsider whether `isIssueWholeHU`'s "target
- * must reach capacity" gate is the right precondition for offering reject reasons on an alternative
- * step at all, given its target is deliberately zero by design.
- *
- * **Decision needed**: whether to open a follow-up issue for that fix so TC5's second half can be
- * written (per this workspace's deferral-needs-approval rule, not decided here).
- */
+// noinspection JSUnusedLocalSymbols
+test('TC5b: a single TU on the pallet offers no reason either', async ({ page }) => {
+    const masterdata = await createPalletMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('mfg');
+    await ManufacturingJobsListScreen.waitForScreen();
+    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+
+    await ManufacturingJobScreen.clickIssueButton({ index: 1 });
+    await RawMaterialIssueLineScreen.openScanScreen();
+    // Scan the under-filled 3rd TU's own QR (`masterdata.handlingUnits.PALLET.tus[0].qrCode`) — this
+    // resolves to the plan's per-TU ALTERNATIVE step (REQUIREMENTS.md §3: "the individual TUs on a
+    // pallet are offered as zero-quantity alternative steps the operator can scan instead of the
+    // pallet"), not the LU's primary step (covered by TC5's first half, above).
+    await RawMaterialIssueLineScanScreen.typeQRCode(masterdata.handlingUnits.PALLET.tus[0].qrCode);
+    await GetQuantityDialog.waitForDialog();
+
+    // Observed state (task-13-report.md "Fix round 2"): an alternative step's target is a permanent
+    // zero (`PPOrderIssuePlanCreateCommand.createAndCollectSteps`: `.qtyToIssue(targetQty.toZero())`),
+    // regardless of what the TU actually holds (3 KGM here) — so the dialog opens already AT its
+    // target, with no shortfall to enter. There is nothing to type: entering less than "0" is not a
+    // valid quantity, and the reject-reason group only renders once a shortfall exists
+    // (`qtyRejected > 0` in `GetQuantityDialog.jsx`), so this zero-shortfall state IS the alternative
+    // step's whole behaviour, not a setup step towards it.
+    await GetQuantityDialog.expectQtyEntered('0');
+
+    // Expect: the new reason is absent here too — completing AC10 (neither the LU step nor a per-TU
+    // alternative step ever offers "empty (auto. inventory)").
+    await GetQuantityDialog.expectQtyNotFoundReasonOffered({ reason: EMPTIED_REASON, offered: false });
+    // `offered: false` above only proves the `E` radio itself is absent — `toHaveCount(0)` on that one
+    // testid would equally pass if `E` were filtered out of an otherwise-rendered N/D group. Assert the
+    // group's own container is absent too, so the test documents the REAL state: no qty-rejected
+    // reason group at all on a zero-target step (not just "E" excluded from one that renders).
+    await GetQuantityDialog.expectQtyRejectedReasonsGroupVisible({ visible: false });
+
+    // Back out without submitting anything — both the TU's and the pallet's quantities must stay
+    // untouched, and no write-off inventory must exist.
+    await GetQuantityDialog.clickCancel();
+    await RawMaterialIssueLineScanScreen.goBack();
+    await RawMaterialIssueLineScreen.goBack();
+
+    await Backend.expect({
+        hus: {
+            [masterdata.handlingUnits.PALLET.tus[0].qrCode]: {
+                huStatus: 'A',
+                storages: { COMP: '3 KGM' },
+            },
+            [masterdata.handlingUnits.PALLET.qrCode]: {
+                huStatus: 'A',
+                storages: { COMP: '13 KGM' },
+            },
+        },
+        inventories: {
+            [masterdata.handlingUnits.PALLET.tus[0].qrCode]: {
+                isExists: false,
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+            },
+        },
+    });
+});
