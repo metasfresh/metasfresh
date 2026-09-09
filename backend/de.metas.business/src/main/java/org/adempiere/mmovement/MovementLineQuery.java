@@ -13,7 +13,8 @@ import javax.annotation.Nullable;
 
 /**
  * Filters for {@link org.adempiere.mmovement.api.IMovementDAO#getLineByQuery(MovementLineQuery)}.
- * Every filter is optional; an unset/empty one is simply not applied.
+ * Every filter is optional; an unset/empty one is simply not applied — but at least one must be set
+ * (see {@link #isEmpty()}), else the query would match an arbitrary line of the system.
  */
 @Value
 @Builder
@@ -29,4 +30,13 @@ public class MovementLineQuery
 
 	/** Restricts the DocStatus of the line's {@code M_Movement} header. */
 	@Nullable DocStatus movementDocStatus;
+
+	/** True if no filter at all is set, i.e. this query would match every movement line. */
+	public boolean isEmpty()
+	{
+		return productId == null
+				&& fromLocatorIds.isEmpty()
+				&& toLocatorIds.isEmpty()
+				&& movementDocStatus == null;
+	}
 }

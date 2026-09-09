@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.MovementLineId;
 import org.adempiere.mmovement.MovementLineQuery;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -56,6 +57,13 @@ public class MovementDAO implements IMovementDAO
 	@Override
 	public Optional<I_M_MovementLine> getLineByQuery(@NonNull final MovementLineQuery query)
 	{
+		// An all-empty query would return an arbitrary movement line of the system, so a caller asking
+		// "is there a line like this?" would be answered by an unrelated one.
+		if (query.isEmpty())
+		{
+			throw new AdempiereException("At least one filter is required: " + query);
+		}
+
 		final IQueryBuilder<I_M_MovementLine> queryBuilder = queryBL.createQueryBuilder(I_M_MovementLine.class)
 				.addOnlyActiveRecordsFilter();
 
