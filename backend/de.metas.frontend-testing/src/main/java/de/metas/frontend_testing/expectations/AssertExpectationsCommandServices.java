@@ -1,15 +1,10 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.generichumodel.HUType;
-import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -44,8 +39,7 @@ import org.adempiere.mmovement.MovementLineQuery;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Product;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
@@ -62,9 +56,8 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final PickingJobService pickingJobService;
@@ -133,7 +126,7 @@ public class AssertExpectationsCommandServices
 
 	public List<I_M_HU> getIncludedHUs(@NonNull final HuId huId)
 	{
-		return handlingUnitsDAO.retrieveIncludedHUs(huId);
+		return handlingUnitsBL.retrieveIncludedHUs(huId);
 	}
 
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
@@ -143,6 +136,9 @@ public class AssertExpectationsCommandServices
 	 * {@code M_InventoryLine_HU} and HU assignments, so the result is narrowed back to lines whose own
 	 * {@code M_HU_ID} is this HU: an assertion must not be satisfied by an unrelated inventory elsewhere
 	 * in the HU's graph.
+	 * <p>
+	 * {@code retrieveAllLinesForHU} loads the HU first, so a fixture naming an HU that does not exist fails
+	 * loudly here instead of silently satisfying an {@code isExists: false} expectation.
 	 */
 	public List<I_M_InventoryLine> getInventoryLinesByHUId(@NonNull final HuId huId)
 	{
@@ -158,25 +154,11 @@ public class AssertExpectationsCommandServices
 		return inventoryService.getById(inventoryId);
 	}
 
-	/**
-	 * The product of the FIRST packing material carried by the given HU (e.g. the crate/pallet product
-	 * an {@code M_HU_PackingMaterial} attaches to a packing-instruction-produced TU).
-	 */
+	/** The packing-material product of the HU; which packing material counts is the BL's decision, not the harness'. */
 	public ProductId getPackingMaterialProductId(@NonNull final HuId huId)
 	{
-		final I_M_HU hu = getHUById(huId);
-		final I_M_HU_PackingMaterial packingMaterial = handlingUnitsDAO.retrievePackingMaterialAndQtys(hu)
-				.stream()
-				.findFirst()
-				.map(IPair::getLeft)
-				.orElseThrow(() -> new AdempiereException("HU has no packing material").setParameter("huId", huId));
-
-		final I_M_Product product = IHUPackingMaterialDAO.extractProductOrNull(packingMaterial);
-		if (product == null)
-		{
-			throw new AdempiereException("Packing material has no product").setParameter("huId", huId);
-		}
-		return ProductId.ofRepoId(product.getM_Product_ID());
+		return handlingUnitsBL.getFirstPackingMaterialProductId(huId)
+				.orElseThrow(() -> new AdempiereException("HU has no packing material product").setParameter("huId", huId));
 	}
 
 	/**
@@ -199,6 +181,6 @@ public class AssertExpectationsCommandServices
 
 	private Set<LocatorId> toLocatorIds(@NonNull final WarehouseId warehouseId)
 	{
-		return ImmutableSet.copyOf(warehouseDAO.getLocatorIds(warehouseId));
+		return warehouseBL.getLocatorIdsByWarehouseId(warehouseId);
 	}
 }

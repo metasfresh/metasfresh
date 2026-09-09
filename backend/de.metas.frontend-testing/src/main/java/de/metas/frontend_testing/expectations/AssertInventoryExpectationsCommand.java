@@ -14,6 +14,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -29,6 +30,8 @@ class AssertInventoryExpectationsCommand
 	@NonNull private final AssertExpectationsCommandServices services;
 	@NonNull private final MasterdataContext context;
 	@NonNull final Map<String, JsonInventoryExpectation> expectations;
+
+	@NonNull private final HashMap<InventoryId, Inventory> inventoriesCache = new HashMap<>();
 
 	void execute()
 	{
@@ -138,9 +141,15 @@ class AssertInventoryExpectationsCommand
 				: "Inventory document exists";
 	}
 
+	/** Cached per distinct inventory id: several lines of the same document are inspected per assertion, and each miss loads the whole {@code Inventory} aggregate. */
 	private Inventory getInventoryOf(@NonNull final I_M_InventoryLine inventoryLine)
 	{
-		return services.getInventoryById(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
+		return getInventoryById(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
+	}
+
+	private Inventory getInventoryById(@NonNull final InventoryId inventoryId)
+	{
+		return inventoriesCache.computeIfAbsent(inventoryId, services::getInventoryById);
 	}
 
 	private Inventory getLatestInventory(@NonNull final List<I_M_InventoryLine> inventoryLines)
@@ -149,7 +158,7 @@ class AssertInventoryExpectationsCommand
 				.max(Comparator.comparing(I_M_InventoryLine::getM_InventoryLine_ID))
 				.orElseThrow(() -> new AdempiereException("inventoryLines is not empty")); // guarded by caller
 
-		return services.getInventoryById(InventoryId.ofRepoId(latestLine.getM_Inventory_ID()));
+		return getInventoryById(InventoryId.ofRepoId(latestLine.getM_Inventory_ID()));
 	}
 
 	private HuId getHUIdByMatcherString(@NonNull final String matcherStr)
