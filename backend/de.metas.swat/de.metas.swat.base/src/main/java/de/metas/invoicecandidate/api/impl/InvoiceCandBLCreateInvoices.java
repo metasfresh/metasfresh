@@ -1141,6 +1141,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					result.add(note);
 				}
 			}
+
+			// This method is the one choke point all three failure call sites reach.
+			// Survives the rollback that is about to happen: the AD_Note is created out-of-trx (TRXNAME_None).
+			getCollector().addFailedCandidates(affectedCands, error);
+
 			return result;
 
 		}

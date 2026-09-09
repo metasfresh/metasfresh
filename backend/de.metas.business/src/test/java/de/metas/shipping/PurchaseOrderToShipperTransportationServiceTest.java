@@ -21,6 +21,7 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.model.X_M_ShipperTransportation;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.sscc18.SSCC18;
 import de.metas.sscc18.impl.SSCC18CodeBL;
@@ -548,8 +549,6 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	/**
 	 * The five transport-order date fields (ETD, ETA, ATD, ATA, B/L date) must auto-populate from the first assigned purchase order:
 	 * ETA = PO.DatePromised, ETD = PO.PreparationDate (taken as already calculated on the order), ATD = ETD, ATA = ETA, B/L date = ATD.
-	 * <p>
-	 * me03 https://github.com/metasfresh/me03/issues/30956
 	 */
 	@Test
 	public void defaultDates_appliedFromFirstPurchaseOrder()
@@ -670,13 +669,13 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	}
 
 	/**
-	 * Regression-safety: the auto-defaulting must NOT run for a sales (SOTrx=Y) transport order, so the existing sales flow is untouched.
+	 * The auto-defaulting must NOT run for a sales (Outgoing direction) transport order.
 	 */
 	@Test
 	public void defaultDates_notAppliedForSalesTransportOrder()
 	{
 		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
-		shipperTransportation.setIsSOTrx(true);
+		shipperTransportation.setTransportDirection(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
 		save(shipperTransportation);
 		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
 
@@ -810,14 +809,14 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	 * collection or of the C_Order_IDs. Here the earliest-promised order is deliberately NOT the lowest-id one.
 	 */
 	@Test
-	public void defaultDates_batchAssignment_firstIsEarliestDatePromised()
+	public void defaultDates_batchAssignment_firstIsEarliestPreparationDate()
 	{
 		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
 		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
 
 		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorBatch", "addressBatch");
 
-		// order1: LOWEST C_Order_ID but the LATEST DatePromised => must NOT seed the dates
+		// order1: LOWEST C_Order_ID, and neither the earliest PreparationDate nor the earliest DatePromised => must NOT seed the dates
 		final OrderId order1 = createOrder(bpartnerAndLocation);
 		createOrderLine(order1, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
 		final I_C_Order order1Record = load(order1, I_C_Order.class);
@@ -832,16 +831,17 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		order2Record.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 2, 2), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
 		save(order2Record);
 
-		// order3: HIGHEST C_Order_ID but the EARLIEST DatePromised => it must seed the dates
+		// order3: HIGHEST C_Order_ID and the LATEST DatePromised, but the EARLIEST PreparationDate => it must seed the dates.
+		// Sorting by DatePromised would pick order2, so this fixture fails unless the comparator sorts on PreparationDate.
 		final OrderId order3 = createOrder(bpartnerAndLocation);
 		createOrderLine(order3, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
 		final I_C_Order order3Record = load(order3, I_C_Order.class);
-		order3Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID()))));
+		order3Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2022, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID()))));
 		final Timestamp order3PreparationDate = TimeUtil.asTimestamp(LocalDate.of(2018, 12, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID())));
 		order3Record.setPreparationDate(order3PreparationDate);
 		save(order3Record);
 
-		// sanity: order3 has the HIGHEST C_Order_ID yet the earliest DatePromised
+		// sanity: order3 has the HIGHEST C_Order_ID and the LATEST DatePromised, yet the earliest PreparationDate
 		assertThat(order1.getRepoId()).isLessThan(order2.getRepoId()).isLessThan(order3.getRepoId());
 
 		// assign all three at once, in a collection order that does NOT start with order3
@@ -849,25 +849,70 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
 		assertThat(reloaded.getETD())
-				.as("ETD is seeded by the earliest-DatePromised order (order3), not the lowest C_Order_ID or the collection order")
+				.as("ETD is seeded by the earliest-PreparationDate order (order3), not the earliest DatePromised, the lowest C_Order_ID or the collection order")
 				.isEqualTo(order3PreparationDate);
 	}
 
 	/**
-	 * Same determinism contract as {@link #defaultDates_batchAssignment_firstIsEarliestDatePromised()} but driven through
+	 * With NO order carrying a {@code PreparationDate} every order lands in the nulls-last bucket, so {@code DatePromised}
+	 * decides the seeding order and not {@code C_Order_ID}: ETD stays unset, ETA is still seeded.
+	 */
+	@Test
+	public void defaultDates_allPreparationDatesNull_earliestDatePromisedWinsOverOrderId()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorNullPrep", "addressNullPrep");
+
+		// order1: LOWEST C_Order_ID and the LATER DatePromised => must NOT seed the dates
+		final OrderId order1 = createOrder(bpartnerAndLocation);
+		createOrderLine(order1, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order1Record = load(order1, I_C_Order.class);
+		order1Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2021, 3, 3), orgDAO.getTimeZone(OrgId.ofRepoId(order1Record.getAD_Org_ID()))));
+		order1Record.setPreparationDate(null);
+		save(order1Record);
+
+		// order2: HIGHER C_Order_ID but the EARLIER DatePromised => it must seed the dates
+		final OrderId order2 = createOrder(bpartnerAndLocation);
+		createOrderLine(order2, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order2Record = load(order2, I_C_Order.class);
+		final Timestamp order2DatePromised = TimeUtil.asTimestamp(LocalDate.of(2019, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID())));
+		order2Record.setDatePromised(order2DatePromised);
+		order2Record.setPreparationDate(null);
+		save(order2Record);
+
+		// sanity: order2 has the HIGHER C_Order_ID yet the earlier DatePromised, and neither has a PreparationDate
+		assertThat(order1.getRepoId()).isLessThan(order2.getRepoId());
+		assertThat(load(order1, I_C_Order.class).getPreparationDate()).isNull();
+		assertThat(load(order2, I_C_Order.class).getPreparationDate()).isNull();
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, ImmutableSet.of(order1, order2));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETA())
+				.as("with every PreparationDate null the seeding order falls to DatePromised, not to the lowest C_Order_ID")
+				.isEqualTo(order2DatePromised);
+		assertThat(reloaded.getETD())
+				.as("no order has a PreparationDate, so ETD stays unset")
+				.isNull();
+	}
+
+	/**
+	 * Same determinism contract as {@link #defaultDates_batchAssignment_firstIsEarliestPreparationDate()} but driven through
 	 * {@code addOrderLinesToShipperTransportation} (the line-level entry point): when a single call carries lines from several
-	 * purchase orders, the "first order" that seeds the default dates must be the one with the EARLIEST {@code DatePromised}
+	 * purchase orders, the "first order" that seeds the default dates must be the one with the EARLIEST {@code PreparationDate}
 	 * (ties broken by {@code C_Order_ID}), regardless of the encounter order of the passed line-id set.
 	 */
 	@Test
-	public void defaultDates_viaAddOrderLines_batchAssignment_firstIsEarliestDatePromised()
+	public void defaultDates_viaAddOrderLines_batchAssignment_firstIsEarliestPreparationDate()
 	{
 		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
 		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
 
 		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorBatchLines", "addressBatchLines");
 
-		// order1: LOWEST C_Order_ID but the LATEST DatePromised => must NOT seed the dates
+		// order1: LOWEST C_Order_ID, and neither the earliest PreparationDate nor the earliest DatePromised => must NOT seed the dates
 		final OrderId order1 = createOrder(bpartnerAndLocation);
 		final I_C_OrderLine line1 = createOrderLine(order1, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
 		final I_C_Order order1Record = load(order1, I_C_Order.class);
@@ -882,16 +927,16 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		order2Record.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 2, 2), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
 		save(order2Record);
 
-		// order3: HIGHEST C_Order_ID but the EARLIEST DatePromised => it must seed the dates
+		// order3: HIGHEST C_Order_ID and the LATEST DatePromised, but the EARLIEST PreparationDate => it must seed the dates
 		final OrderId order3 = createOrder(bpartnerAndLocation);
 		final I_C_OrderLine line3 = createOrderLine(order3, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
 		final I_C_Order order3Record = load(order3, I_C_Order.class);
-		order3Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID()))));
+		order3Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2022, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID()))));
 		final Timestamp order3PreparationDate = TimeUtil.asTimestamp(LocalDate.of(2018, 12, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID())));
 		order3Record.setPreparationDate(order3PreparationDate);
 		save(order3Record);
 
-		// sanity: order3 has the HIGHEST C_Order_ID yet the earliest DatePromised
+		// sanity: order3 has the HIGHEST C_Order_ID and the LATEST DatePromised, yet the earliest PreparationDate
 		assertThat(order1.getRepoId()).isLessThan(order2.getRepoId()).isLessThan(order3.getRepoId());
 
 		// assign one line from each order at once, in a set order that does NOT start with order3's line
@@ -902,7 +947,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
 		assertThat(reloaded.getETD())
-				.as("ETD is seeded by the earliest-DatePromised order (order3), not the lowest C_Order_ID or the line-id set order")
+				.as("ETD is seeded by the earliest-PreparationDate order (order3), not the earliest DatePromised, the lowest C_Order_ID or the line-id set order")
 				.isEqualTo(order3PreparationDate);
 	}
 
@@ -914,7 +959,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		shipperTransportation.setM_Shipper_ID(shipper.getM_Shipper_ID());
 
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 6), orgDAO.getTimeZone(OrgId.ofRepoId(shipper.getAD_Org_ID()))));
-		shipperTransportation.setIsSOTrx(false); // purchase (inbound) transport order
+		shipperTransportation.setTransportDirection(X_M_ShipperTransportation.TRANSPORTDIRECTION_Incoming); // purchase (inbound) transport order
 
 		save(shipperTransportation);
 

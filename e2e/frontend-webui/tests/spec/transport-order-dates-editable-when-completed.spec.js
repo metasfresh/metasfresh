@@ -242,6 +242,8 @@ attribute on the underlying \`<input>\`. So "editable" = input not disabled + th
       transportOrderId = (await patchDocument(TRANSPORT_ORDER_WINDOW_ID, 'NEW', [])).id;
 
       const drafted = await patchDocument(TRANSPORT_ORDER_WINDOW_ID, transportOrderId, [
+        // a PURCHASE order is booked onto this transport order, i.e. goods coming in
+        { op: 'replace', path: 'TransportDirection', value: 'Incoming' },
         { op: 'replace', path: 'Shipper_BPartner_ID', value: Number(carrierBPartnerId) },
         { op: 'replace', path: 'Shipper_Location_ID', value: Number(carrierLocationId) },
         { op: 'replace', path: 'M_Shipper_ID', value: Number(shipperId) },

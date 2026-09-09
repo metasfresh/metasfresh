@@ -133,10 +133,16 @@ public class M_Delivery_Planning_GenerateShortageOverage extends JavaProcess imp
 		}
 
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(context.getSingleSelectedRecordId());
-		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = deliveryPlanningService.getReceiptInfoIfIncomingType(deliveryPlanningId);
+
+		if (deliveryPlanningService.isClosed(deliveryPlanningId))
+		{
+			return ProcessPreconditionsResolution.reject(DeliveryPlanningService.MSG_M_Delivery_Planning_Closed, deliveryPlanningId.getRepoId());
+		}
+
+		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = deliveryPlanningService.getReceiptInfoIfHasReceipt(deliveryPlanningId);
 		if (!optionalDeliveryPlanningReceipt.isPresent())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Delivery planning is not of Type Incoming");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The delivery planning has no receipt");
 		}
 
 		final DeliveryPlanningReceiptInfo receiptInfo = optionalDeliveryPlanningReceipt.get();

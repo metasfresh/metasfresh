@@ -51,7 +51,6 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
-import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -92,6 +91,7 @@ import java.util.Set;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ShipmentSchedule;
 
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_BlockedPartner;
+import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_Closed;
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_PurchaseOrderFullyDelivered;
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_SalesOrderFullyDelivered;
 
@@ -184,21 +184,26 @@ final class DeliveryPlanningGenerateProcessesHelper
 		this.sysConfigBL = sysConfigBL;
 	}
 
+	/**
+	 * Invariant: every caller has already established that this planning HAS a receipt (its direction is
+	 * Incoming or Dropship), so a miss is a programmer error.
+	 */
 	public DeliveryPlanningReceiptInfo getReceiptInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return getReceiptInfoIfIncomingType(deliveryPlanningId)
-				.orElseThrow(() -> new AdempiereException("Expected to be an incoming delivery planning"));
+		return Check.assumeNotEmpty(getReceiptInfoIfHasReceipt(deliveryPlanningId),
+				"Expected {} to have a receipt", deliveryPlanningId);
 	}
 
-	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfIncomingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	public Optional<DeliveryPlanningReceiptInfo> getReceiptInfoIfHasReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return receiptInfos.computeIfAbsent(deliveryPlanningId, deliveryPlanningService::getReceiptInfoIfIncomingType);
+		return receiptInfos.computeIfAbsent(deliveryPlanningId, deliveryPlanningService::getReceiptInfoIfHasReceipt);
 	}
 
+	/** The shipment twin of {@link #getReceiptInfo(DeliveryPlanningId)} - same invariant, same reasoning. */
 	public DeliveryPlanningShipmentInfo getShipmentInfo(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		return getShipmentInfoIfOutgoingType(deliveryPlanningId)
-				.orElseThrow(() -> new AdempiereException("Expected to be an outgoing delivery planning"));
+		return Check.assumeNotEmpty(getShipmentInfoIfOutgoingType(deliveryPlanningId),
+				"Expected {} to be an outgoing delivery planning", deliveryPlanningId);
 	}
 
 	public Optional<DeliveryPlanningShipmentInfo> getShipmentInfoIfOutgoingType(@NonNull final DeliveryPlanningId deliveryPlanningId)
@@ -208,7 +213,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	public Optional<DeliveryPlanningShipmentInfo> getB2BShipmentInfo(@NonNull final DeliveryPlanningReceiptInfo receiptInfo)
 	{
-		if (!receiptInfo.isB2B())
+		if (!receiptInfo.isDropship())
 		{
 			return Optional.empty();
 		}
@@ -248,6 +253,11 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	public ProcessPreconditionsResolution checkEligibleToCreateShipment(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
+		if (deliveryPlanningService.isClosed(deliveryPlanningId))
+		{
+			return ProcessPreconditionsResolution.reject(MSG_M_Delivery_Planning_Closed, deliveryPlanningId.getRepoId());
+		}
+
 		final Optional<DeliveryPlanningShipmentInfo> optionalShipmentInfo = getShipmentInfoIfOutgoingType(deliveryPlanningId);
 		if (!optionalShipmentInfo.isPresent())
 		{
@@ -288,10 +298,15 @@ final class DeliveryPlanningGenerateProcessesHelper
 
 	public ProcessPreconditionsResolution checkEligibleToCreateReceipt(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
-		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = getReceiptInfoIfIncomingType(deliveryPlanningId);
+		if (deliveryPlanningService.isClosed(deliveryPlanningId))
+		{
+			return ProcessPreconditionsResolution.reject(MSG_M_Delivery_Planning_Closed, deliveryPlanningId.getRepoId());
+		}
+
+		final Optional<DeliveryPlanningReceiptInfo> optionalDeliveryPlanningReceipt = getReceiptInfoIfHasReceipt(deliveryPlanningId);
 		if (!optionalDeliveryPlanningReceipt.isPresent())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an incoming delivery planning");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The delivery planning has no receipt");
 		}
 
 		return checkEligibleToCreateReceipt(optionalDeliveryPlanningReceipt.get());

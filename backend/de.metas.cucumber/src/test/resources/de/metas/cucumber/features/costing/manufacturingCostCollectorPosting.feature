@@ -1,6 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
+@allure.label.feature:F1514_Cost_Type_Moving_Average_Invoice
 @F1500
 @ghActions:run_on_executor6
 Feature: Manufacturing cost collector posting - component issue vs material receipt signs
@@ -130,12 +131,87 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     # Component issue: DR P_WIP_Acct / CR P_Asset_Acct (inventory down, WIP up).
     # Material receipt of finished good: DR P_Asset_Acct / CR P_WIP_Acct (inventory up, WIP down).
+    # Qty runs with the amount on each leg: the debited account gains it, the credited one loses it.
     And Fact_Acct records are matching
-      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
-      | issueCostCollector   | P_WIP_Acct            | compProd     | 10        | 0         |
-      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 10        |
-      | receiptCostCollector | P_Asset_Acct          | finProd      | 10        | 0         |
-      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 10        |
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | issueCostCollector   | P_WIP_Acct            | compProd     | 10        | 0         | 1 PCE  |
+      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 10        | -1 PCE |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 10        | 0         | 1 PCE  |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 10        | -1 PCE |
+
+    # Lagerwert, the report those qty signs feed: the component down to 99 of its seeded 100 PCE, the finished
+    # good up to 11 of its seeded 10, each at its unchanged 10 CHF/PCE. Both are stocked and issued in the same
+    # UOM, so each lands on one row - a wrong-signed issue qty is added there instead of subtracted (101 PCE at
+    # 990/101), leaving the ledger amount right and only the quantity and cost price wrong.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | compProd     | warehouseStd   | 99  | 10.0000        | 990.00           | 990.00                |
+      | 2024-03-27 | finProd      | warehouseStd   | 11  | 10.0000        | 110.00           | 110.00                |
+
+  @from:cucumber
+  @Id:S26253_TC1
+  Scenario: A zero-cost finished good on MovingAverageInvoice still posts the received quantity to P_Asset
+    # A product freshly switched to Moving Average Invoice has no cost yet, so its material receipt posts a
+    # ZERO amount. The received quantity must still reach P_Asset_Acct: the Lagerwert report sums Fact_Acct.qty
+    # on P_Asset, so dropping the zero-cost receipt line would silently understate the manufactured stock.
+    And cost elements for material costing methods MovingAverageInvoice are active
+    And update C_AcctSchema:
+      | C_AcctSchema_ID | CostingMethod |
+      | acctSchema      | M             |
+
+    # finProd carries a zero MovingAverageInvoice cost — it has never been received under this costing method, so no cost has accrued yet.
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | finProd      | 0 CHF            |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice |
+      | acctSchema      | finProd      | MovingAverageInvoice | 0 CHF            |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | finProd                 | 10         | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBomLine                 | ppOrder                | compProd                | 10           | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And process response and extract manufacturing step and issueTo HU manufacturing candidate:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+
+    # Issue the component to the production order
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event   | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | IssueTo | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # Receive the finished good
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | receiptCostCollector            | ppOrder                | finProd                 | 10          | CO        | MaterialReceipt   |
+    And Wait until documents receiptCostCollector are posted
+
+    # The zero-cost receipt still books the received quantity: amount 0 on both legs, qty +10 on P_Asset,
+    # qty -10 on WIP. Before the fix the whole fact line (amount AND qty) was dropped, losing the stock.
+    And Fact_Acct records are matching
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty     |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 0         | 0         | 10 PCE  |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 0         | -10 PCE |
 
   @from:cucumber
   @Id:S30811_TC1
@@ -312,6 +388,13 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | AveragePO        | 30 CHF           | 8 PCE      |
 
+    # Baseline Lagerwert, before anything is manufactured. The ledger holds what the seeding inventories
+    # actually posted - compProd at the Background's 10 CHF, not the 34 its current cost was later set to.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | compProd     | warehouseStd   | 100 | 10.0000        | 1000.00          | 1000.00               |
+      | 2024-03-27 | finProd      | warehouseStd   | 8   | 30.0000        | 240.00           | 240.00                |
+
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
       | ppOrder                | MOP         | finProd                 | 10         | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
@@ -352,11 +435,11 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     # issued 340 - received 300 = a 40 CHF WIP residual for the Distribute action to discharge.
     And Fact_Acct records are matching
-      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
-      | issueCostCollector   | P_WIP_Acct            | compProd     | 340       | 0         |
-      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 340       |
-      | receiptCostCollector | P_Asset_Acct          | finProd      | 300       | 0         |
-      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 300       |
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty     |
+      | issueCostCollector   | P_WIP_Acct            | compProd     | 340       | 0         | 10 PCE  |
+      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 340       | -10 PCE |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 300       | 0         | 10 PCE  |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 300       | -10 PCE |
 
     # Sell 10 of the 18 PCE on hand, leaving the 8 PCE onto which the residual gets capitalized.
     And metasfresh contains M_PricingSystems
@@ -389,14 +472,18 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | shipment1             | sched1                           |
+    # The outbound cost decrement lands at POSTING, not at completion.
+    And Wait until documents shipment1 are posted
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | AveragePO        | 30 CHF           | 8 PCE      |
 
-    # Lagerwert before discharging: the 8 PCE still on hand, booked on P_Asset_Acct at 30 CHF/PCE.
+    # Lagerwert before discharging: the 8 PCE still on hand, booked on P_Asset_Acct at 30 CHF/PCE, and the
+    # component down to 90 of its seeded 100 PCE - 1000 CHF seeded minus the 340 issued, so 660 over 90 PCE.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | finProd      | warehouseStd   | 8   | 30.0000        | 240.00           | 240.00                |
+      | 2024-03-27 | compProd     | warehouseStd   | 90  | 7.3333         | 660.00           | 660.00                |
 
     And the manufacturing order identified by ppOrder is distributed
 
@@ -461,6 +548,12 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | MovingAverageInvoice | 20 CHF           | 6 PCE      |
 
+    # Baseline Lagerwert, before anything is manufactured.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | compProd     | warehouseStd   | 100 | 10.0000        | 1000.00          | 1000.00               |
+      | 2024-03-27 | finProd      | warehouseStd   | 6   | 20.0000        | 120.00           | 120.00                |
+
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
       | ppOrder                | MOP         | finProd                 | 10         | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
@@ -501,11 +594,11 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     # issued 250 - received 200 = a 50 CHF WIP residual for the Distribute action to discharge.
     And Fact_Acct records are matching
-      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
-      | issueCostCollector   | P_WIP_Acct            | compProd     | 250       | 0         |
-      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 250       |
-      | receiptCostCollector | P_Asset_Acct          | finProd      | 200       | 0         |
-      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 200       |
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty     |
+      | issueCostCollector   | P_WIP_Acct            | compProd     | 250       | 0         | 10 PCE  |
+      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 250       | -10 PCE |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 200       | 0         | 10 PCE  |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 200       | -10 PCE |
 
     # Sell 10 of the 16 PCE on hand, leaving the 6 PCE onto which the residual gets capitalized.
     And metasfresh contains M_PricingSystems
@@ -538,14 +631,18 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | shipment1             | sched1                           |
+    # The outbound cost decrement lands at POSTING, not at completion.
+    And Wait until documents shipment1 are posted
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | finProd      | MovingAverageInvoice | 20 CHF           | 6 PCE      |
 
-    # Lagerwert before discharging: the 6 PCE still on hand, booked on P_Asset_Acct at 20 CHF/PCE.
+    # Lagerwert before discharging: the 6 PCE still on hand, booked on P_Asset_Acct at 20 CHF/PCE, and the
+    # component down to 90 of its seeded 100 PCE - 1000 CHF seeded minus the 250 issued, so 750 over 90 PCE.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | finProd      | warehouseStd   | 6   | 20.0000        | 120.00           | 120.00                |
+      | 2024-03-27 | compProd     | warehouseStd   | 90  | 8.3333         | 750.00           | 750.00                |
 
     And the manufacturing order identified by ppOrder is distributed
 
@@ -583,3 +680,196 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | finProd      | warehouseStd   | 6   | 25.0000        | 150.00           | 150.00                |
+
+  @from:cucumber
+  @Id:S30811_TC5
+  Scenario: A catch-weight component's stocking unit overshoots the BOM line's own unit
+    # cwComp is stocked in PCE but its BOM line is denominated in KGM, with a product-specific
+    # catch-weight conversion of 1 PCE = 34 KGM. The BOM line only requires 11.5 KGM, but stock
+    # only comes in whole 34 KGM pieces, so issuing the one on-hand HU overshoots the requirement
+    # more than fourfold. The column must mirror the component's real issued value (in the
+    # component's own cost currency), not a quantity recomputed while confusing the BOM line's
+    # KGM with the component's PCE.
+    And cost elements for material costing methods MovingAverageInvoice are active
+    And update C_AcctSchema:
+      | C_AcctSchema_ID | CostingMethod |
+      | acctSchema      | M             |
+
+    And metasfresh contains M_Products:
+      | Identifier | X12DE355 |
+      | cwFinProd  | PCE      |
+      | cwComp     | PCE      |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
+      | cwComp       | PCE                    | KGM                   | 34           | Y                        |
+
+    # cwFinProd's own packing instructions, so the manufacturing receipt has a receiving target.
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name         |
+      | cwFinPackLU           | cwFinPackLU  |
+      | cwFinPackTU           | cwFinPackTU  |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name               | HU_UnitType | IsCurrent |
+      | cwFinPackLUVersion             | cwFinPackLU            | cwFinPackLUVersion | LU          | Y         |
+      | cwFinPackTUVersion             | cwFinPackTU            | cwFinPackTUVersion | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
+      | cwFinPackLUItem             | cwFinPackLUVersion             | 1   | HU       | cwFinPackTU                       |
+      | cwFinPackTUItem             | cwFinPackTUVersion             | 1   | MI       |                                    |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | cwFinProdItem                       | cwFinPackTUItem             | cwFinProd                | 1   | 2022-01-01 |
+
+    # Stock one whole piece of the component (1 PCE = 34 KGM) at its own MovingAverageInvoice cost.
+    # 7, 53 and 34 share no factors and no simple ratio, so every derived figure below traces to exactly one.
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID  | M_InventoryLine_ID  | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID  |
+      | cwCompInventory | cwCompInventoryLine | 2024-03-20   | 540008         | cwComp       | 0       | 1        | PCE          | 7         | cwCompHU |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | cwComp       | MovingAverageInvoice | 7 CHF            | 1 PCE      |
+
+    # cwFinProd carries its own standing MovingAverageInvoice cost, decoupled from the component cost.
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
+      | cwFinInventory | cwFinInventoryLine | 2024-03-20   | 540008         | cwFinProd    | 0       | 1        | PCE          | 53        | cwFinHU |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | cwFinProd    | MovingAverageInvoice | 53 CHF           | 1 PCE      |
+
+    # Baseline Lagerwert, before anything is manufactured: 7 + 53 = 60 CHF across both products. The whole
+    # point of discharging the residual is that the warehouse must be worth this same 60 again afterwards -
+    # manufacturing moves value between products, it does not create any.
+    # cwComp is asserted only here. Once issued it returns TWO report rows - the PCE stock and the KGM issue -
+    # because the report groups by the UOM on each posting, and the step REQUIRES exactly one row per
+    # product - it fails on more, it does not pick one.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | cwComp       | warehouseStd   | 1   | 7.0000         | 7.00             | 7.00                  |
+      | 2024-03-27 | cwFinProd    | warehouseStd   | 1   | 53.0000        | 53.00            | 53.00                 |
+
+    And metasfresh contains PP_Product_BOMVersions:
+      | Identifier   | M_Product_ID.Identifier | Name         |
+      | cwBomVersion | cwFinProd               | cwBomVersion |
+    And metasfresh contains PP_Product_BOM:
+      | Identifier | M_Product_ID.Identifier | Name  | BOMType       | BOMUse        | C_UOM_ID.X12DE355 | PP_Product_BOMVersions_ID.Identifier | ValidFrom  |
+      | cwBom      | cwFinProd               | cwBom | CurrentActive | Manufacturing | PCE               | cwBomVersion                         | 2021-01-02 |
+    And metasfresh contains PP_Product_BOMLines:
+      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | QtyBOM | C_UOM_ID.X12DE355 | ComponentType | ValidFrom  | Line |
+      | cwBomLine  | cwBom                        | cwComp                  | 11.5   | KGM               | CO            | 2021-01-02 | 100  |
+    And the PP_Product_BOM identified by cwBom is completed
+    And verify BOM for M_Product:
+      | M_Product_ID.Identifier |
+      | cwFinProd                |
+
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | cwProdPlan | mobileWorkflow                | cwFinProd                | cwBomVersion                             | false        |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | cwOrder                 | MOP         | cwFinProd                | 1          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | cwProdPlan                            |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | cwOrderBomLine                  | cwOrder                | cwComp                   | 11.5         | false           | KGM               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | cwOrder                 |
+
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | cwOrder                 |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | cwWorkflow                  | cwReceiptActivity            | cwReceiptLine            | cwReceivingTargetValues                  |
+
+    # Issue the whole 34 KGM (1 PCE) HU through the production-desktop mechanism, instead of the
+    # mobile workflow's IssueTo event: the 11.5 KGM requirement never caps it.
+    And the handling unit identified by cwCompHU is issued whole to PP_Order_BOMLine cwOrderBomLine
+
+    # Receive the finished good
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | cwWorkflow                  | cwReceiptActivity            | cwReceiptLine            | cwReceivingTargetValues                  |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # The cost collector's own MovementQty is denominated in the BOM line's KGM (34 = the whole
+    # HU's 1 PCE converted through the catch-weight rate), not the component's own PCE.
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
+      | cwIssueCostCollector             | cwOrder                | cwComp                   | 34.000      | CO        |
+      | cwReceiptCostCollector           | cwOrder                | cwFinProd                | 1           | CO        |
+    And Wait until documents cwIssueCostCollector, cwReceiptCostCollector are posted
+
+    # The MI row's price is snapshotted in the row's OWN unit (the BOM line's KGM, not the
+    # component's PCE): 7 CHF/PCE converted through the 34 KGM/PCE catch weight is 0.2059 CHF/KGM.
+    And PP_Order_Cost are found:
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | CurrentCostPrice |
+      | cwOrder                 | cwComp                   | MovingAverageInvoice | MI                    | 0.2059 CHF       |
+
+    # cumulatedamt (53, cwFinProd's own receipt) minus the component's real issued value (7, its own
+    # 1 PCE at 7 CHF/PCE) = 46. Re-deriving 34 KGM x the 0.2059 snapshot instead gives 7.0006, i.e. 45.9994.
+    And after not more than 60s, PP_Orders are found
+      | Identifier | CostDifference |
+      | cwOrder    | 46             |
+
+    # Lagerwert before discharging: the component's 7 CHF is gone into the order, but both finished pieces
+    # carry cwFinProd's own 53, so the warehouse totals 106 - 46 CHF more than the 60 it started with.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | cwFinProd    | warehouseStd   | 2   | 53.0000        | 106.00           | 106.00                |
+
+    # Discharge it: the catch-weight case is where the old and new column definitions disagree, so it is
+    # the one worth carrying through to the posting.
+    And the manufacturing order identified by cwOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | cwDistributionCostCollector     | cwOrder                | cwFinProd                | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents cwDistributionCostCollector are posted
+
+    # Discharged: the column re-reads the same two fields, which are now equal.
+    And after not more than 60s, PP_Orders are found
+      | Identifier | CostDifference | DocStatus |
+      | cwOrder    | 0              | CL        |
+
+    # The posting reprices the manufactured piece from 53 to the component's real issued value 7, so the
+    # average over it and the seeded piece is (53 + 7) / 2 = 30 CHF over 2 PCE.
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | cwFinProd    | MovingAverageInvoice | 30 CHF           | 2 PCE      |
+
+    # Lagerwert after discharging: quantities untouched, 46 CHF of value removed, and the warehouse is back
+    # to the 60 CHF it was worth before the order - the invariant the whole cost-difference feature exists
+    # to restore.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | cwFinProd    | warehouseStd   | 2   | 30.0000        | 60.00            | 60.00                 |
+
+  @from:cucumber
+  @Id:S30811_TC6
+  Scenario: Close selection closes the completed manufacturing orders and skips a drafted one
+    # The cost-monitor window lists completed-but-not-closed orders. A balanced one has no residual left to
+    # post, so a bulk close is its only remaining action there.
+    # The drafted order rides along in the selection on purpose: the process filters DocStatus='CO' in the
+    # query that builds its selection, so a stale client-side selection cannot close a non-completed order.
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrderCompleted1      | MOP         | finProd                 | 1          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+      | ppOrderCompleted2      | MOP         | finProd                 | 2          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+      | ppOrderDrafted         | MOP         | finProd                 | 3          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | N                | prodPlan                              |
+
+    And after not more than 60s, PP_Orders are found
+      | Identifier        | DocStatus |
+      | ppOrderCompleted1 | CO        |
+      | ppOrderCompleted2 | CO        |
+      | ppOrderDrafted    | DR        |
+
+    When the AD_Process with value 'PP_Order_CloseSelection' is run on the records identified by 'ppOrderCompleted1,ppOrderCompleted2,ppOrderDrafted'
+
+    Then after not more than 60s, PP_Orders are found
+      | Identifier        | DocStatus |
+      | ppOrderCompleted1 | CL        |
+      | ppOrderCompleted2 | CL        |
+      | ppOrderDrafted    | DR        |

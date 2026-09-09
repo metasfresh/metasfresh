@@ -13,6 +13,8 @@ import java.util.Collection;
 
 public interface IShipperTransportationBL extends ISingletonService
 {
+	void save(@NonNull I_M_ShipperTransportation shipperTransportationRecord);
+
 	/**
 	 * Links given {@link I_M_Package} to shipper transportation.
 	 *

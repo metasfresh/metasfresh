@@ -120,4 +120,10 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	 *                                                      indicating that goods have already been received and deletion would corrupt receipt history.
 	 */
 	void deleteByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	/**
+	 * @return {@code true} if at least one receipt schedule matches the given query. Unlike {@link #getIdByQuery(ReceiptScheduleQuery)},
+	 * this does not fail when multiple records match, so it is safe to use as a plain existence probe.
+	 */
+	boolean existsByQuery(@NonNull ReceiptScheduleQuery query);
 }

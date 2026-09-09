@@ -22,6 +22,7 @@
 
 package de.metas.report;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.bpartner.service.BPartnerPrintFormatRepository;
@@ -37,6 +38,7 @@ import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -114,6 +116,32 @@ public class DocumentReportAdvisorUtilTest
 
 			final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
 			Assertions.assertThat(printCopies.toInt()).isEqualTo(2);
+		}
+
+		@Test
+		public void useCopiesOverrideEvenWhenPrintFormatIsSet()
+		{
+			// bug reproduction: a C_BP_PrintFormat row can carry BOTH an AD_PrintFormat_ID (the print-format
+			// hook) and a DocumentCopies_Override. The advisor's non-exact query (no printFormatId given,
+			// as it queries just by table/docType/bpartner) must still find this row's copies override,
+			// not fall back to the doc-type default.
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery bpPrintFormatQuery = createBPrintFormatQuery(docType, bPartnerLocationId);
+
+			final I_C_BP_PrintFormat printFormatWithHookAndOverride = newInstance(I_C_BP_PrintFormat.class);
+			printFormatWithHookAndOverride.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormatWithHookAndOverride.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+			printFormatWithHookAndOverride.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
+			printFormatWithHookAndOverride.setC_DocType_ID(docType.getC_DocType_ID());
+			printFormatWithHookAndOverride.setAD_PrintFormat_ID(540001); // print-format hook set
+			printFormatWithHookAndOverride.setDocumentCopies_Override(3);
+			save(printFormatWithHookAndOverride);
+
+			final PrintCopies printCopies = util.getDocumentCopies(docType, bpPrintFormatQuery);
+			Assertions.assertThat(printCopies.toInt()).isEqualTo(3);
 		}
 
 		@Test
@@ -243,6 +271,170 @@ public class DocumentReportAdvisorUtilTest
 			Assertions.assertThat(util.getDocumentCopies(docType, bpPrintFormatQuery).toInt()).isEqualTo(2);
 		}
 	}
+
+	@Nested
+	class isDropShip
+	{
+		@Test
+		public void dropShipTrueOnlyWhenFlagSetAndTargetDeviatesFromSoldTo()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final BPartnerLocationId soldTo = createBPartnerLocation();
+			final BPartnerLocationId otherRecipient = createBPartnerLocation();
+
+			// realistic drop-ship: DropShip_BPartner_ID + DropShip_Location_ID both set and deviating + IsDropShip=Y -> true
+			final I_C_Order deviatingRecipient = createOrder(soldTo, true, otherRecipient.getBpartnerId().getRepoId(), otherRecipient.getRepoId());
+			Assertions.assertThat(util.isDropShip(deviatingRecipient)).isTrue();
+
+			// the full-key comparison must incorporate the bpartner component, not only the location repoId:
+			// DropShip_BPartner_ID deviates while the DropShip_Location_ID repoId is identical to the sold-to
+			// location -> still a drop-ship (true). (an impl comparing only the location repoId returns false here.)
+			final BPartnerId otherBPartner = createBPartnerLocation().getBpartnerId();
+			final I_C_Order deviatingBPartnerSameLocationRepoId = createOrder(soldTo, true, otherBPartner.getRepoId(), soldTo.getRepoId());
+			Assertions.assertThat(util.isDropShip(deviatingBPartnerSameLocationRepoId)).isTrue();
+
+			// deviating recipient but IsDropShip=N -> false (flag gates it)
+			final I_C_Order flagNotSet = createOrder(soldTo, false, otherRecipient.getBpartnerId().getRepoId(), otherRecipient.getRepoId());
+			Assertions.assertThat(util.isDropShip(flagNotSet)).isFalse();
+
+			// IsDropShip=Y but the drop-ship recipient equals the order's own sold-to (same BP + same location) -> false
+			final I_C_Order notDeviating = createOrder(soldTo, true, soldTo.getBpartnerId().getRepoId(), soldTo.getRepoId());
+			Assertions.assertThat(util.isDropShip(notDeviating)).isFalse();
+
+			// NUANCE: a partial drop-ship state is not a realistic recipient key. With the full natural-key
+			// (bpartner, location) comparison, an order whose DropShip_Location_ID is unset (0) -- even with a
+			// deviating DropShip_BPartner_ID -- yields a null recipient key and is treated as non-deviating (false).
+			// A real drop-ship always sets BOTH DropShip_BPartner_ID and DropShip_Location_ID.
+			final I_C_Order onlyBPartnerSet = createOrder(soldTo, true, otherRecipient.getBpartnerId().getRepoId(), 0);
+			Assertions.assertThat(util.isDropShip(onlyBPartnerSet)).isFalse();
+
+			// NUANCE (mirror): the other partial state -- DropShip_Location_ID set-and-deviating but
+			// DropShip_BPartner_ID unset (0) -- likewise yields a null recipient key and returns false.
+			// (the previous implementation anchored the drop-ship location on the order's OWN bpartner and
+			// returned true here; the natural-key comparison treats an incomplete recipient as non-deviating.
+			// The legacy ProhibitInconsistentDropshipValues model validator that once enforced the pairing is
+			// deactivated, so this partial state is reachable in real data -- flagged for the author to confirm.)
+			final I_C_Order onlyLocationSet = createOrder(soldTo, true, 0, otherRecipient.getRepoId());
+			Assertions.assertThat(util.isDropShip(onlyLocationSet)).isFalse();
+		}
+
+		// NOTE: the "manual shipment, no order -> not a drop-ship" case is no longer asserted here.
+		// isDropShip now requires a @NonNull order; guarding the missing-order case is the caller's
+		// responsibility and is covered by InOutDocumentReportAdvisorTest (module de.metas.business).
+	}
+
+	@Nested
+	class resolveSuppressAutoPrint
+	{
+		@Test
+		public void suppressesWhenMatchingDropShipRowHasAutoPrintNo()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery dropShipQuery = createDropShipQuery(docType, bPartnerLocationId, true);
+
+			final I_C_BP_PrintFormat printFormat = newInstance(I_C_BP_PrintFormat.class);
+			printFormat.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormat.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+			printFormat.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
+			printFormat.setC_DocType_ID(docType.getC_DocType_ID());
+			printFormat.setIsDropShip("Y");
+			printFormat.setIsAutoPrint("N");
+			save(printFormat);
+
+			Assertions.assertThat(util.resolveSuppressAutoPrint(dropShipQuery)).isTrue();
+		}
+
+		@Test
+		public void doesNotSuppressWhenAutoPrintIsYes()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery dropShipQuery = createDropShipQuery(docType, bPartnerLocationId, true);
+
+			final I_C_BP_PrintFormat printFormat = newInstance(I_C_BP_PrintFormat.class);
+			printFormat.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormat.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+			printFormat.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
+			printFormat.setC_DocType_ID(docType.getC_DocType_ID());
+			printFormat.setIsDropShip("Y");
+			printFormat.setIsAutoPrint("Y");
+			save(printFormat);
+
+			Assertions.assertThat(util.resolveSuppressAutoPrint(dropShipQuery)).isFalse();
+		}
+
+		@Test
+		public void doesNotSuppressWhenAutoPrintIsNullReadNullAware()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery dropShipQuery = createDropShipQuery(docType, bPartnerLocationId, true);
+
+			final I_C_BP_PrintFormat printFormat = newInstance(I_C_BP_PrintFormat.class);
+			printFormat.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+			printFormat.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+			printFormat.setAD_Table_ID(IN_OUT_TABLE_ID.getRepoId());
+			printFormat.setC_DocType_ID(docType.getC_DocType_ID());
+			printFormat.setIsDropShip("Y");
+			// IsAutoPrint intentionally left unset (null) -- must NOT collapse to "suppress"
+			save(printFormat);
+
+			Assertions.assertThat(printFormat.getIsAutoPrint()).isNull();
+			Assertions.assertThat(util.resolveSuppressAutoPrint(dropShipQuery)).isFalse();
+		}
+
+		@Test
+		public void doesNotSuppressWhenNoMatchingRow()
+		{
+			final DocumentReportAdvisorUtil util = createUtil();
+
+			final I_C_DocType docType = createDocType(DOCBASETYPE_MaterialDelivery);
+			final BPartnerLocationId bPartnerLocationId = createBPartnerLocation();
+			final BPPrintFormatQuery dropShipQuery = createDropShipQuery(docType, bPartnerLocationId, true);
+
+			// no C_BP_PrintFormat row created at all for this bpartner
+			Assertions.assertThat(util.resolveSuppressAutoPrint(dropShipQuery)).isFalse();
+		}
+	}
+
+	private I_C_Order createOrder(
+			@NonNull final BPartnerLocationId soldTo,
+			final boolean isDropShip,
+			final int dropShipBPartnerId,
+			final int dropShipLocationId)
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(soldTo.getBpartnerId().getRepoId());
+		order.setC_BPartner_Location_ID(soldTo.getRepoId());
+		order.setIsDropShip(isDropShip);
+		order.setDropShip_BPartner_ID(dropShipBPartnerId);
+		order.setDropShip_Location_ID(dropShipLocationId);
+		save(order);
+		return order;
+	}
+
+	private BPPrintFormatQuery createDropShipQuery(
+			@NonNull final I_C_DocType docTypeRecord,
+			@NonNull final BPartnerLocationId bPartnerLocationId,
+			final boolean isDropShip)
+	{
+		return BPPrintFormatQuery.builder()
+				.adTableId(IN_OUT_TABLE_ID)
+				.docTypeId(DocTypeId.ofRepoId(docTypeRecord.getC_DocType_ID()))
+				.bpartnerId(bPartnerLocationId.getBpartnerId())
+				.bPartnerLocationId(bPartnerLocationId)
+				.isDropShip(isDropShip)
+				.build();
+	}
+
 	private I_C_DocType createDocType(@NonNull final String docBaseType)
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);

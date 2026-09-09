@@ -860,6 +860,29 @@ date:yyyyMMdd_HHmmss}
 	String COLUMNNAME_IsUpdateExportDate = "IsUpdateExportDate";
 
 	/**
+	 * Set Apply target window's default filters.
+	 * When jumping into the target window, also apply that window's default filters. Switched off, the jump shows exactly the related rows.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUseAutoFilters (boolean IsUseAutoFilters);
+
+	/**
+	 * Get Apply target window's default filters.
+	 * When jumping into the target window, also apply that window's default filters. Switched off, the jump shows exactly the related rows.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUseAutoFilters();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsUseAutoFilters = new ModelColumn<>(I_AD_Process.class, "IsUseAutoFilters", null);
+	String COLUMNNAME_IsUseAutoFilters = "IsUseAutoFilters";
+
+	/**
 	 * Set Use Business Partner Language.
 	 *
 	 * <br>Type: YesNo

@@ -231,6 +231,31 @@ public class M_ShipperTransportation_StepDef
 		deliveryInstructionTable.putOrReplace(row.getAsIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID), resultHolder[0]);
 	}
 
+	/**
+	 * Creates one {@code M_ShipperTransportation} (transport order / delivery instruction) record per row and
+	 * stores it under its identifier. {@code TransportDirection} is <b>required</b>: the column is mandatory and
+	 * has no default, so a scenario has to say which direction it means.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> (or <b>M_ShipperTransportation_ID</b>) — (required) alias to store the created record
+	 *   under; either header works, the step registers {@code M_ShipperTransportation_ID} as an additional row
+	 *   identifier column<br>
+	 *   <b>TransportDirection</b> — (required) {@code Outgoing}, {@code Incoming} or {@code Dropship}
+	 *   (see {@code X_M_ShipperTransportation.TRANSPORTDIRECTION_*})<br>
+	 *   <b>M_Shipper_ID</b> — (optional, identifier-ref) the shipper; set through
+	 *   {@code IShipperTransportationBL#setShipper}, which also copies the shipper's pickup time window<br>
+	 *   <b>Shipper_BPartner_ID</b> — (optional, identifier-ref) the forwarder business partner<br>
+	 *   <b>Shipper_Location_ID</b> — (optional, identifier-ref) the forwarder location<br>
+	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData, M_Shipper_StepDefData,
+	 * C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains Transport Order
+	 *   | Identifier     | M_Shipper_ID    | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+	 *   | transportOrder | shipper_freight | supplier            | supplierLocation    | Incoming           |
+	 * </pre>
+	 */
 	@And("metasfresh contains Transport Order")
 	public void add_TransportOrder(@NonNull final DataTable dataTable)
 	{
@@ -239,9 +264,15 @@ public class M_ShipperTransportation_StepDef
 				.forEach(this::createTransportOrder);
 	}
 
+	/**
+	 * Row-level worker of {@link #add_TransportOrder(DataTable)}; the column contract is documented there.
+	 * Public so other step defs can create a transport order from a row they already hold.
+	 */
 	public void createTransportOrder(@NonNull final DataTableRow row)
 	{
 		final I_M_ShipperTransportation shipperTransportationRecord = newInstance(I_M_ShipperTransportation.class);
+
+		shipperTransportationRecord.setTransportDirection(row.getAsString(I_M_ShipperTransportation.COLUMNNAME_TransportDirection));
 
 		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID)
 				.map(shipperTable::getId)
@@ -355,7 +386,22 @@ public class M_ShipperTransportation_StepDef
 	 * completed ({@code Processed='Y'}) transport order is read-only unless the column is always-updateable.
 	 * That gate is covered by the Playwright spec
 	 * {@code e2e/frontend-webui/tests/spec/transport-order-dates-editable-when-completed.spec.js}.
+	 * <p>
+	 * On a DELIVERY instruction the same write also syncs the changed dates down onto every allocated planning.
 	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipperTransportation_ID</b> (or <b>Identifier</b>) — (required, identifier-ref) the record to update<br>
+	 *   <b>ETD</b> — (optional) new estimated departure<br>
+	 *   <b>ETA</b> — (optional) new estimated arrival<br>
+	 *   <b>BLDate</b> — (optional) new bill-of-lading date<br>
+	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update transport order
+	 *   | M_ShipperTransportation_ID | ETD                  | ETA                  |
+	 *   | deliveryInstruction        | 2023-06-01T00:00:00Z | 2023-06-05T00:00:00Z |
+	 * </pre>
 	 * @see de.metas.shipping.model.validator.M_ShipperTransportation
 	 */
 	@And("update transport order")
@@ -370,6 +416,9 @@ public class M_ShipperTransportation_StepDef
 	{
 		final ShipperTransportationId shipperTransportationId = tableRow.getAsIdentifier().lookupNotNullIdIn(deliveryInstructionTable);
 		final I_M_ShipperTransportation record = shipperTransportationDAO.getById(shipperTransportationId);
+
+		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_ETD)
+				.ifPresent(expected -> record.setETD(Timestamp.from(expected)));
 
 		tableRow.getAsOptionalInstant(I_M_ShipperTransportation.COLUMNNAME_ETA)
 				.ifPresent(expected -> record.setETA(Timestamp.from(expected)));

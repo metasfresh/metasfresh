@@ -30,8 +30,10 @@ import de.metas.util.Services;
 import de.metas.util.lang.Priority;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -156,6 +158,9 @@ class RelationTypeInOverlayProcessTest
 		@Test
 		void throws_whenNoRelatedDocumentsFound()
 		{
+			// Also the sanctioned JUnit-only proof of the single-selection "no related documents" branch
+			// for the Auftrags-Board -> Traffic Management jump; see order-board-jump-to-traffic-management.spec.js
+			// for why a live UI selection cannot reach it and for the reachable-half coverage.
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
 			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
 
@@ -449,6 +454,8 @@ class RelationTypeInOverlayProcessTest
 		@Test
 		void throws_whenNoRelatedDocsForAnySelectedRow()
 		{
+			// Also the sanctioned JUnit-only proof of the combined-selection half of the same
+			// Auftrags-Board -> Traffic Management jump guarantee; see order-board-jump-to-traffic-management.spec.js.
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
 
 			final TableRecordReference ref1 = TableRecordReference.of("C_OrderLine", 1);
@@ -603,6 +610,33 @@ class RelationTypeInOverlayProcessTest
 		}
 
 		@Test
+		void throws_whenSelectionResolvesToZeroRecords()
+		{
+			// Covers doIt()'s OWN top-level guard (sourceRecordRefs.isEmpty(), before either the single- or
+			// combined-selection path is chosen) -- distinct from throws_whenAllSourceRowsAreUnloadable
+			// above (which has >0 selected refs that each fail to LOAD) and from
+			// throws_whenNoRelatedDocsForAnySelectedRow (which has >0 loadable refs whose related documents
+			// are empty). Here the selection itself already resolves to zero records, e.g. a multi-row
+			// AD_PInstance selection re-run at process time against rows that vanished in the meantime.
+			//
+			// Also a sanctioned JUnit-only case for the Auftrags-Board -> Traffic Management jump: if every
+			// selected board row's identity has changed by the time the process runs, the re-resolved
+			// selection is empty here rather than "unloadable" or "no related docs" -- see
+			// DoIt#throws_whenNoRelatedDocumentsFound above for why a live UI selection cannot otherwise
+			// reach the "no related documents" branches.
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+
+			final RelationTypeInOverlayProcess process = buildMultiProcess(
+					providerFactory, viewsRepo, relationTypeId,
+					ImmutableList.of(), // empty selection (not null -- null would fall through to the real, unmocked resolution)
+					ImmutableMap.of());
+
+			assertThatThrownBy(process::doIt)
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("NO_RELATED_DOCS_FOUND");
+		}
+
+		@Test
 		void usesFirstWindowOnly_whenSelectedRowsTargetDifferentWindows()
 		{
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
@@ -643,6 +677,56 @@ class RelationTypeInOverlayProcessTest
 					.isEqualTo("(PC.C_OrderLine_ID=1)");
 		}
 
+		@Test
+		void createsCombinedView_withAutoFiltersEnabled_whenAD_Process_IsUseAutoFiltersIsY()
+		{
+			final CreateViewRequest request = doIt_multiSelection_capturingRequest(/* isUseAutoFilters */ true);
+
+			assertThat(request.isUseAutoFilters()).isTrue();
+		}
+
+		@Test
+		void createsCombinedView_withAutoFiltersDisabled_whenAD_Process_IsUseAutoFiltersIsN()
+		{
+			final CreateViewRequest request = doIt_multiSelection_capturingRequest(/* isUseAutoFilters */ false);
+
+			assertThat(request.isUseAutoFilters()).isFalse();
+		}
+
+		private CreateViewRequest doIt_multiSelection_capturingRequest(final boolean isUseAutoFilters)
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final WindowId targetWindow = WindowId.of(AdWindowId.ofRepoId(200));
+
+			final TableRecordReference ref1 = TableRecordReference.of("C_OrderLine", 1);
+			final TableRecordReference ref2 = TableRecordReference.of("C_OrderLine", 2);
+			final IZoomSource zoom1 = mock(IZoomSource.class);
+			final IZoomSource zoom2 = mock(IZoomSource.class);
+
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId))).thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom1), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(targetWindow, "PC.C_OrderLine_ID=1")));
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom2), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(targetWindow, "PC.C_OrderLine_ID=2")));
+
+			final IView mockView = mock(IView.class);
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			final ProcessInfo processInfo = buildMultiProcessInfoWithAD_Process(relationTypeId, isUseAutoFilters);
+			final RelationTypeInOverlayProcess process = RelationTypeInOverlayProcess.newInstanceForUnitTesting(
+					providerFactory, viewsRepo, processInfo,
+					ImmutableList.of(ref1, ref2),
+					ImmutableMap.of(ref1, zoom1, ref2, zoom2));
+
+			process.doIt();
+
+			final ArgumentCaptor<CreateViewRequest> captor = ArgumentCaptor.forClass(CreateViewRequest.class);
+			verify(viewsRepo).createView(captor.capture());
+			return captor.getValue();
+		}
+
 		private RelationTypeInOverlayProcess buildMultiProcess(
 				final RelationTypeRelatedDocumentsProvidersFactory factory,
 				final IViewsRepository viewsRepo,
@@ -659,6 +743,27 @@ class RelationTypeInOverlayProcessTest
 					.build();
 
 			return RelationTypeInOverlayProcess.newInstanceForUnitTesting(factory, viewsRepo, processInfo, selectedRecordRefs, zoomSourcesByRecordRef);
+		}
+
+		/**
+		 * Builds a multi-selection {@link ProcessInfo} backed by a real {@link I_AD_Process} row (via
+		 * {@link ProcessInfo.ProcessInfoBuilder#setAD_Process}), so {@code AD_Process.IsUseAutoFilters} actually drives
+		 * {@link ProcessInfo#isUseAutoFilters()} the way it does in production.
+		 */
+		private ProcessInfo buildMultiProcessInfoWithAD_Process(final RelationTypeId relationTypeId, final boolean isUseAutoFilters)
+		{
+			final I_AD_Process adProcess = InterfaceWrapperHelper.newInstance(I_AD_Process.class);
+			adProcess.setAD_Process_ID(1);
+			adProcess.setType(org.compiere.model.X_AD_Process.TYPE_RelationTypeInOverlay);
+			adProcess.setAD_RelationType_ID(relationTypeId.getRepoId());
+			adProcess.setIsUseAutoFilters(isUseAutoFilters);
+
+			return ProcessInfo.builder()
+					.setCtx(Env.getCtx())
+					.setAD_Process(adProcess)
+					.setAdWindowId(AdWindowId.ofRepoId(100))
+					// no single record set -> multi selection
+					.build();
 		}
 
 		private RelatedDocumentsCandidateGroup buildCandidateGroupWithBlankWhereClause(final WindowId targetWindowId)
@@ -766,6 +871,50 @@ class RelationTypeInOverlayProcessTest
 			assertThat(process.getSelectedSourceRecordRefs()).containsExactly(ref);
 		}
 
+		@Test
+		void createsView_withAutoFiltersEnabled_whenAD_Process_IsUseAutoFiltersIsY()
+		{
+			final CreateViewRequest request = doIt_singleSelection_capturingRequest(/* isUseAutoFilters */ true);
+
+			assertThat(request.isUseAutoFilters()).isTrue();
+		}
+
+		@Test
+		void createsView_withAutoFiltersDisabled_whenAD_Process_IsUseAutoFiltersIsN()
+		{
+			final CreateViewRequest request = doIt_singleSelection_capturingRequest(/* isUseAutoFilters */ false);
+
+			assertThat(request.isUseAutoFilters()).isFalse();
+		}
+
+		private CreateViewRequest doIt_singleSelection_capturingRequest(final boolean isUseAutoFilters)
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			final RelatedDocumentsCandidateGroup group = buildCandidateGroupWithOneEntry(WindowId.of(AdWindowId.ofRepoId(200)));
+			final IView mockView = mock(IView.class);
+
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId))).thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(any(), any())).thenReturn(ImmutableList.of(group));
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			final TableRecordReference ref = TableRecordReference.of("C_OrderLine", 101);
+			final IZoomSource zoomSource = mock(IZoomSource.class);
+			final ProcessInfo processInfo = buildProcessInfoWithAD_Process(relationTypeId, isUseAutoFilters);
+
+			final RelationTypeInOverlayProcess process = RelationTypeInOverlayProcess.newInstanceForUnitTesting(
+					providerFactory, viewsRepo, processInfo,
+					ImmutableList.of(ref),
+					ImmutableMap.of(ref, zoomSource));
+
+			process.doIt();
+
+			final ArgumentCaptor<CreateViewRequest> captor = ArgumentCaptor.forClass(CreateViewRequest.class);
+			verify(viewsRepo).createView(captor.capture());
+			return captor.getValue();
+		}
+
 		private ProcessInfo buildProcessInfo(final RelationTypeId relationTypeId)
 		{
 			return ProcessInfo.builder()
@@ -773,6 +922,25 @@ class RelationTypeInOverlayProcessTest
 					.setAD_Process_ID(1)
 					.setAdWindowId(AdWindowId.ofRepoId(100))
 					.setAdRelationTypeId(relationTypeId)
+					.build();
+		}
+
+		/**
+		 * Builds a {@link ProcessInfo} backed by a real {@link I_AD_Process} row (via {@link ProcessInfo.ProcessInfoBuilder#setAD_Process}),
+		 * so {@code AD_Process.IsUseAutoFilters} actually drives {@link ProcessInfo#isUseAutoFilters()} the way it does in production.
+		 */
+		private ProcessInfo buildProcessInfoWithAD_Process(final RelationTypeId relationTypeId, final boolean isUseAutoFilters)
+		{
+			final I_AD_Process adProcess = InterfaceWrapperHelper.newInstance(I_AD_Process.class);
+			adProcess.setAD_Process_ID(1);
+			adProcess.setType(org.compiere.model.X_AD_Process.TYPE_RelationTypeInOverlay);
+			adProcess.setAD_RelationType_ID(relationTypeId.getRepoId());
+			adProcess.setIsUseAutoFilters(isUseAutoFilters);
+
+			return ProcessInfo.builder()
+					.setCtx(Env.getCtx())
+					.setAD_Process(adProcess)
+					.setAdWindowId(AdWindowId.ofRepoId(100))
 					.build();
 		}
 	}

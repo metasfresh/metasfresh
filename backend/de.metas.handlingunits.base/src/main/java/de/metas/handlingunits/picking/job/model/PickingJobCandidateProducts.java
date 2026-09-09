@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.i18n.ITranslatableString;
@@ -127,13 +128,23 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 		return singleProduct != null ? singleProduct.getProductValueAndName() : null;
 	}
 
+	/**
+	 * Un-joined product names, in encounter order. The caller decides the separator (e.g. {@code ", "} for the
+	 * job-detail header, a line break for a block-layout job-list item) — see {@link #getProductNamesJoined(String)}.
+	 */
 	@NonNull
-	public ITranslatableString getProductNamesJoined()
+	public ImmutableList<ITranslatableString> getProductNameParts()
 	{
 		// No deduplication is needed on this path: byProductId is keyed by ProductId and built with Maps.uniqueIndex,
 		// so a repeated product cannot exist here.
 		return byProductId.values().stream()
 				.map(product -> product.getProductValueAndName().getName())
-				.collect(TranslatableStrings.joining(", "));
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ITranslatableString getProductNamesJoined(@NonNull final String separator)
+	{
+		return getProductNameParts().stream().collect(TranslatableStrings.joining(separator));
 	}
 }
