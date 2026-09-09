@@ -416,8 +416,13 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form onSubmit={() => onDialogYes({ isCloseTarget: false })}>
+            {/* Qty rows and the editable-attribute rows render as two tables inside ONE
+                `.table-container`, both with the same `table view-header is-size-6` classes and a
+                shared fixed column grid (get-qty-dialog.scss) — so Qty / Best-Before / Lot and the
+                editable-attribute labels line up as one uniform, professional key/value grid with
+                identical label typography, column widths and input widths. */}
             <div className="table-container">
-              <table className="table">
+              <table className="table view-header is-size-6">
                 <tbody>
                   {qtyTargetCaption && (
                     <tr>
@@ -585,12 +590,14 @@ const GetQuantityDialog = ({
                   )}
                 </tbody>
               </table>
+              {/* Second table in the SAME container: shares the container's fixed column grid and
+                  view-header typography, so its rows continue the qty grid seamlessly. */}
+              <EditableAttributesSection
+                attributes={editableAttributes}
+                disabled={readOnly}
+                onFieldChange={setAttributeValues}
+              />
             </div>
-            <EditableAttributesSection
-              attributes={editableAttributes}
-              disabled={readOnly}
-              onFieldChange={setAttributeValues}
-            />
             <div className="buttons is-centered">
               {isShowCloseTargetButton && (
                 <>

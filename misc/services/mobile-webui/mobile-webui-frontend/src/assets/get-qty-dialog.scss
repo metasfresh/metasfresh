@@ -6,17 +6,27 @@ $serialno-extra-orange: #e67e22;
 
   .table-container {
     // Cap-and-scroll, do NOT force the height: a fixed `height: 70vh` reserved 70vh even when the
-    // qty table is short (just Qty / Qty-to-Receive), leaving a large empty band and pushing the
-    // EditableAttributesSection - which renders BELOW this container - to the bottom of the dialog
-    // (the "huge gap" defect). It also inflated the dialog past the viewport so the flex-centered
-    // card clipped its own top ("Qty to Receive" cut off). `max-height` lets the container shrink to
-    // its content (no gap, card fits and centers) while still scrolling a genuinely tall qty table.
+    // content is short (just Qty / Qty-to-Receive), leaving a large empty band and pushing the
+    // buttons to the bottom of the dialog (the "huge gap" defect). It also inflated the dialog past
+    // the viewport so the flex-centered card clipped its own top ("Qty to Receive" cut off).
+    // `max-height` lets the container shrink to its content (no gap, card fits and centers) while
+    // still scrolling a genuinely tall grid. This container now holds BOTH the qty table AND the
+    // EditableAttributesSection table (they share one fixed column grid — see `.table` below).
     max-height: 70vh;
     overflow-x: auto;
     overflow-y: auto;
 
     .table {
       width: 100%;
+      // Fixed column layout so BOTH tables in this container — the qty table and the
+      // EditableAttributesSection table — resolve the SAME 45%/55% label/value columns regardless
+      // of each table's own content. The qty labels (Qty / Best-Before / Lot) and the
+      // editable-attribute labels (Size (cm), Lot-Nummer, …) then line up as one uniform grid with
+      // equal-width inputs. Long labels wrap (overflow-wrap below) instead of widening the column.
+      table-layout: fixed;
+      // No gap between the two stacked tables so their rows read as one continuous key/value grid
+      // (Bulma's default table margin would otherwise split them into two visual blocks).
+      margin-bottom: 0;
 
       tbody {
         tr {
