@@ -375,10 +375,11 @@ class AssertHUExpectationsCommand
 	}
 
 	/**
-	 * Asserts that each of the given attribute codes carries NO value on {@code actualAttributes} — i.e. the
-	 * HU is neutral for those attributes. Used to positively guard container HUs (TU / LU): an implementation
-	 * that wrongly stamped the size on the shared container would make {@link ImmutableAttributeSet#hasAttribute}
-	 * return {@code true} here and fail.
+	 * Asserts that none of the given attribute codes is materialized on {@code actualAttributes} — i.e. the
+	 * HU carries no such attribute at all, so it is neutral for them. The check is {@link ImmutableAttributeSet#hasAttribute}
+	 * (attribute present in the set), not a value-is-null test: an implementation that wrongly stamped the size on
+	 * the shared container HU (TU / LU) would materialize the code here, making {@code hasAttribute} return
+	 * {@code true}, and fail. Used to positively guard that a mixed-size container stays attribute-neutral.
 	 * <p>
 	 * Package-visible + {@code static} so the pure check can be unit-tested against a hand-built
 	 * {@link ImmutableAttributeSet} without a running HU stack.
