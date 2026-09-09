@@ -196,22 +196,19 @@ class M_Delivery_Planning_GenerateWriteBackTest
 	}
 
 	@Test
-	@DisplayName("GenerateReceipt.doIt() writes the Qty override back onto PlannedDischargeQuantity")
-	void generateReceipt_writesBackPlannedDischargeQuantity()
+	@DisplayName("GenerateReceipt.doIt() leaves PlannedDischargeQuantity alone, so a short receive stays visible")
+	void generateReceipt_doesNotOverwritePlannedDischargeQuantity()
 	{
 		final UomId uomId = createUom();
 		final ProductId productId = createProduct(uomId);
 		final I_M_Delivery_Planning deliveryPlanning = createDeliveryPlanning(productId, uomId);
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID());
 
+		// The plan: 4 expected. The receive below brings 3.
+		deliveryPlanningRepository.setPlannedDischargeQuantity(deliveryPlanningId, Quantitys.of(new BigDecimal("4"), productId));
+
 		final M_Delivery_Planning_GenerateReceipt process = new M_Delivery_Planning_GenerateReceipt();
 		final DeliveryPlanningGenerateProcessesHelper mockHelper = mock(DeliveryPlanningGenerateProcessesHelper.class);
-		// See generateShipment_writesBackPlannedLoadedQuantity's comment: the write-back is real logic under
-		// test, forwarded to the real repository rather than left as a no-op mock stub.
-		Mockito.doAnswer(invocation -> {
-			deliveryPlanningRepository.setPlannedDischargeQuantity(invocation.getArgument(0), invocation.getArgument(1));
-			return null;
-		}).when(mockHelper).writeBackPlannedDischargeQuantity(ArgumentMatchers.any(), ArgumentMatchers.any());
 		process.helper = mockHelper;
 		process.init(processInfoFor(deliveryPlanning));
 
@@ -219,21 +216,24 @@ class M_Delivery_Planning_GenerateWriteBackTest
 				.receiptId(InOutId.ofRepoId(1))
 				.receivedVHUId(HuId.ofRepoId(1))
 				.productId(productId)
-				.qty(Quantitys.of(new BigDecimal("4"), productId))
+				.qty(Quantitys.of(new BigDecimal("3"), productId))
 				.build();
 		when(mockHelper.generateReceipt(ArgumentMatchers.argThat(
-				request -> request.getQtyToReceiveBD().compareTo(new BigDecimal("4")) == 0
+				request -> request.getQtyToReceiveBD().compareTo(new BigDecimal("3")) == 0
 						&& request.getDeliveryPlanningId().equals(deliveryPlanningId))))
 				.thenReturn(receiptResult);
 
 		setPrivateField(process, "p_ReceiptDate", Instant.parse("2026-09-03T00:00:00Z"));
-		setPrivateField(process, "p_QtyBD", new BigDecimal("4"));
+		setPrivateField(process, "p_QtyBD", new BigDecimal("3"));
 
 		process.doIt();
 
 		InterfaceWrapperHelper.refresh(deliveryPlanning);
+		// A planning is exactly ONE receipt, so the missing 1 does not stay open on it - it becomes a new
+		// planning. Which is only visible if the PLAN survives: planned 4 against actual 3 says "4 was
+		// expected, 3 arrived". Overwriting the plan with what arrived would read 3/3 and hide the shortfall.
 		assertThat(deliveryPlanning.getPlannedDischargeQuantity())
-				.as("PlannedDischargeQuantity written back from the Qty override")
+				.as("PlannedDischargeQuantity is left as planned, not overwritten with what was received")
 				.isEqualByComparingTo("4");
 	}
 }

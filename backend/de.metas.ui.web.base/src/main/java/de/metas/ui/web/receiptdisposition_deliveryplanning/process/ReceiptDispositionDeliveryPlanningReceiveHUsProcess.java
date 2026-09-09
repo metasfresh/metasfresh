@@ -123,8 +123,6 @@ abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends Recei
 				.huIdsToReceive(hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet()))
 				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 				.build());
-
-		receiptFromReceiptScheduleService.applyPlanningQuantityRules(sourceIds.getDeliveryPlanningId(), qtyToAllocate);
 	}
 
 	/**

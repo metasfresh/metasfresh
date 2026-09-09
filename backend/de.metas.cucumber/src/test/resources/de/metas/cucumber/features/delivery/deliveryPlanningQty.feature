@@ -1407,9 +1407,9 @@ Feature: Delivery planning quantities
   Scenario: The production generate-receipt process itself makes completion write the discharge actual - it stamps the planning link on the DRAFT, not on the finished receipt
 
     # Pins the draft-vs-post-generation ordering. The process generates the receipt AND completes it in one call, so
-    # if M_Delivery_Planning_ID were set only after the call returned, the receipt would complete with the FK unset
-    # and interceptor/M_InOut#afterComplete would write nothing. The raw M_InOut.M_Delivery_Planning_ID would still
-    # end up set, so the data looks half-right; only the four assertions below tell the two orderings apart.
+    # if M_Delivery_Planning_ID were set only after the call returned, the receipt would complete with the link
+    # unset and interceptor/M_InOut#afterComplete would write nothing. The link on the receipt LINE would still
+    # end up set, so the data looks half-right; only the assertions below tell the two orderings apart.
     Given metasfresh contains M_PricingSystems
       | Identifier        |
       | pricingSystemQ11P |
@@ -1466,17 +1466,21 @@ Feature: Delivery planning quantities
 
     # ActualDischargeQuantity 5, Processed true and M_InOut_ID are written by interceptor/M_InOut#afterComplete and
     # by nothing else. ActualLoadQty stays 9 (mirrored from the plan, never a receipt's to write).
-    # PlannedDischargeQuantity 5 is the process' own Qty write-back - the control: it holds under BOTH orderings.
+    # PlannedDischargeQuantity stays 9 - the production path does NOT write the received quantity back onto the
+    # plan. This is a short receive, 5 of the 9 planned, so the pair 9/5 is the shortfall the operator has to
+    # see; a planning is exactly one receipt, so the missing 4 is a new transport to plan, not something still
+    # open here.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | Processed | M_InOut_ID  |
-      | deliveryPlanningQ11P   | 9          | 4            | Incoming           | 9                     | 5                        | 9             | 5                       | true      | receiptQ11P |
+      | deliveryPlanningQ11P   | 9          | 4            | Incoming           | 9                     | 9                        | 9             | 5                       | true      | receiptQ11P |
 
-    # And the reversal of a receipt the production path generated undoes exactly those writes.
+    # And the reversal of a receipt the production path generated undoes exactly those writes - the plan, which
+    # the receive never touched, is not among them.
     When the material receipt identified by receiptQ11P is reversed
 
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | Processed | M_InOut_ID |
-      | deliveryPlanningQ11P   | 9          | 9            | Incoming           | 9                     | 5                        | 9             | 0                       | false     | null       |
+      | deliveryPlanningQ11P   | 9          | 9            | Incoming           | 9                     | 9                        | 9             | 0                       | false     | null       |
 
   @Id:S31789_TC_Q14_ShippingPackageMirrorsPlanningQuantities
   Scenario: Editing all four planning quantities syncs the delivery instruction line, with no propagation step

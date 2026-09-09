@@ -321,12 +321,11 @@ class DeliveryPlanningGenerateProcessesHelper
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	public void writeBackPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
-	{
-		deliveryPlanningService.setPlannedDischargeQuantity(deliveryPlanningId, quantity);
-	}
-
-	/** The load-side sibling of {@link #writeBackPlannedDischargeQuantity}, used by {@code M_Delivery_Planning_GenerateShipment#doIt()}. */
+	/**
+	 * The LOAD end only. There is no discharge sibling: a receipt must NOT overwrite
+	 * {@code PlannedDischargeQuantity} with what arrived, or a short delivery reads "planned 3 / actual 3" and
+	 * the fact that 4 was expected is gone - see 5823590 for the rule.
+	 */
 	public void writeBackPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
 		deliveryPlanningService.setPlannedLoadedQuantity(deliveryPlanningId, quantity);

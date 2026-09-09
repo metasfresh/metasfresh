@@ -103,10 +103,6 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 						.qtyToReceiveBD(qty)
 						.build());
 
-		// Write the Qty override back onto the planning: a receipt reads/occupies the discharge end, so the
-		// override becomes the planning's new PlannedDischargeQuantity (spec direction rule).
-		helper.writeBackPlannedDischargeQuantity(getDeliveryPlanningId(), receiptResult.getQty());
-
 		if (p_IsGenerateB2BShipment)
 		{
 			final DeliveryPlanningShipmentInfo b2bShipmentInfo = getB2BShipmentInfo()

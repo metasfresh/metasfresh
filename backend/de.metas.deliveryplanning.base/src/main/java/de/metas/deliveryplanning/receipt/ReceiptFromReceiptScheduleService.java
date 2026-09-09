@@ -146,8 +146,6 @@ public class ReceiptFromReceiptScheduleService
 				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 				.build());
 
-		applyPlanningQuantityRules(sourceIds.getDeliveryPlanningId(), qtyToReceive);
-
 		return result;
 	}
 
@@ -167,7 +165,6 @@ public class ReceiptFromReceiptScheduleService
 		final List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<>();
 		final LinkedHashMap<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId = new LinkedHashMap<>();
 		final ImmutableSet.Builder<HuId> huIdsToReceive = ImmutableSet.builder();
-		final LinkedHashMap<DeliveryPlanningId, Quantity> qtyReceivedByDeliveryPlanningId = new LinkedHashMap<>();
 
 		for (final ReceiptScheduleAndDeliveryPlanningId row : rows)
 		{
@@ -197,7 +194,6 @@ public class ReceiptFromReceiptScheduleService
 			if (deliveryPlanningId != null)
 			{
 				deliveryPlanningIdByHuId.put(vhuId, deliveryPlanningId);
-				qtyReceivedByDeliveryPlanningId.merge(deliveryPlanningId, qtyToReceive, Quantity::add);
 			}
 		}
 
@@ -209,10 +205,6 @@ public class ReceiptFromReceiptScheduleService
 
 		final InOutGenerateResult result = generateReceipts(
 				receiptSchedules, huIds, deliveryPlanningIdByHuId, ReceiptMovementDateRule.CURRENT_DATE);
-
-		// Per planning, with that planning's OWN quantity - a selection's total would land the whole gesture on
-		// whichever planning was written last.
-		qtyReceivedByDeliveryPlanningId.forEach(this::applyPlanningQuantityRules);
 
 		return result.getInOuts().stream()
 				.map(receipt -> InOutId.ofRepoId(receipt.getM_InOut_ID()))
@@ -271,20 +263,6 @@ public class ReceiptFromReceiptScheduleService
 				: qtyToMove.getStockQty().toBigDecimal();
 
 		return Quantitys.of(qty, UomId.ofRepoId(receiptSchedule.getC_UOM_ID()));
-	}
-
-	/**
-	 * A receipt occupies the DISCHARGE end, so the quantity received becomes the planning's planned discharge
-	 * quantity. An unplanned row has no planning to write to - that is the whole of the {@code null} branch.
-	 */
-	public void applyPlanningQuantityRules(
-			@Nullable final DeliveryPlanningId deliveryPlanningId,
-			@NonNull final Quantity qtyReceived)
-	{
-		if (deliveryPlanningId != null)
-		{
-			deliveryPlanningService.setPlannedDischargeQuantity(deliveryPlanningId, qtyReceived);
-		}
 	}
 
 	/**
