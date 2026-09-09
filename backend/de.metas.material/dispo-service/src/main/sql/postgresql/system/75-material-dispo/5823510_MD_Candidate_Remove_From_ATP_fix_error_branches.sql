@@ -1,19 +1,14 @@
--- Function: de_metas_material.MD_Candidate_Remove_From_ATP
--- Purpose: Remove an MD_Candidate record from ATP (Available to Promise) calculations
---
--- This function:
--- 1. Calculates the candidate's stock impact based on type, business case, qty, and qtyFulfilled
--- 2. Negates this impact to remove it from ATP
--- 3. Sets the candidate's Qty to 0
--- 4. Updates the associated STOCK candidate's ATP value
--- 5. Propagates changes through the entire MD_Candidate_QtyDetails chain chronologically
--- 6. Creates QtyDetails if they don't exist (looking up previous STOCK record)
---
--- Stock Impact Formula (uses helper function MD_Candidate_Get_Stock_Impact):
--- - DEMAND, STOCK_UP, INVENTORY_DOWN (STOCK_CHANGE): -qty
--- - SUPPLY, INVENTORY_UP (STOCK_CHANGE): qty
--- - UNEXPECTED_DECREASE, INVENTORY_DOWN, ATTRIBUTES_CHANGED_FROM: -qtyFulfilled
--- - UNEXPECTED_INCREASE, INVENTORY_UP, ATTRIBUTES_CHANGED_TO: qtyFulfilled
+-- Source DDL: backend/de.metas.material/dispo-service/src/main/sql/postgresql/ddl/de_metas_material/MD_Candidate_Remove_From_ATP.sql
+-- Re-creates de_metas_material.MD_Candidate_Remove_From_ATP with the two error branches
+-- ("MD_Candidate not found or not active" and "No STOCK candidate found for this record")
+-- padded to the function's declared 6-column RETURNS TABLE shape. Both previously returned
+-- only 4 values, so the message text landed in the numeric qty_adjustment column and
+-- PostgreSQL raised "structure of query does not match function result type" instead of
+-- returning a well-formed error row. This migration supersedes the STOCK-type-branch fix
+-- already present in this DDL file but not yet reflected in the earlier migration copy
+-- 5794721_MD_Candidate_Remove_From_ATP_function.sql (which still returns only 4 values
+-- there, plus carries a debug RAISE NOTICE not present in the current DDL) -- CREATE OR
+-- REPLACE here re-applies the full current DDL, including that already-fixed branch.
 
 DROP FUNCTION IF EXISTS de_metas_material.MD_Candidate_Remove_From_ATP(numeric)
 ;
