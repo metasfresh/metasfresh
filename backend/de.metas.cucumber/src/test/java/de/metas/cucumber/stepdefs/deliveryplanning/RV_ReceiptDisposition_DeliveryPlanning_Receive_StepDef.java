@@ -49,17 +49,12 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Receives a receipt-disposition delivery-planning grid row, the way the window's "CUs annehmen" / "CUs annehmen mit Menge" actions
- * do, and asserts what the produced receipt is linked to.
+ * Receives a receipt-disposition delivery-planning grid row the way the window's "CUs annehmen" actions do, and
+ * asserts what the produced receipt is linked to.
  * <p>
- * <b>Why the BL and not the WebUI process.</b> {@code de.metas.cucumber} deliberately excludes
- * {@code de.metas.ui.web.base} (its pom says why: {@code ServerBoot} component-scans {@code de.metas}, so the
- * WebUI's Spring components would be dragged into this test JVM's app-server context), so the action classes
- * themselves are not loadable here. They are thin adapters: they turn the selected row into a
- * {@link ReceiptScheduleAndDeliveryPlanningId} and call
- * {@link ReceiptFromReceiptScheduleService#receiveCUs}, which is exactly what this step-def does with the ids
- * the view actually produced. The behaviour under test - which receipt a row's two source ids yield - is
- * therefore the production one, and the adapter's own row-to-ids step is covered by
+ * Through the BL, not the WebUI process: {@code de.metas.cucumber} deliberately excludes
+ * {@code de.metas.ui.web.base}, so the action classes are not loadable here. They are thin adapters over
+ * {@link ReceiptFromReceiptScheduleService#receiveCUs}, and their own row-to-ids step is covered by
  * {@code ReceiptDispositionDeliveryPlanningViewBasedProcessTest}.
  */
 @RequiredArgsConstructor
@@ -114,10 +109,8 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 	/**
 	 * Receives SEVERAL grid rows in one gesture, the way the window's "Wareneingangsdispo zu Wareneingang"
 	 * action does, and binds the receipts it produced - in creation order - to the identifiers in the data table.
-	 * <p>
-	 * <b>The data table IS the grouping assertion.</b> One line per receipt the gesture must produce: two rows
-	 * that belong on one receipt yield ONE line, two rows that cannot share a header yield two. The step fails
-	 * when the count differs, so a change that merged or split receipts differently cannot pass unnoticed.
+	 * The data table IS the grouping assertion: one line per receipt the gesture must produce, so a change that
+	 * merged or split receipts differently cannot pass unnoticed.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

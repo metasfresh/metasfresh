@@ -56,13 +56,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Asserts what the receipt-disposition delivery-planning window would list for one purchase order.
  * <p>
- * {@code RV_ReceiptDisposition_DeliveryPlanning} is a UNION of two branches and the whole point of the window is which of them a
- * given order lands on: a <b>planned</b> row (one active {@code Incoming} delivery planning carrying a receipt
- * schedule) or an <b>unplanned</b> row (a receipt schedule no active planning refers to). The two are told apart
- * by {@code M_Delivery_Planning_ID} being set or null, and each carries a different key - the planning id on the
- * planned branch, {@code 1000000000 + M_ReceiptSchedule_ID} on the unplanned one. This step-def asserts that key
- * relationship on every row rather than taking the caller's word for which branch a row came from: a row that
- * claims to be planned but keys like an unplanned one is a defect in the view, not a detail.
+ * Each branch of the union carries a different key - the planning id on the planned branch,
+ * {@code 1000000000 + M_ReceiptSchedule_ID} on the unplanned one - and this step-def asserts that key
+ * relationship on every row rather than taking the caller's word for which branch a row came from.
  */
 @RequiredArgsConstructor
 public class RV_ReceiptDisposition_DeliveryPlanning_StepDef

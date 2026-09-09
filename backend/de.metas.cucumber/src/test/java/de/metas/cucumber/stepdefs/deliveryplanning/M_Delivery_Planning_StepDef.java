@@ -380,10 +380,8 @@ public class M_Delivery_Planning_StepDef
 			row.getAsOptionalBoolean(I_M_Delivery_Planning.COLUMNNAME_IsDelivered)
 					.ifPresent(isDelivered -> softly.assertThat(deliveryPlanning.isDelivered()).as(I_M_Delivery_Planning.COLUMNNAME_IsDelivered).isEqualTo(isDelivered));
 
-			// A feature file names the colour it expects, but the only name->colour lookup there is returns a
-			// ColorId, so the comparison runs on ids. getColorIdByName() returns null for a name no AD_Color
-			// carries, hence the isNotNull() guard: without it a typo'd colour name would silently "match" a
-			// planning that has no status colour at all.
+			// getColorIdByName() returns null for a name no AD_Color carries, hence the isNotNull() guard: without it a
+			// typo'd colour name would silently "match" a planning that has no status colour at all
 			row.getAsOptionalString(I_M_Delivery_Planning.COLUMNNAME_DeliveryStatus_Color_ID + ".Name")
 					.filter(Check::isNotBlank)
 					.ifPresent(expectedColorName -> {
@@ -473,11 +471,10 @@ public class M_Delivery_Planning_StepDef
 	}
 
 	/**
-	 * Cancels the given selection and asserts exactly which of them the cancel left with their planned
-	 * figures untouched because each was still allocated to a delivery instruction when the cancel ran -
-	 * {@link DeliveryPlanningCancelResult#getSkippedAllocatedIds()}. Every named planning is still fully
-	 * cancelled (voided, closed, cancelled order status) same as any other row; only the quantity zeroing is
-	 * skipped for it.
+	 * Cancels the given selection and asserts exactly which of them the cancel left with their planned figures
+	 * untouched because each was still allocated to a delivery instruction -
+	 * {@link DeliveryPlanningCancelResult#getSkippedAllocatedIds()}. Every named planning is still fully cancelled;
+	 * only the quantity zeroing is skipped.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData

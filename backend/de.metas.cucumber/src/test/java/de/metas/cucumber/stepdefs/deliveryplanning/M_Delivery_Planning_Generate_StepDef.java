@@ -50,15 +50,13 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Drives the two <b>production</b> delivery-planning generate processes -
- * {@code M_Delivery_Planning_GenerateReceipt} and {@code M_Delivery_Planning_GenerateShipment} - through the
- * real {@link ProcessExecutor}, exactly as the WebUI's action menu does.
+ * Drives the two PRODUCTION delivery-planning generate processes through the real {@link ProcessExecutor},
+ * exactly as the WebUI's action menu does.
  * <p>
- * Why this exists rather than hand-building an {@code M_InOut}: both processes generate the document AND
- * complete it inside one call, and the order in which they do that is behaviour under test. A scenario that
- * instead creates a draft {@code M_InOut}, sets {@code M_Delivery_Planning_ID} on it and only then completes it
- * is asserting against an ordering production never produces, and would keep passing over a
- * {@code TIMING_AFTER_COMPLETE} interceptor that is inert in production.
+ * Both processes generate the document AND complete it inside one call, and that ordering is behaviour under
+ * test: a scenario that instead creates a draft {@code M_InOut}, sets {@code M_Delivery_Planning_ID} and only
+ * then completes it would keep passing over a {@code TIMING_AFTER_COMPLETE} interceptor that is inert in
+ * production.
  */
 @RequiredArgsConstructor
 public class M_Delivery_Planning_Generate_StepDef

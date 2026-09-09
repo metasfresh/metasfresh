@@ -315,12 +315,10 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
   @Id:S31789_TC8
   Scenario: Receiving a planned row produces the receipt the delivery-planning window would, planning and all
 
-    # THE point of the shared request. A planned row hands the receive its M_Delivery_Planning_ID, the id
-    # travels INSIDE the request onto the draft receipt header, and the completion that happens in the same
-    # call fires the delivery-planning interceptor. Everything asserted below - the back-link on the planning,
-    # the actual discharge quantity, Processed, the open quantity going to zero - is derived from that one id
-    # being present BEFORE completion. Set afterwards, or dropped (which is what the HU-editor receive path
-    # does), every one of these assertions fails.
+    # THE point of the shared request: the planning id travels INSIDE the request onto the DRAFT receipt header, and
+    # the completion in the same call fires the delivery-planning interceptor. Everything asserted below is derived
+    # from that id being present BEFORE completion - set afterwards, or dropped (as the HU-editor path does), every
+    # one of these assertions fails.
     Given metasfresh contains C_Orders:
       | Identifier          | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
       | orderRcvPlanned_RL  | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC8       |
@@ -618,16 +616,11 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
   @Id:S31789_TC9e
   Scenario: One row of a SPLIT planning received ALONE takes only its own share, so its sibling can still receive
 
-    # H1's shape, and the one every other scenario misses. TC9d receives both split rows in ONE gesture; this
-    # one receives them ONE AT A TIME, which is what the window's single-row "CUs annehmen" button does. A split
-    # copies M_ReceiptSchedule_ID onto both plannings, so the SCHEDULE's remaining quantity is the whole ORDER
-    # LINE's - 10 - while each PLANNING's own share is 5. A single-row receive that read the schedule would
-    # consume all 10 on the first row and leave the sibling with a row that looks receivable and is not: no
-    # receipt, no delivered state, and no way to get one from this window. The quantity is deliberately NOT
-    # stated in the step (no OPT.Qty), because a stated quantity is the operator's own and would hide the
-    # divergence - what is under test is what the receive DERIVES for a planned row. Every other single-row
-    # scenario uses an UNSPLIT planning, where the planning's share and the schedule's remainder coincide, so
-    # none of them can tell the two rules apart.
+    # The single-row counterpart of TC9d: the two split rows are received ONE AT A TIME, as the window's "CUs
+    # annehmen" button does. A split copies M_ReceiptSchedule_ID onto both plannings, so the SCHEDULE's remainder
+    # is the whole ORDER LINE's (10) while each PLANNING's share is 5 - a receive that read the schedule would
+    # consume all 10 on the first row and leave the sibling looking receivable but unable to receive. OPT.Qty is
+    # deliberately NOT stated: a stated quantity is the operator's own and would hide the divergence.
     Given metasfresh contains C_Orders:
       | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
       | orderSplitSolo_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC9E      |

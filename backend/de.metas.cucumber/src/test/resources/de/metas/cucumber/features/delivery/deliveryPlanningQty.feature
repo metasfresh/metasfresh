@@ -392,11 +392,9 @@ Feature: Delivery planning quantities
 
   @Id:S31789_TC_Q5_FullyAllocatedMultiple
   Scenario: Splitting a fully allocated delivery planning into MORE THAN ONE new planning still creates them, all carrying 0
-  # The natural counterpart of "Create additional delivery plannings" in deliveryPlanningProcesses.feature,
-  # which pre-edits PlannedLoadedQuantity down to 3 before splitting so its 3/1/1 expectations still hold under
-  # the committed-cargo rule. Here nothing is pre-edited: the target stays fully allocated (own effective ==
-  # QtyOrdered), so the pool is 0 and BOTH new plannings carry 0 - the shape the system produces on its own
-  # when more than one additional planning is requested of an allocated target.
+  # Nothing is pre-edited here: the target stays fully allocated (own effective == QtyOrdered), so the pool is 0
+  # and BOTH new plannings carry 0 - the shape the system produces on its own when more than one additional
+  # planning is requested of an allocated target.
 
     Given metasfresh contains C_Orders:
       | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
@@ -496,15 +494,11 @@ Feature: Delivery planning quantities
     Then after not more than 30s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID                         | C_OrderLine_ID   |
       | deliveryPlanningTC12_1,deliveryPlanningTC12_2 | orderLineQtyTC12 |
-    # The discharge pool now nets coalesce(nullif(actual, 0), planned) instead of copying the
-    # target's own committed 50 as zero. The target is allocated, so its OWN claim counts too: the pool is
-    # QtyOrdered(50) - its actual(40, nonzero so it wins over its planned 50) = 10, all of which the single
-    # new planning receives (additionalLines=1) - not the 0 a planned-only reading (before the pool went live) gave.
+    # The target is allocated, so its OWN claim counts too: pool = QtyOrdered(50) - its actual(40, nonzero so it
+    # wins over its planned 50) = 10, all of which the single new planning receives.
     #
-    # QtyTotalOpen is also live now and is an ORDER-LINE total, redundantly shown on both rows:
-    # Incoming nets discharge, so it is QtyOrdered(50) - the actual discharge summed across BOTH plannings
-    # (40 + 0) = 10, not the frozen 50 either row started with. The split touches no actual, so this figure
-    # is unchanged by the split itself - it was already 10 the moment the receipt above was recorded.
+    # QtyTotalOpen is an ORDER-LINE total, redundantly shown on both rows: Incoming nets discharge, so it is
+    # QtyOrdered(50) - the actual discharge summed across BOTH plannings (40 + 0) = 10.
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
       | deliveryPlanningTC12_1 | 50         | 10           | Incoming            | 50                    | 50                       | 50            | 40                      |
@@ -641,11 +635,9 @@ Feature: Delivery planning quantities
       | M_ShipperTransportation_ID  | M_Delivery_Planning_ID     | IsComplete |
       | deliveryInstructionDischRem | deliveryPlanningDischRem_1 | false      |
 
-    # Allocated: the target's own discharge (13) is committed cargo and stays untouched (D8). The pool is
-    # QtyOrdered(13) - its own actual(2, nonzero so it wins over its planned 13) = 11, DOWN-divided over 2
-    # additional lines (additionalLines=2, a non-dividing quantity): 11/2 = 5 remainder 1 - the remainder
-    # goes to the LAST new planning, same rule the load figure already followed, applied here to
-    # discharge for the first time.
+    # Allocated: the target's own discharge (13) is committed cargo and stays untouched (D8). Pool = QtyOrdered(13)
+    # - its own actual(2, nonzero so it wins over its planned 13) = 11, DOWN-divided over 2 additional lines:
+    # 11/2 = 5 remainder 1, the remainder going to the LAST new planning.
     When generate 2 additional M_Delivery_Planning records for: deliveryPlanningDischRem_1
 
     Then after not more than 30s, load created M_Delivery_Planning:
@@ -705,12 +697,10 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty |
       | deliveryPlanningSplitIn_1 | 10         | 10           | Incoming            | 10                    | 10            |
 
-    # unallocated split with an uneven divisor (10 / 3 additionalLines+1): the target absorbs the DOWN-rounding
-    # remainder via setPlannedLoadedQuantity, which - through the delivery-planning interceptor that mirrors
-    # planned load onto ActualLoadQty for incoming plannings - also moves the
-    # target's OWN ActualLoadQty to 4. That makes 4 a different, nonzero number from the two new plannings'
-    # own planned load of 3: if createRequest ever again copied the TARGET's actual instead of seeding from
-    # each new planning's OWN planned load, deliveryPlanningSplitIn_2/_3 would come back 4, not 3.
+    # Unallocated split with an uneven divisor (10 / 4): the target absorbs the DOWN-rounding remainder, which the
+    # incoming-planning interceptor mirrors onto its OWN ActualLoadQty (4) - a different, nonzero number from the
+    # new plannings' own planned load of 3. If the split ever again copied the TARGET's actual instead of seeding
+    # from each new planning's own planned load, _2/_3 would come back 4, not 3.
     When generate 2 additional M_Delivery_Planning records for: deliveryPlanningSplitIn_1
 
     Then after not more than 30s, load created M_Delivery_Planning:
@@ -1089,11 +1079,9 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
       | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 10                    | 0             | 0                       | false    | false     |
 
-    # A shipment is the only document that ever exists for an Outgoing planning, so - unlike a receipt,
-    # which writes only its own end - completion books the SAME quantity onto both ends: nobody but us
-    # ever reports the customer's unload, so the discharge is written as "arrives as shipped unless told
-    # otherwise". A partial booking (7 of the 10 planned) makes it visible that the ACTUAL, not the
-    # planned figure, is what gets written.
+    # A shipment is the only document an Outgoing planning ever gets, so - unlike a receipt, which writes only its
+    # own end - completion books the SAME quantity onto BOTH ends. A partial booking (7 of the 10 planned) makes it
+    # visible that the ACTUAL, not the planned figure, is what gets written.
     When the delivery planning identified by deliveryPlanningQ11Out generates a shipment:
       | DeliveryDate | Qty | OPT.M_InOut_ID |
       | 2023-02-05   | 7   | shipmentQ11Out |
@@ -1217,20 +1205,11 @@ Feature: Delivery planning quantities
   @Id:S31789_TC_Q11_SplitSiblingsBookOnlyTheirOwnShare
   Scenario: Two plannings SPLIT from one order line each book only their own share, never the line's whole quantity
 
-    # resolveBookedQty scopes a completing document's lines by C_OrderLine_ID, and a shipment schedule is 1:1
-    # with its ORDER LINE - not with the planning. Two plannings split from one order line therefore share
-    # both the schedule and the order line, and nothing on a shipment line tells them apart at
-    # TIMING_AFTER_COMPLETE. What keeps the attribution right is that each generate run COMPLETES its own
-    # document before it returns, and consolidation only ever joins a line onto a header that is still
-    # drafted - so a sibling's document is never a consolidation target for the next sibling's.
-    #
-    # This scenario is that assumption's guard. Both siblings ship 5 of the same order line's 10, on the SAME
-    # delivery date and the same customer / location / warehouse - i.e. into the very consolidation window
-    # that would merge them if the first shipment were left open. Each must book 5, never 10.
-    #
-    # DeliveryRule=Force, so what gets shipped is decided by the process quantity rather than by warehouse
-    # availability - the subject here is which LINES a completion books. Their own warehouse keeps these
-    # shipments out of any other scenario's consolidation window.
+    # resolveBookedQty scopes a completing document's lines by C_OrderLine_ID, and a schedule is 1:1 with the ORDER
+    # LINE, not the planning - so two split siblings share both, and nothing on a shipment line tells them apart.
+    # The attribution holds only because each generate run COMPLETES its own document before returning and
+    # consolidation joins onto DRAFTED headers only. This scenario is that assumption's guard: both siblings ship 5
+    # of the same order line's 10 into the very consolidation window that would merge them. Each must book 5.
     Given metasfresh contains M_Products:
       | Identifier  |
       | productQ11S |
@@ -1358,11 +1337,8 @@ Feature: Delivery planning quantities
   @Id:S31789_TC_Q11_DropshipReceiptWritesDischargeOnly
   Scenario: Completing a Dropship receipt writes discharge only, never the load placeholder - and reversal clears only that same end
 
-    # A Dropship-direction planning is created and driven exactly like Incoming today (fix round after
-    # commit 242a95f1 - the plan's original write-by-the-END table wrongly described the not-yet-built
-    # consolidated planning): GenerateIncomingDeliveryPlanningCommand is the only command that creates it
-    # (order.isDropShip() decides Incoming vs Dropship), and it seeds ActualLoadQty from the planned load
-    # the same way for both. So a Dropship RECEIPT must write discharge, exactly like an Incoming receipt -
+    # A Dropship-direction planning is created and driven exactly like Incoming today, seeding ActualLoadQty from
+    # the planned load the same way. So a Dropship RECEIPT must write discharge, exactly like an Incoming receipt -
     # never the load end, which stays the never-reported-vendor-load placeholder mirrored from the plan.
     Given metasfresh contains M_PricingSystems
       | Identifier        |
@@ -1430,14 +1406,10 @@ Feature: Delivery planning quantities
   @Id:S31789_TC_Q11_GenerateReceiptProcessOrdering
   Scenario: The production generate-receipt process itself makes completion write the discharge actual - it stamps the planning link on the DRAFT, not on the finished receipt
 
-    # The scenario that exists SPECIFICALLY to pin the draft-vs-post-generation ordering (several others now
-    # drive the real generate processes too, but each for its own reason). That process generates the receipt
-    # AND completes it in a single call, so if M_Delivery_Planning_ID were put on the receipt only AFTER that
-    # call returned, the receipt would be completed with the FK still unset and interceptor/M_InOut
-    # #afterComplete - which returns immediately on a null FK - would never write anything: no
-    # ActualDischargeQuantity, no Processed, no receipt back-link on the planning, no delivered-state
-    # recompute. The raw M_InOut.M_Delivery_Planning_ID would still end up set, so the data looks
-    # half-right; only the four assertions below tell the two orderings apart.
+    # Pins the draft-vs-post-generation ordering. The process generates the receipt AND completes it in one call, so
+    # if M_Delivery_Planning_ID were set only after the call returned, the receipt would complete with the FK unset
+    # and interceptor/M_InOut#afterComplete would write nothing. The raw M_InOut.M_Delivery_Planning_ID would still
+    # end up set, so the data looks half-right; only the four assertions below tell the two orderings apart.
     Given metasfresh contains M_PricingSystems
       | Identifier        |
       | pricingSystemQ11P |
@@ -1492,13 +1464,9 @@ Feature: Delivery planning quantities
       | ReceiptDate | Qty | OPT.M_InOut_ID |
       | 2023-02-05  | 5   | receiptQ11P    |
 
-    # Everything below is written by interceptor/M_InOut#afterComplete and by nothing else:
-    #  - ActualDischargeQuantity 5: the booked quantity on the end a receipt occupies
-    #  - Processed true: the planning is now delivered
-    #  - M_InOut_ID: the receipt back-link
-    # ActualLoadQty stays 9 (mirrored from the plan, never a receipt's to write) and
-    # PlannedDischargeQuantity became 5 - that one is the process' own Qty write-back, not the interceptor's,
-    # so it is the control: it holds under BOTH orderings.
+    # ActualDischargeQuantity 5, Processed true and M_InOut_ID are written by interceptor/M_InOut#afterComplete and
+    # by nothing else. ActualLoadQty stays 9 (mirrored from the plan, never a receipt's to write).
+    # PlannedDischargeQuantity 5 is the process' own Qty write-back - the control: it holds under BOTH orderings.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | Processed | M_InOut_ID  |
       | deliveryPlanningQ11P   | 9          | 4            | Incoming           | 9                     | 5                        | 9             | 5                       | true      | receiptQ11P |
@@ -1513,11 +1481,9 @@ Feature: Delivery planning quantities
   @Id:S31789_TC_Q14_ShippingPackageMirrorsPlanningQuantities
   Scenario: Editing all four planning quantities syncs the delivery instruction line, with no propagation step
 
-    # The instruction line has no logic of its own - all four figures (planned load, planned discharge,
-    # actual load, actual discharge) are a straight read-through of the planning via the allocation
-    # (ColumnSQL). So editing the planning directly - no generate, no receipt/shipment
-    # completion, no explicit "sync" step of any kind - must be the only thing this scenario does before
-    # the line already shows the new figures.
+    # The instruction line has no logic of its own - all four figures are a straight ColumnSQL read-through of the
+    # planning via the allocation. So editing the planning directly, with no sync step of any kind, is the only
+    # thing this scenario does before the line already shows the new figures.
     Given metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier |
       | orderSyncQty | true    | customer                 | 2023-02-03  | 2023-02-20T00:00:00Z | customerLocation                      |
