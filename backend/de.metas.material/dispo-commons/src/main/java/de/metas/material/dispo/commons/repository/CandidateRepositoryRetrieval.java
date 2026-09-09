@@ -90,6 +90,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
  * #L%
  */
 
+/**
+ * Repository Tables: MD_Candidate, MD_Candidate_Demand_Detail, MD_Candidate_Dist_Detail, MD_Candidate_Prod_Detail,
+ * MD_Candidate_Transaction_Detail
+ * Repository Cluster: CandidateRepositoryRetrieval, CandidateRepositoryWriteService
+ * <p>
+ * The read side of the {@code MD_Candidate} aggregate: loads {@link Candidate}s (and their business-case detail)
+ * by id, by natural-key query, by group, or by owning {@code PP_Order}. {@link CandidateRepositoryWriteService} is
+ * the write side of the same cluster; together they are the sole owners of {@code MD_Candidate} and the four
+ * detail tables listed above.
+ * <p>
+ * {@code MD_Candidate_Purchase_Detail} and {@code MD_Candidate_StockChange_Detail} are read here too, but only by
+ * delegating to their own repo helpers ({@link PurchaseDetailRepoHelper}, {@link StockChangeDetailRepo}) - this
+ * class claims no ownership of those two tables.
+ */
 @Service
 public class CandidateRepositoryRetrieval
 {
