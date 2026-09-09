@@ -311,6 +311,11 @@ public class AD_Archive_StepDef
 	{
 		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
 
+		// Deliberately not IArchiveDAO.retrieveLastArchives: that orders by Created descending
+		// (ArchiveDAO.java:87). A scenario that prints the same record twice can produce both archives
+		// within one clock tick, and then "last" is whichever row the DB happens to return first.
+		// AD_Archive_ID is monotonic and never ties, so ordering by it picks the newest archive
+		// deterministically -- which is what an assertion about "the PDF just printed" needs.
 		final I_AD_Archive archive = queryBL.createQueryBuilder(I_AD_Archive.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())

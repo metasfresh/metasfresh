@@ -1,30 +1,22 @@
 -- Run mode: SWING_CLIENT
 
--- Fill Description and Help on the existing, reusable AD_Element 585448
--- (ColumnName='DescriptionAboveLine'). The element was created with both fields deliberately empty;
--- the texts below describe the behaviour the field actually has, now that it is observed:
---   * the content prints as a standalone, full-width block immediately above the article row of
---     that very order line, on the order confirmation, the delivery note, the picking list and
---     the invoice;
---   * NULL / empty / whitespace-only prints nothing at all -- no block and no blank vertical gap;
---   * longer text wraps onto several lines and the block grows;
---   * the text is per line: each line's text prints above that line only.
--- The one limitation the Help must state in user terms: the document font is embedded with a
--- Windows-1252 encoding, so any character outside that range (emoji, check marks, arrows, letters
--- outside Western Europe) is silently dropped from the PDF -- it leaves no replacement glyph, even
--- though the WebUI editor displays it fine. Umlauts, sharp s, accented Western European letters and
--- the euro sign are inside the range and print correctly.
+-- Fill Description and Help on the existing reusable AD_Element 585448
+-- (ColumnName='DescriptionAboveLine'), which was created with both fields deliberately empty.
+-- The texts themselves are below; they are not restated here.
 --
--- Nothing is promised here that the field does not do: it is not offered as a search/filter
--- criterion in the order-line overview, and it exists on the sales order line only.
+-- Two things worth knowing rather than re-deriving:
+--   * No new IDs are needed. This script only UPDATEs AD_Element_Trl rows that the element's
+--     creation script (5823420) already seeded -- de_CH / de_DE / en_US -- plus one German-base
+--     fr_CH row that stays IsTranslated='N' and is left untouched, since no French text exists.
+--   * The Help states a real, verified limitation: the document font resolves to Liberation Sans
+--     with Cp1252 encoding, so any character outside Windows-1252 (emoji, check marks, arrows,
+--     letters outside Western Europe) is dropped from the PDF silently -- no replacement glyph --
+--     although the WebUI editor shows it. Umlauts, sharp s, accented Western European letters and
+--     the euro sign are inside the range and print. Confirmed at source and reproduced through
+--     iText with the shipped TTF, not assumed.
 --
--- No new IDs are needed -- this script only UPDATEs AD_Element_Trl rows of element 585448 that the
--- element's creation script already seeded (de_CH / de_DE / en_US, plus a German-base fr_CH row
--- that stays IsTranslated='N' and is left untouched, since no French text is available).
--- Language handling mirrors the element's creation script
--- (5823420_sys_C_OrderLine_DescriptionAboveLine.sql): one UPDATE per final language followed by
--- that language's propagation call, with the base language (de_DE) additionally syncing the base
--- AD_Element row via update_ad_element_on_ad_element_trl_update.
+-- Language handling mirrors 5823420: one UPDATE per language followed by that language's
+-- propagation call, with the base language (de_DE) additionally syncing the base AD_Element row.
 
 -- Element: DescriptionAboveLine (de_CH mirrors de_DE base text)
 -- 2026-09-09T19:00:00.000Z
