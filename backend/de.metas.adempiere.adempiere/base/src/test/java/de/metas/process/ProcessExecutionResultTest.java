@@ -15,6 +15,8 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
@@ -147,6 +149,18 @@ public class ProcessExecutionResultTest
 		// Assert.assertEquals(result.get, resultFromJson.get);
 
 		assertEqualsAsJson(result, resultFromJson);
+	}
+
+	/** Rebuilding the selection is the stronger request, so it must also answer the plain refresh-all question. */
+	@Test
+	public void recreatingTheSelectionImpliesRefreshAll()
+	{
+		final ProcessExecutionResult result = ProcessExecutionResult.newInstanceForADPInstanceId(PInstanceId.ofRepoId(1));
+		assertThat(result.isRefreshAllAfterExecution()).isFalse();
+
+		result.setRecreateViewSelectionAfterExecution(true);
+
+		assertThat(result.isRefreshAllAfterExecution()).isTrue();
 	}
 
 	@Test

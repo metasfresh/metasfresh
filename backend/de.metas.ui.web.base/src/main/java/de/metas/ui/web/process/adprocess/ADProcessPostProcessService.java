@@ -134,7 +134,7 @@ public class ADProcessPostProcessService
 
 		final boolean recreateViewSelection = processExecutionResult.isRecreateViewSelectionAfterExecution();
 
-		if (processExecutionResult.isRefreshAllAfterExecution() || recreateViewSelection)
+		if (processExecutionResult.isRefreshAllAfterExecution())
 		{
 			final IView view = viewSupplier.get();
 

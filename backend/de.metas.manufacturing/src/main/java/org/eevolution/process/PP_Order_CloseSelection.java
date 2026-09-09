@@ -129,7 +129,6 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 	{
 		// Closed orders leave a monitor scoped to completed ones only if the selection is rebuilt.
 		getResult().setRecreateViewSelectionAfterExecution(true);
-		getResult().setRefreshAllAfterExecution(true);
 
 		final PPOrderCloseResult result = ppOrderBL.closeOrdersInSelection(getPinstanceId());
 
