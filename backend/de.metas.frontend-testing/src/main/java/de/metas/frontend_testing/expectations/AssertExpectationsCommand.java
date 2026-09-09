@@ -88,6 +88,24 @@ public class AssertExpectationsCommand
 						.build()
 						.execute();
 			}
+			if (expectations.getInventories() != null)
+			{
+				AssertInventoryExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getInventories())
+						.build()
+						.execute();
+			}
+			if (expectations.getMovements() != null)
+			{
+				AssertMovementExpectationsCommand.builder()
+						.services(services)
+						.context(context)
+						.expectations(expectations.getMovements())
+						.build()
+						.execute();
+			}
 
 			return newJsonExpectationsResponse().build().toResponseEntity();
 		}

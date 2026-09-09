@@ -1,6 +1,6 @@
 import {
   getLineByIdFromActivity,
-  getQtyRejectedReasonsFromActivity,
+  getQtyRejectedReasonsForStep,
   getScaleDeviceFromActivity,
   getStepByIdFromLine,
 } from '../../../../../reducers/wfProcesses';
@@ -62,7 +62,10 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
     isWeightable,
     isIssueWholeHU,
     qtyAlreadyOnScale,
-    qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsFromActivity(activity) : null,
+    // The step's own `allowEmptying` flag is authoritative — the activity-wide list may still carry
+    // the "empty (auto. inventory)" reason for a step whose source HU must refuse it (e.g. a pallet's
+    // primary LU step). See JsonRawMaterialsIssueLineStep#isAllowEmptying (wire key `allowEmptying`).
+    qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsForStep(activity, step) : null,
     scaleDevice: isWeightable ? getScaleDeviceFromActivity(activity) : null,
     scaleTolerance: isWeightable ? step.scaleTolerance : null,
   };

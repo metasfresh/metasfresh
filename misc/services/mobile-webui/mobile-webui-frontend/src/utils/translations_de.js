@@ -88,6 +88,9 @@ const translations = {
       missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
       scanLuOrLocator: 'Scannen LU oder Lagerplatz',
     },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'Die verbleibende Menge %(qty)s wird abgeschrieben und die HU geleert. Fortfahren?',
+    },
     picking: {
       PickingLine: 'Packzeile',
       PickFromManufacturingOrder: 'Produzieren',

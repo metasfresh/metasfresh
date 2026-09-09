@@ -3,20 +3,26 @@ package de.metas.handlingunits.pporder.api.issue_schedule;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.attribute.weightable.PlainWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
+import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.weighting.WeightHUCommand;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -26,7 +32,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -37,11 +45,15 @@ import java.math.BigDecimal;
 public class PPOrderIssueScheduleService
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final PPOrderIssueScheduleRepository issueScheduleRepository;
 	private final HUQtyService huQtyService;
 
 	public static final AdMessageKey MSG_AlreadyIssued = AdMessageKey.of("de.metas.handlingunits.pporder.AlreadyIssuedError");
+	public static final AdMessageKey MSG_EmptiedHUInventoryDescription = AdMessageKey.of("de.metas.handlingunits.pporder.EmptiedHUInventoryDescription");
 
 	public ImmutableList<PPOrderIssueSchedule> getByOrderId(final PPOrderId ppOrderId)
 	{
@@ -65,14 +77,23 @@ public class PPOrderIssueScheduleService
 					.setParameter("issueSchedule", issueSchedule);
 		}
 
+		//
+		// Qty Rejected (resolved early: a weight confirmation below, if any, may itself be the call
+		// that drains the HU to zero on the EMPTIED reason, so it must carry the same write-off
+		// description `bookEmptiedHUToZero` would otherwise apply).
+		final I_C_UOM uom = issueSchedule.getQtyToIssue().getUOM();
+		final QtyRejectedWithReason qtyRejected = getQtyRejectedWithReason(request, uom);
+		final String emptiedHUInventoryDescription = qtyRejected != null && QtyRejectedReasonCode.EMPTIED.equals(qtyRejected.getReasonCode())
+				? resolveEmptiedHUInventoryDescription(request.getPpOrderId())
+				: null;
+
 		if (request.getHuWeightGrossBeforeIssue() != null)
 		{
-			weightHU(issueSchedule.getIssueFromHUId(), request.getHuWeightGrossBeforeIssue());
+			weightHU(issueSchedule.getIssueFromHUId(), request.getHuWeightGrossBeforeIssue(), emptiedHUInventoryDescription);
 		}
 
 		//
 		// Qty Issued
-		final I_C_UOM uom = issueSchedule.getQtyToIssue().getUOM();
 		final Quantity qtyIssued = Quantity.of(request.getQtyIssued(), uom);
 		if (qtyIssued.signum() != 0)
 		{
@@ -99,7 +120,10 @@ public class PPOrderIssueScheduleService
 
 		//
 		// Qty Rejected
-		final QtyRejectedWithReason qtyRejected = getQtyRejectedWithReason(request, uom);
+		if (emptiedHUInventoryDescription != null)
+		{
+			bookEmptiedHUToZero(issueSchedule.getIssueFromHUId(), emptiedHUInventoryDescription);
+		}
 
 		//
 		// Update the issue schedule
@@ -123,7 +147,49 @@ public class PPOrderIssueScheduleService
 		return QtyRejectedWithReason.of(qtyRejected, request.getQtyRejectedReasonCode());
 	}
 
-	private void weightHU(@NonNull final HuId huId, @NonNull final BigDecimal weightGross)
+	private String resolveEmptiedHUInventoryDescription(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
+		return msgBL.getMsg(Language.getBaseAD_Language(), MSG_EmptiedHUInventoryDescription, new Object[] { ppOrder.getDocumentNo() });
+	}
+
+	private void bookEmptiedHUToZero(@NonNull final HuId huId, @NonNull final String description)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		if (!huStatusBL.isStatusActive(hu))
+		{
+			// The ordinary "qty issued" step above already consumed this HU AS A WHOLE: when the issued
+			// qty reaches the HU's current storage qty, HUTransformService's "complete cuHU" branch issues the
+			// HU itself (no split), moving its status to Issued (then, once the resulting cost collector
+			// is completed, to Destroyed) without ever reducing its M_HU_Storage row. That qty is already
+			// accounted for as issued to production, so writing it off here as well would double-count
+			// it (issued/destroyed AND zeroed). Only an HU still Active is still on-hand stock this
+			// method may legitimately book a remainder against (the split-branch case, e.g. a bare VHU
+			// with product left over after the issue).
+			return;
+		}
+
+		final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
+		if (huStorage.getProductStorages().isEmpty())
+		{
+			// Nothing to write off: the HU stayed Active (the status guard above already returned for the
+			// consumed-as-a-whole case) but its storage is already empty, e.g. qtyIssued == 0 with a zero
+			// counted weight — there is no remainder left to book.
+			// HUQtyService.updateQty(huId=...) requires exactly one M_HU_Storage row (it throws "Empty HU is not handled"
+			// for zero storages), so calling it here would fail on an HU that is already effectively empty.
+			return;
+		}
+
+		final Quantity qtyZero = huStorage.getQtyForProductStorages().toZero();
+
+		huQtyService.updateQty(UpdateHUQtyRequest.builder()
+				.huId(huId)
+				.qty(qtyZero)
+				.description(description)
+				.build());
+	}
+
+	private void weightHU(@NonNull final HuId huId, @NonNull final BigDecimal weightGross, @Nullable final String description)
 	{
 		if (weightGross.signum() < 0)
 		{
@@ -149,6 +215,7 @@ public class PPOrderIssueScheduleService
 				//
 				.huId(huId)
 				.targetWeight(targetWeight)
+				.description(description)
 				.build()
 				//
 				.execute();

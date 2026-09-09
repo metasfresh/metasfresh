@@ -5,6 +5,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -43,6 +44,7 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class CreateHUCommand
 {
@@ -82,6 +84,7 @@ public class CreateHUCommand
 
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
+		addAdditionalProducts(huId);
 		final IAttributeStorage huAttributes = updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
@@ -102,7 +105,50 @@ public class CreateHUCommand
 				.productId(getProductId())
 				.warehouseId(getWarehouseId())
 				.externalBarcode(huAttributes != null && huAttributes.hasAttribute(AttributeConstants.ATTR_ExternalBarcode) ? huAttributes.getValueAsString(AttributeConstants.ATTR_ExternalBarcode) : null)
+				.tus(getIncludedTUs(huId))
 				.build();
+	}
+
+	/**
+	 * When this HU was created as an LU with included TUs (request's packingInstructions has an
+	 * {@code luPIItem}), also resolve the included, individually-addressable TUs' own QR codes, so a
+	 * caller can scan one of them directly (e.g. to reach its per-TU alternative step) without a
+	 * separate lookup endpoint. Additive only — the top-level {@code qrCode} field keeps returning
+	 * the LU's own QR code.
+	 * <p>
+	 * An included row that is itself an <b>aggregate HU</b> (one DB row standing in for several
+	 * identical, exactly-capacity-filled TUs — {@code LUTUProducerDestination}/{@code
+	 * TUProducerDestination} coalesce same-content TUs this way whenever a TU is loaded to exactly
+	 * its rated capacity) is skipped: {@link HUQRCodesService#getQRCodeByHuId} would otherwise try to
+	 * generate one QR code per aggregated TU count and throw
+	 * ("Expected only one QR code ... but found [...]"), since an aggregate row has no single QR.
+	 * There is also nothing useful to scan there individually — same as a loading unit, an aggregate
+	 * HU is not a real single-TU write-off source.
+	 */
+	private ImmutableList<JsonCreateHUResponse.Tu> getIncludedTUs(final HuId huId)
+	{
+		if (!request.isGenerateHUQRCode() || request.getPackingInstructions() == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final PackingInstructions packingInstructions = context.getObjectNotNull(request.getPackingInstructions());
+		if (packingInstructions.getLuPIItem() == null)
+		{
+			return ImmutableList.of();
+		}
+
+		return handlingUnitsBL.retrieveIncludedHUs(huId)
+				.stream()
+				.filter(tu -> !handlingUnitsBL.isAggregateHU(tu))
+				.map(tu -> {
+					final HuId tuId = HuId.ofRepoId(tu.getM_HU_ID());
+					return JsonCreateHUResponse.Tu.builder()
+							.huId(String.valueOf(tuId.getRepoId()))
+							.qrCode(huQRCodesService.getQRCodeByHuId(tuId).toGlobalQRCodeString())
+							.build();
+				})
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private @NonNull HuId createCU()
@@ -165,11 +211,12 @@ public class CreateHUCommand
 			}
 			else
 			{
-				if (request.getQty() != null)
-				{
-					throw new AdempiereException("qty shall not be set when packingInstructions are set");
-				}
-				return packingInstructions.getQtyCUs();
+				// An explicit qty together with finite-capacity packingInstructions means: load this
+				// total across the LU's TUs, under-filling the last one (it is NOT rejected as it used
+				// to be) — this is what lets a masterdata request force a real, individually
+				// addressable (non-aggregate) TU into existence for scanning (see getIncludedTUs).
+				// Absent qty keeps the old behaviour: exact fill, derived from the packing instructions.
+				return CoalesceUtil.coalesce(request.getQty(), packingInstructions.getQtyCUs());
 			}
 		}
 		else
@@ -255,6 +302,68 @@ public class CreateHUCommand
 
 		final I_M_HU newLU = producer.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("No LU was created"));
 		return HuId.ofRepoId(newLU.getM_HU_ID());
+	}
+
+	/**
+	 * Stocks each of {@link JsonCreateHURequest#getAdditionalProducts()} onto the already-created {@code targetHuId},
+	 * on top of its primary product — i.e. makes the HU carry storage of more than one distinct product.
+	 * <p>
+	 * Implemented the same way {@link de.metas.handlingunits.allocation.transfer.impl.HUDistributeBuilder} distributes
+	 * a VHU's content onto an existing TU: create a fresh virtual CU for the additional product, then
+	 * {@link HULoader} it directly onto {@code targetHuId} (an existing HU used as {@code destination}, not a
+	 * producer that would create a new one).
+	 * <p>
+	 * Untested in combination with a packing-instruction-produced (possibly aggregate) {@code targetHuId}.
+	 */
+	private void addAdditionalProducts(final HuId targetHuId)
+	{
+		final List<JsonCreateHURequest.AdditionalProduct> additionalProducts = request.getAdditionalProducts();
+		if (additionalProducts == null || additionalProducts.isEmpty())
+		{
+			return;
+		}
+
+		additionalProducts.forEach(additionalProduct -> addAdditionalProduct(targetHuId, additionalProduct));
+	}
+
+	private void addAdditionalProduct(final HuId targetHuId, final JsonCreateHURequest.AdditionalProduct additionalProduct)
+	{
+		final WarehouseId warehouseId = getWarehouseId();
+		final ProductId additionalProductId = context.getId(additionalProduct.getProduct(), ProductId.class);
+		final I_C_UOM uom = productBL.getStockUOM(additionalProductId);
+		final Quantity qty = Quantity.of(additionalProduct.getQty(), uom);
+
+		final HuId sourceCuId = trxManager.callInThreadInheritedTrx(
+				() -> inventoryService.createInventoryForMissingQty(
+						CreateVirtualInventoryWithQtyReq.builder()
+								.clientId(ClientId.METASFRESH)
+								.orgId(MasterdataContext.ORG_ID)
+								.warehouseId(warehouseId)
+								.productId(additionalProductId)
+								.qty(qty)
+								.movementDate(SystemTime.asZonedDateTime())
+								.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+								.build()
+				)
+		);
+
+		huTrxBL.process(huContext -> {
+			final I_M_HU sourceCU = handlingUnitsBL.getById(sourceCuId);
+			final I_M_HU targetHu = handlingUnitsBL.getById(targetHuId);
+
+			HULoader.builder()
+					.source(HUListAllocationSourceDestination.of(sourceCU))
+					.destination(HUListAllocationSourceDestination.of(targetHu))
+					.load(AllocationUtils.builder()
+							.setHUContext(huContext)
+							.setProduct(additionalProductId)
+							.setQuantity(qty)
+							.setDateAsToday()
+							.setForceQtyAllocation(true)
+							.create());
+
+			handlingUnitsBL.destroyIfEmptyStorage(huContext, sourceCU);
+		});
 	}
 
 	private IAttributeStorage updateAttributes(final HuId huId)

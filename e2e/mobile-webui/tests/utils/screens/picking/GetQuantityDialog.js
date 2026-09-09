@@ -68,6 +68,36 @@ export const GetQuantityDialog = {
         await expect(radioButton).toBeChecked();
     }),
 
+    expectQtyNotFoundReasonOffered: async ({ reason, offered = true }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' offered=${offered}`, async () => {
+        const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
+        if (offered) {
+            await expect(radioButton).toBeVisible();
+        } else {
+            await expect(radioButton).toHaveCount(0);
+        }
+    }),
+
+    /**
+     * `offered: false` on a single reason (above) passes even if only that one reason were filtered
+     * out of an otherwise-rendered group. Use this alongside it when the scenario expects the WHOLE
+     * reason group to be absent (e.g. a zero-target step, where the group only renders once
+     * `qtyRejected > 0` — `GetQuantityDialog.jsx`), so the test documents "no reasons at all" rather
+     * than "at least this one is filtered".
+     */
+    expectQtyRejectedReasonsGroupVisible: async ({ visible }) => await test.step(`${NAME} - Expect qty-rejected-reasons group visible=${visible}`, async () => {
+        const group = page.locator('#qty-rejected');
+        if (visible) {
+            await expect(group).toBeVisible();
+        } else {
+            await expect(group).toHaveCount(0);
+        }
+    }),
+
+    expectQtyNotFoundReasonCaption: async ({ reason, caption }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' caption '${caption}'`, async () => {
+        const label = page.getByTestId(`qty-reason-radio-${reason}`).locator('xpath=..');
+        await expect(label).toContainText(caption);
+    }),
+
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
         let doneButton = page.getByTestId('done-button');
 
@@ -81,6 +111,20 @@ export const GetQuantityDialog = {
             },
             ({ textContent }) => expect(textContent).toContain(expectedError)
         );
+    }),
+
+    /**
+     * Presses Done and captures the POST request body it fires (matched by a URL substring) — for
+     * asserting a wire-level field with no visible UI counterpart (e.g.
+     * `issueTo.huWeightGrossBeforeIssue` on the manufacturing issue event).
+     * @returns {Promise<object>} the parsed JSON request body.
+     */
+    clickDoneAndCaptureRequestBody: async ({ urlFragment }) => await test.step(`${NAME} - Press OK (capture request '${urlFragment}')`, async () => {
+        const [request] = await Promise.all([
+            page.waitForRequest((req) => req.url().includes(urlFragment) && req.method() === 'POST'),
+            GetQuantityDialog.clickDone(),
+        ]);
+        return request.postDataJSON();
     }),
 
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {

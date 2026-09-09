@@ -20,4 +20,6 @@ public class JsonExpectations
 	@Nullable Map<String, JsonManufacturingExpectation> manufacturings;
 	@Nullable Map<String, JsonPickingSlotExpectation> pickingSlots;
 	@Nullable Map<String, JsonHUExpectation> hus;
+	@Nullable Map<String, JsonInventoryExpectation> inventories;
+	@Nullable Map<String, JsonMovementExpectation> movements;
 }

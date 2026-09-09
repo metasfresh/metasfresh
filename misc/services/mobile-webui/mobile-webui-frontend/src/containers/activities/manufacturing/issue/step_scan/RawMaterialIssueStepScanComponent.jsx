@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { toastError } from '../../../../../utils/toast';
@@ -9,8 +9,13 @@ import { toQRCodeString } from '../../../../../utils/qrCode/hu';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
-import { getActivityById, getStepByIdFromActivity } from '../../../../../reducers/wfProcesses';
+import {
+  getActivityById,
+  getStepByIdFromActivity,
+  QTY_REJECTED_REASON_EMPTIED_KEY,
+} from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
+import { formatQtyToHumanReadableStr } from '../../../../../utils/qtys';
 import { useBooleanSetting } from '../../../../../reducers/settings';
 import { useMobileNavigation } from '../../../../../hooks/useMobileNavigation';
 import {
@@ -26,6 +31,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
+  const isConfirmEmptyingHU = activity?.dataStored?.isConfirmEmptyingHU;
 
   const eligibleBarcode =
     stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
@@ -51,6 +57,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       lineQtyToIssueRemaining,
       lineQtyIssued,
       isWeightable,
+      isIssueWholeHU,
       qtyRejectedReasons,
       scaleDevice,
       scaleTolerance,
@@ -81,8 +88,20 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       // Props which are needed by `onResult` function (see below):
       stepId: step.id,
       isWeightable,
+      isIssueWholeHU,
     };
   };
+
+  // "Empty (auto. inventory)" write-off: on `isConfirmEmptyingHU`, confirm before booking, naming the
+  // leftover quantity and its UOM. Declining leaves the operator on this dialog and posts nothing.
+  const getEmptyingConfirmationPrompt = useCallback((qtyInput, { qtyRejected, rejectedReason, uom } = {}) => {
+    if (rejectedReason !== QTY_REJECTED_REASON_EMPTIED_KEY || !(qtyRejected > 0)) {
+      return undefined;
+    }
+    return trl('activities.manufacturing.confirmEmptyHUPrompt', {
+      qty: formatQtyToHumanReadableStr({ qty: qtyRejected, uom }),
+    });
+  }, []);
 
   const dispatch = useDispatch();
   const history = useMobileNavigation();
@@ -91,7 +110,22 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
 
     const stepId = resolvedBarcodeData.stepId;
     const isWeightable = !!resolvedBarcodeData.isWeightable;
-    const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
+    // The whole-HU decision must be the one made when the step was offered (target vs the HU's own
+    // capacity — computeStepScanPropsFromActivity.js), not recomputed from the qty the operator
+    // actually typed: typing less than capacity is exactly the "issue a partial amount with a
+    // reason" case (not found / damaged / empty), and recomputing from the entered qty always
+    // evaluates false there, silently dropping qtyRejected/qtyRejectedReasonCode before they reach
+    // the backend.
+    const isIssueWholeHU = !!resolvedBarcodeData.isIssueWholeHU;
+    // ...but the WEIGHT field answers a different question: "did the operator physically weigh the
+    // whole container?" That is a fact about what was measured (the entered qty), so it must NOT ride
+    // on the offer-time flag above. Predicate taken verbatim from
+    // https://github.com/metasfresh/metasfresh/pull/25716 (merged to new_dawn_uat as d58d99fa1c0),
+    // which fixed this independently on intensive_care_hotfix; that commit is not an ancestor of
+    // task_force_hotfix, so keeping the predicates identical is what stops a third divergent variant
+    // of these three lines colliding at the next merge-up.
+    const isQtyEnteredAsWeight = resolvedBarcodeData.uom === 'kg';
+    const isWeighedFullHU = isIssueWholeHU && isQtyEnteredAsWeight;
 
     return dispatch(
       updateManufacturingIssue({
@@ -99,7 +133,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
         activityId,
         lineId,
         stepId,
-        huWeightGrossBeforeIssue: isWeightable && isIssueWholeHU ? qty : null,
+        huWeightGrossBeforeIssue: isWeightable && isWeighedFullHU ? qty : null,
         qtyIssued: qty,
         qtyRejected: isIssueWholeHU ? qtyRejected : 0,
         qtyRejectedReasonCode: isIssueWholeHU ? reason : null,
@@ -123,6 +157,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       // scaleDevice={scaleDevice}
       //
       // Callbacks:
+      getConfirmationPromptForQty={isConfirmEmptyingHU ? getEmptyingConfirmationPrompt : undefined}
       onResult={onResult}
     />
   );

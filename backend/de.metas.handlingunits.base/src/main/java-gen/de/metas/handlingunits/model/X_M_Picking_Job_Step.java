@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_Picking_Job_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1573680053L;
+	private static final long serialVersionUID = -484619648L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Step (final Properties ctx, final int M_Picking_Job_Step_ID, @Nullable final String trxName)
@@ -420,6 +420,8 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public static final String REJECTREASON_NotFound = "N";
 	/** Damaged = D */
 	public static final String REJECTREASON_Damaged = "D";
+	/** Emptied = E */
+	public static final String REJECTREASON_Emptied = "E";
 	@Override
 	public void setRejectReason (final @Nullable java.lang.String RejectReason)
 	{

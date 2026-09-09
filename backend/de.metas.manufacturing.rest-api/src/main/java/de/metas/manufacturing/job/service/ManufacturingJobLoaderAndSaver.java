@@ -265,6 +265,10 @@ public class ManufacturingJobLoaderAndSaver
 						.barcode(supportingServices.getFirstQRCodeByHuId(schedule.getIssueFromHUId()))
 						.build())
 				.issued(schedule.getIssued())
+				// HU-shape decision (aggregate / HUType / single-product-storage), resolved once here at
+				// job-load time rather than on every render. The client-config gate (whether emptying is
+				// offered at all) is applied later, at render time, by RawMaterialsIssueActivityHandler.
+				.isAllowEmptying(supportingServices.isEmptyingEligible(schedule.getIssueFromHUId()))
 				.build();
 	}
 
