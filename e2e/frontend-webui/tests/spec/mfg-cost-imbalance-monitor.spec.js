@@ -7,6 +7,8 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
 
 const COST_IMBALANCE_WINDOW_ID = 542175;
+// Both windows sit on PP_Order, so a row click cannot reach the order - hence the zoom field.
+const PRODUCTION_ORDER_WINDOW_ID = 53009;
 
 // The filter bar carries no data-testid, so it is addressed by the language-invariant structural
 // classes the frontend derives from the identifiers (`form-field-<ColumnName>` per widget).
@@ -154,14 +156,16 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     allure.epic('E0226: Costing');
     allure.tag('F1500: Costing');
     allure.tag('F1500');
-    allure.story('PP_Order_CloseSelection is a quick action of the cost-imbalance monitor');
+    allure.story('PP_Order_CloseSelection is a quick action of the cost-imbalance monitor and refreshes it in place');
     allure.severity('normal');
     allure.description(
       'The monitor lists completed-but-not-closed manufacturing orders and its tab carries no DocAction ' +
         'field, so a balanced order could not be closed from it at all. Verifies the new ' +
         '"Auswahl schliessen" / "Close selection" quick action end to end: it is offered on this window, ' +
         'running it on the selected order closes it, and the closed order consequently drops out of the ' +
-        'monitor. Also guards the window-scoped demotion of the Issue/Receipt launcher: it is still ' +
+        'monitor in place -- with no reload and no re-navigation, so the assertion covers the view ' +
+        'refresh and not merely the tab filter. Also guards the window-scoped demotion of the ' +
+        'Issue/Receipt launcher: it is still ' +
         'offered here but is no longer the default quick action -- a default action always sorts to the ' +
         'front of the action list, so the launcher not being first proves the demotion in any language.'
     );
@@ -211,6 +215,13 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
       // simply absent here. It is covered by the costing cucumber scenarios.
     });
 
+    // Survives an SPA re-render but not a reload: that is what makes the assertions below refresh
+    // coverage - a freshly opened window would pass either way, proving only the tab's filter.
+    const pageLoadMarker = await page.evaluate(() => {
+      window.__pageLoadMarker = Math.random().toString(36);
+      return window.__pageLoadMarker;
+    });
+
     await test.step('Run Close selection', async () => {
       // Running a quick action is two calls: the POST only creates the pinstance, the follow-up
       // /start executes the process. Awaiting the POST would read the result back before it commits.
@@ -219,15 +230,95 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
       await processExecuted;
     });
 
-    // Read back from a FRESH view: the tab is scoped to DocStatus='CO', so a closed order is gone.
-    await MasterWindowPage.goto(COST_IMBALANCE_WINDOW_ID);
-    await MasterWindowPage.expectWindowLoaded();
-    await applyMonitorFilter({ page, documentNo });
-    await expect(page.locator(EMPTY_RESULT)).toBeVisible();
-    await expect(page.locator(TABLE_ROWS).filter({ hasText: documentNo })).toHaveCount(0);
+    await test.step('The closed order leaves the monitor in place, without reloading the page', async () => {
+      // The process rebuilds the selection, so the closed order drops out of the list on its own.
+      await expect(page.locator(EMPTY_RESULT)).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator(TABLE_ROWS).filter({ hasText: documentNo })).toHaveCount(0);
+      expect(await page.evaluate(() => window.__pageLoadMarker)).toBe(pageLoadMarker);
+    });
 
     console.log(
-      `Manufacturing order ${documentNo} closed via PP_Order_CloseSelection and left the cost-imbalance monitor`
+      `Manufacturing order ${documentNo} closed via PP_Order_CloseSelection and left the cost-imbalance monitor in place`
+    );
+  });
+
+  test('Produktionsauftrag field zooms from the monitor into the Produktionsauftrag window', async ({ page }) => {
+    test.setTimeout(120_000);
+
+    allure.epic('E0226: Costing');
+    allure.tag('F1500: Costing');
+    allure.tag('F1500');
+    allure.story('The cost-imbalance monitor can navigate to the full manufacturing order');
+    allure.severity('normal');
+    allure.description(
+      'The monitor is a read-only list over PP_Order and the Produktionsauftrag window (53009) is a ' +
+        'second window over the SAME table, so clicking a monitor row only re-opens it in the monitor -- ' +
+        'a controller had no way to reach the full order. Verifies the new "Produktionsauftrag" field in ' +
+        'successful action: it renders as a grid column showing the order\'s document number, and zooming ' +
+        'it lands on window 53009 on that same order. The landing window is the whole point: a lookup ' +
+        'pointing back at its own table could plausibly resolve to the window the user is already in, so ' +
+        'the assertion is on the target window id, not merely that "a zoom happened".'
+    );
+
+    const { masterdata, documentNo } = await seedCompletedManufacturingOrder();
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await MasterWindowPage.goto(COST_IMBALANCE_WINDOW_ID);
+    await MasterWindowPage.expectWindowLoaded();
+
+    // Narrow to exactly the seeded order so the cell we right-click is unambiguously its cell.
+    await applyMonitorFilter({ page, documentNo });
+    await expect(page.locator(TABLE_ROWS)).toHaveCount(1);
+
+    // Selecting on ColumnName keeps this language-independent.
+    await expect(page.locator('th[data-testid="column-Link_PP_Order_ID"]')).toHaveCount(1);
+
+    const zoomCell = page.locator(TABLE_ROWS).first().locator('[data-cy="cell-Link_PP_Order_ID"]');
+    await expect(zoomCell).toHaveCount(1);
+    // AD_Ref_Table.AD_Display is PP_Order.DocumentNo, so the link is labelled with the document number.
+    await expect(zoomCell).toContainText(documentNo);
+
+    await test.step('Zoom Into is offered on the field', async () => {
+      await zoomCell.click({ button: 'right' });
+      await expect(page.locator('.context-menu-open')).toBeVisible();
+    });
+
+    // The menu caption is translated; the icon is not, so address the entry by its icon.
+    const zoomIntoItem = page.locator('.context-menu-open .context-menu-item').filter({
+      has: page.locator('i.meta-icon-share'),
+    });
+    await expect(zoomIntoItem).toHaveCount(1);
+
+    // This endpoint IS the window resolution under test, so assert it, not only where routing lands.
+    const zoomResolved = page.waitForResponse(
+      (response) =>
+        response.url().includes('/field/Link_PP_Order_ID/zoomInto') && response.status() === 200
+    );
+    // A grid zoom opens the target in a NEW TAB (containers/Table.js handleZoomInto ->
+    // window.open(url, '_blank')), so the assertion is on the popup, not on this page's URL.
+    const orderTabOpened = page.context().waitForEvent('page');
+
+    await zoomIntoItem.click();
+
+    const zoomResponse = await zoomResolved;
+    const zoomPayload = await zoomResponse.json();
+    expect(String(zoomPayload.documentPath.windowId)).toBe(String(PRODUCTION_ORDER_WINDOW_ID));
+
+    const orderTab = await orderTabOpened;
+    await orderTab.waitForLoadState('domcontentloaded');
+
+    // The landing window is the point of the whole change: 53009, never back into 542175.
+    expect(orderTab.url()).toMatch(new RegExp(`/window/${PRODUCTION_ORDER_WINDOW_ID}/\\d+`));
+    expect(orderTab.url()).not.toMatch(new RegExp(`/window/${COST_IMBALANCE_WINDOW_ID}(/|$)`));
+
+    // Same order, not just the right window.
+    await expect(orderTab.locator(`text=${documentNo}`).first()).toBeVisible({ timeout: 60_000 });
+
+    console.log(
+      `Manufacturing order ${documentNo} zoomed from monitor ${COST_IMBALANCE_WINDOW_ID} into window ${PRODUCTION_ORDER_WINDOW_ID}`
     );
   });
 });
