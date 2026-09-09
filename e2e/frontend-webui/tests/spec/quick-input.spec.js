@@ -668,8 +668,8 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
        * packing-instruction sub-field. Quantity is typed WITHOUT clicking, so the assertion
        * that it lands in Menge is the proof that focus advanced (TC8 step 5).
        */
-      const enterOneLine = async (escapeKeys, qty, label) => {
-        await test.step(`Line ${qty}: ${label}`, async () => {
+      const enterOneLine = async (escapeKeys, qty, stepLabel) => {
+        await test.step(`Line ${qty}: ${stepLabel}`, async () => {
           await test.step('Type the product code, press Enter', async () => {
             await typeProductAndWaitForDropdown(page, productCode);
             await page.keyboard.press('Enter');
@@ -678,7 +678,7 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
           });
 
           await test.step(
-            `Packvorschrift has no value - press ${label}`,
+            `Packvorschrift has no value - press ${stepLabel}`,
             async () => {
               for (const key of escapeKeys) {
                 if (key.startsWith('type:')) {
