@@ -1,44 +1,31 @@
+-- Source DDL: backend/de.metas.deliveryplanning.base/src/main/sql/postgresql/ddl/views/RV_ReceiptDisposition_DeliveryPlanning.sql
 --
--- RV_ReceiptDisposition_DeliveryPlanning -- the single inbound list behind the receipt-disposition
--- delivery-planning window: active Incoming delivery plannings (branch one, "planned") UNIONed with the
--- receipt schedules no active planning refers to (branch two, "unplanned"). The two branches are exact
--- complements, so a schedule never appears on both; a schedule shared by N plannings (what a SPLIT produces)
--- yields N rows.
+-- Fixes QtyToMove on a PLANNED row of RV_ReceiptDisposition_DeliveryPlanning: it now serves the PLANNING's own
+-- planned discharge (dp.planneddischargequantity) instead of the receipt SCHEDULE's QtyToMove. Owner ruling
+-- (2026-09-09): "this is simply wrong to see full schedule qty."
 --
--- KEY. RV_ReceiptDisposition_DeliveryPlanning_ID = M_Delivery_Planning_ID on branch one,
--- 1000000000 + M_ReceiptSchedule_ID on branch two.
---   * Arithmetic, never ROW_NUMBER(): a window function blocks predicate push-down, so a filtered open would
---     compute the whole view first.
---   * Branch one keys on the PLANNING, not the schedule: a split shares one schedule, so a schedule-derived id
---     would repeat and the window would lose grid identity, selection and zoom.
---   * Both source ids must stay <= 1,147,483,647 for the sum to fit a Java int.
+-- Why the schedule's figure is wrong on a planned row: a split copies M_ReceiptSchedule_ID onto every sibling
+-- planning, so the schedule carries ONE figure for the whole order line while each planning plans its own share.
+-- Reading the schedule therefore shows the same order-line-wide number on every sibling row - and after a partial
+-- receipt it shows a number nobody plans to receive at all. Observed on the local stack before this script:
+-- schedules 1000018 and 1000019 each carry two active Incoming plannings planning 5 to discharge each while the
+-- schedule's own QtyToMove is 0, so the grid showed 0 on rows that plan to receive 5; schedule 1000070 carries
+-- three plannings planning 4 / 3 / 3 while the schedule says 10, so all three rows showed 10.
 --
--- LAZY-LOADING SOURCE COLUMNS. M_ReceiptSchedule.M_Shipper_ID, IsBLReceived, IsBookingConfirmed and IsWENotice
--- are IsLazyLoading='Y' -- AD-level ColumnSQL with NO physical value on the table, so a plain SQL view cannot
--- select them. The shipper is read off the already-joined C_Order (o.m_shipper_id) and the three flags replicate
--- the source ColumnSQL subquery, correlated on rs.c_order_id, on both branches.
+-- Branch two keeps rs.qtytomove unchanged: a bare schedule has no planning to ask. QtyOrdered is untouched on
+-- both branches (it already reads dp.qtyordered / rs.qtyordered per branch). For Incoming, actual equals planned,
+-- so the planned discharge is the meaningful figure on this purchase-only window.
 --
--- PER-BRANCH vs SHARED. Identity and context (product, partner, warehouse, order, order line) are read off the
--- SCHEDULE on BOTH branches, one expression, no CASE - the generate command copies them onto the planning at
--- creation, so the two agree by construction. Dates, quantities and C_UOM_ID are read per branch, because they
--- stay planning-editable after creation and could otherwise silently disagree with each other.
---   * QtyToMove on a planned row is the PLANNING's own planned discharge (dp.planneddischargequantity), not the
---     schedule's QtyToMove. A split shares one schedule, so the schedule carries a single figure for the whole
---     order line while each planning plans its own share - reading the schedule shows the same order-line-wide
---     number on every sibling row and reports a quantity nobody plans to receive. Branch two keeps rs.qtytomove:
---     a bare schedule has no planning to ask. For Incoming, actual equals planned, so the planned discharge is
---     the meaningful figure on this purchase-only window.
---   * M_Warehouse_ID is the schedule's PLAIN column, deliberately not M_Warehouse_Effective_ID: the planning
---     stores the plain one, so the effective one would make the column's two halves disagree.
---   * ATA (branch two) is the EARLIEST movement date over the schedule's receipts, and needs all three
---     conditions - allocation active, receipt completed, aggregate min - or it reports something false.
---   * CalendarWeek is EXTRACT(week from <that branch's ETA expression>), not from a bare source column, so the
---     week cannot disagree with the ETA shown beside it. ISO week, so a year-end date reports its ISO year's week.
+-- No AD change: the column, its AD_Column (593501) and its field already exist from 5822660 / 5822670, and the
+-- AD_Element it reuses ("Menge zu bewegen" / 542204) still names the quantity the row is about to move. This
+-- script is the view body only.
 --
--- OUT OF SCOPE: branch one is strictly Incoming. Consequence, so it is not read as a bug: branch two excludes a
--- schedule that has ANY active planning, so a schedule whose only active planning is a Dropship one appears on
--- NEITHER branch.
---
+-- Grain/key are unaffected: dp.planneddischargequantity is an existing scalar column on m_delivery_planning,
+-- a table branch one already selects from - no new join, no new table, no fan-out possible. Verified after
+-- applying: 1054 rows, 744 planned + 310 unplanned - identical to the counts measured immediately before this
+-- script, and equal to the view's definition (active Incoming plannings carrying a receipt schedule, plus
+-- schedules no active planning refers to). Still a unique key, and
+-- "GROUP BY RV_ReceiptDisposition_DeliveryPlanning_ID HAVING count(*) > 1" returns zero rows.
 
 DROP VIEW IF EXISTS RV_ReceiptDisposition_DeliveryPlanning$new
 ;

@@ -768,3 +768,56 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
     And after not more than 60s, the C_Order identified by orderProcUnplanned_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID     | OPT.Processed |
       | rowProcUnplanned_RL    | null                    | scheduleProcUnplanned_RL | true          |
+
+  @Id:S31789_TC14
+  Scenario: QtyToMove on a planned row is that planning's own planned discharge, not its schedule's figure
+
+    # A split copies M_ReceiptSchedule_ID onto every sibling planning, so the SCHEDULE carries ONE figure for
+    # the whole order line while each planning plans its own share. Splitting 10 three ways distributes 4/3/3
+    # (the target absorbs the DOWN-rounding remainder) while the schedule underneath all three still says 10 -
+    # so a row that reads the schedule shows 10 on every sibling, three times over, and reports a quantity
+    # nobody plans to receive. The unplanned row is the control: it has no planning to ask, so the schedule's
+    # own QtyToMove is what it must keep showing.
+    Given metasfresh contains C_Orders:
+      | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderQtySplit_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC14A     |
+      | orderQtyPlain_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC14B     |
+    And metasfresh contains C_OrderLines:
+      | Identifier           | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQtySplit_RL | orderQtySplit_RL      | product_RL              | 10         | shipperPlanning_RL          |
+      | orderLineQtyPlain_RL | orderQtyPlain_RL      | product_RL              | 8          | shipperPlain_RL             |
+
+    When the order identified by orderQtySplit_RL is completed
+    And the order identified by orderQtyPlain_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyToMove |
+      | scheduleQtySplit_RL             | orderQtySplit_RL      | orderLineQtySplit_RL      | vendor_RL                | vendorLocation_RL                 | product_RL              | 10         | warehouse_RL              | 10            |
+      | scheduleQtyPlain_RL             | orderQtyPlain_RL      | orderLineQtyPlain_RL      | vendor_RL                | vendorLocation_RL                 | product_RL              | 8          | warehouse_RL              | 8             |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID       |
+      | planningQty1_RL        | orderLineQtySplit_RL |
+
+    # The split: the order line's 10 is distributed over three plannings as 4 / 3 / 3.
+    When generate 2 additional M_Delivery_Planning records for: planningQty1_RL
+    Then after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                          | C_OrderLine_ID       |
+      | planningQty1_RL,planningQty2_RL,planningQty3_RL | orderLineQtySplit_RL |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | TransportDirection |
+      | planningQty1_RL        | 10         | 10           | 4                        | Incoming           |
+      | planningQty2_RL        | 10         | 10           | 3                        | Incoming           |
+      | planningQty3_RL        | 10         | 10           | 3                        | Incoming           |
+
+    # The point: each planned row's QtyToMove is its OWN planned discharge, so the three rows differ from one
+    # another - none of them shows the schedule's 10.
+    Then after not more than 60s, the C_Order identified by orderQtySplit_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.QtyToMove |
+      | rowQty1_RL             | planningQty1_RL        | scheduleQtySplit_RL  | true          | 10             | 4             |
+      | rowQty2_RL             | planningQty2_RL        | scheduleQtySplit_RL  | true          | 10             | 3             |
+      | rowQty3_RL             | planningQty3_RL        | scheduleQtySplit_RL  | true          | 10             | 3             |
+
+    # The control: no planning behind the row, so the schedule's own QtyToMove is what it shows.
+    And after not more than 60s, the C_Order identified by orderQtyPlain_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.QtyToMove |
+      | rowQtyPlain_RL         | null                   | scheduleQtyPlain_RL  | false         | 8              | 8             |

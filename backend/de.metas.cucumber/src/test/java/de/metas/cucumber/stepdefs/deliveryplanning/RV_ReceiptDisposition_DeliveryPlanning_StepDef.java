@@ -91,6 +91,8 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 	 *   <b>OPT.ETA</b> — (optional) expected {@code ETA}, as a date<br>
 	 *   <b>OPT.DatePromised_Effective</b> — (optional) expected {@code DatePromised_Effective}, as a date<br>
 	 *   <b>OPT.QtyOrdered</b> — (optional) expected {@code QtyOrdered}<br>
+	 *   <b>OPT.QtyToMove</b> — (optional) expected {@code QtyToMove} - the planning's own planned discharge on a
+	 *   planned row, the schedule's own {@code QtyToMove} on an unplanned row<br>
 	 *   <b>OPT.CalendarWeek</b> — (optional) expected ISO {@code CalendarWeek}, derived from {@code ETA}<br>
 	 *   <b>OPT.C_BPartner_ID</b> — (optional, identifier-ref) expected business partner<br>
 	 *   <b>OPT.M_Product_ID</b> — (optional, identifier-ref) expected product<br>
@@ -215,6 +217,11 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 		expected.getAsOptionalBigDecimal(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_QtyOrdered)
 				.ifPresent(qty -> softly.assertThat(actual.getQtyOrdered())
 						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_QtyOrdered)
+						.isEqualByComparingTo(qty));
+
+		expected.getAsOptionalBigDecimal(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_QtyToMove)
+				.ifPresent(qty -> softly.assertThat(actual.getQtyToMove())
+						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_QtyToMove)
 						.isEqualByComparingTo(qty));
 
 		expected.getAsOptionalBigDecimal(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_CalendarWeek)

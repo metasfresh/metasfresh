@@ -179,6 +179,11 @@ public class M_ReceiptSchedule_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
 		softly.assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
 
+		row.getAsOptionalBigDecimal(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove)
+				.ifPresent(qtyToMove -> softly.assertThat(receiptSchedule.getQtyToMove())
+						.as(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove)
+						.isEqualByComparingTo(qtyToMove));
+
 		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsClosed)
 				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isClosed()).as("IsClosed").isEqualTo(isClosed));
 
