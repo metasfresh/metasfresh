@@ -26,13 +26,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.mmovement.MovementLineQuery;
 import org.adempiere.mmovement.api.IMovementDAO;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
@@ -48,6 +51,39 @@ public class MovementDAO implements IMovementDAO
 	public I_M_MovementLine getLineById(@NonNull final MovementLineId movementLineId)
 	{
 		return load(movementLineId, I_M_MovementLine.class);
+	}
+
+	@Override
+	public Optional<I_M_MovementLine> getLineByQuery(@NonNull final MovementLineQuery query)
+	{
+		final IQueryBuilder<I_M_MovementLine> queryBuilder = queryBL.createQueryBuilder(I_M_MovementLine.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_MovementLine.COLUMNNAME_M_Product_ID, query.getProductId());
+		}
+		if (!query.getFromLocatorIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_MovementLine.COLUMNNAME_M_Locator_ID, query.getFromLocatorIds());
+		}
+		if (!query.getToLocatorIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_MovementLine.COLUMNNAME_M_LocatorTo_ID, query.getToLocatorIds());
+		}
+		if (query.getMovementDocStatus() != null)
+		{
+			final IQuery<I_M_Movement> movementQuery = queryBL.createQueryBuilder(I_M_Movement.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_Movement.COLUMNNAME_DocStatus, query.getMovementDocStatus())
+					.create();
+			queryBuilder.addInSubQueryFilter(I_M_MovementLine.COLUMNNAME_M_Movement_ID, I_M_Movement.COLUMNNAME_M_Movement_ID, movementQuery);
+		}
+
+		return queryBuilder
+				.orderBy(I_M_MovementLine.COLUMNNAME_M_MovementLine_ID)
+				.create()
+				.firstOptional();
 	}
 
 	@Override

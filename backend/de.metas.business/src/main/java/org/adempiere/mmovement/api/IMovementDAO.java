@@ -23,9 +23,11 @@ package org.adempiere.mmovement.api;
  */
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.mmovement.MovementLineQuery;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
@@ -35,6 +37,11 @@ import de.metas.util.ISingletonService;
 public interface IMovementDAO extends ISingletonService
 {
 	I_M_MovementLine getLineById(MovementLineId movementLineId);
+
+	/**
+	 * @return the first active movement line matching the given query, ordered by {@code M_MovementLine_ID}.
+	 */
+	Optional<I_M_MovementLine> getLineByQuery(MovementLineQuery query);
 
 	/**
 	 * Retrieves all {@link I_M_MovementLine}s (including inactive ones), ordered by "Line" column.

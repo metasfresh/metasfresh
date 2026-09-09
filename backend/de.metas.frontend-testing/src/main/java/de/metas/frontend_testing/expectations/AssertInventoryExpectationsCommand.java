@@ -4,13 +4,13 @@ import de.metas.frontend_testing.expectations.request.JsonInventoryExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.inventory.InventoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Inventory;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -59,7 +59,7 @@ class AssertInventoryExpectationsCommand
 		// description matches) so every check below (isExists, docStatus) uses the SAME record —
 		// never "any inventory referencing the HU" / "the latest one", which can silently pass
 		// against an unrelated (e.g. seed/weight-confirm) inventory that merely happens to be newest.
-		final I_M_Inventory describedInventory = description != null
+		final Inventory describedInventory = description != null
 				? inventoryLines.stream().map(this::getInventoryOf).filter(inventory -> Objects.equals(inventory.getDescription(), description)).findFirst().orElse(null)
 				: null;
 
@@ -84,7 +84,7 @@ class AssertInventoryExpectationsCommand
 			// docStatus is asserted on the DESCRIBED inventory when a description was given (same-record
 			// guarantee with the isExists/description checks above); otherwise fall back to the latest
 			// inventory referencing the HU (pre-existing behaviour for a docStatus-only expectation).
-			final I_M_Inventory inventory = description != null ? describedInventory : getLatestInventory(inventoryLines);
+			final Inventory inventory = description != null ? describedInventory : getLatestInventory(inventoryLines);
 
 			if (expectation.getDocStatus() != null)
 			{
@@ -93,7 +93,7 @@ class AssertInventoryExpectationsCommand
 					fail("Expected an inventory document with description '" + description + "' to assert docStatus on, but none was found");
 					return;
 				}
-				assertThat(inventory.getDocStatus()).as("DocStatus").isEqualTo(expectation.getDocStatus());
+				assertThat(inventory.getDocStatus().getCode()).as("DocStatus").isEqualTo(expectation.getDocStatus());
 			}
 
 			if (assertDescriptionOnLatest)
@@ -119,7 +119,7 @@ class AssertInventoryExpectationsCommand
 		return inventoryLines.stream()
 				.map(this::getInventoryOf)
 				.filter(inventory -> description == null || Objects.equals(inventory.getDescription(), description))
-				.map(I_M_Inventory::getM_Inventory_ID)
+				.map(Inventory::getId)
 				.distinct()
 				.count();
 	}
@@ -138,12 +138,12 @@ class AssertInventoryExpectationsCommand
 				: "Inventory document exists";
 	}
 
-	private I_M_Inventory getInventoryOf(@NonNull final I_M_InventoryLine inventoryLine)
+	private Inventory getInventoryOf(@NonNull final I_M_InventoryLine inventoryLine)
 	{
 		return services.getInventoryById(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
 	}
 
-	private I_M_Inventory getLatestInventory(@NonNull final List<I_M_InventoryLine> inventoryLines)
+	private Inventory getLatestInventory(@NonNull final List<I_M_InventoryLine> inventoryLines)
 	{
 		final I_M_InventoryLine latestLine = inventoryLines.stream()
 				.max(Comparator.comparing(I_M_InventoryLine::getM_InventoryLine_ID))

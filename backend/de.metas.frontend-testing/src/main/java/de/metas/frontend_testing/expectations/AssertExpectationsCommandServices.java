@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.HuId;
@@ -26,32 +27,30 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mmovement.MovementLineQuery;
+import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.model.I_M_Movement;
-import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -65,9 +64,8 @@ public class AssertExpectationsCommandServices
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	@NonNull private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -141,18 +139,23 @@ public class AssertExpectationsCommandServices
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
 
 	/**
-	 * Inventory lines booked on exactly this HU. Deliberately the narrow lookup, not
-	 * {@code retrieveAllLinesForHU}: an assertion must not be satisfied by an unrelated inventory that
-	 * touched an included HU or an HU assignment. The repository owns the query; do not hand-roll one here.
+	 * Inventory lines booked on exactly this HU. {@code retrieveAllLinesForHU} widens to included HUs,
+	 * {@code M_InventoryLine_HU} and HU assignments, so the result is narrowed back to lines whose own
+	 * {@code M_HU_ID} is this HU: an assertion must not be satisfied by an unrelated inventory elsewhere
+	 * in the HU's graph.
 	 */
 	public List<I_M_InventoryLine> getInventoryLinesByHUId(@NonNull final HuId huId)
 	{
-		return inventoryService.getInventoryRepository().retrieveLinesByHUId(huId);
+		return inventoryService.retrieveAllLinesForHU(huId)
+				.stream()
+				.filter(line -> line.getM_HU_ID() == huId.getRepoId())
+				.sorted(Comparator.comparing(I_M_InventoryLine::getM_InventoryLine_ID))
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	public I_M_Inventory getInventoryById(@NonNull final InventoryId inventoryId)
+	public Inventory getInventoryById(@NonNull final InventoryId inventoryId)
 	{
-		return inventoryDAO.getById(inventoryId);
+		return inventoryService.getById(inventoryId);
 	}
 
 	/**
@@ -185,26 +188,17 @@ public class AssertExpectationsCommandServices
 			@NonNull final WarehouseId fromWarehouseId,
 			@NonNull final WarehouseId toWarehouseId)
 	{
-		final Set<Integer> fromLocatorRepoIds = toRepoIds(warehouseDAO.getLocatorIds(fromWarehouseId));
-		final Set<Integer> toLocatorRepoIds = toRepoIds(warehouseDAO.getLocatorIds(toWarehouseId));
-
-		final IQuery<I_M_Movement> completedMovementQuery = queryBL.createQueryBuilder(I_M_Movement.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Movement.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
-				.create();
-
-		return queryBL.createQueryBuilder(I_M_MovementLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
-				.addInArrayFilter(I_M_MovementLine.COLUMNNAME_M_Locator_ID, fromLocatorRepoIds)
-				.addInArrayFilter(I_M_MovementLine.COLUMNNAME_M_LocatorTo_ID, toLocatorRepoIds)
-				.addInSubQueryFilter(I_M_MovementLine.COLUMNNAME_M_Movement_ID, I_M_Movement.COLUMNNAME_M_Movement_ID, completedMovementQuery)
-				.create()
-				.anyMatch();
+		return movementDAO.getLineByQuery(MovementLineQuery.builder()
+						.productId(productId)
+						.fromLocatorIds(toLocatorIds(fromWarehouseId))
+						.toLocatorIds(toLocatorIds(toWarehouseId))
+						.movementDocStatus(DocStatus.Completed)
+						.build())
+				.isPresent();
 	}
 
-	private static Set<Integer> toRepoIds(@NonNull final List<LocatorId> locatorIds)
+	private Set<LocatorId> toLocatorIds(@NonNull final WarehouseId warehouseId)
 	{
-		return locatorIds.stream().map(LocatorId::getRepoId).collect(ImmutableSet.toImmutableSet());
+		return ImmutableSet.copyOf(warehouseDAO.getLocatorIds(warehouseId));
 	}
 }
