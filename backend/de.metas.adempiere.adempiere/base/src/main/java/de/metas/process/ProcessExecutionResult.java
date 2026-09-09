@@ -160,7 +160,27 @@ public class ProcessExecutionResult
 	/**
 	 * Tells if the whole window tab shall be refreshed after process execution (applies only when the process was started from a user window)
 	 */
-	@Setter @Getter private boolean refreshAllAfterExecution = false;
+	@Setter private boolean refreshAllAfterExecution = false;
+
+	/**
+	 * Tells that the view's row selection has to be rebuilt, not merely re-read (the process changed
+	 * whether its records still belong to the view). The stronger form of {@link #refreshAllAfterExecution}:
+	 * a process asks for this one alone, and {@link #isRefreshAllAfterExecution()} answers true as well,
+	 * so a client that knows only the coarser flag (the Swing one) still refreshes.
+	 * <p>
+	 * Only a view that materializes a selection implements the rebuild, so set this only on a process that
+	 * runs on an AD-window view; elsewhere it throws after the process has already committed.
+	 */
+	@Setter @Getter private boolean recreateViewSelectionAfterExecution = false;
+
+	/**
+	 * True when anything at all has to be refreshed — including the stronger
+	 * {@link #recreateViewSelectionAfterExecution}, which subsumes it.
+	 */
+	public boolean isRefreshAllAfterExecution()
+	{
+		return refreshAllAfterExecution || recreateViewSelectionAfterExecution;
+	}
 
 	@Setter @Getter @JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private TableRecordReference recordToRefreshAfterExecution = null;
@@ -819,6 +839,7 @@ public class ProcessExecutionResult
 		reportData = otherResult.reportData;
 
 		refreshAllAfterExecution = otherResult.refreshAllAfterExecution;
+		recreateViewSelectionAfterExecution = otherResult.recreateViewSelectionAfterExecution;
 
 		recordToSelectAfterExecution = otherResult.recordToSelectAfterExecution;
 		recordsToOpen = otherResult.recordsToOpen;
