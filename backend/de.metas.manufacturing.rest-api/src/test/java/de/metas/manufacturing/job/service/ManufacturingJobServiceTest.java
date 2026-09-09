@@ -26,6 +26,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -102,6 +103,10 @@ class ManufacturingJobServiceTest
 	@Nested
 	class assertEmptyingAllowed
 	{
+		// IMPORTANT: plain string, not a reference to the private ManufacturingJobService.MSG_EmptyingNotAllowedForHU
+		// field, so a refactoring that silently changes the message key also breaks this test.
+		private static final String MSG_EMPTYING_NOT_ALLOWED_FOR_HU = "de.metas.manufacturing.job.service.EmptyingNotAllowedForHU";
+
 		private RawMaterialsIssueStep stepWithAllowEmptying(final boolean isAllowEmptying)
 		{
 			final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -153,14 +158,18 @@ class ManufacturingJobServiceTest
 		void stepNotEligible_configOffers_throws()
 		{
 			assertThatThrownBy(() -> ManufacturingJobService.assertEmptyingAllowed(stepWithAllowEmptying(false), configWithOffer(true), QtyRejectedReasonCode.EMPTIED))
-					.isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
+					.isInstanceOf(AdempiereException.class)
+					.extracting(e -> ((AdempiereException)e).getErrorCode())
+					.isEqualTo(MSG_EMPTYING_NOT_ALLOWED_FOR_HU);
 		}
 
 		@Test
 		void stepEligible_configDoesNotOffer_throws()
 		{
 			assertThatThrownBy(() -> ManufacturingJobService.assertEmptyingAllowed(stepWithAllowEmptying(true), configWithOffer(false), QtyRejectedReasonCode.EMPTIED))
-					.isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
+					.isInstanceOf(AdempiereException.class)
+					.extracting(e -> ((AdempiereException)e).getErrorCode())
+					.isEqualTo(MSG_EMPTYING_NOT_ALLOWED_FOR_HU);
 		}
 	}
 }
