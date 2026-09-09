@@ -128,10 +128,11 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		}
 		else
 		{
-			// we work with the delta to the predecessor candidate, so that we can invoke our existing candidateChangeHandler implementation
-			final BigDecimal qtyDifference = event
-					.getQtyOnHand()
-					.subtract(latestStockRecord.getQuantity());
+			// we work with a delta, so that we can invoke our existing candidateChangeHandler implementation.
+			// WHICH delta depends on what the chain's running balance is made of: it equals the bare physical
+			// quantity only for a chain that carries no planned position, and legitimately differs from it for
+			// one that does.
+			final BigDecimal qtyDifference = computeQtyDifference(event, materialDescriptorQuery, latestStockRecord);
 
 			final CandidateType type = computeCandidateTypeOrNull(qtyDifference);
 			if (type == null)
@@ -155,6 +156,37 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 					.build();
 		}
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
+	}
+
+	/**
+	 * The reset-stock event says what {@code MD_Stock.QtyOnHand} now is and what it was before. The chain's
+	 * running balance is {@code physical quantity + the still-outstanding planned positions}, so:
+	 * <ul>
+	 * <li>for a chain that carries no unfulfilled planned position the correct balance <b>is</b> the bare
+	 * physical quantity, and re-baselining the chain onto it is exactly what the reset-stock process is for;
+	 * <li>for a chain that carries one, the bare physical quantity is <b>not</b> the correct balance. Deriving
+	 * the correct one would need each position's source-document status, which this module cannot read (the
+	 * document tables belong to modules downstream of it), so the event's own physical movement is applied
+	 * and the positions are left untouched. Repairing such a chain is the ATP reconciliation's job.
+	 * </ul>
+	 */
+	private BigDecimal computeQtyDifference(
+			@NonNull final StockChangedEvent event,
+			@NonNull final MaterialDescriptorQuery materialDescriptorQuery,
+			@NonNull final Candidate latestStockRecord)
+	{
+		final CandidatesQuery positionsQuery = CandidatesQuery.builder()
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.matchExactStorageAttributesKey(true)
+				.build();
+
+		if (candidateRepository.hasUnfulfilledPlannedPositions(positionsQuery))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("The chain carries unfulfilled planned positions;"
+					+ " -> applying the event's physical movement instead of re-baselining onto the physical qty");
+			return event.getQtyOnHand().subtract(event.getQtyOnHandOld());
+		}
+		return event.getQtyOnHand().subtract(latestStockRecord.getQuantity());
 	}
 
 	private BigDecimal extractQuantityIfPositive(@NonNull final StockChangedEvent event)

@@ -818,15 +818,16 @@ public class MD_Candidate_StepDef
 	 * carrying that row's current QtyOnHand. Mirrors what
 	 * StockDataUpdateRequestHandler.fireStockChangedEvent builds, but WITHOUT the old==new guard.
 	 * <p>
-	 * Note: <code>qtyOnHandOld</code> is fixed at zero, so the <code>MovementQty</code> persisted on the resulting
+	 * Note: <code>qtyOnHandOld</code> defaults to zero, so the <code>MovementQty</code> persisted on the resulting
 	 * <code>MD_Candidate_Transaction_Detail</code> row is the full new <code>QtyOnHand</code> rather than the true
-	 * delta; no scenario asserts that column, but do not rely on it.
+	 * delta; no scenario asserts that column, but do not rely on it. A scenario about a refresh that found the
+	 * physical quantity <em>unchanged</em> has to say so, via the optional <code>QtyOnHandOld</code> column.
 	 * <p>
 	 * Gherkin:
 	 * <pre>
 	 * When metasfresh receives a StockChangedEvent for the current MD_Stock
-	 *   | M_Product_ID | OPT.ChangeDate       |
-	 *   | p_od_1       | 2024-09-23T06:00:00Z |
+	 *   | M_Product_ID | OPT.ChangeDate       | OPT.QtyOnHandOld |
+	 *   | p_od_1       | 2024-09-23T06:00:00Z | 200              |
 	 * </pre>
 	 */
 	@And("^metasfresh receives a StockChangedEvent for the current MD_Stock$")
@@ -845,6 +846,7 @@ public class MD_Candidate_StepDef
 		final int productId = productTable.get(productIdentifier).getM_Product_ID();
 
 		final Instant changeDate = row.getAsOptionalInstant("ChangeDate").orElse(null);
+		final BigDecimal qtyOnHandOld = row.getAsOptionalBigDecimal("QtyOnHandOld").orElse(BigDecimal.ZERO);
 
 		final List<I_MD_Stock> stockRecords = queryBL.createQueryBuilderOutOfTrx(I_MD_Stock.class)
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
@@ -862,7 +864,7 @@ public class MD_Candidate_StepDef
 					.productDescriptor(ProductDescriptor.forProductAndAttributes(productId, attributesKey, asiId.getRepoId()))
 					.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
 					.qtyOnHand(stockRecord.getQtyOnHand())
-					.qtyOnHandOld(BigDecimal.ZERO)
+					.qtyOnHandOld(qtyOnHandOld)
 					.changeDate(changeDate)
 					.stockChangeDetails(StockChangedEvent.StockChangeDetails.builder()
 							.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(nextResetStockPInstanceRepoId()))

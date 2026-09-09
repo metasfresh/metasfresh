@@ -202,3 +202,51 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_od_3     | DEMAND            | SHIPMENT                  | p_od_3       | 2024-09-21T21:00:00Z | -30 | 70  | WH_OD          |
+
+  @Id:ATPBASE_007
+  @from:cucumber
+  Scenario: A reset-stock refresh that finds the physical quantity unchanged leaves the open demand alone
+
+    Given metasfresh contains M_Products:
+      | Identifier | M_Product_Category_ID | C_UOM_ID.X12DE355 |
+      | p_od_4     | std_cat_od            | PCE               |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
+      | pp_od_4    | plv_so_od              | p_od_4       | 10.0     | PCE               | Normal           |
+
+    # stock of 200
+    And metasfresh contains M_Inventories:
+      | Identifier | M_Warehouse_ID | MovementDate |
+      | inv_od_4   | WH_OD          | 2024-09-20   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
+      | inv_od_4       | invl_od_4  | p_od_4       | 0       | 200      | WH_OD          | PCE          |
+    And the inventory identified by inv_od_4 is completed
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_od_4                  | 200       |
+
+    # open sales order for 30 -> the projection is 170, deliberately NOT the bare physical 200
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_od_4    | true    | customer_od   | 2024-09-20  | 2024-09-21T21:00:00Z | WH_OD          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol_od_4   | so_od_4    | p_od_4       | 30         |
+    And the order identified by so_od_4 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 60s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | d_od_4     | DEMAND            | SHIPMENT                  | p_od_4       | 2024-09-21T21:00:00Z | -30 | 170 | WH_OD          |
+
+    # a reset-stock refresh that finds MD_Stock.QtyOnHand exactly where it left it
+    When metasfresh receives a StockChangedEvent for the current MD_Stock
+      | M_Product_ID | OPT.ChangeDate       | OPT.QtyOnHandOld |
+      | p_od_4       | 2024-09-23T06:00:00Z | 200              |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # nothing physical moved, so the refresh must add no candidate and the projection must stay at 170
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | c_od_4     | INVENTORY_UP      |                           | p_od_4       | 2024-09-20T06:00:00Z | 200 | 200 | WH_OD          |
+      | d_od_4     | DEMAND            | SHIPMENT                  | p_od_4       | 2024-09-21T21:00:00Z | -30 | 170 | WH_OD          |

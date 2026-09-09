@@ -9,11 +9,13 @@ import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -129,6 +131,122 @@ public class StockChangedEventHandlerTest
 		assertInvocationCandidateCommons(candidate);
 		assertThat(candidate.getType()).isEqualTo(CandidateType.INVENTORY_DOWN);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("5");
+	}
+
+	/**
+	 * A key that was never reconciled: its chain carries no unfulfilled planned position, but its running
+	 * balance (15) has drifted away from the physical quantity.<br>
+	 * StockChangedEvent with qtyOnHandOld=20, qtyOnHand=10;<br>
+	 * <p>
+	 * => Expect an "INVENTORY_DOWN" of 5, i.e. the chain is re-baselined onto the physical 10. Applying the
+	 * event's physical movement (-10) instead would have produced an "INVENTORY_DOWN" of 10 and left the chain
+	 * at 5. Re-baselining such a chain is the reset-stock process's original purpose, and it has to survive
+	 * the change that stops the refresh from discarding still-open positions.
+	 */
+	@Test
+	public void handleEvent_noPlannedPositions_reBaselinesOntoThePhysicalQty()
+	{
+		final StockChangedEvent event = createStockChangedEvent(new BigDecimal("20"), TEN);
+
+		when(candidateRepositoryRetrieval.retrieveLatestMatchOrNull(any()))
+				.thenReturn(stockCandidateWithQuantity("15"));
+		// no stubbing of hasUnfulfilledPlannedPositions: the chain carries none
+
+		// invoke the method under test
+		stockChangedEventHandler.handleEvent(event);
+
+		final ArgumentCaptor<Candidate> candidateCaptor = ArgumentCaptor.forClass(Candidate.class);
+		verify(candidateChangeService)
+				.onCandidateNewOrChange(candidateCaptor.capture());
+		final Candidate candidate = candidateCaptor.getValue();
+		//
+		assertThat(candidate.getType()).isEqualTo(CandidateType.INVENTORY_DOWN);
+		assertThat(candidate.getQuantity()).isEqualByComparingTo("5");
+	}
+
+	/**
+	 * A chain whose running balance (170) is deliberately not the physical quantity, because it carries an
+	 * unfulfilled planned position of 30.<br>
+	 * StockChangedEvent with qtyOnHandOld=200, qtyOnHand=205, i.e. the physical quantity moved by +5;<br>
+	 * <p>
+	 * => Expect an "INVENTORY_UP" of 5, so the chain lands on 175 and keeps the position. Re-baselining onto
+	 * the bare physical 205 would silently absorb the 30 - the reset-stock process is a repeatable batch, so
+	 * that used to undo a reconciliation on every run.
+	 */
+	@Test
+	public void handleEvent_unfulfilledPlannedPositions_appliesOnlyThePhysicalMovement()
+	{
+		final StockChangedEvent event = createStockChangedEvent(new BigDecimal("200"), new BigDecimal("205"));
+
+		when(candidateRepositoryRetrieval.retrieveLatestMatchOrNull(any()))
+				.thenReturn(stockCandidateWithQuantity("170"));
+		when(candidateRepositoryRetrieval.hasUnfulfilledPlannedPositions(any()))
+				.thenReturn(true);
+
+		// invoke the method under test
+		stockChangedEventHandler.handleEvent(event);
+
+		final ArgumentCaptor<Candidate> candidateCaptor = ArgumentCaptor.forClass(Candidate.class);
+		verify(candidateChangeService)
+				.onCandidateNewOrChange(candidateCaptor.capture());
+		final Candidate candidate = candidateCaptor.getValue();
+		//
+		assertThat(candidate.getType()).isEqualTo(CandidateType.INVENTORY_UP);
+		assertThat(candidate.getQuantity()).isEqualByComparingTo("5");
+	}
+
+	/**
+	 * The same chain as above, but the refresh finds the physical quantity unchanged (200 -> 200).<br>
+	 * <p>
+	 * => Expect no candidate at all: nothing physical happened, so there is nothing to apply. Before the
+	 * change, the delta was taken against the running balance and came out as 200 - 170 = +30, which pushed
+	 * the projection back onto the bare physical stock.
+	 */
+	@Test
+	public void handleEvent_unfulfilledPlannedPositions_andUnchangedPhysicalQty_createsNoCandidate()
+	{
+		final BigDecimal twoHundred = new BigDecimal("200");
+		final StockChangedEvent event = createStockChangedEvent(twoHundred, twoHundred);
+
+		when(candidateRepositoryRetrieval.retrieveLatestMatchOrNull(any()))
+				.thenReturn(stockCandidateWithQuantity("170"));
+		when(candidateRepositoryRetrieval.hasUnfulfilledPlannedPositions(any()))
+				.thenReturn(true);
+
+		// invoke the method under test
+		stockChangedEventHandler.handleEvent(event);
+
+		verify(candidateChangeService, never()).onCandidateNewOrChange(any());
+	}
+
+	private static Candidate stockCandidateWithQuantity(@NonNull final String quantity)
+	{
+		return Candidate.builder()
+				.type(CandidateType.STOCK)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
+				.materialDescriptor(newMaterialDescriptor().withQuantity(new BigDecimal(quantity)))
+				.build();
+	}
+
+	private StockChangedEvent createStockChangedEvent(
+			@NonNull final BigDecimal qtyOnHandOld,
+			@NonNull final BigDecimal qtyOnHand)
+	{
+		final StockChangedEvent event = StockChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
+				.changeDate(Instant.parse("2018-11-19T10:15:30.00Z"))
+				.productDescriptor(createProductDescriptor())
+				.qtyOnHand(qtyOnHand)
+				.qtyOnHandOld(qtyOnHandOld)
+				.stockChangeDetails(StockChangeDetails.builder()
+						.stockId(30)
+						.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(40))
+						.transactionId(50)
+						.build())
+				.warehouseId(WAREHOUSE_ID)
+				.build();
+		event.validate(); // guard
+		return event;
 	}
 
 	private StockChangedEvent createCommonStockChangedEvent()

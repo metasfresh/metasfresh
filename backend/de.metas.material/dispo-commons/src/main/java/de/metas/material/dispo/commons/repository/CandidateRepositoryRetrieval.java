@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.DimensionService;
@@ -49,6 +50,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -152,6 +154,42 @@ public class CandidateRepositoryRetrieval
 				.collect(ImmutableMap.toImmutableMap(
 						record -> CandidateId.ofRepoId(record.getMD_Candidate_ID()),
 						I_MD_Candidate::getQtyFulfilled));
+	}
+
+	/**
+	 * Types whose candidates are <b>planned</b> movements: they move the chain's running balance before
+	 * anything physical has happened, which is why a chain that carries one legitimately disagrees with
+	 * {@code MD_Stock.QtyOnHand}.
+	 * <p>
+	 * Every other non-{@code STOCK} type is deliberately left out. {@code UNEXPECTED_INCREASE}/
+	 * {@code _DECREASE}, {@code INVENTORY_UP}/{@code _DOWN} and {@code ATTRIBUTES_CHANGED_FROM}/{@code _TO}
+	 * all record something that already happened physically, so they belong to the physical baseline rather
+	 * than to the positions - and the last four of them are known to keep a {@code Qty}/{@code QtyFulfilled}
+	 * gap regardless, so counting them would report a position on nearly every key. {@code STOCK_UP} creates
+	 * no stock candidate at all and therefore never moves the running balance.
+	 */
+	private static final ImmutableSet<String> PLANNED_POSITION_TYPES = ImmutableSet.of(
+			X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND,
+			X_MD_Candidate.MD_CANDIDATE_TYPE_SUPPLY);
+
+	/**
+	 * Does the queried part of the chain carry at least one planned position that has not been fully
+	 * realized yet, i.e. one whose {@code Qty} is not (yet) matched by its {@code QtyFulfilled}?
+	 * <p>
+	 * This is deliberately a coarse <b>quantity</b> test and says nothing about whether the position's
+	 * source document is still open - that question needs the document tables, which are owned by modules
+	 * downstream of this one. It answers only "is this chain's running balance carrying anything besides
+	 * the physical baseline?", and it answers it conservatively: a leftover position of a document that has
+	 * meanwhile been closed still counts. A caller may therefore use the {@code true} answer only to
+	 * <i>refrain</i> from treating the bare physical quantity as the chain's correct balance - never to
+	 * derive a balance from it.
+	 */
+	public boolean hasUnfulfilledPlannedPositions(@NonNull final CandidatesQuery query)
+	{
+		return RepositoryCommons.mkQueryBuilder(query)
+				.addInArrayFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, PLANNED_POSITION_TYPES)
+				.filter(TypedSqlQueryFilter.of(I_MD_Candidate.COLUMNNAME_Qty + " <> COALESCE(" + I_MD_Candidate.COLUMNNAME_QtyFulfilled + ", 0)"))
+				.anyMatch();
 	}
 
 	/**
