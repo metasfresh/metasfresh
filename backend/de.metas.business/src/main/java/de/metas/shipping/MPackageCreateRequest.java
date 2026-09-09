@@ -31,10 +31,8 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 /**
- * What {@link MPackageRepository#create(MPackageCreateRequest)} writes onto a new {@code M_Package}.
- * <p>
- * Every field is optional because {@code M_Package} carries no mandatory reference of its own: the caller that
- * knows a value passes it, and a caller that does not leaves the column empty.
+ * What {@link MPackageRepository#create(MPackageCreateRequest)} writes onto a new {@code M_Package}. Every field
+ * is optional because {@code M_Package} carries no mandatory reference of its own.
  */
 @Value
 @Builder

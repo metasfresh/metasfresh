@@ -69,11 +69,9 @@ import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_P
 import static de.metas.deliveryplanning.DeliveryPlanningService.MSG_M_Delivery_Planning_SalesOrderFullyDelivered;
 
 /**
- * Package-private and deliberately NOT final: the same-package generate processes hold it in a
- * package-visible {@code helper} field that their unit tests replace with a stub, so that only the
- * process' own {@code doIt()} logic is exercised and not the heavy production generation chain
- * (async batch + {@code ShipmentService} + real HU allocation). Subclassing outside this package is
- * impossible anyway, package-private being the actual encapsulation boundary here.
+ * Package-private and deliberately NOT final: the same-package generate processes hold it in a package-visible
+ * {@code helper} field that their unit tests replace with a stub, so only the process' own {@code doIt()} logic
+ * is exercised and not the heavy production generation chain.
  */
 class DeliveryPlanningGenerateProcessesHelper
 {
@@ -121,9 +119,7 @@ class DeliveryPlanningGenerateProcessesHelper
 	private final ISysConfigBL sysConfigBL;
 
 	/**
-	 * The ONE receive path - shared with the receipt-disposition delivery-planning window's actions, which receive the very same
-	 * schedules from a grid that unions planned and unplanned rows. See
-	 * {@link CreateReceiptFromReceiptScheduleRequest} for why the planning id must travel inside the request.
+	 * The ONE receive path - shared with the receipt-disposition delivery-planning window's actions.
 	 */
 	private final ReceiptFromReceiptScheduleService receiptFromReceiptScheduleService;
 
@@ -325,11 +321,6 @@ class DeliveryPlanningGenerateProcessesHelper
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	/**
-	 * Write-back for {@code M_Delivery_Planning_GenerateReceipt#doIt()}: routes the qty override onto the
-	 * planning's {@code PlannedDischargeQuantity} through the service, so the process never reaches for the
-	 * repository directly (one collaborator per aggregate per class - service-injection.md).
-	 */
 	public void writeBackPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
 		deliveryPlanningService.setPlannedDischargeQuantity(deliveryPlanningId, quantity);
@@ -365,14 +356,9 @@ class DeliveryPlanningGenerateProcessesHelper
 		final ProductId productId = getProductIdByShipmentScheduleId(shipmentScheduleId);
 		final StockQtyAndUOMQty qtyToShip = StockQtyAndUOMQtys.ofQtyInStockUOM(request.getQtyToShipBD(), productId);
 
-		//
-		// Generate the shipment via the standard ShipmentService. M_Delivery_Planning_ID travels WITH the
-		// request (GenerateShipmentsRequest#deliveryPlanningId) so the shipment carries it while still a
-		// draft: the shipment is completed inside the generation workpackage, and interceptor/M_InOut
-		// #afterComplete - which derives the planning's delivered state, its actual quantities, its
-		// Processed flag and the shipment back-link - only fires when the FK is already set at that moment.
-		// Only the B2B receipt<->shipment link is still done after generation; nothing reads it during
-		// generation.
+		// M_Delivery_Planning_ID travels WITH the request (GenerateShipmentsRequest#deliveryPlanningId) so the shipment
+		// carries it while still a draft: it is completed inside the generation workpackage, and
+		// interceptor/M_InOut#afterComplete only fires when the FK is already set at that moment.
 		//
 		// A caller-supplied partial qty must be shipped, so we use the qtysToDeliverOverride-capable
 		// ShipmentService.generateShipments(...) path with waitForShipments=true (synchronous: the async batch
@@ -411,10 +397,9 @@ class DeliveryPlanningGenerateProcessesHelper
 	}
 
 	/**
-	 * Sets the bidirectional B2B receipt&lt;-&gt;shipment link ({@code B2B_InOut_ID} on both sides) after
-	 * generation. Unlike {@code M_Delivery_Planning_ID} — which has to be on the draft before completion and
-	 * therefore travels with {@link GenerateShipmentsRequest} — nothing reads {@code B2B_InOut_ID} during
-	 * generation or on completion, so setting it here is faithful.
+	 * Unlike {@code M_Delivery_Planning_ID} - which has to be on the draft before completion and therefore travels
+	 * with {@link GenerateShipmentsRequest} - nothing reads {@code B2B_InOut_ID} during generation or on
+	 * completion, so setting it here is faithful.
 	 */
 	private void linkB2BReceiptToShipments(
 			@NonNull final Set<InOutId> shipmentIds,
@@ -496,10 +481,9 @@ class DeliveryPlanningGenerateProcessesHelper
 			throw new AdempiereException("Failed receiving"); // shall not happen
 		}
 
-		// The planning id travels WITH the request rather than being written onto the finished receipt: the
-		// service COMPLETES the receipt before returning, and interceptor/M_InOut#afterComplete - which derives
-		// the planning's delivered state, its actual discharge quantity, its Processed flag and the receipt
-		// back-link - only fires when the FK is already set at that moment.
+		// the planning id travels WITH the request rather than being written onto the finished receipt: the service
+		// COMPLETES the receipt before returning, and interceptor/M_InOut#afterComplete only fires when the FK is
+		// already set at that moment
 		final CreateReceiptFromReceiptScheduleResult result = receiptFromReceiptScheduleService.createReceipt(
 				CreateReceiptFromReceiptScheduleRequest.builder()
 						.receiptScheduleId(receiptScheduleId)

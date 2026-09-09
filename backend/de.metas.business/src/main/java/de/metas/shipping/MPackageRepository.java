@@ -34,19 +34,9 @@ import org.springframework.stereotype.Repository;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * Repository Tables: M_Package
- * Repository Cluster: MPackageRepository (sole owner of M_Package). A caller that needs a package alongside
- * records of another aggregate - {@code M_ShippingPackage}, say - composes the two rather than creating the
- * package itself.
- */
 @Repository
 public class MPackageRepository
 {
-	/**
-	 * Creates one {@code M_Package}. Every field of the request is optional, so a caller passes what it knows and
-	 * leaves the rest empty.
-	 */
 	public PackageId create(@NonNull final MPackageCreateRequest request)
 	{
 		final I_M_Package mpackage = newInstance(I_M_Package.class);

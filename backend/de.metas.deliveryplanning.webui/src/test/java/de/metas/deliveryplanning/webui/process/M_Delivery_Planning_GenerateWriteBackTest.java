@@ -66,14 +66,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * The {@code Qty} override on the single-row generate is written back onto the planning's
- * own planned figure - a shipment occupies the load end, a receipt the discharge end (spec direction
- * rule). The production shipment/receipt generation chain (async batch + {@code ShipmentService}, real
- * HU allocation) is not driven here - {@link DeliveryPlanningGenerateProcessesHelper#generateShipment}
- * and {@code #generateReceipt} are stubbed via the package-visible {@code helper} field, exactly the
- * seam {@link DeliveryPlanningGenerateClosedGuardTest} already relies on for the precondition tests in
- * this same package - so that only the two production classes' OWN doIt() logic (parameter validation +
- * write-back) is under test.
+ * The {@code Qty} override on the single-row generate is written back onto the planning's own planned figure - a
+ * shipment occupies the load end, a receipt the discharge end. The production generation chain is stubbed via
+ * the package-visible {@code helper} field, so only the two classes' OWN {@code doIt()} logic is under test.
  */
 class M_Delivery_Planning_GenerateWriteBackTest
 {
@@ -174,17 +169,10 @@ class M_Delivery_Planning_GenerateWriteBackTest
 
 		final M_Delivery_Planning_GenerateShipment process = new M_Delivery_Planning_GenerateShipment();
 		final DeliveryPlanningGenerateProcessesHelper mockHelper = mock(DeliveryPlanningGenerateProcessesHelper.class);
-		// The write-back itself (helper.writeBackPlannedLoadedQuantity) is real production logic under test here,
-		// not part of the heavy chain being stubbed - forward it to the real, JUnit-registered repository so the
-		// process's doIt() write-back is genuinely exercised and observable below, exactly as it was before that
-		// write-back moved from an inline SpringContextHolder.getBean(DeliveryPlanningRepository.class) call into
-		// this helper method (JavaProcess.doIt() must not grab a @Repository directly).
-		// NOTE what this no longer covers: the doAnswer hardcodes the CORRECT repository method, so the
-		// helper -> service -> repository routing is not under test here - swapping writeBackPlannedLoadedQuantity
-		// to call setPlannedDischargeQuantity would keep this test green. That routing is pinned end-to-end by
-		// cucumber, in both directions: @Id:S31789_TC_Q11_OutgoingCompletionWritesBothEnds asserts
-		// PlannedLoadedQuantity and @Id:S31789_TC_Q11_GenerateReceiptProcessOrdering asserts
-		// PlannedDischargeQuantity, each after the real generate process.
+		// The write-back itself is real production logic under test, so it is forwarded to the real JUnit-registered
+		// repository. NOTE what this does NOT cover: the doAnswer hardcodes the CORRECT repository method, so the
+		// helper -> service -> repository routing is not under test here - swapping writeBackPlannedLoadedQuantity to
+		// call setPlannedDischargeQuantity would keep this test green. Cucumber pins that routing in both directions.
 		Mockito.doAnswer(invocation -> {
 			deliveryPlanningRepository.setPlannedLoadedQuantity(invocation.getArgument(0), invocation.getArgument(1));
 			return null;

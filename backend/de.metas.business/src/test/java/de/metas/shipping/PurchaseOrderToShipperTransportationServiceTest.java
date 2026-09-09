@@ -689,10 +689,8 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		order.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()))));
 		save(order);
 
-		// The date-defaulting question this test used to answer ("does the sales guard suppress ETD/ETA/ATD/ATA/BLDate?")
-		// is now unreachable by construction: PurchaseOrderToShipperTransportationService#assertTransportOrderAcceptsPurchaseDocument
-		// (added for a purchase order/line may only join a receipt-direction transport order) refuses this
-		// purchase-order-onto-Outgoing-transport-order combination outright, before any date defaulting is attempted.
+		// PurchaseOrderToShipperTransportationService#assertTransportOrderAcceptsPurchaseDocument refuses this
+		// purchase-order-onto-Outgoing-transport-order combination outright, before any date defaulting is attempted
 		assertThatThrownBy(() -> service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId)))
 				.isInstanceOf(AdempiereException.class)
 				.satisfies(ex -> {
@@ -737,9 +735,9 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	}
 
 	/**
-	 * A SALES order that is the first order on a receipt-direction (Incoming) transport order must NOT seed the purchase-side
-	 * date defaults: ETA from {@code DatePromised} and ETD from {@code PreparationDate} describe an inbound purchase arrival,
-	 * not a sales departure. The assignment itself still succeeds - no sales-side rejection is defined.
+	 * A SALES order that is the first order on a receipt-direction (Incoming) transport order must NOT seed the
+	 * purchase-side date defaults - {@code ETA} from {@code DatePromised} and {@code ETD} from
+	 * {@code PreparationDate} describe an inbound arrival, not a sales departure.
 	 */
 	@Test
 	public void defaultDates_notAppliedForSalesOrderOnPurchaseTransportOrder()

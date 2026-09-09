@@ -18,30 +18,19 @@ const SALES_ORDER_LINE_TAB_ID = 'AD_Tab-187';
 const SHIPPING_PACKAGE_TAB_ID = 'AD_Tab-546736';
 
 /**
- * AD_Process_ID 585176 = M_Delivery_Planning_GenerateDeliveryInstruction
- * ("Lieferanweisung je Lieferplanung erzeugen") — the grid action that turns a delivery planning into
- * a delivery instruction (M_ShipperTransportation) carrying one M_ShippingPackage per planning, linked
- * by an M_Delivery_Planning_Alloc row. It is a view action, so it needs a view + selected row ids.
+ * AD_Process_ID 585176 = M_Delivery_Planning_GenerateDeliveryInstruction. A view action, so it needs a view
+ * plus selected row ids.
  */
 const GENERATE_DELIVERY_INSTRUCTION_PROCESS_ID = 'ADP_585176';
 
 /**
- * TC11 — a delivery instruction line must show the planning's CURRENT quantity, with no manual reload.
+ * TC11 - a delivery instruction line must show the planning's CURRENT quantity, with no manual reload.
  *
- * All four quantity figures on M_ShippingPackage became derived (ColumnSQL through
- * M_Delivery_Planning_Alloc) instead of physical copies written at generation time. That makes the value
- * CURRENT in the database, which is only half of TC11: the figures live on AD_Tab 546736 — tabLevel 1,
- * an INCLUDED document of the Lieferanweisungen window (541657), not an IView — so making them appear
- * without an F5 additionally needs a cache-invalidation request the WebUI's DocumentCollection can
- * route, i.e. one naming the document's ROOT record (M_ShipperTransportation).
- *
- * Scope — this spec asserts exactly that second half, and it is the ONLY test of it:
- *  - that the four columns are derived (the value is right once re-read) is covered by the cucumber
- *    scenario @Id:S31789_TC_Q14_ShippingPackageMirrorsPlanningQuantities, which asserts through the DB
- *    and can never see a browser's cached document;
- *  - that the value ARRIVES in an open browser without a reload can only be exercised here.
- * The final control step re-reads the same cell after an explicit reload, so a failure of the main
- * assertion is unambiguously "the tab did not refresh" rather than "the column is not derived".
+ * The four M_ShippingPackage figures are derived (ColumnSQL through M_Delivery_Planning_Alloc), so the value
+ * is current in the DB. But they live on AD_Tab 546736 - tabLevel 1, an INCLUDED document of window 541657,
+ * not an IView - so making them appear without an F5 additionally needs a cache-invalidation request naming
+ * the document's ROOT record (M_ShipperTransportation). This spec asserts that second half, and is the ONLY
+ * test of it; the derivation itself is covered by cucumber @Id:S31789_TC_Q14.
  */
 test.describe('Delivery instruction line — quantities follow the planning without a manual reload', () => {
   test('editing the planning updates the Versandpaket row of an open delivery instruction', async ({ page }) => {
@@ -78,9 +67,7 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
 
     const REST = WEBAPI_BASE_URL;
 
-    // Local infra only (PostgREST container next to the local DB) — unavailable in CI. Used purely as
-    // a deterministic setup lookup with a WebAPI-view fallback; see picking-terminal.spec.js's
-    // findShipmentScheduleId for the identical try/fallback shape.
+    // Local infra only (a PostgREST container next to the local DB) - unavailable in CI, hence the fallback below.
     const POSTGREST_BASE_URL = process.env.POSTGREST_BASE_URL || 'http://localhost:21001';
 
     const ORDERED_QTY = 10;
@@ -118,11 +105,8 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
     };
 
     /**
-     * Numbers only — the grid renders "10", "10.00" or "10,00" depending on the session's number
-     * format. Whichever of "," or "." appears LAST is the decimal separator (this session renders
-     * the en_US style "10.00", observed live); any earlier separator is a thousands grouping and is
-     * stripped. Locale-agnostic on purpose — hardcoding one convention here previously misread
-     * "10.00" as 1000.
+     * Numbers only. Whichever of "," or "." appears LAST is the decimal separator; any earlier one is a
+     * thousands grouping and is stripped. Hardcoding one convention here previously misread "10.00" as 1000.
      */
     const cellNumber = (text) => {
       const cleaned = String(text).replace(/[^\d,.-]/g, '');
@@ -193,9 +177,8 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
       expect(productId).toBeTruthy();
     });
 
-    // The auto-create gate is the SHIPPER's own IsCreateDeliveryPlanning flag
-    // (DeliveryPlanningService#isAutoCreateEnabled), so the spec brings its own shipper with the flag
-    // set rather than depending on whatever the seed happens to carry.
+    // The auto-create gate is the SHIPPER's own IsCreateDeliveryPlanning flag, so the spec brings its own
+    // shipper with the flag set rather than depending on whatever the seed happens to carry.
     let shipperId;
     await test.step('Create a shipper that creates delivery plannings', async () => {
       shipperId = (await patchDocument(SHIPPER_WINDOW_ID, 'NEW', [])).id;
@@ -242,21 +225,12 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
       expect(completed.fieldsByName.DocStatus.value.key, 'sales order DocStatus').toBe('CO');
     });
 
-    // The planning is created by the async workpackage the order completion enqueues, so it is polled
-    // for rather than assumed present. A missing planning here means the auto-create gate did not
-    // fire — surfaced now, not later as an empty delivery-instruction view.
+    // The planning is created by the async workpackage the order completion enqueues, so it is polled for.
     //
-    // The grid view of this window returns EVERY planning on the stack, sorted ascending by id
-    // (default order), and the window carries no filter fields at all (AD_Field.IsFilterField is 'N'
-    // on every field of this tab, so no "filters" param can narrow it). A freshly generated planning
-    // always has the highest id, so on a long-lived, reused stack with many rows it sorts past any
-    // fixed page (firstRow=0&pageLength=500) and a poll on that page times out even though the row
-    // exists; on a fresh, small database it happens to land on page 1. So the planning is looked up
-    // deterministically by THIS test's own C_OrderLine_ID (a planning is 1:1 with the order line that
-    // generated it) through PostgREST — the local infra container next to the DB, one indexed query,
-    // no paging at all. PostgREST is local-infra only, so the previous page scan is kept as the CI
-    // fallback there; see picking-terminal.spec.js's findShipmentScheduleId for the identical
-    // try/fallback shape.
+    // It is looked up by THIS test's own C_OrderLine_ID through PostgREST rather than by scanning the grid view:
+    // that view returns EVERY planning on the stack ascending by id and the window carries no filter field at
+    // all, so a freshly generated planning sorts past any fixed page and a page-scan poll times out even though
+    // the row exists. PostgREST is local-infra only, so the page scan is kept as the CI fallback.
     let deliveryPlanningId;
     let deliveryPlanningViewId;
     await test.step('Wait for the delivery planning the completion generated', async () => {
@@ -278,16 +252,9 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
               // PostgREST not reachable (CI) — fall through to the WebAPI view scan below.
             }
 
-            // CI fallback: unfiltered view (no filter fields exist on this tab), ordered NEWEST
-            // FIRST via the WebUI's ?orderBy= param (verified live: "-M_Delivery_Planning_ID" is
-            // accepted and reverses the view's default ascending order) and paged all the way
-            // through if needed — never a single fixed-size page scan. Matched by THIS test's own
-            // C_OrderLine_ID (a planning is 1:1 with the order line that generated it — confirmed
-            // live that the grid row carries a C_OrderLine_ID field), the same scoping the
-            // PostgREST branch above uses, instead of the looser "unique product" match. Newest-
-            // first means the match is found on the first page in practice; the loop is the
-            // deterministic backstop against a database that has grown past one page (this stack's
-            // own delivery-planning view already holds 1357 rows, well past the old 500-row page).
+            // CI fallback: unfiltered view (no filter fields exist on this tab), ordered NEWEST FIRST via the WebUI's
+            // ?orderBy=-M_Delivery_Planning_ID and paged all the way through - never a single fixed-size page scan.
+            // Matched by THIS test's own C_OrderLine_ID (a planning is 1:1 with the order line that generated it).
             const view = await postJson(`${REST}/documentView/${DELIVERY_PLANNING_WINDOW_ID}`, {
               windowId: String(DELIVERY_PLANNING_WINDOW_ID),
               viewType: 'grid',
@@ -323,9 +290,8 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
         )
         .not.toBeNull();
 
-      // Scope a view to exactly this row for the generate-instruction process call below
-      // (filterOnlyIds — SqlViewFactory turns it into a plain "id IN (...)" filter, confirmed against
-      // this window), instead of reusing a 500-row page.
+      // Scope a view to exactly this row for the generate-instruction process call below (filterOnlyIds becomes a
+      // plain "id IN (...)" filter), instead of reusing a 500-row page.
       const scopedView = await postJson(`${REST}/documentView/${DELIVERY_PLANNING_WINDOW_ID}`, {
         windowId: String(DELIVERY_PLANNING_WINDOW_ID),
         viewType: 'grid',
@@ -397,14 +363,10 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
     });
 
     await test.step('Change the planning planned load from another session', async () => {
-      // A plain REST PATCH on the planning window is exactly what a second browser tab does: it never
-      // touches the page opened above, so anything the page then shows had to be pushed to it. Like a
-      // real second tab, it opens the record (a GET) before editing it — the WebUI backend only
-      // reports a field diff (incl. that field's validStatus) for a document already resident in the
-      // session's in-memory DocumentCollection; without the GET first, this PATCH answers with a
-      // save-only acknowledgement carrying no field data at all (confirmed live: no top-level
-      // "validStatus" is ever sent for a delta response — only a changed field's own validStatus is),
-      // so the check below reads the edited field's validStatus, not a document-level one.
+      // A plain REST PATCH is exactly what a second browser tab does: it never touches the page opened above.
+      // Like a real second tab it opens the record (a GET) first - the backend only reports a field diff for a
+      // document already resident in the session's DocumentCollection; without the GET this PATCH answers with a
+      // save-only acknowledgement carrying no field data at all.
       await getDocument(DELIVERY_PLANNING_WINDOW_ID, deliveryPlanningId);
       const planning = await patchDocument(DELIVERY_PLANNING_WINDOW_ID, deliveryPlanningId, [
         { op: 'replace', path: 'PlannedLoadedQuantity', value: EDITED_PLANNED_LOAD_QTY },
@@ -418,13 +380,8 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
 
     // THE assertion of this spec. No page.reload() above it, deliberately.
     //
-    // Its rejection is captured here — NOT swallowed, rethrown below once the control step has had
-    // its turn. Without this, expect.poll's timeout throws straight out of the step and aborts the
-    // test before the control step below ever starts, so the control could only ever run when the
-    // main assertion already PASSED — i.e. exactly when its answer is useless. This isolation makes
-    // the control answer "is the stored data wrong, or only the refresh" available on the one run
-    // that actually needs it, while the assertion itself, and the test's final pass/fail, are
-    // unchanged: a broken refresh still fails the test (see the rethrow after the control step).
+    // Its rejection is captured here and rethrown after the control step: without that, expect.poll's timeout
+    // throws straight out of the step and aborts the test before the control step ever runs.
     let noReloadError;
     await test
       .step('The open Versandpaket row shows the new figure with NO manual reload', async () => {
@@ -449,9 +406,7 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
       });
 
     // Control: separates "the tab did not refresh" from "the column is not derived at all". Runs
-    // UNCONDITIONALLY, including right after the assertion above just failed — that is exactly the
-    // case this control exists to diagnose. If THIS one fails too, the defect is in the derivation,
-    // not in the invalidation.
+    // UNCONDITIONALLY, including right after the assertion above just failed - that is the case it exists for.
     await test.step('Control: an explicit reload shows the same new figure', async () => {
       await page.reload({ timeout: 120000 });
       await page
@@ -470,8 +425,6 @@ Included-tab rows render as \`td[data-cy="cell-<ColumnName>"]\`; the cell text i
     });
 
     // Re-surface the no-reload failure now that the control has had its chance to run and report.
-    // This does not weaken or replace the assertion above — the test still fails with exactly the
-    // same error it would have without this isolation.
     if (noReloadError) {
       throw noReloadError;
     }

@@ -11,9 +11,8 @@ import { PURCHASE_ORDER_WINDOW_ID, RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_
 const PURCHASE_ORDER_LINE_TAB_ID = 'AD_Tab-293';
 
 /**
- * AD_Process.Value of the receipt-disposition delivery-planning window's default quick action and its fallback — the two
- * captions {@code data-testid="quick-action-button"} can show. Both live on the same AD_Table_Process
- * row set that puts the receive actions on the receipt-disposition delivery-planning grid.
+ * AD_Process.Value of the receipt-disposition delivery-planning window's default quick action and its fallback
+ * - the two captions {@code data-testid="quick-action-button"} can show.
  */
 const HUS_VOREINST_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveHUs_UsingDefaults';
 
@@ -21,35 +20,26 @@ const HUS_VOREINST_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPlanning
 const MULTI_ROW_RECEIVE_INTERNAL_NAME = 'WEBUI_RV_ReceiptDisposition_DeliveryPlanning_Generate_M_InOuts';
 
 /**
- * {@code M_HU_PI_Item_Product_ID} of the virtual "No Packing Item" row — the hard-coded id every
- * {@code M_HU_PI_Item_Product_ID} field defaults to, and what
- * {@code ReceiptScheduleDocumentLUTUConfigurationHandler#getM_HU_PI_Item_Product} falls back to. A receipt
- * schedule carrying it resolves to the VIRTUAL TU packing instruction with infinite CU capacity, so
- * {@code HUPackingInfoFormatter} formats nothing and the HU-defaults receive rejects with "no default
- * LU/TU configuration" — i.e. this id is exactly the "unpacked" state.
+ * {@code M_HU_PI_Item_Product_ID} of the virtual "No Packing Item" row - the hard-coded id every such field
+ * defaults to. A receipt schedule carrying it resolves to the VIRTUAL TU packing instruction with infinite CU
+ * capacity, so the HU-defaults receive rejects with "no default LU/TU configuration": this id IS the
+ * "unpacked" state.
  */
 const NO_PACKING_ITEM_ID = 101;
 
 /**
- * The receipt-disposition delivery-planning window's quick-action default and its fallback, and the multi-row receive being
- * reachable only from the action menu.
+ * The receipt-disposition delivery-planning window's quick-action default and its fallback, and the multi-row
+ * receive being reachable only from the action menu.
  *
- * Two receipt-schedule rows, same purchase order, differing only in ONE thing: whether the product has a
- * packing instruction (an `M_HU_PI_Item_Product`) — the one condition that makes the HU-default receive
- * action reject ("no default LU/TU configuration"), mirroring the receipt-schedule window's own default
- * exactly.
+ * Two receipt-schedule rows, same purchase order, differing only in whether the product has a packing
+ * instruction - the one condition that makes the HU-default receive action reject.
  *
- * - The row for the packed product must show "HUs annehmen Voreinst." as the one-click default
- *   (`[data-testid="quick-action-button"]`).
- * - The interesting case: the row for the UNPACKED product must still show a one-click default — the
- *   default action genuinely hides itself (it must not appear even disabled in the quick-actions
- *   dropdown), so the platform's own quick-action-first sort promotes "CUs annehmen".
- * - The multi-row receive ("Wareneingangsdispo zu Wareneingang") must be absent from the quick-actions
- *   dropdown on a multi-row selection, and present in the action menu.
+ * The interesting case: the row for the UNPACKED product must still show a one-click default, i.e. the default
+ * action must genuinely hide itself (not appear even disabled) so the platform's quick-action-first sort
+ * promotes "CUs annehmen".
  *
- * Neither row is planned (no shipper carries `IsCreateDeliveryPlanning`) — planned-vs-unplanned is an
- * orthogonal axis and irrelevant to which quick action a row offers, which is governed by the packing
- * instruction alone.
+ * Neither row is planned - planned-vs-unplanned is an orthogonal axis, the quick action being governed by the
+ * packing instruction alone.
  */
 test.describe('Receipt-disposition delivery-planning — quick-action default and its fallback', () => {
   test('a row with a packing instruction defaults to "HUs annehmen Voreinst.", a row without one falls back to "CUs annehmen", and the multi-row receive stays menu-only', async ({
@@ -102,10 +92,8 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
             prices: [{ price: 10.0, currencyCode: 'EUR' }],
           },
         },
-        // Gives PACKED product a packing instruction (an M_HU_PI_Item_Product) — the ONE thing that
-        // makes "HUs annehmen Voreinst." resolve, once it is also LINKED to the order line below.
-        // UNPACKED gets none, which is the natural, no-setup-needed state that makes its default
-        // reject internally.
+        // Gives PACKED product a packing instruction (an M_HU_PI_Item_Product) - the ONE thing that makes
+        // "HUs annehmen Voreinst." resolve. UNPACKED gets none, which is what makes its default reject internally.
         packingInstructions: {
           RL_TU: { tu: 'RL_TU_PI', product: 'PACKED', qtyCUsPerTU: 10 },
         },
@@ -115,9 +103,8 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     const vendorId = masterdata.bpartners.VENDOR.id;
     const packedProductId = masterdata.products.PACKED.id;
     const unpackedProductId = masterdata.products.UNPACKED.id;
-    // `productName`, not `name` — JsonCreateProductResponse carries {id, productCode, productName}.
-    // Reading `.name` yielded undefined and the grid locator then silently searched for the literal
-    // text "undefined", so the step failed 40s later on a row that never existed rather than here.
+    // `productName`, not `name` - JsonCreateProductResponse carries {id, productCode, productName}. Reading
+    // `.name` yielded undefined and the grid locator then silently searched for the literal text "undefined".
     const packedProductName = masterdata.products.PACKED.productName;
     const unpackedProductName = masterdata.products.UNPACKED.productName;
     expect(vendorId).toBeTruthy();
@@ -126,11 +113,8 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     expect(packedProductName, 'the packed product name the grid rows are matched on').toBeTruthy();
     expect(unpackedProductName, 'the unpacked product name the grid rows are matched on').toBeTruthy();
 
-    // The `M_HU_PI_Item_Product_ID` of the packing instruction this run just created, taken from the
-    // masterdata response — never hard-coded, because every run creates a fresh row. The response exposes
-    // that id in exactly one place: `tuPIItemProductTestId`, a frontend test id of the form
-    // `tuPIItemProduct-<M_HU_PI_Item_Product_ID>`
-    // (JsonPackingInstructionsResponse <- MaterialReceiptActivityHandler#extractNewTUTargetTestId).
+    // Taken from the masterdata response, never hard-coded (every run creates a fresh row). The response exposes
+    // that id in exactly one place: `tuPIItemProductTestId`, of the form `tuPIItemProduct-<id>`.
     const packedPackingInstructionsId = Number(
       String(masterdata.packingInstructions.RL_TU.tuPIItemProductTestId).replace(/^tuPIItemProduct-/, '')
     );
@@ -158,16 +142,10 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       return firstDocument(await response.json());
     };
 
-    // === Authenticate the SETUP session via REST — the same 'metasfresh'/'metasfresh' admin
-    // credentials delivery-instruction-qty-sync.spec.js uses for its window-PATCH setup.
-    //
-    // On the `request` FIXTURE, not on `page.request`: this test drives the browser as the per-test
-    // de_DE user (its German quick-action captions are the assertion), and `page.request` shares the
-    // browser context's cookie jar, so authenticating there logged the browser in as `metasfresh` and
-    // the UI login then died on the form's "User already logged in". The `request` fixture is an
-    // isolated APIRequestContext with its own jar, which makes the setup session genuinely
-    // independent of the browser session — what the two-user split intended all along. Every REST
-    // setup call below therefore goes through `request`, every UI interaction through `page`.
+    // === Authenticate the SETUP session via REST ===
+    // On the `request` FIXTURE, not on `page.request`: the latter shares the browser context's cookie jar, so
+    // authenticating there logs the browser in as `metasfresh` and the UI login then dies on "User already
+    // logged in". Every REST setup call goes through `request`, every UI interaction through `page`.
     await test.step('Authenticate the REST setup session', async () => {
       const sessionBody = await (await request.get(`${REST}/userSession`)).json().catch(() => ({}));
       if (!sessionBody.loggedIn) {
@@ -189,28 +167,15 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
         { op: 'replace', path: 'C_BPartner_ID', value: Number(vendorId) },
       ]);
 
-      // Each line is created AND filled by ONE checked PATCH against rowId 'NEW': WindowRestController
-      // -> DocumentCollection#forDocumentWritable creates the included row and applies the events to it
-      // within the same execution, so no row id ever has to travel back to the test.
+      // Each line is created AND filled by ONE checked PATCH against rowId 'NEW'. A PATCH response is not a place
+      // to read a new included row's id from: saving line 1 stales the root document, and
+      // DocumentChangesCollector#streamOrderedDocumentChanges DROPS the change event of every included row of a
+      // staled tab - so the creation answers HTTP 200 carrying the ROOT document only and `rowId` reads undefined.
       //
-      // Creating the row first and reading its `rowId` out of that response is what used to fail here,
-      // and only for the SECOND line: saving line 1 stales the root document, the next request
-      // refreshes it and re-marks its included tabs stale, and then
-      // DocumentChangesCollector#streamOrderedDocumentChanges DROPS the change event of every included
-      // row of a staled tab (isStaleDocumentChanges) — by design, because the frontend re-reads a
-      // staled tab instead of trusting the response. The creation therefore answers HTTP 200 carrying
-      // the ROOT document only, `rowId` reads as undefined, and the follow-up PATCH goes to
-      // `.../AD_Tab-293/undefined` -> HTTP 500. A PATCH response is simply not a place to read a new
-      // included row's id from.
-      //
-      // The packing instruction is set EXPLICITLY on the packed line, and deliberately not on the other.
-      // Nothing derives it here: picking a product's default packing instruction is a WebUI batch-entry /
-      // quick-input behaviour (`PackingItemProductFieldHelper` off `IOrderLineQuickInput`), and these lines
-      // are created by PATCHing the plain order-line tab, which runs none of it. Without this op BOTH lines
-      // keep `M_HU_PI_Item_Product_ID = 101` ("No Packing Item"), the receipt schedule copies that id
-      // verbatim at creation (`HUReceiptScheduleProducer#updateFromOrderline`, once and only for a
-      // just-created schedule), and the "packed" row then offers exactly the same quick action as the
-      // unpacked one — the distinction this whole test is about, silently gone.
+      // The packing instruction is set EXPLICITLY on the packed line. Nothing derives it here (that is a WebUI
+      // quick-input behaviour these plain tab PATCHes never run), so without this op BOTH lines keep
+      // M_HU_PI_Item_Product_ID = 101, the receipt schedule copies it verbatim, and the packed/unpacked
+      // distinction this whole test is about is silently gone.
       for (const line of [
         { productId: packedProductId, packingInstructionsId: packedPackingInstructionsId },
         { productId: unpackedProductId, packingInstructionsId: null },
@@ -224,9 +189,8 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
         ]);
       }
 
-      // Both lines really landed — asserted on the TAB'S OWN ROWS, not on a PATCH response, so a row
-      // creation the backend silently refuses fails right here instead of surfacing later as a
-      // one-row grid or a completion error.
+      // Asserted on the TAB'S OWN ROWS, not on a PATCH response, so a row creation the backend silently refuses
+      // fails right here.
       const lineRows = (
         await (
           await request.get(
@@ -243,10 +207,8 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
         expect(lineRow.validStatus && lineRow.validStatus.valid, `order line ${lineRow.rowId} is valid`).toBe(true);
       }
 
-      // The packing instruction really landed on the packed line, and only there. Asserted rather than
-      // assumed: the packed-vs-unpacked split is the single variable the quick-action expectations below
-      // rest on, and a PATCH op the backend quietly drops (or applies to the wrong row) would leave both
-      // lines identical while every later step still reported green.
+      // The packing instruction really landed on the packed line, and only there: a PATCH op the backend quietly
+      // drops would leave both lines identical while every later step still reported green.
       const packingInstructionIdByProductId = new Map(
         lineRows.map((row) => [
           String(row.fieldsByName.M_Product_ID.value.key),
@@ -273,19 +235,12 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     });
 
     // === Wait for the receipt-schedule rows the completion creates ASYNCHRONOUSLY ===
-    // Completing the order only ENQUEUES the receipt-schedule creation (de.metas.async), so the rows
-    // are not there when the PATCH returns — measured against this stack: the view is still empty on
-    // the first poll and holds both rows a few seconds later. The window's grid is queried once when
-    // the page loads and never re-queried, so navigating too early leaves the row missing for the
-    // whole test however long a locator waits afterwards. Hence a wait on the CONDITION here, never a
-    // sleep and never a locator timeout standing in for one.
+    // Completing the order only ENQUEUES their creation, and the window's grid is queried once when the page
+    // loads and never re-queried - so navigating too early leaves the row missing for the whole test however
+    // long a locator waits afterwards. Hence a wait on the CONDITION here, never a sleep.
     //
-    // Polled through the window's own view because the tab carries no filter field at all
-    // (AD_Field.IsFilterField is unset on every field of tab 549491), so the rows cannot be narrowed
-    // server-side: a fresh view per attempt (a view is a snapshot), read NEWEST FIRST via
-    // ?orderBy=-RV_ReceiptDisposition_DeliveryPlanning_ID and paged to the end, matched on THIS
-    // order's C_Order_ID. Same shape as delivery-instruction-qty-sync.spec.js's wait for its
-    // delivery planning.
+    // Polled through the window's own view because the tab carries no filter field at all: a fresh view per
+    // attempt, NEWEST FIRST via ?orderBy=, paged to the end, matched on THIS order's C_Order_ID.
     const ownReceiptDispositionRowCount = async () => {
       const view = await (
         await request.post(`${REST}/documentView/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`, {
@@ -332,10 +287,8 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    // No `waitForLoadState('networkidle').catch(() => {})` here: the SPA holds a websocket open, so
-    // networkidle is not a state this page reliably reaches, and swallowing its timeout hid whatever
-    // else went wrong at navigation. The grid row waited for in the first step below is the real
-    // condition — the data it needs is already guaranteed by the poll above.
+    // No waitForLoadState('networkidle') here: the SPA holds a websocket open, so networkidle is not a state this
+    // page reliably reaches, and swallowing its timeout hid whatever else went wrong at navigation.
     await page.goto(`${FRONTEND_BASE_URL}/window/${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}`);
 
     const rowForProduct = (productName) => page.locator(`table tbody tr:has-text("${productName}")`).first();
@@ -369,11 +322,9 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       await rowForProduct(packedProductName).click();
       await rowForProduct(unpackedProductName).click({ modifiers: ['Control'] });
 
-      // Both assertions run UNCONDITIONALLY. An assertion reached only when its own precondition happens to
-      // hold cannot fail, and that is not a hypothetical here: the action-menu half used to be guarded on a
-      // visibility check over three speculative test ids, none of which any component in `frontend/src`
-      // renders, so the block never executed and the step reported green having asserted nothing. Each
-      // opener is waited for instead, so an affordance that disappears fails the step loudly.
+      // Both assertions run UNCONDITIONALLY. The action-menu half used to be guarded on a visibility check over
+      // three test ids nothing in frontend/src renders, so the block never executed and the step reported green
+      // having asserted nothing.
 
       // Quick-actions dropdown: the multi-row receive must never appear here (WEBUI_ViewQuickAction='N').
       const dropdownToggle = page.locator('[data-testid="quick-action-dropdown-toggle"]');
@@ -382,9 +333,8 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       await expect(page.locator(`[data-testid="quick-action-${MULTI_ROW_RECEIVE_INTERNAL_NAME}"]`)).toHaveCount(0);
       await dropdownToggle.click(); // close
 
-      // Action menu: the header's "..." button (`.meta-icon-more`, Header.js) opens the subheader panel
-      // (`.subheader-container`), whose entries carry `data-testid="action-<internalName>"`
-      // (Actions.js). The multi-row receive must be present there (WEBUI_ViewAction='Y').
+      // Action menu: the header's "..." button (.meta-icon-more) opens the subheader panel, whose entries carry
+      // data-testid="action-<internalName>". The multi-row receive must be present there (WEBUI_ViewAction='Y').
       const actionsToggle = page.locator('.meta-icon-more').first();
       await actionsToggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await actionsToggle.click();

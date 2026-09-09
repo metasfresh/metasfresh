@@ -115,9 +115,9 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 		/**
 		 * Stamped onto every receipt header this call creates; {@code null} for every caller that is not the
-		 * delivery-planning generate-receipt process. It travels with the request because this call
-		 * <b>completes</b> the receipt before returning, so an id written afterwards would be invisible to the
-		 * document's {@code TIMING_AFTER_COMPLETE} interceptor that derives the planning's delivered state.
+		 * delivery-planning generate-receipt process. It travels with the REQUEST because this call completes the
+		 * receipt before returning - an id written afterwards is invisible to the {@code TIMING_AFTER_COMPLETE}
+		 * interceptor that derives the planning's delivered state.
 		 */
 		@Nullable DeliveryPlanningId deliveryPlanningId;
 	}
