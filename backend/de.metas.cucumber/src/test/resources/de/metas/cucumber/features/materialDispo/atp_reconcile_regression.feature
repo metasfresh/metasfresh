@@ -41,9 +41,9 @@ Feature: ATP reconciliation regression coverage
   Scenario: A closed production demand and an open sales demand on the same product: only the open one contributes
 
     Given metasfresh contains M_Products:
-      | Identifier | M_Product_Category_ID  | C_UOM_ID.X12DE355 |
-      | fin_reg1   | standard_category_reg  | PCE               |
-      | comp_reg1  | standard_category_reg  | PCE               |
+      | Identifier | M_Product_Category_ID | C_UOM_ID.X12DE355 |
+      | fin_reg1   | standard_category_reg | PCE               |
+      | comp_reg1  | standard_category_reg | PCE               |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
       | pp_reg1    | plv_so_reg             | comp_reg1    | 10.0     | PCE               | Normal           |
@@ -70,8 +70,8 @@ Feature: ATP reconciliation regression coverage
       | inv_reg1       | invl_reg1  | comp_reg1    | 0       | 100      | WH_REG         | PCE          |
     And the inventory identified by inv_reg1 is completed
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID | M_HU_ID  |
-      | invl_reg1          | hu_reg1  |
+      | M_InventoryLine_ID | M_HU_ID |
+      | invl_reg1          | hu_reg1 |
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | comp_reg1               | 100       |

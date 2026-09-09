@@ -133,7 +133,7 @@ Feature: ATP reconciliation process - dry run and selection filter
       | ps_cut     |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | pl_so_cut  | ps_cut              | DE           | EUR           | true  |
+      | pl_so_cut  | ps_cut             | DE           | EUR           | true  |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | plv_so_cut | pl_so_cut      |

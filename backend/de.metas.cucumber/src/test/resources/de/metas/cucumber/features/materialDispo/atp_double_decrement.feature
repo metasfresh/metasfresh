@@ -56,8 +56,8 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
       | inv_dd_1       | invl_dd_1  | comp_dd      | 0       | 100      | WH_DD          | PCE          |
     And the inventory identified by inv_dd_1 is completed
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID | M_HU_ID   |
-      | invl_dd_1          | hu_dd_1   |
+      | M_InventoryLine_ID | M_HU_ID |
+      | invl_dd_1          | hu_dd_1 |
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | comp_dd                 | 100       |
@@ -66,7 +66,7 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
     When metasfresh has date and time 2024-09-21T08:00:00+01:00[Europe/Berlin]
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
-      | ppo_dd                 | MOP         | fin_dd                  | 1          | plant_dd                 | WH_DD                     | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | Y                |
+      | ppo_dd                 | MOP         | fin_dd                  | 1          | plant_dd                 | WH_DD                         | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | Y                |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     # the component's ATP must now be 100 - 20 = 80 while its stock is untouched at 100
     Then after not more than 60s, MD_Candidates are found
@@ -97,8 +97,8 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
       | M_Product_ID.Identifier | QtyOnHand |
       | comp_dd                 | 80        |
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected           | Qty | ATP | M_Warehouse_ID |
-      | invc_dd_2  | INVENTORY_DOWN    | comp_dd      | 2024-09-22T06:00:00Z    | -20 | 60  | WH_DD          |
+      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | invc_dd_2  | INVENTORY_DOWN    | comp_dd      | 2024-09-22T06:00:00Z | -20 | 60  | WH_DD          |
 
     # --- the reconciliation point is where this is actually fixed: once the manufacturing order is
     # closed, its never-issued demand no longer counts, so the target is the physical stock alone -------

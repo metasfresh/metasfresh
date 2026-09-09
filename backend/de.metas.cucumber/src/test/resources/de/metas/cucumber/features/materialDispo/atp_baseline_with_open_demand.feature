@@ -13,8 +13,8 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And load M_Product_Category:
-      | Identifier          | Name     | Value    |
-      | std_cat_od          | Standard | Standard |
+      | Identifier | Name     | Value    |
+      | std_cat_od | Standard | Standard |
     And metasfresh contains M_Warehouse:
       | Identifier |
       | WH_OD      |
@@ -47,8 +47,8 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | M_Warehouse_ID | MovementDate |
       | inv_od_1a  | WH_OD          | 2024-09-20   |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID | Identifier  | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
-      | inv_od_1a      | invl_od_1a  | p_od_1       | 0       | 100      | WH_OD          | PCE          |
+      | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
+      | inv_od_1a      | invl_od_1a | p_od_1       | 0       | 100      | WH_OD          | PCE          |
     And the inventory identified by inv_od_1a is completed
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
@@ -73,8 +73,8 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | M_Warehouse_ID | MovementDate |
       | inv_od_1b  | WH_OD          | 2024-09-22   |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID | Identifier  | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
-      | inv_od_1b      | invl_od_1b  | p_od_1       | 100     | 200      | WH_OD          | PCE          |
+      | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
+      | inv_od_1b      | invl_od_1b | p_od_1       | 100     | 200      | WH_OD          | PCE          |
     And the inventory identified by inv_od_1b is completed
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
@@ -110,8 +110,8 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | M_Warehouse_ID | MovementDate |
       | inv_od_2a  | WH_OD          | 2024-09-20   |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID | Identifier  | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
-      | inv_od_2a      | invl_od_2a  | p_od_2       | 0       | 100      | WH_OD          | PCE          |
+      | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
+      | inv_od_2a      | invl_od_2a | p_od_2       | 0       | 100      | WH_OD          | PCE          |
     And the inventory identified by inv_od_2a is completed
 
     # 2) inventory of 200, then corrupt its ATP to 1000
@@ -120,8 +120,8 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | M_Warehouse_ID | MovementDate |
       | inv_od_2b  | WH_OD          | 2024-09-22   |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID | Identifier  | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
-      | inv_od_2b      | invl_od_2b  | p_od_2       | 100     | 200      | WH_OD          | PCE          |
+      | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
+      | inv_od_2b      | invl_od_2b | p_od_2       | 100     | 200      | WH_OD          | PCE          |
     And the inventory identified by inv_od_2b is completed
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
