@@ -1,8 +1,8 @@
 package org.adempiere.mmovement.api.impl;
 
 import de.metas.product.ProductId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mmovement.MovementLineQuery;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_MovementLine;
