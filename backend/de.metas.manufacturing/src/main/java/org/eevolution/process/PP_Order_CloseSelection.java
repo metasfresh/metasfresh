@@ -48,7 +48,6 @@ import org.eevolution.model.I_PP_Order;
  */
 public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrecondition
 {
-	/** Shown instead of the action when nothing in the selection is closeable. */
 	private static final AdMessageKey MSG_NoCompletedOrderInSelection = AdMessageKey.of("org.eevolution.process.PP_Order_CloseSelection.NoCompletedOrderInSelection");
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -62,8 +61,7 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		// Refused WITH a reason, not hidden: the rows are on screen and look selectable, so a silently
-		// missing action would leave the user guessing.
+		// Refused WITH a reason rather than hidden: the rows look selectable, so a missing action puzzles.
 		if (!createCompletedOrdersQueryBuilder(context.getQueryFilter(I_PP_Order.class)).create().anyMatch())
 		{
 			return ProcessPreconditionsResolution.reject(MSG_NoCompletedOrderInSelection);
@@ -115,9 +113,8 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 	{
 		return queryBL
 				.createQueryBuilder(I_PP_Order.class, getCtx(), ITrx.TRXNAME_None)
-				// DocStatus is filtered here, not in the close loop: the selection comes from a client-side
-				// view that may be stale. The precondition gate and the selection share this builder, so
-				// they cannot disagree on what is closeable.
+				// DocStatus filtered here, not in the close loop: the client-side view may be stale, and
+				// sharing this builder keeps the precondition gate and the selection in agreement.
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.filter(userSelectionFilter)
 				.addOnlyActiveRecordsFilter();
@@ -130,8 +127,7 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		// Closing takes the orders out of a monitor scoped to completed ones, so re-reading their rows is
-		// not enough - the view has to build its row selection again for them to leave it.
+		// Closed orders leave a monitor scoped to completed ones only if the selection is rebuilt.
 		getResult().setRecreateViewSelectionAfterExecution(true);
 
 		final PPOrderCloseResult result = ppOrderBL.closeOrdersInSelection(getPinstanceId());

@@ -88,8 +88,7 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt()
 	{
-		// Distributing closes the order, so it drops out of a monitor scoped to completed ones - and a view
-		// only re-reads the rows it already selected unless it is told to select them again.
+		// Distributing closes the order, so it leaves the monitor only if the selection is rebuilt.
 		getResult().setRecreateViewSelectionAfterExecution(true);
 
 		final PPOrderId ppOrderId = getPPOrderId();

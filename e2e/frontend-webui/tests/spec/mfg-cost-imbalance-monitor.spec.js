@@ -7,8 +7,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
 
 const COST_IMBALANCE_WINDOW_ID = 542175;
-// The full manufacturing order lives in its own window. Both windows sit on PP_Order, which is exactly
-// why a row click cannot get you there and a zoom field is needed.
+// Both windows sit on PP_Order, so a row click cannot reach the order - hence the zoom field.
 const PRODUCTION_ORDER_WINDOW_ID = 53009;
 
 // The filter bar carries no data-testid, so it is addressed by the language-invariant structural
@@ -216,9 +215,8 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
       // simply absent here. It is covered by the costing cucumber scenarios.
     });
 
-    // Survives an SPA re-render but not a reload or a re-navigation, so it is what turns the assertions
-    // below into refresh coverage: reading the list back from a freshly opened window would prove only
-    // that the tab's DocStatus='CO' filter excludes a closed order, and would pass either way.
+    // Survives an SPA re-render but not a reload: that is what makes the assertions below refresh
+    // coverage - a freshly opened window would pass either way, proving only the tab's filter.
     const pageLoadMarker = await page.evaluate(() => {
       window.__pageLoadMarker = Math.random().toString(36);
       return window.__pageLoadMarker;
@@ -233,8 +231,7 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     });
 
     await test.step('The closed order leaves the monitor in place, without reloading the page', async () => {
-      // The process asks the view to build its row selection again, so the order it just closed stops
-      // matching the tab and the list the user is looking at drops it on its own.
+      // The process rebuilds the selection, so the closed order drops out of the list on its own.
       await expect(page.locator(EMPTY_RESULT)).toBeVisible({ timeout: 30_000 });
       await expect(page.locator(TABLE_ROWS).filter({ hasText: documentNo })).toHaveCount(0);
       expect(await page.evaluate(() => window.__pageLoadMarker)).toBe(pageLoadMarker);
@@ -295,8 +292,7 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     });
     await expect(zoomIntoItem).toHaveCount(1);
 
-    // Assert the server's own answer as well as where the browser ends up: this endpoint IS the
-    // window-resolution under test, so a regression would show here even if routing masked it.
+    // This endpoint IS the window resolution under test, so assert it, not only where routing lands.
     const zoomResolved = page.waitForResponse(
       (response) =>
         response.url().includes('/field/Link_PP_Order_ID/zoomInto') && response.status() === 200

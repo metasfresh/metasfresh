@@ -51,10 +51,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Covers the precondition gate of {@link PP_Order_CloseSelection}: when the "close selection" action is
- * offered on a manufacturing-order selection.
- */
+/** Covers the precondition gate of {@link PP_Order_CloseSelection}. */
 @ExtendWith(AdempiereTestWatcher.class)
 class PP_Order_CloseSelectionTest
 {
@@ -90,11 +87,9 @@ class PP_Order_CloseSelectionTest
 		final ProcessPreconditionsResolution resolution = checkPreconditions(ppOrder(DocStatus.Closed), ppOrder(DocStatus.Closed));
 
 		assertThat(resolution.isRejected()).isTrue();
-		// the point of the gate: the user must be told WHY, so the reason has to be a translated message
-		// that survives to the WebUI instead of being filtered out as internal
+		// the reason must reach the WebUI as a translated message, not be filtered out as internal
 		assertThat(resolution.isInternal()).isFalse();
-		// PlainMsgBL renders an un-parameterised AD_Message as its own key, so this pins the reason to the
-		// AD_Message rather than to a hardcoded sentence
+		// PlainMsgBL renders an un-parameterised AD_Message as its key, pinning the reason to the message
 		assertThat(resolution.getRejectReason().getDefaultValue()).isEqualTo(MSG_NoCompletedOrderInSelection.toAD_Message());
 	}
 

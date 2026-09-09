@@ -142,10 +142,9 @@ public class ADProcessPostProcessService
 			{ // multiple rows selected
 				if (recreateViewSelection)
 				{
-					// Builds the row selection again, so records the process moved out of the view's scope
-					// actually leave it. Resets the row cache and collects the change event by itself, so
-					// it also covers a plain refresh asked for at the same time - hence the branch below
-					// must not run as well.
+					// Rebuilds the selection so records the process moved out of scope actually leave it.
+					// Resets the row cache and collects the change event itself, so the else-branch must
+					// not also run.
 					view.invalidateSelection();
 				}
 				else

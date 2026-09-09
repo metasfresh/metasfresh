@@ -48,9 +48,7 @@ import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Covers how {@link ADProcessPostProcessService} invalidates the view a process was run from.
- */
+/** Covers how {@link ADProcessPostProcessService} invalidates the view a process was run from. */
 @ExtendWith(AdempiereTestWatcher.class)
 class ADProcessPostProcessServiceTest
 {
@@ -83,7 +81,6 @@ class ADProcessPostProcessServiceTest
 				.build();
 	}
 
-	/** A process that says nothing must leave the view alone, whatever else the framework does. */
 	@Test
 	void viewIsLeftAlone_whenTheProcessAsksForNothing()
 	{
@@ -93,22 +90,16 @@ class ADProcessPostProcessServiceTest
 		Mockito.verify(view, Mockito.never()).invalidateAll();
 	}
 
-	/**
-	 * Re-reading the rows is not enough when the process changed whether they still belong to the view:
-	 * the selection is materialized, so it has to be built again.
-	 */
 	@Test
 	void selectionIsRecreated_whenTheProcessAsksForIt()
 	{
 		postProcess(result -> result.setRecreateViewSelectionAfterExecution(true));
 
 		Mockito.verify(view).invalidateSelection();
-		// invalidateSelection() resets the row cache and broadcasts by itself, so adding invalidateAll()
-		// here would only duplicate the websocket event
+		// invalidateSelection() resets the row cache and broadcasts itself; invalidateAll() would duplicate
 		Mockito.verify(view, Mockito.never()).invalidateAll();
 	}
 
-	/** The plain refresh keeps its old behaviour: re-read the rows of the selection the view already has. */
 	@Test
 	void onlyTheRowsAreReRead_whenTheProcessAsksForAPlainRefresh()
 	{
