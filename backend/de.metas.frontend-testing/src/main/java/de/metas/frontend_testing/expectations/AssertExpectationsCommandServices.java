@@ -170,13 +170,13 @@ public class AssertExpectationsCommandServices
 			@NonNull final WarehouseId fromWarehouseId,
 			@NonNull final WarehouseId toWarehouseId)
 	{
-		return movementDAO.getLineByQuery(MovementLineQuery.builder()
+		return !movementDAO.retrieveLinesByQuery(MovementLineQuery.builder()
 						.productId(productId)
 						.fromLocatorIds(toLocatorIds(fromWarehouseId))
 						.toLocatorIds(toLocatorIds(toWarehouseId))
 						.movementDocStatus(DocStatus.Completed)
 						.build())
-				.isPresent();
+				.isEmpty();
 	}
 
 	private Set<LocatorId> toLocatorIds(@NonNull final WarehouseId warehouseId)

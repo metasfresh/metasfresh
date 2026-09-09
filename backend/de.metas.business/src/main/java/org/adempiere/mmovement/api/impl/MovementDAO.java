@@ -26,7 +26,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.util.List;
-import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -55,7 +54,7 @@ public class MovementDAO implements IMovementDAO
 	}
 
 	@Override
-	public Optional<I_M_MovementLine> getLineByQuery(@NonNull final MovementLineQuery query)
+	public List<I_M_MovementLine> retrieveLinesByQuery(@NonNull final MovementLineQuery query)
 	{
 		// An all-empty query would return an arbitrary movement line of the system, so a caller asking
 		// "is there a line like this?" would be answered by an unrelated one.
@@ -89,9 +88,8 @@ public class MovementDAO implements IMovementDAO
 		}
 
 		return queryBuilder
-				.orderBy(I_M_MovementLine.COLUMNNAME_M_MovementLine_ID)
 				.create()
-				.firstOptional();
+				.list();
 	}
 
 	@Override

@@ -12,7 +12,7 @@ import org.adempiere.warehouse.LocatorId;
 import javax.annotation.Nullable;
 
 /**
- * Filters for {@link org.adempiere.mmovement.api.IMovementDAO#getLineByQuery(MovementLineQuery)}.
+ * Filters for {@link org.adempiere.mmovement.api.IMovementDAO#retrieveLinesByQuery(MovementLineQuery)}.
  * Every filter is optional; an unset/empty one is simply not applied — but at least one must be set
  * (see {@link #isEmpty()}), else the query would match an arbitrary line of the system.
  */
