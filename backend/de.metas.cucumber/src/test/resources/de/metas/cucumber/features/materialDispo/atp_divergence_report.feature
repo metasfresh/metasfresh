@@ -108,7 +108,7 @@ Feature: ATP divergence report - read-only preview of stored vs. expected ATP
 
   @Id:ATPDIV_003
   @from:cucumber
-  Scenario: An open shipment schedule with no candidate at all is reported as an uncovered document
+  Scenario: An open shipment schedule with no candidate at all is reported as uncovered, a covered one stays excluded
 
     Given metasfresh contains M_PricingSystems
       | Identifier   |
@@ -125,27 +125,45 @@ Feature: ATP divergence report - read-only preview of stored vs. expected ATP
     And metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID  | C_UOM_ID.X12DE355 |
       | p_uncov_a  | standard_category_base | PCE               |
+      | p_cov_a    | standard_category_base | PCE               |
     And metasfresh contains M_ProductPrices
       | Identifier  | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
       | pp_uncov_a  | plv_so_uncov            | p_uncov_a    | 10.0     | PCE               | Normal           |
+      | pp_cov_a    | plv_so_uncov            | p_cov_a      | 10.0     | PCE               | Normal           |
 
     And metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID  | DateOrdered | PreparationDate      | M_Warehouse_ID |
       | so_uncov_a  | true    | customer_uncov | 2024-09-20  | 2024-09-21T21:00:00Z | WH_BASE        |
+      | so_cov_a    | true    | customer_uncov | 2024-09-20  | 2024-09-21T21:00:00Z | WH_BASE        |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_uncov_a | so_uncov_a | p_uncov_a    | 30         |
+      | sol_cov_a   | so_cov_a   | p_cov_a      | 50         |
     And the order identified by so_uncov_a is completed
+    And the order identified by so_cov_a is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_uncov_a  | DEMAND            | SHIPMENT                  | p_uncov_a    | 2024-09-21T21:00:00Z | -30 | -30 | WH_BASE        |
+      | d_cov_a    | DEMAND            | SHIPMENT                  | p_cov_a      | 2024-09-21T21:00:00Z | -50 | -50 | WH_BASE        |
 
-    # the candidate that used to cover this shipment schedule is gone - e.g. purged by a cleanup job -
-    # while the schedule itself is still open: the one gap a recompute cannot close
+    # the candidate that used to cover the p_uncov_a schedule is gone - e.g. purged by a cleanup job - while
+    # the schedule itself is still open: the one gap a recompute cannot close. The p_cov_a schedule keeps its
+    # MD_Candidate_Demand_Detail link intact - it is genuinely covered and must stay excluded from the report.
     When the MD_Candidate_Demand_Detail of d_uncov_a is deleted
     And the MD_Candidate_ATP_Divergence_Report process is run with parameters, storing the run id as "report_c":
       | M_Product_ID |
       | p_uncov_a    |
     Then the divergence report process log for the run id "report_c" contains "1 open source document(s) with no candidate at all"
     And the divergence report process log for the run id "report_c" contains "Uncovered open M_ShipmentSchedule"
+
+    # The negative control, and the reason this scenario can fail at all: p_cov_a's schedule is open exactly
+    # like p_uncov_a's, and differs only in still having its MD_Candidate_Demand_Detail link. Reporting it
+    # would mean the report answers "which open documents exist" instead of "which are uncovered". Scoped to
+    # p_cov_a alone rather than to a shared product category, because the category step reuses an existing row
+    # by Value - so a category-wide count accumulates this scenario's products across runs on a reused
+    # database and drifts upward, while a per-product count stays exact.
+    And the MD_Candidate_ATP_Divergence_Report process is run with parameters, storing the run id as "report_c_covered":
+      | M_Product_ID |
+      | p_cov_a      |
+    Then the divergence report process log for the run id "report_c_covered" contains "0 open source document(s) with no candidate at all"
