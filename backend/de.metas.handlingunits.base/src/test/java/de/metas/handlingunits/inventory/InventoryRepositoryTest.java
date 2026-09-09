@@ -7,6 +7,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.inventory.AggregationType;
@@ -22,6 +23,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -278,6 +280,36 @@ class InventoryRepositoryTest
 		assertThat(result.getInventoryLineHUs())
 				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(tuple(null, Quantity.of("2", uomRecord), Quantity.of("10", uomRecord)));
+	}
+
+	@Test
+	void retrieveAllLinesForHU_lineLinkedViaHUAssignmentOnly()
+	{
+		final HuId huId = HuId.ofRepoId(500);
+		InventoryTestHelper.createStorageFor(ProductId.ofRepoId(40), Quantity.of(TEN, uomRecord), huId);
+
+		final InventoryId inventoryId = inventoryRecord()
+				.docBaseAndSubType(AggregationType.SINGLE_HU.getDocBaseAndSubType())
+				.movementDate("2020-06-15")
+				.build();
+
+		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
+		inventoryLineRecord.setM_Inventory_ID(inventoryId.getRepoId());
+		inventoryLineRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
+		inventoryLineRecord.setM_Locator_ID(locatorRecord.getM_Locator_ID());
+		inventoryLineRecord.setM_Product_ID(40);
+		saveRecord(inventoryLineRecord);
+
+		// the ONLY link between the HU and the line: an M_HU_Assignment pointing at the line
+		final I_M_HU_Assignment huAssignment = newInstance(I_M_HU_Assignment.class);
+		huAssignment.setAD_Table_ID(TableIdsCache.instance.getTableIdNotNull(I_M_InventoryLine.Table_Name).getRepoId());
+		huAssignment.setRecord_ID(inventoryLineRecord.getM_InventoryLine_ID());
+		huAssignment.setM_HU_ID(huId.getRepoId());
+		saveRecord(huAssignment);
+
+		assertThat(inventoryRepository.retrieveAllLinesForHU(huId))
+				.extracting(I_M_InventoryLine::getM_InventoryLine_ID)
+				.containsExactly(inventoryLineRecord.getM_InventoryLine_ID());
 	}
 
 }
