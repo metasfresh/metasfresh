@@ -847,7 +847,7 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | rowQtyPlain_RL         | null                   | scheduleQtyPlain_RL  | false         | 8              | 3                            | 5                           |
 
   @Id:S31789_TC15
-  Scenario: Each row's ContainerNo is its own transport order's, not every container on the order
+  Scenario: Each row's ContainerNo and BL / booking / WE-notice flags are its own transport order's, not the order's
 
     Given metasfresh contains C_Orders:
       | Identifier              | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
@@ -881,10 +881,12 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID |
       | transportContainer1_RL     | planningContainer1_RL  |
       | transportContainer2_RL     | planningContainer2_RL  |
+    # The three flags are OPPOSED between the two transport orders on purpose: an OR over the order reads Y for
+    # all three on both rows, so every column below disagrees with the aggregate on at least one row.
     And update transport order
-      | M_ShipperTransportation_ID | ContainerNo |
-      | transportContainer1_RL     | CONT-RL-001 |
-      | transportContainer2_RL     | CONT-RL-002 |
+      | M_ShipperTransportation_ID | ContainerNo | IsBLReceived | IsBookingConfirmed | IsWENotice |
+      | transportContainer1_RL     | CONT-RL-001 | true         | false              | true       |
+      | transportContainer2_RL     | CONT-RL-002 | false        | true               | false      |
 
     # The unplanned control reaches a transport order through the order-line AddTo process - the only route a row
     # with no planning has, and the one the schedule's own ContainerNo column reads.
@@ -893,14 +895,14 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | transportContainerPlain_RL | shipperPlain_RL | vendor_RL           | vendorLocation_RL   | Incoming           |
     And C_Order_AddTo_M_ShipperTransportation is invoked for order orderContainerPlain_RL and transportation order: transportContainerPlain_RL
     And update transport order
-      | M_ShipperTransportation_ID | ContainerNo |
-      | transportContainerPlain_RL | CONT-RL-003 |
+      | M_ShipperTransportation_ID | ContainerNo | IsBLReceived | IsBookingConfirmed | IsWENotice |
+      | transportContainerPlain_RL | CONT-RL-003 | true         | false              | true       |
 
     Then after not more than 60s, the C_Order identified by orderContainer_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
-      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.ContainerNo |
-      | rowContainer1_RL                          | planningContainer1_RL  | scheduleContainer_RL | true          | CONT-RL-001     |
-      | rowContainer2_RL                          | planningContainer2_RL  | scheduleContainer_RL | true          | CONT-RL-002     |
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.ContainerNo | OPT.IsBLReceived | OPT.IsBookingConfirmed | OPT.IsWENotice |
+      | rowContainer1_RL                          | planningContainer1_RL  | scheduleContainer_RL | true          | CONT-RL-001     | true             | false                  | true           |
+      | rowContainer2_RL                          | planningContainer2_RL  | scheduleContainer_RL | true          | CONT-RL-002     | false            | true                   | false          |
 
     And after not more than 60s, the C_Order identified by orderContainerPlain_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
-      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID      | OPT.IsPlanned | OPT.ContainerNo |
-      | rowContainerPlain_RL                      | null                   | scheduleContainerPlain_RL | false         | CONT-RL-003     |
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID      | OPT.IsPlanned | OPT.ContainerNo | OPT.IsBLReceived | OPT.IsBookingConfirmed | OPT.IsWENotice |
+      | rowContainerPlain_RL                      | null                   | scheduleContainerPlain_RL | false         | CONT-RL-003     | true             | false                  | true           |

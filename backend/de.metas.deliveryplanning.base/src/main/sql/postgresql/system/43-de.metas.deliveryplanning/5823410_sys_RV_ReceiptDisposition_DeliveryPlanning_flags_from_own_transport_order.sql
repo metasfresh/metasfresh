@@ -1,55 +1,59 @@
+-- Source DDL: backend/de.metas.deliveryplanning.base/src/main/sql/postgresql/ddl/views/RV_ReceiptDisposition_DeliveryPlanning.sql
 --
--- RV_ReceiptDisposition_DeliveryPlanning -- the single inbound list behind the receipt-disposition
--- delivery-planning window: active incoming-or-dropship delivery plannings (branch one, "planned") UNIONed
--- with the receipt schedules no active planning refers to (branch two, "unplanned"). The two branches are exact
--- complements, so a schedule never appears on both; a schedule shared by N plannings (what a SPLIT produces)
--- yields N rows.
+-- Sources RV_ReceiptDisposition_DeliveryPlanning.IsBLReceived, IsBookingConfirmed and IsWENotice from the ROW's
+-- own transport order instead of an order-wide aggregate over every transport order of the order - the same
+-- defect and the same fix 5823380 applied to ContainerNo, on the same two branches. 5823380 left the three flags
+-- behind and recorded them as deliberately inconsistent; that note is now wrong and is removed from the view
+-- header along with this change. Owner ruling 2026-09-09: "simply take containerNo from transportation order for
+-- now" - the "for now" defers whether any of these belongs on the planning as its own column, not which columns
+-- read the transport order.
 --
--- KEY. RV_ReceiptDisposition_DeliveryPlanning_ID = M_Delivery_Planning_ID on branch one,
--- 1000000000 + M_ReceiptSchedule_ID on branch two.
---   * Arithmetic, never ROW_NUMBER(): a window function blocks predicate push-down, so a filtered open would
---     compute the whole view first.
---   * Branch one keys on the PLANNING, not the schedule: a split shares one schedule, so a schedule-derived id
---     would repeat and the window would lose grid identity, selection and zoom.
---   * Both source ids must stay <= 1,147,483,647 for the sum to fit a Java int.
+-- Before, on BOTH branches, each flag was
+--   (SELECT max(st.<flag>) FROM m_shippertransportation st
+--      JOIN m_shippingpackage sp ON sp.m_shippertransportation_id = st.m_shippertransportation_id
+--    WHERE sp.c_order_id = rs.c_order_id)
+-- copied from the source columns' own ColumnSQL on M_ReceiptSchedule. max() over 'Y'/'N' is an OR, so every row
+-- of an order showed Y as soon as ANY transport order of that order had the flag set. A SPLIT is the case that
+-- breaks: the siblings share one receipt schedule but each gets its OWN delivery instruction
+-- (generateDeliveryInstructions creates one M_ShipperTransportation per planning), so the two rows can differ in
+-- any of these four columns while the aggregate showed the OR on both.
 --
--- LAZY-LOADING SOURCE COLUMNS. M_ReceiptSchedule.M_Shipper_ID, IsBLReceived, IsBookingConfirmed and IsWENotice
--- are IsLazyLoading='Y' -- AD-level ColumnSQL with NO physical value on the table, so a plain SQL view cannot
--- select them. The shipper is read off the already-joined C_Order (o.m_shipper_id); the three flags come from the
--- row's own transport order, per the bullet below.
+-- After:
+--   * Branch one (planned) reads dpst.<flag> off the LEFT JOIN on M_Delivery_Planning.M_ShipperTransportation_ID
+--     that 5823380 already added for ContainerNo - the transport order's PK, so grain is unchanged and a planning
+--     on no instruction reads NULL, which the AD column allows (IsMandatory='N') and the generated model's
+--     boolean getter reads as false.
+--     Measured on the deep_tundra_release local DB 2026-09-09, before this change's own scenario had run: 117 of
+--     the view's 1488 planned rows carry that FK (601 of all 3346 plannings).
+--   * Branch two (unplanned) has no planning, so it keeps a subquery, scoped to the schedule's ORDER LINE
+--     (sp.c_order_id = rs.c_order_id AND sp.c_orderline_id = rs.c_orderline_id) exactly as 5823380 scoped
+--     ContainerNo: that is the narrowing M_ReceiptSchedule.M_ShipperTransportation_ID's own ColumnSQL uses, and
+--     it is AddOrderLinesToShipperTransportation (behind M_ReceiptSchedule_AddTo_M_ShipperTransportation) that
+--     puts a bare schedule on a transport order, one shipping package per order line. max() is kept so the column
+--     stays one value per row on both branches.
+--     The narrowing discards nothing: measured on the same DB and at the same point, every unplanned row that
+--     reaches a shipping package at all reaches it order-LINE-scoped (13 of 13, of 607 unplanned rows).
 --
--- PER-BRANCH vs SHARED. Identity and context (product, partner, warehouse, order, order line) are read off the
--- SCHEDULE on BOTH branches, one expression, no CASE - the generate command copies them onto the planning at
--- creation, so the two agree by construction. Dates, quantities and C_UOM_ID are read per branch, because they
--- stay planning-editable after creation and could otherwise silently disagree with each other.
---   * The two quantity columns carry DELIVERY-PLANNING names on BOTH branches: PlannedDischargeQuantity and
---     ActualDischargeQuantity. The window's vocabulary is the planning's, and a receipt schedule supplies values
---     INTO those columns without its own terms appearing - so branch two serves rs.qtytomove as the planned
---     discharge and rs.qtymoved as the actual one, a bare schedule having no planning to ask. Branch one reads
---     the PLANNING's own dp.planneddischargequantity / dp.actualdischargequantity, never the schedule's: a split
---     shares one schedule, so the schedule carries a single figure for the whole order line while each planning
---     plans its own share - reading the schedule shows the same order-line-wide number on every sibling row and
---     reports a quantity nobody plans to receive.
---   * Only the DISCHARGE pair appears. The planning also carries PlannedLoadedQuantity and ActualLoadQty, the
---     vendor's end of the movement; this is a receipt window, so what is discharged here is what belongs on it.
---     For Incoming the actual equals the planned figure until a partial receipt splits the two apart.
---   * ContainerNo, IsBLReceived, IsBookingConfirmed and IsWENotice are the ROW's own transport order's: branch
---     one reads them off the planning's M_ShipperTransportation_ID, branch two scopes the shipping-package join
---     to the schedule's ORDER LINE, the way M_ReceiptSchedule.M_ShipperTransportation_ID's ColumnSQL does.
---     Deliberately NOT the order-wide read the four source columns' own ColumnSQL uses: a split puts its siblings
---     on DIFFERENT transport orders, so an order-wide read shows every container of the order, and an OR of every
---     flag on it, on every row of it.
---   * M_Warehouse_ID is the schedule's PLAIN column, deliberately not M_Warehouse_Effective_ID: the planning
---     stores the plain one, so the effective one would make the column's two halves disagree.
---   * ATA (branch two) is the EARLIEST movement date over the schedule's receipts, and needs all three
---     conditions - allocation active, receipt completed, aggregate min - or it reports something false.
---   * CalendarWeek is EXTRACT(week from <that branch's ETA expression>), not from a bare source column, so the
---     week cannot disagree with the ETA shown beside it. ISO week, so a year-end date reports its ISO year's week.
+-- The defect is not observable in this DB's own data: all 672 M_ShipperTransportation rows carry
+-- IsBLReceived = IsBookingConfirmed = IsWENotice = 'N' (measured at the same point), so every order-wide OR
+-- happens to agree with every row's own transport order. It is proven by S31789_TC15, which puts the two
+-- plannings of one split on transport orders with OPPOSED flags. Against the pre-change view that scenario failed
+-- with IsBookingConfirmed expected false but was true on the first row; queried directly, the pair read Y/Y/Y on
+-- both rows against own values of Y/N/Y and N/Y/N.
 --
--- DIRECTIONS: branch one takes Incoming and Dropship - the pair TransportDirection#isIncomingOrDropship()
--- names, and the two the incoming generate command produces, so both carry a receipt schedule. Outgoing
--- carries a shipment schedule instead and has nothing this view could select.
+-- Grain and key are unchanged: no row is added or removed, and branch one adds no join (it reuses 5823380's).
+-- Re-verified on the same DB after applying: 2098 rows = 2098 distinct keys, no key twice, 1490 planned + 608
+-- unplanned - equal to the 1490 and 608 counted straight off the base tables without the view. Of the planned
+-- rows, the 119 that carry a transport order all show its own three flags (0 disagreeing) and the 1371 that carry
+-- none all read NULL for all three.
 --
+-- No model regeneration: the output column list is identical - all 34 columns, same names, same order (diffed
+-- information_schema.columns before and after applying). The three flags' PHYSICAL type does not move either:
+-- both before and after they are character with NO length, because a UNION of branch one's character(1) with
+-- branch two's typmod-less max() result resolves to the unconstrained type (before, both branches were that
+-- max()). Contrast 5823380, where ContainerNo did move, text -> character varying. Either way the AD_Column is
+-- what the generated model and the WebUI field read - AD_Reference_ID=20 YesNo, FieldLength=1, no ColumnSQL,
+-- untouched here.
 
 DROP VIEW IF EXISTS RV_ReceiptDisposition_DeliveryPlanning$new
 ;

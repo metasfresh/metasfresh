@@ -448,6 +448,9 @@ public class M_ShipperTransportation_StepDef
 	 *   <b>ETA</b> — (optional) new estimated arrival<br>
 	 *   <b>BLDate</b> — (optional) new bill-of-lading date<br>
 	 *   <b>ContainerNo</b> — (optional) new container number<br>
+	 *   <b>IsBLReceived</b> — (optional) new bill-of-lading-received flag<br>
+	 *   <b>IsBookingConfirmed</b> — (optional) new booking-confirmed flag<br>
+	 *   <b>IsWENotice</b> — (optional) new goods-receipt-notice flag<br>
 	 * @cucumber.depends StepDefData: M_ShipperTransportation_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -481,6 +484,15 @@ public class M_ShipperTransportation_StepDef
 
 		tableRow.getAsOptionalString(I_M_ShipperTransportation.COLUMNNAME_ContainerNo)
 				.ifPresent(record::setContainerNo);
+
+		tableRow.getAsOptionalBoolean(I_M_ShipperTransportation.COLUMNNAME_IsBLReceived)
+				.ifPresent(record::setIsBLReceived);
+
+		tableRow.getAsOptionalBoolean(I_M_ShipperTransportation.COLUMNNAME_IsBookingConfirmed)
+				.ifPresent(record::setIsBookingConfirmed);
+
+		tableRow.getAsOptionalBoolean(I_M_ShipperTransportation.COLUMNNAME_IsWENotice)
+				.ifPresent(record::setIsWENotice);
 
 		saveRecord(record);
 

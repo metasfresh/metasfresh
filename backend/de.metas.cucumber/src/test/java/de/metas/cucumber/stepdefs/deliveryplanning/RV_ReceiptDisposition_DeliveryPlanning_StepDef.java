@@ -104,6 +104,10 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 	 *   <b>OPT.ContainerNo</b> — (optional, null-allowed) expected {@code ContainerNo} - the container of the
 	 *   transport order this ONE row is on, never every container on the order; a literal {@code null} asserts
 	 *   the row shows none<br>
+	 *   <b>OPT.IsBLReceived</b> — (optional) expected {@code IsBLReceived}<br>
+	 *   <b>OPT.IsBookingConfirmed</b> — (optional) expected {@code IsBookingConfirmed}<br>
+	 *   <b>OPT.IsWENotice</b> — (optional) expected {@code IsWENotice} - like the two flags above and
+	 *   {@code ContainerNo}, the transport order this ONE row is on, never an OR over the order's<br>
 	 *   <b>OPT.IsPlanned</b> — (optional) expected {@code IsPlanned} - true for a row backed by a delivery
 	 *   planning, false for a row backed only by a receipt schedule<br>
 	 *   <b>OPT.Processed</b> — (optional) expected {@code Processed} - the planning's own flag on a planned
@@ -249,6 +253,21 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 				.ifPresent(containerNo -> softly.assertThat(actual.getContainerNo())
 						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_ContainerNo)
 						.isEqualTo(DataTableUtil.nullToken2Null(containerNo)));
+
+		expected.getAsOptionalBoolean(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsBLReceived)
+				.ifPresent(isBLReceived -> softly.assertThat(actual.isBLReceived())
+						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsBLReceived)
+						.isEqualTo(isBLReceived));
+
+		expected.getAsOptionalBoolean(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsBookingConfirmed)
+				.ifPresent(isBookingConfirmed -> softly.assertThat(actual.isBookingConfirmed())
+						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsBookingConfirmed)
+						.isEqualTo(isBookingConfirmed));
+
+		expected.getAsOptionalBoolean(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsWENotice)
+				.ifPresent(isWENotice -> softly.assertThat(actual.isWENotice())
+						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsWENotice)
+						.isEqualTo(isWENotice));
 
 		expected.getAsOptionalBoolean(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsPlanned)
 				.ifPresent(isPlanned -> softly.assertThat(actual.isPlanned())
