@@ -7,6 +7,9 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
 
 const COST_IMBALANCE_WINDOW_ID = 542175;
+// The full manufacturing order lives in its own window. Both windows sit on PP_Order, which is exactly
+// why a row click cannot get you there and a zoom field is needed.
+const PRODUCTION_ORDER_WINDOW_ID = 53009;
 
 // The filter bar carries no data-testid, so it is addressed by the language-invariant structural
 // classes the frontend derives from the identifiers (`form-field-<ColumnName>` per widget).
@@ -233,6 +236,87 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
 
     console.log(
       `Manufacturing order ${documentNo} closed via PP_Order_CloseSelection and left the cost-imbalance monitor`
+    );
+  });
+
+  test('Produktionsauftrag field zooms from the monitor into the Produktionsauftrag window', async ({ page }) => {
+    test.setTimeout(120_000);
+
+    allure.epic('E0226: Costing');
+    allure.tag('F1500: Costing');
+    allure.tag('F1500');
+    allure.story('The cost-imbalance monitor can navigate to the full manufacturing order');
+    allure.severity('normal');
+    allure.description(
+      'The monitor is a read-only list over PP_Order and the Produktionsauftrag window (53009) is a ' +
+        'second window over the SAME table, so clicking a monitor row only re-opens it in the monitor -- ' +
+        'a controller had no way to reach the full order. Verifies the new "Produktionsauftrag" field in ' +
+        'successful action: it renders as a grid column showing the order\'s document number, and zooming ' +
+        'it lands on window 53009 on that same order. The landing window is the whole point: a lookup ' +
+        'pointing back at its own table could plausibly resolve to the window the user is already in, so ' +
+        'the assertion is on the target window id, not merely that "a zoom happened".'
+    );
+
+    const { masterdata, documentNo } = await seedCompletedManufacturingOrder();
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await MasterWindowPage.goto(COST_IMBALANCE_WINDOW_ID);
+    await MasterWindowPage.expectWindowLoaded();
+
+    // Narrow to exactly the seeded order so the cell we right-click is unambiguously its cell.
+    await applyMonitorFilter({ page, documentNo });
+    await expect(page.locator(TABLE_ROWS)).toHaveCount(1);
+
+    // Selecting on ColumnName keeps this language-independent.
+    await expect(page.locator('th[data-testid="column-Link_PP_Order_ID"]')).toHaveCount(1);
+
+    const zoomCell = page.locator(TABLE_ROWS).first().locator('[data-cy="cell-Link_PP_Order_ID"]');
+    await expect(zoomCell).toHaveCount(1);
+    // AD_Ref_Table.AD_Display is PP_Order.DocumentNo, so the link is labelled with the document number.
+    await expect(zoomCell).toContainText(documentNo);
+
+    await test.step('Zoom Into is offered on the field', async () => {
+      await zoomCell.click({ button: 'right' });
+      await expect(page.locator('.context-menu-open')).toBeVisible();
+    });
+
+    // The menu caption is translated; the icon is not, so address the entry by its icon.
+    const zoomIntoItem = page.locator('.context-menu-open .context-menu-item').filter({
+      has: page.locator('i.meta-icon-share'),
+    });
+    await expect(zoomIntoItem).toHaveCount(1);
+
+    // Assert the server's own answer as well as where the browser ends up: this endpoint IS the
+    // window-resolution under test, so a regression would show here even if routing masked it.
+    const zoomResolved = page.waitForResponse(
+      (response) =>
+        response.url().includes('/field/Link_PP_Order_ID/zoomInto') && response.status() === 200
+    );
+    // A grid zoom opens the target in a NEW TAB (containers/Table.js handleZoomInto ->
+    // window.open(url, '_blank')), so the assertion is on the popup, not on this page's URL.
+    const orderTabOpened = page.context().waitForEvent('page');
+
+    await zoomIntoItem.click();
+
+    const zoomResponse = await zoomResolved;
+    const zoomPayload = await zoomResponse.json();
+    expect(String(zoomPayload.documentPath.windowId)).toBe(String(PRODUCTION_ORDER_WINDOW_ID));
+
+    const orderTab = await orderTabOpened;
+    await orderTab.waitForLoadState('domcontentloaded');
+
+    // The landing window is the point of the whole change: 53009, never back into 542175.
+    expect(orderTab.url()).toMatch(new RegExp(`/window/${PRODUCTION_ORDER_WINDOW_ID}/\\d+`));
+    expect(orderTab.url()).not.toMatch(new RegExp(`/window/${COST_IMBALANCE_WINDOW_ID}(/|$)`));
+
+    // Same order, not just the right window.
+    await expect(orderTab.locator(`text=${documentNo}`).first()).toBeVisible({ timeout: 60_000 });
+
+    console.log(
+      `Manufacturing order ${documentNo} zoomed from monitor ${COST_IMBALANCE_WINDOW_ID} into window ${PRODUCTION_ORDER_WINDOW_ID}`
     );
   });
 });
