@@ -169,9 +169,12 @@ public class AD_Archive_StepDef
 	 * <p>
 	 * This is the assertion for "nothing was printed AND nothing took up space". A band that renders a
 	 * blank value emits no glyphs at all, so no text-based assertion can tell it apart from a band that was
-	 * suppressed — but it still consumes its own height, which shows up here as a larger distance. Give it
-	 * one pair around the row under test and one pair around a row known to have nothing above it, and the
-	 * assertion says the two rows are laid out identically.
+	 * suppressed — but it still consumes its own height, which shows up here as a larger distance.
+	 * <p>
+	 * Pick the reference pair (the second one) so that the band under test CANNOT fall inside it — a leg
+	 * that the same band also inflates makes the comparison pass again once every row grows equally, which
+	 * is exactly what happens when a guard is removed outright rather than mis-evaluated. A pair that stays
+	 * within one row, below the band in question, is such a fixed reference.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example

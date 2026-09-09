@@ -97,6 +97,8 @@ Feature: Free text above an order line
       | Auftrag (Jasper) | order     |
     # position 20's article row follows position 10's product number with nothing in between
     Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "BetaItem"
+    # and it is one band below it: the reference leg stays inside position 10, where no block can land
+    And in the PDF archived for the record identified by "order", the vertical distance from text "ALPHA-NR" to text "BetaItem" equals the distance from text "AlphaItem" to text "ALPHA-NR"
 
   @Id:S27486_30
   Scenario: A whitespace-only free text prints no block and takes no vertical space
@@ -119,8 +121,10 @@ Feature: Free text above an order line
       | Auftrag (Jasper) | order     |
     # no text was printed above position 20 ...
     Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "BetaItem"
-    # ... and position 20 sits as far below its predecessor as the control position 30 does
+    # ... position 20 sits as far below its predecessor as the control position 30 does ...
     And in the PDF archived for the record identified by "order", the vertical distance from text "ALPHA-NR" to text "BetaItem" equals the distance from text "BETA-NR" to text "GammaItem"
+    # ... and that is one band, measured inside position 10 where no block of its own can land
+    And in the PDF archived for the record identified by "order", the vertical distance from text "ALPHA-NR" to text "BetaItem" equals the distance from text "AlphaItem" to text "ALPHA-NR"
 
   @Id:S27486_40
   Scenario: A long free text wraps onto further lines instead of being clipped
@@ -137,7 +141,7 @@ Feature: Free text above an order line
     And The jasper process is run
       | Value            | Record_ID |
       | Auftrag (Jasper) | order     |
-    # the block starts right below position 10's product number
+    # the block starts right below position 10's product number; two words on purpose, since this has to pin its FIRST wrapped line
     Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "Diese Position"
     # and it occupies at least three lines before position 20's article row
     And in the PDF archived for the record identified by "order", at least 2 lines appear between text "Diese Position" and text "BetaItem"
