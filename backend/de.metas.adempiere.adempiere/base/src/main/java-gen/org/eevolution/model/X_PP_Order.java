@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2126020309L;
+	private static final long serialVersionUID = 1476785033L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -820,6 +820,29 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getLine() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Line);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getLink_PP_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_Link_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setLink_PP_Order(final org.eevolution.model.I_PP_Order Link_PP_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_Link_PP_Order_ID, org.eevolution.model.I_PP_Order.class, Link_PP_Order);
+	}
+
+	@Override
+	public void setLink_PP_Order_ID (final int Link_PP_Order_ID)
+	{
+		throw new IllegalArgumentException ("Link_PP_Order_ID is virtual column");	}
+
+	@Override
+	public int getLink_PP_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Link_PP_Order_ID);
 	}
 
 	@Override

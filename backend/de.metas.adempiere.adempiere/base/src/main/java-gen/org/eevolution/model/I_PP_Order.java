@@ -1099,6 +1099,36 @@ public interface I_PP_Order
 	String COLUMNNAME_Line = "Line";
 
 	/**
+	 * Set Manufacturing Order.
+	 * Opens the manufacturing order in the Manufacturing Order window.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setLink_PP_Order_ID (int Link_PP_Order_ID);
+
+	/**
+	 * Get Manufacturing Order.
+	 * Opens the manufacturing order in the Manufacturing Order window.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getLink_PP_Order_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order getLink_PP_Order();
+
+	@Deprecated
+	void setLink_PP_Order(@Nullable org.eevolution.model.I_PP_Order Link_PP_Order);
+
+	ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Order> COLUMN_Link_PP_Order_ID = new ModelColumn<>(I_PP_Order.class, "Link_PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_Link_PP_Order_ID = "Link_PP_Order_ID";
+
+	/**
 	 * Set Lot No..
 	 *
 	 * <br>Type: String
