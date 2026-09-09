@@ -17,8 +17,8 @@ import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
-import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
+import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceRequest;
 import org.adempiere.test.AdempiereTestHelper;
@@ -337,6 +337,7 @@ public class CreateMasterdataCommandTest
 				.bpartners(ImmutableMap.of())
 				.products(ImmutableMap.of())
 				.resources(ImmutableMap.of())
+				.shippers(ImmutableMap.of())
 				.warehouses(ImmutableMap.of())
 				.pickingSlots(ImmutableMap.of())
 				.workplaces(ImmutableMap.of())

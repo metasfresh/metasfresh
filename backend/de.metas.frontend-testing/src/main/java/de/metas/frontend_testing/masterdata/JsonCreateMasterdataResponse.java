@@ -43,7 +43,7 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonPickingSlotCreateResponse> pickingSlots;
 	@NonNull Map<String, JsonWarehouseResponse> warehouses;
 	@NonNull Map<String, JsonWorkplaceResponse> workplaces;
-	@Nullable Map<String, JsonCreateShipperResponse> shippers;
+	@NonNull Map<String, JsonCreateShipperResponse> shippers;
 	@NonNull Map<String, JsonPackingInstructionsResponse> packingInstructions;
 	@NonNull Map<String, JsonCreateHUResponse> handlingUnits;
 	@NonNull Map<String, JsonPackageResponse> packages;
