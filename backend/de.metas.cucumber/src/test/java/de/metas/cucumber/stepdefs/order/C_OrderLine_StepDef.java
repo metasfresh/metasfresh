@@ -131,10 +131,7 @@ public class C_OrderLine_StepDef
 {
 	private static final String COLUMNNAME_PREFIX_ATTRIBUTE = "attribute:";
 
-	/**
-	 * See {@link #resolveDescriptionAboveLine(String)}. Namespaced with the column name on purpose: an
-	 * unqualified {@code WHITESPACE_ONLY} would make that word unusable as a real free text.
-	 */
+	/** Column-namespaced, so the bare word stays usable as a real value; see {@link #resolveDescriptionAboveLine(String)}. */
 	private static final String DESCRIPTION_ABOVE_LINE_WHITESPACE_ONLY_SENTINEL = "DescriptionAboveLine:WHITESPACE_ONLY";
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -178,10 +175,9 @@ public class C_OrderLine_StepDef
 	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
 	 *   <li>{@code DescriptionAboveLine} (optional) — free text printed as a standalone block directly above
-	 *       this line's own row on order/delivery/invoice documents. Pass the literal sentinel
-	 *       {@value #DESCRIPTION_ABOVE_LINE_WHITESPACE_ONLY_SENTINEL} for a whitespace-only value (three
-	 *       spaces) — a literal all-spaces cell is trimmed to empty by the Gherkin parser before this
-	 *       step def sees it, so it cannot express that value directly.</li>
+	 *       this line's own row on order/delivery/invoice documents. For a whitespace-only value pass the
+	 *       sentinel {@value #DESCRIPTION_ABOVE_LINE_WHITESPACE_ONLY_SENTINEL}, per
+	 *       {@link #resolveDescriptionAboveLine(String)}.</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_OrderLines:")

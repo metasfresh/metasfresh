@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00144_Free_Text_Above_Order_Lines
 @ghActions:run_on_executor2
 Feature: Free text above an order line
+## F00144: Free Text Above Order Lines
   A sales order line can carry a free text.
   It prints as a standalone block directly above that line's own article row on the order confirmation.
   No text means no block: an unset value prints nothing and a whitespace-only value prints nothing.

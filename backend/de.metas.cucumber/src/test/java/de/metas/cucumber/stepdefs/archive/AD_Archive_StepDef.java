@@ -56,8 +56,8 @@ public class AD_Archive_StepDef
 {
 	@NonNull private final IdentifiersResolver identifiersResolver;
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 	/**
 	 * @cucumber.stepdef

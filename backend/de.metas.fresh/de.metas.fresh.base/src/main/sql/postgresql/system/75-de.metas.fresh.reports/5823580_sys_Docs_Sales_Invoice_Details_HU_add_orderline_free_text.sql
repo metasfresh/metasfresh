@@ -54,7 +54,7 @@ FROM
         INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
         LEFT OUTER JOIN C_BP_Group bpg ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
         -- get order line for the free-text-above-order-line column
-        LEFT OUTER JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
+        LEFT OUTER JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID AND ol.isActive = 'Y'
         -- Product and its translation
         LEFT OUTER JOIN M_Product p 			ON il.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
         LEFT OUTER JOIN M_Product_Trl pt 		ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_AD_Language AND pt.isActive = 'Y'
@@ -67,6 +67,10 @@ FROM
 WHERE
         il.C_Invoice_ID = p_C_Invoice_ID AND il.isActive = 'Y'
   AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
+-- DescriptionAboveLine is one of the grouping keys, so packing-material rows that agree on
+-- product, price, UOM and tax but carry different free texts are now reported as separate
+-- rows instead of being summed into one. That is intended: the free text belongs to its own
+-- order line and a summed row could not carry two different texts.
 GROUP BY
     COALESCE(pt.Name, p.Name), COALESCE(uom.UOMSymbol, uomt.UOMSymbol), il.PriceEntered,
     t.rate,
