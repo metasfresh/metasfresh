@@ -143,8 +143,8 @@ async function deactivateRowInGrid(page, attrValue) {
 test.describe('MobileUI MFG Config — Merkmale (editable attributes) child tab', () => {
   test('add attribute rows with SeqNo, persist, and deactivate on window 541788', async ({ page }) => {
     allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
-    allure.tag('F8030');
+    allure.tag('F8047: MobileUI Manufacturing Profile');
+    allure.tag('F8047');
     allure.story('MobileUI Manufacturing config — Merkmale (editable attributes) child tab');
     allure.severity('critical');
 
