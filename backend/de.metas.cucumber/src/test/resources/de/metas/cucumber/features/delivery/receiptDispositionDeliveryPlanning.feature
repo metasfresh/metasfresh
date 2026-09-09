@@ -772,19 +772,8 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
   @Id:S31789_TC14
   Scenario: Each row's discharge quantities are its own planning's, and an unplanned row's are its schedule's
 
-    # Two columns, both named for the delivery planning: PlannedDischargeQuantity and ActualDischargeQuantity.
-    #
-    # PLANNED rows read the planning. A split copies M_ReceiptSchedule_ID onto every sibling planning, so the
-    # SCHEDULE carries ONE figure for the whole order line while each planning plans its own share. Splitting 10
-    # three ways distributes 4/3/3 (the target absorbs the DOWN-rounding remainder) while the schedule underneath
-    # all three still says 10 - so a row that reads the schedule shows 10 on every sibling, three times over, and
-    # reports a quantity nobody plans to receive. Each planning is then given its own actual discharge (2/1/3, the
-    # third fully received) so the two columns are told apart per row rather than by luck.
-    #
-    # The UNPLANNED row is the control: no planning to ask, so it serves the schedule's own figures - QtyToMove as
-    # the planned discharge and QtyMoved as the actual one. Its schedule is given a partial receipt of 5 against
-    # 8 ordered, which makes QtyToMove 3 and QtyMoved 5: two different non-zero numbers from two different source
-    # columns, so neither column can be passing by reading the other.
+    # A split copies M_ReceiptSchedule_ID onto every sibling planning, so the schedule carries ONE figure for the
+    # whole order line - a row reading it would show 10 on all three siblings.
     Given metasfresh contains C_Orders:
       | Identifier       | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
       | orderQtySplit_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC14A     |
@@ -805,7 +794,7 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | M_Delivery_Planning_ID | C_OrderLine_ID       |
       | planningQty1_RL        | orderLineQtySplit_RL |
 
-    # The split: the order line's 10 is distributed over three plannings as 4 / 3 / 3.
+    # 10 over three plannings distributes 4/3/3 - the target absorbs the DOWN-rounding remainder.
     When generate 2 additional M_Delivery_Planning records for: planningQty1_RL
     Then after not more than 60s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID                          | C_OrderLine_ID       |
@@ -816,25 +805,21 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | planningQty2_RL        | 10         | 10           | 3                        | Incoming           |
       | planningQty3_RL        | 10         | 10           | 3                        | Incoming           |
 
-    # Each planning receives a different part of its own plan, so the actual column carries three distinct
-    # figures that no single schedule-wide number could produce.
     And update M_Delivery_Planning:
       | M_Delivery_Planning_ID | ActualDischargeQuantity |
       | planningQty1_RL        | 2                       |
       | planningQty2_RL        | 1                       |
       | planningQty3_RL        | 3                       |
-    # QtyTotalOpen drops to 4 on ALL THREE - it is the ORDER LINE's remaining figure, so it counts what has
-    # actually arrived across the whole line (10 less 2+1+3). That contrast is the point of the scenario in
-    # miniature: an order-line-wide figure is shared by every sibling, while ActualDischargeQuantity stays each
-    # planning's own.
+    # QtyTotalOpen drops to 4 on ALL THREE: it is the ORDER LINE's remaining figure (10 less 2+1+3), not the
+    # planning's.
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity |
       | planningQty1_RL        | 10         | 4            | Incoming           | 4                        | 2                       |
       | planningQty2_RL        | 10         | 4            | Incoming           | 3                        | 1                       |
       | planningQty3_RL        | 10         | 4            | Incoming           | 3                        | 3                       |
 
-    # A partial receipt on the unplanned control's schedule: 5 of the 8 ordered are in, so the schedule's own
-    # QtyToMove drops to 3 while its QtyMoved is 5.
+    # The unplanned control gets a partial receipt: QtyToMove 3 against QtyMoved 5, two different non-zero
+    # numbers from two different source columns, so neither view column can pass by reading the other.
     And update M_ReceiptSchedule:
       | M_ReceiptSchedule_ID | OPT.QtyMoved |
       | scheduleQtyPlain_RL  | 5            |
@@ -842,15 +827,12 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyToMove | OPT.QtyMoved |
       | scheduleQtyPlain_RL             | orderQtyPlain_RL      | orderLineQtyPlain_RL      | vendor_RL                | vendorLocation_RL                 | product_RL              | 8          | warehouse_RL              | 3             | 5            |
 
-    # The point: each planned row's two discharge figures are its OWN planning's, so the three rows differ from
-    # one another - none of them shows the schedule's 10.
     Then after not more than 60s, the C_Order identified by orderQtySplit_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
       | rowQty1_RL             | planningQty1_RL        | scheduleQtySplit_RL  | true          | 10             | 4                            | 2                           |
       | rowQty2_RL             | planningQty2_RL        | scheduleQtySplit_RL  | true          | 10             | 3                            | 1                           |
       | rowQty3_RL             | planningQty3_RL        | scheduleQtySplit_RL  | true          | 10             | 3                            | 3                           |
 
-    # The control: no planning behind the row, so the schedule's own QtyToMove and QtyMoved are what it shows.
     And after not more than 60s, the C_Order identified by orderQtyPlain_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
       | rowQtyPlain_RL         | null                   | scheduleQtyPlain_RL  | false         | 8              | 3                            | 5                           |
