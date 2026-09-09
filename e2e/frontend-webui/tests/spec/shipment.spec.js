@@ -40,6 +40,7 @@ import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
  * - Sales order creation and completion
  * - PDF generation modal and download
  * - PDF content validation (document number, customer, product, quantity)
+ * - The order line's free text above the line, printed on all three documents
  * - Related documents navigation (Alt+6)
  * - Shipment schedule window and quantity field
  * - Quick action invocation on list views
@@ -169,6 +170,15 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             };
             await SalesOrderPage.addOrderLine(orderLineData);
 
+            // The order line's free text above the line: a run-unique token written to no other
+            // field, so the only way it can reach a PDF is a band printing DescriptionAboveLine —
+            // the assertions below cannot be satisfied by document boilerplate. Verified by
+            // mutation: with the block's band removed from the order template, the
+            // order-confirmation assertion fails.
+            const freeTextAboveLine = `FreeTextAboveLine-${language}-${Date.now()}`;
+            await SalesOrderPage.setOrderLineTextField('DescriptionAboveLine', freeTextAboveLine, recordId);
+            allure.parameter('Free text above line', freeTextAboveLine, { excluded: true });
+
             // Attach order line details as table
             const orderLinesHtml = `<table border="1"><tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Line Total</th></tr><tr><td>${masterdata.products.Product1.productCode}</td><td>10</td><td>50.00 EUR</td><td>500.00 EUR</td></tr></table>`;
             allure.attachment('Order Lines', orderLinesHtml, 'text/html');
@@ -205,6 +215,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
                 // customerName: masterdata.bpartners.CUSTOMER1.bpartnerCode,  // TODO: PDF text extraction breaks long strings with line breaks
                 productCode: masterdata.products.Product1.productCode,
                 quantity: '10',
+                expectedTexts: [freeTextAboveLine],
                 language,
             });
 
@@ -277,6 +288,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
                 documentNo: shipmentDocNo,
                 productCode: masterdata.products.Product1.productCode,
                 quantity: '10',
+                expectedTexts: [freeTextAboveLine],
                 language,
             });
 
@@ -354,6 +366,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
                 documentNo: invoiceDocNo,
                 productCode: masterdata.products.Product1.productCode,
                 quantity: '10',
+                expectedTexts: [freeTextAboveLine],
                 language,
             });
 
@@ -375,6 +388,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
                 <tr><td>Shipment-PDF Generated</td><td>PASS</td><td>${shipmentDownload.suggestedFilename()}</td></tr>
                 <tr><td>Invoice Created</td><td>PASS</td><td>Yes</td></tr>
                 <tr><td>Invoice-PDF Generated</td><td>PASS</td><td>${invoiceDownload.suggestedFilename()}</td></tr>
+                <tr><td>Free Text Above Line printed on all three PDFs</td><td>PASS</td><td>${freeTextAboveLine}</td></tr>
             </table>`;
             allure.attachment('Validation Results', validationHtml, 'text/html');
         });
