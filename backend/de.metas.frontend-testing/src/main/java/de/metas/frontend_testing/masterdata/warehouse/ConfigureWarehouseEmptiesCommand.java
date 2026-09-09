@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -31,41 +32,71 @@ public class ConfigureWarehouseEmptiesCommand
 
 	public void execute()
 	{
-		requests.forEach(this::configure);
+		// Resolved ONCE per execute(): every warehouse carrying `empties` in the same request must end up on the
+		// SAME network. Re-querying per warehouse would make the "never a second empties network" invariant depend
+		// on the repository cache being invalidated between two iterations of the same transaction.
+		DistributionNetworkId emptiesNetworkId = null;
+
+		for (final Map.Entry<String, JsonWarehouseRequest> entry : requests.entrySet())
+		{
+			final Identifier warehouseIdentifier = Identifier.ofString(entry.getKey());
+			final CreateDistributionNetworkRequest.Line line = extractLineOrNull(warehouseIdentifier, entry.getValue());
+			if (line == null)
+			{
+				continue;
+			}
+
+			if (emptiesNetworkId == null)
+			{
+				emptiesNetworkId = getOrCreateEmptiesNetworkId(warehouseIdentifier, line);
+			}
+			else
+			{
+				distributionNetworkRepository.addLine(emptiesNetworkId, line);
+			}
+		}
 	}
 
-	private void configure(@NonNull final String warehouseIdentifierStr, @NonNull final JsonWarehouseRequest request)
+	@Nullable
+	private CreateDistributionNetworkRequest.Line extractLineOrNull(
+			@NonNull final Identifier warehouseIdentifier,
+			@NonNull final JsonWarehouseRequest request)
 	{
 		final JsonWarehouseRequest.Empties empties = request.getEmpties();
 		if (empties == null)
 		{
-			return;
+			return null;
 		}
 
-		final Identifier warehouseIdentifier = Identifier.ofString(warehouseIdentifierStr);
-		final CreateDistributionNetworkRequest.Line line = CreateDistributionNetworkRequest.Line.builder()
+		return CreateDistributionNetworkRequest.Line.builder()
 				.sourceWarehouseId(context.getId(warehouseIdentifier, WarehouseId.class))
 				.targetWarehouseId(context.getId(empties.getToWarehouse(), WarehouseId.class))
 				.shipperId(context.getId(empties.getShipper(), ShipperId.class))
 				.build();
+	}
 
-		final DistributionNetworkId networkId = distributionNetworkRepository.getEmptiesDistributionNetworkIfExists()
+	/** Adds {@code line} to the client's empties network, creating that network (with the line) when there is none. */
+	@NonNull
+	private DistributionNetworkId getOrCreateEmptiesNetworkId(
+			@NonNull final Identifier warehouseIdentifier,
+			@NonNull final CreateDistributionNetworkRequest.Line line)
+	{
+		final DistributionNetworkId existingNetworkId = distributionNetworkRepository.getEmptiesDistributionNetworkIfExists()
 				.map(DistributionNetwork::getId)
 				.orElse(null);
 
-		if (networkId != null)
+		if (existingNetworkId != null)
 		{
-			distributionNetworkRepository.addLine(networkId, line);
+			distributionNetworkRepository.addLine(existingNetworkId, line);
+			return existingNetworkId;
 		}
-		else
-		{
-			distributionNetworkRepository.createNetwork(
-					CreateDistributionNetworkRequest.builder()
-							.orgId(MasterdataContext.ORG_ID)
-							.name(warehouseIdentifier.toUniqueString())
-							.huDestroyed(true)
-							.line(line)
-							.build());
-		}
+
+		return distributionNetworkRepository.createNetwork(
+				CreateDistributionNetworkRequest.builder()
+						.orgId(MasterdataContext.ORG_ID)
+						.name(warehouseIdentifier.toUniqueString())
+						.huDestroyed(true)
+						.line(line)
+						.build());
 	}
 }
