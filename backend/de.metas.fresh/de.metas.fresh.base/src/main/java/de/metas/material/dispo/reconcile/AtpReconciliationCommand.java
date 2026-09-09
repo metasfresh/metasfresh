@@ -99,8 +99,10 @@ import java.util.UUID;
  * Consequence for callers: in a JVM without that profile this bean does not exist, so
  * {@code MD_Candidate_Reconcile_ATP} fails fast there with an explicit message instead of half-reconciling - see
  * that process's {@code reconciliationCommand()}. <b>That applies to a dry run too</b>: the process resolves this
- * whole bean before it inspects its dry-run parameter, so <i>no</i> path through that process is reachable from a
- * profile-less JVM - the operator gets the explicit failure whether or not the preview box is ticked.
+ * whole bean at the top of its {@code doIt()}, before it inspects its dry-run parameter and before it looks at its
+ * selection, so the operator gets the explicit failure whether or not the preview box is ticked and whether or not
+ * the filter matches anything. (Resolving it only per key would let an empty selection finish as a misleading
+ * "0 of 0" success in a JVM that has no engine at all.)
  * <p>
  * {@link AtpTargetCalculator} is a separate matter and is deliberately left unguarded: it needs nothing from
  * {@code dispo-service}, so a caller that holds it directly can compute a divergence anywhere. That does not make

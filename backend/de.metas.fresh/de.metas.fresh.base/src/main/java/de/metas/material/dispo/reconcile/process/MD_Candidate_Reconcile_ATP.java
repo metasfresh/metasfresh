@@ -111,6 +111,13 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 		final Instant runDate = SystemTime.asInstant();
 		final Instant livenessCutoff = toInstantOrNull(p_LivenessCutoffDate);
 
+		// Resolved up front, and deliberately not only inside the loop below: the concrete failure this
+		// prevents is a run in a JVM without the material-disposition profile whose selection happens to
+		// match no key at all. The loop body would then never execute, the command bean would never be
+		// resolved, and the process would report "Reconciled 0 of 0 matching key(s)" as a success - telling
+		// an operator the engine is present when it is not. Failing here makes that answer impossible.
+		reconciliationCommand();
+
 		int offset = 0;
 		int loops = 0;
 		int keysProcessed = 0;
