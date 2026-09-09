@@ -78,12 +78,11 @@ import static org.mockito.Mockito.when;
  * <li>{@link #enqueuedRun_isReconciledThroughTheReconciliationCommand()} - the work package's parameters are read
  * back into the run the operator launched, every matching key goes through the command, and the command sees the
  * <b>enqueued</b> run date rather than "whenever the queue got around to it".</li>
- * <li>{@link #appServerWithoutTheMaterialDispoProfile_failsWithAnActionableMessage()} - the failure that used to
- * be reported by the launching process. After the split the process never needs the command bean on either path,
- * so the guard moved here, where the scenario is real and different: a deployment whose <i>app server</i> does not
- * list the material-disposition profile in {@code de.metas.spring.profiles.active}. Without the guard that
- * deployment fails the work package with Spring's bare {@code NoSuchBeanDefinitionException} naming only the
- * type, buried in the queue where no operator is watching a process window.</li>
+ * <li>{@link #appServerWithoutTheMaterialDispoProfile_failsWithAnActionableMessage()} - the guard belongs here
+ * because this is where the scenario is real: a deployment whose <i>app server</i> does not list the
+ * material-disposition profile in {@code de.metas.spring.profiles.active}. Without it, that deployment fails the
+ * work package with Spring's bare {@code NoSuchBeanDefinitionException} naming only the type, buried in the queue
+ * where no operator is watching a process window.</li>
  * </ul>
  * {@link IWorkpackageProcessor#setParameters(IParams)} is public API, so the processor can be driven directly
  * with a hand-built {@link Params} - no queue, no database.

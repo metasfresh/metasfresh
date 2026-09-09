@@ -127,16 +127,14 @@ class MD_Candidate_Reconcile_ATPTest
 	}
 
 	/**
-	 * The headline of the write-path split: a <b>dry run</b> must produce its whole preview in the JVM a
-	 * WebUI-launched process actually executes in - the webapi, which does not activate
-	 * {@link Profiles#PROFILE_MaterialDispo} - and must therefore never touch
+	 * A <b>dry run</b> produces its whole preview in the JVM a WebUI-launched process actually executes in - the
+	 * webapi, which does not activate {@link Profiles#PROFILE_MaterialDispo} - and must therefore never touch
 	 * {@link AtpReconciliationCommand}, which only exists where that profile is active.
 	 * <p>
-	 * Before the split this was impossible: the process resolved {@link AtpReconciliationCommand} at the top of
-	 * {@code doIt()} regardless of the dry-run flag, so the preview an operator asks for died with
-	 * "the spring profile material-dispo is not active here" instead of reporting anything. The preview needs
-	 * nothing from that bean - {@link AtpTargetCalculator#computeDivergence} already returns expected, stored and
-	 * difference, and is deliberately un-{@code @Profile}-guarded - so it is computed inline here.
+	 * It needs nothing from that bean: {@link AtpTargetCalculator#computeDivergence} already returns expected,
+	 * stored and difference, and is deliberately un-{@code @Profile}-guarded, so the preview is computed inline
+	 * here. Resolving the command bean on this path would make the preview unavailable in exactly the JVM the
+	 * operator asks for it in, failing with "the spring profile material-dispo is not active here".
 	 * <p>
 	 * Reproducing the webapi's situation needs a real, scanned, profile-less
 	 * {@link AnnotationConfigApplicationContext} - see
@@ -178,8 +176,8 @@ class MD_Candidate_Reconcile_ATPTest
 				final ProcessInfo processInfo = ProcessInfo.builder().setCtx(Env.getCtx()).build();
 				final MD_Candidate_Reconcile_ATP process = newProcess(processInfo, true, LocalDate.of(2024, 9, 23));
 
-				// before the split this line threw: the command bean was resolved at the top of doIt() whatever
-				// the dry-run flag said, and it does not exist in this context
+				// the preview must resolve nothing beyond AtpTargetCalculator: AtpReconciliationCommand does not
+				// exist in this profile-less context, so touching it here would throw
 				assertThat(process.doIt()).isEqualTo(JavaProcess.MSG_OK);
 			}
 			finally
