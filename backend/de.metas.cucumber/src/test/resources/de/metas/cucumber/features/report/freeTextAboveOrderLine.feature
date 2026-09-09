@@ -26,6 +26,9 @@ Feature: Free text above an order line
       | M_Warehouse_ID |
       | wh             |
     # Value differs from Name on purpose: the article row shows the Name, the line below it the Value
+    # The short Names are load-bearing: the guard-independent reference leg spans the article-row
+    # band, whose product name stretches with overflow, so a Name long enough to wrap would
+    # inflate that leg and stop it detecting a lost printWhenExpression
     And metasfresh contains M_Products:
       | Identifier | Value    | Name      |
       | productA   | ALPHA-NR | AlphaItem |
