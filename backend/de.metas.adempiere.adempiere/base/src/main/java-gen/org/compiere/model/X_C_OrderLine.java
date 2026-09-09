@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1836513807L;
+	private static final long serialVersionUID = 430571715L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -646,6 +646,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setDescriptionAboveLine (final @Nullable java.lang.String DescriptionAboveLine)
+	{
+		set_Value (COLUMNNAME_DescriptionAboveLine, DescriptionAboveLine);
+	}
+
+	@Override
+	public java.lang.String getDescriptionAboveLine() 
+	{
+		return get_ValueAsString(COLUMNNAME_DescriptionAboveLine);
 	}
 
 	@Override

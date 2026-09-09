@@ -265,7 +265,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
-	 * Set Vendor.
+	 * Set C_BPartner_Vendor_ID.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -274,7 +274,7 @@ public interface I_C_OrderLine
 	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
 
 	/**
-	 * Get Vendor.
+	 * Get C_BPartner_Vendor_ID.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -868,6 +868,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_Description = new ModelColumn<>(I_C_OrderLine.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Free text above line.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescriptionAboveLine (@Nullable java.lang.String DescriptionAboveLine);
+
+	/**
+	 * Get Free text above line.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescriptionAboveLine();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_DescriptionAboveLine = new ModelColumn<>(I_C_OrderLine.class, "DescriptionAboveLine", null);
+	String COLUMNNAME_DescriptionAboveLine = "DescriptionAboveLine";
 
 	/**
 	 * Set Discount %.
