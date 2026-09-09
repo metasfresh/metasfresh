@@ -67,12 +67,15 @@ import java.util.Properties;
  * The parameter names are the ones the operator sees on the {@code AD_Process}, which keeps a work package
  * readable against the process that produced it. {@link #extractRunRequest(IParams)} is the only reader, so the
  * two halves of that wire format cannot drift apart unnoticed.
+ * <p>
+ * <b>Construction must stay side-effect-free.</b> This bean is created by the app server while its own spring
+ * context is still being refreshed, so it must not resolve anything that reaches back into that context - see
+ * the comment in {@link #enqueue(AtpReconciliationRunRequest)} on why {@link IWorkPackageQueueFactory} is looked
+ * up per call.
  */
 @Service
 public class AtpReconciliationEnqueueService
 {
-	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-
 	/** Work-package parameter names - deliberately the {@code AD_Process_Para} column names of the process. */
 	private static final String WP_PARAM_M_Warehouse_ID = I_MD_Stock.COLUMNNAME_M_Warehouse_ID;
 	private static final String WP_PARAM_M_Product_ID = I_MD_Stock.COLUMNNAME_M_Product_ID;
@@ -99,7 +102,17 @@ public class AtpReconciliationEnqueueService
 	public I_C_Queue_WorkPackage enqueue(@NonNull final AtpReconciliationRunRequest request)
 	{
 		final Properties ctx = Env.getCtx();
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, AtpReconciliationWorkpackageProcessor.class);
+		// Resolved here and NEVER in a field initializer. Concrete failure that prevents: the app server
+		// creates this @Service while its own spring context is still being refreshed, and
+		// WorkPackageQueueFactory's constructor reaches back into that context
+		// (QueueProcessorDescriptorIndex.getInstance() -> SpringContextHolder). Resolving the factory at
+		// construction time therefore aborts app-server startup outright with "SpringApplicationContext not
+		// configured yet" - the whole application, not just this feature. Reproduced by the cucumber suite,
+		// which boots ServerBoot for real; no unit test can see it, because SpringContextHolder is satisfied
+		// differently in unit-test mode. (DDOrderCandidateEnqueueService does hold the factory in a field and
+		// happens to survive - it depends purely on bean-creation order, so do not copy it.)
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class)
+				.getQueueForEnqueuing(ctx, AtpReconciliationWorkpackageProcessor.class);
 		final AtpKeySelection selection = request.getSelection();
 
 		final IWorkPackageBuilder workPackageBuilder = queue.newWorkPackage()
