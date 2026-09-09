@@ -23,22 +23,36 @@ package de.metas.material.dispo.reconcile;
  */
 
 import de.metas.common.util.IdConstants;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
- * Repository Tables: M_ShipmentSchedule, M_ReceiptSchedule, PP_Order, DD_Order, M_ForecastLine, M_Forecast
+ * Repository Tables: M_ShipmentSchedule, M_ReceiptSchedule, PP_Order, DD_Order, M_ForecastLine, M_Forecast,
+ * MD_Candidate_Demand_Detail, MD_Candidate_Purchase_Detail
  * Repository Cluster: SourceDocumentRepository
  * <p>
  * READ-ONLY, and it owns none of those tables: it never writes, and each one keeps its own DAO as the
  * persistence owner (see the {@link IQueryBL} note below for why those DAOs are not delegated to). The
  * single-member cluster therefore claims no write ownership - if a table above ever gains a declared
  * owner elsewhere, that is the accepted reader/owner split, not the second-writer case the convention
- * exists to catch.
+ * exists to catch. {@code MD_Candidate_Demand_Detail}/{@code MD_Candidate_Purchase_Detail} are read only
+ * as an existence check (a {@code NOT IN} subquery) in {@link #retrieveOpenShipmentScheduleIdsWithoutCandidate}/
+ * {@link #retrieveOpenReceiptScheduleIdsWithoutCandidate} - the owning module's own repositories still write
+ * them.
  * <p>
  * Loads the source document behind an {@code MD_Candidate} for
  * {@link SourceDocumentLivenessService}, tolerating a miss.
@@ -79,5 +93,107 @@ public class SourceDocumentRepository
 				.addEqualsFilter(idColumnName, repoId)
 				.create()
 				.firstOnly(modelClass);
+	}
+
+	/**
+	 * @return {@code M_ShipmentSchedule_ID} of every open ({@code Processed='N'}, active) shipment schedule
+	 * that no active {@code MD_Candidate_Demand_Detail} row references at all, restricted by the given
+	 * optional warehouse/product/product-category filter - one page of at most {@code limit} starting at
+	 * {@code offset}, ordered by {@code M_ShipmentSchedule_ID} for stable pagination across rounds.
+	 * <p>
+	 * This is the one drift {@link AtpTargetCalculator}'s recompute cannot close: there is no candidate to
+	 * correct, so it has to be surfaced instead of silently absorbed.
+	 */
+	public List<Integer> retrieveOpenShipmentScheduleIdsWithoutCandidate(
+			@Nullable final WarehouseId warehouseId,
+			@Nullable final ProductId productId,
+			@Nullable final ProductCategoryId productCategoryId,
+			final int limit,
+			final int offset)
+	{
+		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addNotInSubQueryFilter(
+						I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID,
+						I_MD_Candidate_Demand_Detail.COLUMNNAME_M_ShipmentSchedule_ID,
+						queryBL.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
+								.addOnlyActiveRecordsFilter()
+								.create());
+
+		addLocationFilters(queryBuilder,
+				I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID,
+				warehouseId, productId, productCategoryId);
+
+		return queryBuilder
+				.orderBy().addColumnAscending(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID).endOrderBy()
+				.create()
+				.setLimit(limit, offset)
+				.listIds();
+	}
+
+	/**
+	 * Same as {@link #retrieveOpenShipmentScheduleIdsWithoutCandidate}, for {@code M_ReceiptSchedule} /
+	 * {@code MD_Candidate_Purchase_Detail}.
+	 */
+	public List<Integer> retrieveOpenReceiptScheduleIdsWithoutCandidate(
+			@Nullable final WarehouseId warehouseId,
+			@Nullable final ProductId productId,
+			@Nullable final ProductCategoryId productCategoryId,
+			final int limit,
+			final int offset)
+	{
+		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+				.addNotInSubQueryFilter(
+						I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID,
+						I_MD_Candidate_Purchase_Detail.COLUMNNAME_M_ReceiptSchedule_ID,
+						queryBL.createQueryBuilder(I_MD_Candidate_Purchase_Detail.class)
+								.addOnlyActiveRecordsFilter()
+								.create());
+
+		addLocationFilters(queryBuilder,
+				I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID, I_M_ReceiptSchedule.COLUMNNAME_M_Product_ID,
+				warehouseId, productId, productCategoryId);
+
+		return queryBuilder
+				.orderBy().addColumnAscending(I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID).endOrderBy()
+				.create()
+				.setLimit(limit, offset)
+				.listIds();
+	}
+
+	/**
+	 * Applies the shared optional warehouse/product/product-category filter to a source-document query
+	 * builder - extracted because {@link #retrieveOpenShipmentScheduleIdsWithoutCandidate} and
+	 * {@link #retrieveOpenReceiptScheduleIdsWithoutCandidate} need the identical filter over two different
+	 * model classes that happen to share both column names.
+	 */
+	private <T> void addLocationFilters(
+			@NonNull final IQueryBuilder<T> queryBuilder,
+			@NonNull final String warehouseColumnName,
+			@NonNull final String productColumnName,
+			@Nullable final WarehouseId warehouseId,
+			@Nullable final ProductId productId,
+			@Nullable final ProductCategoryId productCategoryId)
+	{
+		if (warehouseId != null)
+		{
+			queryBuilder.addEqualsFilter(warehouseColumnName, warehouseId);
+		}
+		if (productId != null)
+		{
+			queryBuilder.addEqualsFilter(productColumnName, productId);
+		}
+		if (productCategoryId != null)
+		{
+			queryBuilder.addInSubQueryFilter(
+					productColumnName,
+					I_M_Product.COLUMNNAME_M_Product_ID,
+					queryBL.createQueryBuilder(I_M_Product.class)
+							.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, productCategoryId)
+							.create());
+		}
 	}
 }

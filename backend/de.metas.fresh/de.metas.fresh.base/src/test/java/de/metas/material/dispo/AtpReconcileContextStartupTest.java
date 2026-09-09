@@ -27,6 +27,7 @@ import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.reconcile.AtpReconciliationCommand;
 import de.metas.material.dispo.reconcile.AtpTargetCalculator;
+import de.metas.material.dispo.reconcile.UncoveredSourceDocumentService;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -122,6 +123,12 @@ class AtpReconcileContextStartupTest
 
 			assertThat(context.getBeanNamesForType(AtpTargetCalculator.class))
 					.as("the read-only divergence computation needs nothing from dispo-service, so it stays available")
+					.isNotEmpty();
+
+			assertThat(context.getBeanNamesForType(UncoveredSourceDocumentService.class))
+					.as("the read-only uncovered-open-document report needs nothing from dispo-service either, so"
+							+ " it must be resolvable in the same webapi-like context that the divergence report"
+							+ " process runs in")
 					.isNotEmpty();
 		}
 	}

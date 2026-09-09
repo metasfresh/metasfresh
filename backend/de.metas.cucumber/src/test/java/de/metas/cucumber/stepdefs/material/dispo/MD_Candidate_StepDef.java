@@ -790,6 +790,27 @@ public class MD_Candidate_StepDef
 		assertThat(result.isError()).isFalse();
 	}
 
+	/**
+	 * Deletes the {@code MD_Candidate_Demand_Detail} row(s) of the given candidate, leaving its
+	 * {@code M_ShipmentSchedule} referenced by no active candidate at all - simulating the drift the
+	 * divergence report's uncovered-document check exists to find (e.g. a candidate purged by a cleanup job
+	 * while its source document survives).
+	 * <p>
+	 * Gherkin: {@code the MD_Candidate_Demand_Detail of <candidateIdentifier> is deleted}
+	 */
+	@And("^the MD_Candidate_Demand_Detail of (.*) is deleted$")
+	public void delete_md_candidate_demand_detail(@NonNull final String candidateIdentifier)
+	{
+		final CandidateId candidateId = materialDispoDataItemStepDefData.get(candidateIdentifier).getCandidateId();
+
+		final List<I_MD_Candidate_Demand_Detail> detailRecords = queryBL.createQueryBuilder(I_MD_Candidate_Demand_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Demand_Detail.COLUMNNAME_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.list();
+		assertThat(detailRecords).as("MD_Candidate_Demand_Detail of %s", candidateIdentifier).isNotEmpty();
+
+		detailRecords.forEach(InterfaceWrapperHelper::delete);
+	}
 
 	/**
 	 * Sets the ATP baseline from MD_Stock: for the given product, posts one reset-stock
