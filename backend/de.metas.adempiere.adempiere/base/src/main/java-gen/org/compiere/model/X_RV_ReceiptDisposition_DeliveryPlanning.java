@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_RV_ReceiptDisposition_DeliveryPlanning extends org.compiere.model.PO implements I_RV_ReceiptDisposition_DeliveryPlanning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 381919965L;
+	private static final long serialVersionUID = -900471658L;
 
     /** Standard Constructor */
     public X_RV_ReceiptDisposition_DeliveryPlanning (final Properties ctx, final int RV_ReceiptDisposition_DeliveryPlanning_ID, @Nullable final String trxName)
@@ -236,6 +236,18 @@ public class X_RV_ReceiptDisposition_DeliveryPlanning extends org.compiere.model
 	public boolean isPlanned() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPlanned);
+	}
+
+	@Override
+	public void setIsReadyForReceipt (final boolean IsReadyForReceipt)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsReadyForReceipt, IsReadyForReceipt);
+	}
+
+	@Override
+	public boolean isReadyForReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReadyForReceipt);
 	}
 
 	@Override

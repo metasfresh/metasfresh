@@ -89,7 +89,7 @@ class DeliveryInstructionDateSyncDownTest
 				new ShipperTransportationDocSubTypeGuard());
 
 		// the REAL interceptor, so a planner's edit of the instruction genuinely fires the sync
-		POJOLookupMap.get().addModelValidator(new M_ShipperTransportation(deliveryPlanningService, Mockito.mock(IEventBusFactory.class)));
+		POJOLookupMap.get().addModelValidator(new M_ShipperTransportation(deliveryPlanningService, deliveryPlanningAllocRepository, Mockito.mock(IEventBusFactory.class)));
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);

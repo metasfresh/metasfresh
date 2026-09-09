@@ -207,7 +207,6 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Set Location.
-	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -217,7 +216,6 @@ public interface I_M_Delivery_Planning
 
 	/**
 	 * Get Location.
-	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -583,6 +581,31 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsDelivered = new ModelColumn<>(I_M_Delivery_Planning.class, "IsDelivered", null);
 	String COLUMNNAME_IsDelivered = "IsDelivered";
+
+	/**
+	 * Set Ready for Receipt.
+	 * Indicates whether the material receipt can be done for this row. A delivery planning is ready once it is allocated to a completed delivery instruction;
+ a row with no delivery planning is always ready.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadyForReceipt (boolean IsReadyForReceipt);
+
+	/**
+	 * Get Ready for Receipt.
+	 * Indicates whether the material receipt can be done for this row. A delivery planning is ready once it is allocated to a completed delivery instruction;
+ a row with no delivery planning is always ready.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadyForReceipt();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsReadyForReceipt = new ModelColumn<>(I_M_Delivery_Planning.class, "IsReadyForReceipt", null);
+	String COLUMNNAME_IsReadyForReceipt = "IsReadyForReceipt";
 
 	/**
 	 * Set Load Time.
@@ -1115,7 +1138,7 @@ public interface I_M_Delivery_Planning
 	 * Set Loading Address.
 	 * The address where goods are loaded for this delivery planning.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
@@ -1127,7 +1150,7 @@ public interface I_M_Delivery_Planning
 	 * Get Loading Address.
 	 * The address where goods are loaded for this delivery planning.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
@@ -1141,7 +1164,7 @@ public interface I_M_Delivery_Planning
 	 * Set Delivery Address.
 	 * The address goods are delivered to for this delivery planning.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
@@ -1153,7 +1176,7 @@ public interface I_M_Delivery_Planning
 	 * Get Delivery Address.
 	 * The address goods are delivered to for this delivery planning.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances

@@ -281,6 +281,55 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID    | OPT.IsPlanned |
       | rowFlagUnplanned_RL    | null                   | scheduleFlagUnplanned_RL | false         |
 
+  @Id:S31789_TC6b
+  Scenario: Readiness follows the planning's own instruction, and a row with no planning is always ready
+
+    Given metasfresh contains C_Orders:
+      | Identifier           | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderRdyPlanned_RL   | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC6B-A    |
+      | orderRdyUnplanned_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC6B-B    |
+    And metasfresh contains C_OrderLines:
+      | Identifier               | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineRdyPlanned_RL   | orderRdyPlanned_RL    | product_RL              | 6          | shipperPlanning_RL          |
+      | orderLineRdyUnplanned_RL | orderRdyUnplanned_RL  | product_RL              | 4          | shipperPlain_RL             |
+
+    When the order identified by orderRdyPlanned_RL is completed
+    And the order identified by orderRdyUnplanned_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleRdyPlanned_RL           | orderRdyPlanned_RL    | orderLineRdyPlanned_RL    | vendor_RL                | vendorLocation_RL                 | product_RL              | 6          | warehouse_RL              |
+      | scheduleRdyUnplanned_RL         | orderRdyUnplanned_RL  | orderLineRdyUnplanned_RL  | vendor_RL                | vendorLocation_RL                 | product_RL              | 4          | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID         |
+      | planningRdy_RL         | orderLineRdyPlanned_RL |
+
+    Then after not more than 60s, the C_Order identified by orderRdyPlanned_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID  | OPT.IsPlanned | OPT.IsReadyForReceipt |
+      | rowRdyPlanned_RL       | planningRdy_RL         | scheduleRdyPlanned_RL | true          | false                 |
+
+    # A DRAFT instruction is the planner still arranging the transport, so allocation ALONE does not make the row
+    # actionable - only the instruction completing does.
+    When generate M_ShipperTransportation for M_Delivery_Planning:
+      | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
+      | transportRdy_RL            | planningRdy_RL         | false      |
+
+    Then after not more than 60s, the C_Order identified by orderRdyPlanned_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID  | OPT.IsPlanned | OPT.IsReadyForReceipt |
+      | rowRdyPlanned_RL       | planningRdy_RL         | scheduleRdyPlanned_RL | true          | false                 |
+
+    # THE transition, on the SAME planning: two plannings compared side by side would pass on a flag that never moves.
+    When the transport order identified by transportRdy_RL is completed
+
+    Then after not more than 60s, the C_Order identified by orderRdyPlanned_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID  | OPT.IsPlanned | OPT.IsReadyForReceipt |
+      | rowRdyPlanned_RL       | planningRdy_RL         | scheduleRdyPlanned_RL | true          | true                  |
+
+    # An unplanned row has no planning to wait on, so it is ready from the moment it appears - never 'N' first.
+    And after not more than 60s, the C_Order identified by orderRdyUnplanned_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID    | OPT.IsPlanned | OPT.IsReadyForReceipt |
+      | rowRdyUnplanned_RL     | null                   | scheduleRdyUnplanned_RL | false         | true                  |
+
   @Id:S31789_TC7
   Scenario: Receiving an unplanned row produces a plain receipt against its schedule
 

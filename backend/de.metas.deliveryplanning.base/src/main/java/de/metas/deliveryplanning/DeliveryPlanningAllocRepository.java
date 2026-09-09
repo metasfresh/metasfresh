@@ -26,7 +26,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
+import de.metas.document.engine.DocStatus;
 import de.metas.organization.OrgId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
 import de.metas.util.Services;
@@ -52,9 +54,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Writes {@code M_Delivery_Planning.IsAllocated} as the one deliberate exception to single-table ownership:
- * that column is this table's mirror, and folding its {@code EXISTS} into the {@code UPDATE}'s own
- * {@code SET} clause is what keeps {@link #refreshIsAllocated(DeliveryPlanningId)} a single statement.
+ * Writes {@code M_Delivery_Planning.IsAllocated} and {@code IsReadyForReceipt} as the one deliberate exception
+ * to single-table ownership: both columns are this table's mirrors, and folding their {@code EXISTS} into the
+ * {@code UPDATE}'s own {@code SET} clause is what keeps
+ * {@link #refreshAllocationDerivedFlags(DeliveryPlanningId)} a single statement.
  */
 @Repository
 public class DeliveryPlanningAllocRepository
@@ -78,8 +81,8 @@ public class DeliveryPlanningAllocRepository
 		allocRecord.setM_ShippingPackage_ID(shippingPackageId.getRepoId());
 		saveRecord(allocRecord);
 
-		// IsAllocated is kept in step by the M_Delivery_Planning_Alloc interceptor (AFTER_NEW) that the saveRecord
-		// above fires - not by an inline call here
+		// IsAllocated and IsReadyForReceipt are kept in step by the M_Delivery_Planning_Alloc interceptor
+		// (AFTER_NEW) that the saveRecord above fires - not by an inline call here
 
 		return DeliveryPlanningAllocId.ofRepoId(allocRecord.getM_Delivery_Planning_Alloc_ID());
 	}
@@ -182,8 +185,8 @@ public class DeliveryPlanningAllocRepository
 			touchedDeliveryInstructionIds.add(ShipperTransportationId.ofRepoId(allocRecord.getM_ShipperTransportation_ID()));
 		}
 
-		// IsAllocated is kept in step by the M_Delivery_Planning_Alloc interceptor (AFTER_CHANGE on IsActive) that the
-		// setIsActive(false) + saveRecord above fires - not by an inline call here
+		// IsAllocated and IsReadyForReceipt are kept in step by the M_Delivery_Planning_Alloc interceptor
+		// (AFTER_CHANGE on IsActive) that the setIsActive(false) + saveRecord above fires - not by an inline call here
 
 		return DeactivatedAllocations.builder()
 				.shippingPackageIds(deactivatedShippingPackageIds.build())
@@ -250,21 +253,33 @@ public class DeliveryPlanningAllocRepository
 	}
 
 	/**
-	 * The single place that re-derives and writes the {@code IsAllocated} mirror, called by the
-	 * {@code M_Delivery_Planning_Alloc} interceptor, so every writer of the allocation table keeps it correct.
+	 * The single place that re-derives and writes the two allocation-derived mirrors on the planning -
+	 * {@code IsAllocated} and {@code IsReadyForReceipt} - so every writer of the allocation table keeps both
+	 * correct. Called by the {@code M_Delivery_Planning_Alloc} interceptor and, for the instruction's own
+	 * {@code DocStatus} half of readiness, by the {@code M_ShipperTransportation} one.
 	 * <p>
 	 * {@code updateDirectly} is raw SQL: it fires no {@code CacheMgt} reset and no interceptor, so the explicit
 	 * {@link CacheMgt#reset(String, int)} below is required - without it a cached {@code I_M_Delivery_Planning}
-	 * row keeps showing the pre-change {@code IsAllocated}.
+	 * row keeps showing the pre-change flags.
 	 */
-	public void refreshIsAllocated(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	public void refreshAllocationDerivedFlags(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
 				.create()
-				.updateDirectly(new IsAllocatedFromAllocTableUpdater());
+				.updateDirectly(new AllocationDerivedFlagsUpdater());
 
 		CacheMgt.get().reset(I_M_Delivery_Planning.Table_Name, deliveryPlanningId.getRepoId());
+	}
+
+	/**
+	 * Refreshes every planning still actively allocated to the given delivery instruction. Its allocations are
+	 * untouched by a Complete or a Re-Activate, so re-resolving them here is safe - unlike on a VOID, whose
+	 * unlink deactivates them first and whose refresh therefore rides on the allocation interceptor instead.
+	 */
+	public void refreshAllocationDerivedFlags(@NonNull final ShipperTransportationId deliveryInstructionId)
+	{
+		getAllocatedPlanningIds(deliveryInstructionId).forEach(this::refreshAllocationDerivedFlags);
 	}
 
 	/**
@@ -272,16 +287,30 @@ public class DeliveryPlanningAllocRepository
 	 * calls {@link #update(I_M_Delivery_Planning)} - the load-and-save fallback for a non-SQL query engine, kept
 	 * correct but never exercised against Postgres.
 	 */
-	private final class IsAllocatedFromAllocTableUpdater implements ISqlQueryUpdater<I_M_Delivery_Planning>
+	private final class AllocationDerivedFlagsUpdater implements ISqlQueryUpdater<I_M_Delivery_Planning>
 	{
 		@Override
 		public String getSql(final Properties ctx, final List<Object> sqlParams)
 		{
-			return I_M_Delivery_Planning.COLUMNNAME_IsAllocated
-					+ " = (case when exists (select 1 from " + I_M_Delivery_Planning_Alloc.Table_Name
+			return I_M_Delivery_Planning.COLUMNNAME_IsAllocated + " = " + existsActiveAllocationSql("")
+					+ ", " + I_M_Delivery_Planning.COLUMNNAME_IsReadyForReceipt + " = "
+					+ existsActiveAllocationSql(" and exists (select 1 from " + I_M_ShipperTransportation.Table_Name
+					+ " st where st." + I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID
+					+ " = a." + I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShipperTransportation_ID
+					+ " and st." + I_M_ShipperTransportation.COLUMNNAME_DocStatus + " = '" + DocStatus.Completed.getCode() + "')");
+		}
+
+		/**
+		 * @param extraAllocCondition appended inside the {@code EXISTS} over the allocation table, so both flags
+		 * 		are derived from one shape and cannot drift apart on what "allocated" means.
+		 */
+		private String existsActiveAllocationSql(@NonNull final String extraAllocCondition)
+		{
+			return "(case when exists (select 1 from " + I_M_Delivery_Planning_Alloc.Table_Name
 					+ " a where a." + I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID
 					+ " = " + I_M_Delivery_Planning.Table_Name + "." + I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID
-					+ " and a." + I_M_Delivery_Planning_Alloc.COLUMNNAME_IsActive + " = 'Y') then 'Y' else 'N' end)";
+					+ " and a." + I_M_Delivery_Planning_Alloc.COLUMNNAME_IsActive + " = 'Y'"
+					+ extraAllocCondition + ") then 'Y' else 'N' end)";
 		}
 
 		@Override
@@ -289,8 +318,21 @@ public class DeliveryPlanningAllocRepository
 		{
 			final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(deliveryPlanningRecord.getM_Delivery_Planning_ID());
 			deliveryPlanningRecord.setIsAllocated(hasActiveAllocation(deliveryPlanningId));
+			deliveryPlanningRecord.setIsReadyForReceipt(isAllocatedToCompletedInstruction(deliveryPlanningId));
 			return true;
 		}
+	}
+
+	/** The Java form of the {@code IsReadyForReceipt} predicate the SQL updater expresses. */
+	private boolean isAllocatedToCompletedInstruction(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId)
+				.andCollect(I_M_Delivery_Planning_Alloc.COLUMNNAME_M_ShipperTransportation_ID, I_M_ShipperTransportation.class)
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.create()
+				.anyMatch();
 	}
 
 	private IQueryBuilder<I_M_Delivery_Planning_Alloc> queryAllocationsByPlanningIds(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)

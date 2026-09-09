@@ -110,6 +110,9 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 	 *   {@code ContainerNo}, the transport order this ONE row is on, never an OR over the order's<br>
 	 *   <b>OPT.IsPlanned</b> — (optional) expected {@code IsPlanned} - true for a row backed by a delivery
 	 *   planning, false for a row backed only by a receipt schedule<br>
+	 *   <b>OPT.IsReadyForReceipt</b> — (optional) expected {@code IsReadyForReceipt} - the planning's own
+	 *   stored flag on a planned row (true only once it is allocated to a completed delivery instruction),
+	 *   always true on an unplanned row<br>
 	 *   <b>OPT.Processed</b> — (optional) expected {@code Processed} - the planning's own flag on a planned
 	 *   row, the schedule's own flag on an unplanned row<br>
 	 * @cucumber.depends StepDefData: RV_ReceiptDisposition_DeliveryPlanning_StepDefData, C_Order_StepDefData,
@@ -273,6 +276,11 @@ public class RV_ReceiptDisposition_DeliveryPlanning_StepDef
 				.ifPresent(isPlanned -> softly.assertThat(actual.isPlanned())
 						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsPlanned)
 						.isEqualTo(isPlanned));
+
+		expected.getAsOptionalBoolean(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsReadyForReceipt)
+				.ifPresent(isReadyForReceipt -> softly.assertThat(actual.isReadyForReceipt())
+						.as(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_IsReadyForReceipt)
+						.isEqualTo(isReadyForReceipt));
 
 		expected.getAsOptionalBoolean(I_RV_ReceiptDisposition_DeliveryPlanning.COLUMNNAME_Processed)
 				.ifPresent(processed -> softly.assertThat(actual.isProcessed())

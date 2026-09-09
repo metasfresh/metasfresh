@@ -108,7 +108,7 @@ class DeliveryPlanningCancelVoidStalenessTest
 				new ShipperTransportationDocSubTypeGuard());
 
 		// the REAL interceptor, so the instruction's AFTER_VOID unlink cascade genuinely runs on void
-		POJOLookupMap.get().addModelValidator(new M_ShipperTransportation(deliveryPlanningService, Mockito.mock(IEventBusFactory.class)));
+		POJOLookupMap.get().addModelValidator(new M_ShipperTransportation(deliveryPlanningService, deliveryPlanningAllocRepository, Mockito.mock(IEventBusFactory.class)));
 
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);

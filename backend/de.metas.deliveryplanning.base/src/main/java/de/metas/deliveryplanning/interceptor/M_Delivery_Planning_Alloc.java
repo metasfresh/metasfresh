@@ -33,10 +33,11 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 /**
- * Keeps {@code M_Delivery_Planning.IsAllocated} in step with the allocation table it mirrors - structurally, via
- * the model-change framework, rather than by trusting every write path to remember an inline call. An INSERT, an
- * {@code IsActive} flip and a hard DELETE can each change which plannings have an active allocation, so all
- * three are covered.
+ * Keeps {@code M_Delivery_Planning.IsAllocated} and {@code IsReadyForReceipt} in step with the allocation table
+ * they mirror - structurally, via the model-change framework, rather than by trusting every write path to
+ * remember an inline call. An INSERT, an {@code IsActive} flip and a hard DELETE can each change which plannings
+ * have an active allocation, so all three are covered. A MOVE needs no timing of its own: it deactivates the old
+ * allocation and inserts a new one instead of repointing {@code M_ShipperTransportation_ID}.
  */
 @Interceptor(I_M_Delivery_Planning_Alloc.class)
 @Component
@@ -48,12 +49,12 @@ public class M_Delivery_Planning_Alloc
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_Delivery_Planning_Alloc.COLUMNNAME_IsActive)
 	public void onActiveStateChanged(@NonNull final I_M_Delivery_Planning_Alloc allocRecord)
 	{
-		deliveryPlanningAllocRepository.refreshIsAllocated(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
+		deliveryPlanningAllocRepository.refreshAllocationDerivedFlags(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void onDelete(@NonNull final I_M_Delivery_Planning_Alloc allocRecord)
 	{
-		deliveryPlanningAllocRepository.refreshIsAllocated(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
+		deliveryPlanningAllocRepository.refreshAllocationDerivedFlags(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
 	}
 }

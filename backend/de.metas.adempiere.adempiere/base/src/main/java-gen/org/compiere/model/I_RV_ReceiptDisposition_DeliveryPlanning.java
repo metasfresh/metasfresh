@@ -455,6 +455,31 @@ public interface I_RV_ReceiptDisposition_DeliveryPlanning
 	String COLUMNNAME_IsPlanned = "IsPlanned";
 
 	/**
+	 * Set Ready for Receipt.
+	 * Indicates whether the material receipt can be done for this row. A delivery planning is ready once it is allocated to a completed delivery instruction;
+ a row with no delivery planning is always ready.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadyForReceipt (boolean IsReadyForReceipt);
+
+	/**
+	 * Get Ready for Receipt.
+	 * Indicates whether the material receipt can be done for this row. A delivery planning is ready once it is allocated to a completed delivery instruction;
+ a row with no delivery planning is always ready.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadyForReceipt();
+
+	ModelColumn<I_RV_ReceiptDisposition_DeliveryPlanning, Object> COLUMN_IsReadyForReceipt = new ModelColumn<>(I_RV_ReceiptDisposition_DeliveryPlanning.class, "IsReadyForReceipt", null);
+	String COLUMNNAME_IsReadyForReceipt = "IsReadyForReceipt";
+
+	/**
 	 * Set WE Notice.
 	 * Has the container planning been completed?
 	 *

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1456037581L;
+	private static final long serialVersionUID = -961137356L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -320,6 +320,18 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public boolean isDelivered() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDelivered);
+	}
+
+	@Override
+	public void setIsReadyForReceipt (final boolean IsReadyForReceipt)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsReadyForReceipt, IsReadyForReceipt);
+	}
+
+	@Override
+	public boolean isReadyForReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReadyForReceipt);
 	}
 
 	@Override
