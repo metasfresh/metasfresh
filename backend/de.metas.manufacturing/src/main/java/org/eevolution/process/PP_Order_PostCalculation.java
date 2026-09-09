@@ -88,8 +88,10 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt()
 	{
-		// Distributing closes the order, so it leaves the monitor only if the selection is rebuilt.
+		// Distributing closes the order, so it leaves the monitor only if the selection is rebuilt. The
+		// Swing client knows only the coarser flag, so set both.
 		getResult().setRecreateViewSelectionAfterExecution(true);
+		getResult().setRefreshAllAfterExecution(true);
 
 		final PPOrderId ppOrderId = getPPOrderId();
 

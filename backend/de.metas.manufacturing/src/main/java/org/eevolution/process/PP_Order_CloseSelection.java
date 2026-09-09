@@ -127,8 +127,11 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		// Closed orders leave a monitor scoped to completed ones only if the selection is rebuilt.
+		// Closed orders leave a monitor scoped to completed ones only if the selection is rebuilt. The
+		// Swing client knows only the coarser flag, so set both: there it is the difference between
+		// re-reading the row and re-running the tab query.
 		getResult().setRecreateViewSelectionAfterExecution(true);
+		getResult().setRefreshAllAfterExecution(true);
 
 		final PPOrderCloseResult result = ppOrderBL.closeOrdersInSelection(getPinstanceId());
 

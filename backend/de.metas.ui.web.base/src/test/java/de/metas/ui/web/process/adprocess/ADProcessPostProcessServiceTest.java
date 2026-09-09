@@ -102,6 +102,19 @@ class ADProcessPostProcessServiceTest
 		Mockito.verify(view, Mockito.never()).invalidateAll();
 	}
 
+	/** Both processes of the cost monitor set both flags, for the sake of the Swing client. */
+	@Test
+	void onlyTheSelectionIsRecreated_whenTheProcessAsksForBoth()
+	{
+		postProcess(result -> {
+			result.setRecreateViewSelectionAfterExecution(true);
+			result.setRefreshAllAfterExecution(true);
+		});
+
+		Mockito.verify(view).invalidateSelection();
+		Mockito.verify(view, Mockito.never()).invalidateAll();
+	}
+
 	@Test
 	void onlyTheRowsAreReRead_whenTheProcessAsksForAPlainRefresh()
 	{
