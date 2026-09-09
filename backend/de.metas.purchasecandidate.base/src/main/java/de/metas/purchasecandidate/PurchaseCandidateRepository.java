@@ -140,6 +140,47 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * @return {@code true} if a real (i.e. non-simulated) purchase candidate exists for the given sales order line
+	 * which has already been used to create a purchase order, i.e. has at least one {@link I_C_PurchaseCandidate_Alloc}
+	 * record (the real link to a {@code C_OrderLinePO_ID}/{@code C_OrderPO_ID}).
+	 * <p>
+	 * Note: intentionally NOT based on {@code C_PurchaseCandidate.Processed}. That flag is neither necessary nor
+	 * sufficient here: a partially-fulfilled candidate has real {@code C_PurchaseCandidate_Alloc} rows while still
+	 * {@code Processed=false} (false negative), and the manual AD process {@code C_PurchaseCandiate_Mark_Processed}
+	 * can set {@code Processed=true} with no PO at all (false positive).
+	 * <p>
+	 * Note: unlike the shipment/invoice delete guards, this check does NOT unblock once the purchase order is
+	 * voided or reversed. Those guards look at the referenced document's {@code DocStatus} because voiding/reversing
+	 * a shipment or invoice cancels the document itself. Here, voiding/reversing the purchase order does NOT remove
+	 * the {@code C_PurchaseCandidate_Alloc} row that links the candidate to it, so the FK would still be violated if
+	 * the candidate were deleted. Blocking on Alloc existence alone (regardless of the PO's DocStatus) is therefore
+	 * deliberate and FK-necessary — do not add a DocStatus check here.
+	 */
+	public boolean hasCandidateThatProducedAPurchaseOrder(@NonNull final OrderLineId salesOrderLineId)
+	{
+		final Set<PurchaseCandidateId> candidateIds = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, salesOrderLineId)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, false)
+				.create()
+				.listIds()
+				.stream()
+				.map(PurchaseCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (candidateIds.isEmpty())
+		{
+			return false;
+		}
+
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_ID, PurchaseCandidateId.toIntSet(candidateIds))
+				.create()
+				.anyMatch();
+	}
+
 	@NonNull
 	public Optional<PurchaseCandidateId> getByExternalHeaderAndLineId(
 			@NonNull final String externalHeaderId,
@@ -762,7 +803,11 @@ public class PurchaseCandidateRepository
 
 		if (deletePurchaseCandidateQuery.isOnlySimulated())
 		{
-			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, deletePurchaseCandidateQuery.isOnlySimulated());
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, true);
+		}
+		else
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, false);
 		}
 
 		if (deletePurchaseCandidateQuery.getSalesOrderLineId() != null)

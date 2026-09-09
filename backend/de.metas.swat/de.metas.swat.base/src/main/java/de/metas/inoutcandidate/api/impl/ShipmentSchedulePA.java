@@ -7,6 +7,8 @@ import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -15,6 +17,7 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -62,6 +65,16 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public static final AdMessageKey MSG_SalesOrderLine_CannotDelete_HasCompletedDocs = AdMessageKey.of("SalesOrderLine_CannotDelete_HasCompletedDocs");
+
+	/**
+	 * DocStatuses of an {@code M_InOut} that do NOT count as "a real shipment" blocking the sales order line delete:
+	 * a voided or reversed inout never blocks.
+	 */
+	private static final ImmutableSet<DocStatus> NON_BLOCKING_INOUT_DOCSTATUSES = ImmutableSet.of(
+			DocStatus.Voided,
+			DocStatus.Reversed);
 
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
@@ -590,6 +603,67 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.delete(); // don't "deleteDirectly". we need model interceptors to fire
 
 		logger.debug("Deleted {} M_ShipmentSchedule records for referencedRecord={}", deletedCount, referencedRecord);
+	}
+
+	@Override
+	public void deleteOrGuardForOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		if (hasActiveShipmentToNonVoidedInOut(orderLineId))
+		{
+			throw new AdempiereException(MSG_SalesOrderLine_CannotDelete_HasCompletedDocs);
+		}
+
+		deleteAllForReference(TableRecordReference.of(InterfaceWrapperHelper.getTableId(I_C_OrderLine.class), orderLineId.getRepoId()));
+	}
+
+	/**
+	 * Block predicate: the schedule for this order line has at least one active allocation
+	 * ({@code M_ShipmentSchedule_QtyPicked}, or the direct {@code M_InOutLine.C_OrderLine_ID} link used for manually
+	 * created shipments) to an {@code M_InOutLine} whose parent {@code M_InOut} is NOT voided/reversed.
+	 */
+	private boolean hasActiveShipmentToNonVoidedInOut(@NonNull final OrderLineId orderLineId)
+	{
+		final ImmutableSet<Integer> inOutLineIds = ImmutableSet.<Integer>builder()
+				.addAll(retrieveInOutLineIdsFromQtyPicked(orderLineId))
+				.addAll(retrieveInOutLineIdsFromDirectOrderLineLink(orderLineId))
+				.build();
+
+		if (inOutLineIds.isEmpty())
+		{
+			return false;
+		}
+
+		return queryBL.createQueryBuilder(org.compiere.model.I_M_InOutLine.class)
+				.addInArrayFilter(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, inOutLineIds)
+				.andCollect(org.compiere.model.I_M_InOutLine.COLUMN_M_InOut_ID)
+				.addNotInArrayFilter(org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus, NON_BLOCKING_INOUT_DOCSTATUSES)
+				.create()
+				.anyMatch();
+	}
+
+	private Set<Integer> retrieveInOutLineIdsFromQtyPicked(@NonNull final OrderLineId orderLineId)
+	{
+		final ShipmentScheduleId shipmentScheduleId = getShipmentScheduleIdByOrderLineId(orderLineId);
+		if (shipmentScheduleId == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		return ImmutableSet.copyOf(queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addNotNull(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID)
+				.create()
+				.listDistinct(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, Integer.class));
+	}
+
+	private Set<Integer> retrieveInOutLineIdsFromDirectOrderLineLink(@NonNull final OrderLineId orderLineId)
+	{
+		return ImmutableSet.copyOf(queryBL.createQueryBuilder(org.compiere.model.I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(org.compiere.model.I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.listDistinct(org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, Integer.class));
 	}
 
 	@Override
