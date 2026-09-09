@@ -30,6 +30,12 @@ let afterTap = {};
 let tapped = [];
 
 const fakePage = {
+    // This branch's tests/utils/common.js additionally arms a browser-console recorder on
+    // setCurrentPage(currentPage), which calls currentPage.on('console', ...) / .off(...) to
+    // attach/detach its listener. The fake page has no real console to listen on, so these are
+    // harmless no-ops — the recovery decision under test never reads the recorder.
+    on: () => {},
+    off: () => {},
     locator: (selector) => ({
         waitFor: async () => {
             if (!attached[selector]) {
