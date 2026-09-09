@@ -28,13 +28,13 @@ Feature: ATP reconciliation regression coverage
       | ps_reg     |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | pl_so_reg  | ps_reg              | DE           | EUR           | true  |
+      | pl_so_reg  | ps_reg             | DE           | EUR           | true  |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | plv_so_reg | pl_so_reg      |
     And metasfresh contains C_BPartners:
       | Identifier   | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | customer_reg | N        | Y          | ps_reg              |
+      | customer_reg | N        | Y          | ps_reg             |
 
   @Id:ATPREG_001
   @from:cucumber
@@ -46,20 +46,20 @@ Feature: ATP reconciliation regression coverage
       | comp_reg1  | standard_category_reg  | PCE               |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
-      | pp_reg1    | plv_so_reg              | comp_reg1    | 10.0     | PCE               | Normal           |
+      | pp_reg1    | plv_so_reg             | comp_reg1    | 10.0     | PCE               | Normal           |
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
       | bom_reg1   | fin_reg1                | 2024-09-01 | bomv_reg1                            |
     And metasfresh contains PP_Product_BOMLines
       | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
-      | boml_reg1  | bom_reg1                     | comp_reg1                | 2024-09-01 | 20       |
+      | boml_reg1  | bom_reg1                     | comp_reg1               | 2024-09-01 | 20       |
     And the PP_Product_BOM identified by bom_reg1 is completed
     And verify BOM for M_Product:
       | M_Product_ID.Identifier |
       | fin_reg1                |
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | ppln_reg1  | fin_reg1                 | bomv_reg1                                | false        |
+      | ppln_reg1  | fin_reg1                | bomv_reg1                                | false        |
 
     # --- component stock of 100, ATP 100 -------------------------------------------------
     And metasfresh contains M_Inventories:
@@ -74,13 +74,13 @@ Feature: ATP reconciliation regression coverage
       | invl_reg1          | hu_reg1  |
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
-      | comp_reg1                | 100      |
+      | comp_reg1               | 100       |
 
     # --- a production order books a BOM demand of 20 for the component -------------------
     When metasfresh has date and time 2024-09-21T08:00:00+01:00[Europe/Berlin]
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
-      | ppo_reg1                | MOP         | fin_reg1                 | 1          | plant_reg                | WH_REG                        | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | Y                |
+      | ppo_reg1               | MOP         | fin_reg1                | 1          | plant_reg                | WH_REG                        | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | Y                |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | ATP | M_Warehouse_ID |
@@ -105,7 +105,7 @@ Feature: ATP reconciliation regression coverage
       | d_reg1     | DEMAND            | SHIPMENT                  | comp_reg1    | 2024-09-22T21:00:00Z | -30 | 50  | WH_REG         |
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
-      | comp_reg1                | 100      |
+      | comp_reg1               | 100       |
 
     # --- reconcile: only the still-open sales demand (30) counts; the closed production demand (20)
     # must not - target = physical 100 - open 30 = 70, not 100 - 30 - 20 = 50 (naive full inclusion,
@@ -128,7 +128,7 @@ Feature: ATP reconciliation regression coverage
       | p_reg2     | standard_category_reg | PCE               |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
-      | pp_reg2    | plv_so_reg              | p_reg2       | 10.0     | PCE               | Normal           |
+      | pp_reg2    | plv_so_reg             | p_reg2       | 10.0     | PCE               | Normal           |
 
     # --- physical stock 100, then the customer's own cleanup zeroes the stored candidate ----------------
     And metasfresh contains M_Inventories:
@@ -183,8 +183,8 @@ Feature: ATP reconciliation regression coverage
       | p_reg3b    | standard_category_reg | PCE               |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
-      | pp_reg3a   | plv_so_reg              | p_reg3a      | 10.0     | PCE               | Normal           |
-      | pp_reg3b   | plv_so_reg              | p_reg3b      | 10.0     | PCE               | Normal           |
+      | pp_reg3a   | plv_so_reg             | p_reg3a      | 10.0     | PCE               | Normal           |
+      | pp_reg3b   | plv_so_reg             | p_reg3b      | 10.0     | PCE               | Normal           |
 
     # --- product A: driven purely by ordinary engine events, never touched by the reconciliation --------
     And metasfresh contains M_Inventories:
