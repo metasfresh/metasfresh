@@ -158,6 +158,12 @@ public class AtpReconciliationBackup_StepDef
 	 * therefore how a scenario proves what an <i>operator-launched</i> real run actually changed: which candidate,
 	 * from which quantity to which. (The synchronous, run-id-keyed assertion above stays the stronger check
 	 * wherever the reconciliation is invoked directly.)
+	 * <p>
+	 * <b>Use it at most once per product per scenario.</b> Because it matches on the product alone, a second
+	 * real run of the same product would be asserted against the union of both runs' rows: it would pass on the
+	 * FIRST run's leftover row if the quantities happened to coincide, and could match that row while the second
+	 * run's has not landed yet. Two consecutive real runs of one product need the run-id-keyed assertion, i.e. a
+	 * way to carry the enqueued run's {@code ReconciliationRunUUID} back to the scenario.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example

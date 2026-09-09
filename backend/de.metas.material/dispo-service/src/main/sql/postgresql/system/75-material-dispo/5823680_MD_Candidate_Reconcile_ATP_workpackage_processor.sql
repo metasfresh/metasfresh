@@ -23,6 +23,13 @@ VALUES (0,0,'de.metas.material.dispo.reconcile.async.AtpReconciliationWorkpackag
 -- whole selection through the dispo engine, so it must not compete for threads with the high-volume queues
 -- (invoice candidates, printing), and two concurrent reconciliations of overlapping selections would each
 -- compute a target from a chain the other is rewriting.
+--
+-- PoolSize 1 serialises this WITHIN one app server, and that is sufficient rather than partial: the whole
+-- reason AtpReconciliationCommand and the engine behind it are @Profile(material-dispo) is that the dispo
+-- engine must be instantiated in exactly ONE JVM - a second app-server replica activating that profile would
+-- already process every material event twice, long before two reconciliations could overlap. So there is
+-- deliberately no cross-replica lock here: it would guard a topology that cannot exist without the engine
+-- already being broken.
 INSERT INTO C_Queue_Processor (AD_Client_ID,AD_Org_ID,C_Queue_Processor_ID,Created,CreatedBy,IsActive,KeepAliveTimeMillis,Name,PoolSize,Updated,UpdatedBy)
 VALUES (0,0,540086 /*From ID Server*/,TO_TIMESTAMP('2026-09-09 22:00:01','YYYY-MM-DD HH24:MI:SS'),100,'Y',1000,'AtpReconciliationWorkpackageProcessor',1,TO_TIMESTAMP('2026-09-09 22:00:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
