@@ -44,6 +44,9 @@ import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
+import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
@@ -82,6 +85,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
+		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
@@ -106,6 +110,7 @@ public class CreateMasterdataCommand
 				.resources(resources)
 				.productPlannings(productPlannings)
 				.pickingSlots(pickingSlots)
+				.shippers(shippers)
 				.warehouses(warehouses)
 				.workplaces(workplaces)
 				.packingInstructions(packingInstructions)
@@ -222,6 +227,21 @@ public class CreateMasterdataCommand
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build().execute();
+	}
+
+	private ImmutableMap<String, JsonCreateShipperResponse> createShippers()
+	{
+		return process(request.getShippers(), this::createShipper);
+	}
+
+	private JsonCreateShipperResponse createShipper(final String identifier, final JsonCreateShipperRequest request)
+	{
+		return CreateShipperCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
 	}
 
 	private ImmutableMap<String, JsonWarehouseResponse> createWarehouses()
