@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -44,6 +45,7 @@ import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.process.M_Delivery_Planning_Close;
 import de.metas.deliveryplanning.process.M_Delivery_Planning_ReOpen;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -104,6 +106,7 @@ public class M_Delivery_Planning_StepDef
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final M_ShipperTransportation_StepDefData deliveryInstructionTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
+	@NonNull private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	@NonNull private final DeliveryPlanningRejectionHelper rejectionHelper;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -261,11 +264,13 @@ public class M_Delivery_Planning_StepDef
 	 *   planning resolves to; asserted alongside {@code IsDelivered} the two cannot silently disagree<br>
 	 *   <b>OrderStatus</b> — (optional, null-allowed) expected {@code OrderStatus}; {@code null} asserts the planning
 	 *   carries none<br>
+	 *   <b>M_ReceiptSchedule_ID</b> — (optional, identifier-ref) expected receipt schedule the planning was
+	 *   generated from<br>
 	 *   <b>M_ShipperTransportation_ID</b> — (optional, identifier-ref, null-allowed) expected linked delivery
 	 *   instruction; a literal {@code null}/{@code -} asserts that none is linked (i.e. {@code M_ShipperTransportation_ID=0})<br>
 	 * @cucumber.depends StepDefData: M_Delivery_Planning_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData,
 	 * C_Order_StepDefData, C_OrderLine_StepDefData, M_Shipper_StepDefData, C_BPartner_Location_StepDefData,
-	 * M_Warehouse_StepDefData, M_ShipperTransportation_StepDefData
+	 * M_Warehouse_StepDefData, M_ShipperTransportation_StepDefData, M_ReceiptSchedule_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And validate M_Delivery_Planning:
@@ -415,6 +420,13 @@ public class M_Delivery_Planning_StepDef
 							final I_M_InOut inout = id.lookupNotNullIn(inOutTable);
 							softly.assertThat(deliveryPlanning.getM_InOut_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_InOut_ID).isEqualTo(inout.getM_InOut_ID());
 						}
+					});
+
+			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ReceiptSchedule_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(id -> {
+						final I_M_ReceiptSchedule receiptSchedule = id.lookupNotNullIn(receiptScheduleTable);
+						softly.assertThat(deliveryPlanning.getM_ReceiptSchedule_ID()).as(I_M_Delivery_Planning.COLUMNNAME_M_ReceiptSchedule_ID).isEqualTo(receiptSchedule.getM_ReceiptSchedule_ID());
 					});
 
 			row.getAsOptionalIdentifier(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID)

@@ -1,49 +1,31 @@
+-- Source DDL: backend/de.metas.deliveryplanning.base/src/main/sql/postgresql/ddl/views/RV_ReceiptDisposition_DeliveryPlanning.sql
 --
--- RV_ReceiptDisposition_DeliveryPlanning -- the single inbound list behind the receipt-disposition
--- delivery-planning window: active incoming-or-dropship delivery plannings (branch one, "planned") UNIONed
--- with the receipt schedules no active planning refers to (branch two, "unplanned"). The two branches are exact
--- complements, so a schedule never appears on both; a schedule shared by N plannings (what a SPLIT produces)
--- yields N rows.
+-- Widens branch one (the "planned" branch) of RV_ReceiptDisposition_DeliveryPlanning from
+-- transportdirection = 'Incoming' to IN ('Incoming', 'Dropship'). Owner ruling 2026-09-09: "include
+-- dropship, filter should be isIncomingOrDropship". REQUIREMENTS.md AC2 now reads "Outgoing rows and
+-- shipment schedules do not appear" - Outgoing is the only direction this window excludes.
 --
--- KEY. RV_ReceiptDisposition_DeliveryPlanning_ID = M_Delivery_Planning_ID on branch one,
--- 1000000000 + M_ReceiptSchedule_ID on branch two.
---   * Arithmetic, never ROW_NUMBER(): a window function blocks predicate push-down, so a filtered open would
---     compute the whole view first.
---   * Branch one keys on the PLANNING, not the schedule: a split shares one schedule, so a schedule-derived id
---     would repeat and the window would lose grid identity, selection and zoom.
---   * Both source ids must stay <= 1,147,483,647 for the sum to fit a Java int.
+-- This is a consistency fix, not a scope widening. Three things say so:
+--   * de.metas.deliveryplanning.base already pairs the two directions at every one of its ten decision
+--     points, through TransportDirection#isIncomingOrDropship(). The view's '= Incoming' was the only
+--     place in the feature singling Incoming out - grep that method name for the others.
+--   * A dropship planning is created by the INCOMING generate command - GenerateIncomingDeliveryPlanningCommand
+--     reads order.isDropShip() ? Dropship : Incoming - so it carries a receipt schedule by construction, which
+--     is the one fact this view's planned branch needs.
+--   * Measured on the deep_tundra_release local DB 2026-09-09, active plannings by direction (count / with a
+--     receipt schedule / with a shipment schedule): Dropship 112 / 112 / 0, Incoming 1192 / 1192 / 0, Outgoing
+--     1848 / 0 / 1848. Dropship is receipt-side in the real data; Outgoing has no receipt schedule to select.
 --
--- LAZY-LOADING SOURCE COLUMNS. M_ReceiptSchedule.M_Shipper_ID, IsBLReceived, IsBookingConfirmed and IsWENotice
--- are IsLazyLoading='Y' -- AD-level ColumnSQL with NO physical value on the table, so a plain SQL view cannot
--- select them. The shipper is read off the already-joined C_Order (o.m_shipper_id) and the three flags replicate
--- the source ColumnSQL subquery, correlated on rs.c_order_id, on both branches.
+-- Branch two is untouched and needs no change: it already excludes every schedule that has ANY active planning,
+-- dropship ones included, so no row moves between the branches. Grain and key are unaffected - no join, no
+-- table and no column changes, only which m_delivery_planning rows the WHERE admits. Re-verified after
+-- applying, same DB: 1794 rows, 1304 planned + 490 unplanned, 1794 distinct keys, no key appearing twice, and
+-- 112 dropship rows - equal to the 112 counted straight off m_delivery_planning, without the view.
 --
--- PER-BRANCH vs SHARED. Identity and context (product, partner, warehouse, order, order line) are read off the
--- SCHEDULE on BOTH branches, one expression, no CASE - the generate command copies them onto the planning at
--- creation, so the two agree by construction. Dates, quantities and C_UOM_ID are read per branch, because they
--- stay planning-editable after creation and could otherwise silently disagree with each other.
---   * The two quantity columns carry DELIVERY-PLANNING names on BOTH branches: PlannedDischargeQuantity and
---     ActualDischargeQuantity. The window's vocabulary is the planning's, and a receipt schedule supplies values
---     INTO those columns without its own terms appearing - so branch two serves rs.qtytomove as the planned
---     discharge and rs.qtymoved as the actual one, a bare schedule having no planning to ask. Branch one reads
---     the PLANNING's own dp.planneddischargequantity / dp.actualdischargequantity, never the schedule's: a split
---     shares one schedule, so the schedule carries a single figure for the whole order line while each planning
---     plans its own share - reading the schedule shows the same order-line-wide number on every sibling row and
---     reports a quantity nobody plans to receive.
---   * Only the DISCHARGE pair appears. The planning also carries PlannedLoadedQuantity and ActualLoadQty, the
---     vendor's end of the movement; this is a receipt window, so what is discharged here is what belongs on it.
---     For Incoming the actual equals the planned figure until a partial receipt splits the two apart.
---   * M_Warehouse_ID is the schedule's PLAIN column, deliberately not M_Warehouse_Effective_ID: the planning
---     stores the plain one, so the effective one would make the column's two halves disagree.
---   * ATA (branch two) is the EARLIEST movement date over the schedule's receipts, and needs all three
---     conditions - allocation active, receipt completed, aggregate min - or it reports something false.
---   * CalendarWeek is EXTRACT(week from <that branch's ETA expression>), not from a bare source column, so the
---     week cannot disagree with the ETA shown beside it. ISO week, so a year-end date reports its ISO year's week.
---
--- DIRECTIONS: branch one takes Incoming and Dropship - the pair TransportDirection#isIncomingOrDropship()
--- names, and the two the incoming generate command produces, so both carry a receipt schedule. Outgoing
--- carries a shipment schedule instead and has nothing this view could select.
---
+-- Consequence deliberately accepted: the window's ~15 receipt actions become available on dropship rows. They
+-- are coherent there - each defers to ReceiptScheduleReceiveEligibility.check(), which keys on the receipt
+-- schedule's IsClosed / IsPackagingMaterial and knows nothing of direction, so a dropship row is offered
+-- exactly what the receipt-schedule window would offer for the same schedule.
 
 DROP VIEW IF EXISTS RV_ReceiptDisposition_DeliveryPlanning$new
 ;

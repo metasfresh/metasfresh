@@ -200,6 +200,20 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 			assertThat(process.checkNoneProcessed(DeliveryPlanningList.EMPTY).isAccepted()).isTrue();
 		}
 
+		// Migration 5823350 put DROPSHIP plannings on this window, so every action here is now offered on them
+		// too. Pinned rather than assumed: the precondition must go on deciding by Processed alone.
+		@Test
+		@DisplayName("a DROPSHIP planning is judged exactly like an incoming one")
+		void dropshipIsJudgedLikeIncoming()
+		{
+			final DeliveryPlanning dropship = planning().transportDirection(TransportDirection.Dropship).build();
+			final DeliveryPlanning incoming = planning().build();
+			assertThat(process.checkNoneProcessed(DeliveryPlanningList.of(dropship, incoming)).isAccepted()).isTrue();
+
+			final DeliveryPlanning processedDropship = planning().transportDirection(TransportDirection.Dropship).processed(true).build();
+			assertThat(process.checkNoneProcessed(DeliveryPlanningList.of(processedDropship)).isAccepted()).isFalse();
+		}
+
 		@Test
 		@DisplayName("one processed row refuses the WHOLE selection, and the reason names it")
 		void oneProcessedRowRefusesTheWholeSelection()

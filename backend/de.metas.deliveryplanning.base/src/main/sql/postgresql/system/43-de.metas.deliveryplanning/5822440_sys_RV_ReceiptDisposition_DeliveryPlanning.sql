@@ -21,6 +21,8 @@
 -- Dropship and Outgoing plannings are out of scope: branch one is strictly Incoming. Consequence,
 -- stated so it is not read as a bug: branch two excludes a schedule that has ANY active planning, so
 -- a schedule whose only active planning is a Dropship one appears on neither branch.
+-- SUPERSEDED, same branch: 5823350 widened branch one to IN ('Incoming', 'Dropship'), so the paragraph
+-- above describes only what THIS script created. Comment-only note - the statements are unchanged.
 
 DROP VIEW IF EXISTS RV_ReceiptDisposition_DeliveryPlanning$new
 ;

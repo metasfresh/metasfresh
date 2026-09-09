@@ -12,8 +12,9 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
   What decides which list an order lands on is the shipper on its order line: a shipper flagged
   IsCreateDeliveryPlanning gets a delivery planning generated on completion (a PLANNED row), an unflagged one
   does not (an UNPLANNED row, keyed 1000000000 + the receipt schedule id so the two branches stay disjoint).
-  Outgoing and dropship transports are not receipt logistics at all and must not appear: a dropship sends the
-  goods from the vendor straight to the customer, so they never reach the warehouse.
+  Outgoing transports are not receipt logistics and must not appear. Dropship ones do appear: the goods go
+  from the vendor straight to the customer, but the planning is still made by the incoming generate command
+  and still carries a receipt schedule.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -117,7 +118,7 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | rowUnplanned_RL        | null                   | scheduleUnplanned_RL | 2023-02-25 | 7              | vendor_RL         | product_RL       | warehouse_RL       | PO-RL-TC2       |
 
   @Id:S31789_TC3
-  Scenario: An outgoing planning and a dropship planning appear not at all
+  Scenario: An outgoing planning never appears, a dropship planning appears as a planned row
 
     # An outgoing transport: goods leave the warehouse, so receipt logistics has nothing to say about it.
     Given metasfresh contains C_Orders:
@@ -142,7 +143,8 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
     # Asserted only AFTER the planning exists: an empty result before generation would prove nothing.
     Then RV_ReceiptDisposition_DeliveryPlanning has no row for the C_Order identified by orderOutgoing_RL
 
-    # A dropship: the vendor delivers straight to the customer, so the goods never reach the warehouse.
+    # A dropship: the goods go from the vendor straight to the customer, but the planning is still made by the
+    # INCOMING generate command and still carries a receipt schedule, so it belongs on this list.
     Given metasfresh contains C_Orders:
       | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.IsDropShip | OPT.DropShip_Location_ID.Identifier |
       | orderDropship_RL  | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | true           | customerLocation_RL                 |
@@ -152,14 +154,21 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
 
     When the order identified by orderDropship_RL is completed
 
-    Then after not more than 60s, load created M_Delivery_Planning:
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleDropship_RL             | orderDropship_RL      | orderLineDropship_RL      | vendor_RL                | vendorLocation_RL                 | product_RL              | 5          | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID | C_OrderLine_ID       |
       | planningDropship_RL    | orderLineDropship_RL |
+    # M_ReceiptSchedule_ID is asserted here because carrying a receipt schedule is what makes a dropship
+    # planning receipt logistics - the fact the row's presence rests on.
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID       | C_OrderLine_ID       |
-      | planningDropship_RL    | 5          | 5            | Dropship           | orderDropship_RL | orderLineDropship_RL |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | C_Order_ID       | C_OrderLine_ID       | M_ReceiptSchedule_ID |
+      | planningDropship_RL    | 5          | 5            | Dropship           | orderDropship_RL | orderLineDropship_RL | scheduleDropship_RL  |
 
-    Then RV_ReceiptDisposition_DeliveryPlanning has no row for the C_Order identified by orderDropship_RL
+    Then after not more than 60s, the C_Order identified by orderDropship_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned | OPT.QtyOrdered | OPT.PlannedDischargeQuantity | OPT.ActualDischargeQuantity |
+      | rowDropship_RL         | planningDropship_RL    | scheduleDropship_RL  | true          | 5              | 5                            | 0                           |
 
   @Id:S31789_TC4
   Scenario: Each row type carries its ETA from its own source
