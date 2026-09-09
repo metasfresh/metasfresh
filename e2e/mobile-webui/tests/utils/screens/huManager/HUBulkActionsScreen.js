@@ -1,9 +1,5 @@
 import { test } from '../../../../playwright.config';
-<<<<<<< HEAD
-import { page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
-=======
-import { page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../../common';
->>>>>>> 9d8638c (HU Manager bulk-move E2E — scan target locator until the move fires (#24615))
+import { page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
