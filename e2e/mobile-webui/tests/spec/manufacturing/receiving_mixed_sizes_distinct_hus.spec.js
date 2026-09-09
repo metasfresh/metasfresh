@@ -33,18 +33,22 @@ import { VIRTUAL_TU_TARGET_TESTID } from '../../utils/screens/manufacturing/rece
 // one per size, never overwritten or merged into a single attribute-less HU):
 //   1. Floor      - two loose-CU receives (sizes 15, 21) -> two distinct bare VHUs, each with its size.
 //   2. Shared TU  - two receives (sizes 15, 21) into ONE TU -> two distinct CUs of different size in it.
-//   3. Shared LU  - receive size 15 into a NEW LU, then receive size 21 into that SAME LU -> the shared
-//                   LU holds TWO distinct VHUs of different size, its direct children being TUs
-//                   (LU->TU->CU, the shape the mobile mfg receive actually produces - loose-CU-directly-
-//                   on-LU is not producible by the receive, a separate documented limitation).
+//   3. Shared LU  - receive size 15 into a NEW LU (producing ONE concrete transport box on the pallet),
+//                   then receive size 21 by scanning that SAME inner box -> the box holds TWO distinct CUs
+//                   of different size (LU->TU->{CU,CU}). This mirrors the real nursery flow: mixed-size
+//                   plants go into the SAME box on the pallet. Receive #2 must scan the INNER box (a TU) so
+//                   the backend routes to receiveToExistingTU; scanning the LU instead would create a
+//                   second box. (Loose-CU-directly-on-LU is not producible by the receive - documented
+//                   limitation.)
 //
 // OUTCOME (DB-verified via m_hu_attribute on the local scrambled stack): each produced CU/VHU carries its
 // OWN selected size, distinctly, and no two are merged. Because the slot is on the VIRTUAL CU PI (101),
 // every CU/VHU is materialised with the "Size (cm)" slot, so the receive stamps the size at the CU
 // level: the floor case's two bare VHUs carry 15 and 21; the shared-TU case's two inner CUs carry 15 and
-// 21 in the one TU; the shared-LU case's two TUs each hold a CU carrying 15 and 21. The TU/LU themselves
-// carry NO size (their PI versions have no such slot), so a mixed-size container is never mislabelled with
-// one size and distinct-size CUs never collapse into a single attribute-less HU. All three tests pass.
+// 21 in the one TU; the shared-LU case's ONE box holds two CUs carrying 15 and 21. The TU/LU themselves
+// carry NO size (their PI versions have no such slot) - positively asserted via `attributesAbsent` - so a
+// mixed-size container is never mislabelled with one size and distinct-size CUs never collapse into a
+// single attribute-less HU.
 //
 // The slot MUST sit on the VIRTUAL CU PI (101), not the TU PI: a TU-version slot stamps the TU and never
 // reaches the inner CU (retrievePIAttributes does NOT push a TU-version slot down to the CU), which is what
@@ -253,6 +257,10 @@ test('Shared TU: two receives of different sizes yield two distinct CUs with dif
         hus: {
             'tu1': {
                 storages: { 'BOM': '2 PCE' },
+                // The shared TU is a neutral container: the size lives on the inner CU (VIRTUAL CU PI 101),
+                // never on the TU (its PI version has no size slot). Positively assert the TU carries NO
+                // size - an implementation that ALSO stamped the size on the TU would fail here.
+                attributesAbsent: [sizeCode],
                 cus: [
                     { qty: '2 PCE', attributes: { [sizeCode]: '15' } },
                 ],
@@ -286,6 +294,9 @@ test('Shared TU: two receives of different sizes yield two distinct CUs with dif
         hus: {
             'tu1': {
                 storages: { 'BOM': '4 PCE' },
+                // The shared, mixed-size TU stays size-neutral: neither of the two distinct sizes (15/21)
+                // is stamped on the container. Positively assert absence so a wrongly-labelled TU fails.
+                attributesAbsent: [sizeCode],
                 cus: [
                     { qty: '2 PCE', attributes: { [sizeCode]: '15' } },
                     { qty: '2 PCE', attributes: { [sizeCode]: '21' } },
@@ -296,7 +307,7 @@ test('Shared TU: two receives of different sizes yield two distinct CUs with dif
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Shared LU: two receives of different sizes yield two distinct TUs (each one CU) of different size on one LU', async ({ page }) => {
+test('Shared LU: two receives of different sizes into ONE transport box on the pallet yield two distinct size-bearing CUs in that box', async ({ page }) => {
     allure.epic('E0160: Manufacturing Execution');
     allure.tag('F8047: MobileUI Manufacturing Profile');
     allure.tag('F8047');
@@ -307,7 +318,7 @@ test('Shared LU: two receives of different sizes yield two distinct TUs (each on
     const sizeCode = masterdata.attributes.sizeAttr.attributeValue;
     const { jobId } = await startJob(masterdata);
 
-    // --- Receive #1: size 15 cm into a NEW LU (LU->TU->CU) ---
+    // --- Receive #1: size 15 cm into a NEW LU -> LU holds ONE concrete transport box (TU) with the CU ---
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
     await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId });
     await MaterialReceiptLineScreen.receiveQty({
@@ -320,61 +331,84 @@ test('Shared LU: two receives of different sizes yield two distinct TUs (each on
     // reading the backend - guards the async-commit race.
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '20 Stk', qtyReceived: '2 Stk' });
 
-    // Bind the produced LU identifier 'lu1' (from the received HU's loading unit) so we can resolve its
-    // QR code and receive INTO the same LU next.
+    // Assert the produced shape AND bind the LU's inner concrete TU as 'tu1'. The realistic nursery flow
+    // receives both mixed-size plants into ONE transport box on the pallet, so receive #2 must scan that
+    // INNER box (a TU), not the LU: scanning a TU routes to receiveToExistingTU (the CU lands inside the
+    // same box); scanning the LU would route to receiveToExistingLU and create a SECOND box. The
+    // receivedHUs.tu binder can't reach the inner TU (it walks UP from the received HU, recorded against
+    // the top-level LU, and getTransportUnitHU returns null from an LU) - so bind it here via the new
+    // nested-TU `tu` identifier field, then resolve ITS QR to scan next.
     await Backend.expect({
-        title: 'Receive #1 - a new LU is produced holding the size-15 receive',
+        title: 'Receive #1 - a new LU holds ONE concrete TU carrying the size-15 CU',
         manufacturings: {
             [jobId]: {
                 receivedHUs: [{ lu: 'lu1', qty: '2 PCE' }],
             },
         },
+        hus: {
+            'lu1': {
+                huType: 'LU',
+                storages: { 'BOM': '2 PCE' },
+                attributesAbsent: [sizeCode],
+                tus: [
+                    // Empty aggregate-TU placeholder for the LU's remaining (unmaterialized) TU capacity -
+                    // inherent to the LU/TU aggregation model, present whenever the LU has spare capacity.
+                    { isAggregatedTU: true },
+                    // The one concrete transport box, bound as 'tu1' so we can scan IT (not the LU) next.
+                    { tu: 'tu1', huType: 'TU', storages: { 'BOM': '2 PCE' }, attributesAbsent: [sizeCode], cus: [{ qty: '2 PCE', attributes: { [sizeCode]: '15' } }] },
+                ],
+            },
+        },
     });
 
-    const huQRCode = await Backend.getHUQRCodeByIdentifier({ identifier: 'lu1' });
+    const innerTuQRCode = await Backend.getHUQRCodeByIdentifier({ identifier: 'tu1' });
 
-    // --- Receive #2: size 21 cm INTO the same existing LU ---
+    // --- Receive #2: size 21 cm INTO the same existing transport box (scan the INNER TU, not the LU) ---
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
-    await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode });
+    await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: innerTuQRCode });
     await MaterialReceiptLineScreen.receiveQty({
         qtyEntered: '2',
         listAttributes: { sizeAttr: '21' },
         expectGoBackToJob: true,
     });
 
-    // Gate on the commit-confirming, user-visible signal (both receives into the shared LU landed: 2+2=4)
+    // Gate on the commit-confirming, user-visible signal (both receives into the shared box landed: 2+2=4)
     // before completing and reading the backend - guards the async-commit race.
     await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '20 Stk', qtyReceived: '4 Stk' });
 
     await ManufacturingJobScreen.complete();
 
-    // End result: the SHARED lu1 holds TWO distinct size-bearing CUs, one per size (15 and 21), each inside
-    // its OWN transport unit (LU->TU->CU) - a distinct-attribute CU is never merged into the other.
+    // End result: the SHARED lu1 holds ONE concrete transport box (TU), and THAT box holds TWO distinct
+    // size-bearing CUs, one per size (15 and 21) - a distinct-attribute CU is never merged into the other,
+    // and no size is overwritten. This is the realistic nursery shape: mixed-size plants received into the
+    // SAME box on the pallet, each plant keeping its own size.
     //
-    // The LU's direct children are asserted as [aggregate placeholder, TU, TU], not [TU, TU]: two separate
-    // PARTIAL receives (2 of the 4 CUs/TU) into an LU that still has spare TU capacity materialize as TWO
-    // concrete TUs AND leave an EMPTY aggregate-TU placeholder on the LU (M_HU_Item ITEMTYPE_HUAggregate, no
-    // storage). That placeholder is inherent to the LU/TU aggregation model - present regardless of the size
-    // attribute - so getIncludedHUs(lu) returns THREE children. Asserting the empty placeholder slot plus
-    // the two concrete TUs (each a LU->TU->CU carrying its own size) keeps the shape faithful to what the
-    // receive really produces and green now the size is persistable. With the "Size (cm)" slot on the
-    // VIRTUAL CU PI (101), each TU's inner CU carries its own size (15 / 21); under a slotless config the
-    // size would be dropped and the per-CU size assertions would fail.
+    // The LU's direct children are asserted as [aggregate placeholder, ONE concrete TU], not [TU, TU]: a
+    // partial receive (here 4 of the 4 CUs/box are filled by 2+2, but only ONE box of the LU's 20-box
+    // capacity is materialized) into an LU with spare box capacity leaves an EMPTY aggregate-TU placeholder
+    // on the LU (M_HU_Item ITEMTYPE_HUAggregate, no storage) alongside the one concrete box. That placeholder
+    // is inherent to the LU/TU aggregation model - present regardless of the size attribute - so
+    // getIncludedHUs(lu) returns TWO children (one aggregate + one concrete box). The concrete box carries
+    // BOTH CUs (4 PCE total). With the "Size (cm)" slot on the VIRTUAL CU PI (101), each CU carries its own
+    // size (15 / 21); under a slotless config the sizes would be dropped and the two CUs would merge into a
+    // single attribute-less 4-PCE CU, failing the two-distinct-CUs assertion below.
     await Backend.expect({
-        title: 'The shared LU holds two distinct size-bearing CUs (15, 21), each in its own TU (LU->TU->CU)',
+        title: 'The shared LU holds ONE concrete TU with two distinct size-bearing CUs (15, 21)',
         hus: {
             'lu1': {
                 huType: 'LU',
                 storages: { 'BOM': '4 PCE' }, // both 2-PCE receives on one pallet
+                // The shared, mixed-size LU (pallet) stays size-neutral: neither of the two distinct sizes
+                // (15/21) is stamped on the pallet. Positively assert absence so a wrongly-labelled LU fails.
+                attributesAbsent: [sizeCode],
                 tus: [
                     // The empty aggregate-TU placeholder for the LU's remaining (unmaterialized) capacity.
                     // No huType asserted here on purpose: an empty aggregate has no resolvable
                     // M_HU_PI_Version, so a huType check would throw rather than fail cleanly.
                     { isAggregatedTU: true },
-                    // Receive #1 -> its own concrete TU, holding one CU of size 15.
-                    { huType: 'TU', storages: { 'BOM': '2 PCE' }, cus: [{ qty: '2 PCE', attributes: { [sizeCode]: '15' } }] },
-                    // Receive #2 -> its own concrete TU, holding one CU of size 21.
-                    { huType: 'TU', storages: { 'BOM': '2 PCE' }, cus: [{ qty: '2 PCE', attributes: { [sizeCode]: '21' } }] },
+                    // The ONE concrete transport box (a neutral container: size lives on its inner CUs, not
+                    // on the TU), holding BOTH distinct CUs - size 15 and size 21 - never merged.
+                    { huType: 'TU', storages: { 'BOM': '4 PCE' }, attributesAbsent: [sizeCode], cus: [{ qty: '2 PCE', attributes: { [sizeCode]: '15' } }, { qty: '2 PCE', attributes: { [sizeCode]: '21' } }] },
                 ],
             },
         },
