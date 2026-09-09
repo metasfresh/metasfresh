@@ -34,7 +34,8 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(IN p
                 catchweight            Numeric,
                 weight_uom             Character Varying,
                 docstatus              char(2),
-                QtyPattern             text
+                QtyPattern             text,
+                descriptionaboveline   character varying
             )
 AS
 $$ SELECT iol.line,
@@ -83,7 +84,11 @@ $$ SELECT iol.line,
           w.catchweight                                                                                   AS catchweight,
           w.weight_uom                                                                                    AS weight_uom,
           io.docstatus,
-          report.getQtyPattern(uom.StdPrecision)                                  AS QtyPattern
+          report.getQtyPattern(uom.StdPrecision)                                  AS QtyPattern,
+          CASE
+              WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'descriptionaboveline') = 'N' THEN
+                  ol.DescriptionAboveLine
+          END                                                                                             AS descriptionaboveline
    FROM M_InOutLine iol
             INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
             LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID

@@ -10,7 +10,8 @@ RETURNS TABLE
 	LineNetAmt numeric,  
 	UOMSymbol character varying(10),
 	Description character varying,
-	IsPrintWhenPackingMaterial char(1)
+	IsPrintWhenPackingMaterial char(1),
+	DescriptionAboveLine character varying
 )
 AS
 $$
@@ -21,7 +22,8 @@ SELECT
 	ol.linenetamt,
 	COALESCE(uom.UOMSymbol, uomt.UOMSymbol)	AS UOMSymbol,
 	ol.Description,
-	p.IsPrintWhenPackingMaterial
+	p.IsPrintWhenPackingMaterial,
+	ol.DescriptionAboveLine
 FROM
 	c_orderline ol
 	-- Product and its translation

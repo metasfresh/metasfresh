@@ -8,7 +8,8 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU
 	Name Character Varying,
 	UOMSymbol Character Varying (10),
 	Description Character Varying,
-	IsPrintWhenPackingMaterial char(1)
+	IsPrintWhenPackingMaterial char(1),
+	DescriptionAboveLine Character Varying
 );
 
 
@@ -20,10 +21,13 @@ SELECT
 	COALESCE(pt.Name, p.name)		AS Name,
 	COALESCE(uomt.UOMSymbol, uom.UOMSymbol)	AS UOMSymbol,
 	iol.Description,
-	p.IsPrintWhenPackingMaterial
+	p.IsPrintWhenPackingMaterial,
+	ol.DescriptionAboveLine
 FROM
 	M_InOut io
 	INNER JOIN M_InOutLine iol 			ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
+	-- get order line for the free-text-above-order-line column
+	LEFT OUTER JOIN C_OrderLine ol			ON ol.C_OrderLine_ID = iol.C_OrderLine_ID
 	-- Product and its translation
 	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_AD_Language AND pt.isActive = 'Y'
@@ -44,9 +48,9 @@ FROM
 WHERE
 	io.M_InOut_ID = p_M_InOut_ID AND io.isActive = 'Y'
 	AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
-	AND QtyEntered != 0 -- Don't display lines without a Qty. See 08293
+	AND iol.QtyEntered != 0 -- Don't display lines without a Qty. See 08293
 GROUP BY
-	 COALESCE(pt.Name, p.name), COALESCE(uomt.UOMSymbol, uom.UOMSymbol), dlsi.SeqNo, iol.description, p.IsPrintWhenPackingMaterial
+	 COALESCE(pt.Name, p.name), COALESCE(uomt.UOMSymbol, uom.UOMSymbol), dlsi.SeqNo, iol.description, p.IsPrintWhenPackingMaterial, ol.DescriptionAboveLine
 ORDER BY 
 	dlsi.SeqNo NULLS LAST
 	

@@ -6,14 +6,16 @@ RETURNS TABLE
 (
 	MovementQty numeric,
 	Name Character Varying,
-	UOMSymbol Character Varying (10)
+	UOMSymbol Character Varying (10),
+	DescriptionAboveLine Character Varying
 )
 AS
 $$
 SELECT
 	SUM(ol.QtyEntered)			AS MovementQty,
 	COALESCE(pt.Name, p.name)		AS Name,
-	COALESCE(uomt.UOMSymbol, uom.UOMSymbol)	AS UOMSymbol
+	COALESCE(uomt.UOMSymbol, uom.UOMSymbol)	AS UOMSymbol,
+	ol.DescriptionAboveLine
 FROM
 	C_Order o
 	INNER JOIN C_OrderLine ol 			ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
@@ -39,7 +41,7 @@ WHERE
 	AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 	AND QtyEntered != 0 -- Don't display lines without a Qty. See 08293
 GROUP BY
-	 COALESCE(pt.Name, p.name), COALESCE(uomt.UOMSymbol, uom.UOMSymbol), dlsi.SeqNo, ol.description
+	 COALESCE(pt.Name, p.name), COALESCE(uomt.UOMSymbol, uom.UOMSymbol), dlsi.SeqNo, ol.description, ol.DescriptionAboveLine
 ORDER BY 
 	dlsi.SeqNo NULLS LAST
 	

@@ -55,7 +55,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 iswithoutcharge            character(1),
                 reason                     character varying(4000),
                 Is_TotalAmount_Hidden      char,
-                Is_Weight_Hidden           char
+                Is_Weight_Hidden           char,
+                descriptionaboveline       character varying
             )
 AS
 $$
@@ -132,7 +133,8 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        il.iswithoutcharge,
        il.reason,
        report.IsHiddenReportElement(i.C_DocType_ID, 'TotalAmount') AS Is_TotalAmount_Hidden,
-       report.IsHiddenReportElement(i.C_DocType_ID, 'Weight') AS Is_Weight_Hidden
+       report.IsHiddenReportElement(i.C_DocType_ID, 'Weight') AS Is_Weight_Hidden,
+       ol.DescriptionAboveLine                                AS descriptionaboveline
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
          INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID

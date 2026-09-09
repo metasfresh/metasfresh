@@ -18,7 +18,8 @@ RETURNS TABLE
 	Description Character Varying,
 	bp_product_no character varying(30),
 	bp_product_name character varying(100),
-	upc character varying(30)
+	upc character varying(30),
+	descriptionaboveline character varying
 )
 AS
 $$
@@ -42,7 +43,8 @@ SELECT
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
 	COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
-	p.upc
+	p.upc,
+	ol.DescriptionAboveLine
 FROM
 	C_OrderLine ol
 	INNER JOIN C_Order o 			ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
