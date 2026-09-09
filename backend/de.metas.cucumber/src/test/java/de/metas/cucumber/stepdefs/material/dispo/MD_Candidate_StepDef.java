@@ -112,7 +112,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -861,7 +860,7 @@ public class MD_Candidate_StepDef
 		final int productId = productTable.get(productIdentifier).getM_Product_ID();
 
 		final Instant changeDate = row.getAsOptionalInstant("ChangeDate").orElse(null);
-		final Optional<BigDecimal> qtyOnHandOld = row.getAsOptionalBigDecimal("QtyOnHandOld");
+		final BigDecimal qtyOnHandOldOverride = row.getAsOptionalBigDecimal("QtyOnHandOld").orElse(null);
 
 		final List<I_MD_Stock> stockRecords = queryBL.createQueryBuilderOutOfTrx(I_MD_Stock.class)
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
@@ -879,13 +878,8 @@ public class MD_Candidate_StepDef
 					.productDescriptor(ProductDescriptor.forProductAndAttributes(productId, attributesKey, asiId.getRepoId()))
 					.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
 					.qtyOnHand(stockRecord.getQtyOnHand())
-					// Nothing changed this row's QtyOnHand, so with no explicit QtyOnHandOld the honest prior
-					// physical quantity is that same value and the event's movement is zero. A ZERO default would
-					// instead claim a movement of the full stock quantity, and since StockChangedEventHandler
-					// derives the created candidate's type and quantity from that movement whenever the chain
-					// carries an unfulfilled position, it would silently add a bogus INVENTORY_UP of the whole
-					// stock (measured on the open-demand-before-the-baseline scenario: ATP 1200 instead of 170).
-					.qtyOnHandOld(qtyOnHandOld.orElseGet(stockRecord::getQtyOnHand))
+					// A ZERO default measured ATP 1200 instead of 170 on the open-demand-before-the-baseline scenario.
+					.qtyOnHandOld(CoalesceUtil.coalesce(qtyOnHandOldOverride, stockRecord.getQtyOnHand()))
 					.changeDate(changeDate)
 					.stockChangeDetails(StockChangedEvent.StockChangeDetails.builder()
 							.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(nextResetStockPInstanceRepoId()))
