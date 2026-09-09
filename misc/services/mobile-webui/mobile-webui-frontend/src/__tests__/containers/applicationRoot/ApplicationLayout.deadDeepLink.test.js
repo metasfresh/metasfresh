@@ -66,7 +66,12 @@ jest.mock('../../../reducers/headers', () => ({
 }));
 
 // Non-fullscreen layout (the real WF screens render the #WFProcessScreen container the e2e gate waits on).
-jest.mock('../../../apps', () => ({ isApplicationFullScreen: () => false }));
+// getApplicationState: () => undefined — on branches where ApplicationLayout also renders
+// ShelfLifeConfirmDialogHost (picking's redux slice reads this same module), an undefined
+// application-state answers "nothing pending" and the dialog host renders null, same as on branches
+// where that component does not exist at all. Not a real state read: this suite only cares about the
+// job-start redirect-home guard.
+jest.mock('../../../apps', () => ({ isApplicationFullScreen: () => false, getApplicationState: () => undefined }));
 
 jest.mock('../../../utils/ui_trace/useUITraceLocationChange', () => ({
   useUITraceLocationChange: jest.fn(),
