@@ -23,6 +23,7 @@ package org.eevolution.process;
  */
 
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -47,6 +48,8 @@ import org.eevolution.model.I_PP_Order;
  */
 public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrecondition
 {
+	private static final AdMessageKey MSG_NoCompletedOrderInSelection = AdMessageKey.of("org.eevolution.process.PP_Order_CloseSelection.NoCompletedOrderInSelection");
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
@@ -56,6 +59,12 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		// Refused WITH a reason rather than hidden: the rows look selectable, so a missing action puzzles.
+		if (!createCompletedOrdersQueryBuilder(context.getQueryFilter(I_PP_Order.class)).create().anyMatch())
+		{
+			return ProcessPreconditionsResolution.reject(MSG_NoCompletedOrderInSelection);
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -73,7 +82,7 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 
 	private int createSelection()
 	{
-		final IQueryBuilder<I_PP_Order> queryBuilder = createCompletedOrdersQueryBuilder();
+		final IQueryBuilder<I_PP_Order> queryBuilder = createCompletedOrdersQueryBuilder(getUserSelectionFilter());
 
 		final PInstanceId adPInstanceId = getPinstanceId();
 
@@ -87,7 +96,7 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 	}
 
 	@NonNull
-	private IQueryBuilder<I_PP_Order> createCompletedOrdersQueryBuilder()
+	private IQueryFilter<I_PP_Order> getUserSelectionFilter()
 	{
 		final IQueryFilter<I_PP_Order> userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
 
@@ -96,10 +105,16 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 			throw new AdempiereException("@NoSelection@");
 		}
 
+		return userSelectionFilter;
+	}
+
+	@NonNull
+	private IQueryBuilder<I_PP_Order> createCompletedOrdersQueryBuilder(@NonNull final IQueryFilter<I_PP_Order> userSelectionFilter)
+	{
 		return queryBL
 				.createQueryBuilder(I_PP_Order.class, getCtx(), ITrx.TRXNAME_None)
-				// The DocStatus guard belongs in the query that materializes the selection, not in the close
-				// loop: the user's selection comes from a client-side view that may be stale.
+				// DocStatus filtered here, not in the close loop: the client-side view may be stale, and
+				// sharing this builder keeps the precondition gate and the selection in agreement.
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.filter(userSelectionFilter)
 				.addOnlyActiveRecordsFilter();
@@ -112,6 +127,9 @@ public class PP_Order_CloseSelection extends JavaProcess implements IProcessPrec
 	@RunOutOfTrx
 	protected String doIt()
 	{
+		// Closed orders leave a monitor scoped to completed ones only if the selection is rebuilt.
+		getResult().setRecreateViewSelectionAfterExecution(true);
+
 		final PPOrderCloseResult result = ppOrderBL.closeOrdersInSelection(getPinstanceId());
 
 		final String summary = "@Processed@ (OK=#" + result.getCountClosed() + ", Error=#" + result.getCountFailed() + ")";

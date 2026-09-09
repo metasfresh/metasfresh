@@ -88,6 +88,9 @@ public class PP_Order_PostCalculation extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt()
 	{
+		// Distributing closes the order, so it leaves the monitor only if the selection is rebuilt.
+		getResult().setRecreateViewSelectionAfterExecution(true);
+
 		final PPOrderId ppOrderId = getPPOrderId();
 
 		costDifferenceDistributor.distribute(ppOrderId);
