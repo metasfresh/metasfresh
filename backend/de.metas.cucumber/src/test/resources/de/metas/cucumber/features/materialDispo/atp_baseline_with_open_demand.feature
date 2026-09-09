@@ -260,3 +260,54 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | c_od_4     | INVENTORY_UP      |                           | p_od_4       | 2024-09-20T06:00:00Z | 200 | 200 | WH_OD          |
       | d_od_4     | DEMAND            | SHIPMENT                  | p_od_4       | 2024-09-21T21:00:00Z | -30 | 170 | WH_OD          |
       | base_od_4  | INVENTORY_UP      |                           | p_od_4       | 2024-09-23T06:00:00Z | 50  | 220 | WH_OD          |
+
+  @Id:ATPBASE_008
+  @from:cucumber
+  Scenario: A reset-stock refresh with no recorded movement leaves an open demand dated before it untouched
+
+    Given metasfresh contains M_Products:
+      | Identifier | M_Product_Category_ID | C_UOM_ID.X12DE355 |
+      | p_od_5     | std_cat_od            | PCE               |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID |
+      | pp_od_5    | plv_so_od              | p_od_5       | 10.0     | PCE               | Normal           |
+
+    # stock of 200
+    And metasfresh contains M_Inventories:
+      | Identifier | M_Warehouse_ID | MovementDate |
+      | inv_od_5   | WH_OD          | 2024-09-20   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
+      | inv_od_5       | invl_od_5  | p_od_5       | 0       | 200      | WH_OD          | PCE          |
+    And the inventory identified by inv_od_5 is completed
+    And after not more than 60s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | c_od_5     | INVENTORY_UP      | p_od_5       | 2024-09-20T06:00:00Z | 200 | 200 | WH_OD          |
+
+    # open sales order for 30, dated BEFORE the refresh below, NO shipment
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | M_Warehouse_ID |
+      | so_od_5    | true    | customer_od   | 2024-09-20  | 2024-09-21T21:00:00Z | WH_OD          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol_od_5   | so_od_5    | p_od_5       | 30         |
+    And the order identified by so_od_5 is completed
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 60s, MD_Candidates are found
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | d_od_5     | DEMAND            | SHIPMENT                  | p_od_5       | 2024-09-21T21:00:00Z | -30 | 170 | WH_OD          |
+
+    # a reset-stock refresh whose recount from the HUs agreed with the stored quantity, dated AFTER the open
+    # demand above: no QtyOnHandOld override, so the step defaults it to the stock's own current QtyOnHand -
+    # a genuinely zero physical movement, with a live open position still in the chain at the event date.
+    When metasfresh receives a StockChangedEvent for the current MD_Stock
+      | M_Product_ID | OPT.ChangeDate       |
+      | p_od_5       | 2024-09-23T06:00:00Z |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # the refresh must add no candidate at all: the chain still carries the open demand, and its projection
+    # stays exactly what it was before the refresh.
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | c_od_5     | INVENTORY_UP      |                           | p_od_5       | 2024-09-20T06:00:00Z | 200 | 200 | WH_OD          |
+      | d_od_5     | DEMAND            | SHIPMENT                  | p_od_5       | 2024-09-21T21:00:00Z | -30 | 170 | WH_OD          |

@@ -62,15 +62,22 @@ Feature: ATP divergence report - read-only preview of stored vs. expected ATP
       | Identifier     | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | cand_drifted_a | INVENTORY_UP      | p_drifted_a  | 2024-09-20T06:00:00Z | 0   | 0   | WH_BASE        |
 
+    # scoped per product, not the shared category: "metasfresh contains M_Product_Categories" reuses an
+    # existing row by Value, so a category-wide count accumulates this scenario's products across runs on a
+    # reused database and drifts upward, while a per-product count stays exact regardless of database history.
     When metasfresh has date and time 2024-09-21T08:00:00+01:00[Europe/Berlin]
-    And the MD_Candidate_ATP_Divergence_Report process is run with parameters, storing the run id as "report_a":
-      | M_Product_Category_ID |
-      | cat_atpdiv_a           |
+    And the MD_Candidate_ATP_Divergence_Report process is run with parameters, storing the run id as "report_healthy_a":
+      | M_Product_ID |
+      | p_healthy_a  |
+    And the MD_Candidate_ATP_Divergence_Report process is run with parameters, storing the run id as "report_drifted_a":
+      | M_Product_ID |
+      | p_drifted_a  |
 
-    Then the divergence report process log for the run id "report_a" contains "Checked 2 key(s); 1 diverged"
-    And the divergence report process log for the run id "report_a" contains "expectedAtp=100, storedAtp=0, difference=100"
+    Then the divergence report process log for the run id "report_healthy_a" contains "Checked 1 key(s); 0 diverged"
+    And the divergence report process log for the run id "report_drifted_a" contains "Checked 1 key(s); 1 diverged"
+    And the divergence report process log for the run id "report_drifted_a" contains "expectedAtp=100, storedAtp=0, difference=100"
     # the healthy key's own expected/stored values, had it been logged despite no divergence
-    And the divergence report process log for the run id "report_a" does not contain "storedAtp=80, difference=0"
+    And the divergence report process log for the run id "report_healthy_a" does not contain "storedAtp=80, difference=0"
 
   @Id:ATPDIV_002
   @from:cucumber
