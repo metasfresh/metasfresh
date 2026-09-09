@@ -42,6 +42,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -113,7 +114,25 @@ public class AtpReconciliationCommand
 			@NonNull final Instant date,
 			final boolean dryRun)
 	{
-		final AtpDivergence divergence = atpTargetCalculator.computeDivergence(key, date);
+		return reconcile(key, date, dryRun, null);
+	}
+
+	/**
+	 * Same as {@link #reconcile(StockDataRecordIdentifier, Instant, boolean)}, but a candidate dated strictly before
+	 * {@code livenessCutoff} is treated as closed regardless of its source document - see
+	 * {@link AtpTargetCalculator#computeTarget(StockDataRecordIdentifier, Instant, Instant)}. This is how the
+	 * optional liveness-cutoff date reaches the operator-invoked run.
+	 *
+	 * @param livenessCutoff may be {@code null}, in which case no candidate is cut off - same result as the three-arg
+	 * overload
+	 */
+	public AtpDivergence reconcile(
+			@NonNull final StockDataRecordIdentifier key,
+			@NonNull final Instant date,
+			final boolean dryRun,
+			@Nullable final Instant livenessCutoff)
+	{
+		final AtpDivergence divergence = atpTargetCalculator.computeDivergence(key, date, livenessCutoff);
 		if (isNoOpCorrection(divergence, dryRun))
 		{
 			return divergence;
@@ -171,7 +190,20 @@ public class AtpReconciliationCommand
 			@NonNull final Instant date,
 			final boolean dryRun)
 	{
-		final AtpDivergence divergence = atpTargetCalculator.computeDivergence(key, date);
+		return reconcileAndLog(key, date, dryRun, null);
+	}
+
+	/**
+	 * Same as {@link #reconcileAndLog(StockDataRecordIdentifier, Instant, boolean)}, but honours a liveness cutoff -
+	 * see {@link #reconcile(StockDataRecordIdentifier, Instant, boolean, Instant)}.
+	 */
+	public AtpReconciliationRunLog reconcileAndLog(
+			@NonNull final StockDataRecordIdentifier key,
+			@NonNull final Instant date,
+			final boolean dryRun,
+			@Nullable final Instant livenessCutoff)
+	{
+		final AtpDivergence divergence = atpTargetCalculator.computeDivergence(key, date, livenessCutoff);
 		if (isNoOpCorrection(divergence, dryRun))
 		{
 			return AtpReconciliationRunLog.empty(divergence);
@@ -195,8 +227,12 @@ public class AtpReconciliationCommand
 
 	/**
 	 * @return every general (i.e. not customer-reserved - see {@link #buildCandidate}) {@code STOCK} candidate of
-	 * {@code key} dated at or after {@code date}: exactly the set {@link #reconcile} can possibly touch, since it
-	 * only ever writes at {@code date} and {@code CandidateChangeService} only ever propagates forward from there.
+	 * {@code key} dated at or after {@code date}. The filter is on {@code date} alone, with no {@code SeqNo}
+	 * cutoff, so this is deliberately wider than the set {@link #reconcile} actually changes: a pre-existing
+	 * candidate dated exactly at {@code date} but sequenced before the new correction (see {@link #nextSeqNo}) is
+	 * included here too, even though the write never touches it. That over-inclusion is harmless - {@link
+	 * #buildEntries} pairs it with an identical before/after {@code Qty} and produces no log entry for it - it
+	 * only costs one superfluous unchanged-snapshot row in {@link AtpReconciliationBackupRepository}.
 	 */
 	private List<Candidate> retrieveGeneralStockCandidatesFrom(
 			@NonNull final StockDataRecordIdentifier key,
@@ -310,6 +346,12 @@ public class AtpReconciliationCommand
 	 * Not hardened here: this reconciliation is a single-operator, selection-restricted workflow, so two calls for
 	 * the same key and date are not expected to race in practice - and a lock or retry here would guard against a
 	 * scenario this workflow does not produce.
+	 * <p>
+	 * The one realistic way two {@link #reconcile} calls for the same key and date could actually race is two
+	 * concurrent operator-triggered runs - closed cheaply at that entry point instead of here:
+	 * {@code de.metas.material.dispo.reconcile.process.MD_Candidate_Reconcile_ATP}'s {@code AD_Process.IsOneInstanceOnly
+	 * = 'Y'} refuses to start a second instance of that process while one is already running. This method's
+	 * read-then-write gap itself stays open and unhardened - any other future caller is not covered by that guard.
 	 */
 	private int nextSeqNo(
 			@NonNull final StockDataRecordIdentifier key,

@@ -23,16 +23,26 @@ package de.metas.cucumber.stepdefs.material.dispo;
  */
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.dispo.model.I_MD_ATP_Reconciliation_Backup;
 import de.metas.material.dispo.reconcile.AtpReconciliationCommand;
 import de.metas.material.dispo.reconcile.AtpReconciliationRunLog;
+import de.metas.material.dispo.reconcile.process.MD_Candidate_Reconcile_ATP;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
@@ -50,19 +60,25 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Step definitions invoking {@link AtpReconciliationCommand#reconcileAndLog} directly (there is no
- * {@code AD_Process} for it yet - that is a separate, later deliverable) and asserting the durable backup this
- * run persists is recoverable from {@code MD_ATP_Reconciliation_Backup} - never from the in-process
+ * Step definitions around ATP reconciliation: invoking {@link AtpReconciliationCommand#reconcileAndLog} directly,
+ * invoking the operator-facing {@code AD_Process} {@link MD_Candidate_Reconcile_ATP}, and asserting the durable
+ * backup a run persists is recoverable from {@code MD_ATP_Reconciliation_Backup} - never from the in-process
  * {@link AtpReconciliationRunLog} return value, which does not outlive the JVM that produced it.
  */
 @RequiredArgsConstructor
 public class AtpReconciliationBackup_StepDef
 {
+	@NonNull private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
+
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 
 	/** Maps a scenario-local alias (e.g. {@code run_a}) to the {@code ReconciliationRunUUID} it produced. */
 	private final Map<String, String> runUuidByAlias = new HashMap<>();
+
+	/** Maps a scenario-local alias to the full log text of the {@link MD_Candidate_Reconcile_ATP} run it came from. */
+	private final Map<String, String> processLogByAlias = new HashMap<>();
 
 	/**
 	 * Invokes {@link AtpReconciliationCommand#reconcileAndLog} directly for the given product/warehouse key (there
@@ -134,5 +150,81 @@ public class AtpReconciliationBackup_StepDef
 				.as("no persisted MD_ATP_Reconciliation_Backup row for run '%s' with QtyBefore=%s QtyAfter=%s among %s",
 						runUuid, qtyBeforeText, qtyAfterText, backedUpRows)
 				.isTrue();
+	}
+
+	/**
+	 * Invokes the operator-facing {@code AD_Process} {@link MD_Candidate_Reconcile_ATP} - the real entry point an
+	 * operator uses, as opposed to {@link #runReconciliation} above, which calls the underlying command
+	 * directly. Every filter column is optional, matching the process's own parameters; an omitted filter is not
+	 * restricted on. The process's resolved log text (every value it changed or, on a dry run, would have changed)
+	 * is stored under {@code runIdAlias} for {@link #assertProcessLogContains} to check afterwards.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) restricts the run to this product<br>
+	 *   <b>M_Warehouse_ID</b> — (optional, identifier-ref) restricts the run to this warehouse<br>
+	 *   <b>M_Product_Category_ID</b> — (optional, identifier-ref) restricts the run to this product category<br>
+	 *   <b>IsDryRun</b> — (optional, defaults false) when true, nothing is written; the log reports what would change<br>
+	 *   <b>LivenessCutoffDate</b> — (optional, ISO local date) a candidate dated strictly before this date is
+	 *   treated as closed regardless of its source document's own status<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Warehouse_StepDefData, M_Product_Category_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the MD_Candidate_Reconcile_ATP process is run with parameters, storing the run id as "dry_run":
+	 *   | M_Product_ID | IsDryRun |
+	 *   | p_dry_a      | true     |
+	 * </pre>
+	 */
+	@When("^the MD_Candidate_Reconcile_ATP process is run with parameters, storing the run id as \"([^\"]*)\":$")
+	public void runReconciliationProcess(
+			@NonNull final String runIdAlias,
+			@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).getFirstRow();
+
+		final AdProcessId processId = processDAO.retrieveProcessIdByClass(MD_Candidate_Reconcile_ATP.class);
+		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId());
+
+		row.getAsOptionalIdentifier("M_Warehouse_ID")
+				.ifPresent(identifier -> processInfoBuilder.addParameter("M_Warehouse_ID", warehouseTable.getId(identifier).getRepoId()));
+		row.getAsOptionalIdentifier("M_Product_ID")
+				.ifPresent(identifier -> processInfoBuilder.addParameter("M_Product_ID", productTable.getId(identifier).getRepoId()));
+		row.getAsOptionalIdentifier("M_Product_Category_ID")
+				.ifPresent(identifier -> processInfoBuilder.addParameter("M_Product_Category_ID", productCategoryTable.getId(identifier).getRepoId()));
+		processInfoBuilder.addParameter("IsDryRun", row.getAsOptionalBoolean("IsDryRun").orElseFalse());
+		row.getAsOptionalLocalDateTimestamp("LivenessCutoffDate")
+				.ifPresent(cutoff -> processInfoBuilder.addParameter("LivenessCutoffDate", cutoff));
+
+		final ProcessExecutionResult result = processInfoBuilder
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
+
+		assertThat(result).as("MD_Candidate_Reconcile_ATP process result").isNotNull();
+		assertThat(result.isError()).as("MD_Candidate_Reconcile_ATP process failed: %s", result).isFalse();
+
+		processLogByAlias.put(runIdAlias, result.getLogInfo());
+	}
+
+	/**
+	 * Asserts that the resolved log text of a {@link #runReconciliationProcess} run - every {@code {}} placeholder
+	 * already substituted with its real value - contains the given substring. Used to prove a dry run reports the
+	 * value it would have changed to, without writing anything.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the ATP reconciliation process log for the run id "dry_run" contains "would change to 100"
+	 * </pre>
+	 */
+	@Then("^the ATP reconciliation process log for the run id \"([^\"]*)\" contains \"([^\"]*)\"$")
+	public void assertProcessLogContains(
+			@NonNull final String runIdAlias,
+			@NonNull final String expectedSubstring)
+	{
+		final String logText = processLogByAlias.get(runIdAlias);
+		assertThat(logText).as("no process log was stored for alias '%s' - the triggering step must run first", runIdAlias).isNotNull();
+		assertThat(logText).as("process log for run '%s'", runIdAlias).contains(expectedSubstring);
 	}
 }

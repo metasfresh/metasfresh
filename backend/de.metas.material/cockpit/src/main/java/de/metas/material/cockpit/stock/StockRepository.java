@@ -7,6 +7,8 @@ import de.metas.material.cockpit.model.I_T_MD_Stock_WarehouseAndProduct;
 import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import org.adempiere.mm.attributes.keys.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -18,13 +20,16 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
@@ -120,6 +125,72 @@ public class StockRepository
 				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, identifier.getWarehouseId())
 				.create();
+	}
+
+	/**
+	 * Selects the {@code MD_Stock} keys matching an optional warehouse/product/product-category filter, one page
+	 * at a time.
+	 * <p>
+	 * Extracted for the ATP reconciliation process ({@code de.metas.material.dispo.reconcile.process.MD_Candidate_Reconcile_ATP}),
+	 * which needs to drain a (possibly large) selection in bounded batches and, per {@code docs/REVIEW.md}, must not
+	 * hold the {@code IQueryBL}/{@code IQueryBuilder} persistence primitives itself.
+	 *
+	 * @param warehouseId       when given, only keys of this warehouse
+	 * @param productId         when given, only keys of this product
+	 * @param productCategoryId when given, only keys of a product in this category
+	 * @param limit             page size
+	 * @param offset            zero-based row offset of this page
+	 * @return at most {@code limit} keys, ordered by {@code MD_Stock_ID} so repeated calls with increasing
+	 * {@code offset} page through the same static selection without gaps or repeats
+	 */
+	public List<StockDataRecordIdentifier> retrieveKeys(
+			@Nullable final WarehouseId warehouseId,
+			@Nullable final ProductId productId,
+			@Nullable final ProductCategoryId productCategoryId,
+			final int limit,
+			final int offset)
+	{
+		final IQueryBuilder<I_MD_Stock> queryBuilder = queryBL.createQueryBuilder(I_MD_Stock.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (warehouseId != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouseId);
+		}
+		if (productId != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId);
+		}
+		if (productCategoryId != null)
+		{
+			queryBuilder.addInSubQueryFilter(
+					I_MD_Stock.COLUMNNAME_M_Product_ID,
+					I_M_Product.COLUMNNAME_M_Product_ID,
+					queryBL.createQueryBuilder(I_M_Product.class)
+							.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, productCategoryId)
+							.create());
+		}
+		queryBuilder.orderBy().addColumnAscending(I_MD_Stock.COLUMNNAME_MD_Stock_ID).endOrderBy();
+
+		final List<I_MD_Stock> stockRecords = queryBuilder
+				.create()
+				.setLimit(limit, offset)
+				.list();
+
+		return stockRecords.stream()
+				.map(StockRepository::toStockDataRecordIdentifier)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static StockDataRecordIdentifier toStockDataRecordIdentifier(@NonNull final I_MD_Stock stockRecord)
+	{
+		return StockDataRecordIdentifier.builder()
+				.clientId(ClientId.ofRepoId(stockRecord.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(stockRecord.getAD_Org_ID()))
+				.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
+				.productId(ProductId.ofRepoId(stockRecord.getM_Product_ID()))
+				.storageAttributesKey(AttributesKey.ofString(stockRecord.getAttributesKey()))
+				.build();
 	}
 
 	/** Please use this stream within a try-with-resources statement, because it's supposed to do cleanup. */

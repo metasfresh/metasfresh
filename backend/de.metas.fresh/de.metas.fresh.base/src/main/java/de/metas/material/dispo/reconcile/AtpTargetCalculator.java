@@ -44,6 +44,7 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -99,6 +100,24 @@ public class AtpTargetCalculator
 			@NonNull final StockDataRecordIdentifier key,
 			@NonNull final Instant date)
 	{
+		return computeTarget(key, date, null);
+	}
+
+	/**
+	 * Same as {@link #computeTarget(StockDataRecordIdentifier, Instant)}, but a candidate dated strictly before
+	 * {@code livenessCutoff} is treated as {@link de.metas.material.dispo.commons.reconcile.SourceDocumentStatus#CLOSED}
+	 * regardless of what its source document says - see
+	 * {@link SourceDocumentLivenessService#getStatus(Candidate, Instant)}. This is the operator-facing escape hatch
+	 * for an era whose document statuses are themselves unreliable.
+	 *
+	 * @param livenessCutoff may be {@code null}, in which case no candidate is cut off - same result as the two-arg
+	 * overload
+	 */
+	public BigDecimal computeTarget(
+			@NonNull final StockDataRecordIdentifier key,
+			@NonNull final Instant date,
+			@Nullable final Instant livenessCutoff)
+	{
 		final List<Candidate> candidates = candidateRepository
 				.retrieveOrderedByDateAndSeqNo(createCandidatesQueryUntilDate(key, date, BPartnerClassifier.any()));
 
@@ -117,7 +136,7 @@ public class AtpTargetCalculator
 				// a STOCK candidate is the running balance itself, not a position contributing to it
 				continue;
 			}
-			if (!livenessService.getStatus(candidate).isContributingToAtp())
+			if (!livenessService.getStatus(candidate, livenessCutoff).isContributingToAtp())
 			{
 				continue;
 			}
@@ -136,8 +155,20 @@ public class AtpTargetCalculator
 			@NonNull final StockDataRecordIdentifier key,
 			@NonNull final Instant date)
 	{
+		return computeDivergence(key, date, null);
+	}
+
+	/**
+	 * Same as {@link #computeDivergence(StockDataRecordIdentifier, Instant)}, but honours a liveness cutoff - see
+	 * {@link #computeTarget(StockDataRecordIdentifier, Instant, Instant)}.
+	 */
+	public AtpDivergence computeDivergence(
+			@NonNull final StockDataRecordIdentifier key,
+			@NonNull final Instant date,
+			@Nullable final Instant livenessCutoff)
+	{
 		return AtpDivergence.of(
-				computeTarget(key, date),
+				computeTarget(key, date, livenessCutoff),
 				retrieveStoredAtp(key, date));
 	}
 
