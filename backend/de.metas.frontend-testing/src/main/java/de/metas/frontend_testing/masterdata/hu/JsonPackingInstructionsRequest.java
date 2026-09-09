@@ -90,6 +90,26 @@ public class JsonPackingInstructionsRequest
 	 */
 	@Nullable List<AttributeCode> attributes;
 
+	/**
+	 * {@code M_Attribute.Value} codes to declare as a writable {@code M_HU_PI_Attribute} slot on the
+	 * system <b>VIRTUAL</b> CU packing-instruction version ({@code M_HU_PI_ID=101},
+	 * {@link de.metas.handlingunits.HuPackingInstructionsVersionId#VIRTUAL}) - the level every loose
+	 * CU / VHU actually sits on ({@code HU_UnitType='V'}).
+	 * <p>
+	 * Use this (instead of {@link #attributes}) when a generic attribute submitted at a mobile receive must
+	 * persist on the produced <b>CU/VHU</b> rather than on the TU - so mixed values coexist as distinct
+	 * plant HUs, one per value (each inner CU carries its OWN value, never overwritten or merged). This is
+	 * the correct level because {@code HUPIAttributesDAO.retrievePIAttributes} resolves a version's slots as
+	 * its OWN direct rows plus the TEMPLATE's ({@code M_HU_PI_ID=100}); a TU-version slot therefore never
+	 * reaches the inner CU (which is on the VIRTUAL version), while a VIRTUAL-version slot lands the size on
+	 * every CU/VHU yet leaves the TU/LU neutral (their slots are direct(TU/LU) + template, neither carrying it).
+	 * <p>
+	 * Applies to <b>any</b> request (cu or tu): the VIRTUAL PI is a single global system PI, so the slot is
+	 * declared once on its current version and reaches every loose CU/VHU - including a bare VHU received onto
+	 * the "No Packing Item" virtual target, which has no per-run PI of its own. Idempotent per attribute.
+	 */
+	@Nullable List<AttributeCode> cuAttributes;
+
 	public Identifier getTuNotNull() {return Check.assumeNotNull(tu, "tu must be set");}
 
 	public Identifier getProductNotNull() {return Check.assumeNotNull(product, "product must be set");}

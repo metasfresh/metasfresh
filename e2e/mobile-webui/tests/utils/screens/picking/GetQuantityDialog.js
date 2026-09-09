@@ -102,7 +102,10 @@ export const GetQuantityDialog = {
     // LIST-type editable attribute (renders a native <select>). `value` is the M_AttributeValue.Value code.
     selectEditableAttribute: async (codeOrIdentifier, value) => await test.step(`${NAME} - Select editable attribute '${codeOrIdentifier}' = '${value}'`, async () => {
         const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
+        // The frontend holds the operator's selection across a background reload, so a single select
+        // and verify is enough - the option the operator picked must be the one the control holds.
         await field.selectOption(value);
+        await expect(field).toHaveValue(value);
     }),
 
     expectEditableAttributesSectionVisible: async () => await test.step(`${NAME} - Expect editable-attributes section visible`, async () => {

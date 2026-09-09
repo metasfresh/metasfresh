@@ -153,4 +153,72 @@ describe('EditableAttributesSection', () => {
     rerenderWithAttributes(ATTRIBUTES);
     expect(screen.getByTestId('attr-LotNumber-field')).toHaveValue('');
   });
+
+  // Partial overlap: the code-set genuinely changes but still contains one of the previous codes.
+  // The persisting code's value MUST be kept while the vanished code's value MUST be dropped -
+  // the reset prunes per-code, it is not all-or-nothing (docstring: "selections for codes that
+  // persist are kept" while values for disappearing codes "are dropped").
+  it('keeps a persisting code value and drops a vanished code value on a partial-overlap code-set change', () => {
+    const AB_ATTRIBUTES = [
+      { code: 'LotNumber', caption: 'Lot number', valueType: 'STRING', value: null },
+      { code: 'BatchRef', caption: 'Batch ref', valueType: 'STRING', value: null },
+    ];
+    // Different, still-non-empty code-set that STILL contains LotNumber (A) but drops BatchRef (B).
+    const AC_ATTRIBUTES = [
+      { code: 'LotNumber', caption: 'Lot number', valueType: 'STRING', value: null },
+      { code: 'Color', caption: 'Color', valueType: 'STRING', value: null },
+    ];
+    const { rerenderWithAttributes } = renderSection({ attributes: AB_ATTRIBUTES });
+
+    fireEvent.change(screen.getByTestId('attr-LotNumber-field'), { target: { value: 'LOT-0001' } });
+    fireEvent.change(screen.getByTestId('attr-BatchRef-field'), { target: { value: 'BATCH-9' } });
+
+    // Genuine code-set change [A,B] -> [A,C]: A persists, B disappears, C is new.
+    rerenderWithAttributes(AC_ATTRIBUTES);
+
+    // A persists -> its just-entered value is kept, not wiped by the reset.
+    expect(screen.getByTestId('attr-LotNumber-field')).toHaveValue('LOT-0001');
+    // B is gone from the set -> no longer rendered.
+    expect(screen.queryByTestId('attr-BatchRef-field')).not.toBeInTheDocument();
+
+    // Bringing B back proves its value was DROPPED from state (pruned), not merely hidden.
+    rerenderWithAttributes(AB_ATTRIBUTES);
+    expect(screen.getByTestId('attr-LotNumber-field')).toHaveValue('LOT-0001');
+    expect(screen.getByTestId('attr-BatchRef-field')).toHaveValue('');
+  });
+
+  // Under a background wfProcess reload the `attributes` prop is transiently emptied and then
+  // repopulated with the SAME code-set (a new array identity). The operator's just-picked value
+  // MUST survive that transient - clobbering it to blank posted a receive with a BLANK value.
+  // A transient empty set is a loading state, NOT a genuine attribute-set change.
+  it("keeps the operator's selection across a transient empty attributes reload (same code-set)", () => {
+    const { onFieldChange, rerenderWithAttributes } = renderSection();
+
+    fireEvent.change(screen.getByTestId('attr-SizeCM-field'), { target: { value: 'M' } });
+    expect(screen.getByTestId('attr-SizeCM-field')).toHaveValue('M');
+    expect(onFieldChange).toHaveBeenLastCalledWith(expect.objectContaining({ SizeCM: 'M' }));
+
+    // Background reload under load: the prop is briefly emptied (section renders nothing)...
+    rerenderWithAttributes([]);
+    expect(screen.queryByTestId('attr-SizeCM-field')).not.toBeInTheDocument();
+
+    // ...then repopulated with a NEW array carrying the SAME codes.
+    rerenderWithAttributes(ATTRIBUTES.map((attr) => ({ ...attr })));
+
+    // The operator's selection must still be there - not silently reset to blank.
+    expect(screen.getByTestId('attr-SizeCM-field')).toHaveValue('M');
+  });
+
+  // A pure re-render with a NEW array identity but the SAME codes (no empty in between) must also
+  // preserve the value - the reset keys on the code-set, never on array identity.
+  it('keeps the operator selection when re-rendered with a new array of the same codes', () => {
+    const { rerenderWithAttributes } = renderSection();
+
+    fireEvent.change(screen.getByTestId('attr-LotNumber-field'), { target: { value: 'LOT-0001' } });
+    expect(screen.getByTestId('attr-LotNumber-field')).toHaveValue('LOT-0001');
+
+    rerenderWithAttributes(ATTRIBUTES.map((attr) => ({ ...attr })));
+
+    expect(screen.getByTestId('attr-LotNumber-field')).toHaveValue('LOT-0001');
+  });
 });

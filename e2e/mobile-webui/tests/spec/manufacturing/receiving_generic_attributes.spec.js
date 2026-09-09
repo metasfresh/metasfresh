@@ -99,11 +99,13 @@ const createMasterdata = async () => {
             packingInstructions: {
                 'PI': {
                     lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'BOM', qtyCUsPerTU: 4,
-                    // Declares the writable M_HU_PI_Attribute slot for sizeAttr on the TU's PI version -
-                    // required for the value to actually land on the produced HU's own storage (the apply
-                    // path's hasAttribute guard reads the HU's own PI version, not the product's attribute
-                    // set - see JsonPackingInstructionsRequest#getAttributes Javadoc).
-                    attributes: ['TestSizeCM'],
+                    // Declares the writable M_HU_PI_Attribute slot for sizeAttr on the system VIRTUAL CU PI
+                    // version (M_HU_PI_ID=101 - the level every produced CU/VHU sits on) via `cuAttributes`,
+                    // NOT the TU version - so the selected size lands on the produced CU (the plant), mirroring
+                    // the real plant-nursery case (see receiving_mixed_sizes_distinct_hus.spec.js). The apply
+                    // path's hasAttribute guard reads the HU's own PI version, and a slot on the VIRTUAL version
+                    // (101) reaches every CU/VHU - see JsonPackingInstructionsRequest#getCuAttributes Javadoc.
+                    cuAttributes: ['TestSizeCM'],
                 },
                 'BOM_WITH_BYPRODUCT_PI': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU3', product: 'BOM_WITH_BYPRODUCT', qtyCUsPerTU: 4 },
                 'BY_PRODUCT_PI': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'BY_PRODUCT', qtyCUsPerTU: 4 },
@@ -115,7 +117,9 @@ const createMasterdata = async () => {
                 'PP1': {
                     warehouse: 'wh',
                     product: 'BOM',
-                    qty: 4, // exactly one full TU (qtyCUsPerTU: 4) - deterministic single produced TU
+                    qty: 4, // generous target; test 1 receives a PARTIAL 2 (of the 4-CU TU) so the receive
+                            // materialises a CONCRETE size-bearing CU (a full-TU receive aggregates into a
+                            // single HU with no concrete CU to carry the size - see the CU-level assertion below).
                     datePromised: '2025-03-01T00:00:00.000+02:00',
                 },
                 'PP2': {
@@ -171,26 +175,46 @@ test('Receive selecting a LIST attribute — produced HU carries it; not-configu
     await GetQuantityDialog.expectEditableAttributeNotVisible('notConfiguredAttr');
     await GetQuantityDialog.expectEditableAttributesOrder(['bestBeforeDateAttr', 'sizeAttr', 'lotNumberAttr']);
 
-    // Select the LIST value and complete the receive.
+    // Select the LIST value and complete a PARTIAL receive (2 of the 4-CU TU) - a partial receive into
+    // the LU materialises a CONCRETE TU->CU (the mixed-sizes spec's proven shape), so the selected size
+    // lands on a concrete CU. (A full-TU receive would aggregate into a single HU with no concrete CU.)
     await GetQuantityDialog.selectEditableAttribute('sizeAttr', 'M');
-    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '4' });
+    await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '4', qtyEntered: '2' });
+
+    // Gate on the commit-confirming, user-visible signal: back on the job screen, the receive button shows
+    // the received qty (the WFProcess re-fetched AFTER the mfg receive committed). Reading the backend
+    // before this can read pre-commit state - the documented async-commit race (mobile-webui CLAUDE.md
+    // § "A RED is not a bug until you rule out the test harness").
+    await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '4 Stk', qtyReceived: '2 Stk' });
 
     await ManufacturingJobScreen.complete();
 
     await Backend.expect({
-        title: 'Produced HU carries the selected LIST attribute value',
+        title: 'Produced CU (the plant) carries the selected LIST attribute value',
         manufacturings: {
             [jobId]: {
-                receivedHUs: [{ lu: 'lu1', qty: '4 PCE' }],
+                receivedHUs: [{ lu: 'lu1', qty: '2 PCE' }],
             },
         },
         hus: {
             'lu1': {
-                storages: { 'BOM': '4 PCE' },
+                huType: 'LU',
+                storages: { 'BOM': '2 PCE' },
+                // A single partial receive into a fresh LU that still has spare TU capacity yields the empty
+                // aggregate-TU placeholder plus ONE concrete TU (LU->TU->CU) - the shape the mobile mfg
+                // receive actually produces (mirrors receiving_mixed_sizes_distinct_hus.spec.js "Shared LU").
                 tus: [
+                    // The empty aggregate-TU placeholder for the LU's remaining (unmaterialized) capacity.
+                    { isAggregatedTU: true },
                     {
-                        storages: { 'BOM': '4 PCE' },
-                        attributes: { [masterdata.attributes.sizeAttr.attributeValue]: 'M' },
+                        huType: 'TU',
+                        storages: { 'BOM': '2 PCE' },
+                        // The size lands on the CU (the plant), not the TU: the slot is declared on the
+                        // VIRTUAL CU PI (101) via cuAttributes, so the produced CU carries "M" while the TU
+                        // stays a neutral container. Mirrors receiving_mixed_sizes_distinct_hus.spec.js.
+                        cus: [
+                            { qty: '2 PCE', attributes: { [masterdata.attributes.sizeAttr.attributeValue]: 'M' } },
+                        ],
                     },
                 ],
             },

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import DateInput from '../DateInput';
 import { trl } from '../../utils/translations';
@@ -21,17 +21,41 @@ import { trl } from '../../utils/translations';
  * `GetQuantityDialog` / `ChangeHUQtyDialog` / `InventoryCountComponent`.
  *
  * If the `attributes` prop changes to a different set of attribute codes while mounted (e.g. the
- * consumer re-renders this section for a different receive line), all collected values are reset
- * — a stale value from the previous attribute set must never leak into the new one.
+ * consumer re-renders this section for a different receive line), values for codes that disappear
+ * are dropped — a stale value from the previous attribute set must never leak into the new one —
+ * while selections for codes that persist are kept.
+ *
+ * A transient EMPTY `attributes` array is a loading state, NOT an attribute-set change: a background
+ * reload under load can momentarily clear the prop before repopulating it with the same codes, and
+ * the operator's in-progress values must survive that transient — clobbering them to blank would
+ * post the receive with a blank value.
  */
 const EditableAttributesSection = ({ attributes, disabled, onFieldChange }) => {
   const [valuesByCode, setValuesByCode] = useState({});
   const [invalidCodes, setInvalidCodes] = useState({});
 
   const attributeCodesKey = (attributes ?? []).map(({ code }) => code).join('|');
+  const lastNonEmptyCodesKeyRef = useRef(attributeCodesKey);
   useEffect(() => {
-    setValuesByCode({});
-    setInvalidCodes({});
+    // A transient EMPTY attribute set is a loading state (a background reload under load momentarily
+    // clears the prop), not a real change of the receive line's attributes — keep the operator's
+    // in-progress values until the real attributes come back, otherwise a just-picked value is
+    // silently clobbered to blank.
+    if (attributeCodesKey === '') {
+      return;
+    }
+    // Only a genuine change of the (non-empty) attribute code-set resets, keyed on the codes and not
+    // on array identity: drop values for codes that disappeared (so a stale value never leaks into
+    // the new set), keep selections for codes that persist.
+    if (attributeCodesKey === lastNonEmptyCodesKeyRef.current) {
+      return;
+    }
+    lastNonEmptyCodesKeyRef.current = attributeCodesKey;
+    const codesInNewSet = attributeCodesKey.split('|');
+    const keepPersistingCodes = (prev) =>
+      Object.fromEntries(Object.entries(prev).filter(([code]) => codesInNewSet.includes(code)));
+    setValuesByCode(keepPersistingCodes);
+    setInvalidCodes(keepPersistingCodes);
   }, [attributeCodesKey]);
 
   if (!attributes || attributes.length === 0) {

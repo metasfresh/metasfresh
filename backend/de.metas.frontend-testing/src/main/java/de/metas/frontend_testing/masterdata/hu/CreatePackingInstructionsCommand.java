@@ -111,6 +111,12 @@ public class CreatePackingInstructionsCommand
 		}
 
 		//
+		// CU/VHU attributes: declare the slot on the system VIRTUAL PI (101) so a generic attribute submitted at
+		// a mobile receive persists on the produced CU/VHU (not the TU) - applies to any request, incl. the
+		// floor case's bare VHU on the "No Packing Item" virtual target (no per-run PI of its own).
+		assignVirtualCuAttributes();
+
+		//
 		// GRAI mapping
 		final GRAI grai = request.isGraiMapping() ? createGRAIMapping(tu) : null;
 
@@ -248,13 +254,43 @@ public class CreatePackingInstructionsCommand
 	 */
 	private void assignCustomAttributes(@NonNull final PIResult tu)
 	{
-		final List<AttributeCode> attributeCodes = request.getAttributes();
+		declareAttributeSlots(tu.getPivId(), request.getAttributes());
+	}
+
+	/**
+	 * Declares the {@link JsonPackingInstructionsRequest#getCuAttributes()} slots on the system VIRTUAL PI
+	 * version ({@link HuPackingInstructionsId#VIRTUAL}, {@code M_HU_PI_ID=101}) - the level every loose CU/VHU
+	 * sits on - so a generic attribute submitted at a mobile receive persists on the produced CU/VHU (each one
+	 * carrying its own value) rather than on the TU. See {@link JsonPackingInstructionsRequest#getCuAttributes()}.
+	 * <p>
+	 * Idempotent per attribute. The VIRTUAL PI is a single global system PI, so this reaches every loose CU/VHU
+	 * regardless of whether this request created a TU/LU (incl. a bare VHU on the "No Packing Item" target).
+	 */
+	private void assignVirtualCuAttributes()
+	{
+		final List<AttributeCode> cuAttributeCodes = request.getCuAttributes();
+		if (cuAttributeCodes == null || cuAttributeCodes.isEmpty())
+		{
+			return;
+		}
+
+		final HuPackingInstructionsVersionId virtualPivId = handlingUnitsBL.retrievePICurrentVersionId(HuPackingInstructionsId.VIRTUAL);
+		declareAttributeSlots(virtualPivId, cuAttributeCodes);
+	}
+
+	/**
+	 * Declares a writable {@code M_HU_PI_Attribute} slot on {@code pivId} for every given attribute code, so HUs
+	 * materialised from that PI version carry the attribute in their own storage (the apply-side {@code hasAttribute}
+	 * guard reads the HU's OWN PI version - see {@link JsonPackingInstructionsRequest#getAttributes()}). Mirrors the
+	 * cucumber step {@code M_HU_PI_Attribute_StepDef}. Idempotent per attribute: an already-present slot is left untouched.
+	 */
+	private void declareAttributeSlots(@NonNull final HuPackingInstructionsVersionId pivId, @Nullable final List<AttributeCode> attributeCodes)
+	{
 		if (attributeCodes == null || attributeCodes.isEmpty())
 		{
 			return;
 		}
 
-		final HuPackingInstructionsVersionId pivId = tu.getPivId();
 		for (final AttributeCode attributeCode : attributeCodes)
 		{
 			final AttributeId attributeId = attributeDAO.getAttributeIdByCode(attributeCode);
