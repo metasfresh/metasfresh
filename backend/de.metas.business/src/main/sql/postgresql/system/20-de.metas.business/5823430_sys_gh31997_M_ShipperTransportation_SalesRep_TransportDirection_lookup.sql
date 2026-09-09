@@ -22,9 +22,19 @@
 --   drop-ship transport.
 --
 -- WHAT THIS DELIBERATELY DOES *NOT* DO
---   * AD_Reference 190 is left untouched. 20+ other columns still resolve through it on tables that
---     DO have IsSOTrx (C_Invoice, C_Order, M_InOut, M_RMA, I_Invoice, I_Order, C_Invoice_Candidate),
---     where @IsSOTrx@ still resolves correctly.
+--   * AD_Reference 190 is left untouched. Many other columns still resolve through it, and they all
+--     fall into one of two harmless groups:
+--       - the table HAS IsSOTrx (C_Invoice, C_Order, M_InOut, M_RMA, I_Invoice, I_Order,
+--         C_Invoice_Candidate) -> @IsSOTrx@ resolves normally, nothing to fix;
+--       - the table lacks IsSOTrx but its windows are listed in
+--         MissingContextVariables.KNOWN_MISSING_CONTEXT_VARIABLES_IN_LOOKUPS (C_Project 130/286/
+--         540668/540680/541015, M_Product 140/344/53010/540410, C_RfQ 315, M_Movement 170,
+--         C_SalesRegion 152, W_Store 350, M_Material_Tracking 540226, C_Phonecall_Schedule 540607,
+--         RV_R_Group_Prospect 540013, ... 39 SalesRep_ID entries in total) -> the health check
+--         deliberately suppresses the warning there.
+--     M_ShipperTransportation is the only column in NEITHER group, which is exactly why windows
+--     540020 and 541657 are the only two reported NOK. Repointing this one column therefore closes
+--     the whole defect without touching AD_Reference 190 or the allowlist.
 --   * IsAutoApplyValidationRule on AD_Column 551101 is not changed. The sibling C_BPartner fix set it
 --     to 'Y' in 5787080_c_bpartner_sales_rep_fix_LookupDescriptor.sql and reverted it to 'N' in
 --     5787160_c_bpartner_sales_rep_fix_LookupDescriptor2.sql; 'N' is the corrected end state.
@@ -61,11 +71,11 @@ SELECT rt.AD_Client_ID,
        rt.IsValueDisplayed,
        rt.OrderByClause,
        '(AD_User.IsSystemUser = ''Y'' OR ''@TransportDirection@'' IN (''Incoming'',''Dropship''))',
-       TO_TIMESTAMP('2026-09-09 12:52:39','YYYY-MM-DD HH24:MI:SS'),
+       TO_TIMESTAMP('2026-09-09 12:52:40','YYYY-MM-DD HH24:MI:SS'),
        100,
        'D',
        'Y',
-       TO_TIMESTAMP('2026-09-09 12:52:39','YYYY-MM-DD HH24:MI:SS'),
+       TO_TIMESTAMP('2026-09-09 12:52:40','YYYY-MM-DD HH24:MI:SS'),
        100
 FROM   AD_Ref_Table rt
 WHERE  rt.AD_Reference_ID = 190
@@ -73,5 +83,5 @@ WHERE  rt.AD_Reference_ID = 190
 
 -- 2026-09-09 12:52:39
 -- Column: M_ShipperTransportation.SalesRep_ID
-UPDATE AD_Column SET AD_Reference_Value_ID=542139 /*From ID Server*/,Updated=TO_TIMESTAMP('2026-09-09 12:52:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551101
+UPDATE AD_Column SET AD_Reference_Value_ID=542139 /*From ID Server*/,Updated=TO_TIMESTAMP('2026-09-09 12:52:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551101
 ;
