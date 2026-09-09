@@ -39,6 +39,15 @@ import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.Env;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
+import org.mockito.Mockito;
+import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.X_AD_Process;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderCloseResult;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -103,6 +112,42 @@ class PP_Order_CloseSelectionTest
 	void notOffered_whenNothingIsSelected()
 	{
 		assertThat(checkPreconditions().isRejected()).isTrue();
+	}
+
+	/**
+	 * Pins the two flags {@code doIt()} sets. Dropping either one silently reintroduces the stale-row bug:
+	 * the WebUI would stop rebuilding the selection, the Swing client would stop re-running the tab query.
+	 */
+	@Test
+	void doIt_asksTheClientToRebuildItsView()
+	{
+		final IPPOrderBL ppOrderBL = Mockito.mock(IPPOrderBL.class);
+		Mockito.when(ppOrderBL.closeOrdersInSelection(Mockito.any()))
+				.thenReturn(PPOrderCloseResult.builder().countClosed(1).countFailed(0).build());
+		Services.registerService(IPPOrderBL.class, ppOrderBL);
+
+		final I_AD_Process adProcess = InterfaceWrapperHelper.newInstance(I_AD_Process.class);
+		adProcess.setValue("PP_Order_CloseSelection");
+		adProcess.setName("Auswahl schliessen");
+		adProcess.setClassname(PP_Order_CloseSelection.class.getName());
+		adProcess.setType(X_AD_Process.TYPE_Java);
+		InterfaceWrapperHelper.saveRecord(adProcess);
+
+		final I_AD_PInstance pinstance = InterfaceWrapperHelper.newInstance(I_AD_PInstance.class);
+		InterfaceWrapperHelper.saveRecord(pinstance);
+
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setPInstanceId(PInstanceId.ofRepoId(pinstance.getAD_PInstance_ID()))
+				.setAD_Process_ID(adProcess.getAD_Process_ID())
+				.build();
+		final PP_Order_CloseSelection process = new PP_Order_CloseSelection();
+		process.init(processInfo);
+
+		process.doIt();
+
+		assertThat(processInfo.getResult().isRecreateViewSelectionAfterExecution()).isTrue();
+		assertThat(processInfo.getResult().isRefreshAllAfterExecution()).isTrue();
 	}
 
 	private I_PP_Order ppOrder(@NonNull final DocStatus docStatus)

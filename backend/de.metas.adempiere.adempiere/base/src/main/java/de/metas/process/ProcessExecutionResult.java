@@ -166,6 +166,9 @@ public class ProcessExecutionResult
 	 * Tells that the view's row selection has to be rebuilt, not merely re-read (the process changed
 	 * whether its records still belong to the view). Throws unless the view materializes a selection,
 	 * i.e. set it only on a process that runs on an AD-window view.
+	 * <p>
+	 * The Swing client reads only {@link #refreshAllAfterExecution}, and its fallback re-reads the row
+	 * without re-running the tab query — so a process reachable from Swing too must set both.
 	 */
 	@Setter @Getter private boolean recreateViewSelectionAfterExecution = false;
 
