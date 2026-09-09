@@ -7,7 +7,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { SLOW_ACTION_TIMEOUT, collectPageErrors } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { waitForTabAllowsNew, getTabRows } from '../utils/WebAPIValidation';
+import { waitForTabAllowsNew, getTabRows, waitForRecordSaved } from '../utils/WebAPIValidation';
 
 /**
  * Quick Input (Batch Entry) E2E test suite.
@@ -24,7 +24,9 @@ import { waitForTabAllowsNew, getTabRows } from '../utils/WebAPIValidation';
  * 5. Regular form lookup regression: Customer selection in header (non-quick-input)
  * 6. Enter-key selects packing instruction on secondary sub-field (the reported bug)
  * 7. Mouse-click selects packing instruction on secondary sub-field (regression)
- * (TESTs 6–7 are placed after TEST 3 in the file)
+ * 8. Regular-form composite partner lookup: server auto-fill of the location and
+ *    contact secondary sub-fields (RawList-rendered sub-fields, not RawLookup)
+ * (TESTs 6–8 are placed after TEST 3 in the file)
  */
 
 // ============================================================================
@@ -579,6 +581,52 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       await expectSingleLineWithPackingInstruction(recordId, pi.tuPIItemProductTestId);
       await expect(page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field')).toHaveValue('');
       await expect(page.locator('#lookup_M_Product_ID input.input-field')).toHaveValue('');
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 8 (TC7 part a): regular-form composite BPartner lookup — the
+    // secondary sub-fields (Location, Contact) auto-fill from the server
+    // after selecting the customer. In THIS window these sub-fields are
+    // RawList-rendered (not RawLookup), so this guards the server auto-fill
+    // reaching the secondary sub-fields — not the RawLookup call sites
+    // themselves (those are covered by TESTs 6/7).
+    // ------------------------------------------------------------------
+    test(`Composite partner lookup: location and contact auto-fill in the regular form (${label})`, async ({ page }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00100: Sales Order');
+      allure.tag('F00100');
+      allure.story('Composite lookup: secondary sub-fields auto-filled in a regular form');
+      allure.severity('normal');
+      allure.parameter('Language', language);
+      allure.tag(language);
+      test.setTimeout(150000);
+
+      // Contract: zero browser errors for the whole scenario — not reset mid-test.
+      const errors = collectPageErrors(page);
+      const masterdata = await createMasterdata(language);
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await DashboardPage.expectVisible();
+      await SalesOrderPage.goto();
+      await SalesOrderPage.clickNew();
+      const recordId = await SalesOrderPage.selectCustomer(
+        masterdata.bpartners.CUSTOMER1.bpartnerCode
+      );
+
+      // Server auto-fill reached the secondary sub-fields — asserted, not logged.
+      await expect(page.locator('#lookup_C_BPartner_Location_ID input.input-field')).not.toHaveValue(
+        '',
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      // The server defaults AD_User_ID only from a contact flagged IsSalesContact_Default (CalloutOrder),
+      // which the frontend-testing masterdata API cannot set — so only the sub-field's presence is asserted here; Location is the auto-filled value under test.
+      await expect(page.locator('#lookup_AD_User_ID input.input-field')).toBeVisible();
+
+      await waitForRecordSaved(SALES_ORDER_WINDOW_ID, recordId, { maxRetries: 20, retryDelayMs: 1000 });
+
+      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
     });
 
     // ------------------------------------------------------------------
