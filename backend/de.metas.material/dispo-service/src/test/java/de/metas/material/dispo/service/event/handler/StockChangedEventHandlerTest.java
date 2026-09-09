@@ -201,6 +201,14 @@ public class StockChangedEventHandlerTest
 	 * => Expect no candidate at all: nothing physical happened, so there is nothing to apply. Before the
 	 * change, the delta was taken against the running balance and came out as 200 - 170 = +30, which pushed
 	 * the projection back onto the bare physical stock.
+	 * <p>
+	 * <b>Defensive test - no production producer emits this event.</b> The only producer,
+	 * {@code StockDataUpdateRequestHandler.fireStockChangedEvent}, returns early when the old and new
+	 * quantities are equal, and its reset-stock caller {@code MD_Stock_Update_From_M_HUs.retrieveHuData}
+	 * additionally filters on {@code QtyOnHandChange <> 0}. So this pins the handler's own arithmetic at
+	 * the zero-movement boundary and nothing more; the production-reachable regression is the sibling
+	 * {@link #handleEvent_unfulfilledPlannedPositions_appliesOnlyThePhysicalMovement()}, which is where a
+	 * behaviour change would actually surface for a customer.
 	 */
 	@Test
 	public void handleEvent_unfulfilledPlannedPositions_andUnchangedPhysicalQty_createsNoCandidate()

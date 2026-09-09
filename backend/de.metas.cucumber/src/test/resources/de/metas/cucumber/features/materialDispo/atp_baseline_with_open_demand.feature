@@ -205,7 +205,7 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
 
   @Id:ATPBASE_007
   @from:cucumber
-  Scenario: A reset-stock refresh that finds the physical quantity unchanged leaves the open demand alone
+  Scenario: A reset-stock refresh applies its own physical movement and leaves the open demand alone
 
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID | C_UOM_ID.X12DE355 |
@@ -239,14 +239,18 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_od_4     | DEMAND            | SHIPMENT                  | p_od_4       | 2024-09-21T21:00:00Z | -30 | 170 | WH_OD          |
 
-    # a reset-stock refresh that finds MD_Stock.QtyOnHand exactly where it left it
+    # a reset-stock refresh whose recount from the HUs disagreed with the stored quantity: it found 150 stored,
+    # wrote the recomputed 200 - the quantity MD_Stock now holds - and reports that +50 movement. This is the only
+    # event shape the reset-stock process emits: it skips every key whose recomputed quantity did not move.
     When metasfresh receives a StockChangedEvent for the current MD_Stock
       | M_Product_ID | OPT.ChangeDate       | OPT.QtyOnHandOld |
-      | p_od_4       | 2024-09-23T06:00:00Z | 200              |
+      | p_od_4       | 2024-09-23T06:00:00Z | 150              |
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # nothing physical moved, so the refresh must add no candidate and the projection must stay at 170
+    # only the refresh's own +50 may reach the chain: the projection moves 170 -> 220 and keeps the open demand.
+    # Re-baselining onto the bare physical 200 would land the projection there and absorb the demand.
     Then after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | c_od_4     | INVENTORY_UP      |                           | p_od_4       | 2024-09-20T06:00:00Z | 200 | 200 | WH_OD          |
       | d_od_4     | DEMAND            | SHIPMENT                  | p_od_4       | 2024-09-21T21:00:00Z | -30 | 170 | WH_OD          |
+      | base_od_4  | INVENTORY_UP      |                           | p_od_4       | 2024-09-23T06:00:00Z | 50  | 220 | WH_OD          |

@@ -112,6 +112,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -818,16 +819,30 @@ public class MD_Candidate_StepDef
 	 * carrying that row's current QtyOnHand. Mirrors what
 	 * StockDataUpdateRequestHandler.fireStockChangedEvent builds, but WITHOUT the old==new guard.
 	 * <p>
-	 * Note: <code>qtyOnHandOld</code> defaults to zero, so the <code>MovementQty</code> persisted on the resulting
-	 * <code>MD_Candidate_Transaction_Detail</code> row is the full new <code>QtyOnHand</code> rather than the true
-	 * delta; no scenario asserts that column, but do not rely on it. A scenario about a refresh that found the
-	 * physical quantity <em>unchanged</em> has to say so, via the optional <code>QtyOnHandOld</code> column.
+	 * Note: <code>qtyOnHandOld</code> is the quantity the refresh found <em>stored</em> before it wrote the one the
+	 * event now carries. It defaults to the very <code>MD_Stock.QtyOnHand</code> the event's <code>qtyOnHand</code>
+	 * is taken from, because this step never changes <code>MD_Stock</code>: a scenario that says nothing therefore
+	 * posts a refresh that found the stored quantity exactly where it was, and the event's physical movement
+	 * (<code>qtyOnHand - qtyOnHandOld</code>) is genuinely zero. Use the optional <code>QtyOnHandOld</code> column
+	 * to model a refresh that found the stored quantity off by that much - which is the only shape the reset-stock
+	 * process actually emits, since it recomputes <code>MD_Stock</code> from the HUs and skips every key whose
+	 * quantity did not move.
+	 * <p>
+	 * That difference is load-bearing, not cosmetic. Two consumers read it:
+	 * <ul>
+	 * <li><code>StockChangedEventHandler.computeQtyDifference</code>: for a chain that carries an unfulfilled
+	 * <code>DEMAND</code>/<code>SUPPLY</code> at or before the event date, the created candidate's <b>type and
+	 * quantity</b> are that difference - <code>INVENTORY_UP</code>/<code>INVENTORY_DOWN</code> of its absolute
+	 * value, or no candidate at all when it is zero;
+	 * <li>the <code>MovementQty</code> persisted on the resulting <code>MD_Candidate_Transaction_Detail</code> row;
+	 * no scenario asserts that column, but do not rely on it.
+	 * </ul>
 	 * <p>
 	 * Gherkin:
 	 * <pre>
 	 * When metasfresh receives a StockChangedEvent for the current MD_Stock
 	 *   | M_Product_ID | OPT.ChangeDate       | OPT.QtyOnHandOld |
-	 *   | p_od_1       | 2024-09-23T06:00:00Z | 200              |
+	 *   | p_od_1       | 2024-09-23T06:00:00Z | 150              |
 	 * </pre>
 	 */
 	@And("^metasfresh receives a StockChangedEvent for the current MD_Stock$")
@@ -846,7 +861,7 @@ public class MD_Candidate_StepDef
 		final int productId = productTable.get(productIdentifier).getM_Product_ID();
 
 		final Instant changeDate = row.getAsOptionalInstant("ChangeDate").orElse(null);
-		final BigDecimal qtyOnHandOld = row.getAsOptionalBigDecimal("QtyOnHandOld").orElse(BigDecimal.ZERO);
+		final Optional<BigDecimal> qtyOnHandOld = row.getAsOptionalBigDecimal("QtyOnHandOld");
 
 		final List<I_MD_Stock> stockRecords = queryBL.createQueryBuilderOutOfTrx(I_MD_Stock.class)
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
@@ -864,7 +879,13 @@ public class MD_Candidate_StepDef
 					.productDescriptor(ProductDescriptor.forProductAndAttributes(productId, attributesKey, asiId.getRepoId()))
 					.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
 					.qtyOnHand(stockRecord.getQtyOnHand())
-					.qtyOnHandOld(qtyOnHandOld)
+					// Nothing changed this row's QtyOnHand, so with no explicit QtyOnHandOld the honest prior
+					// physical quantity is that same value and the event's movement is zero. A ZERO default would
+					// instead claim a movement of the full stock quantity, and since StockChangedEventHandler
+					// derives the created candidate's type and quantity from that movement whenever the chain
+					// carries an unfulfilled position, it would silently add a bogus INVENTORY_UP of the whole
+					// stock (measured on the open-demand-before-the-baseline scenario: ATP 1200 instead of 170).
+					.qtyOnHandOld(qtyOnHandOld.orElseGet(stockRecord::getQtyOnHand))
 					.changeDate(changeDate)
 					.stockChangeDetails(StockChangedEvent.StockChangeDetails.builder()
 							.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(nextResetStockPInstanceRepoId()))
