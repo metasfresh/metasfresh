@@ -88,16 +88,24 @@ import java.util.UUID;
  * ({@code WebRestApiApplication}) reads a different sysconfig prefix and so never activates it. Both applications
  * component-scan {@code de.metas}, so an <i>unconditional</i> {@code @Service} here is picked up by the webapi too,
  * where its constructor cannot be satisfied - which aborts webapi startup outright with "required a bean of type
- * CandidateChangeService that could not be found". The same guard on the same grounds is carried by every other
- * bean outside {@code dispo-service} that collaborates with the engine, e.g.
+ * CandidateChangeService that could not be found". The same annotation is carried by every other bean outside
+ * {@code dispo-service} that collaborates with the engine, e.g.
  * {@code de.metas.material.cockpit.view.mainrecord.MaterialCandidateChangedHandler} and
- * {@code de.metas.material.planning.event.SupplyRequiredDecreasedHandler}.
+ * {@code de.metas.material.planning.event.SupplyRequiredDecreasedHandler} - though note those guard against a
+ * different failure: they are event handlers that would otherwise process the same material event in two JVMs,
+ * whereas this class simply cannot have its constructor satisfied outside the profile. Same instrument, same
+ * convention, different reason.
  * <p>
  * Consequence for callers: in a JVM without that profile this bean does not exist, so
  * {@code MD_Candidate_Reconcile_ATP} fails fast there with an explicit message instead of half-reconciling - see
- * that process's {@code reconciliationCommand()}. {@link AtpTargetCalculator}, which needs nothing from
- * {@code dispo-service}, is deliberately left unguarded, so the read-only divergence computation stays available
- * everywhere.
+ * that process's {@code reconciliationCommand()}. <b>That applies to a dry run too</b>: the process resolves this
+ * whole bean before it inspects its dry-run parameter, so <i>no</i> path through that process is reachable from a
+ * profile-less JVM - the operator gets the explicit failure whether or not the preview box is ticked.
+ * <p>
+ * {@link AtpTargetCalculator} is a separate matter and is deliberately left unguarded: it needs nothing from
+ * {@code dispo-service}, so a caller that holds it directly can compute a divergence anywhere. That does not make
+ * the process above universally runnable - the process does not use the calculator directly - it only means the
+ * read-only computation is available to code that wants it.
  */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
