@@ -92,7 +92,9 @@ public class DeliveryPlanningAllocRepository
 	}
 
 	/**
-	 * A multimap rather than one key per planning: a planning may be allocated to more than one instruction.
+	 * A multimap for shape symmetry with the instruction-side lookup, NOT because a planning can hold several
+	 * active allocations: {@code M_Delivery_Planning_Alloc_Planning_UQ} permits at most one
+	 * ({@code UNIQUE (M_Delivery_Planning_ID) WHERE IsActive='Y'}), so each key carries exactly one value.
 	 */
 	public ImmutableListMultimap<DeliveryPlanningId, DeliveryPlanningAlloc> getAllocationsByPlanningId(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{

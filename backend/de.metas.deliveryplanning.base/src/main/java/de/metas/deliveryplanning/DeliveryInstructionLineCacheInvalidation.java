@@ -47,7 +47,11 @@ import java.util.Collection;
 public final class DeliveryInstructionLineCacheInvalidation
 {
 	/**
-	 * One request per allocation - a planning may sit on more than one delivery instruction.
+	 * One request per allocation. Today that is always exactly ONE: the pre-existing partial unique index
+	 * {@code M_Delivery_Planning_Alloc_Planning_UQ} - {@code UNIQUE (M_Delivery_Planning_ID) WHERE IsActive='Y'} -
+	 * permits at most one ACTIVE allocation per planning, and the caller passes only active rows. The
+	 * collection form is kept because it costs nothing and stays correct if that constraint is relaxed; it is
+	 * NOT evidence that a planning can currently sit on several instructions.
 	 *
 	 * @return {@code null} when there is nothing to invalidate, so the caller can skip the broadcast entirely.
 	 */

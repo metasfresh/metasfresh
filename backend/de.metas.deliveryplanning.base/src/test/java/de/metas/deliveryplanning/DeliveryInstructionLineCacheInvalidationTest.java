@@ -77,7 +77,11 @@ public class DeliveryInstructionLineCacheInvalidationTest
 	}
 
 	/**
-	 * A planning may sit on more than one delivery instruction, so each gets its own request rather than only the first.
+	 * Pins the N-allocations-to-N-requests mapping: every allocation gets its own request rather than only the
+	 * first. NOTE this input is NOT currently reachable through the schema - {@code M_Delivery_Planning_Alloc_Planning_UQ}
+	 * permits at most one ACTIVE allocation per planning - so this covers the mapping itself, not a supported
+	 * business scenario. Kept deliberately: it is what would catch a regression to "only the first request"
+	 * if that constraint is ever relaxed.
 	 */
 	@Test
 	void twoAllocations_yieldOneRequestPerInstruction()
