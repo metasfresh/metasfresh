@@ -166,6 +166,14 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * Only the rows the current filter keeps - this is what the grid renders.
+	 *
+	 * <p>
+	 * A caller that turns rows into persistent records (creating the order lines, an export, a bulk
+	 * action) must NOT use this: a row the filter hides would be silently dropped. Use
+	 * {@link #getAllRowsIncludingFilteredOut()} there.
+	 */
 	@Override
 	public ImmutableList<ProductsProposalRow> getAllRows()
 	{

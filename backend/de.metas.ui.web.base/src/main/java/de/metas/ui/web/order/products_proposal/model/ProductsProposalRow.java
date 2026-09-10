@@ -284,6 +284,14 @@ public class ProductsProposalRow implements IViewRow
 		// (ProductsProposalRowsData#getAllRowsIncludingFilteredOut), which is what actually guarantees
 		// no typed quantity is lost.
 		//
+		// Because qty is editable, this is the first criterion whose outcome an edit can change. Row
+		// membership is recomputed only when a filter is applied (ProductsProposalRowsData#filter), NOT
+		// on every row change, so clearing a quantity back to zero while the filter is on leaves that
+		// row on screen until the filter is re-applied. That is deliberate: making a row vanish from
+		// under the cursor mid-edit is worse than showing one row too many, and nothing is lost either
+		// way - OrderLinesFromProductProposalsProducer gates on the same isQtySet() predicate, so a
+		// cleared row produces no order line however long it stays visible.
+		//
 		// The exemption deliberately does NOT cover the product-name search: that search is the only
 		// filter the "Andere Produkte" view offers, and this predicate is shared with it, so exempting
 		// typed-quantity rows from the name search would silently change that view's results - which

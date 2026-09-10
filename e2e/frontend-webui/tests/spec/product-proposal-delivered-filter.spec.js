@@ -67,7 +67,7 @@ async function readOverlayRows(page) {
 }
 
 test.describe('Product Proposals - delivered-only filter', () => {
-  test('Filter Produktvorschläge to products already delivered to this partner (TC1-TC4)', async ({ page }) => {
+  test('Filter Produktvorschläge to products already delivered to this partner', async ({ page }) => {
     allure.epic('E0100: Sales');
     allure.tag('F00140');
     allure.tag('F00140: Sales Order - Product Proposals');

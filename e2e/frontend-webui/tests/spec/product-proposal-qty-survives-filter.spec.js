@@ -6,7 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
-import { ProductProposalPage } from '../utils/pages/ProductProposalPage';
+import { ProductProposalPage, ROWS as OVERLAY_ROWS } from '../utils/pages/ProductProposalPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
@@ -32,7 +32,7 @@ const DAYS_PATTERN = /^\d+$/;
 const hasDeliveryValue = (lastShipmentDaysText) => DAYS_PATTERN.test((lastShipmentDaysText || '').trim());
 
 async function readOverlayRows(page) {
-  const rows = page.locator('.raw-modal .panel-modal table tbody tr');
+  const rows = page.locator(OVERLAY_ROWS);
   const count = await rows.count();
 
   const result = [];
@@ -47,7 +47,7 @@ async function readOverlayRows(page) {
 }
 
 test.describe('Product Proposals - quantity survives the filter (AC7)', () => {
-  test('A typed quantity becomes an order line even if the filter hides that row on DONE (TC8)', async ({
+  test('A typed quantity becomes an order line whatever the filter is set to', async ({
     page,
   }) => {
     allure.epic('E0100: Sales');
@@ -59,7 +59,7 @@ test.describe('Product Proposals - quantity survives the filter (AC7)', () => {
     allure.description(`
 ## F00140: Sales Order - Product Proposals
 
-### Test Scenario (TC8)
+### Test Scenario
 
 A quantity typed on a row that the delivery-history filter is currently hiding still becomes an
 order line when the overlay is closed with DONE - the filter is a view concern, not a data-loss

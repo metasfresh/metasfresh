@@ -100,16 +100,19 @@ export class ProductProposalPage {
       const overlay = page.locator(OVERLAY);
       await overlay.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-      // Wait for the view's own spinners to settle before anything is read
-      await page
-        .locator(`${OVERLAY} .rotating, ${OVERLAY} .indicator-pending`)
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-
-      // The product column proves the view layout (not just the modal frame) is rendered
+      // The product column proves the view layout (not just the modal frame) is rendered...
       await expect(page.locator(`${OVERLAY} th[data-testid="column-product"]`)).toBeVisible({
         timeout: SLOW_ACTION_TIMEOUT,
       });
+
+      // Deliberately NOT also asserting that a data row is present: a filtered view is allowed to be
+      // legitimately empty, and a caller that needs rows asserts on them itself (web-first, so it
+      // retries). Nor is there a spinner to wait on here - this overlay renders no loading
+      // affordance, and `.rotating`/`.indicator-pending` (waited on at this spot previously) are not
+      // classes the frontend emits at all: `indicator-pending` exists only as a @keyframes name in
+      // frontend/src/assets/css/window-indicator.scss, so that wait resolved on the first poll and
+      // protected nothing. What does synchronise a filter change is the round-trip wait in
+      // `setFilter`.
     });
   }
 
