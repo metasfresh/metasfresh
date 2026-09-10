@@ -216,7 +216,9 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	{
 		OrderLinesFromProductProposalsProducer.builder()
 				.orderId(view.getOrderId().get())
-				.rows(view.getAllRows())
+				// NOT getAllRows(): that one is filtered, so a quantity typed on a row the user then
+				// hid with a filter would never become an order line.
+				.rows(view.getAllRowsIncludingFilteredOut())
 				.build()
 				.produce();
 	}

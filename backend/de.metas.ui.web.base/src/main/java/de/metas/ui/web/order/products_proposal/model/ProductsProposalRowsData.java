@@ -172,6 +172,24 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 		return getTopLevelRows();
 	}
 
+	/**
+	 * All rows, ignoring the current filter - i.e. built from {@code rowIdsOrdered} instead of
+	 * {@code rowIdsOrderedAndFiltered}.
+	 *
+	 * <p>
+	 * Needed because everything a user typed into a row has to survive filtering: a quantity entered
+	 * on a row that a later filter hides is still a quantity the user asked for. {@link #getAllRows()}
+	 * streams the filtered ids, so callers that turn rows into persistent records - notably creating
+	 * the order lines when the view is closed with DONE - must use this method, or the hidden rows are
+	 * silently dropped.
+	 */
+	public synchronized ImmutableList<ProductsProposalRow> getAllRowsIncludingFilteredOut()
+	{
+		return rowIdsOrdered.stream()
+				.map(rowsById::get)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	@Override
 	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{

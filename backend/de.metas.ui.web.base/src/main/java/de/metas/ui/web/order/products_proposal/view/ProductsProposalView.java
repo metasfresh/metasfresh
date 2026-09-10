@@ -178,6 +178,12 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 		return ImmutableList.copyOf(getRows());
 	}
 
+	/** All rows, ignoring the current filter - see {@link ProductsProposalRowsData#getAllRowsIncludingFilteredOut()}. */
+	public List<ProductsProposalRow> getAllRowsIncludingFilteredOut()
+	{
+		return rowsData.getAllRowsIncludingFilteredOut();
+	}
+
 	public void addOrUpdateRows(@NonNull final List<ProductsProposalRowAddRequest> requests)
 	{
 		rowsData.addOrUpdateRows(requests);
