@@ -37,11 +37,25 @@ import java.util.Collection;
  * The cache-invalidation request that makes a delivery instruction's {@code M_ShippingPackage} line show a
  * planning's CURRENT quantities without a manual reload.
  * <p>
- * The generic {@code AD_SQLColumn_SourceTableColumn} path cannot express it: it always emits
+ * Neither declarative mechanism can express this, for two DIFFERENT reasons - check both before replacing this
+ * class with configuration:
+ * <ul>
+ * <li>{@code AD_SQLColumn_SourceTableColumn} produces the wrong SHAPE: it always emits
  * {@code CacheInvalidateRequest.rootRecord("M_ShippingPackage", id)}, and {@code M_ShippingPackage} is the root
  * table of no window (tabLevel 1 in both 540020 and 541657), so that request resolves to no window and is
- * dropped - the model cache is reset, the open document is not. The routable shape is root
- * {@code M_ShipperTransportation} + child {@code M_ShippingPackage}, which is what this builds.
+ * dropped - the model cache is reset, the open document is not.</li>
+ * <li>{@code AD_ViewSource} would produce the RIGHT shape but cannot REACH the record. Its factory does not
+ * build a request itself; it delegates to the window-based parent/child factories for the target table
+ * ({@code ViewSourceCacheInvalidateRequestFactory#createRequestsFromModel}), and those are seeded from
+ * {@code AD_Window_ParentChildTableNames_v1}, which already registers root {@code M_ShipperTransportation} +
+ * child {@code M_ShippingPackage} via {@code M_ShipperTransportation_ID}. The blocker is the link instead: the
+ * descriptor carries ONE source and ONE target link column and applies them as a single
+ * {@code addEqualsFilter}, but {@code M_Delivery_Planning} and {@code M_ShippingPackage} share no column -
+ * neither carries the other's FK, and the linkage lives in {@code M_Delivery_Planning_Alloc}. That is two hops,
+ * which the single-hop descriptor cannot traverse.</li>
+ * </ul>
+ * So the routable shape is root {@code M_ShipperTransportation} + child {@code M_ShippingPackage}, built here
+ * from the allocation because only the allocation knows both ids.
  */
 @UtilityClass
 public final class DeliveryInstructionLineCacheInvalidation
