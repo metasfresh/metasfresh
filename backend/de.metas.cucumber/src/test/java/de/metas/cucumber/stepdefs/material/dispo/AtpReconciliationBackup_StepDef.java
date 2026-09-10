@@ -67,6 +67,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * invoking the operator-facing {@code AD_Process} {@link MD_Candidate_Reconcile_ATP}, and asserting the durable
  * backup a run persists is recoverable from {@code MD_ATP_Reconciliation_Backup} - never from the in-process
  * {@link AtpReconciliationRunLog} return value, which does not outlive the JVM that produced it.
+ * <p>
+ * <b>Scope note:</b> {@link #runReconciliation} validates the command layer only, not the real operator entry
+ * point - a real (non-dry) run through {@link MD_Candidate_Reconcile_ATP} is enqueued and never returns its
+ * {@code ReconciliationRunUUID} to the caller, so there is nothing for this scenario's run-id-keyed assertions to
+ * read back. An operator cannot reproduce this exact scenario from the WebUI today.
  */
 @RequiredArgsConstructor
 public class AtpReconciliationBackup_StepDef

@@ -6,6 +6,11 @@ Feature: ATP reconciliation backup survives the run and names what changed
 ## Before the reconciliation writes anything, the affected rows must be backed up; the requirement is that the
 ## pre-change values stay recoverable and the run log names what changed - reachable from a fresh database read,
 ## not only from the return value of the call that ran the reconciliation.
+##
+## Scope note: this feature validates the command layer (AtpReconciliationCommand#reconcileAndLog) directly, not
+## the real operator-facing AD_Process - a real run through MD_Candidate_Reconcile_ATP is enqueued and never
+## returns its ReconciliationRunUUID to the caller, so these run-id-keyed assertions have nothing to read back
+## through that path today.
 
   Background:
     Given infrastructure and metasfresh are running
