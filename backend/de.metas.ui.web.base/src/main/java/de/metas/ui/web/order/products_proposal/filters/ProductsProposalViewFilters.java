@@ -115,6 +115,7 @@ public class ProductsProposalViewFilters
 		{
 			documentFilters.add(DocumentFilter.builder()
 					.setFilterId(OrderProductsProposalViewFilters.FILTER_ID)
+					.setCaption(OrderProductsProposalViewFilters.getOnlyDeliveredCaption())
 					.addParameter(DocumentFilterParam.ofNameEqualsValue(ProductsProposalViewFilter.PARAM_OnlyDelivered, Boolean.TRUE))
 					.build());
 		}

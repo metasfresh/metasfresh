@@ -6,7 +6,11 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
-import { ProductProposalPage } from '../utils/pages/ProductProposalPage';
+import {
+  ProductProposalPage,
+  ROWS as OVERLAY_ROWS,
+  FILTER_CHECKBOX as OVERLAY_FILTER_CHECKBOX,
+} from '../utils/pages/ProductProposalPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
@@ -32,12 +36,6 @@ import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
  * page.request, per the workspace E2E conventions.
  */
 
-// Same overlay scoping ProductProposalPage.js uses internally (not exported): the overlay is a
-// raw-modal panel layered over the still-mounted order window, so an unscoped `table tbody tr`
-// would also match the order lines grid behind it.
-const OVERLAY_ROWS = '.raw-modal .panel-modal table tbody tr';
-const OVERLAY_FILTER_CHECKBOX =
-  '.raw-modal .panel-modal .filters-frequent .inline-filters label.input-checkbox input[type="checkbox"]';
 
 // Named so a poll timeout points straight at the mechanism, not just "value never appeared".
 const STATS_ASYNC_MECHANISM =
@@ -163,19 +161,6 @@ the customer has never bought.
         quantity: '5',
         recordId: historyOrderId,
       });
-
-      // Reload before adding the second line. SalesOrderPage.addOrderLine() reuses the same
-      // batch-entry toggle button across calls; back-to-back calls on one order can leave that
-      // toggle in a state where the second click closes an already-open panel instead of opening
-      // it, so the second line silently never reaches the server (known sharp edge of the shared
-      // helper - see compensation-group-bundle.spec.js's own note on addOrderLine's fragility). A
-      // full reload guarantees the batch-entry panel starts closed for the second call.
-      await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${historyOrderId}`);
-      // Deterministic readiness signal instead of a fixed pause: addOrderLine's very first action is
-      // to scroll to and click this toggle, so the page is ready exactly when the toggle is visible.
-      await page
-        .getByTestId('batch-entry-toggle')
-        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
       await SalesOrderPage.addOrderLine({
         product: product2Code,
@@ -311,11 +296,12 @@ the customer has never bought.
 
       expect(await ProductProposalPage.getRowCount(page)).toBe(0);
 
-      // A negative assertion needs a settle window, otherwise it passes simply because nothing has
-      // rendered yet: toHaveCount(0) matches an empty DOM immediately. Give the filter round-trip
-      // time to surface a toast, then assert none did.
+      // Zero rows + no toast alone would also be the signature of a filter round-trip that threw
+      // and left the grid empty, so first assert the overlay is still in a valid rendered state
+      // (column header present, spinners detached). That is also the settle window the negative
+      // toast assertion needs - toHaveCount(0) matches an empty DOM immediately.
+      await ProductProposalPage.expectVisible(page);
       const errorToast = page.locator('.Toastify div[role="alert"].Toastify__toast-body');
-      await page.waitForTimeout(3000);
       await expect(errorToast).toHaveCount(0);
     });
   });

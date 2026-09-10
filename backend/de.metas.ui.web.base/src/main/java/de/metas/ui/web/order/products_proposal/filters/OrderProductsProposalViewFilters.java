@@ -69,7 +69,7 @@ public class OrderProductsProposalViewFilters
 				.build();
 	}
 
-	private static ITranslatableString getOnlyDeliveredCaption()
+	static ITranslatableString getOnlyDeliveredCaption()
 	{
 		return Services.get(IMsgBL.class).getTranslatableMsgText(ProductsProposalViewFilter.PARAM_OnlyDelivered);
 	}

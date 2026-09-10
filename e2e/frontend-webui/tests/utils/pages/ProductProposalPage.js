@@ -24,10 +24,17 @@ import { getPage, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../common';
 export const PRODUCT_PROPOSAL_WINDOW_ID = 'orderProductsProposal';
 
 /** Container of the overlay (raw modal panel). */
-const OVERLAY = '.raw-modal .panel-modal';
+export const OVERLAY = '.raw-modal .panel-modal';
 
 /** Data rows of the overlay grid. */
-const ROWS = `${OVERLAY} table tbody tr`;
+export const ROWS = `${OVERLAY} table tbody tr`;
+
+/**
+ * The delivery-history flag filter's checkbox in the overlay's inline (frequent-used) filter line.
+ * Exported so a spec asserting on the control itself uses the same selector `setFilter` toggles,
+ * instead of keeping its own copy that can drift.
+ */
+export const FILTER_CHECKBOX = `${OVERLAY} .filters-frequent .inline-filters label.input-checkbox input[type="checkbox"]`;
 
 /**
  * Buttons of the order lines tab's filter line - the included-tab top actions come last.
