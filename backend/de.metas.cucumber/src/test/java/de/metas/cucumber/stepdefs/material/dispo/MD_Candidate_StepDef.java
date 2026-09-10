@@ -441,11 +441,45 @@ public class MD_Candidate_StepDef
 	}
 
 	/**
-	 * Drains the {@code de.metas.material} RabbitMQ queue before validating, then asserts each expected row.
-	 * The drain is internalized here (rather than left as a standalone feature-file step) because this
-	 * consumer's {@link #tryAndWaitForCandidate} already matches a <em>complete</em> candidate row (type,
-	 * business case, product, date, qty, ATP) that no later event revises - draining first guarantees the
-	 * read is settled instead of merely relying on the poll's first-match semantics.
+	 * Waits (up to {@code timeoutSec} seconds) for each expected {@code MD_Candidate} row to appear, then
+	 * asserts it against the given DataTable row.
+	 * <p>
+	 * Drains the {@code de.metas.material} RabbitMQ queue before validating, rather than leaving that as a
+	 * standalone feature-file step (see {@code de.metas.cucumber/CLAUDE.md} rule 7). This consumer's
+	 * {@link #tryAndWaitForCandidate} already matches a <em>complete</em> candidate row (type, business case,
+	 * product, date, qty, ATP) that no later event revises, so draining first only adds a settled read on top
+	 * of that poll - it never masks a real failure.
+	 * <p>
+	 * DataTable columns (one row per expected candidate):
+	 * <ul>
+	 * <li>{@code Identifier} - registers the matched candidate under this name for later steps</li>
+	 * <li>{@code MD_Candidate_Type} - required; a {@link CandidateType} (e.g. {@code DEMAND}, {@code SUPPLY},
+	 * {@code INVENTORY_UP})</li>
+	 * <li>{@code OPT.MD_Candidate_BusinessCase} - a {@link CandidateBusinessCase} (e.g. {@code SHIPMENT},
+	 * {@code PURCHASE}, {@code PRODUCTION}); omit for a plain {@code STOCK}/inventory candidate with no
+	 * business case</li>
+	 * <li>{@code M_Product_ID} - required; a product identifier</li>
+	 * <li>{@code DateProjected} - required (or {@code OPT.DateProjected_LocalTimeZone} as a local-timezone
+	 * alternative)</li>
+	 * <li>{@code Qty} - required; the candidate's own quantity (sign is normalized internally for
+	 * demand-type candidates)</li>
+	 * <li>{@code OPT.ATP} (or the older {@code OPT.Qty_AvailableToPromise}) - the running ATP on the
+	 * candidate's STOCK parent/child; defaults to {@code 0} if neither is given</li>
+	 * <li>{@code OPT.M_Warehouse_ID}, {@code OPT.M_AttributeSetInstance_ID}, {@code OPT.simulated} - optional
+	 * refinements</li>
+	 * <li>{@code OPT.DD_Order_Candidate_ID} / {@code DD_Order_ID} / {@code DD_OrderLine_ID}, and the
+	 * {@code Forward_PP_*} / {@code PP_Order_Candidate_ID} family - optional distribution/production linkage
+	 * columns</li>
+	 * </ul>
+	 * <p>
+	 * Gherkin:
+	 * <pre>
+	 * {@code
+	 * Then after not more than 60s, MD_Candidates are found
+	 *   | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+	 *   | d_1        | DEMAND             | SHIPMENT                  | p_1          | 2024-09-21T21:00:00Z | -30 | 70  | WH_1           |
+	 * }
+	 * </pre>
 	 */
 	@And("^after not more than (.*)s, MD_Candidates are found$")
 	public void validate_md_candidates(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
