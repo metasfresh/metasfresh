@@ -105,9 +105,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
  * the write side of the same cluster; together they are the sole owners of {@code MD_Candidate} and the four
  * detail tables listed above.
  * <p>
- * {@code MD_Candidate_Purchase_Detail} and {@code MD_Candidate_StockChange_Detail} are read here too, but only by
- * delegating to their own repo helpers ({@link PurchaseDetailRepoHelper}, {@link StockChangeDetailRepo}) - this
- * class claims no ownership of those two tables.
+ * {@code MD_Candidate_Purchase_Detail}, {@code MD_Candidate_StockChange_Detail} and {@code MD_ATP_Reconciliation_Backup}
+ * (the correction candidate's own row only) are read here too, but only by delegating to their own repo helpers
+ * ({@link PurchaseDetailRepoHelper}, {@link StockChangeDetailRepo}, {@link AtpReconciliationDetailRepo}) - this
+ * class claims no ownership of those tables.
  */
 @Service
 public class CandidateRepositoryRetrieval

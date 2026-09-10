@@ -54,8 +54,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class AtpReconciliationDetailRepo
 {
-	private static final String COLUMNNAME_IsCandidateOwnDetail = "IsCandidateOwnDetail";
-
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Nullable
@@ -91,7 +89,7 @@ public class AtpReconciliationDetailRepo
 			recordToUpdate.setStorageAttributesKey(candidateRecord.getStorageAttributesKey());
 			recordToUpdate.setDateProjected(candidateRecord.getDateProjected());
 			recordToUpdate.setReconciliationRunUUID(atpReconciliationDetail.getReconciliationRunUUID());
-			InterfaceWrapperHelper.setValue(recordToUpdate, COLUMNNAME_IsCandidateOwnDetail, Boolean.TRUE);
+			recordToUpdate.setIsCandidateOwnDetail(true);
 		}
 
 		if (atpReconciliationDetail.getQtyBefore() != null)
@@ -109,7 +107,7 @@ public class AtpReconciliationDetailRepo
 				.createQueryBuilder(I_MD_ATP_Reconciliation_Backup.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_ATP_Reconciliation_Backup.COLUMNNAME_MD_Candidate_ID, candidateId.getRepoId())
-				.addEqualsFilter(COLUMNNAME_IsCandidateOwnDetail, true);
+				.addEqualsFilter(I_MD_ATP_Reconciliation_Backup.COLUMNNAME_IsCandidateOwnDetail, true);
 	}
 
 	@Nullable

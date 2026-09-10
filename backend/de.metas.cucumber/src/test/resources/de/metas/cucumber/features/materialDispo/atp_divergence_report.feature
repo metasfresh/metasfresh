@@ -112,8 +112,8 @@ Feature: ATP divergence report - read-only preview of stored vs. expected ATP
     # landed and still see the divergence. Wait for the correction candidate itself - the run's end-state -
     # rather than for a duration.
     And after not more than 60s, MD_Candidates are found
-      | Identifier  | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | fix_recon_a | INVENTORY_UP      | p_recon_a    | 2024-09-22T06:00:00Z | 200 | 200 | WH_BASE        |
+      | Identifier  | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_recon_a | INVENTORY_UP      | ATP_RECONCILE             | p_recon_a    | 2024-09-22T06:00:00Z | 200 | 200 | WH_BASE        |
 
     And the MD_Candidate_ATP_Divergence_Report process is run with parameters, storing the run id as "report_b":
       | M_Product_ID |

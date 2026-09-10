@@ -90,8 +90,8 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
 
     # business-correct expectation: stock 200 minus the still-open demand 30 = 170
     Then after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty  | ATP | M_Warehouse_ID |
-      | base_od_1  | INVENTORY_DOWN    | p_od_1       | 2024-09-23T06:00:00Z | -830 | 170 | WH_OD          |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP | M_Warehouse_ID |
+      | base_od_1  | INVENTORY_DOWN    | ATP_RECONCILE             | p_od_1       | 2024-09-23T06:00:00Z | -830 | 170 | WH_OD          |
 
   @Id:ATPBASE_004
   @from:cucumber

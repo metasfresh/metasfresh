@@ -210,6 +210,6 @@ Feature: ATP reconciliation process - dry run and selection filter
       | p_cut_a      | false    | 2024-09-23         |
     Then the ATP reconciliation process log for the run id "real_cutoff_run" contains "Enqueued work package"
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | fix_cut_a  | INVENTORY_UP      | p_cut_a      | 2024-09-26T06:00:00Z | 30  | 80  | WH_BASE        |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_cut_a  | INVENTORY_UP      | ATP_RECONCILE             | p_cut_a      | 2024-09-26T06:00:00Z | 30  | 80  | WH_BASE        |
     And after not more than 60s, the persisted ATP reconciliation backup for M_Product_ID "p_cut_a" contains a row with QtyBefore "null" and QtyAfter "80"

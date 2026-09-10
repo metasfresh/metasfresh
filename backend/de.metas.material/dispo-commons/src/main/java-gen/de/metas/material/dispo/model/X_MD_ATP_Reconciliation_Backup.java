@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_MD_ATP_Reconciliation_Backup extends org.compiere.model.PO implements I_MD_ATP_Reconciliation_Backup, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -249210409L;
+	private static final long serialVersionUID = -2016971931L;
 
     /** Standard Constructor */
     public X_MD_ATP_Reconciliation_Backup (final Properties ctx, final int MD_ATP_Reconciliation_Backup_ID, @Nullable final String trxName)
@@ -45,6 +45,18 @@ public class X_MD_ATP_Reconciliation_Backup extends org.compiere.model.PO implem
 	public java.sql.Timestamp getDateProjected() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateProjected);
+	}
+
+	@Override
+	public void setIsCandidateOwnDetail (final boolean IsCandidateOwnDetail)
+	{
+		set_Value (COLUMNNAME_IsCandidateOwnDetail, IsCandidateOwnDetail);
+	}
+
+	@Override
+	public boolean isCandidateOwnDetail() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCandidateOwnDetail);
 	}
 
 	@Override

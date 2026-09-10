@@ -121,6 +121,27 @@ public interface I_MD_ATP_Reconciliation_Backup
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set This candidate's own ATP reconciliation detail.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCandidateOwnDetail (boolean IsCandidateOwnDetail);
+
+	/**
+	 * Get This candidate's own ATP reconciliation detail.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCandidateOwnDetail();
+
+	ModelColumn<I_MD_ATP_Reconciliation_Backup, Object> COLUMN_IsCandidateOwnDetail = new ModelColumn<>(I_MD_ATP_Reconciliation_Backup.class, "IsCandidateOwnDetail", null);
+	String COLUMNNAME_IsCandidateOwnDetail = "IsCandidateOwnDetail";
+
+	/**
 	 * Set MD_ATP_Reconciliation_Backup.
 	 *
 	 * <br>Type: ID
