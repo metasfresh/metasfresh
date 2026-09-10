@@ -73,6 +73,14 @@ public class StockEstimateCreatedHandler implements MaterialEventHandler<Abstrac
 					.setParameter("StockEstimateCreatedEvent", event);
 		}
 
+		if (stockEstimateEventService.hasUnfulfilledPlannedPositions(event))
+		{
+			// re-baselining onto the bare counted qty would silently absorb it - unlike StockChangedEventHandler,
+			// this event carries no old/new pair to fall back to a physical-movement delta, so the safe choice is
+			// to write nothing and leave the correction to the ATP reconciliation process.
+			return;
+		}
+
 		final Candidate previousStockOrNull = stockEstimateEventService.retrievePreviousStockCandidateOrNull(event);
 
 		final BigDecimal currentATP = previousStockOrNull != null ? previousStockOrNull.getQuantity() : BigDecimal.ZERO;

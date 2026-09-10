@@ -62,6 +62,31 @@ public class StockEstimateEventService
 		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 	}
 
+	/**
+	 * @return whether the chain carries a planned position (dated before the event) that isn't yet fully
+	 * realized - see {@link CandidateRepositoryRetrieval#hasUnfulfilledPlannedPositions} for what that answer may
+	 * and may not be used for. Mirrors {@code StockChangedEventHandler}'s guard against re-baselining a chain
+	 * that carries one: unlike that event, a stock estimate has no separate old/new pair to fall back to a pure
+	 * physical-movement delta, so the caller's only safe option on {@code true} is to write nothing at all.
+	 */
+	public boolean hasUnfulfilledPlannedPositions(@NonNull final AbstractStockEstimateEvent event)
+	{
+		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor())
+				.toBuilder()
+				.timeRangeEnd(DateAndSeqNo.builder()
+									  .date(event.getDate())
+									  .operator(DateAndSeqNo.Operator.EXCLUSIVE)
+									  .build())
+				.build();
+
+		final CandidatesQuery query = CandidatesQuery.builder()
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.matchExactStorageAttributesKey(true)
+				.build();
+
+		return candidateRepositoryRetrieval.hasUnfulfilledPlannedPositions(query);
+	}
+
 	@NonNull
 	private CandidatesQuery createCandidatesQuery(@NonNull final AbstractStockEstimateEvent event)
 	{
