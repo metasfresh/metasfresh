@@ -6,7 +6,9 @@ import de.metas.ui.web.handlingunits.HUEditorRowIsProcessedPredicates;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewCustomizer;
 import de.metas.ui.web.handlingunits.process.WEBUI_M_HU_Transform;
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
 
 /*
@@ -41,6 +43,7 @@ import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
  * ({@code rowAttributesAlwaysReadonlyByReferencingTableName} defaults to {@code TRUE}) - i.e. an editor the
  * operator cannot edit in.
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 final class HUsToReceiveHUEditorViewCustomizer implements HUEditorViewCustomizer
 {
 	/** Launched from the receipt-schedule window. */
@@ -51,12 +54,7 @@ final class HUsToReceiveHUEditorViewCustomizer implements HUEditorViewCustomizer
 	public static final transient HUsToReceiveHUEditorViewCustomizer forReceiptDispositionDeliveryPlanning =
 			new HUsToReceiveHUEditorViewCustomizer(I_RV_ReceiptDisposition_DeliveryPlanning.Table_Name);
 
-	private final String referencingTableNameToMatch;
-
-	private HUsToReceiveHUEditorViewCustomizer(@NonNull final String referencingTableNameToMatch)
-	{
-		this.referencingTableNameToMatch = referencingTableNameToMatch;
-	}
+	@NonNull private final String referencingTableNameToMatch;
 
 	@Override
 	public String getReferencingTableNameToMatch()
