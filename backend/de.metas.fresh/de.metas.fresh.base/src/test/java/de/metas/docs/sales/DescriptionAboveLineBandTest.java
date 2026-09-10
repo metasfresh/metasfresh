@@ -141,7 +141,7 @@ public class DescriptionAboveLineBandTest
 	 * {@code $F{x}.intValue() - 1 == 0} contains the text {@code 1 == 0} while being an entirely data-dependent
 	 * condition, and reporting that as a constant would fail a legitimate guard with an actively misleading message.
 	 * {@link #isStandaloneComparison(String, int, int)} therefore has to confirm the match IS the comparison before
-	 * {@link #isConstantlyFalse(double, String, double)} judges it.
+	 * {@link #evaluateLiteralComparison(double, String, double)} judges it.
 	 */
 	private static final Pattern LITERAL_COMPARISON_PATTERN =
 			Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*(==|!=|<=|>=|<|>)\\s*(\\d+(?:\\.\\d+)?)");
@@ -391,7 +391,7 @@ public class DescriptionAboveLineBandTest
 				violations.add(templateName + ": invariant 5b - the band-level guard contains "
 						+ String.join(" and ", constantFalseFindings) + ", i.e. a subexpression that is false whatever"
 						+ " the data is, so the band never prints however correct the rest of the guard reads: `"
-						+ singleLine(ourGuard) + "`. Invariants 5, 7b and 7d are substring checks, so a constant"
+						+ singleLine(ourGuard) + "`. Invariants 5, 7b, 7c and 7d are all substring checks, so a constant"
 						+ " short-circuited in front of a correct guard satisfies all of them while silently dropping"
 						+ " the customer's text. Take the leftover toggle out.");
 			}
@@ -779,10 +779,17 @@ public class DescriptionAboveLineBandTest
 	 * 		constantly false exactly as {@code 1 == 0} is and must still be caught. Suppressing every negated
 	 * 		comparison would fix the first at the price of opening the second.
 	 * 		<p>
-	 * 		Deliberately narrow: a comparison negated at a distance ({@code !(A && (1 == 0))}) returns 0 here and is
-	 * 		therefore judged un-negated, which can only make this check say nothing - the safe direction. Untangling
-	 * 		that needs a real expression evaluator, which is out of scope for a syntactic check (see the class
-	 * 		javadoc).
+	 * 		Deliberately narrow, and the limit is NOT one-sided - an earlier version of this javadoc claimed a
+	 * 		distant negation "can only make this check say nothing", and review disproved it by mutation. A comparison
+	 * 		negated at a distance returns 0 here and is judged on its own value, so BOTH errors are reachable:
+	 * 		{@code !(true && (1 == 0))} is constantly TRUE yet IS reported (a false positive - verified), while
+	 * 		{@code !(true || (1 == 1))} is constantly false yet is NOT reported (a false negative - verified). Neither
+	 * 		is a regression; before parity was considered at all, the first misfired exactly the same way.
+	 * 		<p>
+	 * 		So if invariant 5b ever fails on a guard of that nested shape, the check is at fault and not the guard.
+	 * 		Untangling it needs a real expression evaluator, which is out of scope for a syntactic check (see the
+	 * 		class javadoc) - and note the same page in this file already declines the 7c polarity hole for the same
+	 * 		reason, rather than shipping a half-measure.
 	 */
 	private static int negationsDirectlyWrapping(final String expression, final int start, final int end)
 	{
