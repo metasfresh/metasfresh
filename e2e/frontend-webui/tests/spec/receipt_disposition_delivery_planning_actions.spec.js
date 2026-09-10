@@ -42,7 +42,7 @@ const NO_PACKING_ITEM_ID = 101;
  * packing instruction alone.
  */
 test.describe('Receipt-disposition delivery-planning — quick-action default and its fallback', () => {
-  test('a row with a packing instruction defaults to "HUs annehmen Voreinst.", a row without one falls back to "CUs annehmen", and the multi-row receive stays menu-only', async ({
+  test('a row with a packing instruction defaults to the HU receive captioned with its resolved configuration, a row without one falls back to "CUs annehmen", and the multi-row receive stays menu-only', async ({
     page,
     request,
   }) => {
@@ -56,7 +56,9 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
 1. Creates one purchase order with two lines against the SAME vendor — one product carries a packing
    instruction (an \`M_HU_PI_Item_Product\`), the other does not — and completes it, producing two
    UNPLANNED receipt-schedule rows on window ${RECEIPT_DISPOSITION_DELIVERY_PLANNING_WINDOW_ID}.
-2. Selecting the packed-product row: the quick-action button reads "HUs annehmen Voreinst.".
+2. Selecting the packed-product row: the quick-action button reads the RESOLVED PACKING INFO
+   (\`1 <its own PI> x 10 Stk\`), not the static label - the action overrides its caption with the
+   configuration it resolved, and rejects when none resolves, so the caption is the evidence.
 3. Selecting the unpacked-product row: the quick-action button reads "CUs annehmen" (the fallback), and
    opening the quick-actions dropdown never shows "HUs annehmen Voreinst." at all — it hides itself
    rather than merely disabling.
@@ -293,14 +295,21 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
 
     const rowForProduct = (productName) => page.locator(`table tbody tr:has-text("${productName}")`).first();
 
-    await test.step('the packed-product row defaults to "HUs annehmen Voreinst."', async () => {
+    await test.step('the packed-product row defaults to the HU receive, captioned with the configuration it resolved', async () => {
       const row = rowForProduct(packedProductName);
       await row.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
       await row.click();
 
       const quickActionButton = page.locator('[data-testid="quick-action-button"]');
       await expect(quickActionButton).toBeVisible();
-      await expect(quickActionButton).toHaveText('HUs annehmen Voreinst.');
+      // NOT the static label: the action overrides its own caption with the resolved packing info
+      // (WEBUI_RV_..._ReceiveHUs_UsingDefaults#checkPreconditionsApplicable -> deriveWithCaptionOverride,
+      // formatted by HUPackingInfoFormatter), and REJECTS outright when no default LU/TU configuration
+      // resolves. So the caption IS the evidence that a default resolved, and which one - a stronger
+      // assertion than the label, which would pass even if some other configuration had won.
+      // The PI name carries a per-run-unique suffix, so anchor on what this test controls: its own PI's
+      // base name, and the 10 CUs per TU it configured.
+      await expect(quickActionButton).toHaveText(/^1 RL_TU_PI_\S+ x 10 Stk$/);
     });
 
     await test.step('the interesting case: the unpacked-product row falls back to "CUs annehmen", and the HU default genuinely hides itself', async () => {
