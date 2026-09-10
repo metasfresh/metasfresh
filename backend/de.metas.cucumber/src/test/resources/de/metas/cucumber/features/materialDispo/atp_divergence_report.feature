@@ -107,6 +107,13 @@ Feature: ATP divergence report - read-only preview of stored vs. expected ATP
     And the MD_Candidate_Reconcile_ATP process is run with parameters, storing the run id as "reconcile_a":
       | M_Product_ID | IsDryRun |
       | p_recon_a    | false    |
+    # a real run only ENQUEUES: the process returns as soon as the work package exists and the app server
+    # reconciles afterwards, so the report below would otherwise re-read the chain before the correction has
+    # landed and still see the divergence. Wait for the correction candidate itself - the run's end-state -
+    # rather than for a duration.
+    And after not more than 60s, MD_Candidates are found
+      | Identifier  | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_recon_a | INVENTORY_UP      | p_recon_a    | 2024-09-22T06:00:00Z | 200 | 200 | WH_BASE        |
 
     And the MD_Candidate_ATP_Divergence_Report process is run with parameters, storing the run id as "report_b":
       | M_Product_ID |
