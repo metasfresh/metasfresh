@@ -44,7 +44,10 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+import de.metas.shipper.client.nshift.json.request.JsonShipmentRequest;
+
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
@@ -379,6 +382,31 @@ public class NShiftMandatoryFieldValidationTest
 			assertThatThrownBy(() -> NShiftShipmentService.buildShipmentRequest(request))
 					.isInstanceOf(IllegalStateException.class)
 					.hasMessageContaining("Attention");
+		}
+
+		/**
+		 * Both halves of the Attention-mapping rule in one place. With test mode OFF the mandatory check is
+		 * unchanged (the method above). With test mode ON the mapping is not consulted for the Attention at
+		 * all, so a mapping configuration without an Attention entry must NOT fail the request — requiring a
+		 * value that the configured test text immediately replaces would fail a booking for a reason with no
+		 * bearing on what is actually sent.
+		 */
+		@Test
+		void missingAttentionMapping_inTestMode_doesNotThrowAndSendsTheTestText()
+		{
+			final JsonDeliveryRequest request = validShipRequest().toBuilder()
+					.mappingConfigs(MAPPING_WITHOUT_ATTENTION)
+					.shipperConfig(validShipRequest().getShipperConfig()
+							.withAdditionalProperty(NShiftConstants.TEST_MODE, "Y")
+							.withAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION, "TEST SHIPMENT"))
+					.build();
+
+			final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+			assertThat(shipmentRequest.getData().getAddresses())
+					.as("every address carries the configured test text as its Attention")
+					.isNotEmpty()
+					.allSatisfy(address -> assertThat(address.getAttention()).isEqualTo("TEST SHIPMENT"));
 		}
 
 		@Test

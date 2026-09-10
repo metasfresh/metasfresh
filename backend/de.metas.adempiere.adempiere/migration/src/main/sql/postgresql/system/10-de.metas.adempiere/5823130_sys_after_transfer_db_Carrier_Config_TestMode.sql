@@ -1,24 +1,10 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.migration-sql
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/ops/functions/after_transfer_db.sql
+--
+-- Re-creates ops.after_transfer_db with one added statement: it switches Carrier_Config.IsTestMode back
+-- to 'Y', next to the existing statements that neutralise live integrations after a transfer from
+-- production (external-system deactivation, scheduler deactivation, debug-mail redirect). A productive
+-- instance has test mode switched off by hand, so a database copied from it arrives with 'N' and must be
+-- forced back on here.
 
 CREATE OR REPLACE FUNCTION ops.after_transfer_db(
     p_source_instance            text,
