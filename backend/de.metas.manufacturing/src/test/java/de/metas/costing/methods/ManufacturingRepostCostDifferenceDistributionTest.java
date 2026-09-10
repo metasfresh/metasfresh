@@ -38,10 +38,15 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.IProductCostingBL;
+import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.ICostDetailService;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
+import de.metas.costing.impl.CostingService;
 import de.metas.costing.impl.CurrentCostsRepository;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
@@ -125,6 +130,8 @@ class ManufacturingRepostCostDifferenceDistributionTest
 	private ProductId componentProductId;
 
 	private CostElementRepository costElementRepo;
+	private ICostDetailService costDetailService;
+	private ICurrentCostsRepository currentCostsRepo;
 	private CostingMethodHandlerUtils utils;
 	private PPOrderCostDifferenceDistributor distributor;
 
@@ -132,6 +139,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 	private AcctSchemaId acctSchemaId;
 	private CostElement costElement;
 	private CostingMethodHandler handler;
+	private CostingService costingService;
 	private PPOrderId orderId;
 	private PPCostCollectorId distributionCollectorId;
 
@@ -198,10 +206,9 @@ class ManufacturingRepostCostDifferenceDistributionTest
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
 
 		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
-		utils = new CostingMethodHandlerUtils(
-				new CurrencyRepository(),
-				new CurrentCostsRepository(costElementRepo),
-				new CostDetailService(new CostDetailRepository(), costElementRepo));
+		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
+		costDetailService = new CostDetailService(new CostDetailRepository(), costElementRepo);
+		utils = new CostingMethodHandlerUtils(new CurrencyRepository(), currentCostsRepo, costDetailService);
 		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
 	}
 
@@ -243,6 +250,63 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.isEqualByComparingTo(EXPECTED_ALREADY_SHIPPED);
 	}
 
+	// drives CostingService.createReversalCostDetailsOrEmpty directly - the actual entry point
+	// DocLine_CostCollector calls when the reversal document itself is posted - not the manufacturing
+	// handler in isolation, so this also exercises CostingService's own (costElementId, amtType) lookup.
+	@ParameterizedTest
+	@EnumSource(ManufacturingHandlerUnderTest.class)
+	void costDifferenceDistribution_reversal_recreatesAllThreeLegs_notJustMain(final ManufacturingHandlerUnderTest handlerUnderTest)
+	{
+		setupOrderFor(handlerUnderTest);
+
+		final CostDetailCreateRequest request = distributionRequest();
+		handler.createOrUpdateCost(request);
+		assertThat(currentCostPriceOf(request)).isEqualByComparingTo("34"); // (30 x 8 + 32) / 8
+
+		final PPCostCollectorId reversalCollectorId = createCostDifferenceDistributionCollector();
+		final CostDetailReverseRequest reversalRequest = CostDetailReverseRequest.builder()
+				.acctSchemaId(acctSchemaId)
+				.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(distributionCollectorId))
+				.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(reversalCollectorId))
+				.date(request.getDate())
+				.build();
+
+		final CostDetailCreateResultsList reversalResults = costingService.createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
+
+		assertThat(currentCostPriceOf(request)).isEqualByComparingTo(MAIN_CURRENT_COST_PRICE); // moved back
+
+		final CostAmountDetailed reversed = reversalResults.getTotalAmountToPost(utils.getAcctSchemaById(acctSchemaId));
+
+		assertThat(reversed.getMainAmt().toBigDecimal())
+				.as("MAIN leg reversed")
+				.isEqualByComparingTo("-" + EXPECTED_RESIDUAL);
+		assertThat(reversed.getCostAdjustmentAmt().toBigDecimal())
+				.as("ADJUSTMENT leg must be recreated by its own call, not collapsed into MAIN")
+				.isEqualByComparingTo("-" + EXPECTED_CAPITALIZED);
+		assertThat(reversed.getAlreadyShippedAmt().toBigDecimal())
+				.as("ALREADY_SHIPPED leg must be recreated by its own call, not collapsed into MAIN")
+				.isEqualByComparingTo("-" + EXPECTED_ALREADY_SHIPPED);
+
+		// repost of the SAME reversal document: existingCostDetailsList (CostingService.java) is now
+		// fetched with all 3 legs already persisted, sharing one costElementId - the exact shape that
+		// crashed a costElementId-keyed ImmutableMap.toImmutableMap build (IllegalArgumentException:
+		// Multiple entries with same key) before the fix. Must recover, not crash or duplicate.
+		final CostDetailCreateResultsList repostResults = costingService.createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
+
+		assertThat(utils.getExistingCostDetails(request.toBuilder().documentRef(reversalRequest.getReversalDocumentRef()).build()))
+				.as("repost recovers the 3 existing legs, does not duplicate them")
+				.hasSize(3);
+		final CostAmountDetailed reversedAfterRepost = repostResults.getTotalAmountToPost(utils.getAcctSchemaById(acctSchemaId));
+		assertThat(reversedAfterRepost.getMainAmt().toBigDecimal()).isEqualByComparingTo(reversed.getMainAmt().toBigDecimal());
+		assertThat(reversedAfterRepost.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo(reversed.getCostAdjustmentAmt().toBigDecimal());
+		assertThat(reversedAfterRepost.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo(reversed.getAlreadyShippedAmt().toBigDecimal());
+	}
+
+	private BigDecimal currentCostPriceOf(final CostDetailCreateRequest request)
+	{
+		return utils.getCurrentCost(request).getCostPrice().toBigDecimal();
+	}
+
 	//
 	//
 	// fixture
@@ -258,6 +322,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.build();
 		costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, handlerUnderTest.costingMethod);
 		handler = handlerUnderTest.createHandler(utils, distributor);
+		costingService = new CostingService(utils, costDetailService, costElementRepo, currentCostsRepo, ImmutableList.of(handler));
 
 		orderId = createCompletedPPOrder();
 		distributionCollectorId = createCostDifferenceDistributionCollector();
