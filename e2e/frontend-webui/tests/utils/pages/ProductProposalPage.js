@@ -172,14 +172,40 @@ export class ProductProposalPage {
         return;
       }
 
+      // Toggling runs DocumentListContainer's isNewFilter flow (handleFilterChange ->
+      // fetchLayoutAndData -> filterCurrentView): a layout GET, then POST .../filter, then
+      // GET .../<viewId>?firstRow=... - and only that last GET repaints the grid, so that is the
+      // thing to wait for. Both promises must be created BEFORE the click or a fast response is
+      // missed.
+      //
+      // Neither a spinner wait nor `networkidle` can substitute here:
+      //  - this overlay renders NO loading affordance during the round-trip (`.spinner` from
+      //    components/app/SpinnerOverlay.js never attaches, and `.rotating`/`.indicator-pending`
+      //    are not classes the frontend emits at all - `indicator-pending` exists only as a
+      //    @keyframes name in src/assets/css/window-indicator.scss), so a `detached` wait on
+      //    either resolves on the very first poll;
+      //  - `waitForLoadState('networkidle')` resolves immediately on an already-loaded page and
+      //    does not track XHRs started after the call.
+      // Measured on C_Order_ID=1000030: with those two waits the row read landed before the
+      // repaint in 3 of 8 toggles - checkbox already on, grid still showing the unfiltered rows.
+      const filterApplied = page.waitForResponse(
+        (response) =>
+          /\/documentView\/[^/]+\/[^/]+\/filter$/.test(response.url()) &&
+          response.request().method() === 'POST',
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      const rowsReloaded = page.waitForResponse(
+        (response) =>
+          /\/documentView\/[^/]+\/[^/]+\?firstRow=/.test(response.url()) &&
+          response.request().method() === 'GET',
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+
       await filterLabel.click();
 
-      // The toggle triggers a filter patch + view reload
-      await page
-        .locator(`${OVERLAY} .rotating, ${OVERLAY} .indicator-pending`)
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      const filterResponse = await filterApplied;
+      expect(filterResponse.status(), 'the filter round-trip must succeed').toBe(200);
+      await rowsReloaded;
 
       await expect(checkbox).toBeChecked({ checked: on, timeout: SLOW_ACTION_TIMEOUT });
     });
@@ -215,26 +241,58 @@ export class ProductProposalPage {
       const qtyInput = qtyCell.locator('input').first();
 
       const inputRendered = await qtyInput
-        .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT })
+        .waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT })
         .then(() => true)
         .catch(() => false);
 
       if (!inputRendered) {
-        // Not in edit mode yet - a click on the cell renders the always-on editor
+        // Not in edit mode yet. A click alone only FOCUSES an "always-editor" cell -
+        // TableRow#_editProperty (components/table/TableRow.js) only swaps in the input widget
+        // on Enter/F2 (`handleKeyDown_Enter`), never on a bare click or dblclick; confirmed by
+        // inspecting the cell's DOM before/after each of click, dblclick and click+Enter. So
+        // focus the cell, then press Enter to render the input.
         await qtyCell.click();
-        await qtyInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await page.keyboard.press('Enter');
+        await qtyInput.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
       }
 
-      await qtyInput.click();
+      // Do NOT click qtyInput here: Enter already rendered the widget with real DOM/browser
+      // focus on it (confirmed: outerHTML shows `input-focused` immediately after Enter, and
+      // `isEditable()`/`isEnabled()`/`isVisible()` are all true). An extra click on the
+      // already-focused input collapses the cell straight back to display mode - the DOM
+      // reverts to the plain `cell-text-wrapper` (no `<input>`) in the same tick, so the
+      // subsequent `.fill()` waits forever for an `input` that no longer exists (that is the
+      // "times out at locator.fill" symptom). Reproduced live: click -> Enter -> input attached,
+      // visible/enabled/editable, boundingBox present; one more `.click()` on that same input ->
+      // cell reverts to `<div class="cell-text-wrapper quantity-cell"></div>`, input gone.
+      // `.fill()` does not click (it focuses + sets the value directly), so it is safe to call
+      // right after the input is attached.
       await qtyInput.fill(qty.toString());
 
-      // Blur commits the cell - an uncommitted edit is discarded
+      // Blur commits the cell - an uncommitted edit is discarded. The commit is a
+      // PATCH .../documentView/<windowId>/<viewId>/<rowId>/edit
+      // (ViewRowEditRestController.ENDPOINT, patchRow), which is the only reliable signal that the
+      // value reached the server: the cell re-renders optimistically, and the overlay shows no
+      // spinner while the request is in flight. Arm the wait BEFORE the blur or a fast response is
+      // missed. (The previous wait here - `.rotating, .indicator-pending` detached - was a no-op:
+      // the frontend emits neither as a class; `indicator-pending` exists only as a @keyframes
+      // name in frontend/src/assets/css/window-indicator.scss.)
+      const qtyCommitted = page.waitForResponse(
+        (response) =>
+          /\/documentView\/[^/]+\/[^/]+\/[^/]+\/edit$/.test(response.url()) &&
+          response.request().method() === 'PATCH',
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+
       await page.keyboard.press('Tab');
 
-      await page
-        .locator(`${OVERLAY} .rotating, ${OVERLAY} .indicator-pending`)
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
+      const commitResponse = await qtyCommitted;
+      expect(commitResponse.status(), `committing qty ${qty} for ${productName} must succeed`).toBe(200);
+
+      // ... and the committed value must be what is now rendered in the cell.
+      await expect(qtyCell).toContainText(qty.toString().replace(/\.0+$/, ''), {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
     });
   }
 
