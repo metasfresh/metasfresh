@@ -1,5 +1,6 @@
 package de.metas.material.dispo.commons.candidate;
 
+import de.metas.material.dispo.commons.candidate.businesscase.AtpReconciliationDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
@@ -50,6 +51,9 @@ public enum CandidateBusinessCase implements ReferenceListAwareEnum
 	FORECAST(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_FORECAST, DemandDetail.class),
 	PURCHASE(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE, PurchaseDetail.class),
 	STOCK_CHANGE(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_STOCK_CHANGE, StockChangeDetail.class),
+	// literal, not X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_ATP_RECONCILIATION: matches migration
+	// 5823960's AD_Ref_List.Value; X_MD_Candidate has not been regenerated against it yet.
+	ATP_RECONCILIATION("ATP_RECONCILIATION", AtpReconciliationDetail.class),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<CandidateBusinessCase> index = ReferenceListAwareEnums.index(values());

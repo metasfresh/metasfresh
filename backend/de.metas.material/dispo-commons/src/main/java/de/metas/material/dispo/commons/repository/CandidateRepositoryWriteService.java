@@ -39,6 +39,7 @@ import de.metas.material.dispo.commons.candidate.CandidateQtyDetailsPersistMulti
 import de.metas.material.dispo.commons.candidate.CandidateQtyDetailsPersistRequest;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.AtpReconciliationDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
@@ -47,6 +48,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.AtpReconciliationDetailRepo;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
@@ -74,7 +76,6 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -86,6 +87,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -108,7 +110,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
-@RequiredArgsConstructor
 public class CandidateRepositoryWriteService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -117,6 +118,36 @@ public class CandidateRepositoryWriteService
 	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final CandidateQtyDetailsRepository candidateQtyDetailsRepository;
+	@NonNull private final AtpReconciliationDetailRepo atpReconciliationDetailRepo;
+
+	/**
+	 * Legacy 4-arg shape, kept so the many existing test call sites that construct this class directly don't all
+	 * need touching for one new business-case detail repo - delegates with a bare {@code new}, harmless since
+	 * {@link AtpReconciliationDetailRepo} carries no state of its own (same as {@link StockChangeDetailRepo}).
+	 */
+	public CandidateRepositoryWriteService(
+			@NonNull final DimensionService dimensionService,
+			@NonNull final StockChangeDetailRepo stockChangeDetailRepo,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final CandidateQtyDetailsRepository candidateQtyDetailsRepository)
+	{
+		this(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, candidateQtyDetailsRepository, new AtpReconciliationDetailRepo());
+	}
+
+	@Autowired
+	public CandidateRepositoryWriteService(
+			@NonNull final DimensionService dimensionService,
+			@NonNull final StockChangeDetailRepo stockChangeDetailRepo,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final CandidateQtyDetailsRepository candidateQtyDetailsRepository,
+			@NonNull final AtpReconciliationDetailRepo atpReconciliationDetailRepo)
+	{
+		this.dimensionService = dimensionService;
+		this.stockChangeDetailRepo = stockChangeDetailRepo;
+		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.candidateQtyDetailsRepository = candidateQtyDetailsRepository;
+		this.atpReconciliationDetailRepo = atpReconciliationDetailRepo;
+	}
 
 	/**
 	 * Stores the given {@code candidate}.
@@ -207,6 +238,8 @@ public class CandidateRepositoryWriteService
 		addOrReplaceTransactionDetail(candidate, syncedRecord);
 
 		addOrReplaceStockChangeDetail(candidate, syncedRecord);
+
+		addOrReplaceAtpReconciliationDetail(candidate, syncedRecord);
 
 		final Candidate savedCandidate = createNewCandidateWithIdsFromRecord(candidate, syncedRecord);
 
@@ -618,6 +651,14 @@ public class CandidateRepositoryWriteService
 		stockChangeDetailRepo.saveOrUpdate(stockChangeDetail, synchedRecord);
 	}
 
+	private void addOrReplaceAtpReconciliationDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate synchedRecord)
+	{
+		final AtpReconciliationDetail atpReconciliationDetail = AtpReconciliationDetail.castOrNull(candidate.getBusinessCaseDetail());
+		atpReconciliationDetailRepo.saveOrUpdate(atpReconciliationDetail, synchedRecord);
+	}
+
 	private Candidate createNewCandidateWithIdsFromRecord(
 			@NonNull final Candidate candidate,
 			@NonNull final I_MD_Candidate candidateRecord)
@@ -833,6 +874,8 @@ public class CandidateRepositoryWriteService
 		deleteProdDetailsRecords(candidateId);
 		deletePurchaseDetailsRecords(candidateId);
 		deleteStockChangeDetailsRecords(candidateId);
+		// deliberately NOT deleting MD_ATP_Reconciliation_Backup rows here: that table is a durable audit trail
+		// (see its own migration header) and is meant to survive deletion of the candidate it describes.
 		deleteTransactionDetailsRecords(candidateId);
 		deleteQtyDetails(candidateId);
 	}

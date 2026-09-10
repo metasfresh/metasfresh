@@ -16,6 +16,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.CandidatesGroup;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.AtpReconciliationDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
@@ -25,6 +26,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.AtpReconciliationDetailRepo;
 import de.metas.material.dispo.commons.repository.repohelpers.DemandDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
@@ -57,6 +59,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -112,13 +115,29 @@ public class CandidateRepositoryRetrieval
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final DimensionService dimensionService;
 	private final StockChangeDetailRepo stockChangeDetailRepo;
+	private final AtpReconciliationDetailRepo atpReconciliationDetailRepo;
 
+	/**
+	 * Legacy 2-arg shape, kept so the many existing test call sites that construct this class directly don't all
+	 * need touching for one new business-case detail repo - delegates with a bare {@code new}, harmless since
+	 * {@link AtpReconciliationDetailRepo} carries no state of its own (same as {@link StockChangeDetailRepo}).
+	 */
 	public CandidateRepositoryRetrieval(
 			@NonNull final DimensionService dimensionService,
 			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
 	{
+		this(dimensionService, stockChangeDetailRepo, new AtpReconciliationDetailRepo());
+	}
+
+	@Autowired
+	public CandidateRepositoryRetrieval(
+			@NonNull final DimensionService dimensionService,
+			@NonNull final StockChangeDetailRepo stockChangeDetailRepo,
+			@NonNull final AtpReconciliationDetailRepo atpReconciliationDetailRepo)
+	{
 		this.dimensionService = dimensionService;
 		this.stockChangeDetailRepo = stockChangeDetailRepo;
+		this.atpReconciliationDetailRepo = atpReconciliationDetailRepo;
 	}
 
 	public Candidate retrieveById(@NonNull final CandidateId candidateId)
@@ -253,19 +272,21 @@ public class CandidateRepositoryRetrieval
 		final DistributionDetail distributionDetailOrNull = retrieveDistributionDetailOrNull(candidateId);
 		final PurchaseDetail purchaseDetailOrNull = PurchaseDetailRepoHelper.getSingleForCandidateRecordOrNull(candidateId);
 		final StockChangeDetail stockChangeDetailOrNull = stockChangeDetailRepo.getSingleForCandidateRecordOrNull(candidateId);
+		final AtpReconciliationDetail atpReconciliationDetailOrNull = atpReconciliationDetailRepo.getSingleForCandidateRecordOrNull(candidateId);
 
 		final int hasProductionDetail = productionDetailOrNull == null ? 0 : 1;
 		final int hasDistributionDetail = distributionDetailOrNull == null ? 0 : 1;
 		final int hasPurchaseDetail = purchaseDetailOrNull == null ? 0 : 1;
 		final int hasStockChangeDetail = stockChangeDetailOrNull == null ? 0 : 1;
+		final int hasAtpReconciliationDetail = atpReconciliationDetailOrNull == null ? 0 : 1;
 
-		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail + hasStockChangeDetail > 1,
-				"A candidate may not have both a distribution, production, production detail and a hasStockChangeDetail; candidateRecord={}", candidateRecordOrNull);
+		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail + hasStockChangeDetail + hasAtpReconciliationDetail > 1,
+				"A candidate may not have more than one of a distribution, production, purchase, stock-change or atp-reconciliation detail; candidateRecord={}", candidateRecordOrNull);
 
 		final DemandDetail demandDetailOrNull = retrieveDemandDetailOrNull(candidateId);
 
 		final BusinessCaseDetail businessCaseDetail = CoalesceUtil.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull,
-				demandDetailOrNull, stockChangeDetailOrNull);
+				demandDetailOrNull, stockChangeDetailOrNull, atpReconciliationDetailOrNull);
 		builder.businessCaseDetail(businessCaseDetail);
 		if (hasProductionDetail > 0 || hasDistributionDetail > 0 || hasPurchaseDetail > 0)
 		{

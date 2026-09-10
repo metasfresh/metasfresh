@@ -65,6 +65,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -168,18 +169,32 @@ public class AtpReconciliationBackupTest
 		assertThat(backedUpD2Candidate.getM_Warehouse_ID()).isEqualTo(WAREHOUSE_ID.getRepoId());
 		assertThat(backedUpD2Candidate.getM_Product_ID()).isEqualTo(PRODUCT_ID.getRepoId());
 
-		// the brand-new correction candidate this run created at D1 itself: nothing to back up (it did not exist
-		// before), but the persisted row still names the run's own effect.
+		// the correction's own new STOCK child at D1: nothing to back up (it did not exist before), but the
+		// persisted row still names the run's own effect. Disambiguated by MD_Candidate_ID from the correction
+		// candidate's OWN backup row below - both share DateProjected=D1 and a null QtyBefore.
 		// Nullness of QtyBefore is checked via InterfaceWrapperHelper.isNull, not row.getQtyBefore() == null: the
 		// generated accessor for a nullable Quantity column coalesces a null value to BigDecimal.ZERO (the standard
 		// metasfresh model-generator behaviour for numeric columns), so the getter itself cannot tell "never backed
 		// up because the candidate is new" apart from "backed up with quantity zero".
+		final Candidate stockCandidateAtD1 = retrieveStockCandidateUpTo(D1);
 		final I_MD_ATP_Reconciliation_Backup backedUpNewD1Candidate = backedUpRows.stream()
 				.filter(row -> TimeUtil.asInstant(row.getDateProjected()).equals(D1)
-						&& InterfaceWrapperHelper.isNull(row, I_MD_ATP_Reconciliation_Backup.COLUMNNAME_QtyBefore))
+						&& InterfaceWrapperHelper.isNull(row, I_MD_ATP_Reconciliation_Backup.COLUMNNAME_QtyBefore)
+						&& row.getMD_Candidate_ID() == stockCandidateAtD1.getId().getRepoId())
 				.findFirst()
 				.orElseThrow(() -> new AssertionError("no persisted backup row for the newly created D1 STOCK candidate: " + backedUpRows));
 		assertThat(backedUpNewD1Candidate.getQtyAfter()).isEqualByComparingTo("150");
+
+		// the correction candidate itself (INVENTORY_UP, not its STOCK child) also gets a backup row - via its
+		// ATP_RECONCILIATION business-case detail, not via backupRepository - naming its own qty, not the running
+		// balance. Same (D1, null QtyBefore) signature as the STOCK child above; excluded by candidate id instead.
+		final I_MD_ATP_Reconciliation_Backup backedUpCorrectionCandidate = backedUpRows.stream()
+				.filter(row -> TimeUtil.asInstant(row.getDateProjected()).equals(D1)
+						&& InterfaceWrapperHelper.isNull(row, I_MD_ATP_Reconciliation_Backup.COLUMNNAME_QtyBefore)
+						&& row.getMD_Candidate_ID() != stockCandidateAtD1.getId().getRepoId())
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no persisted backup row for the correction candidate itself: " + backedUpRows));
+		assertThat(backedUpCorrectionCandidate.getQtyAfter()).isEqualByComparingTo("50");
 	}
 
 	@Test
@@ -314,6 +329,13 @@ public class AtpReconciliationBackupTest
 	/** @return the {@code Qty} of the key's youngest general {@code STOCK} candidate dated at or before {@code date}. */
 	private BigDecimal retrieveStockQtyUpTo(final Instant date)
 	{
+		final Candidate stockCandidate = retrieveStockCandidateUpTo(date);
+		return stockCandidate != null ? stockCandidate.getQuantity() : BigDecimal.ZERO;
+	}
+
+	@Nullable
+	private Candidate retrieveStockCandidateUpTo(final Instant date)
+	{
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.warehouseId(WAREHOUSE_ID)
 				.productId(PRODUCT_ID.getRepoId())
@@ -322,14 +344,12 @@ public class AtpReconciliationBackupTest
 				.timeRangeEnd(DateAndSeqNo.atTimeNoSeqNo(date).withOperator(DateAndSeqNo.Operator.INCLUSIVE))
 				.build();
 
-		final Candidate stockCandidate = candidateRepository.retrieveLatestMatchOrNull(
+		return candidateRepository.retrieveLatestMatchOrNull(
 				CandidatesQuery.builder()
 						.materialDescriptorQuery(materialDescriptorQuery)
 						.matchExactStorageAttributesKey(true)
 						.type(CandidateType.STOCK)
 						.build());
-
-		return stockCandidate != null ? stockCandidate.getQuantity() : BigDecimal.ZERO;
 	}
 
 	private static List<I_MD_ATP_Reconciliation_Backup> retrieveBackupRows(@NonNull final String runUuid)

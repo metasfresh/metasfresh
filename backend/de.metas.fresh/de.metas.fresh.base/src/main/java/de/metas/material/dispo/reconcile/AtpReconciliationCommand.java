@@ -28,8 +28,10 @@ import de.metas.Profiles;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.AtpReconciliationDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -120,7 +122,9 @@ public class AtpReconciliationCommand
 			return divergence;
 		}
 
-		writeCorrectionCandidate(key, date, divergence.getDifference());
+		// no caller-supplied run id on this path (unlike reconcileAndLog) - generate one just to tag the
+		// correction candidate's own ATP_RECONCILIATION detail; nothing else reads it.
+		writeCorrectionCandidate(key, date, divergence.getDifference(), UUID.randomUUID().toString());
 
 		return divergence;
 	}
@@ -139,10 +143,11 @@ public class AtpReconciliationCommand
 	private void writeCorrectionCandidate(
 			@NonNull final StockDataRecordIdentifier key,
 			@NonNull final Instant date,
-			@NonNull final BigDecimal delta)
+			@NonNull final BigDecimal delta,
+			@NonNull final String runUuid)
 	{
 		final CandidateType type = delta.signum() > 0 ? CandidateType.INVENTORY_UP : CandidateType.INVENTORY_DOWN;
-		final Candidate candidate = buildCandidate(key, date, type, delta.abs());
+		final Candidate candidate = buildCandidate(key, date, type, delta.abs(), runUuid);
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
 	}
@@ -183,7 +188,7 @@ public class AtpReconciliationCommand
 		final List<Candidate> stockCandidatesBeforeWrite = retrieveGeneralStockCandidatesFrom(key, date);
 		backupRepository.backupBeforeWrite(runUuid, key, stockCandidatesBeforeWrite);
 
-		writeCorrectionCandidate(key, date, divergence.getDifference());
+		writeCorrectionCandidate(key, date, divergence.getDifference(), runUuid);
 
 		final List<Candidate> stockCandidatesAfterWrite = retrieveGeneralStockCandidatesFrom(key, date);
 		final ImmutableList<AtpReconciliationRunLog.Entry> entries = buildEntries(stockCandidatesBeforeWrite, stockCandidatesAfterWrite);
@@ -258,7 +263,8 @@ public class AtpReconciliationCommand
 			@NonNull final StockDataRecordIdentifier key,
 			@NonNull final Instant date,
 			@NonNull final CandidateType type,
-			@NonNull final BigDecimal qty)
+			@NonNull final BigDecimal qty,
+			@NonNull final String runUuid)
 	{
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.date(date)
@@ -269,9 +275,19 @@ public class AtpReconciliationCommand
 				.quantity(qty)
 				.build();
 
+		// null qtyBefore: this candidate did not exist before the run, matching the same convention
+		// AtpReconciliationBackupRepositoryImpl.newRecordFor uses for the STOCK candidates a run creates.
+		final AtpReconciliationDetail businessCaseDetail = AtpReconciliationDetail.builder()
+				.reconciliationRunUUID(runUuid)
+				.qtyBefore(null)
+				.qtyAfter(qty)
+				.build();
+
 		return Candidate.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(key.getClientId(), key.getOrgId()))
 				.type(type)
+				.businessCase(CandidateBusinessCase.ATP_RECONCILIATION)
+				.businessCaseDetail(businessCaseDetail)
 				.materialDescriptor(materialDescriptor)
 				.seqNo(nextSeqNo(key, date))
 				.build();
