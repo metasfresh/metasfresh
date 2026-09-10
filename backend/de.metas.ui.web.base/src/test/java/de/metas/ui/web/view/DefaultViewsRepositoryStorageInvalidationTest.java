@@ -9,23 +9,30 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
+
 /**
- * A configured view invalidation has to be able to surface a row that did not exist when the view was opened.
+ * Pins the deliberate split between refreshing a view's row VALUES and recomputing WHICH rows it holds.
  * <p>
- * A grid view serves its rows out of a MATERIALIZED selection ({@link DefaultView} reads
- * {@code selectionsRef.getOrderedSelection(...)}), and {@link DefaultView#invalidateAll()} drops only the
- * per-row cache and the header - it leaves that selection in place. So invalidating "everything" still replays
- * the same row ids: a newly inserted row is not among them and can never appear, no matter how many times the
- * frontend re-fetches. Only {@link DefaultView#invalidateSelection()} calls {@code forgetCurrentSelections()},
- * which is what lets the selection be recomputed.
+ * An ambient invalidation - one the cache machinery raises because somebody, anybody, wrote to a trigger
+ * table - must only refresh values. Growing an open view's selection from such an event would silently add
+ * rows the user never asked for, and a process the user then runs over "all rows" of that view would act on
+ * them. Membership is recomputed only where the user's own action changed it: every
+ * {@link IView#invalidateSelection()} caller in the codebase is the {@code postProcess} of a process the user
+ * just ran on that very view. Re-materializing a selection is also far more expensive than dropping row
+ * caches.
+ * <p>
+ * These tests exist because this was "fixed" the wrong way once: a window whose grid did not show a planning
+ * created elsewhere looked like a cache bug, and making the ambient path forget the selection made the row
+ * appear - by changing shared behaviour for every grid view in the product. Not showing it is the intended
+ * behaviour; the requirement is only that a CHANGE to a row already in the view shows without a reload.
  */
 class DefaultViewsRepositoryStorageInvalidationTest
 {
@@ -49,8 +56,8 @@ class DefaultViewsRepositoryStorageInvalidationTest
 	}
 
 	@Test
-	@DisplayName("invalidating a view forgets its selection, so a row created after the view was opened can enter")
-	void invalidateView_forgetsTheSelection()
+	@DisplayName("an ambient invalidation refreshes the rows' values and leaves the view's membership alone")
+	void invalidateView_refreshesValues_butKeepsTheSelection()
 	{
 		final ViewId viewId = ViewId.random(WindowId.of(542190));
 		final IView view = mock(IView.class);
@@ -59,21 +66,22 @@ class DefaultViewsRepositoryStorageInvalidationTest
 
 		storage.invalidateView(viewId);
 
-		// the point of the test: dropping the row caches alone (invalidateAll) cannot surface a new row
-		verify(view).invalidateSelection();
+		verify(view).invalidateAll();
+		verify(view, never()).invalidateSelection();
 	}
 
 	@Test
-	@DisplayName("the IView.invalidateSelection() default degrades to invalidateAll() instead of throwing")
-	void invalidateSelection_default_doesNotThrow()
+	@DisplayName("asking a view type that has no selection to recompute its membership fails loudly")
+	void invalidateSelection_default_throwsRatherThanSilentlyDoingLess()
 	{
-		// DefaultView overrides invalidateSelection(); the other IView implementations inherit the default, and
-		// they are reached by the same invalidation path - so the default must be a usable fallback, not a throw.
+		// Only DefaultView overrides invalidateSelection(), because only it has a selection to forget. Any other
+		// implementation must reject the request instead of quietly downgrading it to invalidateAll(), which
+		// would leave the caller believing membership had been recomputed when it had not.
 		final IView view = mock(IView.class);
 		doCallRealMethod().when(view).invalidateSelection();
 
-		assertThatCode(view::invalidateSelection).doesNotThrowAnyException();
+		assertThatThrownBy(view::invalidateSelection).isInstanceOf(UnsupportedOperationException.class);
 
-		verify(view).invalidateAll();
+		verify(view, never()).invalidateAll();
 	}
 }

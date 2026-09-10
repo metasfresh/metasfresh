@@ -132,17 +132,19 @@ public interface IView
 	void invalidateAll();
 
 	/**
-	 * Invalidates this view AND forgets its current selection, so that rows which did not exist (or did not
-	 * match) when the view was opened can enter it. {@link #invalidateAll()} is not enough on its own: a view
-	 * serves its rows out of a materialized selection, which {@code invalidateAll} leaves in place.
+	 * Recomputes which rows belong to this view, discarding the current materialized selection.
 	 * <p>
-	 * The default degrades to {@link #invalidateAll()}. Only {@link DefaultView} can actually forget a
-	 * selection - it is the implementation that has one - and the invalidation path reaches every other
-	 * {@link IView} type too, so this must be a fallback rather than a throw.
+	 * This CHANGES WHAT THE USER IS LOOKING AT, so it is deliberately caller-driven rather than something the
+	 * invalidation machinery does on its own: every caller is the {@code postProcess} of a process the user just
+	 * ran on this view, where the user's own action is what changed membership. An ambient invalidation must use
+	 * {@link #invalidateAll()} instead, which refreshes the rows' VALUES and leaves membership alone.
+	 * <p>
+	 * Unsupported by default: only a selection-backed view can forget a selection, and a caller asking any other
+	 * view type to recompute its membership should fail loudly rather than silently do less than it asked for.
 	 */
 	default void invalidateSelection()
 	{
-		invalidateAll();
+		throw new UnsupportedOperationException();
 	}
 
 	/**
