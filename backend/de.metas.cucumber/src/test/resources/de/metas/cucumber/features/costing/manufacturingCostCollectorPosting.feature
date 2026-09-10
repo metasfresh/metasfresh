@@ -523,6 +523,35 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
       | 2024-03-27 | finProd      | warehouseStd   | 8   | 34.0000        | 272.00           | 272.00                |
 
+    # Reverse-Correct the distribution: the residual re-opens and the price move-back should undo the
+    # capitalization, since the on-hand qty has not moved since the distribution ran.
+    And the PP_Cost_Collector identified by distributionCostCollector is reversed as reversedDistributionCostCollector
+
+    # distributionCostCollector/reversedDistributionCostCollector are already registered (above); load fresh
+    # aliases here so the DB re-check does not collide with those identifiers already bound to the same rows.
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          | Reversal_ID.Identifier            |
+      | reversalRowCheck                | ppOrder                | finProd                 | 0           | RE        | CostDifferenceDistribution | distributionCostCollector         |
+      | originalRowCheck                | ppOrder                | finProd                 | 0           | RE        | CostDifferenceDistribution | reversedDistributionCostCollector |
+    And Wait until documents reversedDistributionCostCollector are posted
+
+    # The reversal exactly undoes the distribution's legs: every account flips side, still at qty zero.
+    And Fact_Acct records are matching
+      | Record_ID                         | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | reversedDistributionCostCollector | P_Asset_Acct          | finProd      | 0         | 32        | 0 PCE |
+      | reversedDistributionCostCollector | P_COGS_Acct           | finProd      | 0         | 8         | 0 PCE |
+      | reversedDistributionCostCollector | P_WIP_Acct            | finProd      | 40        | 0         | 0 PCE |
+
+    # The literal answer to "does Lagerwert return after reversal?" - cost price moves back to its
+    # pre-distribution value, qty on hand unchanged.
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
+      | acctSchema      | finProd      | AveragePO        | 30 CHF           | 8 PCE      |
+
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt | InventoryValueAcctAmt |
+      | 2024-03-27 | finProd      | warehouseStd   | 8   | 30.0000        | 240.00           | 240.00                |
+
   @from:cucumber
   @Id:S30811_TC4
   Scenario: Distribute discharges the residual on the MovingAverageInvoice costing method too

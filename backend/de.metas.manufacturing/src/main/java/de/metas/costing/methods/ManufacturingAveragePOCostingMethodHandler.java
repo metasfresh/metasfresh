@@ -94,7 +94,12 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	public CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
-		if (!existingCostDetails.isEmpty())
+		// NOTE: checking for the requested amtType specifically - not just non-emptiness - matters on a
+		// CostDifferenceDistribution reversal: CostingService replays MAIN/ADJUSTMENT/ALREADY_SHIPPED as
+		// separate calls against the same reversal document, so after the first leg is persisted, existingCostDetails
+		// is already non-empty for the next call even though ITS leg is still missing. See
+		// CostingMethodHandlerUtils.containsAmtType.
+		if (utils.containsAmtType(existingCostDetails, request.getAmtType()))
 		{
 			// make sure DateAcct is up-to-date
 			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());

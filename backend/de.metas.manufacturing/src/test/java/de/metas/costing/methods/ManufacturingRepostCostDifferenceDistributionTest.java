@@ -243,6 +243,64 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.isEqualByComparingTo(EXPECTED_ALREADY_SHIPPED);
 	}
 
+	/**
+	 * Reverses all three legs (MAIN, ADJUSTMENT, ALREADY_SHIPPED) the way
+	 * {@code CostingService.createReversalCostDetailsOrEmpty} actually drives them: one
+	 * {@code CostingMethodHandler.createOrUpdateCost} call per leg, all against the SAME reversal document.
+	 * <p>
+	 * {@code createOrUpdateCost}'s idempotency guard used to be {@code !existingCostDetails.isEmpty()} - "does
+	 * ANY cost detail already exist for this document" - which the SECOND and THIRD calls satisfied the moment
+	 * the FIRST call persisted the MAIN leg, even though ADJUSTMENT/ALREADY_SHIPPED were never created. Each
+	 * call then returned the MAIN row again, so the reversal ended up with three copies of the MAIN amount and
+	 * none of ADJUSTMENT/ALREADY_SHIPPED - an unbalanced posting (one lone WIP line, no offsetting entry).
+	 */
+	@ParameterizedTest
+	@EnumSource(ManufacturingHandlerUnderTest.class)
+	void costDifferenceDistribution_reversal_recreatesAllThreeLegs_notJustMain(final ManufacturingHandlerUnderTest handlerUnderTest)
+	{
+		setupOrderFor(handlerUnderTest);
+
+		final CostDetailCreateRequest request = distributionRequest();
+		handler.createOrUpdateCost(request);
+		assertThat(currentCostPriceOf(request)).isEqualByComparingTo("34"); // (30 x 8 + 32) / 8
+
+		final PPCostCollectorId reversalCollectorId = createCostDifferenceDistributionCollector();
+		final CostDetailCreateRequest reversalTemplate = request.toBuilder()
+				.documentRef(CostingDocumentRef.ofCostCollectorId(reversalCollectorId))
+				.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(distributionCollectorId))
+				.build();
+
+		// what CostingService hands the handler for each reversed leg: the original leg's amount and qty, negated
+		for (final CostDetail original : utils.getExistingCostDetails(request))
+		{
+			handler.createOrUpdateCost(reversalTemplate.withAmountAndTypeAndQty(
+					original.getAmt().negate(),
+					original.getAmtType(),
+					original.getQty().negate()));
+		}
+
+		assertThat(currentCostPriceOf(request)).isEqualByComparingTo(MAIN_CURRENT_COST_PRICE); // moved back
+
+		final CostDetailCreateResultsList reversalResults = utils.toCostDetailCreateResultsList(
+				utils.getExistingCostDetails(reversalTemplate));
+		final CostAmountDetailed reversed = reversalResults.getTotalAmountToPost(utils.getAcctSchemaById(acctSchemaId));
+
+		assertThat(reversed.getMainAmt().toBigDecimal())
+				.as("MAIN leg reversed")
+				.isEqualByComparingTo("-" + EXPECTED_RESIDUAL);
+		assertThat(reversed.getCostAdjustmentAmt().toBigDecimal())
+				.as("ADJUSTMENT leg must be recreated by its own call, not collapsed into MAIN")
+				.isEqualByComparingTo("-" + EXPECTED_CAPITALIZED);
+		assertThat(reversed.getAlreadyShippedAmt().toBigDecimal())
+				.as("ALREADY_SHIPPED leg must be recreated by its own call, not collapsed into MAIN")
+				.isEqualByComparingTo("-" + EXPECTED_ALREADY_SHIPPED);
+	}
+
+	private BigDecimal currentCostPriceOf(final CostDetailCreateRequest request)
+	{
+		return utils.getCurrentCost(request).getCostPrice().toBigDecimal();
+	}
+
 	//
 	//
 	// fixture

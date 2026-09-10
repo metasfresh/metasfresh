@@ -168,6 +168,25 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.getExistingCostDetails(request);
 	}
 
+	/**
+	 * Whether {@code costDetails} already contains a row of the given {@code amtType}. This is the manufacturing
+	 * costing-method handlers' "was THIS leg already persisted" guard on top of {@link #getExistingCostDetails}.
+	 * <p>
+	 * On a {@code CostDifferenceDistribution} reversal, {@code CostingService.createReversalCostDetailsOrEmpty}
+	 * invokes {@code createOrUpdateCost} once PER ORIGINAL LEG (MAIN, then ADJUSTMENT, then ALREADY_SHIPPED) for
+	 * the very same reversal document. {@link #getExistingCostDetails} matches on document + cost element only
+	 * (intentionally, so a genuine repost recovers every leg at once - see its javadoc), so once the first call
+	 * persists the MAIN leg, it already returns a non-empty list for the second and third calls even though THEIR
+	 * leg is still missing. Checking emptiness alone would wrongly treat that as an idempotent repost and hand
+	 * back the MAIN leg's row again instead of creating the ADJUSTMENT/ALREADY_SHIPPED rows - checking for the
+	 * requested type specifically tells "already reposted" apart from "a sibling leg of this same document was
+	 * created a moment ago".
+	 */
+	public boolean containsAmtType(@NonNull final List<CostDetail> costDetails, @NonNull final CostAmountType amtType)
+	{
+		return costDetails.stream().anyMatch(costDetail -> costDetail.getAmtType() == amtType);
+	}
+
 	public List<CostDetail> getExistingCostDetails(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsService.stream(query).collect(ImmutableList.toImmutableList());
