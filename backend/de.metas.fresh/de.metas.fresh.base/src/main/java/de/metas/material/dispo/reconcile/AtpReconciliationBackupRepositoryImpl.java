@@ -38,11 +38,13 @@ import static de.metas.util.Check.assumeNotNull;
 
 /**
  * Repository Tables: MD_ATP_Reconciliation_Backup
- * Repository Cluster: AtpReconciliationBackupRepositoryImpl
+ * Repository Cluster: AtpReconciliationBackupRepositoryImpl,
+ * {@link de.metas.material.dispo.commons.repository.repohelpers.AtpReconciliationDetailRepo}
  * <p>
  * Default {@link AtpReconciliationBackupRepository}: persists rows to {@code MD_ATP_Reconciliation_Backup} via the
  * ordinary {@link InterfaceWrapperHelper} save path (no bespoke SQL, matching every other repository in this
- * package).
+ * package). {@code AtpReconciliationDetailRepo} writes/reads the SAME table's one-row-per-candidate
+ * {@code IsCandidateOwnDetail='Y'} rows - the two are disjoint by that column, never in contention.
  */
 @Repository
 public class AtpReconciliationBackupRepositoryImpl implements AtpReconciliationBackupRepository

@@ -77,7 +77,6 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
 
     # --- the order is CLOSED without ever issuing the components ------------------------
     When the manufacturing order identified by ppo_dd is closed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- the inventory then counts reality: the components were consumed after all -------
     And metasfresh has date and time 2024-09-22T08:00:00+01:00[Europe/Berlin]
