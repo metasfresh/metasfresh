@@ -130,6 +130,7 @@ class M_Delivery_Planning_GenerateWriteBackTest
 	private static I_M_Delivery_Planning createDeliveryPlanning(final ProductId productId, final UomId uomId)
 	{
 		final I_M_Delivery_Planning deliveryPlanning = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		deliveryPlanning.setC_BPartner_ID(2000000);
 		deliveryPlanning.setM_Product_ID(productId.getRepoId());
 		deliveryPlanning.setC_UOM_ID(uomId.getRepoId());
 		InterfaceWrapperHelper.save(deliveryPlanning);

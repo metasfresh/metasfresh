@@ -49,6 +49,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -154,7 +156,9 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
 				.qtyTotalOpen(zeroQty())
-				.readyForReceipt(true);
+				.readyForReceipt(true)
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()));
 	}
 
 	@Nested

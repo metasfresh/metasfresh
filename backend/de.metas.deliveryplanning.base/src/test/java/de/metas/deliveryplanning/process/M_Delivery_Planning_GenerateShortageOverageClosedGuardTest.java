@@ -93,6 +93,8 @@ class M_Delivery_Planning_GenerateShortageOverageClosedGuardTest
 		final I_C_UOM mandatoryUom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(mandatoryUom);
 		record.setC_UOM_ID(mandatoryUom.getC_UOM_ID());
+		// C_BPartner_ID is mandatory on the table too, so a fixture must supply one
+		record.setC_BPartner_ID(2000000);
 		record.setIsClosed(closed);
 		// a TransportDirection is required so getReceiptInfoIfHasReceipt (reached only for an OPEN planning,
 		// after the closed guard already let it through) does not NPE on a null column

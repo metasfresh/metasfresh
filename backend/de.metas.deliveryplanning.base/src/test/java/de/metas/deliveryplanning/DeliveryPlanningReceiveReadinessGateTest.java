@@ -31,6 +31,8 @@ import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.TransportDirection;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -106,6 +108,8 @@ class DeliveryPlanningReceiveReadinessGateTest
 				.actualDischargeQty(zeroQty())
 				.qtyTotalOpen(zeroQty())
 				.readyForReceipt(readyForReceipt)
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.build();
 	}
 
@@ -164,6 +168,8 @@ class DeliveryPlanningReceiveReadinessGateTest
 				.qtyTotalOpen(zeroQty())
 				.processed(true)
 				.readyForReceipt(false)
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.build();
 
 		final Optional<ITranslatableString> rejection =

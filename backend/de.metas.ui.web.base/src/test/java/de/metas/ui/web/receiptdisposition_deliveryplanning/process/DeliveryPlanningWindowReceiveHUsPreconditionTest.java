@@ -48,6 +48,8 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -135,6 +137,8 @@ class DeliveryPlanningWindowReceiveHUsPreconditionTest
 						.actualDischargeQty(zeroQty())
 						.qtyTotalOpen(zeroQty())
 						.processed(false)
+						.bpartnerId(BPartnerId.ofRepoId(2000000))
+						.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 						.build()));
 
 		final IViewRow row = ViewRow.builder(WINDOW_ID)

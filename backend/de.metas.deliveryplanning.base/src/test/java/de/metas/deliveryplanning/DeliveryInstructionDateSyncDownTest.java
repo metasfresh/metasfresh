@@ -106,6 +106,7 @@ class DeliveryInstructionDateSyncDownTest
 			@NonNull final String loadingTime)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		record.setC_BPartner_ID(2000000);
 		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
 		record.setM_Product_ID(PRODUCT_ID);
 		record.setC_UOM_ID(uom.getC_UOM_ID());

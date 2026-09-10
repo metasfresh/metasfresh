@@ -39,6 +39,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -119,12 +120,13 @@ public class DeliveryPlanningRepository
 	 * @throws AdempiereException for an id with no matching row - a dangling reference, not a row to drop silently.
 	 */
 	/**
-	 * Writes back the MUTABLE fields the model owns, leaving every other column untouched - the model is
+	 * UPDATE, never create: the row must already exist, since creation goes through
+	 * {@link #generateDeliveryPlanning}. Writes back the MUTABLE fields the model owns, leaving every other column untouched - the model is
 	 * deliberately not a full mirror of {@code M_Delivery_Planning}, so a save must not blank what it does not
 	 * carry. Product, UOM and order line are set when the planning is created and changed by no write path
 	 * here, so they are identity rather than state and are deliberately not rewritten.
 	 */
-	public void save(@NonNull final DeliveryPlanning deliveryPlanning)
+	public void update(@NonNull final DeliveryPlanning deliveryPlanning)
 	{
 		final I_M_Delivery_Planning record = getById(deliveryPlanning.getId());
 		applyTo(record, deliveryPlanning);
@@ -132,14 +134,15 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Read-modify-write over ONE batch load: the records are fetched once, each is handed to the caller AS THE
-	 * MODEL, and the returned model is written straight back onto the record it came from.
+	 * The batch sibling of {@link #update}: read-modify-write over ONE load. The records are fetched once,
+	 * each is handed to the caller AS THE MODEL, and the returned model is written straight back onto the
+	 * record it came from.
 	 * <p>
 	 * This exists because the obvious shape - read a {@link DeliveryPlanningList}, transform it, save it -
 	 * reads every row TWICE, once as models and again as records to write. {@code DeliveryPlanningBatchLoadingTest}
 	 * pins the load count on these paths, which is what caught that.
 	 */
-	public void updateByIds(
+	public void updateAll(
 			@NonNull final Set<DeliveryPlanningId> deliveryPlanningIds,
 			@NonNull final UnaryOperator<DeliveryPlanning> transform)
 	{
@@ -169,6 +172,26 @@ public class DeliveryPlanningRepository
 		record.setActualLoadQty(deliveryPlanning.getActualLoadedQty().toBigDecimal());
 		record.setPlannedDischargeQuantity(deliveryPlanning.getPlannedDischargeQty().toBigDecimal());
 		record.setActualDischargeQuantity(deliveryPlanning.getActualDischargeQty().toBigDecimal());
+		record.setC_BPartner_ID(deliveryPlanning.getBpartnerId().getRepoId());
+		record.setC_UOM_ID(deliveryPlanning.getUomId().getRepoId());
+		record.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(deliveryPlanning.getBpartnerLocationId()));
+		record.setM_Product_ID(ProductId.toRepoId(deliveryPlanning.getProductId()));
+		record.setM_Warehouse_ID(WarehouseId.toRepoId(deliveryPlanning.getWarehouseId()));
+		record.setC_Order_ID(OrderId.toRepoId(deliveryPlanning.getOrderId()));
+		record.setC_OrderLine_ID(OrderLineId.toRepoId(deliveryPlanning.getOrderLineId()));
+		record.setM_ReceiptSchedule_ID(ReceiptScheduleId.toRepoId(deliveryPlanning.getReceiptScheduleId()));
+		record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(deliveryPlanning.getShipmentScheduleId()));
+		record.setC_OriginCountry_ID(CountryId.toRepoId(deliveryPlanning.getOriginCountryId()));
+		record.setC_DestinationCountry_ID(CountryId.toRepoId(deliveryPlanning.getDestinationCountryId()));
+		record.setATA(TimeUtil.asTimestamp(deliveryPlanning.getAta()));
+		record.setATD(TimeUtil.asTimestamp(deliveryPlanning.getAtd()));
+		record.setETA(TimeUtil.asTimestamp(deliveryPlanning.getEta()));
+		record.setLoadingTime(deliveryPlanning.getLoadingTime());
+		record.setDeliveryTime(deliveryPlanning.getDeliveryTime());
+		record.setOrderStatus(deliveryPlanning.getOrderStatus());
+		record.setBatch(deliveryPlanning.getBatch());
+		record.setWayBillNo(deliveryPlanning.getWayBillNo());
+		record.setTransportDetails(deliveryPlanning.getTransportDetails());
 		record.setQtyTotalOpen(deliveryPlanning.getQtyTotalOpen().toBigDecimal());
 		record.setQtyTotalOpenPlanned(deliveryPlanning.getQtyTotalOpenPlanned() != null ? deliveryPlanning.getQtyTotalOpenPlanned().toBigDecimal() : null);
 	}
@@ -575,6 +598,26 @@ public class DeliveryPlanningRepository
 				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(record.getM_ShipperTransportation_ID()))
 				.releaseNo(record.getReleaseNo())
+				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.uomId(uomId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
+				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
+				.orderLineId(OrderLineId.ofRepoIdOrNull(record.getC_OrderLine_ID()))
+				.receiptScheduleId(ReceiptScheduleId.ofRepoIdOrNull(record.getM_ReceiptSchedule_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(record.getM_ShipmentSchedule_ID()))
+				.originCountryId(CountryId.ofRepoIdOrNull(record.getC_OriginCountry_ID()))
+				.destinationCountryId(CountryId.ofRepoIdOrNull(record.getC_DestinationCountry_ID()))
+				.ata(TimeUtil.asInstant(record.getATA()))
+				.atd(TimeUtil.asInstant(record.getATD()))
+				.eta(TimeUtil.asInstant(record.getETA()))
+				.loadingTime(record.getLoadingTime())
+				.deliveryTime(record.getDeliveryTime())
+				.orderStatus(record.getOrderStatus())
+				.batch(record.getBatch())
+				.wayBillNo(record.getWayBillNo())
+				.transportDetails(record.getTransportDetails())
 				.qtyTotalOpen(Quantitys.of(record.getQtyTotalOpen(), uomId))
 				.qtyTotalOpenPlanned(record.getQtyTotalOpenPlanned() != null ? Quantitys.of(record.getQtyTotalOpenPlanned(), uomId) : null)
 				.qtyOrdered(Quantitys.of(record.getQtyOrdered(), uomId))
@@ -793,7 +836,7 @@ public class DeliveryPlanningRepository
 	 */
 	public void clearInstructionReference(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		updateByIds(ImmutableSet.copyOf(deliveryPlanningIds), deliveryPlanning -> deliveryPlanning.toBuilder()
+		updateAll(ImmutableSet.copyOf(deliveryPlanningIds), deliveryPlanning -> deliveryPlanning.toBuilder()
 				.releaseNo(null)
 				.shipperTransportationId(null)
 				.build());

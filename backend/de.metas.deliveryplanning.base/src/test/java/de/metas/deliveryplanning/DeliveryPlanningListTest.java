@@ -33,6 +33,8 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeAll;
@@ -89,7 +91,9 @@ class DeliveryPlanningListTest
 				.actualLoadedQty(qty(0))
 				.plannedDischargeQty(qty(0))
 				.actualDischargeQty(qty(0))
-				.qtyTotalOpen(qty(0));
+				.qtyTotalOpen(qty(0))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()));
 	}
 
 	private static DeliveryPlanning withShipper(@Nullable final Integer shipperRepoId)
@@ -187,6 +191,8 @@ class DeliveryPlanningListTest
 					.loadingLocationId(BPartnerLocationId.ofRepoId(540004, 540005))
 					.deliveryLocationId(BPartnerLocationId.ofRepoId(540006, 540007))
 					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 					.build();
 
 			final DeliveryPlanning row2 = DeliveryPlanning.builder()
@@ -205,6 +211,8 @@ class DeliveryPlanningListTest
 					.loadingLocationId(BPartnerLocationId.ofRepoId(540014, 540015))
 					.deliveryLocationId(BPartnerLocationId.ofRepoId(540016, 540017))
 					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 					.build();
 
 			assertThat(DeliveryPlanningList.of(row1, row2).aggregationKeyViolations())
@@ -229,6 +237,8 @@ class DeliveryPlanningListTest
 					.actualDischargeQty(qty(0))
 					.etd(etd != null ? Instant.parse(etd) : null)
 					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 					.build();
 		}
 
@@ -654,6 +664,8 @@ class DeliveryPlanningListTest
 					.plannedDischargeQty(qty(0))
 					.actualDischargeQty(qty(0))
 					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 					.build();
 		}
 
@@ -715,6 +727,8 @@ class DeliveryPlanningListTest
 					.plannedDischargeQty(qty(plannedDischarge))
 					.actualDischargeQty(qty(actualDischarge))
 					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 					.build();
 		}
 
@@ -892,6 +906,8 @@ class DeliveryPlanningListTest
 					.plannedDischargeQty(qty(plannedDischarge))
 					.actualDischargeQty(qty(actualDischarge))
 					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 					.build();
 		}
 

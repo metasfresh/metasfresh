@@ -28,6 +28,15 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.InOutId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
+import de.metas.location.CountryId;
+import org.adempiere.warehouse.WarehouseId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.order.OrderLineId;
+import de.metas.order.OrderId;
+import de.metas.uom.UomId;
+import de.metas.product.ProductId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
@@ -143,6 +152,57 @@ public class DeliveryPlanning
 	@NonNull Quantity qtyTotalOpen;
 
 	@Nullable Quantity qtyTotalOpenPlanned;
+
+	// ------------------------------------------------------------------------------------------------
+	// The rest of the row. Deliberately absent: AD_Client_ID / AD_Org_ID beyond orgId, the audit columns
+	// (Created/CreatedBy/Updated/UpdatedBy), the 13 ColumnSQL-computed columns (BPartnerName, IsDelivered,
+	// ProductName, ShipTo_Location_ID, DeliveryStatus_Color_ID, ...) which have no physical column to write
+	// back to, and IsAllocated - that one is stored AND already derived here from {@link #allocations}, and
+	// two sources of truth for one question is worse than none.
+	// ------------------------------------------------------------------------------------------------
+
+	/** {@code AD_IsMandatory='Y'} and physically NOT NULL, like the quantities. */
+	@NonNull BPartnerId bpartnerId;
+
+	@NonNull UomId uomId;
+
+	@Nullable BPartnerLocationId bpartnerLocationId;
+
+	@Nullable ProductId productId;
+
+	@Nullable WarehouseId warehouseId;
+
+	@Nullable OrderId orderId;
+
+	@Nullable OrderLineId orderLineId;
+
+	@Nullable ReceiptScheduleId receiptScheduleId;
+
+	@Nullable ShipmentScheduleId shipmentScheduleId;
+
+	@Nullable CountryId originCountryId;
+
+	@Nullable CountryId destinationCountryId;
+
+	/** The actual departure/arrival, against {@link #etd} and {@link #eta} as planned. */
+	@Nullable Instant ata;
+
+	@Nullable Instant atd;
+
+	@Nullable Instant eta;
+
+	/** Free text, not a timestamp: both columns are String in the dictionary despite their names. */
+	@Nullable String loadingTime;
+
+	@Nullable String deliveryTime;
+
+	@Nullable String orderStatus;
+
+	@Nullable String batch;
+
+	@Nullable String wayBillNo;
+
+	@Nullable String transportDetails;
 
 	/**
 	 * This planning's ACTIVE allocations, one per delivery instruction it sits on. A list rather than a single id

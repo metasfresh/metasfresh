@@ -188,6 +188,7 @@ class DeliveryPlanningDateResetOnDeallocationTest
 	private I_M_Delivery_Planning deliveryPlanning(@NonNull final String transportDirection)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		record.setC_BPartner_ID(2000000);
 		record.setTransportDirection(transportDirection);
 		record.setM_Product_ID(PRODUCT_ID);
 		record.setC_UOM_ID(uom.getC_UOM_ID());

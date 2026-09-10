@@ -38,6 +38,8 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,7 +110,9 @@ class DeliveryPlanningAddRemoveRejectionTest
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
 				.qtyTotalOpen(zeroQty())
-				.shipperId(ShipperId.ofRepoId(540001));
+				.shipperId(ShipperId.ofRepoId(540001))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()));
 	}
 
 	private static ShipperTransportationId deliveryInstruction(@NonNull final DocStatus docStatus)

@@ -37,6 +37,8 @@ import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -107,7 +109,9 @@ class DeliveryPlanningCombineRejectionTest
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
 				.qtyTotalOpen(zeroQty())
-				.shipperId(ShipperId.ofRepoId(540001));
+				.shipperId(ShipperId.ofRepoId(540001))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()));
 	}
 
 	/**
@@ -214,6 +218,8 @@ class DeliveryPlanningCombineRejectionTest
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoId(540003))
 				.loadingLocationId(BPartnerLocationId.ofRepoId(540004, 540005))
 				.deliveryLocationId(BPartnerLocationId.ofRepoId(540006, 540007))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.build();
 
 		final DeliveryPlanning row2 = DeliveryPlanning.builder()
@@ -232,6 +238,8 @@ class DeliveryPlanningCombineRejectionTest
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoId(540013))
 				.loadingLocationId(BPartnerLocationId.ofRepoId(540014, 540015))
 				.deliveryLocationId(BPartnerLocationId.ofRepoId(540016, 540017))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.build();
 
 		final String rejectionText = rejectionTextOf(row1, row2);
