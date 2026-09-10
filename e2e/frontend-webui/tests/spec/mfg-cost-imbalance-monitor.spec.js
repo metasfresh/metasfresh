@@ -376,8 +376,9 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     const leftColumn = columns.nth(0);
     const rightColumn = columns.nth(1);
 
-    // Property of every document window, not of this change: LayoutFactory hoists DocStatus and
-    // DocAction into the header ActionButton, so they are never section fields.
+    // Characterization, not a regression guard: DocStatus's absence from the form is now
+    // overdetermined - LayoutFactory hoists it into the header ActionButton AND IsDisplayed='N' -
+    // so this cannot detect the loss of either mechanism. It records the current, intended state.
     await test.step('Belegstatus is not a form field — the document header carries the status', async () => {
       await expect(page.locator('.section .form-field-DocStatus')).toHaveCount(0);
     });
