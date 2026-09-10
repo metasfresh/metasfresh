@@ -25,6 +25,7 @@ package de.metas.material.dispo.reconcile;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.model.I_MD_ATP_Reconciliation_Backup;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -34,7 +35,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.Services.get;
 
 /**
  * Repository Tables: MD_ATP_Reconciliation_Backup
@@ -47,6 +47,8 @@ import static de.metas.util.Services.get;
 @Repository
 public class AtpReconciliationBackupRepositoryImpl implements AtpReconciliationBackupRepository
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public void backupBeforeWrite(
 			@NonNull final String runUuid,
@@ -103,13 +105,12 @@ public class AtpReconciliationBackupRepositoryImpl implements AtpReconciliationB
 	}
 
 	/** @return the row {@link #backupBeforeWrite} already created for this exact run and candidate. */
-	private static I_MD_ATP_Reconciliation_Backup retrieveBackedUpRecord(
+	private I_MD_ATP_Reconciliation_Backup retrieveBackedUpRecord(
 			@NonNull final String runUuid,
 			@NonNull final AtpReconciliationRunLog.Entry entry)
 	{
 		return assumeNotNull(
-				get(IQueryBL.class)
-						.createQueryBuilder(I_MD_ATP_Reconciliation_Backup.class)
+				queryBL.createQueryBuilder(I_MD_ATP_Reconciliation_Backup.class)
 						.addEqualsFilter(I_MD_ATP_Reconciliation_Backup.COLUMNNAME_ReconciliationRunUUID, runUuid)
 						.addEqualsFilter(I_MD_ATP_Reconciliation_Backup.COLUMNNAME_MD_Candidate_ID, entry.getCandidateId().getRepoId())
 						.create()
