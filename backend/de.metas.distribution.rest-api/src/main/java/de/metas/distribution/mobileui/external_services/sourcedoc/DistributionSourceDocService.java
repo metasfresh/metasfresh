@@ -14,6 +14,7 @@ import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipping.CarrierProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.eevolution.api.IPPOrderBL;
@@ -26,17 +27,13 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 
 @Service
+@RequiredArgsConstructor
 public class DistributionSourceDocService
 {
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final CarrierProductRepository carrierProductRepository;
-
-	public DistributionSourceDocService(@NonNull final CarrierProductRepository carrierProductRepository)
-	{
-		this.carrierProductRepository = carrierProductRepository;
-	}
 
 	@NonNull
 	public PlantInfo getPlantInfo(@NonNull final ResourceId plantId)
