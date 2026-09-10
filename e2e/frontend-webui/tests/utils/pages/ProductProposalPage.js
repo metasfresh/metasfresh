@@ -29,7 +29,15 @@ const OVERLAY = '.raw-modal .panel-modal';
 /** Data rows of the overlay grid. */
 const ROWS = `${OVERLAY} table tbody tr`;
 
-/** Buttons of the order lines tab's filter line - the included-tab top actions come last. */
+/**
+ * Buttons of the order lines tab's filter line - the included-tab top actions come last.
+ *
+ * NOTE: consumers select `.last()` here, which assumes the tab's own buttons ("Add new",
+ * batch entry) always render BEFORE the included-tab top actions, and that this tab has
+ * exactly one top action. Both hold today, but neither is enforced anywhere: if a button
+ * is ever added after the top actions, `.last()` silently targets the wrong element with
+ * no error. Prefer the `Alt+Z` shortcut path; this is only the fallback.
+ */
 const TOP_ACTION_BUTTONS = '.table-filter-line .filter-panel-buttons button';
 
 export class ProductProposalPage {
@@ -176,6 +184,11 @@ export class ProductProposalPage {
    * ProductsProposalRow#FIELD_Qty) and the overlay opens with the focus in it
    * (`setFocusOnFieldName(ProductsProposalRow.FIELD_Qty)`). The typed value is only
    * persisted once the cell is blurred, so `Tab` is pressed to commit the edit.
+   *
+   * NO PERSISTENCE GUARANTEE: this method types and commits, but does not read the value
+   * back, so it does not prove the quantity stuck. A spec that depends on the quantity
+   * having persisted must assert that itself - e.g. by re-reading the cell, or by checking
+   * the resulting order line after the overlay is closed with DONE.
    *
    * @param {import('@playwright/test').Page} page - Playwright page
    * @param {string} productName - Product name of the row to edit
