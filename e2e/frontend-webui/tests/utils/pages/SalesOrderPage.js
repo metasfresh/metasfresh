@@ -1,5 +1,5 @@
 import { test } from '../../../playwright.config';
-import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { FAST_ACTION_TIMEOUT, FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 import { PdfDownloader } from '../PdfDownloader';
@@ -316,15 +316,28 @@ export class SalesOrderPage {
           await page.waitForTimeout(1000);
         }
 
-        // Verify that at least one order line was added
+        // Verify THIS product's line was added. `rowCount > 0` is not enough: it is already true
+        // whenever an earlier addOrderLine call added a DIFFERENT line, so a silently-failed dropdown
+        // selection on a second call would be reported as success and leave the requested product off
+        // the order - measured at ~10% of runs, where a two-line fixture ended up with one line and
+        // the downstream assertions failed far from the cause.
         const gridRows = page.locator('table tbody tr');
         const rowCount = await gridRows.count();
-        if (rowCount > 0) {
-          console.log(`Order line added successfully on attempt ${attempt} (${rowCount} row(s))`);
+        const addedProductRow = gridRows
+          .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: product }) })
+          .first();
+        const addedProductRowPresent = await addedProductRow
+          .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT })
+          .then(() => true)
+          .catch(() => false);
+        if (addedProductRowPresent) {
+          console.log(
+            `Order line added successfully on attempt ${attempt} (${rowCount} row(s), ${product} present)`
+          );
           return;
         }
 
-        console.log(`No order lines found after attempt ${attempt}, reloading page...`);
+        console.log(`Order line for ${product} not found after attempt ${attempt}, reloading page...`);
         await page.keyboard.press('F5');
         await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
         await page.waitForTimeout(2000);
