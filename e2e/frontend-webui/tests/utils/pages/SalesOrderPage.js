@@ -1,5 +1,5 @@
 import { test } from '../../../playwright.config';
-import { FAST_ACTION_TIMEOUT, FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 import { PdfDownloader } from '../PdfDownloader';
@@ -220,8 +220,23 @@ export class SalesOrderPage {
 
       console.log(`Sales Order Lines tab ready for record ${effectiveRecordId}`);
 
+      // Matches the grid row for the product this call is adding. Used both to confirm success and -
+      // before every retry - to make the retry idempotent.
+      const productRow = () =>
+        page
+          .locator('table tbody tr')
+          .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: product }) })
+          .first();
+
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         console.log(`addOrderLine attempt ${attempt}/${maxAttempts}`);
+
+        // A previous attempt may have succeeded on the server and only rendered after this method
+        // gave up waiting. Re-adding then would silently duplicate the line, so check first.
+        if (attempt > 1 && (await productRow().isVisible().catch(() => false))) {
+          console.log(`Order line for ${product} is present after all - not adding it again`);
+          return;
+        }
 
         // Scroll to batch entry button (may be below the fold in single-section layout)
         const batchEntryButton = page.getByTestId('batch-entry-toggle');
@@ -321,13 +336,11 @@ export class SalesOrderPage {
         // selection on a second call would be reported as success and leave the requested product off
         // the order - measured at ~10% of runs, where a two-line fixture ended up with one line and
         // the downstream assertions failed far from the cause.
-        const gridRows = page.locator('table tbody tr');
-        const rowCount = await gridRows.count();
-        const addedProductRow = gridRows
-          .filter({ has: page.locator('[data-cy="cell-M_Product_ID"]', { hasText: product }) })
-          .first();
-        const addedProductRowPresent = await addedProductRow
-          .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT })
+        const rowCount = await page.locator('table tbody tr').count();
+        // Waited on with the SLOW timeout deliberately: a miss here costs a full reload-and-retry
+        // cycle, so being impatient is more expensive than waiting a little longer.
+        const addedProductRowPresent = await productRow()
+          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
           .then(() => true)
           .catch(() => false);
         if (addedProductRowPresent) {
