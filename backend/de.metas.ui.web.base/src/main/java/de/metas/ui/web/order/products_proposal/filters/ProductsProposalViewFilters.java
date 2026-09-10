@@ -1,5 +1,6 @@
 package de.metas.ui.web.order.products_proposal.filters;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -104,11 +105,20 @@ public class ProductsProposalViewFilters
 			builder.addParameter(DocumentFilterParam.ofNameEqualsValue(ProductsProposalViewFilter.PARAM_ProductName, filter.getProductName()));
 		}
 
-		if (!builder.hasParameters())
+		final ImmutableList.Builder<DocumentFilter> documentFilters = ImmutableList.builder();
+		if (builder.hasParameters())
 		{
-			return DocumentFilterList.EMPTY;
+			documentFilters.add(builder.build());
 		}
 
-		return DocumentFilterList.of(builder.build());
+		if (filter.isOnlyDelivered())
+		{
+			documentFilters.add(DocumentFilter.builder()
+					.setFilterId(OrderProductsProposalViewFilters.FILTER_ID)
+					.addParameter(DocumentFilterParam.ofNameEqualsValue(ProductsProposalViewFilter.PARAM_OnlyDelivered, Boolean.TRUE))
+					.build());
+		}
+
+		return DocumentFilterList.ofList(documentFilters.build());
 	}
 }
