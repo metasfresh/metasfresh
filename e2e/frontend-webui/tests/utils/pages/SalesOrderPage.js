@@ -1,5 +1,5 @@
 import { test } from '../../../playwright.config';
-import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { FAST_ACTION_TIMEOUT, FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 import { PdfDownloader } from '../PdfDownloader';
@@ -199,6 +199,12 @@ export class SalesOrderPage {
    * IMPORTANT: Parent record must be saved before calling this method.
    * Use waitForTabAllowsNew() or call selectCustomer() first which waits for save.
    *
+   * CONSTRAINT: do NOT call this twice with the same `product` on the same order. Success, and the
+   * retry's idempotency guard, are both decided by "a grid row for this product exists" - which
+   * cannot tell one call's row from another's. A second call for the same product would therefore
+   * see the first call's row and report success without adding anything. A spec that genuinely needs
+   * two lines of one product must drive batch entry itself.
+   *
    * @param {Object} params - Order line parameters
    * @param {string} params.product - Product code or name
    * @param {string|number} params.quantity - Quantity to order
@@ -232,8 +238,16 @@ export class SalesOrderPage {
         console.log(`addOrderLine attempt ${attempt}/${maxAttempts}`);
 
         // A previous attempt may have succeeded on the server and only rendered after this method
-        // gave up waiting. Re-adding then would silently duplicate the line, so check first.
-        if (attempt > 1 && (await productRow().isVisible().catch(() => false))) {
+        // gave up waiting. Re-adding then would silently duplicate the line, so check first - with a
+        // short wait rather than an instantaneous read, because the reload that precedes this may
+        // still be settling.
+        const alreadyPresent =
+          attempt > 1 &&
+          (await productRow()
+            .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT })
+            .then(() => true)
+            .catch(() => false));
+        if (alreadyPresent) {
           console.log(`Order line for ${product} is present after all - not adding it again`);
           return;
         }
