@@ -142,14 +142,15 @@ Feature: Free text above an order line
       | lineLeadIn | order      | productA     | 1          |
     And metasfresh contains C_OrderLines:
       | Identifier       | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine |
-      | lineWithLongText | order      | productB     | 1          | Diese Position wird in mehreren Teillieferungen versandt. Bitte die Ware bei Anlieferung sofort auf Vollstaendigkeit pruefen und jede Abweichung innerhalb von drei Werktagen schriftlich melden. Die fehlende Menge liefern wir dann als Nachlieferung |
+      | lineWithLongText | order      | productB     | 1          | Diese Position wird in mehreren Teillieferungen versandt. Bitte die Ware bei Anlieferung sofort auf Vollstaendigkeit pruefen und jede Abweichung innerhalb von drei Werktagen schriftlich melden. Die fehlende Menge liefern wir dann als Nachlieferung. Teilmengen werden getrennt berechnet und koennen als separate Rechnung zugestellt werden. Ein Avis zur jeweiligen Restmenge erhalten Sie per E-Mail als Teillieferungsavis |
     When the order identified by order is completed
     And The jasper process is run
       | Value            | Record_ID |
       | Auftrag (Jasper) | order     |
     # the block starts right below position 10's product number; two words on purpose, since this has to pin its FIRST wrapped line
     Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "Diese Position"
-    # and it occupies at least three lines before position 20's article row
+    # the block must wrap onto further lines before position 20's article row; the
+    # fixture text is sized so this holds at the band's full width, not a narrower one
     And in the PDF archived for the record identified by "order", at least 2 lines appear between text "Diese Position" and text "BetaItem"
     # the last word is still on the page, so nothing was clipped off the end
-    And the PDF archived for the record identified by "order" contains text "Nachlieferung"
+    And the PDF archived for the record identified by "order" contains text "Teillieferungsavis"
