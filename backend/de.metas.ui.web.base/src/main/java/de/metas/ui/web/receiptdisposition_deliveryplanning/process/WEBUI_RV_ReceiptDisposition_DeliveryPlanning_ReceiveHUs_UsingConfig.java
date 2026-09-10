@@ -100,6 +100,10 @@ public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveHUs_UsingConfig
 			final I_M_ReceiptSchedule receiptSchedule = getSelectedReceiptSchedule();
 			final I_M_HU_LUTU_Configuration defaultLUTUConfiguration = ReceiptScheduleLUTUConfigurations.getCurrent(receiptSchedule);
 			huReceiptScheduleBL.adjustLUTUConfiguration(defaultLUTUConfiguration, receiptSchedule);
+			// adjustLUTUConfiguration takes only the schedule - its signature cannot express a planning - so on a
+			// planned row it pre-fills the operator's QtyLU/QtyTU for the whole order line. Cap it, or accepting
+			// the default receives a split sibling's share too.
+			capToPlannedShare(defaultLUTUConfiguration, receiptSchedule, getSelectedDeliveryPlanningIdOrNull());
 			_defaultLUTUConfiguration = defaultLUTUConfiguration;
 		}
 		return _defaultLUTUConfiguration;

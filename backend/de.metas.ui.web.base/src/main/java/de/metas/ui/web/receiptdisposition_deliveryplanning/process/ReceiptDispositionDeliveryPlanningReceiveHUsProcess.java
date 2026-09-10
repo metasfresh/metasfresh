@@ -24,6 +24,7 @@ package de.metas.ui.web.receiptdisposition_deliveryplanning.process;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.deliveryplanning.DeliveryPlanningList;
 import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
@@ -44,6 +45,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 /**
@@ -126,6 +129,7 @@ abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends Recei
 
 		final I_M_HU_LUTU_Configuration lutuConfiguration =
 				createLUTUConfiguration(ReceiptScheduleLUTUConfigurations.getCurrent(receiptSchedule), receiptSchedule);
+		capToPlannedShare(lutuConfiguration, receiptSchedule, deliveryPlanningId);
 		Services.get(ILUTUConfigurationFactory.class).save(lutuConfiguration);
 		huGenerator.setM_HU_LUTU_Configuration(lutuConfiguration);
 
@@ -139,6 +143,85 @@ abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends Recei
 		huGenerator.setQtyToAllocateTarget(qtyToAllocate);
 
 		return huGenerator.generateWithinOwnTransaction();
+	}
+
+	/**
+	 * The planning of a single-row selection, or {@code null} when the selection is not a single PLANNED row.
+	 * The receive quick actions are single-row, and an unplanned row has no planning to cap by.
+	 */
+	@Nullable
+	protected final DeliveryPlanningId getSelectedDeliveryPlanningIdOrNull()
+	{
+		final DeliveryPlanningList selected = getSelectedDeliveryPlannings();
+		return selected.size() == 1 ? selected.getIdsInAllocationOrder().get(0) : null;
+	}
+
+	/**
+	 * Caps a SCHEDULE-derived LU/TU configuration to the selected planning's share.
+	 * <p>
+	 * {@code ReceiptScheduleLUTUConfigurations.adjustToDefaults} derives QtyTU from
+	 * {@code getQtyToMoveTU(receiptSchedule)}, and a split copies {@code M_ReceiptSchedule_ID} onto every new
+	 * planning - so on a planned row the derived configuration describes the WHOLE order line. That number is
+	 * what the quick-action caption prints and what the operator's config form is pre-filled with, so without
+	 * this a row planned for 50 out of a 100 schedule offers "100" while the allocation books 50: the user is
+	 * shown one quantity and gets another.
+	 * <p>
+	 * Capping the CONFIGURATION rather than only the allocation fixes the caption, the pre-filled form and the
+	 * booked quantity together, because all three read it. An UNPLANNED row has no share and is left alone -
+	 * there the schedule-derived value is the correct one.
+	 */
+	protected final void capToPlannedShare(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfig,
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		capToPlannedShare(lutuConfig, receiptFromReceiptScheduleService
+				.getPlannedShareToReceive(receiptSchedule, deliveryPlanningId)
+				.orElse(null));
+	}
+
+	/**
+	 * The capping itself, split from the share lookup so it can be exercised without constructing a
+	 * process - {@code ViewBasedProcessTemplate}'s constructor pulls a whole Spring graph that has nothing
+	 * to do with this arithmetic.
+	 *
+	 * @param plannedShare {@code null} for an UNPLANNED row, which is left alone: there the
+	 *                     schedule-derived configuration is the correct one.
+	 */
+	@VisibleForTesting
+	static void capToPlannedShare(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfig,
+			@Nullable final Quantity plannedShare)
+	{
+		if (plannedShare == null)
+		{
+			return;
+		}
+
+		final BigDecimal qtyCUsPerTU = lutuConfig.getQtyCUsPerTU();
+		if (lutuConfig.isInfiniteQtyCU() || qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
+		{
+			// Nothing to divide by: leave the configuration as derived rather than guess a TU count.
+			return;
+		}
+
+		// UP, not HALF_UP: a partial TU still has to be received, so 55 CUs at 10 per TU needs 6 TUs.
+		final BigDecimal cappedQtyTU = plannedShare.toBigDecimal().divide(qtyCUsPerTU, 0, RoundingMode.UP);
+		if (cappedQtyTU.signum() <= 0 || cappedQtyTU.compareTo(lutuConfig.getQtyTU()) >= 0)
+		{
+			// The share is not the binding limit - the packing already fits inside it.
+			return;
+		}
+
+		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+		lutuConfig.setIsInfiniteQtyTU(false);
+		lutuConfig.setQtyTU(cappedQtyTU);
+		if (!lutuConfigurationFactory.isNoLU(lutuConfig))
+		{
+			lutuConfig.setIsInfiniteQtyLU(false);
+			lutuConfig.setQtyLU(BigDecimal.valueOf(
+					lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfig, cappedQtyTU)));
+		}
 	}
 
 	/**

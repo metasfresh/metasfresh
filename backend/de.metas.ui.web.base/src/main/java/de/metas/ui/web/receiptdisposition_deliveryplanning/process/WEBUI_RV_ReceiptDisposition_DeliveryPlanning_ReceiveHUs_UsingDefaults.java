@@ -74,6 +74,9 @@ public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveHUs_UsingDefaul
 	{
 		final I_M_HU_LUTU_Configuration lutuConfig = ReceiptScheduleLUTUConfigurations.getCurrent(receiptSchedule);
 		ReceiptScheduleLUTUConfigurations.adjustToDefaults(lutuConfig, receiptSchedule);
+		// adjustToDefaults sizes this from the SCHEDULE, so on a planned row the caption would advertise the
+		// whole order line (e.g. "100" on a row planned for 50) while the allocation books only the share.
+		capToPlannedShare(lutuConfig, receiptSchedule, getSelectedDeliveryPlanningIdOrNull());
 
 		return HUPackingInfoFormatter.newInstance()
 				.setShowLU(false) // NOTE: don't show LU info because it makes the whole label too long
