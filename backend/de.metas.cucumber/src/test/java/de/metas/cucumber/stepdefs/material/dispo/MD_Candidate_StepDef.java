@@ -450,9 +450,9 @@ public class MD_Candidate_StepDef
 	@And("^after not more than (.*)s, MD_Candidates are found$")
 	public void validate_md_candidates(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
-		rabbitMQStepDef.wait_empty_material_queue();
-
 		final Stopwatch stopwatch = Stopwatch.createStarted();
+
+		rabbitMQStepDef.waitEmptyMaterialQueue();
 
 		final HashMap<CandidateId, StepDefDataIdentifier> candidateIdsAlreadyMatched = new HashMap<>();
 		table.forEach((row) -> {
