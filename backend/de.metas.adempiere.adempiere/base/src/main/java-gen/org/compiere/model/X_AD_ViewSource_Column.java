@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_ViewSource_Column extends org.compiere.model.PO implements I_AD_ViewSource_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1284549240L;
+	private static final long serialVersionUID = 1343056116L;
 
     /** Standard Constructor */
     public X_AD_ViewSource_Column (final Properties ctx, final int AD_ViewSource_Column_ID, @Nullable final String trxName)
@@ -32,18 +32,6 @@ public class X_AD_ViewSource_Column extends org.compiere.model.PO implements I_A
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Column getAD_Column()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
-	}
-
-	@Override
-	public void setAD_Column(final org.compiere.model.I_AD_Column AD_Column)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class, AD_Column);
 	}
 
 	@Override
@@ -74,18 +62,6 @@ public class X_AD_ViewSource_Column extends org.compiere.model.PO implements I_A
 	public int getAD_ViewSource_Column_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_ViewSource_Column_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_ViewSource getAD_ViewSource()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_ViewSource_ID, org.compiere.model.I_AD_ViewSource.class);
-	}
-
-	@Override
-	public void setAD_ViewSource(final org.compiere.model.I_AD_ViewSource AD_ViewSource)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_ViewSource_ID, org.compiere.model.I_AD_ViewSource.class, AD_ViewSource);
 	}
 
 	@Override

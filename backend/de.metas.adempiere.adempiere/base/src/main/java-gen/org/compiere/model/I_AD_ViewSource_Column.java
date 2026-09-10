@@ -48,10 +48,6 @@ public interface I_AD_ViewSource_Column
 	 */
 	int getAD_Column_ID();
 
-	org.compiere.model.I_AD_Column getAD_Column();
-
-	void setAD_Column(org.compiere.model.I_AD_Column AD_Column);
-
 	ModelColumn<I_AD_ViewSource_Column, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new ModelColumn<>(I_AD_ViewSource_Column.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
 	String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
 
@@ -115,10 +111,6 @@ public interface I_AD_ViewSource_Column
 	 * <br>Virtual Column: false
 	 */
 	int getAD_ViewSource_ID();
-
-	org.compiere.model.I_AD_ViewSource getAD_ViewSource();
-
-	void setAD_ViewSource(org.compiere.model.I_AD_ViewSource AD_ViewSource);
 
 	ModelColumn<I_AD_ViewSource_Column, org.compiere.model.I_AD_ViewSource> COLUMN_AD_ViewSource_ID = new ModelColumn<>(I_AD_ViewSource_Column.class, "AD_ViewSource_ID", org.compiere.model.I_AD_ViewSource.class);
 	String COLUMNNAME_AD_ViewSource_ID = "AD_ViewSource_ID";

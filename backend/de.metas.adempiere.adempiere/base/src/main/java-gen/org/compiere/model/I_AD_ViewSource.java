@@ -264,10 +264,6 @@ public interface I_AD_ViewSource
 	 */
 	int getParent_LinkColumn_ID();
 
-	org.compiere.model.I_AD_Column getParent_LinkColumn();
-
-	void setParent_LinkColumn(org.compiere.model.I_AD_Column Parent_LinkColumn);
-
 	ModelColumn<I_AD_ViewSource, org.compiere.model.I_AD_Column> COLUMN_Parent_LinkColumn_ID = new ModelColumn<>(I_AD_ViewSource.class, "Parent_LinkColumn_ID", org.compiere.model.I_AD_Column.class);
 	String COLUMNNAME_Parent_LinkColumn_ID = "Parent_LinkColumn_ID";
 
@@ -288,10 +284,6 @@ public interface I_AD_ViewSource
 	 * <br>Virtual Column: false
 	 */
 	int getSource_LinkColumn_ID();
-
-	org.compiere.model.I_AD_Column getSource_LinkColumn();
-
-	void setSource_LinkColumn(org.compiere.model.I_AD_Column Source_LinkColumn);
 
 	ModelColumn<I_AD_ViewSource, org.compiere.model.I_AD_Column> COLUMN_Source_LinkColumn_ID = new ModelColumn<>(I_AD_ViewSource.class, "Source_LinkColumn_ID", org.compiere.model.I_AD_Column.class);
 	String COLUMNNAME_Source_LinkColumn_ID = "Source_LinkColumn_ID";

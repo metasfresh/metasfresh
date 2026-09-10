@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_ViewSource extends org.compiere.model.PO implements I_AD_ViewSource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -308100805L;
+	private static final long serialVersionUID = -1004203507L;
 
     /** Standard Constructor */
     public X_AD_ViewSource (final Properties ctx, final int AD_ViewSource_ID, @Nullable final String trxName)
@@ -125,18 +125,6 @@ public class X_AD_ViewSource extends org.compiere.model.PO implements I_AD_ViewS
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Column getParent_LinkColumn()
-	{
-		return get_ValueAsPO(COLUMNNAME_Parent_LinkColumn_ID, org.compiere.model.I_AD_Column.class);
-	}
-
-	@Override
-	public void setParent_LinkColumn(final org.compiere.model.I_AD_Column Parent_LinkColumn)
-	{
-		set_ValueFromPO(COLUMNNAME_Parent_LinkColumn_ID, org.compiere.model.I_AD_Column.class, Parent_LinkColumn);
-	}
-
-	@Override
 	public void setParent_LinkColumn_ID (final int Parent_LinkColumn_ID)
 	{
 		if (Parent_LinkColumn_ID < 1) 
@@ -149,18 +137,6 @@ public class X_AD_ViewSource extends org.compiere.model.PO implements I_AD_ViewS
 	public int getParent_LinkColumn_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Parent_LinkColumn_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Column getSource_LinkColumn()
-	{
-		return get_ValueAsPO(COLUMNNAME_Source_LinkColumn_ID, org.compiere.model.I_AD_Column.class);
-	}
-
-	@Override
-	public void setSource_LinkColumn(final org.compiere.model.I_AD_Column Source_LinkColumn)
-	{
-		set_ValueFromPO(COLUMNNAME_Source_LinkColumn_ID, org.compiere.model.I_AD_Column.class, Source_LinkColumn);
 	}
 
 	@Override
