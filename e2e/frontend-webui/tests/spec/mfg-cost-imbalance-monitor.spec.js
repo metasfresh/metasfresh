@@ -321,4 +321,96 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
       `Manufacturing order ${documentNo} zoomed from monitor ${COST_IMBALANCE_WINDOW_ID} into window ${PRODUCTION_ORDER_WINDOW_ID}`
     );
   });
+  test('Grid drops Nr. and Belegart; the detail form regroups Belegart, the dates and Lager', async ({ page }) => {
+    test.setTimeout(120_000);
+
+    allure.epic('E0226: Costing');
+    allure.tag('F1500: Costing');
+    allure.tag('F1500');
+    allure.story('Cost-monitor layout: Nr. and Belegart off the grid, Belegart + dates grouped right, Lager promoted left');
+    allure.severity('normal');
+    allure.description(
+      'Verifies the three layout changes the controller asked for: Nr. (DocumentNo) and Belegart ' +
+        '(C_DocType_ID) are no longer grid columns while Nr. still works as a filter; in the detail ' +
+        'view Belegart and the two date fields share one new group in the right column, below the ' +
+        'Aktiv group and above Sektion/Mandant; and Lager sits in the left column primary group. ' +
+        'Group assertions go on DOM ancestry, not captions, so they hold in either language.'
+    );
+
+    const { masterdata, documentNo } = await seedCompletedManufacturingOrder();
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    await MasterWindowPage.goto(COST_IMBALANCE_WINDOW_ID);
+    await MasterWindowPage.expectWindowLoaded();
+    await MasterWindowPage.waitForTableData();
+
+    await test.step('Nr. and Belegart are gone from the grid, the cost columns stay', async () => {
+      // Control: on a grid that rendered headers, a zero count means removed, not "not rendered yet".
+      await expect(page.locator('th[data-testid="column-CostDifference"]')).toHaveCount(1);
+      await expect(page.locator('th[data-testid="column-M_Product_ID"]')).toHaveCount(1);
+
+      await expect(page.locator('th[data-testid="column-DocumentNo"]')).toHaveCount(0);
+      await expect(page.locator('th[data-testid="column-C_DocType_ID"]')).toHaveCount(0);
+    });
+
+    await test.step('Nr. survives as a filter even though it lost its grid column', async () => {
+      const panel = await openFilterPanel({ page });
+      await expect(panel.locator('.form-field-DocumentNo')).toHaveCount(1);
+    });
+
+    await applyMonitorFilter({ page, documentNo });
+    await expect(page.locator(TABLE_ROWS)).toHaveCount(1);
+
+    // The regrouping exists in the single-row view only.
+    await MasterWindowPage.clickRow(0);
+
+    const columns = page.locator('.section > .row').first().locator('> div');
+    await expect(columns).toHaveCount(2);
+    const leftColumn = columns.nth(0);
+    const rightColumn = columns.nth(1);
+
+    await test.step('Lager sits in the left column primary group', async () => {
+      await expect(leftColumn.locator('.panel-primary .form-field-M_Warehouse_ID')).toHaveCount(1);
+    });
+
+    await test.step('Belegart and both date fields left the left column', async () => {
+      await expect(leftColumn.locator('.form-field-C_DocType_ID')).toHaveCount(0);
+      await expect(leftColumn.locator('.form-field-DatePromised')).toHaveCount(0);
+      await expect(leftColumn.locator('.form-field-DateFinishSchedule')).toHaveCount(0);
+    });
+
+    await test.step('... and share ONE group in the right column, below Aktiv and above Sektion', async () => {
+      const panels = rightColumn.locator('> .panel');
+      const panelIndexOf = async (selector) => {
+        const panelCount = await panels.count();
+        for (let i = 0; i < panelCount; i += 1) {
+          if ((await panels.nth(i).locator(selector).count()) > 0) {
+            return i;
+          }
+        }
+        return -1;
+      };
+
+      const activeIndex = await panelIndexOf('.form-field-IsActive');
+      const docTypeIndex = await panelIndexOf('.form-field-C_DocType_ID');
+      const orgIndex = await panelIndexOf('.form-field-AD_Org_ID');
+
+      expect(activeIndex).toBeGreaterThanOrEqual(0);
+      expect(docTypeIndex).toBeGreaterThanOrEqual(0);
+
+      // One group, not three.
+      expect(await panelIndexOf('.form-field-DatePromised')).toBe(docTypeIndex);
+      expect(await panelIndexOf('.form-field-DateFinishSchedule')).toBe(docTypeIndex);
+
+      expect(docTypeIndex).toBeGreaterThan(activeIndex);
+      expect(orgIndex).toBeGreaterThan(docTypeIndex);
+    });
+
+    console.log(
+      `Cost-monitor layout verified on order ${documentNo}: Nr./Belegart off the grid, Belegart+dates grouped right, Lager left`
+    );
+  });
 });
