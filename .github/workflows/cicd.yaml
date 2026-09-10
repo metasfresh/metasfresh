@@ -1628,6 +1628,10 @@ jobs:
           fi
           xmllint --version
       - name: assert success
+        # Always evaluate the cucumber verdict, even if a preceding step failed: without this the step is
+        # SKIPPED on any earlier failure and failing scenarios are never judged at all. Safe to force --
+        # this step can only ADD an exit 1 (a missing report also exits 1), never clear one.
+        if: ${{ !cancelled() }}
         run: |
           junit_xml_path="cucumber/cucumber-junit.xml"
 
