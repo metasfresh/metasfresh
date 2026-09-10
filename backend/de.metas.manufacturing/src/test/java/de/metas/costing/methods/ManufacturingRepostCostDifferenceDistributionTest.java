@@ -243,17 +243,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.isEqualByComparingTo(EXPECTED_ALREADY_SHIPPED);
 	}
 
-	/**
-	 * Reverses all three legs (MAIN, ADJUSTMENT, ALREADY_SHIPPED) the way
-	 * {@code CostingService.createReversalCostDetailsOrEmpty} actually drives them: one
-	 * {@code CostingMethodHandler.createOrUpdateCost} call per leg, all against the SAME reversal document.
-	 * <p>
-	 * {@code createOrUpdateCost}'s idempotency guard used to be {@code !existingCostDetails.isEmpty()} - "does
-	 * ANY cost detail already exist for this document" - which the SECOND and THIRD calls satisfied the moment
-	 * the FIRST call persisted the MAIN leg, even though ADJUSTMENT/ALREADY_SHIPPED were never created. Each
-	 * call then returned the MAIN row again, so the reversal ended up with three copies of the MAIN amount and
-	 * none of ADJUSTMENT/ALREADY_SHIPPED - an unbalanced posting (one lone WIP line, no offsetting entry).
-	 */
+	// one createOrUpdateCost call per leg against the same reversal document, as CostingService actually drives it
 	@ParameterizedTest
 	@EnumSource(ManufacturingHandlerUnderTest.class)
 	void costDifferenceDistribution_reversal_recreatesAllThreeLegs_notJustMain(final ManufacturingHandlerUnderTest handlerUnderTest)

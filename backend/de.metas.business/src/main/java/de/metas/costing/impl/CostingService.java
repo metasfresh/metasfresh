@@ -400,10 +400,7 @@ public class CostingService implements ICostingService
 			throw new AdempiereException("Initial document has no cost details: " + reversalRequest);
 		}
 
-		// NOTE: matched by (costElementId, amtType), NOT costElementId alone: a CostDifferenceDistribution
-		// collector persists three rows (MAIN/ADJUSTMENT/ALREADY_SHIPPED) that all share the same cost element,
-		// so a costElementId-only lookup could return the wrong leg's row - or, once a genuine repost finds all
-		// three already persisted, collide trying to key a map by costElementId alone.
+		// matched by (costElementId, amtType): a distribution collector's 3 legs share one cost element.
 		final List<CostDetail> existingCostDetailsList = costDetailsService
 				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId());
 
