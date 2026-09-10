@@ -425,6 +425,76 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved |
       | scheduleRcvPlanned_RL           | orderRcvPlanned_RL    | orderLineRcvPlanned_RL    | vendor_RL                | vendorLocation_RL                 | product_RL              | 5          | warehouse_RL              | 5            |
 
+  @Id:S31789_TC8b
+  Scenario: Receiving a planned row through the HU editor lands the planning on the receipt LINE
+
+    # The receipt-disposition window's "HUs annehmen" is TWO steps, and this scenario is the second one reaching
+    # the database. The action itself only GENERATES planning HUs and opens the HU editor; the goods are booked by
+    # the confirm inside that editor, which resolves the launching row back to its receipt schedule AND its
+    # delivery planning and hands the planning to processReceiptSchedules keyed by the HUs being confirmed.
+    #
+    # What is at stake is the key: InOutProducerFromReceiptScheduleHU#extractDeliveryPlanningId looks the planning
+    # up by the allocation's TU id and then its LU id, mirroring #isInSelectedHUs - so a map keyed by anything
+    # other than the HUs handed over as selected silently produces a receipt line with NO planning, while the
+    # receive still reports success. Here the HU received is an LU, i.e. the fallback half of that lookup.
+    #
+    # The step below is the confirm's own call and shares its map builder
+    # (ReceiptFromReceiptScheduleService#deliveryPlanningIdByHuId); the row-to-planning resolution it cannot reach
+    # from here - de.metas.cucumber excludes de.metas.ui.web.base - is covered by HUEditorReceiptSourcesTest.
+    Given metasfresh contains C_Orders:
+      | Identifier         | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType | OPT.POReference |
+      | orderRcvHU_RL      | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             | PO-RL-TC8B      |
+    And metasfresh contains C_OrderLines:
+      | Identifier        | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineRcvHU_RL | orderRcvHU_RL         | product_RL              | 10         | shipperPlanning_RL          |
+
+    When the order identified by orderRcvHU_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleRcvHU_RL                | orderRcvHU_RL         | orderLineRcvHU_RL         | vendor_RL                | vendorLocation_RL                 | product_RL              | 10         | warehouse_RL              |
+    And after not more than 60s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID    |
+      | planningRcvHU_RL       | orderLineRcvHU_RL |
+    And after not more than 60s, the C_Order identified by orderRcvHU_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned |
+      | rowRcvHU_RL                               | planningRcvHU_RL       | scheduleRcvHU_RL     | true          |
+
+    # Nothing received yet.
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity | IsClosed | Processed |
+      | planningRcvHU_RL       | 10         | 10           | Incoming           | 0                       | false    | false     |
+
+    # Step one of the gesture: the action generates the planning HUs and hands them to the editor. Nothing is
+    # booked, which is why the planning is still untouched below.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | lutuConfigRcvHU_RL                    | huRcvHU_RL         | scheduleRcvHU_RL                | N               | 1     | N               | 1     | N               | 10          | 101                                | 1000006                      |
+
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity | IsClosed | Processed |
+      | planningRcvHU_RL       | 10         | 10           | Incoming           | 0                       | false    | false     |
+
+    # Step two: the confirm inside the editor.
+    And create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Delivery_Planning_ID |
+      | huRcvHU_RL         | scheduleRcvHU_RL                | receiptRcvHU_RL       | planningRcvHU_RL           |
+
+    And validate M_In_Out status
+      | M_InOut_ID      | DocStatus |
+      | receiptRcvHU_RL | CO        |
+
+    # THE assertion this scenario exists for: the planning is on the receipt LINE.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID      | C_OrderLine_ID    | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptRcvHU_RL | orderLineRcvHU_RL | planningRcvHU_RL       | 10              |
+
+    # ... and everything the TIMING_AFTER_COMPLETE interceptor derives from that link. PlannedDischargeQuantity is
+    # deliberately NOT asserted as changed: a receive no longer overwrites the plan.
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity | M_InOut_ID      | IsClosed | Processed |
+      | planningRcvHU_RL       | 10         | 0            | Incoming           | 10                       | 10                      | receiptRcvHU_RL | false    | true      |
+
   @Id:S31789_TC9
   Scenario: Several unplanned rows received together are grouped exactly as the receipt-schedule batch groups them
 

@@ -22,11 +22,9 @@
 
 package de.metas.ui.web.receiptdisposition_deliveryplanning.process;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
-import de.metas.deliveryplanning.receipt.CreateReceiptFromReceiptScheduleRequest;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -35,14 +33,15 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
-import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.process.ReceiptScheduleLUTUConfigurations;
+import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -50,9 +49,12 @@ import java.util.List;
 /**
  * The "receive HUs" half of the receipt-disposition delivery-planning window's receive actions.
  * <p>
- * Mirrors {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_Base} step for step with one difference at the end: it books
- * the generated HUs through the shared receive right away instead of handing them to the HU editor, which is why
- * it cannot simply extend that class - the HU-editor path never sets the planning id.
+ * Mirrors {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_Base} step for step, hand-off to the HU EDITOR included: the
+ * operator repacks, weighs and completes attributes in there and confirms, and only that confirm books. It cannot
+ * simply EXTEND that class - the platform resolves a view row's record through
+ * {@code IView#getTableRecordReferenceOrNull}, which on this window yields
+ * {@code RV_ReceiptDisposition_DeliveryPlanning}, while every {@code WEBUI_M_ReceiptSchedule_*} class asks for its
+ * record as {@code M_ReceiptSchedule} and {@code JavaProcess#getRecord} is {@code protected final}.
  */
 abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends ReceiptDispositionDeliveryPlanningReceiveProcess
 {
@@ -91,6 +93,28 @@ abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends Recei
 	protected final void receive(@NonNull final ReceiptScheduleAndDeliveryPlanningId sourceIds)
 	{
 		final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(sourceIds.getReceiptScheduleId());
+
+		final List<I_M_HU> hus = generatePlanningHUs(receiptSchedule, sourceIds.getDeliveryPlanningId());
+		receiptFromReceiptScheduleService.updatePlanningHUAttributes(hus, receiptSchedule);
+
+		// ... and that is where this action stops. The goods are booked by the CONFIRM inside the editor
+		// (WEBUI_M_HU_CreateReceipt_*), which resolves this window's row back to its receipt schedule and its
+		// delivery planning - see HUEditorReceiptSources.
+		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus), HUsToReceiveViewFactory.WINDOW_ID_STRING);
+	}
+
+	/**
+	 * The PLANNING HUs of one row, packed as the action's LU/TU configuration says - the same generation the
+	 * receipt-schedule window's "HUs annehmen" runs.
+	 * <p>
+	 * Split out from {@link #receive} so that what the action does with the generated HUs can be exercised
+	 * without driving the real generator, which needs an HU context and a saved LU/TU configuration.
+	 */
+	@VisibleForTesting
+	protected List<I_M_HU> generatePlanningHUs(
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
 		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class)
 				.createMutableHUContextForProcessing(
 						getCtx(),
@@ -111,18 +135,10 @@ abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends Recei
 		{
 			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + lutuConfiguration);
 		}
-		final Quantity qtyToAllocate = getQtyToAllocate(qtyCUsTotal, receiptSchedule, sourceIds.getDeliveryPlanningId());
+		final Quantity qtyToAllocate = getQtyToAllocate(qtyCUsTotal, receiptSchedule, deliveryPlanningId);
 		huGenerator.setQtyToAllocateTarget(qtyToAllocate);
 
-		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
-		receiptFromReceiptScheduleService.updatePlanningHUAttributes(hus, receiptSchedule);
-
-		receiptFromReceiptScheduleService.createReceipt(CreateReceiptFromReceiptScheduleRequest.builder()
-				.receiptScheduleId(sourceIds.getReceiptScheduleId())
-				.deliveryPlanningId(sourceIds.getDeliveryPlanningId())
-				.huIdsToReceive(hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet()))
-				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
-				.build());
+		return huGenerator.generateWithinOwnTransaction();
 	}
 
 	/**

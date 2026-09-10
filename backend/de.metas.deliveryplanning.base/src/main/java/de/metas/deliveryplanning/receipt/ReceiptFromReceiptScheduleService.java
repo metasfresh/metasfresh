@@ -315,8 +315,12 @@ public class ReceiptFromReceiptScheduleService
 	/**
 	 * The single-planning shape of the map: every HU of this receive belongs to the one planning the request
 	 * names, and an unplanned request maps none.
+	 * <p>
+	 * Public because the HU-EDITOR path builds the very same map at CONFIRM time - out of the HUs the operator
+	 * ended up with rather than out of the ones that were generated; see {@code HUEditorReceiptSources}. ONE
+	 * definition, because a second one keyed differently would silently yield receipt lines with no planning.
 	 */
-	private static ImmutableMap<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId(
+	public static ImmutableMap<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId(
 			@NonNull final Set<HuId> huIds,
 			@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{

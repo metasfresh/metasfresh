@@ -1,7 +1,10 @@
 package de.metas.ui.web.handlingunits.process;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -19,8 +22,8 @@ import de.metas.product.ProductRepository;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributes;
 import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.handlingunits.process.HUEditorReceiptSources.ReferencedReceiptSource;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -40,6 +43,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Delivery_Planning;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -82,6 +86,8 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 	private SecurPharmService securPharmService;
 	@Autowired
 	private ProductRepository productRepository;
+	@Autowired
+	private DeliveryPlanningService deliveryPlanningService;
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
@@ -165,10 +171,15 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 	@RunOutOfTrx // IHUReceiptScheduleBL.processReceiptSchedules creates its own transaction
 	protected String doIt()
 	{
-		// Generate material receipts
-		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
+		final ImmutableList<ReferencedReceiptSource> referencedSources = getReferencedReceiptSources();
+		final List<I_M_ReceiptSchedule> receiptSchedules = referencedSources.stream()
+				.map(ReferencedReceiptSource::getReceiptSchedule)
+				.collect(GuavaCollectors.toImmutableList());
 		final Set<HuId> selectedHuIds = retrieveHUsToReceive();
 
+		assertNoReferencedDeliveryPlanningProcessed(referencedSources);
+
+		// Generate material receipts
 		final CreateReceiptsParametersBuilder parametersBuilder = CreateReceiptsParameters.builder()
 				.commitEachReceiptIndividually(false)
 				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
@@ -176,7 +187,11 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 				.printReceiptLabels(true)
 				.receiptSchedules(receiptSchedules)
-				.selectedHuIds(selectedHuIds);
+				.selectedHuIds(selectedHuIds)
+				// The provenance the finished receipt has to carry. It travels with the REQUEST because the call
+				// below completes the receipt before returning, and an id written afterwards is invisible to the
+				// TIMING_AFTER_COMPLETE interceptor that derives the planning's delivered state.
+				.deliveryPlanningIdByHuId(HUEditorReceiptSources.deliveryPlanningIdByHuId(referencedSources, selectedHuIds));
 
 		customizeParametersBuilder(parametersBuilder);
 
@@ -188,9 +203,43 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		// Reset the view's affected HUs
 		getView().invalidateAll();
 
-		viewsRepo.notifyRecordsChangedAsync(TableRecordReferenceSet.of(TableRecordReference.ofSet(receiptSchedules)));
+		// The launching window's rows too, not only the receipt schedules: on the receipt-disposition window a
+		// PLANNED row is keyed on its planning, so a grid listening for M_ReceiptSchedule alone would not refresh.
+		viewsRepo.notifyRecordsChangedAsync(TableRecordReferenceSet.of(ImmutableSet.<TableRecordReference>builder()
+				.addAll(TableRecordReference.ofSet(receiptSchedules))
+				.addAll(HUEditorReceiptSources.deliveryPlanningIds(referencedSources).stream()
+						.map(deliveryPlanningId -> TableRecordReference.of(I_M_Delivery_Planning.Table_Name, deliveryPlanningId))
+						.collect(ImmutableSet.toImmutableSet()))
+				.build()));
 
 		return MSG_OK;
+	}
+
+	/**
+	 * The planning guard of the launching window, fired a SECOND time here - at confirm, and before anything is
+	 * produced.
+	 * <p>
+	 * The gesture is two steps and the editor stays open for as long as the operator needs: between the row's
+	 * receive action and this confirm the planning can have been received - or closed - by another path, and a
+	 * planning is exactly ONE receipt. The first firing happened when the editor was opened
+	 * ({@code ReceiptDispositionDeliveryPlanningReceiveProcess#doIt}) and cannot cover that window of time.
+	 * <p>
+	 * Does nothing at all when the launch carries no planning, so the receipt-schedule window's confirm is
+	 * unchanged.
+	 */
+	private void assertNoReferencedDeliveryPlanningProcessed(@NonNull final ImmutableList<ReferencedReceiptSource> referencedSources)
+	{
+		final ImmutableSet<DeliveryPlanningId> deliveryPlanningIds = HUEditorReceiptSources.deliveryPlanningIds(referencedSources);
+		if (deliveryPlanningIds.isEmpty())
+		{
+			return;
+		}
+
+		deliveryPlanningService
+				.getReceiveRejectionReason(deliveryPlanningService.getProcessedStatePlannings(deliveryPlanningIds))
+				.ifPresent(reason -> {
+					throw new AdempiereException(reason);
+				});
 	}
 
 	protected abstract void customizeParametersBuilder(final CreateReceiptsParametersBuilder parametersBuilder);
@@ -203,17 +252,20 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 
 	protected List<I_M_ReceiptSchedule> getM_ReceiptSchedules()
 	{
-		return getView()
-				.getReferencingDocumentPaths().stream()
-				.map(referencingDocumentPath -> getReceiptSchedule(referencingDocumentPath))
+		return getReferencedReceiptSources().stream()
+				.map(ReferencedReceiptSource::getReceiptSchedule)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private I_M_ReceiptSchedule getReceiptSchedule(@NonNull final DocumentPath referencingDocumentPath)
+	/**
+	 * The rows of the view this editor was launched from, resolved to the records they stand for.
+	 */
+	private ImmutableList<ReferencedReceiptSource> getReferencedReceiptSources()
 	{
-		return documentsCollection
-				.getTableRecordReference(referencingDocumentPath)
-				.getModel(this, I_M_ReceiptSchedule.class);
+		return HUEditorReceiptSources.resolve(
+				documentsCollection,
+				this,
+				getView().getReferencingDocumentPaths());
 	}
 
 	protected Set<HuId> retrieveHUsToReceive()
