@@ -54,6 +54,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
+ * Repository Tables: M_Delivery_Planning_Alloc, M_Delivery_Planning, M_ShipperTransportation
+ * Repository Cluster: DeliveryPlanningAllocRepository (sole owner of M_Delivery_Planning_Alloc),
+ * DeliveryPlanningRepository, DeliveryInstructionRepository
+ * <p>
  * Writes {@code M_Delivery_Planning.IsAllocated} and {@code IsReadyForReceipt} as the one deliberate exception
  * to single-table ownership: both columns are this table's mirrors, and folding their {@code EXISTS} into the
  * {@code UPDATE}'s own {@code SET} clause is what keeps

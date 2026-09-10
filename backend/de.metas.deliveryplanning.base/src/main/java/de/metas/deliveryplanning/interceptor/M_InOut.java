@@ -46,14 +46,14 @@ public class M_InOut
 				deliveryPlanningService.updateShipmentInfoById(deliveryPlanningId, shipmentInfo -> shipmentInfo.setShipmentId(inoutId));
 				// Writes the booked quantity onto the end(s) this shipment occupies, and marks the
 				// planning Processed - alongside the recompute below, not instead of it.
-				deliveryPlanningRepository.recordActualQtyOnComplete(deliveryPlanningId, false, inout);
+				deliveryPlanningService.recordActualQtyOnComplete(deliveryPlanningId, false, inout);
 			}
 			else
 			{
 				deliveryPlanningService.updateReceiptInfoById(deliveryPlanningId, receiptInfo -> receiptInfo.setReceiptId(inoutId));
 				// Writes the booked quantity onto the end this receipt occupies, and marks the
 				// planning Processed - alongside the recompute below, not instead of it.
-				deliveryPlanningRepository.recordActualQtyOnComplete(deliveryPlanningId, true, inout);
+				deliveryPlanningService.recordActualQtyOnComplete(deliveryPlanningId, true, inout);
 			}
 
 			// DeliveredState recompute wiring: the planning's IsDelivered just changed (M_InOut_ID

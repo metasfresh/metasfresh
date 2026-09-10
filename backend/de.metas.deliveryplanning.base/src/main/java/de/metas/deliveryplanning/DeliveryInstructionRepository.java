@@ -51,6 +51,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_ShipperTransportation, M_ShippingPackage
+ * Repository Cluster: DeliveryInstructionRepository, DeliveryPlanningRepository,
+ * DeliveryPlanningAllocRepository, ShipperTransportationDAO, PurchaseOrderToShipperTransportationRepository,
+ * MPackageRepository (both tables are shared with the transport-order role, which knows nothing of delivery
+ * planning; M_Package itself belongs to MPackageRepository alone)
+ */
 @Repository
 @RequiredArgsConstructor
 public class DeliveryInstructionRepository

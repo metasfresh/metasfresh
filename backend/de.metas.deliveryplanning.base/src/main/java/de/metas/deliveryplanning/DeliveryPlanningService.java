@@ -47,6 +47,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.incoterms.IncotermsId;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -74,6 +76,7 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -89,6 +92,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
@@ -197,6 +201,9 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_EmptyDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction");
 
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
@@ -2122,5 +2129,68 @@ public class DeliveryPlanningService
 		final I_M_Delivery_Planning deliveryPlanning = deliveryPlanningRepository.getById(deliveryPlanningId);
 		return MeansOfTransportationId.optionalOfRepoId(deliveryPlanning.getM_MeansOfTransportation_ID())
 				.map(meansOfTransportationService::getById);
+	}
+
+	/**
+	 * A receipt writes the discharge end only - {@code ActualLoadQty} is a placeholder for the never-reported
+	 * vendor load and must not be overwritten, {@link TransportDirection#Dropship} included. A shipment books the
+	 * same quantity onto BOTH ends: nobody else ever reports the customer's unload.
+	 * <p>
+	 * Lives here rather than in the repository because deciding which end(s) a document occupies -- and resolving
+	 * the booked quantity, which needs {@link IInOutBL} and {@link IUOMConversionBL} -- is business logic; the
+	 * repository is handed the resolved values to persist.
+	 *
+	 * @param isReceipt {@code true} for a receipt (a purchase-side {@code M_InOut}), {@code false} for a shipment
+	 */
+	public void recordActualQtyOnComplete(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			final boolean isReceipt,
+			@NonNull final I_M_InOut inout)
+	{
+		final I_M_Delivery_Planning record = deliveryPlanningRepository.getById(deliveryPlanningId);
+		final TransportDirection direction = DeliveryPlanningRepository.extractTransportDirection(record);
+		final BigDecimal bookedQty = resolveBookedQty(inout, record).toBigDecimal();
+
+		if (isReceipt)
+		{
+			deliveryPlanningRepository.recordActualQuantities(deliveryPlanningId, null, bookedQty);
+		}
+		else if (DeliveryPlanningRepository.hasOwnShipment(direction))
+		{
+			deliveryPlanningRepository.recordActualQuantities(deliveryPlanningId, bookedQty, bookedQty);
+		}
+		else
+		{
+			// a receipt owns this planning's discharge end, so a shipment writing to it here would silently overwrite
+			// the wrong end
+			throw new AdempiereException("Dropship planning with its own shipment is not supported yet: " + record);
+		}
+	}
+
+	/**
+	 * Scoped by the LINE's own {@code M_Delivery_Planning_ID}, not by document and no longer by
+	 * {@code C_OrderLine_ID}: a document can carry other schedules' lines (a consolidating shipment) and even
+	 * other PLANNINGS' lines of the very same order line (siblings of a split received together), so both wider
+	 * scopes book quantities that are not this planning's. The schedule-to-line allocation tables
+	 * ({@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID}) cannot be used instead - they are written after
+	 * {@code ACTION_Complete}, i.e. after this {@code TIMING_AFTER_COMPLETE} handler, so every planning would book
+	 * zero. {@link IInOutBL#getMovementQty} rather than the raw column keeps a return's negated sign.
+	 * <p>
+	 * The product filter stays: the same header's packing-material lines carry this planning too on documents
+	 * whose lines were stamped by the backfill of the retired header column, and their quantity is not this
+	 * planning's product's.
+	 */
+	private Quantity resolveBookedQty(@NonNull final I_M_InOut inout, @NonNull final I_M_Delivery_Planning planningRecord)
+	{
+		final ProductId productId = ProductId.ofRepoId(planningRecord.getM_Product_ID());
+		final I_C_UOM uom = uomDAO.getById(planningRecord.getC_UOM_ID());
+		final int planningRepoId = planningRecord.getM_Delivery_Planning_ID();
+
+		return inOutDAO.retrieveLines(inout).stream()
+				.filter(line -> line.getM_Product_ID() == productId.getRepoId())
+				.filter(line -> line.getM_Delivery_Planning_ID() == planningRepoId)
+				.map(inOutBL::getMovementQty)
+				.map(qty -> uomConversionBL.convertQuantityTo(qty, productId, uom))
+				.reduce(Quantity.zero(uom), Quantity::add);
 	}
 }

@@ -30,8 +30,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.DimensionService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.incoterms.IncotermsId;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -47,8 +45,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -60,7 +56,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_M_Delivery_Planning;
@@ -85,14 +80,23 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_Delivery_Planning, M_ShipperTransportation
+ * Repository Cluster: DeliveryPlanningRepository (primary owner of M_Delivery_Planning, which
+ * DeliveryPlanningImportProcess also writes directly), DeliveryPlanningAllocRepository,
+ * DeliveryInstructionRepository, ShipperTransportationDAO, PurchaseOrderToShipperTransportationRepository
+ * (M_ShipperTransportation is shared with the transport-order role, which knows nothing of delivery planning)
+ * <p>
+ * M_Delivery_Planning_Alloc moved to {@link DeliveryPlanningAllocRepository}, and M_ShippingPackage / M_Package
+ * to {@link DeliveryInstructionRepository} / MPackageRepository, so this class no longer owns them.
+ * <p>
+ * The one injected collaborator is {@link DimensionService}: a dimension is copied from the source row onto the
+ * target row as that row is written, which is persistence rather than a delivery-planning decision.
+ */
 @Repository
 public class DeliveryPlanningRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final DimensionService dimensionService;
 
@@ -286,36 +290,24 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * A receipt writes the discharge end only - {@code ActualLoadQty} is a placeholder for the never-reported
-	 * vendor load and must not be overwritten, {@link TransportDirection#Dropship} included. A shipment books the
-	 * same quantity onto BOTH ends: nobody else ever reports the customer's unload.
+	 * Writes the actual quantities a completed document booked onto this planning, and marks it
+	 * {@code Processed}. Which end(s) a document occupies is a business decision and is made by
+	 * {@link DeliveryPlanningService#recordActualQtyOnComplete}, which passes the resolved values in.
 	 *
-	 * @param isReceipt {@code true} for a receipt (a purchase-side {@code M_InOut}), {@code false} for a shipment
+	 * @param actualLoadQty the load end, or {@code null} to leave it untouched
 	 */
-	public void recordActualQtyOnComplete(
+	public void recordActualQuantities(
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
-			final boolean isReceipt,
-			@NonNull final I_M_InOut inout)
+			@Nullable final BigDecimal actualLoadQty,
+			@NonNull final BigDecimal actualDischargeQuantity)
 	{
 		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
-		final TransportDirection direction = extractTransportDirection(record);
-		final BigDecimal bookedQty = resolveBookedQty(inout, record).toBigDecimal();
 
-		if (isReceipt)
+		if (actualLoadQty != null)
 		{
-			record.setActualDischargeQuantity(bookedQty);
+			record.setActualLoadQty(actualLoadQty);
 		}
-		else if (hasOwnShipment(direction))
-		{
-			record.setActualLoadQty(bookedQty);
-			record.setActualDischargeQuantity(bookedQty);
-		}
-		else
-		{
-			// a receipt owns this planning's discharge end, so a shipment writing to it here would silently overwrite
-			// the wrong end
-			throw new AdempiereException("Dropship planning with its own shipment is not supported yet: " + record);
-		}
+		record.setActualDischargeQuantity(actualDischargeQuantity);
 
 		if (!record.isProcessed())
 		{
@@ -358,32 +350,6 @@ public class DeliveryPlanningRepository
 		save(record);
 	}
 
-	/**
-	 * Scoped by the LINE's own {@code M_Delivery_Planning_ID}, not by document and no longer by
-	 * {@code C_OrderLine_ID}: a document can carry other schedules' lines (a consolidating shipment) and even
-	 * other PLANNINGS' lines of the very same order line (siblings of a split received together), so both wider
-	 * scopes book quantities that are not this planning's. The schedule-to-line allocation tables
-	 * ({@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID}) cannot be used instead - they are written after
-	 * {@code ACTION_Complete}, i.e. after this {@code TIMING_AFTER_COMPLETE} handler, so every planning would book
-	 * zero. {@link IInOutBL#getMovementQty} rather than the raw column keeps a return's negated sign.
-	 * <p>
-	 * The product filter stays: the same header's packing-material lines carry this planning too on documents
-	 * whose lines were stamped by the backfill of the retired header column, and their quantity is not this
-	 * planning's product's.
-	 */
-	private Quantity resolveBookedQty(@NonNull final I_M_InOut inout, @NonNull final I_M_Delivery_Planning planningRecord)
-	{
-		final ProductId productId = ProductId.ofRepoId(planningRecord.getM_Product_ID());
-		final I_C_UOM uom = uomDAO.getById(planningRecord.getC_UOM_ID());
-		final int planningRepoId = planningRecord.getM_Delivery_Planning_ID();
-
-		return inOutDAO.retrieveLines(inout).stream()
-				.filter(line -> line.getM_Product_ID() == productId.getRepoId())
-				.filter(line -> line.getM_Delivery_Planning_ID() == planningRepoId)
-				.map(inOutBL::getMovementQty)
-				.map(qty -> uomConversionBL.convertQuantityTo(qty, productId, uom))
-				.reduce(Quantity.zero(uom), Quantity::add);
-	}
 
 	public <T> T getShipmentOrReceiptInfo(
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
