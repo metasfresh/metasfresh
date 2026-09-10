@@ -164,6 +164,109 @@ describe('RawLookup component', () => {
     });
   });
 
+  // ------------------------------------------------------------------
+  // TC8: keyboard-only completion when the lookup resolves to NO match.
+  // Decision 2026-09-09: on a NON-MANDATORY sub-field, Enter is Tab-identical for
+  // the no-match case — it commits the empty entry and advances focus, instead of
+  // dead-ending. The mandatory product sub-field keeps the old beep-and-hold.
+  //
+  // The commit contract is asserted (onChange with null + focus advance), not the
+  // beep: playBeep is module-local and its Web-Audio call is swallowed by a
+  // try/catch under jsdom, so "did it beep" is not observable here.
+  // ------------------------------------------------------------------
+  describe('TC8: Enter with no match on a non-mandatory sub-field commits empty and advances', () => {
+    const noneItem = { key: null, caption: 'none' };
+    const realItem = { key: '1000123', caption: 'KT x 18 KG' };
+
+    const mountQuickInput = (extraProps = {}) => {
+      const onChange = jest.fn(); // undefined → doThen runs its callback synchronously
+      const props = createDummyProps({
+        subentity: 'quickInput',
+        mandatory: false,
+        onChange,
+        handleInputEmptyStatus: jest.fn(),
+        ...extraProps,
+      });
+      const wrapper = mount(<RawLookup {...props} />);
+      const instance = wrapper.instance();
+      const advanceSpy = jest
+        .spyOn(instance, 'focusNextFieldInForm')
+        .mockImplementation(() => {}); // no parent <form> in the test DOM
+      return { wrapper, instance, onChange, advanceSpy };
+    };
+
+    it('resolveItems with no match commits null and advances', () => {
+      const { instance, onChange, advanceSpy } = mountQuickInput();
+      instance.inputSearch.value = 'leer';
+
+      instance.resolveItems([]);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith('someField', null);
+      expect(instance.inputSearch.value).toBe('');
+      expect(advanceSpy).toHaveBeenCalled();
+    });
+
+    it('bare Enter on an empty input with a closed dropdown commits null and advances', () => {
+      const { instance, onChange, advanceSpy } = mountQuickInput();
+      instance.inputSearch.value = '';
+      instance.setState({ list: [], loading: false });
+
+      instance.resolveAndSelectOnEnter();
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith('someField', null);
+      expect(advanceSpy).toHaveBeenCalled();
+    });
+
+    it('Enter with only the synthetic empty row in the open dropdown commits null and advances', () => {
+      const { instance, onChange, advanceSpy } = mountQuickInput();
+      instance.inputSearch.value = '';
+      instance.setState({ list: [noneItem], loading: false });
+
+      instance.resolveAndSelectOnEnter();
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith('someField', null);
+      expect(advanceSpy).toHaveBeenCalled();
+    });
+
+    it('Enter on typed text that matches nothing commits null and advances (Tab-identical)', () => {
+      const { instance, onChange, advanceSpy } = mountQuickInput();
+      instance.inputSearch.value = 'xyzzy';
+      instance.setState({ list: [noneItem], loading: false });
+
+      instance.resolveAndSelectOnEnter();
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith('someField', null);
+      expect(instance.inputSearch.value).toBe('');
+      expect(advanceSpy).toHaveBeenCalled();
+    });
+
+    it('MANDATORY sub-field (product) with no match does NOT commit and does NOT advance', () => {
+      const { instance, onChange, advanceSpy } = mountQuickInput({ mandatory: true });
+      instance.inputSearch.value = 'nonsense';
+
+      instance.resolveItems([]);
+
+      expect(onChange).not.toHaveBeenCalled();
+      expect(advanceSpy).not.toHaveBeenCalled();
+      expect(instance.inputSearch.value).toBe('nonsense');
+    });
+
+    it('an exact single match still selects that item (TC2 regression)', () => {
+      const { instance, onChange, advanceSpy } = mountQuickInput();
+
+      instance.resolveItems([realItem]);
+
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange).toHaveBeenCalledWith('someField', realItem);
+      expect(instance.inputSearch.value).toBe('KT x 18 KG');
+      expect(advanceSpy).toHaveBeenCalled();
+    });
+  });
+
   describe('handleInputEmptyStatus guard (non-primary sub-fields receive no function)', () => {
     const item = { key: '1000123', caption: 'KT x 18 KG' };
 
