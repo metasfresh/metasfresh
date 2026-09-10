@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeResponse;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
@@ -13,6 +14,7 @@ import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfi
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.product.JsonProductCategoryResponse;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningResponse;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateResponse;
@@ -47,6 +49,8 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
 	@Nullable Map<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas;
 	@Nullable Map<String, de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse> vatIdChecks;
+	@Nullable Map<String, JsonProductCategoryResponse> productCategories;
+	@Nullable Map<String, JsonCreateAttributeResponse> attributes;
 	@NonNull Map<String, JsonCreateProductResponse> products;
 	@Nullable Map<String, JsonCreateResourceResponse> resources;
 	@NonNull Map<String, JsonCreateProductPlanningResponse> productPlannings;

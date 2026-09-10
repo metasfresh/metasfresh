@@ -13,6 +13,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Retry...',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Please select...',
+    },
+  },
   general: {
     Yes: 'Yes',
     No: 'No',

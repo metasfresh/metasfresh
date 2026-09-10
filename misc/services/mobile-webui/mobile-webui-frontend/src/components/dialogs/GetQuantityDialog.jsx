@@ -7,6 +7,7 @@ import { trl } from '../../utils/translations';
 import QtyInputField from '../QtyInputField';
 import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
 import DateInput from '../DateInput';
+import EditableAttributesSection from '../attributes/EditableAttributesSection';
 import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
@@ -49,6 +50,7 @@ const GetQuantityDialog = ({
   bestBeforeDate: bestBeforeDateParam = '',
   lotNo: lotNoParam = '',
   serialNos: serialNosParam = [],
+  editableAttributes = [],
   isShowCloseTargetButton = false,
   //
   validateQtyEntered,
@@ -59,6 +61,13 @@ const GetQuantityDialog = ({
   const isShowBestBeforeDate = readAttributes.includes(PickAttribute.BestBeforeDate);
   const isShowLotNo = readAttributes.includes(PickAttribute.LotNo);
   const isShowSerialNo = readAttributes.includes(PickAttribute.SerialNo);
+
+  // Manufacturing-receipt case: the dialog additionally renders editable-attribute rows (below the
+  // qty rows, in the same `.table-container`). Both render as plain `.table`s — identical to how the
+  // SAME GetQuantityDialog renders for picking (UnpickPanel, ScanHUAndGetQtyComponent,
+  // catch-weight/serial-no capture) — so the mfg labels match picking's exactly. This flag only gates
+  // whether the editable-attribute values are included in the confirm payload.
+  const hasEditableAttributes = editableAttributes.length > 0;
 
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
@@ -99,6 +108,11 @@ const GetQuantityDialog = ({
     //console.log('onLotNoEntered', { lotNoNew, e });
     setLotNo(lotNoNew);
   };
+
+  // Generic, per-attribute-code editable-attribute values (e.g. mfg receive) — collected as a
+  // `{ [code]: value }` map, already excluding empty/invalid entries (EditableAttributesSection's
+  // own contract). Not shown/used unless a caller passes `editableAttributes`.
+  const [attributeValues, setAttributeValues] = useState({});
 
   // Serial numbers: one per picked unit (required count = entered qty). Captured via a live
   // multi-scan screen (chips + "X of N"), mirroring the GRAI scan UX. Manual entry is the
@@ -179,6 +193,7 @@ const GetQuantityDialog = ({
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
         serialNos: isShowSerialNo ? serialNos : null,
+        attributeValues: hasEditableAttributes ? attributeValues : null,
         isCloseTarget: !!isCloseTarget,
       };
       uiTrace.putContext(onQtyChangePayload);
@@ -408,6 +423,14 @@ const GetQuantityDialog = ({
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
           <form onSubmit={() => onDialogYes({ isCloseTarget: false })}>
+            {/* The qty rows and (mfg-receipt case) the editable-attribute rows render inside ONE
+                `.table-container` as plain `.table`s — the SAME rendering picking uses. Label
+                typography must be IDENTICAL to picking: a plain Bulma `.table` (~1rem, regular
+                weight), NOT the bumped-up `view-header is-size-6` (1.5rem bold) an earlier iteration
+                applied here. Shared `.table-container .table` base rules (get-qty-dialog.scss:
+                width, 45% label column, label wrap) already apply to both picking and mfg, so the
+                qty labels, the editable-attribute labels and picking's labels all line up as one
+                uniform grid with identical typography. */}
             <div className="table-container">
               <table className="table">
                 <tbody>
@@ -577,6 +600,14 @@ const GetQuantityDialog = ({
                   )}
                 </tbody>
               </table>
+              {/* Second table in the SAME container: a plain `.table` sharing the container's base
+                  rules (width, 45% label column, label wrap), so its labels render with the same
+                  ~1rem typography as the qty rows above and as picking. */}
+              <EditableAttributesSection
+                attributes={editableAttributes}
+                disabled={readOnly}
+                onFieldChange={setAttributeValues}
+              />
             </div>
             <div className="buttons is-centered">
               {isShowCloseTargetButton && (
@@ -696,6 +727,7 @@ GetQuantityDialog.propTypes = {
   bestBeforeDate: PropTypes.string,
   lotNo: PropTypes.string,
   serialNos: PropTypes.arrayOf(PropTypes.string),
+  editableAttributes: PropTypes.array,
   isShowCloseTargetButton: PropTypes.bool,
   customQRCodeFormats: PropTypes.array,
 

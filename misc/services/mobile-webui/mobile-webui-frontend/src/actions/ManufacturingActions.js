@@ -70,6 +70,7 @@ export const postManufacturingReceiveEventThunk = ({
   bestBeforeDate,
   productionDate,
   lotNo,
+  attributes, // [{ code, value }] — generic editable-attribute values, see JsonManufacturingOrderEvent.ReceiveFrom.attributes
   barcode, // i.e. the catch weight QR code
 }) => {
   return (dispatch, getState) => {
@@ -92,6 +93,7 @@ export const postManufacturingReceiveEventThunk = ({
         bestBeforeDate,
         productionDate,
         lotNo,
+        attributes,
         barcode,
       },
       pickTo,
