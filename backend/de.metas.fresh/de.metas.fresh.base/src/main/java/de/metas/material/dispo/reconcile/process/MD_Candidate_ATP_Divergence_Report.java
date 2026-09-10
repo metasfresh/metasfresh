@@ -77,6 +77,11 @@ public class MD_Candidate_ATP_Divergence_Report extends JavaProcess
 	 */
 	private static final int MAX_LOOPS = 10_000;
 
+	// Justification for >1 collaborator (docs/coding-rules/architecture.md §4 "at most one service"):
+	// this process reports two functionally disjoint things in one run - the stored-vs-expected ATP
+	// divergence (stockRepository + atpTargetCalculator) and the separate "uncovered open source document"
+	// gap (uncoveredSourceDocumentService) - each needing its own collaborator subset, with no overlap
+	// between the two that would justify merging them into a single service.
 	private final StockRepository stockRepository = SpringContextHolder.getBeanOrSupply(StockRepository.class, StockRepository::new);
 	private final AtpTargetCalculator atpTargetCalculator =
 			SpringContextHolder.getBeanOrSupply(AtpTargetCalculator.class, AtpTargetCalculator::newInstanceForUnitTesting);

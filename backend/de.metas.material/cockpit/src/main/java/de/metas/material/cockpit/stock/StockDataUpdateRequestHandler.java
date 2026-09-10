@@ -9,6 +9,7 @@ import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,18 +46,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 @Component
+@RequiredArgsConstructor
 public class StockDataUpdateRequestHandler
 {
+	@NonNull
 	private final PostMaterialEventService postMaterialEventService;
+	@NonNull
 	private final StockRepository stockRepository;
-
-	public StockDataUpdateRequestHandler(
-			@NonNull final PostMaterialEventService postMaterialEventService,
-			@NonNull final StockRepository stockRepository)
-	{
-		this.postMaterialEventService = postMaterialEventService;
-		this.stockRepository = stockRepository;
-	}
 
 	public void handleDataUpdateRequest(@NonNull final StockDataUpdateRequest dataUpdateRequest)
 	{

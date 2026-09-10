@@ -78,6 +78,12 @@ import java.time.LocalDate;
  */
 public class MD_Candidate_Reconcile_ATP extends JavaProcess
 {
+	// Justification for >1 collaborator (docs/coding-rules/architecture.md §4 "at most one service"):
+	// the dry-run and real-run paths are disjoint by design (see class Javadoc) and each needs its own
+	// collaborator - atpTargetCalculator for the synchronous dry-run preview, keyDrainer for the shared
+	// batched key selection both paths use, and enqueueService only for a real (non-dry) run. None of the
+	// three overlaps in responsibility, so folding them into one service would just relocate the branching
+	// into that service instead of removing it.
 	private final AtpTargetCalculator atpTargetCalculator =
 			SpringContextHolder.getBeanOrSupply(AtpTargetCalculator.class, AtpTargetCalculator::newInstanceForUnitTesting);
 	private final AtpKeySelectionDrainer keyDrainer =

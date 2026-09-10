@@ -69,7 +69,7 @@ public class StockRepository
 	{
 		Check.assumeNotEmpty(warehouseIds, "warehouseIds is not empty");
 
-		final BigDecimal qtyOnHand = Services.get(IQueryBL.class)
+		final BigDecimal qtyOnHand = queryBL
 				.createQueryBuilder(I_MD_Stock.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
@@ -292,7 +292,6 @@ public class StockRepository
 
 	private IQuery<I_MD_Stock_WarehouseAndProduct_v> createStockDataAggregateItemQuery(@NonNull final StockDataAggregateQuery query)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Stock_WarehouseAndProduct_v> queryBuilder = queryBL.createQueryBuilder(I_MD_Stock_WarehouseAndProduct_v.class);
 		if (!query.getProductCategoryIds().isEmpty())
 		{
