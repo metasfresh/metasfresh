@@ -56,6 +56,13 @@ public class DistributionSourceDocService
 	public String getCarrierProductName(@NonNull final CarrierProductId carrierProductId)
 	{
 		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
+		if (carrierProduct == null)
+		{
+			// A dangling Carrier_Product_ID (the M_ShipmentSchedule row outlived its referenced Carrier_Product)
+			// must not NPE and blank the whole launcher screen: over-showing is preferred to under-showing
+			// (REQUIREMENTS.md §3).
+			return "Carrier product " + carrierProductId.getRepoId();
+		}
 		return carrierProduct.getName();
 	}
 

@@ -1,5 +1,6 @@
 package de.metas.distribution.ddorder.lowlevel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderId;
@@ -469,6 +470,7 @@ public class DDOrderLowLevelDAO
 	 *                           never line-id to line-id, so parent and sub table differ and {@link org.adempiere.ad.dao.impl.InSubQueryFilter}
 	 *                           renders a correlated {@code EXISTS} rather than an {@code IN}.
 	 */
+	@VisibleForTesting
 	IQueryBuilder<I_DD_Order> toSqlQuery(final DDOrderQuery query, @NonNull final ImmutableList<IQuery<?>> lineIdRestrictions)
 	{
 		final IQueryBuilder<I_DD_Order> queryBuilder = queryBL.createQueryBuilder(I_DD_Order.class);
@@ -523,13 +525,6 @@ public class DDOrderLowLevelDAO
 							.addOnlyActiveRecordsFilter()
 							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getExcludeLocatorToIds())
 							.create());
-		}
-
-		//
-		// Sales Order
-		if (query.getSalesOrderIds() != null && !query.getSalesOrderIds().isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_C_Order_ID, query.getSalesOrderIds());
 		}
 
 		//

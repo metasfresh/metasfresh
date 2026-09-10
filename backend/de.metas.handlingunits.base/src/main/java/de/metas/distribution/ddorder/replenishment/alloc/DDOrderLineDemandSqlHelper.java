@@ -25,19 +25,31 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Builds line-side demand restrictions for the distribution launcher: an unexecuted {@link IQuery} over
- * {@code DD_OrderLine}, handed to {@link de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO} to run.
+ * Builds line-side demand restrictions for the distribution launcher, and the batched pair lookups behind their
+ * facet hit counts.
  * <p>
  * This is a NEW class rather than extra methods on {@link DDOrderLineContributorRepository}: the restrictions span
  * the association table, {@code M_Picking_Job_Schedule}, {@code M_ShipmentSchedule} and {@code DD_OrderLine.C_OrderLineSO_ID}
  * — well past what that repository's name claims. It is also the home for further demand-side facets cut off from
  * the order by aggregation (carrier and sales order).
  * <p>
- * <b>Known, deliberate exception to the "IQueryBL only inside DAO/Repository classes" rule.</b> This class performs
- * no persistence I/O itself — it hands back an unexecuted query for a DAO to run — which satisfies that rule's
- * purpose (keep query construction out of business-logic classes) while not matching its letter (this class is
- * named neither {@code *DAO} nor {@code *Repository}). That is intentional: renaming this class to fit the keyword
- * would misdescribe it, so it stays a named, understood exception rather than a naming workaround.
+ * <b>Known, deliberate exception to the "IQueryBL only inside DAO/Repository classes" rule.</b> The rule's purpose
+ * is to keep query construction out of business-logic classes; every method here matches that purpose, but none
+ * matches the rule's letter (this class is named neither {@code *DAO} nor {@code *Repository}) — for two different
+ * reasons depending on the method:
+ * <ul>
+ * <li>{@link #byCarrierProductIds} and {@link #bySalesOrderIds} perform no persistence I/O themselves — each hands
+ * back an unexecuted {@link IQuery} over {@code DD_OrderLine} for {@link de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO}
+ * to run.</li>
+ * <li>{@link #getCarrierProductIdsByDDOrderIds} and {@link #getSalesOrderIdsByDDOrderIds} DO execute queries and
+ * materialise the results here — for the cross-module-dependency reason already stated correctly on their
+ * delegating wrapper, {@code DDOrderService#getCarrierProductIdsByDDOrderIds}/{@code #getSalesOrderIdsByDDOrderIds}:
+ * the join needs {@code M_ShipmentSchedule} / {@code M_Picking_Job_Schedule} (module {@code de.metas.swat.base}) and
+ * {@code DD_OrderLine_PickingJobSchedule} (this module), none of which {@code de.metas.manufacturing} — home of
+ * {@code DDOrderLowLevelDAO} — may depend on.</li>
+ * </ul>
+ * That is intentional: renaming this class to fit the keyword would misdescribe it, so it stays a named, understood
+ * exception rather than a naming workaround.
  */
 @UtilityClass
 public class DDOrderLineDemandSqlHelper
