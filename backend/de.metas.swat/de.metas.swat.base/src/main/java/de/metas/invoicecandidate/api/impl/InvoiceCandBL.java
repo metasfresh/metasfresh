@@ -228,6 +228,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 {
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsToClear");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_IsInDispute");
+	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_SIMULATION = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Simulation");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_DateToInvoice");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_MANUAL_RULE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_ManualRule");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_Error");
@@ -1010,6 +1011,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final boolean ignoreInvoiceSchedule,
 			final boolean isInvoiceManualRule)
 	{
+		return getInvoicingSkipReasonOrNull(ic, ignoreInvoiceSchedule, isInvoiceManualRule) != null;
+	}
+
+	@Override
+	@Nullable
+	public String getInvoicingSkipReasonOrNull(
+			final I_C_Invoice_Candidate ic,
+			final boolean ignoreInvoiceSchedule,
+			final boolean isInvoiceManualRule)
+	{
 		// 04533: ignore already processed candidates
 		// task 08343: if the ic is processed (after the recent update), then skip it (this logic was in the where clause in C_Invoice_Candidate_EnqueueSelection)
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -1018,7 +1029,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_PROCESSED, new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.INFO).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		// ignore "error" candidates
@@ -1028,7 +1039,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					+ ": "
 					+ ic.getErrorMsg();
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		if (ic.isToClear())
@@ -1037,7 +1048,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		if (ic.isInDispute())
@@ -1046,14 +1057,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE,
 					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
 		if (ic.isSimulation())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
-					+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
-			return true;
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_SIMULATION,
+					new Object[] { ic.getC_Invoice_Candidate_ID() });
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
+			return msg;
 		}
 
 		// Manual rule is on its own axis — controlled by a dedicated flag, decoupled from IgnoreInvoiceSchedule.
@@ -1065,10 +1077,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_MANUAL_RULE,
 						new Object[] { ic.getC_Invoice_Candidate_ID() });
 				Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-				return true;
+				return msg;
 			}
 			// Manual is explicitly requested → don't apply the date gate (Manual has no schedule by design).
-			return false;
+			return null;
 		}
 
 		// flagged via field color
@@ -1080,10 +1092,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
 					new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoice), TimeUtil.asTimestamp(getToday()) });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
-			return true;
+			return msg;
 		}
 
-		return false; // Don't skip!
+		return null; // Don't skip!
 	}
 
 	@Override
