@@ -462,7 +462,7 @@ public class MD_Candidate_StepDef
 	 * <li>{@code DateProjected} - required (or {@code OPT.DateProjected_LocalTimeZone} as a local-timezone
 	 * alternative)</li>
 	 * <li>{@code Qty} - required; the candidate's own quantity (sign is normalized internally for
-	 * demand-type candidates)</li>
+	 * decreasing-stock candidate types, e.g. {@code DEMAND})</li>
 	 * <li>{@code OPT.ATP} (or the older {@code OPT.Qty_AvailableToPromise}) - the running ATP on the
 	 * candidate's STOCK parent/child; defaults to {@code 0} if neither is given</li>
 	 * <li>{@code OPT.M_Warehouse_ID}, {@code OPT.M_AttributeSetInstance_ID}, {@code OPT.simulated} - optional
@@ -477,7 +477,7 @@ public class MD_Candidate_StepDef
 	 * {@code
 	 * Then after not more than 60s, MD_Candidates are found
 	 *   | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
-	 *   | d_1        | DEMAND             | SHIPMENT                  | p_1          | 2024-09-21T21:00:00Z | -30 | 70  | WH_1           |
+	 *   | d_1        | DEMAND            | SHIPMENT                  | p_1          | 2024-09-21T21:00:00Z | -30 | 70  | WH_1           |
 	 * }
 	 * </pre>
 	 */
