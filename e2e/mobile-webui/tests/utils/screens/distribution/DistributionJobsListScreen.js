@@ -23,12 +23,16 @@ export const DistributionJobsListScreen = {
         await page.locator('.loading').waitFor({ state: 'detached', timeout });
     }),
 
+    openFilters: async () => await test.step(`${NAME} - Open filters`, async () => {
+        await page.locator('#filter-button').tap();
+        await DistributionJobsListFiltersScreen.waitForScreen();
+    }),
+
     filterByFacetId: async ({
                                 facetId,
                                 expectHitCount
                             }) => await test.step(`${NAME} - Filter by facet "${facetId}"`, async () => {
-        await page.locator('#filter-button').tap();
-        await DistributionJobsListFiltersScreen.waitForScreen();
+        await DistributionJobsListScreen.openFilters();
         await DistributionJobsListFiltersScreen.filterByFacetId({ facetId, expectHitCount });
         await DistributionJobsListScreen.waitForScreen();
     }),
