@@ -465,11 +465,35 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity | IsClosed | Processed |
       | planningRcvHU_RL       | 10         | 10           | Incoming           | 0                       | false    | false     |
 
+      # This scenario's own packing instructions, deliberately built here rather than borrowing seeded ids.
+      # It previously used M_HU_PI_Item_Product 101 ("No Packing Item") and M_HU_PI 1000006
+      # ("EUR-Tauschpalette Holz") - the latter an INACTIVE returnable pallet, i.e. real Gebinde packing
+      # material. Generating HUs against it made every HU here carry packing material, so the empties path
+      # became relevant for this feature's own warehouse; that warehouse has no line in the Gebinde
+      # distribution network, and the resulting exception surfaced inside unrelated scenarios sharing this
+      # executor. Note the deliberate absence of a PM item below: with no packing material there is no
+      # empties relationship to be missing in the first place.
+      And metasfresh contains M_HU_PI:
+        | M_HU_PI_ID | Name     |
+        | tuPi_RL    | RL_TU_PI |
+        | luPi_RL    | RL_LU_PI |
+      And metasfresh contains M_HU_PI_Version:
+        | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+        | tuPiVer_RL         | tuPi_RL    | TU          | Y         |
+        | luPiVer_RL         | luPi_RL    | LU          | Y         |
+      And metasfresh contains M_HU_PI_Item:
+        | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+        | tuMiItem_RL     | tuPiVer_RL         | 0   | MI       |                   |
+        | luHuItem_RL     | luPiVer_RL         | 100 | HU       | tuPi_RL           |
+      And metasfresh contains M_HU_PI_Item_Product:
+        | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty | ValidFrom  |
+        | pipTU_RL                | tuMiItem_RL     | product_RL   | 10  | 2000-01-01 |
+
     # Step one of the gesture: the action generates the planning HUs and hands them to the editor. Nothing is
     # booked, which is why the planning is still untouched below.
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | lutuConfigRcvHU_RL                    | huRcvHU_RL         | scheduleRcvHU_RL                | N               | 1     | N               | 1     | N               | 10          | 101                                | 1000006                      |
+      | lutuConfigRcvHU_RL                    | huRcvHU_RL         | scheduleRcvHU_RL                | N               | 1     | N               | 1     | N               | 10          | pipTU_RL                           | luPi_RL                      |
 
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | ActualDischargeQuantity | IsClosed | Processed |
