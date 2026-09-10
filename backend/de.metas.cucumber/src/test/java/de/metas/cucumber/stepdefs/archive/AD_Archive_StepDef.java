@@ -63,7 +63,7 @@ public class AD_Archive_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
-	/** AD_Archive_IDs already attached to the report in THIS scenario — see {@link #attachToReportOnce}. */
+	/** AD_Archive_IDs already attached to the report in THIS scenario — see {@link #attachToAllureReportOnce}. */
 	@NonNull private final Set<Integer> attachedArchiveIds = new HashSet<>();
 
 	/**
@@ -345,7 +345,7 @@ public class AD_Archive_StepDef
 				.isNotNull()
 				.isNotEmpty();
 
-		attachToReportOnce(archive.getAD_Archive_ID(), recordIdentifier, binaryData);
+		attachToAllureReportOnce(archive.getAD_Archive_ID(), recordIdentifier, binaryData);
 
 		return binaryData;
 	}
@@ -358,7 +358,7 @@ public class AD_Archive_StepDef
 	 * would otherwise attach another copy of it. This step-def instance lives for exactly one scenario
 	 * (picocontainer builds a fresh one per scenario), so the set needs no clearing.
 	 */
-	private void attachToReportOnce(
+	private void attachToAllureReportOnce(
 			final int archiveId,
 			@NonNull final String recordIdentifier,
 			@NonNull final byte[] pdfBytes)

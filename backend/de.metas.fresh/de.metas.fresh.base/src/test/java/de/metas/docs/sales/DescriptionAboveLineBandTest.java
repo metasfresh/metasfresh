@@ -56,24 +56,45 @@ public class DescriptionAboveLineBandTest
 	private static final String FIELD_REF = "$F{" + FIELD_NAME + "}";
 
 	/**
-	 * The number of line-detail templates that carry the band. Deliberately a hardcoded expectation: a template
-	 * that gains or loses the field has to make someone bump this number on purpose.
+	 * A tripwire, NOT a specification: nothing says there have to be exactly this many templates. It protects
+	 * against a template silently GAINING or LOSING the field - a merge that drops the band, a new line-detail
+	 * template copied from one that has it - by making that show up as a failure instead of as untested code.
+	 * The value is purely descriptive of today's tree; a template that gains or loses the field on purpose has
+	 * to make someone bump this number, and think about the band while doing so.
 	 */
 	private static final int EXPECTED_TEMPLATE_COUNT = 15;
 
 	/**
-	 * A band with at least this many {@code <textFieldExpression>}s is an article row (it prints many columns),
-	 * as opposed to our own single-column block or the single-column description/attribute rows.
+	 * An article row is a band that lays out several COLUMNS, i.e. one whose elements sit at several different
+	 * {@code x} positions - as opposed to our own full-width block and the single-column
+	 * description/attribute/campaign rows, which put everything at one {@code x}.
+	 * <p>
+	 * Measured over all 15 templates that carry the field: article rows have 3 to 12 distinct {@code x}
+	 * positions, every non-article band has exactly 1, so 3 separates them with the widest possible margin on
+	 * both sides. Distinct {@code x} over ALL element types, deliberately not over {@code <textField>}s only:
+	 * {@code inout/report_details_hu}, {@code inout/report_details_hu_v2}, {@code picking/report_details_hu} and
+	 * {@code picking/report_details_hu_name_over_attributes} are article rows carrying just three text fields
+	 * ({@code name}, {@code uomsymbol}, {@code movementqty}), so counting text fields misclassified them as
+	 * single-column rows and skipped invariant 7 on them entirely.
 	 */
-	private static final int ARTICLE_BAND_MIN_TEXT_FIELDS = 5;
+	private static final int ARTICLE_ROW_MIN_DISTINCT_X_POSITIONS = 3;
 
 	/**
 	 * Slack allowed between our block's right edge and the right edge of its template's own content row.
-	 * {@code order/report_details_hu_v2} legitimately ends 2pt short of its article row.
+	 * The floor is set by {@code order/report_details_hu_v2}, whose block ends at 543 while its article row ends
+	 * at 545; in the other 14 templates the block is flush with the content row (delta 0), so 2 is the smallest
+	 * value that keeps the tree green.
 	 */
-	private static final int RIGHT_EDGE_TOLERANCE = 5;
+	private static final int RIGHT_EDGE_TOLERANCE = 2;
 
-	private static final Pattern FIELD_REFERENCE_PATTERN = Pattern.compile("\\$F\\{([^}]+)}");
+	/**
+	 * Matches every reference a jasper expression can make to something outside itself: a field {@code $F{}}, a
+	 * parameter {@code $P{}}, a resource-bundle string {@code $R{}} and a variable {@code $V{}}. All four can
+	 * gate a band, so a coverage check that knows only {@code $F{}} reads a band guarded by e.g.
+	 * {@code $P{PRINTER_OPTS_IsPrintPrices}} as "fully covered". The whole reference is captured, not just the
+	 * name, so {@code $F{x}} and {@code $P{x}} cannot be confused.
+	 */
+	private static final Pattern EXPRESSION_REFERENCE_PATTERN = Pattern.compile("\\$[FPRV]\\{[^}]+}");
 
 	@Test
 	void eachTemplateCarryingTheFieldPrintsItAsOneFullWidthGuardedBandAboveItsArticleRow()
@@ -82,6 +103,21 @@ public class DescriptionAboveLineBandTest
 		final List<Path> templates = findTemplatesReferencingTheField(templatesDir);
 
 		final List<String> violations = new ArrayList<>();
+
+		// The filename pattern classifies, it does not filter: a template that carries the field under some other
+		// name is a template whose band nobody is checking, so it has to be reported - and it has to count towards
+		// EXPECTED_TEMPLATE_COUNT, or it could be added without tripping anything.
+		final List<String> offPatternNames = templates.stream()
+				.filter(template -> !isLineDetailTemplate(template))
+				.map(template -> relativeName(templatesDir, template))
+				.collect(Collectors.toList());
+		if (!offPatternNames.isEmpty())
+		{
+			violations.add("template(s) carry `" + FIELD_NAME + "` but are not named `" + TEMPLATE_FILENAME_PREFIX
+					+ "*" + TEMPLATE_FILENAME_SUFFIX + "`, which is where this test expects the line-detail templates"
+					+ " to live. They are checked all the same; either rename them or widen"
+					+ " TEMPLATE_FILENAME_PREFIX on purpose:\n" + bulletList(offPatternNames));
+		}
 
 		if (templates.size() != EXPECTED_TEMPLATE_COUNT)
 		{
@@ -175,7 +211,7 @@ public class DescriptionAboveLineBandTest
 		}
 		else
 		{
-			final String compactGuard = ourGuard.replaceAll("\\s+", "");
+			final String compactGuard = compact(ourGuard);
 			if (!compactGuard.contains(FIELD_REF + "!=null"))
 			{
 				violations.add(templateName + ": invariant 5 - the band-level guard lacks a null check on " + FIELD_REF
@@ -193,6 +229,10 @@ public class DescriptionAboveLineBandTest
 		// Invariant 6: full width measured against THIS template's own content row.
 		// Not against a fraction of pageWidth: the same 596pt page carries content rows ending at 573, 545 and 457
 		// in different templates, so pageWidth is the wrong yardstick.
+		// The content row is measured over the OTHER bands only. Measuring it over the whole `<detail>` includes
+		// our own element, which makes `ourX >= contentRowX` and `ourRightEdge <= contentRowRightEdge` true by
+		// construction: an over-wide or over-left band would then simply move the yardstick and the check could
+		// only ever catch a block that is too NARROW, never one that is misplaced.
 		if (ourElements.size() == 1)
 		{
 			final Element ourElement = ourElements.get(0);
@@ -200,91 +240,236 @@ public class DescriptionAboveLineBandTest
 			final int ourWidth = intAttribute(ourElement, "width");
 			final int ourRightEdge = ourX + ourWidth;
 
-			final List<Element> detailElements = descendantElements(detail, "reportElement");
 			int contentRowX = Integer.MAX_VALUE;
 			int contentRowRightEdge = Integer.MIN_VALUE;
-			for (final Element detailElement : detailElements)
+			for (int i = 0; i < bands.size(); i++)
 			{
-				final int x = intAttribute(detailElement, "x");
-				contentRowX = Math.min(contentRowX, x);
-				contentRowRightEdge = Math.max(contentRowRightEdge, x + intAttribute(detailElement, "width"));
+				if (i == ourBandIndex)
+				{
+					continue;
+				}
+				for (final Element otherElement : descendantElements(bands.get(i), "reportElement"))
+				{
+					final int x = intAttribute(otherElement, "x");
+					contentRowX = Math.min(contentRowX, x);
+					contentRowRightEdge = Math.max(contentRowRightEdge, x + intAttribute(otherElement, "width"));
+				}
 			}
 
-			if (ourX != contentRowX)
+			if (contentRowRightEdge == Integer.MIN_VALUE)
 			{
-				violations.add(templateName + ": invariant 6 - the block starts at x=" + ourX
-						+ " but the leftmost element in `<detail>` starts at x=" + contentRowX
-						+ "; the block has to span the template's own content row.");
+				violations.add(templateName + ": invariant 6 - apart from the `" + FIELD_NAME + "` band there is no"
+						+ " band with elements inside `<detail>`, so there is no content row to measure the block"
+						+ " against - and no article row for the text to sit above either.");
 			}
-			if (contentRowRightEdge - ourRightEdge > RIGHT_EDGE_TOLERANCE)
+			else
 			{
-				violations.add(templateName + ": invariant 6 - the block ends at x=" + ourRightEdge
-						+ " (x=" + ourX + " width=" + ourWidth + "), which is "
-						+ (contentRowRightEdge - ourRightEdge) + "pt short of the right edge of this template's own"
-						+ " content row (x=" + contentRowRightEdge + "); at most " + RIGHT_EDGE_TOLERANCE
-						+ "pt of slack is allowed. A narrow block wraps the customer's text far too early.");
+				if (ourX != contentRowX)
+				{
+					violations.add(templateName + ": invariant 6 - the block starts at x=" + ourX
+							+ " but the leftmost element of the OTHER bands in `<detail>` starts at x=" + contentRowX
+							+ "; the block has to span the template's own content row, and start with it.");
+				}
+				if (contentRowRightEdge - ourRightEdge > RIGHT_EDGE_TOLERANCE)
+				{
+					violations.add(templateName + ": invariant 6 - the block ends at x=" + ourRightEdge
+							+ " (x=" + ourX + " width=" + ourWidth + "), which is "
+							+ (contentRowRightEdge - ourRightEdge) + "pt short of the right edge of this template's own"
+							+ " content row (x=" + contentRowRightEdge + "); at most " + RIGHT_EDGE_TOLERANCE
+							+ "pt of slack is allowed. A narrow block wraps the customer's text far too early.");
+				}
 			}
 		}
 
 		//
-		// Invariant 7: our guard covers EVERY article band of this template.
+		// Invariant 7: our band prints for exactly the rows the article bands print for.
 		// If an article row can be suppressed by a condition our block does not share, the block renders orphaned;
 		// and if a second article band prints under a different condition, a guard naming only the first silently
 		// DROPS the text above rows that do print.
-		final Set<String> ourGuardFields = fieldsReferencedIn(ourGuard);
+		//
+		// Comparing the mere SET of references is both polarity-blind and (before this) parameter-blind: inverting
+		// the invoice guard `!$F{ishu} || "Y".equals($F{isprintwhenpackingmaterial})` into
+		// `$F{ishu} && "Y".equals($F{isprintwhenpackingmaterial})` leaves the set identical while dropping the text
+		// above every non-HU line, and a `$P{...}`-guarded article band used to read as "covered" because only
+		// `$F{...}` was extracted. Hence four checks, dispatched by how the article bands are guarded - which is
+		// what decides what our guard has to look like. Deliberately NOT a jasper expression parser; each check is
+		// a syntactic one whose reasoning is spelled out.
+		final Set<String> ourGuardReferences = referencesIn(ourGuard);
+		final String ourCompactGuard = compact(ourGuard);
+
+		final List<Integer> articleBandIndexes = new ArrayList<>();
+		final List<Integer> guardedArticleBandIndexes = new ArrayList<>();
 		for (int i = 0; i < bands.size(); i++)
 		{
-			if (i == ourBandIndex)
+			if (i == ourBandIndex || !isArticleRow(bands.get(i)))
 			{
 				continue;
 			}
-
-			final Element band = bands.get(i);
-			final int textFieldCount = descendantElements(band, "textFieldExpression").size();
-			if (textFieldCount < ARTICLE_BAND_MIN_TEXT_FIELDS)
+			articleBandIndexes.add(i);
+			if (bandLevelPrintWhenExpression(bands.get(i)) != null)
 			{
-				continue; // not an article row: an article row prints many columns, our block and the description rows print one
+				guardedArticleBandIndexes.add(i);
 			}
+		}
 
-			final String articleGuard = bandLevelPrintWhenExpression(band);
-			if (articleGuard == null)
-			{
-				// The article row always prints, so there is nothing for our block to inherit. Note that a
-				// `printWhenExpression` sitting on a nested `<textField>` (e.g. IsPrintPrices) must NOT be
-				// inherited - inheriting it would hide the customer's text whenever prices are switched off.
-				continue;
-			}
-
-			final Set<String> notCovered = new LinkedHashSet<>(fieldsReferencedIn(articleGuard));
-			notCovered.removeAll(ourGuardFields);
+		//
+		// 7a: every reference an article band's guard makes - $F, $P, $R or $V - has to be made by our guard too.
+		// Catches a renamed or forgotten condition, in whatever namespace it lives.
+		for (final int i : guardedArticleBandIndexes)
+		{
+			final String articleGuard = bandLevelPrintWhenExpression(bands.get(i));
+			final Set<String> notCovered = new LinkedHashSet<>(referencesIn(articleGuard));
+			notCovered.removeAll(ourGuardReferences);
 			if (!notCovered.isEmpty())
 			{
-				violations.add(templateName + ": invariant 7 - article band " + (i + 1) + " of " + bands.size()
-						+ " (" + textFieldCount + " text fields) is guarded by `" + singleLine(articleGuard) + "`,"
-						+ " but the `" + FIELD_NAME + "` band's guard `" + singleLine(String.valueOf(ourGuard)) + "`"
-						+ " does not share " + notCovered + "."
+				violations.add(templateName + ": invariant 7a - article band " + (i + 1) + " of " + bands.size()
+						+ " (" + distinctXPositions(bands.get(i)).size() + " columns) is guarded by `"
+						+ singleLine(String.valueOf(articleGuard)) + "`, but the `" + FIELD_NAME + "` band's guard `"
+						+ singleLine(String.valueOf(ourGuard)) + "` does not reference " + notCovered + "."
 						+ " The text would then print above a row that is suppressed, or be dropped above rows that do print.");
+			}
+		}
+
+		// 7b-7d all reason about what our band's own guard has to look like, so they have nothing to compare
+		// against when there is none - invariant 5 already reported that, and they would only pile onto it.
+		if (ourGuard != null)
+		{
+			if (articleBandIndexes.isEmpty())
+			{
+				violations.add(templateName + ": invariant 7 - `<detail>` has no article row (no band with at least "
+						+ ARTICLE_ROW_MIN_DISTINCT_X_POSITIONS + " distinct element `x` positions), so there is no row for"
+						+ " the text to sit above. Either the template is not a line-detail template or the discriminator"
+						+ " no longer fits it.");
+			}
+			else if (guardedArticleBandIndexes.size() < articleBandIndexes.size())
+			{
+				//
+				// 7d: at least one article row prints unconditionally, so every line has an article row - and our text
+				// therefore has to print on every line too. Our guard may then hold nothing but our own null/blank
+				// clauses. Note that a `printWhenExpression` sitting on a nested `<textField>` (e.g. IsPrintPrices) must
+				// NOT be inherited either: inheriting it would hide the customer's text whenever prices are switched off.
+				final Set<String> foreignReferences = new LinkedHashSet<>(ourGuardReferences);
+				foreignReferences.remove(FIELD_REF);
+				if (!foreignReferences.isEmpty())
+				{
+					violations.add(templateName + ": invariant 7d - article band "
+							+ humanBandNumbers(articleBandIndexes) + " of " + bands.size() + " print(s) unconditionally,"
+							+ " so every line has an article row and the text has to print above every line. But the `"
+							+ FIELD_NAME + "` band's guard `" + singleLine(ourGuard) + "` also depends on "
+							+ foreignReferences + ", which drops the text above the lines where that is false.");
+				}
+			}
+			else if (guardedArticleBandIndexes.size() == 1)
+			{
+				//
+				// 7b: exactly one article row, and it is guarded. Our block prints for exactly the lines that one row
+				// prints for, so our guard has to be THAT guard plus our own null/blank clauses - which means it has to
+				// contain it verbatim (whitespace aside). This is the check that catches an inverted, weakened or
+				// re-parameterised copy - `!= 0` turned into `== 0`, an added `!`, a swapped `$P{...}` - and not merely
+				// a renamed reference. It is deliberately rigid: a purely cosmetic rewrite of the article guard trips it
+				// and has to be mirrored here, which is the point (someone looks at the band).
+				final String articleGuard = bandLevelPrintWhenExpression(bands.get(guardedArticleBandIndexes.get(0)));
+				if (!ourCompactGuard.contains(compact(articleGuard)))
+				{
+					violations.add(templateName + ": invariant 7b - the single article band "
+							+ humanBandNumbers(guardedArticleBandIndexes) + " of " + bands.size() + " is guarded by `"
+							+ singleLine(String.valueOf(articleGuard)) + "`, but the `" + FIELD_NAME + "` band's guard `"
+							+ singleLine(ourGuard) + "` does not contain that expression verbatim, so the two do not"
+							+ " provably print for the same lines - the guard may be inverted, weakened or"
+							+ " differently parameterised.");
+				}
+			}
+			else
+			{
+				//
+				// 7c: several guarded article rows. They are ALTERNATIVES - each prints for a disjoint subset of the
+				// lines (invoice: non-HU lines vs HU lines that print as packing material) - and our block has to print
+				// for EITHER of them. A guard that only ANDs conditions taken from both prints above neither set
+				// completely, so our guard must combine them disjunctively and hence must contain a `||`.
+				// What this does NOT catch, and what would need an evaluator for jasper expressions: an inversion that
+				// keeps the disjunctive shape, e.g. rewriting `!$F{ishu} || X` as `$F{ishu} || X`.
+				if (!ourCompactGuard.contains("||"))
+				{
+					violations.add(templateName + ": invariant 7c - article bands "
+							+ humanBandNumbers(guardedArticleBandIndexes) + " of " + bands.size()
+							+ " are alternatives, each guarded by its own expression, so the `" + FIELD_NAME + "` band has"
+							+ " to print for EITHER of them. Its guard `" + singleLine(ourGuard) + "` contains no `||`,"
+							+ " i.e. it requires the conditions of the alternatives to hold at the same time - the text is"
+							+ " then dropped above the article rows that do print.");
+				}
+			}
+		}
+
+		//
+		// Invariant 8: the text element stretches with its content. Without `isStretchWithOverflow="true"` the block
+		// clips to its designed height - a single 12pt line - and everything the customer typed beyond the first
+		// line is silently lost. It is uniform across all templates, but the wrap scenario in
+		// `freeTextAboveOrderLine.feature` can only ever exercise the one template a rendered document uses.
+		final List<Element> ourTextFields = descendantElements(ourBand, "textField");
+		if (ourTextFields.isEmpty())
+		{
+			violations.add(templateName + ": invariant 8 - the `" + FIELD_NAME + "` band has no `<textField>` at all,"
+					+ " so there is nothing that could print the text.");
+		}
+		for (final Element ourTextField : ourTextFields)
+		{
+			if (!"true".equals(ourTextField.getAttribute("isStretchWithOverflow")))
+			{
+				violations.add(templateName + ": invariant 8 - the `" + FIELD_NAME + "` band's `<textField>` has"
+						+ " isStretchWithOverflow=`" + ourTextField.getAttribute("isStretchWithOverflow") + "`,"
+						+ " expected `true`. Without it the block clips to its designed height of one 12pt line and"
+						+ " everything the customer typed after the first line is dropped without a trace.");
 			}
 		}
 	}
 
 	/**
-	 * @return the {@code $F{...}} field names referenced in the given jasper expression; empty if there is none.
+	 * @return {@code true} if the given band lays out several columns and is therefore an article row rather than
+	 * 		our own block or a single-column description/attribute row - see
+	 * 		{@link #ARTICLE_ROW_MIN_DISTINCT_X_POSITIONS}.
 	 */
-	private static Set<String> fieldsReferencedIn(@Nullable final String expression)
+	private static boolean isArticleRow(final Element band)
 	{
-		final Set<String> fieldNames = new LinkedHashSet<>();
+		return distinctXPositions(band).size() >= ARTICLE_ROW_MIN_DISTINCT_X_POSITIONS;
+	}
+
+	private static Set<Integer> distinctXPositions(final Element band)
+	{
+		final Set<Integer> xPositions = new LinkedHashSet<>();
+		for (final Element reportElement : descendantElements(band, "reportElement"))
+		{
+			xPositions.add(intAttribute(reportElement, "x"));
+		}
+		return xPositions;
+	}
+
+	/**
+	 * @return the {@code $F{...}}, {@code $P{...}}, {@code $R{...}} and {@code $V{...}} references made by the
+	 * 		given jasper expression, each as written; empty if there is none.
+	 */
+	private static Set<String> referencesIn(@Nullable final String expression)
+	{
+		final Set<String> references = new LinkedHashSet<>();
 		if (expression == null)
 		{
-			return fieldNames;
+			return references;
 		}
 
-		final Matcher matcher = FIELD_REFERENCE_PATTERN.matcher(expression);
+		final Matcher matcher = EXPRESSION_REFERENCE_PATTERN.matcher(expression);
 		while (matcher.find())
 		{
-			fieldNames.add(matcher.group(1).trim());
+			references.add(matcher.group());
 		}
-		return fieldNames;
+		return references;
+	}
+
+	/**
+	 * @return the given expression with ALL whitespace removed, so that two expressions can be compared without
+	 * 		their formatting getting in the way; {@code ""} for {@code null}.
+	 */
+	private static String compact(@Nullable final String expression)
+	{
+		return expression == null ? "" : expression.replaceAll("\\s+", "");
 	}
 
 	/**
@@ -378,7 +563,7 @@ public class DescriptionAboveLineBandTest
 		{
 			return files
 					.filter(Files::isRegularFile)
-					.filter(DescriptionAboveLineBandTest::isLineDetailTemplate)
+					.filter(file -> file.getFileName().toString().endsWith(TEMPLATE_FILENAME_SUFFIX))
 					.filter(DescriptionAboveLineBandTest::referencesTheField)
 					.sorted()
 					.collect(Collectors.toList());
