@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.util.Services;
 import io.cucumber.java.en.Then;
+import io.qameta.allure.Allure;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -39,9 +40,12 @@ import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.TextPosition;
 import org.compiere.model.I_AD_Archive;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,6 +62,9 @@ public class AD_Archive_StepDef
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+
+	/** AD_Archive_IDs already attached to the report in THIS scenario — see {@link #attachToReportOnce}. */
+	@NonNull private final Set<Integer> attachedArchiveIds = new HashSet<>();
 
 	/**
 	 * @cucumber.stepdef
@@ -338,7 +345,34 @@ public class AD_Archive_StepDef
 				.isNotNull()
 				.isNotEmpty();
 
+		attachToReportOnce(archive.getAD_Archive_ID(), recordIdentifier, binaryData);
+
 		return binaryData;
+	}
+
+	/**
+	 * Attaches the rendered PDF to the Allure report, so a reviewer can open the actual document a
+	 * scenario asserted against instead of inferring it from extracted text.
+	 * <p>
+	 * Deduplicated per archive: several assertion steps in one scenario read the same document, and each
+	 * would otherwise attach another copy of it. This step-def instance lives for exactly one scenario
+	 * (picocontainer builds a fresh one per scenario), so the set needs no clearing.
+	 */
+	private void attachToReportOnce(
+			final int archiveId,
+			@NonNull final String recordIdentifier,
+			@NonNull final byte[] pdfBytes)
+	{
+		if (!attachedArchiveIds.add(archiveId))
+		{
+			return;
+		}
+
+		Allure.addAttachment(
+				"PDF archived for " + recordIdentifier + " (AD_Archive_ID=" + archiveId + ")",
+				"application/pdf",
+				new ByteArrayInputStream(pdfBytes),
+				".pdf");
 	}
 
 	/** One visual line of the PDF: the page it sits on, its vertical position, and its text. */
