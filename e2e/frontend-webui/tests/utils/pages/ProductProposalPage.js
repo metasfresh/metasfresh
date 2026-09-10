@@ -30,11 +30,15 @@ export const OVERLAY = '.raw-modal .panel-modal';
 export const ROWS = `${OVERLAY} table tbody tr`;
 
 /**
- * The delivery-history flag filter's checkbox in the overlay's inline (frequent-used) filter line.
- * Exported so a spec asserting on the control itself uses the same selector `setFilter` toggles,
- * instead of keeping its own copy that can drift.
+ * The delivery-history flag filter in the overlay's inline (frequent-used) filter line.
+ *
+ * The <input> is visually replaced by `.input-checkbox-tick`, so the LABEL is what gets clicked
+ * while the INPUT is what carries the checked state - hence both constants. `FILTER_CHECKBOX` is
+ * derived from `FILTER_LABEL` (not written out a second time) so `setFilter` and any spec asserting
+ * on the control cannot drift apart when the markup changes.
  */
-export const FILTER_CHECKBOX = `${OVERLAY} .filters-frequent .inline-filters label.input-checkbox input[type="checkbox"]`;
+export const FILTER_LABEL = `${OVERLAY} .filters-frequent .inline-filters label.input-checkbox`;
+export const FILTER_CHECKBOX = `${FILTER_LABEL} input[type="checkbox"]`;
 
 /**
  * Buttons of the order lines tab's filter line - the included-tab top actions come last.
@@ -157,9 +161,7 @@ export class ProductProposalPage {
    */
   static async setFilter(page = getPage(), on = true) {
     return await test.step(`ProductProposalPage - Set delivery-history filter: ${on}`, async () => {
-      const filterLabel = page
-        .locator(`${OVERLAY} .filters-frequent .inline-filters label.input-checkbox`)
-        .first();
+      const filterLabel = page.locator(FILTER_LABEL).first();
       const checkbox = filterLabel.locator('input[type="checkbox"]');
 
       await checkbox.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
@@ -170,7 +172,6 @@ export class ProductProposalPage {
         return;
       }
 
-      // The <input> is visually replaced by .input-checkbox-tick, so click the label wrapper
       await filterLabel.click();
 
       // The toggle triggers a filter patch + view reload
