@@ -45,27 +45,23 @@ import java.util.List;
  * MD_Candidate_Demand_Detail, MD_Candidate_Purchase_Detail
  * Repository Cluster: SourceDocumentRepository
  * <p>
- * READ-ONLY, and it owns none of those tables: it never writes, and each one keeps its own DAO as the
- * persistence owner (see the {@link IQueryBL} note below for why those DAOs are not delegated to). The
- * single-member cluster therefore claims no write ownership - if a table above ever gains a declared
- * owner elsewhere, that is the accepted reader/owner split, not the second-writer case the convention
- * exists to catch. {@code MD_Candidate_Demand_Detail}/{@code MD_Candidate_Purchase_Detail} are read only
- * as an existence check (a {@code NOT IN} subquery) in {@link #retrieveOpenShipmentScheduleIdsWithoutCandidate}/
- * {@link #retrieveOpenReceiptScheduleIdsWithoutCandidate} - the owning module's own repositories still write
- * them.
+ * READ-ONLY, and owns none of those tables - each keeps its own DAO as persistence owner (see the
+ * {@link IQueryBL} note below). It claims no write ownership, so a table above later gaining a declared owner
+ * elsewhere is the accepted reader/owner split, not a second-writer conflict. {@code MD_Candidate_Demand_Detail}/
+ * {@code MD_Candidate_Purchase_Detail} are read only as an existence check ({@code NOT IN} subquery) in
+ * {@link #retrieveOpenShipmentScheduleIdsWithoutCandidate}/{@link #retrieveOpenReceiptScheduleIdsWithoutCandidate}
+ * - the owning module's repositories still write them.
  * <p>
- * Loads the source document behind an {@code MD_Candidate} for
- * {@link SourceDocumentLivenessService}, tolerating a miss.
+ * Loads the source document behind an {@code MD_Candidate} for {@link SourceDocumentLivenessService}, tolerating
+ * a miss.
  * <p>
- * This repository goes through {@link IQueryBL} rather than delegating to each source document's own
- * DAO, deliberately: no null-tolerant by-id lookup exists across all five source documents.
- * {@code ShipmentSchedulePA.getById} and {@code IForecastDAO.getById} throw on a miss (in production, not
- * just in tests); the receipt-schedule, {@code PP_Order} and {@code DD_Order} DAOs are bare
- * {@code InterfaceWrapperHelper.load(...)} calls, which NPE on a miss in unit-test POJO mode; and
- * {@code DD_Order} plus the {@code M_ForecastLine} hop offer no null-tolerant batch alternative either.
- * A candidate referencing a purged document must degrade to
- * {@link de.metas.material.dispo.commons.reconcile.SourceDocumentStatus#NO_SOURCE_DOCUMENT}, never abort
- * the run — that dangling reference is precisely the drifted state this feature exists to find and report.
+ * Goes through {@link IQueryBL} rather than each source document's own DAO because no null-tolerant by-id lookup
+ * exists across all five: {@code ShipmentSchedulePA.getById}/{@code IForecastDAO.getById} throw on a miss, and the
+ * receipt-schedule/{@code PP_Order}/{@code DD_Order} DAOs NPE on one in unit-test POJO mode - {@code DD_Order}
+ * and the {@code M_ForecastLine} hop offer no null-tolerant batch alternative either. A candidate referencing a
+ * purged document must degrade to
+ * {@link de.metas.material.dispo.commons.reconcile.SourceDocumentStatus#NO_SOURCE_DOCUMENT}, never abort the run
+ * - that dangling reference is precisely the drift this feature exists to find and report.
  */
 @Repository
 public class SourceDocumentRepository
@@ -96,13 +92,13 @@ public class SourceDocumentRepository
 	}
 
 	/**
-	 * @return {@code M_ShipmentSchedule_ID} of every open ({@code Processed='N'}, active) shipment schedule
-	 * that no active {@code MD_Candidate_Demand_Detail} row references at all, restricted by the given
-	 * optional warehouse/product/product-category filter - one page of at most {@code limit} starting at
-	 * {@code offset}, ordered by {@code M_ShipmentSchedule_ID} for stable pagination across rounds.
+	 * @return {@code M_ShipmentSchedule_ID} of every open ({@code Processed='N'}, active) shipment schedule that no
+	 * active {@code MD_Candidate_Demand_Detail} row references, restricted by the optional
+	 * warehouse/product/product-category filter - one page of at most {@code limit} at {@code offset}, ordered by
+	 * {@code M_ShipmentSchedule_ID} for stable pagination.
 	 * <p>
-	 * This is the one drift {@link AtpTargetCalculator}'s recompute cannot close: there is no candidate to
-	 * correct, so it has to be surfaced instead of silently absorbed.
+	 * This is the one drift {@link AtpTargetCalculator}'s recompute cannot close: there is no candidate to correct,
+	 * so it has to be surfaced instead of silently absorbed.
 	 */
 	public List<Integer> retrieveOpenShipmentScheduleIdsWithoutCandidate(
 			@Nullable final WarehouseId warehouseId,

@@ -33,13 +33,12 @@ import javax.annotation.Nullable;
 /**
  * <i>Which</i> reconciliation keys a run covers: the optional warehouse / product / product-category filter an
  * operator hands to {@code MD_Candidate_Reconcile_ATP} or {@code MD_Candidate_ATP_Divergence_Report}. An unset
- * field is not restricted on, so {@link #ALL} - every field unset - selects the whole {@code MD_Stock} population.
+ * field is not restricted on, so {@link #ALL} selects the whole {@code MD_Stock} population.
  * <p>
- * Kept as a value object rather than three loose nullable parameters because the filter now travels: the write
- * path serialises it onto a {@code C_Queue_WorkPackage} in the webapi and reconstitutes it in the app server (see
- * {@code de.metas.material.dispo.reconcile.async.AtpReconciliationEnqueueService}), so "the selection" has to be
- * one thing that can be passed, stored and compared as a whole - not a tuple that a caller can partially forget
- * to carry across the JVM boundary.
+ * Kept as a value object rather than three loose nullable parameters because it travels: the write path serialises
+ * it onto a {@code C_Queue_WorkPackage} in the webapi and reconstitutes it in the app server (see
+ * {@code de.metas.material.dispo.reconcile.async.AtpReconciliationEnqueueService}) - a tuple could be partially
+ * forgotten across that boundary.
  */
 @Value
 @Builder

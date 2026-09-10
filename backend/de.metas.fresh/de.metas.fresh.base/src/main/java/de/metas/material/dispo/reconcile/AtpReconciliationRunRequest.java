@@ -30,16 +30,14 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 /**
- * One whole reconciliation run as the operator asked for it: <i>which</i> keys ({@link #getSelection()}), at
- * <i>which</i> date ({@link #getRunDate()}) and under <i>which</i> liveness rule
- * ({@link #getLivenessCutoff()}).
+ * One whole reconciliation run as the operator asked for it: <i>which</i> keys, at <i>which</i> date, under
+ * <i>which</i> liveness rule.
  * <p>
- * This is the payload that crosses the JVM boundary. A real run is enqueued in the webapi and reconciled in the
- * app server (see {@code de.metas.material.dispo.reconcile.async.AtpReconciliationEnqueueService}), so everything
- * the run depends on has to be captured here, at the moment the operator launched it, and carried along - most
- * pointedly the <b>run date</b>: derived in the app server instead, it would silently become "whenever the queue
- * happened to get around to it", which is a different reconciliation point and therefore a different result (a
- * correction candidate absorbs everything dated before it).
+ * This is the payload that crosses the JVM boundary - a real run is enqueued in the webapi and reconciled in the
+ * app server (see {@code de.metas.material.dispo.reconcile.async.AtpReconciliationEnqueueService}). The
+ * <b>run date</b> in particular must be captured here rather than derived in the app server, where it would
+ * silently become "whenever the queue got around to it" - a different reconciliation point, and therefore a
+ * different result.
  */
 @Value
 @Builder

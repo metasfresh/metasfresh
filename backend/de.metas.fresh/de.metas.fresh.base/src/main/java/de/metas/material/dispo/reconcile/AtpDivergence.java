@@ -30,13 +30,11 @@ import lombok.Value;
 import java.math.BigDecimal;
 
 /**
- * How far one reconciliation key's stored projected ATP is from the target the
- * {@link AtpTargetCalculator} computes for it.
+ * How far one reconciliation key's stored projected ATP is from the target {@link AtpTargetCalculator} computes.
  * <p>
- * The {@code difference} is always {@code expectedAtp - storedAtp}, i.e. the delta that has to be applied
- * to the stored projection to bring it onto the target. It is computed here rather than by the callers, so
- * that the reconciliation (which writes that delta) and the divergence report (which only shows it) cannot
- * end up with opposite signs.
+ * {@code difference} is always {@code expectedAtp - storedAtp} - computed here, not by callers, so the
+ * reconciliation (which writes it) and the divergence report (which only shows it) can't end up with opposite
+ * signs.
  */
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

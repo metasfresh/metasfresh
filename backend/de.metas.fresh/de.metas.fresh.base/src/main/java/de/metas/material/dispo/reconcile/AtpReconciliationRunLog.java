@@ -35,16 +35,12 @@ import java.time.Instant;
  * The audit trail of one {@link AtpReconciliationCommand#reconcileAndLog} run: which {@code STOCK} candidates it
  * changed, and what {@code Qty} each one carried immediately before the run touched it.
  * <p>
- * That before-value <b>is</b> the backup: nothing this run changes is ever lost, because the value it replaced is
- * captured here - read from the store before {@link AtpReconciliationCommand#reconcile} writes anything - rather
- * than only being derivable after the fact from the new, already-overwritten state. This in-process object does
- * not itself outlive the run, though: {@link #getRunUuid()} is the key under which
- * {@link AtpReconciliationBackupRepository} persists the same before/after values durably, so they stay recoverable
- * after the process that ran this reconciliation has ended.
+ * That before-value is read from the store before {@link AtpReconciliationCommand#reconcile} writes anything, so
+ * nothing is lost even though this in-process object does not itself outlive the run - {@link #getRunUuid()} is
+ * the key under which {@link AtpReconciliationBackupRepository} persists the same before/after values durably.
  * <p>
- * A candidate absent from {@link #getEntries()} was not touched by the run - either the run wrote nothing at all
- * (a dry run, or a zero delta - see {@link AtpReconciliationCommand#reconcile}), or the candidate falls outside the
- * general {@code STOCK} chain from the run's date onward, the only place a reconciliation ever writes.
+ * A candidate absent from {@link #getEntries()} was not touched by the run: either the run wrote nothing (a dry
+ * run, or a zero delta), or the candidate falls outside the general {@code STOCK} chain from the run's date onward.
  */
 @Value
 public class AtpReconciliationRunLog
@@ -53,8 +49,8 @@ public class AtpReconciliationRunLog
 	@NonNull ImmutableList<Entry> entries;
 
 	/**
-	 * Groups this run's persisted {@link AtpReconciliationBackupRepository} rows - {@code null} when nothing was
-	 * written (a dry run, or a zero delta), since then there is nothing to look up.
+	 * Groups this run's persisted {@link AtpReconciliationBackupRepository} rows; {@code null} when nothing was
+	 * written (a dry run, or a zero delta).
 	 */
 	@Nullable String runUuid;
 
@@ -78,8 +74,8 @@ public class AtpReconciliationRunLog
 		@NonNull Instant date;
 
 		/**
-		 * The candidate's {@code Qty} immediately before this run touched it - the backed-up value - or
-		 * {@code null} when the run itself created this candidate, i.e. there was no earlier value to back up.
+		 * The candidate's {@code Qty} immediately before this run touched it, or {@code null} when the run itself
+		 * created this candidate (nothing to back up).
 		 */
 		@Nullable BigDecimal qtyBefore;
 

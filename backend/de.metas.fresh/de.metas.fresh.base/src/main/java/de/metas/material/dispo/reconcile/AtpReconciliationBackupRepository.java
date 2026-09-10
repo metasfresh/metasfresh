@@ -29,15 +29,9 @@ import lombok.NonNull;
 import java.util.List;
 
 /**
- * Persists the pre-change {@code Qty} of every {@code STOCK} candidate a reconciliation run is about to touch, so
- * the value survives after the run's process ends - and, once the run's outcome is known, completes that same row
- * with the after-value, turning it into a durable record of what changed.
- * <p>
- * The two calls are used in strict order by {@link AtpReconciliationCommand#reconcileAndLog}:
- * {@link #backupBeforeWrite} runs BEFORE any candidate is written, so the backup this method creates is never lost
- * even if the write that follows never happens (a crash, an aborted transaction); {@link #recordAfterWrite} runs
- * only once the write is done, and only completes rows {@link #backupBeforeWrite} already created (plus a fresh row
- * for a candidate the run itself created, which had nothing to back up).
+ * Persists the pre-change {@code Qty} of every {@code STOCK} candidate a reconciliation run is about to touch, then
+ * completes that same row with the after-value once the run's outcome is known - turning it into a durable record
+ * of what changed. {@link AtpReconciliationCommand#reconcileAndLog} always calls the two methods in that order.
  */
 public interface AtpReconciliationBackupRepository
 {

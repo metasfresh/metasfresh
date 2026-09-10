@@ -59,13 +59,12 @@ import java.util.List;
  *                                                  with date(c) &le; D and liveness(c) == STILL_OPEN
  * </pre>
  * <p>
- * Candidates dated <b>after</b> D are deliberately not part of the sum: the reconciliation hands its
- * correction to the engine's ordinary candidate-change handling at D, and the engine's forward propagation
- * then re-derives every stock candidate after D from exactly those later positions. Adding them here as
- * well would count them twice.
+ * Candidates dated <b>after</b> D are excluded: the reconciliation hands its correction to the engine's ordinary
+ * candidate-change handling at D, whose forward propagation re-derives every later stock candidate from those
+ * later positions - counting them here too would double them.
  * <p>
- * This class is the single expression behind both the reconciliation (which writes the delta) and the
- * divergence report (which only shows it), so that the two cannot disagree about what "correct" means.
+ * Single expression behind both the reconciliation (which writes the delta) and the divergence report (which only
+ * shows it), so the two cannot disagree about what "correct" means.
  */
 @Service
 @RequiredArgsConstructor
@@ -106,12 +105,10 @@ public class AtpTargetCalculator
 	/**
 	 * Same as {@link #computeTarget(StockDataRecordIdentifier, Instant)}, but a candidate dated strictly before
 	 * {@code livenessCutoff} is treated as {@link de.metas.material.dispo.commons.reconcile.SourceDocumentStatus#CLOSED}
-	 * regardless of what its source document says - see
-	 * {@link SourceDocumentLivenessService#getStatus(Candidate, Instant)}. This is the operator-facing escape hatch
-	 * for an era whose document statuses are themselves unreliable.
+	 * regardless of its source document - see {@link SourceDocumentLivenessService#getStatus(Candidate, Instant)}.
+	 * The operator-facing escape hatch for an era whose document statuses are themselves unreliable.
 	 *
-	 * @param livenessCutoff may be {@code null}, in which case no candidate is cut off - same result as the two-arg
-	 * overload
+	 * @param livenessCutoff {@code null} means no cutoff - same as the two-arg overload
 	 */
 	public BigDecimal computeTarget(
 			@NonNull final StockDataRecordIdentifier key,
@@ -173,18 +170,15 @@ public class AtpTargetCalculator
 	}
 
 	/**
-	 * @return the {@code Qty} of the key's youngest <b>general</b> {@code STOCK} candidate dated at or before
-	 * the given date - i.e. the running balance the system currently believes in - or
-	 * {@link BigDecimal#ZERO} if the key has no such stock candidate up to that date.
+	 * @return the {@code Qty} of the key's youngest <b>general</b> {@code STOCK} candidate at or before the given
+	 * date - the running balance the system currently believes in - or {@link BigDecimal#ZERO} if none.
 	 * <p>
-	 * "General" means {@code C_BPartner_Customer_ID IS NULL}, which is what {@link BPartnerClassifier#none()}
-	 * emits (see {@code RepositoryCommons#addMaterialDescriptorToQueryBuilderIfNotNull}). Unlike the sum in
-	 * {@link #computeTarget(StockDataRecordIdentifier, Instant)}, this lookup must NOT be customer-agnostic:
-	 * {@code StockCandidateService} propagates the customer id onto the {@code STOCK} candidate it creates
-	 * for a position that is reserved for a customer, and such a candidate's {@code Qty} is the balance over
-	 * {that customer's rows} &cup; {the null-customer rows} only - not over the general population. Reading
-	 * it as "the stored balance" would compare it against an {@code expectedAtp} anchored on
-	 * {@code MD_Stock.QtyOnHand}, which has no customer dimension at all, i.e. two different populations.
+	 * "General" means {@code C_BPartner_Customer_ID IS NULL} ({@link BPartnerClassifier#none()}). Unlike the sum
+	 * in {@link #computeTarget(StockDataRecordIdentifier, Instant)}, this lookup must NOT be customer-agnostic:
+	 * {@code StockCandidateService} propagates the customer id onto a {@code STOCK} candidate reserved for a
+	 * customer, so such a candidate's {@code Qty} balances only that customer's rows plus the null-customer rows -
+	 * not the general population, which is what an {@code expectedAtp} anchored on {@code MD_Stock.QtyOnHand} (no
+	 * customer dimension) has to be compared against.
 	 */
 	private BigDecimal retrieveStoredAtp(
 			@NonNull final StockDataRecordIdentifier key,
@@ -198,16 +192,14 @@ public class AtpTargetCalculator
 	}
 
 	/**
-	 * The open remainder of a candidate is {@code Qty - QtyFulfilled}; its <i>sign</i> depends on the
-	 * candidate's type, and that mapping exists exactly once in the codebase, in
-	 * {@link Candidate#getStockImpactPlannedQuantity()}. So instead of switching on the type again here, the
-	 * remainder is put back onto the candidate and run through that one authoritative formula.
+	 * The open remainder is {@code Qty - QtyFulfilled}; its <i>sign</i> depends on the candidate's type, and that
+	 * mapping exists exactly once, in {@link Candidate#getStockImpactPlannedQuantity()} - so the remainder is put
+	 * back onto the candidate and run through that one authoritative formula instead of switching on type again
+	 * here.
 	 * <p>
-	 * Doing it this way rather than via {@code openQty.abs()} plus a {@code signum()} of the candidate's own
-	 * signed quantity is not cosmetic: a candidate with {@code Qty = 0} has a signed quantity of {@code 0},
-	 * whose {@code signum()} carries no direction at all - and zero-quantity {@code INVENTORY_DOWN}
-	 * candidates do occur in real data (a zero-movement inventory creates one). Feeding the remainder
-	 * through the type switch stays correct there.
+	 * Not cosmetic: {@code openQty.abs()} plus a {@code signum()} of the candidate's own signed quantity would
+	 * break for {@code Qty = 0}, whose {@code signum()} carries no direction - and zero-quantity
+	 * {@code INVENTORY_DOWN} candidates do occur in real data (a zero-movement inventory creates one).
 	 *
 	 * @return the candidate's still-open quantity, signed by its effect on stock
 	 */
@@ -222,11 +214,10 @@ public class AtpTargetCalculator
 	}
 
 	/**
-	 * @param customer how the query treats {@code MD_Candidate.C_BPartner_Customer_ID}. The two terms of the
-	 * reconciliation need different answers here: the sum over the key's positions is customer-agnostic
-	 * ({@link BPartnerClassifier#any()}) because a customer-reserved demand still consumes real physical
-	 * stock and so must count towards the target, whereas the stored-balance lookup has to stay on the
-	 * general chain ({@link BPartnerClassifier#none()}) - see {@link #retrieveStoredAtp}.
+	 * @param customer how the query treats {@code MD_Candidate.C_BPartner_Customer_ID}: the sum over the key's
+	 * positions is customer-agnostic ({@link BPartnerClassifier#any()}) because customer-reserved demand still
+	 * consumes real physical stock, while the stored-balance lookup stays on the general chain
+	 * ({@link BPartnerClassifier#none()}) - see {@link #retrieveStoredAtp}.
 	 */
 	private static CandidatesQuery createCandidatesQueryUntilDate(
 			@NonNull final StockDataRecordIdentifier key,
@@ -238,22 +229,18 @@ public class AtpTargetCalculator
 				.productId(key.getProductId().getRepoId())
 				.storageAttributesKey(key.getStorageAttributesKey())
 				.customer(customer)
-				// the key's client and org are not filtered here, and need not be: a warehouse belongs to
-				// exactly one org of one client, so M_Warehouse_ID already pins both. (The MD_Stock side of
-				// the expression does filter them, because MD_Stock carries them as part of its unique key.)
-				// seqNo is deliberately left at 0, which yields a plain "DateProjected <= date"; a seqNo > 0
-				// would additionally build a "(date < D OR (date = D AND seqNo <= n))" composite
+				// client/org aren't filtered here: a warehouse belongs to exactly one org of one client, so
+				// M_Warehouse_ID already pins both (MD_Stock's side does filter them, since it carries them in its key)
+				// seqNo stays at 0 -> plain "DateProjected <= date"; seqNo > 0 would add "(date < D OR (date = D AND seqNo <= n))"
 				.timeRangeEnd(DateAndSeqNo.atTimeNoSeqNo(date).withOperator(DateAndSeqNo.Operator.INCLUSIVE))
 				.build();
 
 		return CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.matchExactStorageAttributesKey(true)
-				// The type is left unset on purpose: CandidatesQuery cannot express "type != STOCK" (it only
-				// ever emits an equals filter on the type), so the STOCK candidates come back too and are
-				// dropped in computeTarget. Reading them is immaterial here - the largest real candidate
-				// chain measured for this feature was 913 MD_Candidate rows for a single product.
-				// (retrieveStoredAtp narrows this query to exactly CandidateType.STOCK instead.)
+				// type left unset on purpose: CandidatesQuery can't express "type != STOCK", so STOCK candidates
+				// come back too and are dropped in computeTarget - immaterial here (largest measured chain: 913
+				// rows for one product). (retrieveStoredAtp narrows this query to exactly CandidateType.STOCK.)
 				.build();
 	}
 }

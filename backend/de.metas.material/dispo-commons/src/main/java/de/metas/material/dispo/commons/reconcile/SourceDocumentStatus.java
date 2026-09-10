@@ -22,10 +22,7 @@ package de.metas.material.dispo.commons.reconcile;
  * #L%
  */
 
-/**
- * Result of the liveness test that decides whether a candidate's source document
- * still contributes to the projected ATP.
- */
+/** Result of the liveness test deciding whether a candidate's source document still contributes to ATP. */
 public enum SourceDocumentStatus
 {
 	/** The source document is open and contributes to ATP */

@@ -41,16 +41,13 @@ import javax.annotation.Nullable;
 
 /**
  * Performs the real, data-writing ATP reconciliation that {@code MD_Candidate_Reconcile_ATP} enqueued - in the
- * app server, which is the only JVM that has the material disposition engine.
+ * app server, the only JVM with the material disposition engine. The dry-run preview stays synchronous in the
+ * launching process instead (it needs only the un-{@code @Profile}-guarded {@code AtpTargetCalculator}); see
+ * {@link AtpReconciliationEnqueueService} for why the write half can't.
  * <p>
- * This is the write half of the process's split. The read half (the dry-run preview) stays synchronous in the
- * launching process, because it needs only the un-{@code @Profile}-guarded {@code AtpTargetCalculator}; see
- * {@link AtpReconciliationEnqueueService} for why the write half cannot stay there.
- * <p>
- * The selection is drained through the very same {@link AtpKeySelectionDrainer} the preview uses, so a preview
- * and the run it previews cannot walk different key sets. Per-key results are written to the work package's own
- * log via {@link Loggables}, which is where the operator finds them: the launching process returns as soon as the
- * work package is enqueued, so its process log cannot contain them.
+ * Drains the selection through the same {@link AtpKeySelectionDrainer} the preview uses, so the two can't walk
+ * different key sets. Per-key results go to the work package's own log via {@link Loggables} - the launching
+ * process has already returned by the time this runs, so its own log can't carry them.
  */
 public class AtpReconciliationWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -58,11 +55,10 @@ public class AtpReconciliationWorkpackageProcessor extends WorkpackageProcessorA
 			SpringContextHolder.getBeanOrSupply(AtpKeySelectionDrainer.class, AtpKeySelectionDrainer::newInstanceForUnitTesting);
 
 	/**
-	 * @return {@code false}. The reconciliation hands every correction to {@code CandidateChangeService}, i.e. to
-	 * the engine's own candidate-change handling, which manages its transactions itself - which is also why the
-	 * launching process is {@code @RunOutOfTrx}. Wrapping a drain of a possibly very large selection in one
-	 * enclosing transaction would additionally make the whole run all-or-nothing, so a single bad key would
-	 * discard every correct correction before it.
+	 * @return {@code false} - the reconciliation hands every correction to {@code CandidateChangeService}, which
+	 * manages its own transactions (also why the launching process is {@code @RunOutOfTrx}). One enclosing
+	 * transaction here would also make a possibly large drain all-or-nothing, discarding every correct correction
+	 * for a single bad key.
 	 */
 	@Override
 	public boolean isRunInTransaction()
@@ -88,16 +84,13 @@ public class AtpReconciliationWorkpackageProcessor extends WorkpackageProcessorA
 	}
 
 	/**
-	 * @return the {@link AtpReconciliationCommand} bean.
+	 * @return the {@link AtpReconciliationCommand} bean, or throws with an actionable message.
 	 * <p>
-	 * Concrete failure this prevents: {@link AtpReconciliationCommand} is
-	 * {@code @Profile(Profiles.PROFILE_MaterialDispo)} - see its Javadoc for why it has to be. This work package
-	 * is drained by the app server, which reads its active profiles from the
-	 * {@code de.metas.spring.profiles.active} sysconfigs; a deployment whose app server does not list the material
-	 * disposition profile there has no such bean, and without this method the work package would fail with
-	 * Spring's bare {@code NoSuchBeanDefinitionException} naming only the type - buried in the queue, where no
-	 * operator is watching a process window and nothing would say what to configure. Wrapping it names the
-	 * missing profile, the sysconfig that activates it and the JVM that has to have it.
+	 * {@link AtpReconciliationCommand} is {@code @Profile(Profiles.PROFILE_MaterialDispo)} (see its Javadoc); a
+	 * deployment whose app server doesn't list that profile in {@code de.metas.spring.profiles.active} has no such
+	 * bean. Without this wrapper the work package would fail with Spring's bare
+	 * {@code NoSuchBeanDefinitionException} - buried in the queue, with no operator watching. This names the
+	 * missing profile, the sysconfig, and the JVM that needs it.
 	 */
 	private AtpReconciliationCommand reconciliationCommand()
 	{

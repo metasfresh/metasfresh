@@ -39,17 +39,13 @@ import java.util.List;
  * Walks the reconciliation keys matching an {@link AtpKeySelection} in bounded pages and hands each one to a
  * caller-supplied {@link KeyProcessor}.
  * <p>
- * <b>Why this is its own collaborator.</b> The reconciliation now runs on two paths - the operator's synchronous
- * dry-run preview in the webapi ({@code MD_Candidate_Reconcile_ATP}) and the real, writing run in the app server
- * ({@code de.metas.material.dispo.reconcile.async.AtpReconciliationWorkpackageProcessor}) - and the recorded
- * downside of that split is exactly "two execution paths to keep in step". The page size, the pagination
- * arithmetic and the runaway backstop are the part that would silently drift apart, so they live here once and
- * both paths call in; a preview that walked a different key set from the run it previews would be worse than no
- * preview at all.
+ * <b>Why its own collaborator:</b> the reconciliation runs on two paths - the webapi's synchronous dry-run preview
+ * and the app server's real, writing run ({@code AtpReconciliationWorkpackageProcessor}) - and the page size,
+ * pagination arithmetic and runaway backstop must not drift apart between them; a preview walking a different key
+ * set than the run it previews would be worse than none.
  * <p>
- * Not folded in (yet): {@code MD_Candidate_ATP_Divergence_Report} carries a third, structurally identical key
- * drain. It is a separate process with its own pagination and backstop tests, so unifying it is a change to
- * <i>that</i> process's covering tests rather than part of this split.
+ * Not folded in (yet): {@code MD_Candidate_ATP_Divergence_Report} carries a third, structurally identical drain -
+ * unifying it is a change to that process's own covering tests, not part of this split.
  * <p>
  * The actual persistence query stays in {@link StockRepository} - see {@code docs/REVIEW.md} on keeping
  * {@code IQueryBL}/{@code IQueryBuilder} out of a {@code @Service}.
@@ -63,10 +59,10 @@ public class AtpKeySelectionDrainer
 	public static final int BATCH_SIZE = 500;
 
 	/**
-	 * Backstop against a pagination bug that never converges (e.g. an {@code OFFSET} that stops advancing): the
-	 * selection drained here is static, so a healthy run always empties it in a small, bounded number of rounds.
-	 * {@link #BATCH_SIZE} * {@link #MAX_LOOPS} = 5,000,000 keys, far past any real selection size for this feature
-	 * (the largest real candidate chain measured for this issue was 913 rows for a single product).
+	 * Backstop against a pagination bug that never converges (e.g. an {@code OFFSET} that stops advancing): a
+	 * healthy run always empties the (static) selection in a bounded number of rounds. {@link #BATCH_SIZE} *
+	 * {@link #MAX_LOOPS} = 5,000,000 keys, far past any real selection size (the largest measured candidate chain
+	 * for this feature was 913 rows for a single product).
 	 */
 	@VisibleForTesting
 	public static final int MAX_LOOPS = 10_000;
@@ -74,9 +70,8 @@ public class AtpKeySelectionDrainer
 	@NonNull private final StockRepository stockRepository;
 
 	/**
-	 * @return an instance for a plain JUnit test, wired the same way the divergence-report process wires its own
-	 * collaborators: whatever is registered on {@link SpringContextHolder} wins, so a test that registered a mocked
-	 * {@link StockRepository} gets a drainer paging through that mock.
+	 * @return an instance for a plain JUnit test - whatever is registered on {@link SpringContextHolder} wins, so a
+	 * test that registered a mocked {@link StockRepository} gets a drainer paging through that mock.
 	 */
 	@VisibleForTesting
 	public static AtpKeySelectionDrainer newInstanceForUnitTesting()
@@ -115,8 +110,7 @@ public class AtpKeySelectionDrainer
 			loops++;
 			if (loops > MAX_LOOPS)
 			{
-				// concrete failure this prevents: a pagination bug (e.g. an OFFSET that never advances) turning
-				// this into an infinite loop instead of a bounded, reportable failure
+				// a bounded, reportable failure instead of an infinite loop from a stuck OFFSET
 				throw new AdempiereException("ATP reconciliation key drain aborted after " + MAX_LOOPS
 						+ " rounds of " + BATCH_SIZE + " keys each - the selection never shrank below a full batch");
 			}
@@ -151,8 +145,8 @@ public class AtpKeySelectionDrainer
 
 	/**
 	 * What a caller does with one key. Deliberately not a {@code java.util.function.Predicate}: the return value
-	 * is not a test on the key, it is the processor <i>reporting</i> whether that key turned out to need a change,
-	 * which is what {@link DrainSummary#getKeysChanged()} counts.
+	 * isn't a test on the key, it's the processor reporting whether that key needed a change - what
+	 * {@link DrainSummary#getKeysChanged()} counts.
 	 */
 	@FunctionalInterface
 	public interface KeyProcessor

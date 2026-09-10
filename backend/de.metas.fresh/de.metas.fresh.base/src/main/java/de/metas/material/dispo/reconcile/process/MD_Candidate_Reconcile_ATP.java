@@ -55,27 +55,26 @@ import java.time.LocalDate;
  * <b>The two paths are deliberately different, and this is the class where they part.</b>
  * <ul>
  * <li><b>Dry run</b> ({@code IsDryRun = 'Y'}) is computed here, synchronously, and reported in this process's own
- * log. It needs only {@link AtpTargetCalculator#computeDivergence}, which is un-{@code @Profile}-guarded on
- * purpose (see that class), so the preview works in the webapi - the JVM a WebUI-launched {@code AD_Process}
- * actually executes in. Nothing is written, and {@link AtpReconciliationCommand} is never touched.</li>
- * <li><b>A real run</b> is <i>enqueued</i>: this process writes a {@code C_Queue_WorkPackage} carrying the whole
- * run and returns, and {@link AtpReconciliationWorkpackageProcessor} performs the reconciliation in the app
- * server. It has to: the reconciliation needs {@link AtpReconciliationCommand}, which is
- * {@code @Profile(Profiles.PROFILE_MaterialDispo)}, and that profile is active only in the app server. (
- * {@code AD_Process.IsServerProcess} is not an escape hatch - it only affects Swing class loading.) So a real
- * run's result is <b>asynchronous</b> and is reported on the work package, not in this process's log.</li>
+ * log. It needs only the un-{@code @Profile}-guarded {@link AtpTargetCalculator#computeDivergence}, so the
+ * preview works in the webapi - the JVM a WebUI-launched {@code AD_Process} actually executes in. Nothing is
+ * written, and {@link AtpReconciliationCommand} is never touched.</li>
+ * <li><b>A real run</b> is <i>enqueued</i>: this process writes a {@code C_Queue_WorkPackage} and returns, and
+ * {@link AtpReconciliationWorkpackageProcessor} performs the reconciliation in the app server - the only JVM
+ * where {@link AtpReconciliationCommand}'s {@code @Profile(Profiles.PROFILE_MaterialDispo)} is active
+ * ({@code AD_Process.IsServerProcess} is not an escape hatch - it only affects Swing class loading). So a real
+ * run's result is <b>asynchronous</b>, reported on the work package instead.</li>
  * </ul>
- * The consequence the two paths must not suffer is drifting apart. The batched key drain - page size, pagination
- * and the runaway backstop - therefore lives once, in {@link AtpKeySelectionDrainer}, and both paths call it.
+ * Both paths share the batched key drain (page size, pagination, runaway backstop) via
+ * {@link AtpKeySelectionDrainer}, so they can't drift apart.
  * <p>
- * {@code IsDryRun} defaults to {@code 'N'} (off) - matching the house convention for comparable process-level
- * preview/simulation parameters (e.g. {@code IsSimulation} on the Commission Overview process, {@code IsTest} on
- * {@code DLM_Partition_Migrate}, both default {@code 'N'}) - so an operator who launches this process and accepts
- * every default runs a real, data-writing reconciliation; the checkbox must be ticked explicitly to preview only.
+ * {@code IsDryRun} defaults to {@code 'N'} - matching the house convention for comparable process-level
+ * preview/simulation parameters (e.g. {@code IsSimulation} on the Commission Overview process) - so an operator
+ * who accepts every default runs a real, data-writing reconciliation; the checkbox must be ticked explicitly to
+ * preview only.
  * <p>
- * <b>Liveness cutoff:</b> {@code LivenessCutoffDate}, when given, is converted to an {@link Instant} at the
- * start of that day in the system time zone and passed through as the liveness cutoff, so a candidate dated
- * strictly before it is treated as closed regardless of what its source document says.
+ * <b>Liveness cutoff:</b> {@code LivenessCutoffDate}, when given, is converted to an {@link Instant} at the start
+ * of that day in the system time zone, so a candidate dated strictly before it is treated as closed regardless of
+ * what its source document says.
  */
 public class MD_Candidate_Reconcile_ATP extends JavaProcess
 {
@@ -122,11 +121,10 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 	/**
 	 * Reports, per key of the selection, the divergence a real run would correct - and writes nothing.
 	 * <p>
-	 * Deliberately computed from {@link AtpTargetCalculator#computeDivergence} rather than from
-	 * {@link AtpReconciliationCommand#reconcileAndLog} with its {@code dryRun} flag set: the two produce the same
-	 * numbers (that flag makes {@code reconcileAndLog} return exactly the divergence and nothing else), but going
-	 * through the command would require the command <i>bean</i>, which does not exist in the webapi - so the
-	 * preview an operator asks for would fail there instead of previewing.
+	 * Deliberately computed from {@link AtpTargetCalculator#computeDivergence} rather than
+	 * {@link AtpReconciliationCommand#reconcileAndLog}'s {@code dryRun} path (same numbers either way): going
+	 * through the command would require the command <i>bean</i>, which doesn't exist in the webapi - so the
+	 * preview would fail there instead of previewing.
 	 */
 	private void previewInline(@NonNull final AtpReconciliationRunRequest request)
 	{
