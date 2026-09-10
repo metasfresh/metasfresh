@@ -93,7 +93,7 @@ public class AD_Archive_StepDef
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * Then the PDF archived for the record identified by "order" contains text "Nachlieferung"
+	 * Then the PDF archived for the record identified by "order" contains text "Teillieferungsavis"
 	 * </pre>
 	 */
 	@Then("the PDF archived for the record identified by {string} contains text {string}")

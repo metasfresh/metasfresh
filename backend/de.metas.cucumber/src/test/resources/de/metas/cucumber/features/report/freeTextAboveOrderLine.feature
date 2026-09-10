@@ -149,8 +149,8 @@ Feature: Free text above an order line
       | Auftrag (Jasper) | order     |
     # the block starts right below position 10's product number; two words on purpose, since this has to pin its FIRST wrapped line
     Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "Diese Position"
-    # the block must wrap onto further lines before position 20's article row; the
-    # fixture text is sized so this holds at the band's full width, not a narrower one
+    # the block occupies at least three lines of its own before position 20's article row
+    # text is sized for report_details_v2's full-width band: ~133 chars/line, so it wraps onto 4
     And in the PDF archived for the record identified by "order", at least 2 lines appear between text "Diese Position" and text "BetaItem"
     # the last word is still on the page, so nothing was clipped off the end
     And the PDF archived for the record identified by "order" contains text "Teillieferungsavis"
