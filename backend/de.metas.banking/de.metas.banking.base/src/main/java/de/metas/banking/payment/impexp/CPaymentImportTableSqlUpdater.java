@@ -55,13 +55,36 @@ public class CPaymentImportTableSqlUpdater
 
 	private void dbUpdateBPartners(@NonNull final ImportRecordsSelection selection)
 	{
+		final String matchCondition = "(i.BPartnerValue=bp.Debtorid OR i.BPartnerValue=bp.CreditorId)"
+				+ " AND i.AD_Client_ID=bp.AD_Client_ID AND i.AD_Org_ID=bp.AD_Org_ID"
+				+ " AND bp.IsActive='Y'";
+
+		// Set C_BPartner_ID only when exactly one active BPartner matches.
+		// Uses HAVING COUNT(*)=1 so that duplicate DebtorId/CreditorId values
+		// (after relaxing the unique constraint) don't silently pick an arbitrary partner.
 		StringBuilder sql = new StringBuilder("UPDATE I_Datev_Payment i ")
-				.append("SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner bp ")
-				.append(" WHERE (i.BPartnerValue=bp.Debtorid OR i.BPartnerValue=bp.CreditorId) AND i.AD_Client_ID=bp.AD_Client_ID AND i.AD_Org_ID=bp.AD_Org_ID ) ")
+				.append("SET C_BPartner_ID=(SELECT MIN(C_BPartner_ID) FROM C_BPartner bp ")
+				.append(" WHERE ").append(matchCondition)
+				.append(" HAVING COUNT(*)=1) ")
 				.append("WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL ")
 				.append("AND I_IsImported<>'Y'  ")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndSaveErrorOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		// Flag records where multiple active BPartners match the same DebtorId/CreditorId
+		sql = new StringBuilder("UPDATE I_Datev_Payment i ")
+				.append("SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')")
+				.append("||'ERR=Multiple BPartners found for the same DebtorId/CreditorId.")
+				.append(" Please make sure each DebtorId/CreditorId is unique among active BPartners.' ")
+				.append("WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL ")
+				.append("AND (SELECT COUNT(*) FROM C_BPartner bp WHERE ").append(matchCondition).append(") > 1 ")
+				.append("AND I_IsImported<>'Y'  ")
+				.append(selection.toSqlWhereClause("i"));
+		final int noAmbiguous = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		if (noAmbiguous > 0)
+		{
+			logger.warn("Ambiguous BPartner matches (multiple active BPartners with same DebtorId/CreditorId): {}", noAmbiguous);
+		}
 	}
 
 	private void dbUpdateInvoices(@NonNull final ImportRecordsSelection selection)
