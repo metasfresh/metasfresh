@@ -1635,34 +1635,55 @@ jobs:
         run: |
           junit_xml_path="cucumber/cucumber-junit.xml"
 
-          if [ -f "$junit_xml_path" ]; then
-            echo "Parsing JUnit XML report at: $junit_xml_path"
-
-            # Extract failures and errors from the XML using xmllint.
-            # We explicitly check for 'testsuite' as the root element that holds 'failures' and 'errors'.
-            failures=$(xmllint --xpath 'string(//testsuite/@failures)' "$junit_xml_path" 2>/dev/null)
-            errors=$(xmllint --xpath 'string(//testsuite/@errors)' "$junit_xml_path" 2>/dev/null)
-
-            # Default to 0 if the attributes are not found or xmllint returns nothing.
-            failures=${failures:-0}
-            errors=${errors:-0}
-
-            echo "Found $failures failures and $errors errors in $junit_xml_path"
-
-            if [ "$failures" -gt 0 ] || [ "$errors" -gt 0 ]; then
-              tail -n 1000 cucumber.log || true # Print last 1000 lines of log (if available).
-              echo "--- Cucumber tests FAILED! ---"
-              echo "Failures: $failures, Errors: $errors"
-              exit 1 # Exit with a non-zero code to indicate failure
-            else
-              echo "--- All Cucumber tests PASSED successfully! ---"
-            fi
-          else
+          if [ ! -f "$junit_xml_path" ]; then
             echo "ERROR: JUnit XML report not found at $junit_xml_path."
             echo "This is unexpected, as entrypoint.sh should copy it. Check container logs and paths."
             tail -n 1000 cucumber.log || true # Print last 1000 lines of log.
             exit 1 # Fail the CI/CD step if the report is missing.
           fi
+
+          echo "Parsing JUnit XML report at: $junit_xml_path"
+
+          # 'testsuite' is the root element carrying tests/failures/errors.
+          tests=$(xmllint --xpath 'string(//testsuite/@tests)' "$junit_xml_path" 2>/dev/null)
+          failures=$(xmllint --xpath 'string(//testsuite/@failures)' "$junit_xml_path" 2>/dev/null)
+          errors=$(xmllint --xpath 'string(//testsuite/@errors)' "$junit_xml_path" 2>/dev/null)
+
+          # An unreadable attribute must NOT be treated as 0: defaulting makes SILENCE look like
+          # SUCCESS, which is the one outcome this step exists to prevent. A blank or non-numeric
+          # value means the report is not the shape we assume, so say so and fail.
+          for pair in "tests:$tests" "failures:$failures" "errors:$errors"; do
+            name=${pair%%:*}
+            value=${pair#*:}
+            case "$value" in
+              ''|*[!0-9]*)
+                echo "ERROR: could not read a numeric '$name' from $junit_xml_path (got '$value')."
+                echo "The report is not the expected shape - refusing to call this a pass."
+                head -c 4000 "$junit_xml_path" || true
+                exit 1
+                ;;
+            esac
+          done
+
+          echo "Found $tests tests, $failures failures and $errors errors in $junit_xml_path"
+
+          # ZERO tests is a failure, not a pass: this shard verified nothing. It is what a silently
+          # empty tag filter, a renamed executor tag, or a harness that died before running anything
+          # looks like from here -- and every profile legitimately reports a real count.
+          if [ "$tests" -eq 0 ]; then
+            echo "ERROR: the report contains ZERO tests - this shard verified nothing."
+            tail -n 1000 cucumber.log || true
+            exit 1
+          fi
+
+          if [ "$failures" -gt 0 ] || [ "$errors" -gt 0 ]; then
+            tail -n 1000 cucumber.log || true # Print last 1000 lines of log (if available).
+            echo "--- Cucumber tests FAILED! ---"
+            echo "Failures: $failures, Errors: $errors"
+            exit 1 # Exit with a non-zero code to indicate failure
+          fi
+
+          echo "--- All $tests Cucumber tests PASSED successfully! ---"
       - name: Check if 'metasfreshArchives' directory exists
         id: check_metasfreshArchives_dir
         run: |
