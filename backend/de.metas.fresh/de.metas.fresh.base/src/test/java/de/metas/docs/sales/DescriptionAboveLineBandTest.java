@@ -42,13 +42,26 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * The templates live in {@code src/main/jasperreports}, i.e. they are NOT on the test classpath - they are
  * resolved from the filesystem relative to the module root, the same way {@code RunMigrationScriptsTest}
- * resolves the migration scripts. They are parsed as XML (never matched as text): the whole point is to tell
- * a band-level {@code printWhenExpression} apart from one nested inside a {@code <textField>}, and a
- * substring match cannot.
+ * resolves the migration scripts. Two maven modules carry such templates - this one and
+ * {@code metasfresh-dist/base} - so two source roots are scanned; see {@link #templateRoots()}. They are parsed as
+ * XML (never matched as text): the whole point is to tell a band-level {@code printWhenExpression} apart from one
+ * nested inside a {@code <textField>}, and a substring match cannot.
  */
 public class DescriptionAboveLineBandTest
 {
 	private static final String TEMPLATES_DIR = "src/main/jasperreports/de/metas/docs/sales";
+
+	/**
+	 * The very same directory in the SIBLING maven module {@code metasfresh-dist/base}, which carries one further
+	 * line-detail template ({@code alternate_inout_2/report_details_hu.jrxml}) with the same band in it. The band
+	 * there would otherwise be the one nobody checks, which is exactly the situation this test exists to remove.
+	 * <p>
+	 * It is resolved by walking up from this module until a directory containing this path is found, so no
+	 * assumption is made about how deeply either module is nested; and a checkout that does not have the sibling
+	 * module simply gets that root SKIPPED rather than a failure - see {@link #templateRoots()}.
+	 */
+	private static final String DIST_MODULE_TEMPLATES_DIR = "metasfresh-dist/base/" + TEMPLATES_DIR;
+
 	private static final String TEMPLATE_FILENAME_PREFIX = "report_details";
 	private static final String TEMPLATE_FILENAME_SUFFIX = ".jrxml";
 
@@ -61,16 +74,26 @@ public class DescriptionAboveLineBandTest
 	 * template copied from one that has it - by making that show up as a failure instead of as untested code.
 	 * The value is purely descriptive of today's tree; a template that gains or loses the field on purpose has
 	 * to make someone bump this number, and think about the band while doing so.
+	 * <p>
+	 * Counted PER SOURCE ROOT, because the templates live in two maven modules: 22 in this one
+	 * ({@code de.metas.fresh.base}) and 1 in {@code metasfresh-dist/base}
+	 * ({@code alternate_inout_2/report_details_hu.jrxml}), 23 together.
 	 */
-	private static final int EXPECTED_TEMPLATE_COUNT = 15;
+	private static final int EXPECTED_TEMPLATE_COUNT_OWN_MODULE = 22;
+
+	/**
+	 * @see #EXPECTED_TEMPLATE_COUNT_OWN_MODULE
+	 */
+	private static final int EXPECTED_TEMPLATE_COUNT_DIST_MODULE = 1;
 
 	/**
 	 * An article row is a band that lays out several COLUMNS, i.e. one whose elements sit at several different
 	 * {@code x} positions - as opposed to our own full-width block and the single-column
 	 * description/attribute/campaign rows, which put everything at one {@code x}.
 	 * <p>
-	 * Measured over all 15 templates that carry the field: article rows have 3 to 12 distinct {@code x}
-	 * positions, every non-article band has exactly 1, so 3 separates them with the widest possible margin on
+	 * Measured over all 23 templates that carry the field: article rows have 3 to 12 distinct {@code x}
+	 * positions, every non-article band has 0 or 1 (0 being the 3pt spacer band in
+	 * {@code alternate_inout_2/report_details_hu}), so 3 separates them with the widest possible margin on
 	 * both sides. Distinct {@code x} over ALL element types, deliberately not over {@code <textField>}s only:
 	 * {@code inout/report_details_hu}, {@code inout/report_details_hu_v2}, {@code picking/report_details_hu} and
 	 * {@code picking/report_details_hu_name_over_attributes} are article rows carrying just three text fields
@@ -82,8 +105,9 @@ public class DescriptionAboveLineBandTest
 	/**
 	 * Slack allowed between our block's right edge and the right edge of its template's own content row.
 	 * The floor is set by {@code order/report_details_hu_v2}, whose block ends at 543 while its article row ends
-	 * at 545; in the other 14 templates the block is flush with the content row (delta 0), so 2 is the smallest
-	 * value that keeps the tree green.
+	 * at 545; of the other 22 templates 21 are flush with their content row (delta 0) and {@code pickingv2/report_details}
+	 * is wider than it, so 2 is the smallest value that keeps the tree green. Only a block that falls SHORT of the
+	 * content row is a violation - one that reaches beyond it cannot wrap the customer's text too early.
 	 */
 	private static final int RIGHT_EDGE_TOLERANCE = 2;
 
@@ -99,43 +123,51 @@ public class DescriptionAboveLineBandTest
 	@Test
 	void eachTemplateCarryingTheFieldPrintsItAsOneFullWidthGuardedBandAboveItsArticleRow()
 	{
-		final Path templatesDir = moduleRootDir().resolve(TEMPLATES_DIR);
-		final List<Path> templates = findTemplatesReferencingTheField(templatesDir);
+		final List<TemplateRoot> templateRoots = templateRoots();
 
 		final List<String> violations = new ArrayList<>();
+		int checkedTemplateCount = 0;
 
-		// The filename pattern classifies, it does not filter: a template that carries the field under some other
-		// name is a template whose band nobody is checking, so it has to be reported - and it has to count towards
-		// EXPECTED_TEMPLATE_COUNT, or it could be added without tripping anything.
-		final List<String> offPatternNames = templates.stream()
-				.filter(template -> !isLineDetailTemplate(template))
-				.map(template -> relativeName(templatesDir, template))
-				.collect(Collectors.toList());
-		if (!offPatternNames.isEmpty())
+		for (final TemplateRoot templateRoot : templateRoots)
 		{
-			violations.add("template(s) carry `" + FIELD_NAME + "` but are not named `" + TEMPLATE_FILENAME_PREFIX
-					+ "*" + TEMPLATE_FILENAME_SUFFIX + "`, which is where this test expects the line-detail templates"
-					+ " to live. They are checked all the same; either rename them or widen"
-					+ " TEMPLATE_FILENAME_PREFIX on purpose:\n" + bulletList(offPatternNames));
-		}
+			final List<Path> templates = findTemplatesReferencingTheField(templateRoot.dir);
+			checkedTemplateCount += templates.size();
 
-		if (templates.size() != EXPECTED_TEMPLATE_COUNT)
-		{
-			violations.add("Expected " + EXPECTED_TEMPLATE_COUNT + " line-detail templates to carry `" + FIELD_NAME + "`"
-					+ " but found " + templates.size() + "."
-					+ " If a template gained or lost the field on purpose, update EXPECTED_TEMPLATE_COUNT."
-					+ " Templates found:\n" + bulletList(relativeNames(templatesDir, templates)));
-		}
+			// The filename pattern classifies, it does not filter: a template that carries the field under some other
+			// name is a template whose band nobody is checking, so it has to be reported - and it has to count towards
+			// the expected count, or it could be added without tripping anything.
+			final List<String> offPatternNames = templates.stream()
+					.filter(template -> !isLineDetailTemplate(template))
+					.map(templateRoot::nameOf)
+					.collect(Collectors.toList());
+			if (!offPatternNames.isEmpty())
+			{
+				violations.add("template(s) carry `" + FIELD_NAME + "` but are not named `" + TEMPLATE_FILENAME_PREFIX
+						+ "*" + TEMPLATE_FILENAME_SUFFIX + "`, which is where this test expects the line-detail templates"
+						+ " to live. They are checked all the same; either rename them or widen"
+						+ " TEMPLATE_FILENAME_PREFIX on purpose:\n" + bulletList(offPatternNames));
+			}
 
-		for (final Path template : templates)
-		{
-			checkTemplate(relativeName(templatesDir, template), parseXml(template), violations);
+			if (templates.size() != templateRoot.expectedTemplateCount)
+			{
+				violations.add("Expected " + templateRoot.expectedTemplateCount + " line-detail template(s) under `"
+						+ templateRoot.label + "` to carry `" + FIELD_NAME + "` but found " + templates.size() + "."
+						+ " If a template gained or lost the field on purpose, update that root's expected count"
+						+ " (EXPECTED_TEMPLATE_COUNT_OWN_MODULE / EXPECTED_TEMPLATE_COUNT_DIST_MODULE)."
+						+ " Templates found:\n" + bulletList(templateRoot.namesOf(templates)));
+			}
+
+			for (final Path template : templates)
+			{
+				checkTemplate(templateRoot.nameOf(template), parseXml(template), violations);
+			}
 		}
 
 		assertThat(violations)
 				.withFailMessage("The `%s` print band violates its structural invariants in %s place(s):\n\n%s\n\n"
 								+ "(checked %s template(s) under %s)",
-						FIELD_NAME, violations.size(), bulletList(violations), templates.size(), templatesDir)
+						FIELD_NAME, violations.size(), bulletList(violations), checkedTemplateCount,
+						templateRoots.stream().map(root -> String.valueOf(root.dir)).collect(Collectors.joining(", ")))
 				.isEmpty();
 	}
 
@@ -595,28 +627,97 @@ public class DescriptionAboveLineBandTest
 	}
 
 	/**
+	 * One directory holding line-detail templates, together with how many of them are expected to carry the field
+	 * and how a template inside it is named in a violation message. There is more than one because the templates
+	 * are spread over two maven modules - see {@link #DIST_MODULE_TEMPLATES_DIR}.
+	 */
+	private static final class TemplateRoot
+	{
+		private final String label;
+		private final Path dir;
+		private final int expectedTemplateCount;
+
+		private TemplateRoot(final String label, final Path dir, final int expectedTemplateCount)
+		{
+			this.label = label;
+			this.dir = dir;
+			this.expectedTemplateCount = expectedTemplateCount;
+		}
+
+		/**
+		 * @return the template's path relative to this root, prefixed with the root's label, so that a violation
+		 * 		message says which MODULE's template it is about - two modules have a {@code report_details_hu.jrxml}.
+		 */
+		private String nameOf(final Path template)
+		{
+			return label + "/" + relativeName(dir, template);
+		}
+
+		private List<String> namesOf(final List<Path> templates)
+		{
+			return templates.stream().map(this::nameOf).collect(Collectors.toList());
+		}
+	}
+
+	/**
+	 * @return every directory that holds line-detail templates: this module's, always, plus
+	 * 		{@code metasfresh-dist/base}'s when the checkout has that sibling module. The sibling being absent is
+	 * 		NOT a failure - the templates are resolved from the filesystem rather than from the classpath, so the
+	 * 		test has to cope with being run from a checkout that does not contain it, and then still checks
+	 * 		everything it CAN see. What it must never do is quietly check nothing, which is why this module's own
+	 * 		root is resolved by {@link #moduleRootDir()} and throws when it is not found.
+	 */
+	private static List<TemplateRoot> templateRoots()
+	{
+		final List<TemplateRoot> roots = new ArrayList<>();
+		roots.add(new TemplateRoot("de.metas.fresh.base", moduleRootDir().resolve(TEMPLATES_DIR),
+				EXPECTED_TEMPLATE_COUNT_OWN_MODULE));
+
+		final Path distModuleParentDir = findAncestorContaining(DIST_MODULE_TEMPLATES_DIR);
+		if (distModuleParentDir != null)
+		{
+			roots.add(new TemplateRoot("metasfresh-dist/base", distModuleParentDir.resolve(DIST_MODULE_TEMPLATES_DIR),
+					EXPECTED_TEMPLATE_COUNT_DIST_MODULE));
+		}
+
+		return roots;
+	}
+
+	/**
 	 * @return the first directory - starting at the working directory and walking up - that contains
 	 * 		{@link #TEMPLATES_DIR}. The templates are not on the test classpath, so they have to be resolved from
 	 * 		the filesystem; {@code RunMigrationScriptsTest} locates the migration scripts the same way.
 	 */
 	private static Path moduleRootDir()
 	{
+		final Path moduleRootDir = findAncestorContaining(TEMPLATES_DIR);
+		if (moduleRootDir == null)
+		{
+			throw new IllegalStateException("Cannot locate `" + TEMPLATES_DIR + "` in "
+					+ Paths.get("").toAbsolutePath().normalize()
+					+ " or any of its ancestors. Run this test with the module directory as working directory.");
+		}
+
+		return moduleRootDir;
+	}
+
+	/**
+	 * @return the first directory - starting at the working directory and walking up - under which
+	 * 		{@code relativePath} is an existing directory; {@code null} if there is none.
+	 */
+	@Nullable
+	private static Path findAncestorContaining(final String relativePath)
+	{
 		final Path workingDir = Paths.get("").toAbsolutePath().normalize();
 		for (Path dir = workingDir; dir != null; dir = dir.getParent())
 		{
-			if (Files.isDirectory(dir.resolve(TEMPLATES_DIR)))
+			if (Files.isDirectory(dir.resolve(relativePath)))
 			{
 				return dir;
 			}
 		}
 
-		throw new IllegalStateException("Cannot locate `" + TEMPLATES_DIR + "` in " + workingDir
-				+ " or any of its ancestors. Run this test with the module directory as working directory.");
-	}
-
-	private static List<String> relativeNames(final Path templatesDir, final List<Path> files)
-	{
-		return files.stream().map(file -> relativeName(templatesDir, file)).collect(Collectors.toList());
+		return null;
 	}
 
 	private static String relativeName(final Path templatesDir, final Path file)
