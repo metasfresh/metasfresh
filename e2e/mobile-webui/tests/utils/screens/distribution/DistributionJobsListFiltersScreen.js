@@ -39,6 +39,13 @@ export const DistributionJobsListFiltersScreen = {
         await expect(group.locator('.caption')).toHaveText(caption);
     }),
 
+    // Absence counterpart to expectGroupOffered above: a group with zero facets is never rendered at
+    // all (DistributionFacetsCollection only builds a group for a groupId it actually collected a
+    // facet for), so "not offered" means the group container never attaches to the DOM.
+    expectGroupNotOffered: async ({ groupId }) => await test.step(`Expect facet group "${groupId}" NOT offered`, async () => {
+        await expect(page.locator(`[data-testid="${groupId}"]`)).toHaveCount(0);
+    }),
+
     getFacetIdByCaptionContains: async ({ groupId, captionContains, expectHitCount }) => await test.step(`Get facet id in group "${groupId}" captioned like "${captionContains}"`, async () => {
         const chip = page.locator(`[data-testid="${groupId}"] button`).filter({ hasText: captionContains });
         await chip.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
