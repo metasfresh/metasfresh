@@ -112,9 +112,9 @@ Feature: ATP reconciliation process - dry run and selection filter
 
     # the selected key was corrected: a new candidate at the run date restores the physical quantity
     Then after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier    | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | cand_sel_a    | INVENTORY_UP      | p_sel_a      | 2024-09-20T06:00:00Z | 0   | 0   | WH_BASE        |
-      | cand_sel_a_fx | INVENTORY_UP      | p_sel_a      | 2024-09-22T06:00:00Z | 100 | 100 | WH_BASE        |
+      | Identifier    | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | cand_sel_a    | INVENTORY_UP      |                           | p_sel_a      | 2024-09-20T06:00:00Z | 0   | 0   | WH_BASE        |
+      | cand_sel_a_fx | INVENTORY_UP      | ATP_RECONCILE             | p_sel_a      | 2024-09-22T06:00:00Z | 100 | 100 | WH_BASE        |
     # the key outside the selection was left untouched: still exactly the one, drifted candidate
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |

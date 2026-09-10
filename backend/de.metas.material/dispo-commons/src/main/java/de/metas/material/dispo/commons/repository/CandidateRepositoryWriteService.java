@@ -76,6 +76,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -110,6 +111,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class CandidateRepositoryWriteService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -132,21 +134,6 @@ public class CandidateRepositoryWriteService
 			@NonNull final CandidateQtyDetailsRepository candidateQtyDetailsRepository)
 	{
 		this(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, candidateQtyDetailsRepository, new AtpReconciliationDetailRepo());
-	}
-
-	@Autowired
-	public CandidateRepositoryWriteService(
-			@NonNull final DimensionService dimensionService,
-			@NonNull final StockChangeDetailRepo stockChangeDetailRepo,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final CandidateQtyDetailsRepository candidateQtyDetailsRepository,
-			@NonNull final AtpReconciliationDetailRepo atpReconciliationDetailRepo)
-	{
-		this.dimensionService = dimensionService;
-		this.stockChangeDetailRepo = stockChangeDetailRepo;
-		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
-		this.candidateQtyDetailsRepository = candidateQtyDetailsRepository;
-		this.atpReconciliationDetailRepo = atpReconciliationDetailRepo;
 	}
 
 	/**
