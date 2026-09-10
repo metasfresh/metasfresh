@@ -121,7 +121,7 @@ public abstract class ReceiptDispositionDeliveryPlanningViewBasedProcess extends
 
 		return deliveryPlanningIds.isEmpty()
 				? DeliveryPlanningList.EMPTY
-				: deliveryPlanningService.getProcessedStatePlannings(deliveryPlanningIds);
+				: deliveryPlanningService.getByIds(deliveryPlanningIds);
 	}
 
 	/**

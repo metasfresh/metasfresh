@@ -53,6 +53,7 @@ import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Set;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -367,8 +368,8 @@ class DeliveryPlanningCompletionCascadeTest
 		// exactly ONE batch load, carrying ALL THREE allocated plannings - not a per-planning loop, and not a
 		// batch that silently drops the instruction's other lines
 		@SuppressWarnings("unchecked")
-		final ArgumentCaptor<Collection<DeliveryPlanningId>> batchLoadedIds = ArgumentCaptor.forClass(Collection.class);
-		Mockito.verify(deliveryPlanningRepository, Mockito.times(1)).getByIds(batchLoadedIds.capture());
+		final ArgumentCaptor<Set<DeliveryPlanningId>> batchLoadedIds = ArgumentCaptor.forClass(Set.class);
+		Mockito.verify(deliveryPlanningRepository, Mockito.times(1)).getRecordsByIds(batchLoadedIds.capture());
 		assertThat(batchLoadedIds.getValue()).containsExactlyInAnyOrder(first, second, third);
 		Mockito.verify(deliveryPlanningRepository, Mockito.never()).getById(Mockito.any());
 	}
@@ -393,6 +394,6 @@ class DeliveryPlanningCompletionCascadeTest
 		// TWO calls over the same 2 ids are expected: the deactivation resets those plannings' dates (one batch
 		// load), and the deferred invalidation reads them again afterwards (a second, unrelated batch load)
 		Mockito.verify(deliveryPlanningRepository, Mockito.times(2))
-				.getByIds(Mockito.argThat(ids -> ((java.util.Collection<?>) ids).size() == 2));
+				.getRecordsByIds(Mockito.argThat(ids -> ((java.util.Collection<?>) ids).size() == 2));
 	}
 }

@@ -236,7 +236,7 @@ class DeliveryPlanningBatchLoadingTest
 	 */
 	private void assertBatchLoadedExactly(final int batchLoads, final int singleRowLoads)
 	{
-		Mockito.verify(deliveryPlanningRepository, Mockito.times(batchLoads)).getByIds(Mockito.any());
+		Mockito.verify(deliveryPlanningRepository, Mockito.times(batchLoads)).getRecordsByIds(Mockito.any());
 		Mockito.verify(deliveryPlanningRepository, Mockito.times(singleRowLoads)).getById(Mockito.any());
 	}
 

@@ -106,6 +106,7 @@ class DeliveryPlanningCombineRejectionTest
 				.actualLoadedQty(zeroQty())
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540001));
 	}
 
@@ -206,6 +207,7 @@ class DeliveryPlanningCombineRejectionTest
 				.actualLoadedQty(zeroQty())
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540001))
 				.incotermsId(IncotermsId.ofRepoId(540002))
 				.incotermLocation("Hamburg")
@@ -223,6 +225,7 @@ class DeliveryPlanningCombineRejectionTest
 				.actualLoadedQty(zeroQty())
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540011))
 				.incotermsId(IncotermsId.ofRepoId(540012))
 				.incotermLocation("Rotterdam")

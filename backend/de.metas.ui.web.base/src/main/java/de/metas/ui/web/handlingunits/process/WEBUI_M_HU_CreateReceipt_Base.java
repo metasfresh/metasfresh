@@ -236,7 +236,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		}
 
 		deliveryPlanningService
-				.getReceiveRejectionReason(deliveryPlanningService.getProcessedStatePlannings(deliveryPlanningIds))
+				.getReceiveRejectionReason(deliveryPlanningService.getByIds(deliveryPlanningIds))
 				.ifPresent(reason -> {
 					throw new AdempiereException(reason);
 				});

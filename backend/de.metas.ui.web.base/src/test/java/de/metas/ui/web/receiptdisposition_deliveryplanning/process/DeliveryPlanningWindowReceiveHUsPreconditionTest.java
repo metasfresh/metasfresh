@@ -123,7 +123,7 @@ class DeliveryPlanningWindowReceiveHUsPreconditionTest
 	 */
 	private ViewAsPreconditionsContext singleRowSelected(@NonNull final TransportDirection transportDirection)
 	{
-		Mockito.when(deliveryPlanningService().getProcessedStatePlannings(Mockito.any()))
+		Mockito.when(deliveryPlanningService().getByIds(Mockito.any()))
 				.thenReturn(DeliveryPlanningList.of(DeliveryPlanning.builder()
 						.id(PLANNING_ID)
 						.orgId(OrgId.ANY)
@@ -133,6 +133,7 @@ class DeliveryPlanningWindowReceiveHUsPreconditionTest
 						.actualLoadedQty(zeroQty())
 						.plannedDischargeQty(zeroQty())
 						.actualDischargeQty(zeroQty())
+						.qtyTotalOpen(zeroQty())
 						.processed(false)
 						.build()));
 

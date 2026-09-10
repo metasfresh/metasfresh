@@ -686,7 +686,7 @@ public class DeliveryPlanningService
 				.collect(ImmutableSet.toImmutableSet());
 
 		return toDeliveryPlanningList(
-				deliveryPlanningRepository.getByIds(allocatedIds),
+				deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(allocatedIds)),
 				Multimaps.index(allocations, DeliveryPlanningAlloc::getDeliveryPlanningId));
 	}
 
@@ -1080,9 +1080,9 @@ public class DeliveryPlanningService
 		return Optional.empty();
 	}
 
-	public DeliveryPlanningList getProcessedStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	public DeliveryPlanningList getByIds(@NonNull final Set<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		return deliveryPlanningRepository.getProcessedStatePlannings(deliveryPlanningIds);
+		return deliveryPlanningRepository.getByIds(deliveryPlanningIds);
 	}
 
 	/**
@@ -1227,9 +1227,9 @@ public class DeliveryPlanningService
 			return Optional.empty();
 		}
 
-		final ImmutableList<DeliveryPlanningId> closedPlanningIds = deliveryPlanningRepository.getByIds(allocatedPlanningIds).stream()
-				.filter(I_M_Delivery_Planning::isClosed)
-				.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
+		final ImmutableList<DeliveryPlanningId> closedPlanningIds = deliveryPlanningRepository.getByIds(ImmutableSet.copyOf(allocatedPlanningIds)).stream()
+				.filter(DeliveryPlanning::isClosed)
+				.map(DeliveryPlanning::getId)
 				.collect(ImmutableList.toImmutableList());
 		if (closedPlanningIds.isEmpty())
 		{
@@ -1308,7 +1308,7 @@ public class DeliveryPlanningService
 	 */
 	private ImmutableList<DeliveryPlanningAllocCreateRequest> createAllocCreateRequests(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		return deliveryPlanningRepository.getByIds(deliveryPlanningIds)
+		return deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(deliveryPlanningIds))
 				.stream()
 				.map(this::createAllocCreateRequest)
 				.collect(ImmutableList.toImmutableList());
@@ -1714,7 +1714,7 @@ public class DeliveryPlanningService
 
 		if (!allocatedPlanningIds.isEmpty())
 		{
-			trxManager.runAfterCommit(() -> deliveryPlanningRepository.getByIds(allocatedPlanningIds)
+			trxManager.runAfterCommit(() -> deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(allocatedPlanningIds))
 					.forEach(this::invalidateInvoiceCandidatesFor));
 		}
 	}
@@ -1819,7 +1819,7 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords = deliveryPlanningRepository.getByIds(deliveryPlanningIds);
+		final ImmutableList<I_M_Delivery_Planning> deliveryPlanningRecords = deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(deliveryPlanningIds));
 
 		final ImmutableSet.Builder<OrderId> orderIds = ImmutableSet.builder();
 		final ImmutableSet.Builder<OrderLineId> orderLineIds = ImmutableSet.builder();
@@ -2129,7 +2129,7 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		deliveryPlanningRepository.getByIds(allocatedPlanningIds)
+		deliveryPlanningRepository.getRecordsByIds(ImmutableSet.copyOf(allocatedPlanningIds))
 				.forEach(this::invalidateInvoiceCandidatesFor);
 	}
 

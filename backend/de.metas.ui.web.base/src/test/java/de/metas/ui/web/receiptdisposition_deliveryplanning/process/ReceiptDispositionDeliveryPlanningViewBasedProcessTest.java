@@ -153,6 +153,7 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 				.actualLoadedQty(zeroQty())
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
 				.readyForReceipt(true);
 	}
 

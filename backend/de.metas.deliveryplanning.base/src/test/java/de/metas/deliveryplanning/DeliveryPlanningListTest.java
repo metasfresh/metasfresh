@@ -88,13 +88,15 @@ class DeliveryPlanningListTest
 				.plannedLoadedQty(qty(0))
 				.actualLoadedQty(qty(0))
 				.plannedDischargeQty(qty(0))
-				.actualDischargeQty(qty(0));
+				.actualDischargeQty(qty(0))
+				.qtyTotalOpen(qty(0));
 	}
 
 	private static DeliveryPlanning withShipper(@Nullable final Integer shipperRepoId)
 	{
 		return planning()
 				.shipperId(shipperRepoId != null ? ShipperId.ofRepoId(shipperRepoId) : null)
+				.qtyTotalOpen(qty(0))
 				.build();
 	}
 
@@ -184,6 +186,7 @@ class DeliveryPlanningListTest
 					.meansOfTransportationId(MeansOfTransportationId.ofRepoId(540003))
 					.loadingLocationId(BPartnerLocationId.ofRepoId(540004, 540005))
 					.deliveryLocationId(BPartnerLocationId.ofRepoId(540006, 540007))
+					.qtyTotalOpen(qty(0))
 					.build();
 
 			final DeliveryPlanning row2 = DeliveryPlanning.builder()
@@ -201,6 +204,7 @@ class DeliveryPlanningListTest
 					.meansOfTransportationId(MeansOfTransportationId.ofRepoId(540013))
 					.loadingLocationId(BPartnerLocationId.ofRepoId(540014, 540015))
 					.deliveryLocationId(BPartnerLocationId.ofRepoId(540016, 540017))
+					.qtyTotalOpen(qty(0))
 					.build();
 
 			assertThat(DeliveryPlanningList.of(row1, row2).aggregationKeyViolations())
@@ -224,6 +228,7 @@ class DeliveryPlanningListTest
 					.plannedDischargeQty(qty(0))
 					.actualDischargeQty(qty(0))
 					.etd(etd != null ? Instant.parse(etd) : null)
+					.qtyTotalOpen(qty(0))
 					.build();
 		}
 
@@ -648,6 +653,7 @@ class DeliveryPlanningListTest
 					.actualLoadedQty(qty(actualLoad))
 					.plannedDischargeQty(qty(0))
 					.actualDischargeQty(qty(0))
+					.qtyTotalOpen(qty(0))
 					.build();
 		}
 
@@ -708,6 +714,7 @@ class DeliveryPlanningListTest
 					.actualLoadedQty(qty(actualLoad))
 					.plannedDischargeQty(qty(plannedDischarge))
 					.actualDischargeQty(qty(actualDischarge))
+					.qtyTotalOpen(qty(0))
 					.build();
 		}
 
@@ -884,6 +891,7 @@ class DeliveryPlanningListTest
 					.actualLoadedQty(qty(actualLoad))
 					.plannedDischargeQty(qty(plannedDischarge))
 					.actualDischargeQty(qty(actualDischarge))
+					.qtyTotalOpen(qty(0))
 					.build();
 		}
 

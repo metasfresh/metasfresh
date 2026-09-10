@@ -47,7 +47,7 @@ import java.time.Instant;
  * is allocated to. Not a full mirror of {@code M_Delivery_Planning}.
  */
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class DeliveryPlanning
 {
 	@NonNull DeliveryPlanningId id;
@@ -123,6 +123,26 @@ public class DeliveryPlanning
 	 * is null on the majority of rows - a planning has no shipment/receipt until one is generated.
 	 */
 	@Nullable InOutId inOutId;
+
+	/**
+	 * The delivery instruction this planning currently sits on, and the release number stamped from it. Both
+	 * null while it is on none - which is the state {@code clearInstructionReference} puts it back into.
+	 */
+	@Nullable ShipperTransportationId shipperTransportationId;
+
+	@Nullable String releaseNo;
+
+	/**
+	 * The order-line TOTALS, redundantly stored on every planning of the line: how much of the line is still
+	 * open, and how much of that is already planned. Written together by
+	 * {@code recomputeOpenQuantitiesForOrderLine}, which is why they are on the model at all.
+	 * <p>
+	 * {@code QtyTotalOpen} is {@code AD_IsMandatory='Y'} and physically NOT NULL; {@code QtyTotalOpenPlanned}
+	 * is neither, so the two are typed differently on purpose rather than uniformly.
+	 */
+	@NonNull Quantity qtyTotalOpen;
+
+	@Nullable Quantity qtyTotalOpenPlanned;
 
 	/**
 	 * This planning's ACTIVE allocations, one per delivery instruction it sits on. A list rather than a single id

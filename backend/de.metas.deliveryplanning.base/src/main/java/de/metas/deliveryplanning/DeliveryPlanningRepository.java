@@ -23,6 +23,7 @@
 package de.metas.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -71,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -116,7 +118,66 @@ public class DeliveryPlanningRepository
 	 *
 	 * @throws AdempiereException for an id with no matching row - a dangling reference, not a row to drop silently.
 	 */
-	protected ImmutableList<I_M_Delivery_Planning> getByIds(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	/**
+	 * Writes back the MUTABLE fields the model owns, leaving every other column untouched - the model is
+	 * deliberately not a full mirror of {@code M_Delivery_Planning}, so a save must not blank what it does not
+	 * carry. Product, UOM and order line are set when the planning is created and changed by no write path
+	 * here, so they are identity rather than state and are deliberately not rewritten.
+	 */
+	public void save(@NonNull final DeliveryPlanning deliveryPlanning)
+	{
+		final I_M_Delivery_Planning record = getById(deliveryPlanning.getId());
+		applyTo(record, deliveryPlanning);
+		saveRecord(record);
+	}
+
+	/**
+	 * Read-modify-write over ONE batch load: the records are fetched once, each is handed to the caller AS THE
+	 * MODEL, and the returned model is written straight back onto the record it came from.
+	 * <p>
+	 * This exists because the obvious shape - read a {@link DeliveryPlanningList}, transform it, save it -
+	 * reads every row TWICE, once as models and again as records to write. {@code DeliveryPlanningBatchLoadingTest}
+	 * pins the load count on these paths, which is what caught that.
+	 */
+	public void updateByIds(
+			@NonNull final Set<DeliveryPlanningId> deliveryPlanningIds,
+			@NonNull final UnaryOperator<DeliveryPlanning> transform)
+	{
+		for (final I_M_Delivery_Planning record : getRecordsByIds(deliveryPlanningIds))
+		{
+			applyTo(record, transform.apply(fromRecord(record)));
+			saveRecord(record);
+		}
+	}
+
+	private static void applyTo(@NonNull final I_M_Delivery_Planning record, @NonNull final DeliveryPlanning deliveryPlanning)
+	{
+		record.setAD_Org_ID(deliveryPlanning.getOrgId().getRepoId());
+		record.setTransportDirection(deliveryPlanning.getTransportDirection().getCode());
+		record.setM_Shipper_ID(ShipperId.toRepoId(deliveryPlanning.getShipperId()));
+		record.setC_Incoterms_ID(IncotermsId.toRepoId(deliveryPlanning.getIncotermsId()));
+		record.setIncotermLocation(deliveryPlanning.getIncotermLocation());
+		record.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(deliveryPlanning.getMeansOfTransportationId()));
+		record.setETD(TimeUtil.asTimestamp(deliveryPlanning.getEtd()));
+		record.setIsClosed(deliveryPlanning.isClosed());
+		record.setProcessed(deliveryPlanning.isProcessed());
+		record.setM_InOut_ID(InOutId.toRepoId(deliveryPlanning.getInOutId()));
+		record.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(deliveryPlanning.getShipperTransportationId()));
+		record.setReleaseNo(deliveryPlanning.getReleaseNo());
+		record.setQtyOrdered(deliveryPlanning.getQtyOrdered().toBigDecimal());
+		record.setPlannedLoadedQuantity(deliveryPlanning.getPlannedLoadedQty().toBigDecimal());
+		record.setActualLoadQty(deliveryPlanning.getActualLoadedQty().toBigDecimal());
+		record.setPlannedDischargeQuantity(deliveryPlanning.getPlannedDischargeQty().toBigDecimal());
+		record.setActualDischargeQuantity(deliveryPlanning.getActualDischargeQty().toBigDecimal());
+		record.setQtyTotalOpen(deliveryPlanning.getQtyTotalOpen().toBigDecimal());
+		record.setQtyTotalOpenPlanned(deliveryPlanning.getQtyTotalOpenPlanned() != null ? deliveryPlanning.getQtyTotalOpenPlanned().toBigDecimal() : null);
+	}
+
+	/**
+	 * The RECORDS, for the write paths that mutate and save them. Read paths take {@link #getByIds}, which
+	 * hands out the model and keeps the records inside this repository.
+	 */
+	protected ImmutableList<I_M_Delivery_Planning> getRecordsByIds(@NonNull final Set<DeliveryPlanningId> deliveryPlanningIds)
 	{
 		if (deliveryPlanningIds.isEmpty())
 		{
@@ -315,7 +376,7 @@ public class DeliveryPlanningRepository
 			record.setProcessed(true);
 		}
 
-		save(record);
+		saveRecord(record);
 	}
 
 	/**
@@ -348,7 +409,7 @@ public class DeliveryPlanningRepository
 			record.setProcessed(false);
 		}
 
-		save(record);
+		saveRecord(record);
 	}
 
 	public <T> T getShipmentOrReceiptInfo(
@@ -432,7 +493,7 @@ public class DeliveryPlanningRepository
 
 		dimensionService.updateRecord(deliveryPlanningRecord, request.getDimension());
 
-		save(deliveryPlanningRecord);
+		saveRecord(deliveryPlanningRecord);
 	}
 
 	public boolean isOtherDeliveryPlanningsExistForOrderLine(@NonNull final OrderLineId orderLineId, @NonNull final DeliveryPlanningId excludeDeliveryPlanningId)
@@ -512,6 +573,10 @@ public class DeliveryPlanningRepository
 				.processed(record.isProcessed())
 				.readyForReceipt(record.isReadyForReceipt())
 				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
+				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(record.getM_ShipperTransportation_ID()))
+				.releaseNo(record.getReleaseNo())
+				.qtyTotalOpen(Quantitys.of(record.getQtyTotalOpen(), uomId))
+				.qtyTotalOpenPlanned(record.getQtyTotalOpenPlanned() != null ? Quantitys.of(record.getQtyTotalOpenPlanned(), uomId) : null)
 				.qtyOrdered(Quantitys.of(record.getQtyOrdered(), uomId))
 				.plannedLoadedQty(Quantitys.of(record.getPlannedLoadedQuantity(), uomId))
 				.actualLoadedQty(Quantitys.of(record.getActualLoadQty(), uomId))
@@ -531,6 +596,8 @@ public class DeliveryPlanningRepository
 	 */
 	public void recomputeOpenQuantitiesForOrderLine(@NonNull final OrderLineId orderLineId)
 	{
+		// ONE load: the same records feed the computation and the write-back. Reading a DeliveryPlanningList
+		// here and saving it afterwards would fetch every row a second time.
 		final ImmutableList<I_M_Delivery_Planning> records = retrieveForOrderLine(orderLineId).collect(ImmutableList.toImmutableList());
 		if (records.isEmpty())
 		{
@@ -538,20 +605,24 @@ public class DeliveryPlanningRepository
 		}
 
 		final DeliveryPlanningList plannings = records.stream().map(DeliveryPlanningRepository::fromRecord).collect(DeliveryPlanningList.collect());
+
 		// Incoming and Dropship both net DISCHARGE, so a line mixing them is computable and must not be rejected:
 		// this runs from M_Delivery_Planning's AFTER_* interceptors, where a throw makes such a line unsavable.
-		// Asserting one pool end - rather than reading records.get(0) - is what pins it: the query has no ORDER BY.
+		// Asserting one pool end - rather than reading the first row - is what pins it: the query has no ORDER BY.
 		final DeliveryPlanningList.PoolEnd end = Check.assumePresent(plannings.getSinglePoolEnd(),
 				"Expected every M_Delivery_Planning of orderLineId={} to net one PoolEnd: {}", orderLineId, plannings);
 
 		// One helper on the list rather than two calls plus two locals here: the pair is always written together,
 		// so the list is the place that knows how to produce it.
 		final DeliveryPlanningList.OpenTotals openTotals = plannings.openTotals(end);
+		final UomId uomId = plannings.iterator().next().getQtyOrdered().getUomId();
 
 		for (final I_M_Delivery_Planning record : records)
 		{
-			record.setQtyTotalOpen(openTotals.getQtyTotalOpen());
-			record.setQtyTotalOpenPlanned(openTotals.getQtyTotalOpenPlanned());
+			applyTo(record, fromRecord(record).toBuilder()
+					.qtyTotalOpen(Quantitys.of(openTotals.getQtyTotalOpen(), uomId))
+					.qtyTotalOpenPlanned(Quantitys.of(openTotals.getQtyTotalOpenPlanned(), uomId))
+					.build());
 			saveRecord(record);
 		}
 	}
@@ -590,7 +661,7 @@ public class DeliveryPlanningRepository
 			{
 				deliveryPlanningRecord.setProcessed(true);
 			}
-			save(deliveryPlanningRecord);
+			saveRecord(deliveryPlanningRecord);
 		}
 	}
 
@@ -628,7 +699,7 @@ public class DeliveryPlanningRepository
 			{
 				deliveryPlanningRecord.setProcessed(false);
 			}
-			save(deliveryPlanningRecord);
+			saveRecord(deliveryPlanningRecord);
 		}
 	}
 
@@ -689,16 +760,14 @@ public class DeliveryPlanningRepository
 				I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
 	}
 
-	public DeliveryPlanningList getDeliveredStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
+	/**
+	 * The given plannings as models. Replaces the former getDeliveredStatePlannings / getProcessedStatePlannings
+	 * pair: while three partial mappers existed those two carried different subsets of the record, but with one
+	 * mapper they became the same method twice, differing only in name.
+	 */
+	public DeliveryPlanningList getByIds(@NonNull final Set<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		return getByIds(deliveryPlanningIds).stream()
-				.map(DeliveryPlanningRepository::fromRecord)
-				.collect(DeliveryPlanningList.collect());
-	}
-
-	public DeliveryPlanningList getProcessedStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
-	{
-		return getByIds(deliveryPlanningIds).stream()
+		return getRecordsByIds(deliveryPlanningIds).stream()
 				.map(DeliveryPlanningRepository::fromRecord)
 				.collect(DeliveryPlanningList.collect());
 	}
@@ -712,7 +781,7 @@ public class DeliveryPlanningRepository
 			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
 			@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
-		for (final I_M_Delivery_Planning deliveryPlanningRecord : getByIds(deliveryPlanningIds))
+		for (final I_M_Delivery_Planning deliveryPlanningRecord : getRecordsByIds(ImmutableSet.copyOf(deliveryPlanningIds)))
 		{
 			updateDeliveryPlanningFromInstruction(deliveryPlanningRecord, deliveryInstruction);
 		}
@@ -724,12 +793,10 @@ public class DeliveryPlanningRepository
 	 */
 	public void clearInstructionReference(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		for (final I_M_Delivery_Planning deliveryPlanningRecord : getByIds(deliveryPlanningIds))
-		{
-			deliveryPlanningRecord.setReleaseNo(null);
-			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
-			saveRecord(deliveryPlanningRecord);
-		}
+		updateByIds(ImmutableSet.copyOf(deliveryPlanningIds), deliveryPlanning -> deliveryPlanning.toBuilder()
+				.releaseNo(null)
+				.shipperTransportationId(null)
+				.build());
 	}
 
 	public void clearInstructionReferenceOfInstruction(@NonNull final ShipperTransportationId deliveryInstructionId)
@@ -808,7 +875,7 @@ public class DeliveryPlanningRepository
 			deliveryPlanningRecord.setPlannedLoadedQuantity(BigDecimal.ZERO);
 			deliveryPlanningRecord.setPlannedDischargeQuantity(BigDecimal.ZERO);
 		}
-		save(deliveryPlanningRecord);
+		saveRecord(deliveryPlanningRecord);
 	}
 
 	public ICompositeQueryFilter<I_M_Delivery_Planning> excludeUnsuitableForInstruction(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -846,7 +913,7 @@ public class DeliveryPlanningRepository
 		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
 		deliveryPlanning.setPlannedLoadedQuantity(quantity.toBigDecimal());
 		deliveryPlanning.setC_UOM_ID(quantity.getUomId().getRepoId());
-		save(deliveryPlanning);
+		saveRecord(deliveryPlanning);
 	}
 
 	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
@@ -854,7 +921,7 @@ public class DeliveryPlanningRepository
 		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
 		deliveryPlanning.setPlannedDischargeQuantity(quantity.toBigDecimal());
 		deliveryPlanning.setC_UOM_ID(quantity.getUomId().getRepoId());
-		save(deliveryPlanning);
+		saveRecord(deliveryPlanning);
 	}
 
 }

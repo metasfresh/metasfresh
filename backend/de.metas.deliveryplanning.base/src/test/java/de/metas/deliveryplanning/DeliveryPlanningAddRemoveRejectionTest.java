@@ -107,6 +107,7 @@ class DeliveryPlanningAddRemoveRejectionTest
 				.actualLoadedQty(zeroQty())
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540001));
 	}
 

@@ -271,7 +271,7 @@ public class DeliveryInstructionService
 					.map(DeliveryPlanningAlloc::getDeliveryPlanningId)
 					.collect(ImmutableSet.toImmutableSet());
 
-			deliveredState = deliveryPlanningRepository.getDeliveredStatePlannings(allocatedPlanningIds).getDeliveredState();
+			deliveredState = deliveryPlanningRepository.getByIds(ImmutableSet.copyOf(allocatedPlanningIds)).getDeliveredState();
 		}
 
 		deliveryInstructionRepository.setDeliveredState(deliveryInstructionId, deliveredState);

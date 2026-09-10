@@ -104,6 +104,7 @@ class DeliveryPlanningReceiveReadinessGateTest
 				.actualLoadedQty(zeroQty())
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
 				.readyForReceipt(readyForReceipt)
 				.build();
 	}
@@ -160,6 +161,7 @@ class DeliveryPlanningReceiveReadinessGateTest
 				.actualLoadedQty(zeroQty())
 				.plannedDischargeQty(zeroQty())
 				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
 				.processed(true)
 				.readyForReceipt(false)
 				.build();
