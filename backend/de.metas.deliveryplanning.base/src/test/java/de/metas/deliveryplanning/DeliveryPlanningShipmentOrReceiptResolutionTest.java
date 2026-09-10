@@ -26,6 +26,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.shipping.TransportDirection;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,6 +90,9 @@ class DeliveryPlanningShipmentOrReceiptResolutionTest
 			@Nullable final Integer shipmentScheduleId)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		final I_C_UOM mandatoryUom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(mandatoryUom);
+		record.setC_UOM_ID(mandatoryUom.getC_UOM_ID());
 		record.setTransportDirection(transportDirection.getCode());
 		record.setC_BPartner_ID(BPARTNER_ID);
 		if (receiptScheduleId != null)

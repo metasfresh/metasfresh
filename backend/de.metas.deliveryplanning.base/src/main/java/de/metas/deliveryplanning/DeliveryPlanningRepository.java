@@ -473,25 +473,53 @@ public class DeliveryPlanningRepository
 	public DeliveryPlanningList getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return retrieveForOrderLine(orderLineId)
-				.map(DeliveryPlanningRepository::toPoolPlanning)
+				.map(DeliveryPlanningRepository::fromRecord)
 				.collect(DeliveryPlanningList.collect());
 	}
 
-	private static DeliveryPlanning toPoolPlanning(@NonNull final I_M_Delivery_Planning record)
+	/**
+	 * The ONE record-to-model mapper: sets every field readable off {@code M_Delivery_Planning} itself. Only the
+	 * two location fields (which need the batch-loaded addresses) and the allocations (which need the allocation
+	 * multimap) are added on top, by {@link DeliveryPlanningService}.
+	 * <p>
+	 * There used to be three partial variants - one per caller, each carrying "only what my guard reads" and
+	 * stamping placeholders into the rest, including a hardcoded {@code TransportDirection.Outgoing} for records
+	 * that were frequently Incoming. That is a hazard, not an optimisation: none of them saved a query (all read
+	 * the same already-loaded record), every new field had to be hand-copied into all of them, and any
+	 * downstream code that began reading a placeholder field would silently get a fabricated value. Adding
+	 * {@code IsReadyForReceipt} demonstrated it - one of the four sites was missed on the first pass, and for
+	 * that flag the unset value is the restrictive one.
+	 */
+	static DeliveryPlanning.DeliveryPlanningBuilder fromRecordBuilder(@NonNull final I_M_Delivery_Planning record)
 	{
+		// C_UOM_ID carries AD_IsMandatory='N' while all five quantity columns carry 'Y'. A mandatory quantity
+		// without a UOM is a broken record, so this throws rather than quietly yielding a planning with no
+		// quantities - which is what the old partial mappers did by simply omitting them.
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
+
 		return DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.transportDirection(extractTransportDirection(record))
+				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
+				.incotermsId(IncotermsId.ofRepoIdOrNull(record.getC_Incoterms_ID()))
+				.incotermLocation(record.getIncotermLocation())
+				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(record.getM_MeansOfTransportation_ID()))
+				.etd(TimeUtil.asInstant(record.getETD()))
+				.closed(record.isClosed())
 				.processed(record.isProcessed())
 				.readyForReceipt(record.isReadyForReceipt())
+				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.qtyOrdered(Quantitys.of(record.getQtyOrdered(), uomId))
 				.plannedLoadedQty(Quantitys.of(record.getPlannedLoadedQuantity(), uomId))
 				.actualLoadedQty(Quantitys.of(record.getActualLoadQty(), uomId))
 				.plannedDischargeQty(Quantitys.of(record.getPlannedDischargeQuantity(), uomId))
-				.actualDischargeQty(Quantitys.of(record.getActualDischargeQuantity(), uomId))
-				.build();
+				.actualDischargeQty(Quantitys.of(record.getActualDischargeQuantity(), uomId));
+	}
+
+	static DeliveryPlanning fromRecord(@NonNull final I_M_Delivery_Planning record)
+	{
+		return fromRecordBuilder(record).build();
 	}
 
 	/**
@@ -507,20 +535,21 @@ public class DeliveryPlanningRepository
 			return;
 		}
 
-		final DeliveryPlanningList plannings = records.stream().map(DeliveryPlanningRepository::toPoolPlanning).collect(DeliveryPlanningList.collect());
+		final DeliveryPlanningList plannings = records.stream().map(DeliveryPlanningRepository::fromRecord).collect(DeliveryPlanningList.collect());
 		// Incoming and Dropship both net DISCHARGE, so a line mixing them is computable and must not be rejected:
 		// this runs from M_Delivery_Planning's AFTER_* interceptors, where a throw makes such a line unsavable.
 		// Asserting one pool end - rather than reading records.get(0) - is what pins it: the query has no ORDER BY.
 		final DeliveryPlanningList.PoolEnd end = Check.assumePresent(plannings.getSinglePoolEnd(),
 				"Expected every M_Delivery_Planning of orderLineId={} to net one PoolEnd: {}", orderLineId, plannings);
 
-		final BigDecimal qtyTotalOpen = plannings.qtyTotalOpen(end).toBigDecimal();
-		final BigDecimal qtyTotalOpenPlanned = plannings.qtyTotalOpenPlanned(end).toBigDecimal();
+		// One helper on the list rather than two calls plus two locals here: the pair is always written together,
+		// so the list is the place that knows how to produce it.
+		final DeliveryPlanningList.OpenTotals openTotals = plannings.openTotals(end);
 
 		for (final I_M_Delivery_Planning record : records)
 		{
-			record.setQtyTotalOpen(qtyTotalOpen);
-			record.setQtyTotalOpenPlanned(qtyTotalOpenPlanned);
+			record.setQtyTotalOpen(openTotals.getQtyTotalOpen());
+			record.setQtyTotalOpenPlanned(openTotals.getQtyTotalOpenPlanned());
 			saveRecord(record);
 		}
 	}
@@ -658,51 +687,18 @@ public class DeliveryPlanningRepository
 				I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, deliveryPlanningId.getRepoId());
 	}
 
-	/**
-	 * Carries only what {@link DeliveryPlanning#isDelivered()} reads - every other field is a placeholder.
-	 */
 	public DeliveryPlanningList getDeliveredStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
 		return getByIds(deliveryPlanningIds).stream()
-				.map(DeliveryPlanningRepository::toDeliveredStatePlanning)
+				.map(DeliveryPlanningRepository::fromRecord)
 				.collect(DeliveryPlanningList.collect());
 	}
 
-	private static DeliveryPlanning toDeliveredStatePlanning(@NonNull final I_M_Delivery_Planning record)
-	{
-		return DeliveryPlanning.builder()
-				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				// never read by isDelivered(); only satisfies the shared value object's @NonNull contract
-				.transportDirection(TransportDirection.ofNullableCode(record.getTransportDirection(), TransportDirection.Outgoing))
-				.processed(record.isProcessed())
-				.readyForReceipt(record.isReadyForReceipt())
-				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
-				.build();
-	}
-
-	/**
-	 * Carries only what {@link DeliveryPlanning#isProcessed()} reads - every other field is a placeholder.
-	 */
 	public DeliveryPlanningList getProcessedStatePlannings(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
 		return getByIds(deliveryPlanningIds).stream()
-				.map(DeliveryPlanningRepository::toProcessedStatePlanning)
+				.map(DeliveryPlanningRepository::fromRecord)
 				.collect(DeliveryPlanningList.collect());
-	}
-
-	private static DeliveryPlanning toProcessedStatePlanning(@NonNull final I_M_Delivery_Planning record)
-	{
-		return DeliveryPlanning.builder()
-				.id(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				// never read by the guard; only satisfies the shared value object's @NonNull contract
-				.transportDirection(TransportDirection.ofNullableCode(record.getTransportDirection(), TransportDirection.Outgoing))
-				.closed(record.isClosed())
-				.processed(record.isProcessed())
-				.readyForReceipt(record.isReadyForReceipt())
-				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
-				.build();
 	}
 
 	/**

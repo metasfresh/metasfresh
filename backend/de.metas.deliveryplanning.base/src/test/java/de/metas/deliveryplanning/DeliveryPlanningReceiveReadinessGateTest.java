@@ -29,6 +29,10 @@ import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.TransportDirection;
+import org.compiere.model.I_C_UOM;
+import de.metas.quantity.Quantity;
+import org.adempiere.model.InterfaceWrapperHelper;
+import java.math.BigDecimal;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,6 +59,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DeliveryPlanningReceiveReadinessGateTest
 {
+	private static I_C_UOM uom;
+
 	private static int nextId = 1;
 
 	private static final OrgId ORG = OrgId.ofRepoId(1000000);
@@ -65,6 +71,11 @@ class DeliveryPlanningReceiveReadinessGateTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// The five quantity columns are AD_IsMandatory='Y', so a planning always has them - and a
+		// quantity needs a UOM. Stated here rather than relying on a mapper to omit them.
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
 
 		final DeliveryPlanningRepository deliveryPlanningRepository = Mockito.mock(DeliveryPlanningRepository.class);
 		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
@@ -88,9 +99,16 @@ class DeliveryPlanningReceiveReadinessGateTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(orgId)
 				.transportDirection(TransportDirection.Incoming)
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
 				.readyForReceipt(readyForReceipt)
 				.build();
 	}
+
+	private static Quantity zeroQty() {return Quantity.of(BigDecimal.ZERO, uom);}
 
 	@Test
 	@DisplayName("a not-ready planning is rejected - no switch required")
@@ -137,6 +155,11 @@ class DeliveryPlanningReceiveReadinessGateTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(ORG)
 				.transportDirection(TransportDirection.Incoming)
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
 				.processed(true)
 				.readyForReceipt(false)
 				.build();

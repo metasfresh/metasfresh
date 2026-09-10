@@ -82,7 +82,12 @@ class DeliveryPlanningListTest
 		return DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
-				.transportDirection(TransportDirection.Outgoing);
+				.transportDirection(TransportDirection.Outgoing)
+				.qtyOrdered(qty(0))
+				.plannedLoadedQty(qty(0))
+				.actualLoadedQty(qty(0))
+				.plannedDischargeQty(qty(0))
+				.actualDischargeQty(qty(0));
 	}
 
 	private static DeliveryPlanning withShipper(@Nullable final Integer shipperRepoId)
@@ -167,6 +172,11 @@ class DeliveryPlanningListTest
 					.id(DeliveryPlanningId.ofRepoId(nextId++))
 					.orgId(OrgId.ofRepoId(1000000))
 					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(0))
+					.plannedLoadedQty(qty(0))
+					.actualLoadedQty(qty(0))
+					.plannedDischargeQty(qty(0))
+					.actualDischargeQty(qty(0))
 					.shipperId(ShipperId.ofRepoId(540001))
 					.incotermsId(IncotermsId.ofRepoId(540002))
 					.incotermLocation("Hamburg")
@@ -179,6 +189,11 @@ class DeliveryPlanningListTest
 					.id(DeliveryPlanningId.ofRepoId(nextId++))
 					.orgId(OrgId.ofRepoId(1000001))
 					.transportDirection(TransportDirection.Incoming)
+					.qtyOrdered(qty(0))
+					.plannedLoadedQty(qty(0))
+					.actualLoadedQty(qty(0))
+					.plannedDischargeQty(qty(0))
+					.actualDischargeQty(qty(0))
 					.shipperId(ShipperId.ofRepoId(540011))
 					.incotermsId(IncotermsId.ofRepoId(540012))
 					.incotermLocation("Rotterdam")
@@ -202,6 +217,11 @@ class DeliveryPlanningListTest
 					.id(DeliveryPlanningId.ofRepoId(idRepoId))
 					.orgId(OrgId.ofRepoId(1000000))
 					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(0))
+					.plannedLoadedQty(qty(0))
+					.actualLoadedQty(qty(0))
+					.plannedDischargeQty(qty(0))
+					.actualDischargeQty(qty(0))
 					.etd(etd != null ? Instant.parse(etd) : null)
 					.build();
 		}

@@ -37,6 +37,9 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import de.metas.quantity.Quantity;
+import java.math.BigDecimal;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -57,6 +60,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DeliveryPlanningAddRemoveRejectionTest
 {
+	private static I_C_UOM uom;
+
+	private static Quantity zeroQty() {return Quantity.of(BigDecimal.ZERO, uom);}
+
 	private static int nextId = 1;
 
 	private DeliveryPlanningService deliveryPlanningService;
@@ -65,6 +72,11 @@ class DeliveryPlanningAddRemoveRejectionTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// The five quantity columns are AD_IsMandatory='Y', so a planning always has them - and a
+		// quantity needs a UOM. Stated here rather than relying on a mapper to omit them.
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
 
 		final DeliveryPlanningRepository deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
 		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
@@ -90,6 +102,11 @@ class DeliveryPlanningAddRemoveRejectionTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
 				.transportDirection(TransportDirection.Outgoing)
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540001));
 	}
 

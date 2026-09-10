@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,6 +89,10 @@ class DeliveryPlanningClosedGuardsTest
 	private I_M_Delivery_Planning deliveryPlanning(final boolean closed)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		final I_C_UOM mandatoryUom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(mandatoryUom);
+		record.setC_UOM_ID(mandatoryUom.getC_UOM_ID());
+		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
 		record.setIsClosed(closed);
 		InterfaceWrapperHelper.save(record);
 		return record;

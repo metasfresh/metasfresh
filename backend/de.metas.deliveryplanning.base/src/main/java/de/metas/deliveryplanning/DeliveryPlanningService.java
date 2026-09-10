@@ -706,11 +706,16 @@ public class DeliveryPlanningService
 		final DeliveryPlanningAddresses addresses = loadAddresses(deliveryPlanningRecords);
 
 		return deliveryPlanningRecords.stream()
-				.map(record -> toDeliveryPlanning(record, addresses, allocationsByPlanningId))
+				.map(record -> fromRecord(record, addresses, allocationsByPlanningId))
 				.collect(DeliveryPlanningList.collect());
 	}
 
-	private static DeliveryPlanning toDeliveryPlanning(
+	/**
+	 * Every record-derived field comes from {@link DeliveryPlanningRepository#fromRecordBuilder} - the one
+	 * mapper - so this adds only what that method has no data for: the two locations (from the batch-loaded
+	 * addresses) and the allocations.
+	 */
+	private static DeliveryPlanning fromRecord(
 			@NonNull final I_M_Delivery_Planning record,
 			@NonNull final DeliveryPlanningAddresses addresses,
 			@NonNull final ImmutableListMultimap<DeliveryPlanningId, DeliveryPlanningAlloc> allocationsByPlanningId)
@@ -718,20 +723,9 @@ public class DeliveryPlanningService
 		final TransportDirection transportDirection = DeliveryPlanningRepository.extractTransportDirection(record);
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
 
-		return DeliveryPlanning.builder()
-				.id(deliveryPlanningId)
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.transportDirection(transportDirection)
-				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
-				.incotermsId(IncotermsId.ofRepoIdOrNull(record.getC_Incoterms_ID()))
-				.incotermLocation(record.getIncotermLocation())
-				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(record.getM_MeansOfTransportation_ID()))
+		return DeliveryPlanningRepository.fromRecordBuilder(record)
 				.loadingLocationId(extractShipFromLocationIdOrNull(record, transportDirection, addresses))
 				.deliveryLocationId(extractShipToLocationIdOrNull(record, transportDirection, addresses))
-				.etd(TimeUtil.asInstant(record.getETD()))
-				.closed(record.isClosed())
-				.processed(record.isProcessed())
-				.readyForReceipt(record.isReadyForReceipt())
 				.allocations(allocationsByPlanningId.get(deliveryPlanningId))
 				.build();
 	}

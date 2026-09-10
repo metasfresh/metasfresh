@@ -47,6 +47,9 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import de.metas.quantity.Quantity;
+import java.math.BigDecimal;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
@@ -76,6 +79,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class DeliveryPlanningWindowReceiveHUsPreconditionTest
 {
 	/** The delivery-planning window ("Lieferplanung"), whose grid rows are {@code M_Delivery_Planning} records. */
+	private static I_C_UOM uom;
+
 	private static final WindowId WINDOW_ID = WindowId.of(541632);
 
 	private static final DeliveryPlanningId PLANNING_ID = DeliveryPlanningId.ofRepoId(540030);
@@ -86,6 +91,11 @@ class DeliveryPlanningWindowReceiveHUsPreconditionTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// The five quantity columns are AD_IsMandatory='Y', so a planning always has them - and a
+		// quantity needs a UOM. Stated here rather than relying on a mapper to omit them.
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
 
 		SpringContextHolder.registerJUnitBean(DeliveryPlanningService.class, Mockito.mock(DeliveryPlanningService.class));
 		SpringContextHolder.registerJUnitBean(IViewsRepository.class, Mockito.mock(IViewsRepository.class));
@@ -118,6 +128,11 @@ class DeliveryPlanningWindowReceiveHUsPreconditionTest
 						.id(PLANNING_ID)
 						.orgId(OrgId.ANY)
 						.transportDirection(transportDirection)
+						.qtyOrdered(zeroQty())
+						.plannedLoadedQty(zeroQty())
+						.actualLoadedQty(zeroQty())
+						.plannedDischargeQty(zeroQty())
+						.actualDischargeQty(zeroQty())
 						.processed(false)
 						.build()));
 
@@ -167,6 +182,8 @@ class DeliveryPlanningWindowReceiveHUsPreconditionTest
 				.contains("outgoing")
 				.doesNotContain("M_ReceiptSchedule_ID");
 	}
+
+	private static Quantity zeroQty() {return Quantity.of(BigDecimal.ZERO, uom);}
 
 	@Test
 	@DisplayName("an INCOMING delivery planning DOES offer \"HUs annehmen\" - the guard discriminates instead of refusing every row")

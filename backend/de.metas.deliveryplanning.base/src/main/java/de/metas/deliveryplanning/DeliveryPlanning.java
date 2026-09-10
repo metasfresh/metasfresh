@@ -102,26 +102,25 @@ public class DeliveryPlanning
 	boolean readyForReceipt;
 
 	/**
-	 * {@code null} for a planning loaded by a caller that never asks {@link DeliveryPlanningList#openPlanQty}
-	 * about it, which is why this is not {@code @NonNull}.
+	 * The five quantities are {@code @NonNull} because their columns all carry {@code AD_IsMandatory='Y'} - a
+	 * planning always has them. They were {@code @Nullable} only because three partial record mappers used to
+	 * omit them for callers that "never ask"; with one mapper setting every record-derived field, that reason
+	 * is gone and the model can state what the dictionary already guarantees.
 	 */
-	@Nullable Quantity qtyOrdered;
+	@NonNull Quantity qtyOrdered;
 
 	/** This planning's own planned LOAD figure - the load half of {@link DeliveryPlanningList#openPlanQty}'s pool. */
-	@Nullable Quantity plannedLoadedQty;
+	@NonNull Quantity plannedLoadedQty;
 
-	/** This planning's own ACTUAL load figure - {@code null}/zero until something is recorded against it. */
-	@Nullable Quantity actualLoadedQty;
+	@NonNull Quantity actualLoadedQty;
 
-	/** This planning's own planned DISCHARGE figure - the discharge half of the pool. */
-	@Nullable Quantity plannedDischargeQty;
+	@NonNull Quantity plannedDischargeQty;
 
-	/** This planning's own ACTUAL discharge figure - a receipt's, once booked. */
-	@Nullable Quantity actualDischargeQty;
+	@NonNull Quantity actualDischargeQty;
 
 	/**
-	 * {@code null} for a planning loaded by a caller that never asks {@link #isDelivered()} about it - same
-	 * convention as the quantity fields above.
+	 * Genuinely optional, unlike the quantities above: {@code M_InOut_ID} carries {@code AD_IsMandatory='N'} and
+	 * is null on the majority of rows - a planning has no shipment/receipt until one is generated.
 	 */
 	@Nullable InOutId inOutId;
 

@@ -32,6 +32,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -42,6 +43,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -290,6 +292,23 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 		}
 
 		return qtyOrdered.subtract(plannedSum);
+	}
+
+	/**
+	 * Both order-line totals in one value, because they are always written together (the two
+	 * {@code QtyTotalOpen*} columns of every planning on the line). Returned as {@link BigDecimal} - the shape
+	 * the caller stores - so the pair cannot be produced with two mismatched pool ends.
+	 */
+	public OpenTotals openTotals(@NonNull final PoolEnd end)
+	{
+		return new OpenTotals(qtyTotalOpen(end).toBigDecimal(), qtyTotalOpenPlanned(end).toBigDecimal());
+	}
+
+	@Value
+	public static class OpenTotals
+	{
+		@NonNull BigDecimal qtyTotalOpen;
+		@NonNull BigDecimal qtyTotalOpenPlanned;
 	}
 
 	public enum PoolEnd

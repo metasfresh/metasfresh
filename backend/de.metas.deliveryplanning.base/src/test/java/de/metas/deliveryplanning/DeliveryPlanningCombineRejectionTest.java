@@ -35,6 +35,10 @@ import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
+import org.compiere.model.I_C_UOM;
+import de.metas.quantity.Quantity;
+import org.adempiere.model.InterfaceWrapperHelper;
+import java.math.BigDecimal;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,6 +63,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DeliveryPlanningCombineRejectionTest
 {
+	private static I_C_UOM uom;
+
 	private static int nextId = 1;
 
 	private DeliveryPlanningService deliveryPlanningService;
@@ -67,6 +73,11 @@ class DeliveryPlanningCombineRejectionTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// The five quantity columns are AD_IsMandatory='Y', so a planning always has them - and a
+		// quantity needs a UOM. Stated here rather than relying on a mapper to omit them.
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
 
 		final DeliveryPlanningRepository deliveryPlanningRepository = Mockito.mock(DeliveryPlanningRepository.class);
 		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
@@ -90,6 +101,11 @@ class DeliveryPlanningCombineRejectionTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
 				.transportDirection(TransportDirection.Outgoing)
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540001));
 	}
 
@@ -108,6 +124,8 @@ class DeliveryPlanningCombineRejectionTest
 	{
 		return adMessageKey.toAD_Message();
 	}
+
+	private static Quantity zeroQty() {return Quantity.of(BigDecimal.ZERO, uom);}
 
 	@Test
 	@DisplayName("a selection agreeing on every admissibility field is accepted")
@@ -183,6 +201,11 @@ class DeliveryPlanningCombineRejectionTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
 				.transportDirection(TransportDirection.Outgoing)
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540001))
 				.incotermsId(IncotermsId.ofRepoId(540002))
 				.incotermLocation("Hamburg")
@@ -195,6 +218,11 @@ class DeliveryPlanningCombineRejectionTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000001))
 				.transportDirection(TransportDirection.Incoming)
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540011))
 				.incotermsId(IncotermsId.ofRepoId(540012))
 				.incotermLocation("Rotterdam")

@@ -44,6 +44,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -151,6 +152,10 @@ class DeliveryPlanningCompletionCascadeTest
 	private DeliveryPlanningId createDeliveryPlanning(final boolean closed)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		final I_C_UOM mandatoryUom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(mandatoryUom);
+		record.setC_UOM_ID(mandatoryUom.getC_UOM_ID());
+		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
 		record.setIsClosed(closed);
 		InterfaceWrapperHelper.save(record);
 		return DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());

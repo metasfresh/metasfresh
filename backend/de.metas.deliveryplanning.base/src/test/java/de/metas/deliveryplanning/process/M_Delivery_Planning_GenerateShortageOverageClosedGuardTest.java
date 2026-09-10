@@ -40,6 +40,7 @@ import de.metas.shipping.TransportDirection;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,6 +90,9 @@ class M_Delivery_Planning_GenerateShortageOverageClosedGuardTest
 	private static int deliveryPlanning(final boolean closed)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		final I_C_UOM mandatoryUom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(mandatoryUom);
+		record.setC_UOM_ID(mandatoryUom.getC_UOM_ID());
 		record.setIsClosed(closed);
 		// a TransportDirection is required so getReceiptInfoIfHasReceipt (reached only for an OPEN planning,
 		// after the closed guard already let it through) does not NPE on a null column

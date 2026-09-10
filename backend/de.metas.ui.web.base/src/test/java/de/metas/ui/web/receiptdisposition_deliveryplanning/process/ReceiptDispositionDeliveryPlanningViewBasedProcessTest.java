@@ -47,6 +47,10 @@ import de.metas.ui.web.view.ViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+import de.metas.quantity.Quantity;
+import org.adempiere.model.InterfaceWrapperHelper;
+import java.math.BigDecimal;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
@@ -75,6 +79,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 {
 	/** The receipt-disposition delivery-planning window itself ("Wareneingangsdisposition inkl. Lieferplanung"), so a reader is not misled about what is under test. */
+	private static I_C_UOM uom;
+
+	private static Quantity zeroQty() {return Quantity.of(BigDecimal.ZERO, uom);}
+
 	private static final WindowId WINDOW_ID = WindowId.of(542190);
 
 	private static int nextId = 1;
@@ -83,6 +91,11 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+
+		// The five quantity columns are AD_IsMandatory='Y', so a planning always has them - and a
+		// quantity needs a UOM. Stated here rather than relying on a mapper to omit them.
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
 
 		final DeliveryPlanningRepository deliveryPlanningRepository = Mockito.mock(DeliveryPlanningRepository.class);
 		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
@@ -134,6 +147,11 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
 				.transportDirection(TransportDirection.Incoming)
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
 				.readyForReceipt(true);
 	}
 
