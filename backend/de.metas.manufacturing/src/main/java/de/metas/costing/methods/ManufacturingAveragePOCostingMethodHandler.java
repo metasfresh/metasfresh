@@ -94,7 +94,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	public CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
 	{
 		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
-		if (!existingCostDetails.isEmpty())
+		if (utils.containsAmtType(existingCostDetails, request.getAmtType()))
 		{
 			// make sure DateAcct is up-to-date
 			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
