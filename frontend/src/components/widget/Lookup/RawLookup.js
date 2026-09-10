@@ -423,6 +423,7 @@ export class RawLookup extends Component {
 
     const query = this.inputSearch.value;
     if (!query || !query.trim()) {
+      this.commitEmptyValueAndAdvance();
       return;
     }
 
@@ -463,11 +464,38 @@ export class RawLookup extends Component {
         }
       }
     } else {
-      // No match
+      // No match: on a non-mandatory sub-field, confirm the empty entry and advance
+      // instead of dead-ending the keyboard flow (TC8). Mandatory fields keep the beep.
+      if (this.commitEmptyValueAndAdvance()) {
+        return;
+      }
+
       if (this.props.beepOnInvalidProduct) {
         playBeep();
       }
     }
+  };
+
+  /**
+   * @method commitEmptyValueAndAdvance
+   * @summary Quick input: confirm the empty ("none") entry and advance focus — the same
+   * outcome `Tab` already produces on this field, and the same payload the mouse sends when
+   * the synthetic empty row is clicked (`handleSelect_RegularItem` normalises it to `null`).
+   *
+   * Only for NON-MANDATORY sub-fields: `!mandatory` is exactly the condition under which that
+   * synthetic empty row is offered at all (see `handleValueChanged`), so a mandatory field
+   * (the quick-input product, `MandatoryLogic.TRUE`) keeps beeping and holding focus.
+   *
+   * @return {boolean} true when the Enter was handled here, false when the caller must fall
+   *                   back to its previous no-match behaviour.
+   */
+  commitEmptyValueAndAdvance = () => {
+    if (this.props.mandatory) {
+      return false;
+    }
+
+    this.handleAutoSelectAndAdvance(null);
+    return true;
   };
 
   /**

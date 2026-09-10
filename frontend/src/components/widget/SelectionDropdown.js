@@ -66,6 +66,15 @@ class SelectionDropdown extends Component {
    * @param {*} up
    */
   scrollIntoView(element, up) {
+    // `optionToRef` is keyed by option object identity and is cleared whenever `listHash`
+    // changes, while `handleKeyDown` stays registered on `window`. An arrow key handled
+    // before the refs are re-populated resolves to no element, and dereferencing it threw
+    // an uncaught "Cannot read properties of undefined (reading 'getBoundingClientRect')".
+    // Only the scrolling is skipped — `navigate` still selects the option.
+    if (!element) {
+      return;
+    }
+
     const { top: topMax, bottom: bottomMax } =
       this.wrapper.getBoundingClientRect();
     const { top, bottom } = element.getBoundingClientRect();
