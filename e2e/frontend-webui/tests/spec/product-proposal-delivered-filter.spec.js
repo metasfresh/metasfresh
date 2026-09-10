@@ -226,7 +226,7 @@ the customer has never bought.
     await test.step('TC2 - overlay opens with the filter present but not active; all three products listed', async () => {
       await ProductProposalPage.openFromSalesOrder(page);
 
-      expect(await ProductProposalPage.getRowCount(page)).toBe(3);
+      await expect(page.locator(OVERLAY_ROWS)).toHaveCount(3);
 
       const rows = await readOverlayRows(page);
       const row1 = rows.find((r) => r.product.includes(product1Code));
@@ -250,7 +250,7 @@ the customer has never bought.
     await test.step('TC1 - filter on narrows the list to the delivered products', async () => {
       await ProductProposalPage.setFilter(page, true);
 
-      expect(await ProductProposalPage.getRowCount(page)).toBe(2);
+      await expect(page.locator(OVERLAY_ROWS)).toHaveCount(2);
 
       const rows = await readOverlayRows(page);
       const productsShown = rows.map((r) => r.product);
@@ -270,7 +270,7 @@ the customer has never bought.
     await test.step('TC3 - filter off restores the full list', async () => {
       await ProductProposalPage.setFilter(page, false);
 
-      expect(await ProductProposalPage.getRowCount(page)).toBe(3);
+      await expect(page.locator(OVERLAY_ROWS)).toHaveCount(3);
 
       const rows = await readOverlayRows(page);
       const productsShown = rows.map((r) => r.product);
@@ -291,11 +291,11 @@ the customer has never bought.
 
       // Sanity: same shared price list, unfiltered - all three products are still offered; the
       // difference from CUSTOMER_WITH_HISTORY is purely the (absent) delivery history.
-      expect(await ProductProposalPage.getRowCount(page)).toBe(3);
+      await expect(page.locator(OVERLAY_ROWS)).toHaveCount(3);
 
       await ProductProposalPage.setFilter(page, true);
 
-      expect(await ProductProposalPage.getRowCount(page)).toBe(0);
+      await expect(page.locator(OVERLAY_ROWS)).toHaveCount(0);
 
       // Zero rows + no toast alone would also be the signature of a filter round-trip that threw
       // and left the grid empty, so first assert the overlay is still in a valid rendered state
@@ -304,6 +304,47 @@ the customer has never bought.
       await ProductProposalPage.expectVisible(page);
       const errorToast = page.locator('.Toastify div[role="alert"].Toastify__toast-body');
       await expect(errorToast).toHaveCount(0);
+    });
+
+    // === TC9: a row the user typed a quantity into stays visible under the filter ===
+    // Nothing the user has typed may vanish behind a filter: a quantity entered on a
+    // never-delivered product is still a quantity they asked for, and they must be able to see and
+    // correct it. (The order line for such a row is guaranteed separately, by creating the lines
+    // from the unfiltered rows - the exemption is not a substitute for that.)
+    await test.step('TC9 - a row with a typed quantity stays listed when the filter is on', async () => {
+      await SalesOrderPage.goto();
+      await SalesOrderPage.clickNew();
+      const qtyOrderId = await SalesOrderPage.selectCustomer(customerWithHistoryCode);
+      console.log(`TC9 order created: record=${qtyOrderId}`);
+
+      await ProductProposalPage.openFromSalesOrder(page);
+      await expect(page.locator(OVERLAY_ROWS)).toHaveCount(3);
+
+      const typedQty = '4';
+      await ProductProposalPage.enterQty(page, product3Code, typedQty);
+
+      await ProductProposalPage.setFilter(page, true);
+
+      // Product1 + Product2 qualify on delivery history, Product3 only because of its quantity.
+      await expect(page.locator(OVERLAY_ROWS)).toHaveCount(3);
+
+      const rows = await readOverlayRows(page);
+      const product3Row = rows.find((r) => r.product.includes(product3Code));
+      expect(product3Row, 'the row with a typed quantity was hidden by the filter').toBeTruthy();
+      expect(hasDeliveryValue(product3Row.lastShipmentDays)).toBe(false);
+
+      // The quantity is still there, and still editable - the point of keeping the row.
+      const product3QtyCell = page
+        .locator(OVERLAY_ROWS)
+        .filter({ has: page.locator('td[data-cy="cell-product"]', { hasText: product3Code }) })
+        .first()
+        .locator('td[data-cy="cell-qty"]');
+      await expect(product3QtyCell).toContainText(typedQty);
+
+      await ProductProposalPage.enterQty(page, product3Code, '6');
+      await expect(product3QtyCell).toContainText('6');
+
+      await ProductProposalPage.closeWithDone(page);
     });
   });
 });

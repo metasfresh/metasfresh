@@ -1,6 +1,7 @@
 package de.metas.ui.web.order.products_proposal.model;
 
 import de.metas.currency.Amount;
+import java.math.BigDecimal;
 import de.metas.currency.CurrencyCode;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -64,7 +65,47 @@ public class ProductsProposalRowTest
 		assertThat(row(null).isMatching(filter)).isFalse();
 	}
 
+	@Test
+	public void isMatching_onlyDeliveredSet_rowWithoutLastShipmentDaysButWithQty_matches()
+	{
+		final ProductsProposalViewFilter filter = ProductsProposalViewFilter.builder()
+				.onlyDelivered(true)
+				.build();
+
+		// A quantity the user typed must not vanish behind the filter.
+		assertThat(rowWithQty(null, BigDecimal.ONE).isMatching(filter)).isTrue();
+	}
+
+	@Test
+	public void isMatching_onlyDeliveredSet_rowWithoutLastShipmentDaysAndZeroQty_doesNotMatch()
+	{
+		final ProductsProposalViewFilter filter = ProductsProposalViewFilter.builder()
+				.onlyDelivered(true)
+				.build();
+
+		// Zero is not a typed quantity - it is what an untouched row holds once it has been visited.
+		assertThat(rowWithQty(null, BigDecimal.ZERO).isMatching(filter)).isFalse();
+	}
+
+	@Test
+	public void isMatching_productNameSearch_isNotExemptedByQty()
+	{
+		// The product-name search is the only filter the "Andere Produkte" view offers, and it shares
+		// this predicate: a typed quantity must NOT keep a non-matching row in that view's results.
+		final ProductsProposalViewFilter filter = ProductsProposalViewFilter.builder()
+				.productName("something-else")
+				.build();
+
+		assertThat(rowWithQty(null, BigDecimal.ONE).isMatching(filter)).isFalse();
+		assertThat(rowWithQty(5, BigDecimal.ONE).isMatching(filter)).isFalse();
+	}
+
 	private static ProductsProposalRow row(final Integer lastShipmentDays)
+	{
+		return rowWithQty(lastShipmentDays, null);
+	}
+
+	private static ProductsProposalRow rowWithQty(final Integer lastShipmentDays, final BigDecimal qty)
 	{
 		return ProductsProposalRow.builder()
 				.id(DocumentId.of(1))
@@ -72,7 +113,7 @@ public class ProductsProposalRowTest
 				.price(ProductProposalPrice.builder()
 						.priceListPrice(Amount.of(10, CurrencyCode.EUR))
 						.build())
-				.qty(null)
+				.qty(qty)
 				.lastShipmentDays(lastShipmentDays)
 				.seqNo(10)
 				.build();

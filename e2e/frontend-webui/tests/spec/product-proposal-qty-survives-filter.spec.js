@@ -191,25 +191,29 @@ mechanism.
     const product3Qty = '7';
 
     // === TC8: type a qty on Product3, hide it with the filter, close with DONE ===
-    await test.step('TC8 - enter qty on the never-delivered product, hide it with the filter, close with DONE', async () => {
+    await test.step('TC8 - enter qty on the never-delivered product, turn the filter on, close with DONE', async () => {
       await ProductProposalPage.openFromSalesOrder(page);
 
       await ProductProposalPage.enterQty(page, product3Code, product3Qty);
 
       await ProductProposalPage.setFilter(page, true);
 
-      // Sanity: the filter actually hides Product3 at the moment of closing - otherwise this test
-      // would not exercise the data-loss path at all.
+      // Product3 has no delivery history, so the filter's criterion alone would hide it - but a row
+      // carrying a typed quantity is exempt from that criterion precisely so the quantity stays
+      // visible and correctable. Assert that exemption holds here, because it is what the user sees.
       const rowsAfterFilter = await readOverlayRows(page);
       expect(
         rowsAfterFilter.some((r) => r.product.includes(product3Code)),
-        'Product3 is still visible after turning the filter on - the fixture does not exercise the hidden-row path'
-      ).toBe(false);
+        'the row carrying a typed quantity was hidden by the filter'
+      ).toBe(true);
 
       await ProductProposalPage.closeWithDone(page);
     });
 
-    // === Assert the order line was created despite the row being hidden at close time ===
+    // The order line must exist regardless of the filter state at close time. Note this spec can no
+    // longer, through the UI, present a hidden row carrying a quantity - the exemption above prevents
+    // it. That the lines are built from the UNFILTERED rows (so no filter could ever drop one) is
+    // pinned separately by ProductsProposalRowsDataTest.
     await test.step('Assert an order line for Product3 exists with the typed quantity', async () => {
       // Read the result back from the reloaded order, not from in-page state.
       await page.reload();

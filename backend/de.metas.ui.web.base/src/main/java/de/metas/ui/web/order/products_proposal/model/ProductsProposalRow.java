@@ -276,8 +276,20 @@ public class ProductsProposalRow implements IViewRow
 
 	public boolean isMatching(@NonNull final ProductsProposalViewFilter filter)
 	{
+		// A row the user has already typed a quantity into is never hidden by the DELIVERY-HISTORY
+		// criterion, so that quantity can still be seen and corrected instead of vanishing. It gates on
+		// the same predicate OrderLinesFromProductProposalsProducer uses to decide which rows become
+		// order lines, so visibility and line production stay in lockstep - and it is not a substitute
+		// for creating those lines from the unfiltered rows
+		// (ProductsProposalRowsData#getAllRowsIncludingFilteredOut), which is what actually guarantees
+		// no typed quantity is lost.
+		//
+		// The exemption deliberately does NOT cover the product-name search: that search is the only
+		// filter the "Andere Produkte" view offers, and this predicate is shared with it, so exempting
+		// typed-quantity rows from the name search would silently change that view's results - which
+		// this change must not do.
 		return isMatchingProductName(filter)
-				&& isMatchingOnlyDelivered(filter);
+				&& (isQtySet() || isMatchingOnlyDelivered(filter));
 	}
 
 	private boolean isMatchingProductName(@NonNull final ProductsProposalViewFilter filter)
