@@ -113,8 +113,8 @@ Feature: ATP reconciliation regression coverage
       | M_Product_ID | IsDryRun |
       | comp_reg1    | false    |
     Then after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | fix_reg1   | INVENTORY_UP      | comp_reg1    | 2024-09-23T06:00:00Z | 20  | 70  | WH_REG         |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_reg1   | INVENTORY_UP      | ATP_RECONCILE             | comp_reg1    | 2024-09-23T06:00:00Z | 20  | 70  | WH_REG         |
 
   @Id:ATPREG_002
   @from:cucumber
@@ -151,8 +151,8 @@ Feature: ATP reconciliation regression coverage
       | M_Product_ID | IsDryRun |
       | p_reg2       | false    |
     Then after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | fix_reg2   | INVENTORY_UP      | p_reg2       | 2024-09-21T06:00:00Z | 100 | 100 | WH_REG         |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_reg2   | INVENTORY_UP      | ATP_RECONCILE             | p_reg2       | 2024-09-21T06:00:00Z | 100 | 100 | WH_REG         |
 
     # --- an ordinary, unrelated material event follows: a genuinely open, unshipped sales order ---------
     And metasfresh contains C_Orders:
@@ -231,8 +231,8 @@ Feature: ATP reconciliation regression coverage
 
     # --- both chains land on the same ATP for the same physical position: 100 - 25 = 75 ------------------
     Then after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty  | ATP | M_Warehouse_ID |
-      | fix_reg3b  | INVENTORY_DOWN    | p_reg3b      | 2024-09-21T06:00:00Z | -924 | 75  | WH_REG         |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP | M_Warehouse_ID |
+      | fix_reg3b  | INVENTORY_DOWN    | ATP_RECONCILE             | p_reg3b      | 2024-09-21T06:00:00Z | -924 | 75  | WH_REG         |
 
   @Id:ATPREG_004
   @from:cucumber
@@ -272,5 +272,5 @@ Feature: ATP reconciliation regression coverage
     # back up; QtyAfter 60 is the physical stock the projection was brought back onto
     And after not more than 60s, the persisted ATP reconciliation backup for M_Product_ID "p_reg4" contains a row with QtyBefore "null" and QtyAfter "60"
     And after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | fix_reg4   | INVENTORY_UP      | p_reg4       | 2024-09-21T06:00:00Z | 60  | 60  | WH_REG         |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_reg4   | INVENTORY_UP      | ATP_RECONCILE             | p_reg4       | 2024-09-21T06:00:00Z | 60  | 60  | WH_REG         |

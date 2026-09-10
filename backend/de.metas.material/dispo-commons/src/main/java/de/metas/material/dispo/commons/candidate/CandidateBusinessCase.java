@@ -51,9 +51,11 @@ public enum CandidateBusinessCase implements ReferenceListAwareEnum
 	FORECAST(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_FORECAST, DemandDetail.class),
 	PURCHASE(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE, PurchaseDetail.class),
 	STOCK_CHANGE(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_STOCK_CHANGE, StockChangeDetail.class),
-	// literal, not X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_ATP_RECONCILIATION: matches migration
-	// 5823960's AD_Ref_List.Value; X_MD_Candidate has not been regenerated against it yet.
-	ATP_RECONCILIATION("ATP_RECONCILIATION", AtpReconciliationDetail.class),
+	// literal, not X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_ATP_RECONCILE: matches migration 5823960's
+	// AD_Ref_List.Value as corrected by 5824020 (the original 'ATP_RECONCILIATION' was 18 characters -
+	// MD_Candidate_BusinessCase is varchar(15) and silently truncated it, breaking every read-back).
+	// X_MD_Candidate has not been regenerated against either migration yet.
+	ATP_RECONCILIATION("ATP_RECONCILE", AtpReconciliationDetail.class),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<CandidateBusinessCase> index = ReferenceListAwareEnums.index(values());

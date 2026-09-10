@@ -107,5 +107,5 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
 
     # --- business-correct result: ATP is now 80, matching the physical stock --------------
     Then after not more than 60s, MD_Candidates are found
-      | Identifier | MD_Candidate_Type | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
-      | fix_dd     | INVENTORY_UP      | comp_dd      | 2024-09-23T06:00:00Z | 20  | 80  | WH_DD          |
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | fix_dd     | INVENTORY_UP      | ATP_RECONCILE             | comp_dd      | 2024-09-23T06:00:00Z | 20  | 80  | WH_DD          |
