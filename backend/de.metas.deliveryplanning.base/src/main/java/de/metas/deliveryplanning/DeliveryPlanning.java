@@ -90,6 +90,18 @@ public class DeliveryPlanning
 	boolean processed;
 
 	/**
+	 * Read straight off the stored column, which the {@code M_Delivery_Planning_Alloc} interceptor keeps in
+	 * step: it is true exactly while the planning has an ACTIVE allocation to a delivery instruction in
+	 * {@code DocStatus = Completed}. Receiving before that is what it guards.
+	 * <p>
+	 * NOTE the polarity is the OPPOSITE of {@link #processed} above: there the unset value {@code false} is
+	 * the permissive answer, so a mapper that forgets it waves a processed planning through. Here {@code false}
+	 * is the RESTRICTIVE answer - a mapper that forgets it blocks a receivable planning instead of allowing an
+	 * unreceivable one. That fails safe, but it is why a test building a receivable planning has to say so.
+	 */
+	boolean readyForReceipt;
+
+	/**
 	 * {@code null} for a planning loaded by a caller that never asks {@link DeliveryPlanningList#openPlanQty}
 	 * about it, which is why this is not {@code @NonNull}.
 	 */

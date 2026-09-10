@@ -131,7 +131,9 @@ class DeliveryPlanningGenerateProcessesHelper
 	private final HashMap<OrderAndLineId, Optional<DeliveryPlanningShipmentInfo>> shipmentInfosByPurchaseOrderLineId = new HashMap<>();
 
 	private static final AdMessageKey MSG_ERROR_GOODS_ISSUE_QUANTITY = AdMessageKey.of("GoodsIssueQuantityParameterError");
-	private static final String SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS = "de.metas.deliveryplanning.webui.process.PreventReceiptIfMissingDeliveryInstructions";
+	/** The switch itself lives on {@link DeliveryPlanningService}, so this precondition and the
+	 * selection-shaped one in that service cannot obey different switches. */
+	private static final String SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS = DeliveryPlanningService.SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS;
 
 	@Builder
 	private DeliveryPlanningGenerateProcessesHelper(

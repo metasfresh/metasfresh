@@ -485,6 +485,7 @@ public class DeliveryPlanningRepository
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.transportDirection(extractTransportDirection(record))
 				.processed(record.isProcessed())
+				.readyForReceipt(record.isReadyForReceipt())
 				.qtyOrdered(Quantitys.of(record.getQtyOrdered(), uomId))
 				.plannedLoadedQty(Quantitys.of(record.getPlannedLoadedQuantity(), uomId))
 				.actualLoadedQty(Quantitys.of(record.getActualLoadQty(), uomId))
@@ -675,6 +676,7 @@ public class DeliveryPlanningRepository
 				// never read by isDelivered(); only satisfies the shared value object's @NonNull contract
 				.transportDirection(TransportDirection.ofNullableCode(record.getTransportDirection(), TransportDirection.Outgoing))
 				.processed(record.isProcessed())
+				.readyForReceipt(record.isReadyForReceipt())
 				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.build();
 	}
@@ -698,6 +700,7 @@ public class DeliveryPlanningRepository
 				.transportDirection(TransportDirection.ofNullableCode(record.getTransportDirection(), TransportDirection.Outgoing))
 				.closed(record.isClosed())
 				.processed(record.isProcessed())
+				.readyForReceipt(record.isReadyForReceipt())
 				.inOutId(InOutId.ofRepoIdOrNull(record.getM_InOut_ID()))
 				.build();
 	}

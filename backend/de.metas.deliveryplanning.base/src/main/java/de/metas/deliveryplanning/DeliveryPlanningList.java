@@ -175,6 +175,10 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 	public DeliveryPlanningList processedOnes() {return filter(DeliveryPlanning::isProcessed);}
 
+	public boolean anyNotReadyForReceipt() {return list.stream().anyMatch(dp -> !dp.isReadyForReceipt());}
+
+	public DeliveryPlanningList notReadyForReceiptOnes() {return filter(dp -> !dp.isReadyForReceipt());}
+
 	public boolean anyAllocated() {return list.stream().anyMatch(DeliveryPlanning::isAllocated);}
 
 	public DeliveryPlanningList allocatedOnes() {return filter(DeliveryPlanning::isAllocated);}
