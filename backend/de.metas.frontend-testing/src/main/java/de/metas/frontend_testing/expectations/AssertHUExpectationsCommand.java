@@ -191,6 +191,11 @@ class AssertHUExpectationsCommand
 			assertAttributesAbsent(expectation.getAttributesAbsent(), huId);
 		}
 
+		if (expectation.getAttributesAbsent() != null)
+		{
+			assertAttributesAbsent(expectation.getAttributesAbsent(), huId);
+		}
+
 		if (expectation.getTus() != null)
 		{
 			final I_M_HU hu = getHUById(huId);
@@ -426,6 +431,11 @@ class AssertHUExpectationsCommand
 		if (expectation.getAttributes() != null)
 		{
 			HUAttributeAssertions.assertAttributes(services, expectation.getAttributes(), cu);
+		}
+
+		if (expectation.getAttributesAbsent() != null)
+		{
+			assertAttributesAbsent(expectation.getAttributesAbsent(), cu);
 		}
 
 		if (expectation.getAttributesAbsent() != null)
