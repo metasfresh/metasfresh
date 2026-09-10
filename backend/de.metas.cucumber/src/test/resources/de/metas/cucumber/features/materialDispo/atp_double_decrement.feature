@@ -88,7 +88,6 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
       | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 | M_HU_ID.Identifier |
       | inv_dd_2       | invl_dd_2  | comp_dd      | 100     | 80       | WH_DD          | PCE          | hu_dd_1            |
     And the inventory identified by inv_dd_2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- stock is correct at 80, but the never-issued BOM demand still decrements a second time: today's
     # behaviour lands ATP at 60, not the physically correct 80 -----------------------------

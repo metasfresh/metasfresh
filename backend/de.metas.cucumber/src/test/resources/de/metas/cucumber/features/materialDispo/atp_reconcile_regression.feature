@@ -88,7 +88,6 @@ Feature: ATP reconciliation regression coverage
     # --- the order is CLOSED without ever issuing the components: this demand is now a closed source
     # document, and must stop contributing once reconciled -------------------------------
     When the manufacturing order identified by ppo_reg1 is closed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- a genuinely open, unshipped sales order for the same component, dated after the closing -------
     And metasfresh contains C_Orders:

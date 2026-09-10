@@ -883,6 +883,12 @@ public class MD_Candidate_StepDef
 	 * no scenario asserts that column, but do not rely on it.
 	 * </ul>
 	 * <p>
+	 * Drains the {@code de.metas.material} RabbitMQ queue before posting the event (see
+	 * {@code de.metas.cucumber/CLAUDE.md} rule 7): a still-pending event from an earlier step (e.g. an
+	 * open-demand order completion) must have finished materializing its {@code MD_Candidate} before this
+	 * step's own {@link StockChangedEvent} enters the chain, or the reconciliation the event triggers
+	 * builds forward from an incomplete chain.
+	 * <p>
 	 * Gherkin:
 	 * <pre>
 	 * When metasfresh receives a StockChangedEvent for the current MD_Stock
@@ -891,8 +897,10 @@ public class MD_Candidate_StepDef
 	 * </pre>
 	 */
 	@And("^metasfresh receives a StockChangedEvent for the current MD_Stock$")
-	public void metasfresh_receives_stock_changed_event(@NonNull final DataTable dataTable)
+	public void metasfresh_receives_stock_changed_event(@NonNull final DataTable dataTable) throws InterruptedException
 	{
+		rabbitMQStepDef.waitEmptyMaterialQueue();
+
 		DataTableRows.of(dataTable).forEach(this::postStockChangedEventsForCurrentStock);
 	}
 

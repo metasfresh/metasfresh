@@ -135,7 +135,6 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_od_2   | so_od_2    | p_od_2       | 30         |
     And the order identified by so_od_2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # 4) post the reset-stock event; MD_Stock is still 200
     When metasfresh receives a StockChangedEvent for the current MD_Stock
@@ -192,7 +191,6 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
     And shipment is generated for the following shipment schedule
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | ship_od_3             | ss_od_3                          | D                 | Y                  |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # the invariant: stock dropped to 70, ATP is UNCHANGED at 70. The full shipment fulfils the open
     # demand (its own remaining qty goes to 0) and books the actual movement as a separate certain
@@ -247,7 +245,6 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
     When metasfresh receives a StockChangedEvent for the current MD_Stock
       | M_Product_ID | OPT.ChangeDate       | OPT.QtyOnHandOld |
       | p_od_4       | 2024-09-23T06:00:00Z | 150              |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # only the refresh's own +50 may reach the chain: the projection moves 170 -> 220 and keeps the open demand.
     # Re-baselining onto the bare physical 200 would land the projection there and absorb the demand.
@@ -298,7 +295,6 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
     When metasfresh receives a StockChangedEvent for the current MD_Stock
       | M_Product_ID | OPT.ChangeDate       |
       | p_od_5       | 2024-09-23T06:00:00Z |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # the refresh must add no candidate at all: the chain still carries the open demand, and its projection
     # stays exactly what it was before the refresh.

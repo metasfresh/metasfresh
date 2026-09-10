@@ -63,7 +63,6 @@ Feature: ATP baseline from physical stock after an MD_Candidate cleanup
       | M_Inventory_ID | Identifier | M_Product_ID | QtyBook | QtyCount | M_Warehouse_ID | UOM.X12DE355 |
       | inv_1_b        | invl_1_b   | p_base_1     | 100     | 100      | WH_BASE        | PCE          |
     And the inventory identified by inv_1_b is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- result: ATP is still 0 -----------------------------------------------------------
     # The engine mirrors EVERY inventory M_Transaction 1:1 into an INVENTORY_UP/DOWN candidate, and a
