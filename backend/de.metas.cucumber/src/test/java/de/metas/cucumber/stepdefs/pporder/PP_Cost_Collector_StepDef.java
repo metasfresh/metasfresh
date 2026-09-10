@@ -42,6 +42,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -65,6 +67,7 @@ public class PP_Cost_Collector_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
@@ -221,7 +224,8 @@ public class PP_Cost_Collector_StepDef
 		InterfaceWrapperHelper.refresh(costCollector);
 		documentBL.processEx(costCollector, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
-		final I_PP_Cost_Collector reversal = InterfaceWrapperHelper.load(costCollector.getReversal_ID(), I_PP_Cost_Collector.class);
+		final PPCostCollectorId reversalId = PPCostCollectorId.ofRepoId(costCollector.getReversal_ID());
+		final I_PP_Cost_Collector reversal = ppCostCollectorBL.getById(reversalId);
 		ppCostCollectorTable.put(reversalIdentifier, reversal);
 	}
 

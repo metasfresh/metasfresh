@@ -284,6 +284,28 @@ class ManufacturingRepostCostDifferenceDistributionTest
 		assertThat(reversed.getAlreadyShippedAmt().toBigDecimal())
 				.as("ALREADY_SHIPPED leg must be recreated by its own call, not collapsed into MAIN")
 				.isEqualByComparingTo("-" + EXPECTED_ALREADY_SHIPPED);
+
+		// repost of the reversal document itself, all 3 legs already persisted: must recover them, not
+		// crash (the pre-fix ImmutableMap.toImmutableMap keying by costElementId alone throws
+		// IllegalArgumentException: Multiple entries with same key once all 3 same-cost-element rows exist)
+		// and not duplicate them.
+		for (final CostDetail original : utils.getExistingCostDetails(request))
+		{
+			handler.createOrUpdateCost(reversalTemplate.withAmountAndTypeAndQty(
+					original.getAmt().negate(),
+					original.getAmtType(),
+					original.getQty().negate()));
+		}
+
+		assertThat(utils.getExistingCostDetails(reversalTemplate))
+				.as("repost recovers the 3 existing legs, does not duplicate them")
+				.hasSize(3);
+		final CostAmountDetailed reversedAfterRepost = utils
+				.toCostDetailCreateResultsList(utils.getExistingCostDetails(reversalTemplate))
+				.getTotalAmountToPost(utils.getAcctSchemaById(acctSchemaId));
+		assertThat(reversedAfterRepost.getMainAmt().toBigDecimal()).isEqualByComparingTo(reversed.getMainAmt().toBigDecimal());
+		assertThat(reversedAfterRepost.getCostAdjustmentAmt().toBigDecimal()).isEqualByComparingTo(reversed.getCostAdjustmentAmt().toBigDecimal());
+		assertThat(reversedAfterRepost.getAlreadyShippedAmt().toBigDecimal()).isEqualByComparingTo(reversed.getAlreadyShippedAmt().toBigDecimal());
 	}
 
 	private BigDecimal currentCostPriceOf(final CostDetailCreateRequest request)

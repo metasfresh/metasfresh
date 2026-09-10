@@ -400,7 +400,9 @@ public class CostingService implements ICostingService
 			throw new AdempiereException("Initial document has no cost details: " + reversalRequest);
 		}
 
-		// matched by (costElementId, amtType): a distribution collector's 3 legs share one cost element.
+		// matched by (costElementId, amtType), NOT costElementId alone: a distribution collector's 3 legs
+		// share one cost element, so a costElementId-keyed map would either return the wrong leg or (once
+		// a repost finds all 3 already persisted) throw on the duplicate key while building the map.
 		final List<CostDetail> existingCostDetailsList = costDetailsService
 				.getAllForDocumentAndAcctSchemaId(reversalRequest.getReversalDocumentRef(), reversalRequest.getAcctSchemaId());
 
