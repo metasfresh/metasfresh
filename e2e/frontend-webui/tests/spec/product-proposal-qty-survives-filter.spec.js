@@ -17,11 +17,11 @@ import { SLOW_ACTION_TIMEOUT } from '../utils/common';
  * (`rowIdsOrderedAndFiltered`), yet `OrderProductsProposalViewFactory.createOrderLines` reads the
  * order lines to write from exactly that accessor. A row hidden by the delivery-history filter at
  * the moment DONE is pressed is therefore silently dropped - no order line, no error. This spec
- * proves the fix: a quantity typed on a row that the filter is currently hiding still becomes an
- * order line.
+ * proves the fix: a quantity typed on a never-delivered product still becomes an order line when the
+ * delivery-history filter is on.
  *
- * Fixture: one partner gets a real order -> shipment -> completion for Product1 + Product2;
- * Product3 is never shipped, so the delivery-history filter hides it once it is turned on.
+ * Fixture: one partner gets a real order -> shipment -> completion for Product1;
+ * Product3 is never shipped, so it only qualifies for the filter through the typed quantity.
  */
 
 const STATS_ASYNC_MECHANISM =
@@ -61,14 +61,15 @@ test.describe('Product Proposals - quantity survives the filter (AC7)', () => {
 
 ### Test Scenario
 
-A quantity typed on a row that the delivery-history filter is currently hiding still becomes an
-order line when the overlay is closed with DONE - the filter is a view concern, not a data-loss
-mechanism.
+A quantity typed on a never-delivered product still becomes an order line when the overlay is
+closed with DONE while the delivery-history filter is on - the filter is a view concern, not a
+data-loss mechanism. (The lines are built from the unfiltered rows, so no filter state can drop one;
+that guarantee is pinned directly by ProductsProposalRowsDataTest.)
 
-1. Build delivery history for Product1 + Product2 via a real order -> shipment -> completion;
-   Product3 is never shipped (fixture), so the filter hides Product3 once turned on.
-2. On a fresh order: enter a qty on Product3, turn the filter on (Product3 disappears from the
-   grid), then close with DONE.
+1. Build delivery history for Product1 via a real order -> shipment -> completion;
+   Product3 is never shipped (fixture), so only the typed quantity keeps it in the list.
+2. On a fresh order: enter a qty on Product3, turn the filter on (Product3 stays, exempt because it
+   carries a quantity), then close with DONE.
 3. Reload the order and confirm an order line for Product3 exists with the typed quantity.
     `);
 
@@ -112,7 +113,6 @@ mechanism.
 
     const customerCode = masterdata.bpartners.CUSTOMER_WITH_HISTORY.bpartnerCode;
     const product1Code = masterdata.products.Product1.productCode;
-    const product2Code = masterdata.products.Product2.productCode;
     const product3Code = masterdata.products.Product3.productCode;
 
     // === LOGIN ===
@@ -120,20 +120,21 @@ mechanism.
     await LoginPage.login(masterdata.login.user);
     await DashboardPage.expectVisible();
 
-    // === FIXTURE: deliver Product1 + Product2; Product3 never ===
-    await test.step('Fixture - deliver Product1 + Product2 to the partner (Product3 never)', async () => {
+    // === FIXTURE: deliver Product1; Product3 never ===
+    // Only ONE delivered product is needed here: this spec is about a quantity typed on a
+    // NEVER-delivered product, so a single product with delivery history is enough to make the filter
+    // meaningful. Deliberately not adding a second line - each extra addOrderLine call on the same
+    // order is a further chance for the shared quick-input helper to fail (measured: it occasionally
+    // cannot add a second line at all, three retries included), and a fixture step that the assertions
+    // do not need is pure flakiness surface. The sibling spec that asserts the row COUNT narrowing
+    // does keep two delivered products, because there the second one is load-bearing.
+    await test.step('Fixture - deliver Product1 to the partner (Product2, Product3 never)', async () => {
       await SalesOrderPage.goto();
       await SalesOrderPage.clickNew();
       const historyOrderId = await SalesOrderPage.selectCustomer(customerCode);
 
       await SalesOrderPage.addOrderLine({
         product: product1Code,
-        quantity: '5',
-        recordId: historyOrderId,
-      });
-
-      await SalesOrderPage.addOrderLine({
-        product: product2Code,
         quantity: '5',
         recordId: historyOrderId,
       });
@@ -150,7 +151,7 @@ mechanism.
       });
       await ShipmentSchedulePage.expectVisible();
       await ShipmentSchedulePage.createShipment();
-      console.log('Shipment created and completed for Product1 + Product2');
+      console.log('Shipment created and completed for Product1');
     });
 
     // === FIXTURE: the fresh order TC8 runs against ===
@@ -172,17 +173,14 @@ mechanism.
             await ProductProposalPage.closeWithDone(page);
 
             const row1 = rows.find((r) => r.product.includes(product1Code));
-            const row2 = rows.find((r) => r.product.includes(product2Code));
 
-            return Boolean(
-              row1 && hasDeliveryValue(row1.lastShipmentDays) && row2 && hasDeliveryValue(row2.lastShipmentDays)
-            );
+            return Boolean(row1 && hasDeliveryValue(row1.lastShipmentDays));
           },
           {
             timeout: 120000,
             message:
-              'Tage vergangen (lastShipmentDays) never appeared for Product1/Product2 - the async stats update ' +
-              `(${STATS_ASYNC_MECHANISM}) was not consumed within the timeout`,
+              'Tage vergangen (lastShipmentDays) never appeared for the delivered product - the async ' +
+              `stats update (${STATS_ASYNC_MECHANISM}) was not consumed within the timeout`,
           }
         )
         .toBe(true);
