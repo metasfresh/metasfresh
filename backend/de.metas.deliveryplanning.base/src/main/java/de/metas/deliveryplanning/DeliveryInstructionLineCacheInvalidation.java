@@ -37,30 +37,11 @@ import java.util.Collection;
  * The cache-invalidation request that makes a delivery instruction's {@code M_ShippingPackage} line show a
  * planning's CURRENT quantities without a manual reload.
  * <p>
- * Neither declarative mechanism can express this, for two DIFFERENT reasons - check both before replacing this
- * class with configuration:
- * <ul>
- * <li>{@code AD_SQLColumn_SourceTableColumn} produces the wrong SHAPE: it always emits
- * {@code CacheInvalidateRequest.rootRecord("M_ShippingPackage", id)}, and {@code M_ShippingPackage} is the root
- * table of no window (tabLevel 1 in both 540020 and 541657), so that request resolves to no window and is
- * dropped - the model cache is reset, the open document is not.</li>
- * <li>{@code AD_ViewSource} would produce the RIGHT shape but cannot REACH the record. Its factory does not
- * build a request itself; it delegates to the window-based parent/child factories for the target table
- * ({@code ViewSourceCacheInvalidateRequestFactory#createRequestsFromModel}), and those are seeded from
- * {@code AD_Window_ParentChildTableNames_v1}, which already registers root {@code M_ShipperTransportation} +
- * child {@code M_ShippingPackage} via {@code M_ShipperTransportation_ID}. The blocker is the link instead: the
- * descriptor carries ONE source and ONE target link column and applies them as a single
- * {@code addEqualsFilter}, and neither {@code M_Delivery_Planning} nor {@code M_ShippingPackage} carries the
- * other's FK: the planning-to-package linkage lives in {@code M_Delivery_Planning_Alloc}, the only table
- * holding both ids, and the factory does not re-enter the group, so there is no second hop to chain.
- * <br>
- * The two tables DO share {@code C_Order_ID} / {@code C_OrderLine_ID}, so a single hop on those is
- * expressible - but it emits a DIFFERENT set: every package line of that order line, sibling plannings'
- * packages included. It is not provably even a superset, because nothing constrains an allocated package to
- * share its planning's order line. So it is not a substitute.</li>
- * </ul>
- * So the routable shape is root {@code M_ShipperTransportation} + child {@code M_ShippingPackage}, built here
- * from the allocation because only the allocation knows both ids.
+ * The shape is root {@code M_ShipperTransportation} + child {@code M_ShippingPackage} because a request has to
+ * resolve to a window to reach an open document, and {@code M_ShippingPackage} is a child tab (tabLevel 1) in
+ * both 540020 and 541657 - the root table of no window. A bare
+ * {@code rootRecord("M_ShippingPackage", id)} resolves to no window and is dropped: the model cache is reset,
+ * the open document is not.
  */
 @UtilityClass
 public final class DeliveryInstructionLineCacheInvalidation
