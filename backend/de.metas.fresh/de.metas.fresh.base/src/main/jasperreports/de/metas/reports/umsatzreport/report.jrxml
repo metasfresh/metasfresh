@@ -43,6 +43,7 @@
 	<field name="yeardiffpercentage" class="java.math.BigDecimal"/>
 	<field name="attributesetinstance" class="java.lang.String"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="delivery_bp_name" class="java.lang.String"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
@@ -114,14 +115,14 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
 			</textField>
-			<textField pattern="MM.yyyy">
+			<textField isBlankWhenNull="true" pattern="MM.yyyy">
 				<reportElement x="206" y="53" width="40" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement textAlignment="Right">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{periodend}]]></textFieldExpression>
 			</textField>
-			<textField pattern="MM.yyyy">
+			<textField isBlankWhenNull="true" pattern="MM.yyyy">
 				<reportElement x="247" y="53" width="40" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
 				<textElement textAlignment="Right">
 					<font size="7" isBold="false"/>
@@ -147,14 +148,14 @@
 				<textElement textAlignment="Right">
 					<font size="7" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{cumulated} + " " + $F{lastyear}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{cumulated} + " " + ($F{lastyear} != null ? $F{lastyear} : "")]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy">
 				<reportElement x="370" y="53" width="58" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement textAlignment="Right">
 					<font size="7" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{cumulated} +" " + $F{year}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{cumulated} + " " + ($F{year} != null ? $F{year} : "")]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy">
 				<reportElement x="535" y="53" width="40" height="10" uuid="537afb78-eaa6-4498-a064-db9a2c2630c8"/>
@@ -273,8 +274,8 @@
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 1)
 && ($F{sameperiodsum}.signum() !=0
 || $F{sameperiodlastyearsum}.signum() !=0)]]></printWhenExpression>
-			<textField>
-				<reportElement x="37" y="0" width="170" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="37" y="0" width="120" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
