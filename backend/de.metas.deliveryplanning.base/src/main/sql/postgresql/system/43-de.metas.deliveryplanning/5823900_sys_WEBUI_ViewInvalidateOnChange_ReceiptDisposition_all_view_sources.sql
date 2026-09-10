@@ -29,9 +29,25 @@
 --
 -- Trade-off, stated deliberately: this is the COARSE mechanism (window + table, no link column), so any write to
 -- one of these tables invalidates the window's open views even when it touches no column the view shows. C_Order
--- and M_InOut are high-traffic, so if this proves noisy the remedy is AD_ViewSource rows with
--- AD_ViewSource_Column narrowing -- which additionally needs the view to expose the source ids as link columns.
--- Correctness first; narrowing is an optimisation and is recorded as such.
+-- and M_InOut are high-traffic.
+--
+-- If that proves noisy, the narrowing option is AD_ViewSource + AD_ViewSource_Column -- but note what it costs
+-- HERE, because this window's shape makes it more than a config row. AD_ViewSource does not build a request
+-- itself: ViewSourceCacheInvalidateRequestFactory filters the VIEW by a link column (so the view's internal join
+-- depth is irrelevant -- only that it EXPOSES the source's id), then delegates the request SHAPE to the
+-- window-based factories keyed on the target table, seeded from AD_Window_ParentChildTableNames_v1. There:
+--
+--   RV_ReceiptDisposition_DeliveryPlanning        parent with a NULL child  -> Direct factory
+--                                                 -> request names the VIEW table
+--   M_Delivery_Planning_Delivery_Instructions_V   CHILD of M_Delivery_Planning -> ParentChild factory
+--                                                 -> root M_Delivery_Planning + child the view
+--
+-- The sibling view is a child TAB, so its request lands on M_Delivery_Planning's existing trigger row and the
+-- loop closes with nothing extra. Ours is a standalone view window (the view IS the root, tabLevel 0), so its
+-- request names the view table and reaches nothing unless a WEBUI_ViewInvalidateOnChange row for
+-- window 542190 + the VIEW table (AD_Table 542644) is added too. So the narrowing route is THREE pieces per
+-- source -- the exposed link column, the AD_ViewSource row, and that closing trigger row -- and it replaces
+-- nothing below; it only makes invalidation more selective. Correctness first; narrowing is an optimisation.
 --
 -- Idempotent per row, and touches no row registered for another window.
 
