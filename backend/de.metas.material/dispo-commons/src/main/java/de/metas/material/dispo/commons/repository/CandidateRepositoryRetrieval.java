@@ -50,6 +50,7 @@ import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -111,12 +112,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
  * class claims no ownership of those tables.
  */
 @Service
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class CandidateRepositoryRetrieval
 {
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final DimensionService dimensionService;
-	private final StockChangeDetailRepo stockChangeDetailRepo;
-	private final AtpReconciliationDetailRepo atpReconciliationDetailRepo;
+	@NonNull private final DimensionService dimensionService;
+	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
+	@NonNull private final AtpReconciliationDetailRepo atpReconciliationDetailRepo;
 
 	/**
 	 * Legacy 2-arg shape, kept so the many existing test call sites that construct this class directly don't all
@@ -128,17 +130,6 @@ public class CandidateRepositoryRetrieval
 			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
 	{
 		this(dimensionService, stockChangeDetailRepo, new AtpReconciliationDetailRepo());
-	}
-
-	@Autowired
-	public CandidateRepositoryRetrieval(
-			@NonNull final DimensionService dimensionService,
-			@NonNull final StockChangeDetailRepo stockChangeDetailRepo,
-			@NonNull final AtpReconciliationDetailRepo atpReconciliationDetailRepo)
-	{
-		this.dimensionService = dimensionService;
-		this.stockChangeDetailRepo = stockChangeDetailRepo;
-		this.atpReconciliationDetailRepo = atpReconciliationDetailRepo;
 	}
 
 	public Candidate retrieveById(@NonNull final CandidateId candidateId)
