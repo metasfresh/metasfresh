@@ -6,8 +6,9 @@
 -- with no explanation reads as a bug rather than a definition.
 --
 -- The text is deliberately split across two levels, because the row-type rule is NOT generally true.
--- Eleven columns across six tables share these two elements (M_Delivery_Planning, M_ShippingPackage,
--- I_DeliveryPlanning, two instruction views and this view), and on M_Delivery_Planning the planned figure
+-- Eleven columns across seven tables share these two elements (M_Delivery_Planning, M_ShippingPackage,
+-- I_DeliveryPlanning, the two delivery-instruction views, the transport-order planning-history view and
+-- this view), and on M_Delivery_Planning the planned figure
 -- is ALWAYS the planning's own decision. So the ELEMENT carries the general meaning only, and the row-type
 -- rule goes on the two RV_ReceiptDisposition_DeliveryPlanning columns, where it is the truth.
 --
@@ -43,11 +44,11 @@ UPDATE AD_Element_Trl SET Description='The quantity actually discharged.', Updat
 
 -- The row-type rule, only where it holds: the two view columns.
 
-UPDATE AD_Column SET Description='Die für die Entladung geplante Menge. Auf einer Zeile mit Lieferplanung ist es die Entscheidung der Lieferplanung selbst; eine Zeile ohne Lieferplanung hat keine Planung, die man fragen könnte, daher gilt dort die bestellte Menge - auf diesen Zeilen stimmt der Wert deshalb mit der Spalte "Bestellt" überein.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Column SET Description='Die für die Entladung geplante Menge. Auf einer Zeile mit Lieferplanung ist es die Entscheidung der Lieferplanung selbst; eine Zeile ohne Lieferplanung hat keine Planung, die man fragen könnte, daher gilt dort die bestellte Menge - auf diesen Zeilen stimmt der Wert deshalb mit der Spalte "Bestellt/ Beauftragt" überein.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Column_ID=593501 AND COALESCE(Description,'')=''
 ;
 
-UPDATE AD_Column_Trl SET Description='Die für die Entladung geplante Menge. Auf einer Zeile mit Lieferplanung ist es die Entscheidung der Lieferplanung selbst; eine Zeile ohne Lieferplanung hat keine Planung, die man fragen könnte, daher gilt dort die bestellte Menge - auf diesen Zeilen stimmt der Wert deshalb mit der Spalte "Bestellt" überein.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Column_Trl SET Description='Die für die Entladung geplante Menge. Auf einer Zeile mit Lieferplanung ist es die Entscheidung der Lieferplanung selbst; eine Zeile ohne Lieferplanung hat keine Planung, die man fragen könnte, daher gilt dort die bestellte Menge - auf diesen Zeilen stimmt der Wert deshalb mit der Spalte "Bestellt/ Beauftragt" überein.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Column_ID=593501 AND AD_Language IN ('de_DE','de_CH') AND COALESCE(Description,'')=''
 ;
 
@@ -55,11 +56,11 @@ UPDATE AD_Column_Trl SET Description='The quantity planned for discharge. On a r
  WHERE AD_Column_ID=593501 AND AD_Language IN ('en_US','fr_CH') AND COALESCE(Description,'')=''
 ;
 
-UPDATE AD_Column SET Description='Die tatsächlich entladene Menge. Auf einer Zeile mit Lieferplanung ist es die von der Lieferplanung erfasste tatsächliche Menge; auf einer Zeile ohne Lieferplanung die auf der Wareneingangsdisposition bereits bewegte Menge.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Column SET Description='Die tatsächlich entladene Menge. Auf einer Zeile mit Lieferplanung ist es die von der Lieferplanung erfasste tatsächliche Menge; auf einer Zeile ohne Lieferplanung die bereits eingegangene Menge.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Column_ID=593530 AND COALESCE(Description,'')=''
 ;
 
-UPDATE AD_Column_Trl SET Description='Die tatsächlich entladene Menge. Auf einer Zeile mit Lieferplanung ist es die von der Lieferplanung erfasste tatsächliche Menge; auf einer Zeile ohne Lieferplanung die auf der Wareneingangsdisposition bereits bewegte Menge.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Column_Trl SET Description='Die tatsächlich entladene Menge. Auf einer Zeile mit Lieferplanung ist es die von der Lieferplanung erfasste tatsächliche Menge; auf einer Zeile ohne Lieferplanung die bereits eingegangene Menge.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Column_ID=593530 AND AD_Language IN ('de_DE','de_CH') AND COALESCE(Description,'')=''
 ;
 
