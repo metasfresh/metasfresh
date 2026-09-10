@@ -285,9 +285,10 @@ public class AtpReconciliationCommand
 	 * <p>
 	 * <b>Known gap, accepted:</b> read-then-write with no lock/uniqueness constraint on {@code (key, date, SeqNo)} -
 	 * two racing {@link #reconcile} calls for the same key/date could compute the same next value and overwrite
-	 * each other. Not hardened: this is a single-operator workflow, and the realistic race (two concurrent
-	 * operator-triggered runs) is already closed at the process level -
-	 * {@code MD_Candidate_Reconcile_ATP}'s {@code AD_Process.IsOneInstanceOnly = 'Y'}.
+	 * each other. Not hardened: this is a single-operator workflow, and the two current callers are each already
+	 * serialised - the webapi dry-run process via {@code AD_Process.IsOneInstanceOnly = 'Y'}, the async write path
+	 * via {@code C_Queue_Processor.PoolSize = 1}. The gap itself stays open: a future caller of {@link #reconcile}
+	 * is not automatically covered by either guard.
 	 */
 	private int nextSeqNo(
 			@NonNull final StockDataRecordIdentifier key,
