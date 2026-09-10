@@ -331,7 +331,8 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     allure.severity('normal');
     allure.description(
       'Verifies the three layout changes the controller asked for: Nr. (DocumentNo) and Belegart ' +
-        '(C_DocType_ID) are no longer grid columns while Nr. still works as a filter; in the detail ' +
+        '(C_DocType_ID) are no longer grid columns while Nr. still works as a filter, and Belegstatus keeps ' +
+        'its grid column; in the detail ' +
         'view Belegart and the two date fields share one new group in the right column, below the ' +
         'Aktiv group and above Sektion/Mandant; and Lager sits in the left column primary group. ' +
         'Group assertions go on DOM ancestry, not captions, so they hold in either language.'
@@ -354,6 +355,9 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
 
       await expect(page.locator('th[data-testid="column-DocumentNo"]')).toHaveCount(0);
       await expect(page.locator('th[data-testid="column-C_DocType_ID"]')).toHaveCount(0);
+
+      // Guard for the grid edits above: Belegstatus must not be swept out with them.
+      await expect(page.locator('th[data-testid="column-DocStatus"]')).toHaveCount(1);
     });
 
     await test.step('Nr. survives as a filter even though it lost its grid column', async () => {
@@ -371,6 +375,12 @@ test.describe('Manufacturing cost-imbalance monitor window', () => {
     await expect(columns).toHaveCount(2);
     const leftColumn = columns.nth(0);
     const rightColumn = columns.nth(1);
+
+    // Property of every document window, not of this change: LayoutFactory hoists DocStatus and
+    // DocAction into the header ActionButton, so they are never section fields.
+    await test.step('Belegstatus is not a form field — the document header carries the status', async () => {
+      await expect(page.locator('.section .form-field-DocStatus')).toHaveCount(0);
+    });
 
     await test.step('Lager sits in the left column primary group', async () => {
       await expect(leftColumn.locator('.panel-primary .form-field-M_Warehouse_ID')).toHaveCount(1);
