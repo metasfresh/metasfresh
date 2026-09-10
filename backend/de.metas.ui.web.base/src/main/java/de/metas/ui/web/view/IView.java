@@ -131,9 +131,18 @@ public interface IView
 	 */
 	void invalidateAll();
 
+	/**
+	 * Invalidates this view AND forgets its current selection, so that rows which did not exist (or did not
+	 * match) when the view was opened can enter it. {@link #invalidateAll()} is not enough on its own: a view
+	 * serves its rows out of a materialized selection, which {@code invalidateAll} leaves in place.
+	 * <p>
+	 * The default degrades to {@link #invalidateAll()}. Only {@link DefaultView} can actually forget a
+	 * selection - it is the implementation that has one - and the invalidation path reaches every other
+	 * {@link IView} type too, so this must be a fallback rather than a throw.
+	 */
 	default void invalidateSelection()
 	{
-		throw new UnsupportedOperationException();
+		invalidateAll();
 	}
 
 	/**

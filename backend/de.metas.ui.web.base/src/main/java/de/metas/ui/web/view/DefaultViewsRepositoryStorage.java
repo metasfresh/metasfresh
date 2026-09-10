@@ -109,7 +109,12 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 			return;
 		}
 
-		view.invalidateAll();
+		// invalidateSelection, not invalidateAll: a view serves its rows out of a materialized selection, and
+		// invalidateAll drops only the row cache and the header. Leaving the selection in place means the
+		// re-fetch replays the same row ids, so a row created after the view was opened could never appear --
+		// no matter how many invalidations arrived. Implementations without a selection fall back to
+		// invalidateAll via the IView default.
+		view.invalidateSelection();
 
 		ViewChangesCollector.getCurrentOrAutoflush()
 				.collectFullyChanged(view);

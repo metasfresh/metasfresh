@@ -350,7 +350,6 @@ public class DeliveryPlanningRepository
 		save(record);
 	}
 
-
 	public <T> T getShipmentOrReceiptInfo(
 			@NonNull final DeliveryPlanningId deliveryPlanningId,
 			@NonNull final Function<DeliveryPlanningReceiptInfo, T> receiptInfoMapper,
