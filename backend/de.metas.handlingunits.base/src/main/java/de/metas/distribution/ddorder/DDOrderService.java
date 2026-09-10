@@ -42,6 +42,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.IQuery;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -97,6 +98,18 @@ public class DDOrderService
 	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)
 	{
 		return ddOrderLowLevelDAO.streamDDOrders(query);
+	}
+
+	/**
+	 * The flavour of {@link #streamDDOrders(DDOrderQuery)} that also restricts on the order's lines via opaque,
+	 * caller-built queries. Each entry in {@code lineIdRestrictions} MUST be a query over {@code I_DD_OrderLine};
+	 * entries are AND-ed. {@code DDOrderQuery} is deliberately not extended for this — the restriction is a
+	 * parameter, not a field — so this module gains no new dependency on whatever built the restriction (e.g. a
+	 * carrier or sales-order facet).
+	 */
+	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query, @NonNull final ImmutableList<IQuery<?>> lineIdRestrictions)
+	{
+		return ddOrderLowLevelDAO.streamDDOrders(query, lineIdRestrictions);
 	}
 
 	public void save(final I_DD_Order ddOrder)

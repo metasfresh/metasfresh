@@ -399,6 +399,24 @@ public class DDOrderLowLevelDAO
 		return sqlQuery.iterateAndStream();
 	}
 
+	/**
+	 * The flavour of {@link #streamDDOrders(DDOrderQuery)} that also restricts on the order's lines via opaque,
+	 * caller-built queries. Each entry in {@code lineIdRestrictions} MUST be a query over {@link I_DD_OrderLine};
+	 * entries are AND-ed (a facet OR-ing several routes internally builds its own single entry with a composite
+	 * {@code setJoinOr()} filter — see {@code DDOrderLineDemandSqlHelper}). The list is generic on purpose: it is
+	 * not specific to any one demand-side attribute (carrier, sales order, ...), so later facets reuse it.
+	 */
+	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query, @NonNull final ImmutableList<IQuery<?>> lineIdRestrictions)
+	{
+		final IQueryBuilder<I_DD_Order> sqlQuery = toSqlQuery(query, lineIdRestrictions);
+		if (sqlQuery == null)
+		{
+			return Stream.empty();
+		}
+
+		return sqlQuery.iterateAndStream();
+	}
+
 	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
 	{
 		final IQueryBuilder<I_DD_Order> deleteOrdersQueryBuilder = queryBL.createQueryBuilder(I_DD_Order.class);
@@ -437,6 +455,21 @@ public class DDOrderLowLevelDAO
 	}
 
 	private IQueryBuilder<I_DD_Order> toSqlQuery(final DDOrderQuery query)
+	{
+		return toSqlQuery(query, ImmutableList.of());
+	}
+
+	/**
+	 * Package-private (not {@code private}) so {@code DDOrderLowLevelDAOTest} can inspect the emitted SQL of the
+	 * applied {@code lineIdRestrictions} directly, without going through {@link #streamDDOrders(DDOrderQuery, ImmutableList)}'s
+	 * execution.
+	 *
+	 * @param lineIdRestrictions each entry MUST be a query over {@link I_DD_OrderLine}; entries are AND-ed. Applied
+	 *                           on the order-to-line join ({@code I_DD_Order.DD_Order_ID -> I_DD_OrderLine.DD_Order_ID}),
+	 *                           never line-id to line-id, so parent and sub table differ and {@link org.adempiere.ad.dao.impl.InSubQueryFilter}
+	 *                           renders a correlated {@code EXISTS} rather than an {@code IN}.
+	 */
+	IQueryBuilder<I_DD_Order> toSqlQuery(final DDOrderQuery query, @NonNull final ImmutableList<IQuery<?>> lineIdRestrictions)
 	{
 		final IQueryBuilder<I_DD_Order> queryBuilder = queryBL.createQueryBuilder(I_DD_Order.class);
 		setOrderBys(queryBuilder, query.getOrderBys());
@@ -562,6 +595,18 @@ public class DDOrderLowLevelDAO
 			{
 				queryBuilder.addInSubQueryFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_OrderLine.COLUMNNAME_DD_Order_ID, lineQueryBuilder.create());
 			}
+		}
+
+		//
+		// Demand-side line restrictions (e.g. carrier, sales order): applied on the order-to-line join so that
+		// parent (DD_Order) and sub (DD_OrderLine) table differ, making InSubQueryFilter render a correlated
+		// EXISTS instead of falling back to IN (which it would emit for a same-table sub-query).
+		for (final IQuery<?> lineIdRestriction : lineIdRestrictions)
+		{
+			queryBuilder.addInSubQueryFilter(
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+					lineIdRestriction);
 		}
 
 		//
