@@ -48,6 +48,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.X_M_Delivery_Planning;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -131,6 +132,7 @@ class M_Delivery_Planning_GenerateWriteBackTest
 	{
 		final I_M_Delivery_Planning deliveryPlanning = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
 		deliveryPlanning.setC_BPartner_ID(2000000);
+		deliveryPlanning.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
 		deliveryPlanning.setM_Product_ID(productId.getRepoId());
 		deliveryPlanning.setC_UOM_ID(uomId.getRepoId());
 		InterfaceWrapperHelper.save(deliveryPlanning);

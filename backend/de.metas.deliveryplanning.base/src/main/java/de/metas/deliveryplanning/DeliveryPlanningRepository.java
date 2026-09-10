@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -120,23 +121,14 @@ public class DeliveryPlanningRepository
 	 * @throws AdempiereException for an id with no matching row - a dangling reference, not a row to drop silently.
 	 */
 	/**
-	 * UPDATE, never create: the row must already exist, since creation goes through
-	 * {@link #generateDeliveryPlanning}. Writes back the MUTABLE fields the model owns, leaving every other column untouched - the model is
-	 * deliberately not a full mirror of {@code M_Delivery_Planning}, so a save must not blank what it does not
-	 * carry. Product, UOM and order line are set when the planning is created and changed by no write path
-	 * here, so they are identity rather than state and are deliberately not rewritten.
-	 */
-	public void update(@NonNull final DeliveryPlanning deliveryPlanning)
-	{
-		final I_M_Delivery_Planning record = getById(deliveryPlanning.getId());
-		applyTo(record, deliveryPlanning);
-		saveRecord(record);
-	}
-
-	/**
-	 * The batch sibling of {@link #update}: read-modify-write over ONE load. The records are fetched once,
-	 * each is handed to the caller AS THE MODEL, and the returned model is written straight back onto the
-	 * record it came from.
+	 * UPDATE, never create - creation goes through {@link #generateDeliveryPlanning}. Read-modify-write
+	 * over ONE load: the records are fetched once, each is handed to the caller AS THE MODEL, and the
+	 * returned model is written straight back onto the record it came from.
+	 * <p>
+	 * There is deliberately no single-model {@code update(DeliveryPlanning)}: it would write every column
+	 * the model tracks from a possibly-DETACHED instance, so a caller building one from scratch - the
+	 * mandatory fields are only a third of them - would silently blank the rest of a live row. Single-row
+	 * semantics are this method with a one-element set, which cannot detach.
 	 * <p>
 	 * This exists because the obvious shape - read a {@link DeliveryPlanningList}, transform it, save it -
 	 * reads every row TWICE, once as models and again as records to write. {@code DeliveryPlanningBatchLoadingTest}
@@ -152,6 +144,25 @@ public class DeliveryPlanningRepository
 			saveRecord(record);
 		}
 	}
+
+	/** The filter-shaped sibling: same one-load read-modify-write, for the selection-based writers. */
+	public void updateAll(
+			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
+			@NonNull final UnaryOperator<DeliveryPlanning> transform)
+	{
+		for (final I_M_Delivery_Planning record : getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter).create().list())
+		{
+			applyTo(record, transform.apply(fromRecord(record)));
+			saveRecord(record);
+		}
+	}
+
+	/** One transform, shared by the by-ids and by-instruction entry points - the same operation twice over. */
+	private static final UnaryOperator<DeliveryPlanning> CLEAR_INSTRUCTION_REFERENCE =
+			deliveryPlanning -> deliveryPlanning.toBuilder()
+					.releaseNo(null)
+					.shipperTransportationId(null)
+					.build();
 
 	private static void applyTo(@NonNull final I_M_Delivery_Planning record, @NonNull final DeliveryPlanning deliveryPlanning)
 	{
@@ -409,30 +420,30 @@ public class DeliveryPlanningRepository
 	 */
 	public void clearActualQtyOnReverse(@NonNull final DeliveryPlanningId deliveryPlanningId, final boolean isReceipt)
 	{
-		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
-		final TransportDirection direction = extractTransportDirection(record);
+		updateAll(ImmutableSet.of(deliveryPlanningId), deliveryPlanning -> {
+			final Quantity zero = deliveryPlanning.getActualDischargeQty().toZero();
 
-		if (isReceipt)
-		{
-			record.setActualDischargeQuantity(BigDecimal.ZERO);
-		}
-		else if (hasOwnShipment(direction))
-		{
-			record.setActualLoadQty(BigDecimal.ZERO);
-			record.setActualDischargeQuantity(BigDecimal.ZERO);
-		}
-		else
-		{
-			// Dropship shipment: unreachable today, mirrors recordActualQtyOnComplete's refusal - see its comment.
-			throw new AdempiereException("Dropship planning with its own shipment is not supported yet: " + record);
-		}
+			final DeliveryPlanning.DeliveryPlanningBuilder builder = deliveryPlanning.toBuilder();
+			if (isReceipt)
+			{
+				builder.actualDischargeQty(zero);
+			}
+			else if (hasOwnShipment(deliveryPlanning.getTransportDirection()))
+			{
+				builder.actualLoadedQty(deliveryPlanning.getActualLoadedQty().toZero()).actualDischargeQty(zero);
+			}
+			else
+			{
+				// Dropship shipment: unreachable today, mirrors recordActualQtyOnComplete's refusal - see its comment.
+				throw new AdempiereException("Dropship planning with its own shipment is not supported yet: " + deliveryPlanning);
+			}
 
-		if (!record.isClosed())
-		{
-			record.setProcessed(false);
-		}
-
-		saveRecord(record);
+			if (!deliveryPlanning.isClosed())
+			{
+				builder.processed(false);
+			}
+			return builder.build();
+		});
 	}
 
 	public <T> T getShipmentOrReceiptInfo(
@@ -685,27 +696,13 @@ public class DeliveryPlanningRepository
 			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
 			@NonNull final AdMessageKey alreadyClosedMessage)
 	{
-		final List<I_M_Delivery_Planning> deliveryPlanningRecords = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
-				.create()
-				.list();
+		assertNoneMatches(selectedDeliveryPlanningsFilter, DeliveryPlanning::isClosed, alreadyClosedMessage);
 
-		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
-		{
-			if (deliveryPlanningRecord.isClosed())
-			{
-				throw new AdempiereException(alreadyClosedMessage, deliveryPlanningRecord.getM_Delivery_Planning_ID());
-			}
-		}
-
-		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
-		{
-			deliveryPlanningRecord.setIsClosed(true);
-			if (!deliveryPlanningRecord.isProcessed())
-			{
-				deliveryPlanningRecord.setProcessed(true);
-			}
-			saveRecord(deliveryPlanningRecord);
-		}
+		updateAll(selectedDeliveryPlanningsFilter, deliveryPlanning -> deliveryPlanning.toBuilder()
+				.closed(true)
+				// Processed tracks IsClosed || IsDelivered, so closing always processes
+				.processed(true)
+				.build());
 	}
 
 	/**
@@ -723,27 +720,31 @@ public class DeliveryPlanningRepository
 			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
 			@NonNull final AdMessageKey stillOpenMessage)
 	{
-		final List<I_M_Delivery_Planning> deliveryPlanningRecords = getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)
-				.create()
-				.list();
+		assertNoneMatches(selectedDeliveryPlanningsFilter, deliveryPlanning -> !deliveryPlanning.isClosed(), stillOpenMessage);
 
-		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
-		{
-			if (!deliveryPlanningRecord.isClosed())
-			{
-				throw new AdempiereException(stillOpenMessage, deliveryPlanningRecord.getM_Delivery_Planning_ID());
-			}
-		}
+		updateAll(selectedDeliveryPlanningsFilter, deliveryPlanning -> deliveryPlanning.toBuilder()
+				.closed(false)
+				// ... and re-opening only un-processes a planning that has no receipt/shipment of its own
+				.processed(deliveryPlanning.getInOutId() != null)
+				.build());
+	}
 
-		for (final I_M_Delivery_Planning deliveryPlanningRecord : deliveryPlanningRecords)
-		{
-			deliveryPlanningRecord.setIsClosed(false);
-			if (deliveryPlanningRecord.getM_InOut_ID() <= 0)
-			{
-				deliveryPlanningRecord.setProcessed(false);
-			}
-			saveRecord(deliveryPlanningRecord);
-		}
+	/**
+	 * Refuses the WHOLE selection by name before anything is written, so a mixed selection leaves no row
+	 * half-changed - the all-or-nothing shape every selection-shaped action here uses.
+	 */
+	private void assertNoneMatches(
+			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
+			@NonNull final Predicate<DeliveryPlanning> refuseWhen,
+			@NonNull final AdMessageKey message)
+	{
+		getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter).create().list().stream()
+				.map(DeliveryPlanningRepository::fromRecord)
+				.filter(refuseWhen)
+				.findFirst()
+				.ifPresent(deliveryPlanning -> {
+					throw new AdempiereException(message, deliveryPlanning.getId().getRepoId());
+				});
 	}
 
 	public boolean isExistNoShipperDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
@@ -824,10 +825,20 @@ public class DeliveryPlanningRepository
 			@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds,
 			@NonNull final I_M_ShipperTransportation deliveryInstruction)
 	{
-		for (final I_M_Delivery_Planning deliveryPlanningRecord : getRecordsByIds(ImmutableSet.copyOf(deliveryPlanningIds)))
-		{
-			updateDeliveryPlanningFromInstruction(deliveryPlanningRecord, deliveryInstruction);
-		}
+		final String created = new SimpleDateFormat("yyyyMMdd-HHmm").format(deliveryInstruction.getCreated());
+
+		updateAll(ImmutableSet.copyOf(deliveryPlanningIds), deliveryPlanning -> deliveryPlanning.toBuilder()
+				// the release number embeds the planning's OWN id, which is why this is a per-model transform
+				// and not a set-based update of one constant
+				.releaseNo(deliveryInstruction.getDocumentNo() + "-" + deliveryPlanning.getId().getRepoId() + "-" + created)
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(deliveryInstruction.getM_ShipperTransportation_ID()))
+				.etd(TimeUtil.asInstant(deliveryInstruction.getETD()))
+				.eta(TimeUtil.asInstant(deliveryInstruction.getETA()))
+				.atd(TimeUtil.asInstant(deliveryInstruction.getATD()))
+				.ata(TimeUtil.asInstant(deliveryInstruction.getATA()))
+				.loadingTime(deliveryInstruction.getLoadingTime())
+				.deliveryTime(deliveryInstruction.getDeliveryTime())
+				.build());
 	}
 
 	/**
@@ -836,22 +847,12 @@ public class DeliveryPlanningRepository
 	 */
 	public void clearInstructionReference(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		updateAll(ImmutableSet.copyOf(deliveryPlanningIds), deliveryPlanning -> deliveryPlanning.toBuilder()
-				.releaseNo(null)
-				.shipperTransportationId(null)
-				.build());
+		updateAll(ImmutableSet.copyOf(deliveryPlanningIds), CLEAR_INSTRUCTION_REFERENCE);
 	}
 
 	public void clearInstructionReferenceOfInstruction(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = retrieveForDeliveryInstructionId(deliveryInstructionId);
-		while (deliveryPlanningIterator.hasNext())
-		{
-			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
-			deliveryPlanningRecord.setReleaseNo(null);
-			deliveryPlanningRecord.setM_ShipperTransportation_ID(-1);
-			saveRecord(deliveryPlanningRecord);
-		}
+		updateAll(getPlanningIdsOfInstruction(deliveryInstructionId), CLEAR_INSTRUCTION_REFERENCE);
 	}
 
 	/**
@@ -862,24 +863,6 @@ public class DeliveryPlanningRepository
 	 * Also conforms the planning's own date fields to the instruction's - unconditionally overwritten, and only in
 	 * that direction: instruction to planning, never back.
 	 */
-	private static void updateDeliveryPlanningFromInstruction(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord,
-			@NonNull final I_M_ShipperTransportation deliveryInstruction)
-	{
-		final String created = new SimpleDateFormat("yyyyMMdd-HHmm").format(deliveryInstruction.getCreated());
-		deliveryPlanningRecord.setReleaseNo(deliveryInstruction.getDocumentNo() + "-"
-													+ deliveryPlanningRecord.getM_Delivery_Planning_ID()
-													+ "-" + created);
-		deliveryPlanningRecord.setM_ShipperTransportation_ID(deliveryInstruction.getM_ShipperTransportation_ID());
-
-		deliveryPlanningRecord.setETD(deliveryInstruction.getETD());
-		deliveryPlanningRecord.setETA(deliveryInstruction.getETA());
-		deliveryPlanningRecord.setATD(deliveryInstruction.getATD());
-		deliveryPlanningRecord.setATA(deliveryInstruction.getATA());
-		deliveryPlanningRecord.setLoadingTime(deliveryInstruction.getLoadingTime());
-		deliveryPlanningRecord.setDeliveryTime(deliveryInstruction.getDeliveryTime());
-
-		saveRecord(deliveryPlanningRecord);
-	}
 
 	public Iterator<I_M_Delivery_Planning> extractDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
@@ -895,12 +878,13 @@ public class DeliveryPlanningRepository
 				.filter(selectedDeliveryPlanningsFilter);
 	}
 
-	private Iterator<I_M_Delivery_Planning> retrieveForDeliveryInstructionId(@NonNull final ShipperTransportationId deliveryInstructionId)
+	/** The ids of every planning currently stamped with the given instruction. */
+	private ImmutableSet<DeliveryPlanningId> getPlanningIdsOfInstruction(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+		return ImmutableSet.copyOf(queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionId)
 				.create()
-				.iterate(I_M_Delivery_Planning.class);
+				.listIds(DeliveryPlanningId::ofRepoId));
 	}
 
 	/**
@@ -953,18 +937,19 @@ public class DeliveryPlanningRepository
 
 	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
-		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
-		deliveryPlanning.setPlannedLoadedQuantity(quantity.toBigDecimal());
-		deliveryPlanning.setC_UOM_ID(quantity.getUomId().getRepoId());
-		saveRecord(deliveryPlanning);
+		// the Quantity carries its own UOM, so C_UOM_ID no longer has to be remembered alongside it
+		updateAll(ImmutableSet.of(deliveryPlanningId), deliveryPlanning -> deliveryPlanning.toBuilder()
+				.plannedLoadedQty(quantity)
+				.uomId(quantity.getUomId())
+				.build());
 	}
 
 	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
-		final I_M_Delivery_Planning deliveryPlanning = getById(deliveryPlanningId);
-		deliveryPlanning.setPlannedDischargeQuantity(quantity.toBigDecimal());
-		deliveryPlanning.setC_UOM_ID(quantity.getUomId().getRepoId());
-		saveRecord(deliveryPlanning);
+		updateAll(ImmutableSet.of(deliveryPlanningId), deliveryPlanning -> deliveryPlanning.toBuilder()
+				.plannedDischargeQty(quantity)
+				.uomId(quantity.getUomId())
+				.build());
 	}
 
 }
