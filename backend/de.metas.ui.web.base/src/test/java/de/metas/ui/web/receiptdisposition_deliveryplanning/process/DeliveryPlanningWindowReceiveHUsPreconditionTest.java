@@ -32,6 +32,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessPreconditionChecker;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.TransportDirection;
 import de.metas.ui.web.handlingunits.process.ReceiptScheduleActions;
@@ -47,11 +48,9 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import de.metas.quantity.Quantity;
-import java.math.BigDecimal;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,9 +58,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
-
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 

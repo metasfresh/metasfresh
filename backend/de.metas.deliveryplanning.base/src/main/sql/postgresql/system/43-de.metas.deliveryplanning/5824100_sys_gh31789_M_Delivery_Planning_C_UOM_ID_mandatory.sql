@@ -8,8 +8,11 @@
 -- can interpret. Every consumer that turns those columns into a Quantity needs the UOM, so the column was
 -- mandatory in fact and optional only on paper.
 --
--- Safe to enforce: all 6224 rows on the deep_tundra stack already carry a C_UOM_ID (0 null or 0-valued), so
--- SET NOT NULL validates without rewriting data, and no backfill is needed.
+-- Safe to enforce, on structure rather than on one environment's row count: the column already carries the
+-- foreign key cuom_mdeliveryplanning -> c_uom(c_uom_id), and no C_UOM with id 0 exists, so the "set but
+-- zero" value that would satisfy NOT NULL while still being unusable cannot occur anywhere the table does.
+-- That leaves only genuinely NULL rows, which SET NOT NULL rejects loudly at deploy rather than silently.
+-- Corroborated on the deep_tundra stack: 6224 rows, none null or zero - but the FK is the argument.
 --
 -- No backup_table: this alters only the column's nullability and its dictionary flag - no row is modified.
 

@@ -36,6 +36,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperRepository;
@@ -47,22 +48,21 @@ import de.metas.ui.web.view.ViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import de.metas.quantity.Quantity;
 import org.adempiere.model.InterfaceWrapperHelper;
-import java.math.BigDecimal;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

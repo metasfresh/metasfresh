@@ -48,6 +48,7 @@ import java.util.Arrays;
 
 import static de.metas.deliveryplanning.DeliveryPlanningAllocTestHelper.allocatedTo;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Pure in-memory combinatorics of the aggregation admissibility rule.
@@ -629,6 +630,60 @@ class DeliveryPlanningListTest
 		void nullStaysNull()
 		{
 			assertThat(AggregationKeyField.toProcessParameterValue(null)).isNull();
+		}
+	}
+
+	@Nested
+	@DisplayName("openTotals")
+	class OpenTotals
+	{
+		private DeliveryPlanning row(final int qtyOrdered, final int plannedLoad, final int actualLoad)
+		{
+			return DeliveryPlanning.builder()
+					.id(DeliveryPlanningId.ofRepoId(nextId++))
+					.orgId(OrgId.ofRepoId(1000000))
+					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(qtyOrdered))
+					.plannedLoadedQty(qty(plannedLoad))
+					.actualLoadedQty(qty(actualLoad))
+					.plannedDischargeQty(qty(0))
+					.actualDischargeQty(qty(0))
+					.build();
+		}
+
+		@Test
+		@DisplayName("returns exactly what the two single-value methods return, for the same pool end")
+		void agreesWithTheSingleValueMethods()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(row(100, 40, 25), row(50, 10, 10));
+
+			final DeliveryPlanningList.OpenTotals totals = list.openTotals(PoolEnd.LOAD);
+
+			assertThat(totals.getQtyTotalOpen()).isEqualByComparingTo(list.qtyTotalOpen(PoolEnd.LOAD).toBigDecimal());
+			assertThat(totals.getQtyTotalOpenPlanned()).isEqualByComparingTo(list.qtyTotalOpenPlanned(PoolEnd.LOAD).toBigDecimal());
+		}
+
+		@Test
+		@DisplayName("both halves come from the SAME pool end - the point of returning them together")
+		void bothHalvesUseTheGivenEnd()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(row(100, 40, 25));
+
+			final DeliveryPlanningList.OpenTotals load = list.openTotals(PoolEnd.LOAD);
+			final DeliveryPlanningList.OpenTotals discharge = list.openTotals(PoolEnd.DISCHARGE);
+
+			assertThat(load.getQtyTotalOpen()).isEqualByComparingTo(list.qtyTotalOpen(PoolEnd.LOAD).toBigDecimal());
+			assertThat(discharge.getQtyTotalOpen()).isEqualByComparingTo(list.qtyTotalOpen(PoolEnd.DISCHARGE).toBigDecimal());
+		}
+
+		@Test
+		@DisplayName("an empty selection is refused, exactly as the single-value methods refuse it")
+		void emptySelectionIsRefused()
+		{
+			// not a gap: qtyTotalOpen guards an empty list on purpose, and openTotals must not soften that
+			// into a silent zero, which would write 0 onto every planning of the line.
+			assertThatThrownBy(() -> DeliveryPlanningList.EMPTY.openTotals(DeliveryPlanningList.PoolEnd.LOAD))
+					.hasMessageContaining("empty DeliveryPlanningList");
 		}
 	}
 

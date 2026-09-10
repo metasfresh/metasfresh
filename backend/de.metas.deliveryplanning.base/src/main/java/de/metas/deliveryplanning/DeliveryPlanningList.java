@@ -32,18 +32,16 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.Value;
 import lombok.ToString;
-
+import lombok.Value;
 import javax.annotation.Nullable;
-
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -51,6 +49,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
+
+
 
 /**
  * An immutable selection of delivery plannings, loaded once per invocation, with every selection predicate the

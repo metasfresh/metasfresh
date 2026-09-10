@@ -468,7 +468,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Carries only the quantity fields the pool needs - every other {@link DeliveryPlanning} field is a placeholder.
+	 * Every planning of the given order line, fully populated - see {@link #fromRecordBuilder}. This used to
+	 * carry only the quantity fields the pool needs, with every other field a placeholder; it no longer does.
 	 */
 	public DeliveryPlanningList getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
