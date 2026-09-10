@@ -1010,7 +1010,7 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | rowShort1_RL           | planningShort1_RL      | scheduleShort_RL     | true          | 0             | 4                            | 3                           |
       | rowShort2_RL           | planningShort2_RL      | scheduleShort_RL     | true          | 4             | 4                            | 0                           |
 
-  @Id:S31789_TC10
+  @Id:S31789_TC16
   Scenario: Processed is read from the row's own source - the planning on a planned row, the schedule on an unplanned one
 
     # Processed is the shared blocker on both row types, but each row reads it from its OWN source: the
@@ -1078,7 +1078,7 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID     | OPT.Processed |
       | rowProcUnplanned_RL    | null                    | scheduleProcUnplanned_RL | true          |
 
-  @Id:S31789_TC14
+  @Id:S31789_TC17
   Scenario: Each row's discharge quantities are its own planning's, and an unplanned row's are its schedule's
 
     # A split copies M_ReceiptSchedule_ID onto every sibling planning, so the schedule carries ONE figure for the
