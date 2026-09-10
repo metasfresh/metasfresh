@@ -107,7 +107,8 @@ public class DescriptionAboveLineBandTest
 	 * The floor is set by {@code order/report_details_hu_v2}, whose block ends at 543 while its article row ends
 	 * at 545; of the other 22 templates 21 are flush with their content row (delta 0) and {@code pickingv2/report_details}
 	 * is wider than it, so 2 is the smallest value that keeps the tree green. Only a block that falls SHORT of the
-	 * content row is a violation - one that reaches beyond it cannot wrap the customer's text too early.
+	 * content row is a violation of THIS bound - one that reaches beyond it cannot wrap the customer's text too
+	 * early, and is bounded by the page instead (see invariant 6's upper bound).
 	 */
 	private static final int RIGHT_EDGE_TOLERANCE = 2;
 
@@ -119,6 +120,45 @@ public class DescriptionAboveLineBandTest
 	 * name, so {@code $F{x}} and {@code $P{x}} cannot be confused.
 	 */
 	private static final Pattern EXPRESSION_REFERENCE_PATTERN = Pattern.compile("\\$[FPRV]\\{[^}]+}");
+
+	/**
+	 * Matches a boolean {@code false} literal that stands on its own rather than being part of a longer name.
+	 * Case-insensitive, so the same pattern catches the {@code FALSE} of {@code Boolean.FALSE}.
+	 * <p>
+	 * The lookarounds are what keep a legitimate name out: a {@code false} glued to an identifier character on
+	 * either side (a hypothetical field accessor {@code isfalsepositive}) does NOT match, while the one in
+	 * {@code false}, {@code new Boolean(false)}, {@code new Boolean (false)}, {@code Boolean.valueOf(false)} and
+	 * {@code Boolean.FALSE} does - {@code .} and {@code (} are not identifier characters.
+	 */
+	private static final Pattern FALSE_LITERAL_PATTERN =
+			Pattern.compile("(?<![A-Za-z0-9_$])false(?![A-Za-z0-9_$])", Pattern.CASE_INSENSITIVE);
+
+	/**
+	 * Matches a comparison of two NUMBER literals, e.g. {@code 0 == 1} or {@code 1 != 1} - the other everyday way of
+	 * writing a constant, and one that carries no {@code false} to look for. BOTH operands have to be literals:
+	 * the real guards compare something against a literal ({@code $F{qtyentered}.floatValue() != 0},
+	 * {@code $V{PAGE_COUNT}.intValue() > 1}) and must not match, which is what the leading lookbehind rules out -
+	 * it rejects a number that follows an identifier character or a closing {@code )} / {@code ]}.
+	 * Whether a match is actually false is then decided by {@link #isConstantlyFalse(double, String, double)}.
+	 */
+	private static final Pattern LITERAL_COMPARISON_PATTERN = Pattern.compile(
+			"(?<![A-Za-z0-9_$.)\\]])(\\d+(?:\\.\\d+)?)\\s*(==|!=|<=|>=|<|>)\\s*(\\d+(?:\\.\\d+)?)(?![A-Za-z0-9_$.])");
+
+	/**
+	 * Matches a java string or character literal, including its escapes. Removed before {@code false} is looked for,
+	 * so that a guard comparing against the STRING {@code "false"} is not read as a constant.
+	 */
+	private static final Pattern STRING_OR_CHAR_LITERAL_PATTERN =
+			Pattern.compile("\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'");
+
+	/**
+	 * Matches a java comment inside a jasper expression. These are not hypothetical: THREE of the 23 scanned
+	 * templates carry {@code //hide column for now} directly above a {@code new Boolean (false)} in an element-level
+	 * expression, so a comment mentioning {@code false} in a band guard is entirely plausible - and it must not be
+	 * read as one.
+	 */
+	private static final Pattern JAVA_COMMENT_PATTERN =
+			Pattern.compile("/\\*.*?\\*/|//[^\\r\\n]*", Pattern.DOTALL);
 
 	@Test
 	void eachTemplateCarryingTheFieldPrintsItAsOneFullWidthGuardedBandAboveItsArticleRow()
@@ -255,12 +295,69 @@ public class DescriptionAboveLineBandTest
 						+ ".trim().isEmpty()` check, so whitespace-only text would print an empty row: `"
 						+ singleLine(ourGuard) + "`");
 			}
+
+			//
+			// Invariant 5b: the guard is not defeated by a subexpression that is false whatever the data is.
+			// Invariant 5 above and invariants 7b and 7d below are all SUBSTRING containments over the guard text, so
+			// a perfectly correct guard wrapped in a short-circuiting constant -
+			// `new Boolean(false) && (<the correct guard>)` - satisfies every single one of them while the band never
+			// prints at all. Both of these were confirmed to leave this test green before 5b existed:
+			// `new Boolean(false) && (<inout_org_data_right's guard>)` and
+			// `new Boolean(false) && (<individual_inout's guard>)`. The customer's text is then gone and no
+			// invariant says a word about it, which is the exact failure mode this test exists to prevent.
+			//
+			// WHAT IT COVERS: the shapes a leftover debug toggle or a bad merge is actually written in - `false`,
+			// `new Boolean(false)`, `new Boolean (false)`, `Boolean.valueOf(false)`, `Boolean.FALSE`, and a
+			// comparison of two number literals such as `0 == 1` or `1 != 1`.
+			// WHAT IT DOES NOT COVER: a constant built out of anything else - a `$P{...}` a caller always passes
+			// false, `!Boolean.TRUE`, `"a".equals("b")`, an always-empty string. Ruling those out needs an evaluator
+			// for jasper expressions; this is deliberately a syntactic check over the plausible shapes, because
+			// catching those is worth far more than catching none.
+			//
+			// It is applied to OUR band's guard ONLY, never to any other band's and never to a nested expression, and
+			// that restriction is load-bearing rather than incidental. Measured over the 23 scanned templates: TWELVE
+			// of them carry a `false` literal in an ELEMENT-level `printWhenExpression` (mostly
+			// `$V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false)`, which is a real condition),
+			// and NONE carries one in a band-level guard. A whole band deliberately switched off with
+			// `new Boolean (false)` is a legitimate thing in this tree too - `invoice/report.jrxml`, which does not
+			// carry our field and so is not scanned, disables its `<detail>` band exactly like that. So only the
+			// band-level guard of the band that prints the customer's text is read, which is what
+			// bandLevelPrintWhenExpression already restricts us to.
+			//
+			// It is also deliberately position-blind: ANY false literal in this one guard is rejected, even one that
+			// would not make the whole expression constant (`X || false`). None of the 23 legitimate guards contains
+			// one, so nothing is lost - and it saves this check from having to understand operator precedence.
+			final String sanitizedGuard = withoutLiteralsCommentsAndReferences(ourGuard);
+			final List<String> constantFalseFindings = new ArrayList<>();
+			if (FALSE_LITERAL_PATTERN.matcher(sanitizedGuard).find())
+			{
+				constantFalseFindings.add("a `false` literal");
+			}
+			final Matcher literalComparison = LITERAL_COMPARISON_PATTERN.matcher(sanitizedGuard);
+			while (literalComparison.find())
+			{
+				if (isConstantlyFalse(Double.parseDouble(literalComparison.group(1)), literalComparison.group(2),
+						Double.parseDouble(literalComparison.group(3))))
+				{
+					constantFalseFindings.add("the constantly false comparison `" + literalComparison.group() + "`");
+				}
+			}
+			if (!constantFalseFindings.isEmpty())
+			{
+				violations.add(templateName + ": invariant 5b - the band-level guard contains "
+						+ String.join(" and ", constantFalseFindings) + ", i.e. a subexpression that is false whatever"
+						+ " the data is, so the band never prints however correct the rest of the guard reads: `"
+						+ singleLine(ourGuard) + "`. Invariants 5, 7b and 7d are substring checks, so a constant"
+						+ " short-circuited in front of a correct guard satisfies all of them while silently dropping"
+						+ " the customer's text. Take the leftover toggle out.");
+			}
 		}
 
 		//
-		// Invariant 6: full width measured against THIS template's own content row.
-		// Not against a fraction of pageWidth: the same 596pt page carries content rows ending at 573, 545 and 457
-		// in different templates, so pageWidth is the wrong yardstick.
+		// Invariant 6: full width measured against THIS template's own content row, and never past its own page.
+		// The LOWER bound is not a fraction of pageWidth: the same 596pt page carries content rows ending at 573, 545
+		// and 457 in different templates, so pageWidth cannot say how wide "full width" is in a given template.
+		// The UPPER bound is the page, for the reasons spelled out where it is checked.
 		// The content row is measured over the OTHER bands only. Measuring it over the whole `<detail>` includes
 		// our own element, which makes `ourX >= contentRowX` and `ourRightEdge <= contentRowRightEdge` true by
 		// construction: an over-wide or over-left band would then simply move the yardstick and the check could
@@ -271,6 +368,49 @@ public class DescriptionAboveLineBandTest
 			final int ourX = intAttribute(ourElement, "x");
 			final int ourWidth = intAttribute(ourElement, "width");
 			final int ourRightEdge = ourX + ourWidth;
+
+			//
+			// Invariant 6, UPPER bound: the block must not reach past its own page's printable right edge.
+			// Without one the check is entirely one-sided - a `width="5000"` on `individual_inout/report_details`,
+			// eight times its 596pt page, was confirmed to leave this test green - and a block that wide pushes the
+			// customer's text off the paper just as surely as a narrow one wraps it too early.
+			//
+			// Why NOT the tempting "at most as far as the content row": that bound is WRONG here.
+			// `pickingv2/report_details` legitimately ends at x=584 while the widest element of its other `<detail>`
+			// bands ends at x=504, so a content-row upper bound would fail a correct template. (Widening the
+			// yardstick to include the `pageHeader` band instead fails four templates, so that is no way out either.)
+			// The page is the one yardstick no template in the tree argues with: all 23 blocks sit inside it, the
+			// tightest by 11pt (`pickingv2` again, 584 of 595).
+			//
+			// `pageWidth - rightMargin` rather than `pageWidth - leftMargin - rightMargin` (the true printable width,
+			// since an element's `x` is relative to the left margin): every template here has `leftMargin="0"`, so
+			// the two coincide today, and of the two this is the LOOSER one - it can therefore never fail a template
+			// that a correct printable-width bound would pass.
+			final Element rootElement = template.getDocumentElement();
+			final int pageWidth = intAttribute(rootElement, "pageWidth");
+			if (pageWidth <= 0)
+			{
+				// Not merely defensive: without a pageWidth there is no upper bound at all, and this check would
+				// silently stop running - which is exactly the "quietly checks nothing" outcome this test exists to
+				// avoid. A jasper template without `pageWidth` does not compile, so this can only mean the attribute
+				// was renamed or the root element is not the report.
+				violations.add(templateName + ": invariant 6 - the root element carries no usable `pageWidth`"
+						+ " (`" + rootElement.getAttribute("pageWidth") + "`), so the block's right edge cannot be"
+						+ " bounded against the page and the upper half of invariant 6 would not be checked at all.");
+			}
+			else
+			{
+				final int printableRightEdge = pageWidth - intAttribute(rootElement, "rightMargin");
+				if (ourRightEdge > printableRightEdge)
+				{
+					violations.add(templateName + ": invariant 6 - the block ends at x=" + ourRightEdge
+							+ " (x=" + ourX + " width=" + ourWidth + "), which is " + (ourRightEdge - printableRightEdge)
+							+ "pt PAST this template's own printable right edge (x=" + printableRightEdge
+							+ ", pageWidth=" + pageWidth + " minus rightMargin="
+							+ intAttribute(rootElement, "rightMargin") + "). The customer's text is then pushed off"
+							+ " the paper.");
+				}
+			}
 
 			int contentRowX = Integer.MAX_VALUE;
 			int contentRowRightEdge = Integer.MIN_VALUE;
@@ -331,6 +471,7 @@ public class DescriptionAboveLineBandTest
 
 		final List<Integer> articleBandIndexes = new ArrayList<>();
 		final List<Integer> guardedArticleBandIndexes = new ArrayList<>();
+		final List<Integer> unguardedArticleBandIndexes = new ArrayList<>();
 		for (int i = 0; i < bands.size(); i++)
 		{
 			if (i == ourBandIndex || !isArticleRow(bands.get(i)))
@@ -342,23 +483,40 @@ public class DescriptionAboveLineBandTest
 			{
 				guardedArticleBandIndexes.add(i);
 			}
+			else
+			{
+				unguardedArticleBandIndexes.add(i);
+			}
 		}
 
 		//
 		// 7a: every reference an article band's guard makes - $F, $P, $R or $V - has to be made by our guard too.
 		// Catches a renamed or forgotten condition, in whatever namespace it lives.
-		for (final int i : guardedArticleBandIndexes)
+		//
+		// It is part of the dispatch below and not a rule of its own: it holds only while EVERY article band is
+		// guarded, i.e. exactly in the 7b and 7c cases, where the article rows are the only rows there are and our
+		// block has to follow their conditions. The moment ONE article band prints unconditionally, 7d applies and
+		// says the very opposite - our guard must then reference nothing beyond our own field, because an
+		// always-printing article row means every line HAS an article row and our text has to print above every
+		// line, which makes a guarded sibling's condition irrelevant. Demanding both at once left one legitimate
+		// shape - a `<detail>` with one guarded and one unguarded article band - with no satisfiable guard at all:
+		// the null/blank-only guard 7d demands tripped 7a, and adding the guarded sibling's condition to satisfy 7a
+		// tripped 7d. 7d is the semantically correct one there, so 7a stands down.
+		if (unguardedArticleBandIndexes.isEmpty())
 		{
-			final String articleGuard = bandLevelPrintWhenExpression(bands.get(i));
-			final Set<String> notCovered = new LinkedHashSet<>(referencesIn(articleGuard));
-			notCovered.removeAll(ourGuardReferences);
-			if (!notCovered.isEmpty())
+			for (final int i : guardedArticleBandIndexes)
 			{
-				violations.add(templateName + ": invariant 7a - article band " + (i + 1) + " of " + bands.size()
-						+ " (" + distinctXPositions(bands.get(i)).size() + " columns) is guarded by `"
-						+ singleLine(String.valueOf(articleGuard)) + "`, but the `" + FIELD_NAME + "` band's guard `"
-						+ singleLine(String.valueOf(ourGuard)) + "` does not reference " + notCovered + "."
-						+ " The text would then print above a row that is suppressed, or be dropped above rows that do print.");
+				final String articleGuard = bandLevelPrintWhenExpression(bands.get(i));
+				final Set<String> notCovered = new LinkedHashSet<>(referencesIn(articleGuard));
+				notCovered.removeAll(ourGuardReferences);
+				if (!notCovered.isEmpty())
+				{
+					violations.add(templateName + ": invariant 7a - article band " + (i + 1) + " of " + bands.size()
+							+ " (" + distinctXPositions(bands.get(i)).size() + " columns) is guarded by `"
+							+ singleLine(String.valueOf(articleGuard)) + "`, but the `" + FIELD_NAME + "` band's guard `"
+							+ singleLine(String.valueOf(ourGuard)) + "` does not reference " + notCovered + "."
+							+ " The text would then print above a row that is suppressed, or be dropped above rows that do print.");
+				}
 			}
 		}
 
@@ -373,7 +531,7 @@ public class DescriptionAboveLineBandTest
 						+ " the text to sit above. Either the template is not a line-detail template or the discriminator"
 						+ " no longer fits it.");
 			}
-			else if (guardedArticleBandIndexes.size() < articleBandIndexes.size())
+			else if (!unguardedArticleBandIndexes.isEmpty())
 			{
 				//
 				// 7d: at least one article row prints unconditionally, so every line has an article row - and our text
@@ -385,7 +543,7 @@ public class DescriptionAboveLineBandTest
 				if (!foreignReferences.isEmpty())
 				{
 					violations.add(templateName + ": invariant 7d - article band "
-							+ humanBandNumbers(articleBandIndexes) + " of " + bands.size() + " print(s) unconditionally,"
+							+ humanBandNumbers(unguardedArticleBandIndexes) + " of " + bands.size() + " print(s) unconditionally,"
 							+ " so every line has an article row and the text has to print above every line. But the `"
 							+ FIELD_NAME + "` band's guard `" + singleLine(ourGuard) + "` also depends on "
 							+ foreignReferences + ", which drops the text above the lines where that is false.");
@@ -502,6 +660,52 @@ public class DescriptionAboveLineBandTest
 	private static String compact(@Nullable final String expression)
 	{
 		return expression == null ? "" : expression.replaceAll("\\s+", "");
+	}
+
+	/**
+	 * @return the given expression stripped of everything that may legitimately CONTAIN the text of a constant
+	 * 		without being one, so that invariant 5b can look for a constant with plain patterns: string and character
+	 * 		literals ({@code "false".equals(...)}), java comments (see {@link #JAVA_COMMENT_PATTERN}) and the
+	 * 		{@code $F{}}/{@code $P{}}/{@code $R{}}/{@code $V{}} references (a field could be named {@code isfalse}),
+	 * 		which become the placeholder {@code _REF_}.
+	 * 		<p>
+	 * 		String literals are removed BEFORE comments, on the grounds that a string literal in a guard is everyday
+	 * 		({@code "Y".equals(...)}) whereas a {@code //} inside one would be bizarre; lexing java properly to settle
+	 * 		that ordering question would be out of all proportion to what this check is for.
+	 */
+	private static String withoutLiteralsCommentsAndReferences(final String expression)
+	{
+		String sanitized = STRING_OR_CHAR_LITERAL_PATTERN.matcher(expression).replaceAll("\"\"");
+		sanitized = JAVA_COMMENT_PATTERN.matcher(sanitized).replaceAll(" ");
+		sanitized = EXPRESSION_REFERENCE_PATTERN.matcher(sanitized).replaceAll("_REF_");
+		return sanitized;
+	}
+
+	/**
+	 * @return {@code true} if comparing the two given NUMBER LITERALS with the given java operator yields
+	 * 		{@code false} for every possible input - which is what makes {@code 0 == 1} and {@code 1 != 1} constants
+	 * 		rather than conditions. Only ever called with two literals, so "for every possible input" is simply
+	 * 		"once"; an unknown operator is reported as not constant, i.e. this never invents a violation.
+	 */
+	private static boolean isConstantlyFalse(final double left, final String operator, final double right)
+	{
+		switch (operator)
+		{
+			case "==":
+				return left != right;
+			case "!=":
+				return left == right;
+			case "<":
+				return !(left < right);
+			case "<=":
+				return !(left <= right);
+			case ">":
+				return !(left > right);
+			case ">=":
+				return !(left >= right);
+			default:
+				return false;
+		}
 	}
 
 	/**
