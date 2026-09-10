@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -160,6 +161,8 @@ public class MD_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+
+	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
@@ -437,9 +440,18 @@ public class MD_Candidate_StepDef
 				.execute();
 	}
 
+	/**
+	 * Drains the {@code de.metas.material} RabbitMQ queue before validating, then asserts each expected row.
+	 * The drain is internalized here (rather than left as a standalone feature-file step) because this
+	 * consumer's {@link #tryAndWaitForCandidate} already matches a <em>complete</em> candidate row (type,
+	 * business case, product, date, qty, ATP) that no later event revises - draining first guarantees the
+	 * read is settled instead of merely relying on the poll's first-match semantics.
+	 */
 	@And("^after not more than (.*)s, MD_Candidates are found$")
 	public void validate_md_candidates(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
+		rabbitMQStepDef.wait_empty_material_queue();
+
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final HashMap<CandidateId, StepDefDataIdentifier> candidateIdsAlreadyMatched = new HashMap<>();
