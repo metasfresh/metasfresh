@@ -1,15 +1,14 @@
 package de.metas.manufacturing.config;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
+import com.google.common.collect.ImmutableList;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.Set;
 
 @Value
 @Builder(toBuilder = true)
@@ -18,8 +17,14 @@ public class MobileUIManufacturingConfig
 	@NonNull OptionalBoolean isScanResourceRequired;
 	@NonNull OptionalBoolean isAllowIssuingAnyHU;
 	@Nullable ReceiveUnitType receiveUnitType;
-	@NonNull OptionalBoolean isBestBeforeDateEditable;
-	@NonNull OptionalBoolean isLotNumberEditable;
+
+	/**
+	 * The editable-attribute list (global-only, v1 - {@code MobileUI_MFG_Config_Attribute} active rows in
+	 * {@code SeqNo} order), replacing the retired per-attribute boolean flags. Empty when no config row exists
+	 * or none of its child rows are active.
+	 */
+	@NonNull ImmutableList<AttributeCode> editableAttributeCodesInOrder;
+
 	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToLU;
 	@NonNull OptionalBoolean isAllowFinishedGoodsReceiveToTU;
 	@NonNull OptionalBoolean isSkipFinishedGoodsReceiveTargetStep;
@@ -88,34 +93,13 @@ public class MobileUIManufacturingConfig
 				.build();
 	}
 
-	/**
-	 * @return the set of attributes that shall be editable on the manufacturing finished-goods receipt.
-	 * An attribute is editable when its config flag resolves to {@code TRUE}.
-	 * Reuses picking's {@link PickAttribute} so the mobile JSON contract is identical to picking's {@code readAttributes}.
-	 */
-	@NonNull
-	public Set<PickAttribute> getEditableAttributes()
-	{
-		final ImmutableSet.Builder<PickAttribute> result = ImmutableSet.builder();
-		if (isBestBeforeDateEditable.isTrue())
-		{
-			result.add(PickAttribute.BestBeforeDate);
-		}
-		if (isLotNumberEditable.isTrue())
-		{
-			result.add(PickAttribute.LotNo);
-		}
-		return result.build();
-	}
-
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
 	{
 		final MobileUIManufacturingConfig result = MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(this.isScanResourceRequired.ifUnknown(other.isScanResourceRequired))
 				.isAllowIssuingAnyHU(this.isAllowIssuingAnyHU.ifUnknown(other.isAllowIssuingAnyHU))
 				.receiveUnitType(this.receiveUnitType != null ? this.receiveUnitType : other.receiveUnitType)
-				.isBestBeforeDateEditable(this.isBestBeforeDateEditable.ifUnknown(other.isBestBeforeDateEditable))
-				.isLotNumberEditable(this.isLotNumberEditable.ifUnknown(other.isLotNumberEditable))
+				.editableAttributeCodesInOrder(!this.editableAttributeCodesInOrder.isEmpty() ? this.editableAttributeCodesInOrder : other.editableAttributeCodesInOrder)
 				.isAllowFinishedGoodsReceiveToLU(this.isAllowFinishedGoodsReceiveToLU.ifUnknown(other.isAllowFinishedGoodsReceiveToLU))
 				.isAllowFinishedGoodsReceiveToTU(this.isAllowFinishedGoodsReceiveToTU.ifUnknown(other.isAllowFinishedGoodsReceiveToTU))
 				.isSkipFinishedGoodsReceiveTargetStep(this.isSkipFinishedGoodsReceiveTargetStep.ifUnknown(other.isSkipFinishedGoodsReceiveTargetStep))

@@ -2,8 +2,10 @@ package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.attribute.json.JsonAttribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTargetsList;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
@@ -16,9 +18,17 @@ import de.metas.product.hazard_symbol.HazardSymbolRepository;
 import de.metas.product.hazard_symbol.ProductHazardSymbolRepository;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
+import de.metas.util.OptionalBoolean;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeSetMandatoryType;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeSet;
+import org.compiere.model.I_M_AttributeUse;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -47,7 +57,8 @@ class MaterialReceiptActivityHandlerTest
 				new ProductHazardSymbolService(new ProductHazardSymbolRepository(), new HazardSymbolRepository()),
 				new ProductAllergensService(new ProductAllergensRepository(), new AllergenRepository()),
 				ScannableCodeFormatService.newInstanceForUnitTesting(),
-				new MobileUIManufacturingConfigRepository());
+				new MobileUIManufacturingConfigRepository(),
+				new MaterialReceiptEditableAttributes());
 
 		productId = createProduct();
 		createVirtualPIItemProduct();
@@ -130,6 +141,94 @@ class MaterialReceiptActivityHandlerTest
 
 			assertThat(result.getValues()).isEmpty();
 			assertThat(result.getEmptyReason()).isNull();
+		}
+	}
+
+	/**
+	 * The per-line {@code editableAttributes} build — here only the restriction to the product's own
+	 * {@code M_AttributeSet} (a configured code not on this product's set is excluded). The other facets
+	 * (instance-level filtering, {@code SeqNo} ordering, per-line / co-product independence) are
+	 * UI-observable and covered by the mobile Playwright suite, not here.
+	 */
+	@Nested
+	class buildEditableAttributes
+	{
+		/**
+		 * POJO-only, no-DB variant of the {@code de.metas.business} test fixture ({@code AttributesTestHelper}
+		 * cannot be reused here: it goes through {@code InterfaceWrapperHelper.create(ctx, class, trxName)}, which
+		 * needs a real DB connection for {@code POInfo} - this module's unit tests run fully in-memory).
+		 */
+		private I_M_Attribute createAttribute(final String code, final String valueTypeCode, final boolean isInstanceAttribute)
+		{
+			final I_M_Attribute record = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
+			record.setValue(code);
+			record.setName(code);
+			record.setAttributeValueType(valueTypeCode);
+			record.setIsInstanceAttribute(isInstanceAttribute);
+			InterfaceWrapperHelper.save(record);
+			return record;
+		}
+
+		private I_M_AttributeSet createAttributeSet(final I_M_Attribute... attributes)
+		{
+			final I_M_AttributeSet attributeSet = InterfaceWrapperHelper.newInstance(I_M_AttributeSet.class);
+			attributeSet.setName("AttributeSet");
+			attributeSet.setMandatoryType(AttributeSetMandatoryType.NotMandatory.getCode());
+			InterfaceWrapperHelper.save(attributeSet);
+
+			for (final I_M_Attribute attribute : attributes)
+			{
+				final I_M_AttributeUse attributeUse = InterfaceWrapperHelper.newInstance(I_M_AttributeUse.class);
+				attributeUse.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
+				attributeUse.setM_Attribute_ID(attribute.getM_Attribute_ID());
+				InterfaceWrapperHelper.save(attributeUse);
+			}
+			return attributeSet;
+		}
+
+		private ProductId createProductWithAttributeSet(final I_M_AttributeSet attributeSet)
+		{
+			final I_M_Product_Category category = InterfaceWrapperHelper.newInstance(I_M_Product_Category.class);
+			category.setName("Category for AttributeSet " + attributeSet.getM_AttributeSet_ID());
+			category.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
+			InterfaceWrapperHelper.save(category);
+
+			final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			product.setValue("PROD-" + attributeSet.getM_AttributeSet_ID() + "-" + System.nanoTime());
+			product.setName("Product for AttributeSet " + attributeSet.getM_AttributeSet_ID());
+			product.setM_Product_Category_ID(category.getM_Product_Category_ID());
+			InterfaceWrapperHelper.save(product);
+			return ProductId.ofRepoId(product.getM_Product_ID());
+		}
+
+		private MobileUIManufacturingConfig configWithEditableCodes(final AttributeCode... codes)
+		{
+			return MobileUIManufacturingConfig.builder()
+					.isScanResourceRequired(OptionalBoolean.UNKNOWN)
+					.isAllowIssuingAnyHU(OptionalBoolean.UNKNOWN)
+					.receiveUnitType(null)
+					.editableAttributeCodesInOrder(ImmutableList.copyOf(codes))
+					.isAllowFinishedGoodsReceiveToLU(OptionalBoolean.UNKNOWN)
+					.isAllowFinishedGoodsReceiveToTU(OptionalBoolean.UNKNOWN)
+					.isSkipFinishedGoodsReceiveTargetStep(OptionalBoolean.UNKNOWN)
+					.isCaptureCatchWeightAtReceipt(OptionalBoolean.UNKNOWN)
+					.isAllowReceiveWithoutPackingItem(OptionalBoolean.UNKNOWN)
+					.build();
+		}
+
+		@Test
+		void configuredAttributeNotInProductAttributeSet_isExcluded()
+		{
+			final I_M_Attribute inSet = createAttribute("Color2", AttributeValueType.STRING.getCode(), true);
+			final I_M_AttributeSet attributeSet = createAttributeSet(inSet);
+			final ProductId productId = createProductWithAttributeSet(attributeSet);
+
+			final List<JsonAttribute> result = handler.buildEditableAttributes(
+					productId,
+					configWithEditableCodes(AttributeCode.ofString("Color2"), AttributeCode.ofString("NotOnThisProductsSet")),
+					AD_LANGUAGE);
+
+			assertThat(result).extracting(JsonAttribute::getCode).containsExactly(AttributeCode.ofString("Color2"));
 		}
 	}
 }

@@ -190,29 +190,6 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsAllowReceiveWithoutPackingItem = "IsAllowReceiveWithoutPackingItem";
 
 	/**
-	 * Set Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsBestBeforeDateEditable (boolean IsBestBeforeDateEditable);
-
-	/**
-	 * Get Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isBestBeforeDateEditable();
-
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsBestBeforeDateEditable", null);
-	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
-
-	/**
 	 * Set Capture catch weight.
 	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
@@ -234,29 +211,6 @@ public interface I_MobileUI_MFG_Config
 
 	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsCaptureCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsCaptureCatchWeightAtReceipt", null);
 	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
-
-	/**
-	 * Set Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsLotNumberEditable (boolean IsLotNumberEditable);
-
-	/**
-	 * Get Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isLotNumberEditable();
-
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsLotNumberEditable = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsLotNumberEditable", null);
-	String COLUMNNAME_IsLotNumberEditable = "IsLotNumberEditable";
 
 	/**
 	 * Set Workstation Scan Required.

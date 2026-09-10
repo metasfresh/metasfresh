@@ -85,7 +85,6 @@ public class CreateProductCommand
 
 	@NonNull private final Identifier identifier;
 	@NonNull private final OrgId orgId = MasterdataContext.ORG_ID;
-	@NonNull private final ProductCategoryId productCategoryId = MasterdataContext.PRODUCT_CATEGORY_STANDARD_ID;
 
 	public JsonCreateProductResponse execute()
 	{
@@ -145,7 +144,7 @@ public class CreateProductCommand
 		{
 			productRecord.setIsSerialNoPicked(isSerialNoPicked);
 		}
-		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
+		productRecord.setM_Product_Category_ID(resolveProductCategoryId().getRepoId());
 		productRecord.setIsSold(CoalesceUtil.coalesceNotNull(request.getIsSold(), true));
 		productRecord.setIsPurchased(CoalesceUtil.coalesceNotNull(request.getIsPurchased(), true));
 		if (request.getGuaranteeDaysMin() != null)
@@ -182,6 +181,22 @@ public class CreateProductCommand
 		context.putIdentifier(identifier, productId);
 
 		return productRecord;
+	}
+
+	/**
+	 * Resolves the product's category: the per-run {@link JsonCreateProductRequest#getProductCategory()} when the
+	 * request names one (looked up from the context, which the {@code productCategories} section populated), else the
+	 * shared {@link MasterdataContext#PRODUCT_CATEGORY_STANDARD_ID} default (backward-compatible for every product
+	 * that omits it).
+	 */
+	private ProductCategoryId resolveProductCategoryId()
+	{
+		final Identifier productCategory = request.getProductCategory();
+		if (productCategory != null)
+		{
+			return context.getId(productCategory, ProductCategoryId.class);
+		}
+		return MasterdataContext.PRODUCT_CATEGORY_STANDARD_ID;
 	}
 
 	private String generateValue()

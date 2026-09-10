@@ -192,6 +192,11 @@ class AssertHUExpectationsCommand
 			assertAttributes(expectation.getAttributes(), huId);
 		}
 
+		if (expectation.getAttributesAbsent() != null)
+		{
+			assertAttributesAbsent(expectation.getAttributesAbsent(), huId);
+		}
+
 		if (expectation.getTus() != null)
 		{
 			final I_M_HU hu = getHUById(huId);
@@ -382,6 +387,62 @@ class AssertHUExpectationsCommand
 		assertThat(actualValue).as("Date attribute " + attributeCode).isEqualTo(expectedValue);
 	}
 
+	private void assertAttributesAbsent(@NonNull final List<String> attributeCodes, @NonNull final HuId huId)
+	{
+		if (attributeCodes.isEmpty())
+		{
+			return;
+		}
+
+		final I_M_HU hu = services.getHUById(huId);
+		assertAttributesAbsent(attributeCodes, hu);
+	}
+
+	private void assertAttributesAbsent(@NonNull final List<String> attributeCodes, @NonNull final I_M_HU hu)
+	{
+		if (attributeCodes.isEmpty())
+		{
+			return;
+		}
+
+		assertAttributesAbsent(attributeCodes, services.getAttributes(hu));
+	}
+
+	/**
+	 * Asserts that none of the given attribute codes is materialized on {@code actualAttributes} — i.e. the
+	 * HU carries no such attribute at all, so it is neutral for them. The check is {@link ImmutableAttributeSet#hasAttribute}
+	 * (attribute present in the set), not a value-is-null test: an implementation that wrongly stamped the size on
+	 * the shared container HU (TU / LU) would materialize the code here, making {@code hasAttribute} return
+	 * {@code true}, and fail. Used to positively guard that a mixed-size container stays attribute-neutral.
+	 * <p>
+	 * Package-visible + {@code static} so the pure check can be unit-tested against a hand-built
+	 * {@link ImmutableAttributeSet} without a running HU stack.
+	 */
+	static void assertAttributesAbsent(@NonNull final List<String> attributeCodes, @NonNull final ImmutableAttributeSet actualAttributes)
+	{
+		if (attributeCodes.isEmpty())
+		{
+			return;
+		}
+
+		softly(() -> {
+			softlyPutContext("expectedAbsentAttributes", attributeCodes);
+			softlyPutContext("actualAttributes", actualAttributes);
+
+			for (final String attributeCodeStr : attributeCodes)
+			{
+				final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeStr);
+				softlyPutContext("attributeCode", attributeCode);
+
+				if (actualAttributes.hasAttribute(attributeCode))
+				{
+					fail("Expected attribute " + attributeCode + " to be ABSENT on this HU"
+							+ " but it is present with value <" + actualAttributes.getValueAsString(attributeCode) + ">");
+				}
+			}
+		});
+	}
+
 	private void assertTUs(@NonNull final List<JsonHUExpectation> expectations, @NonNull final HuId luId)
 	{
 		final ArrayList<I_M_HU> tus = new ArrayList<>(services.getIncludedHUs(luId));
@@ -405,7 +466,18 @@ class AssertHUExpectationsCommand
 				final I_M_HU tu = tus.get(i);
 				softlyPutContext("TUs: actual TU", tu);
 
-				assertHU(HuId.ofRepoId(tu.getM_HU_ID()), expectation);
+				final HuId tuId = HuId.ofRepoId(tu.getM_HU_ID());
+
+				// Bind this LU-child TU as an identifier (if requested) so a later
+				// getHUQRCodeByIdentifier can resolve the inner concrete TU's QR code. The
+				// receivedHUs.tu binder cannot reach it (it walks upward from the received HU, which
+				// is recorded against the top-level LU). Register-or-verify, same as receivedHUs.
+				if (expectation.getTu() != null)
+				{
+					context.putSameOrMissingId("tu", expectation.getTu(), tuId, HuId.class);
+				}
+
+				assertHU(tuId, expectation);
 			}
 		});
 
@@ -449,6 +521,11 @@ class AssertHUExpectationsCommand
 		if (expectation.getAttributes() != null)
 		{
 			assertAttributes(expectation.getAttributes(), cu);
+		}
+
+		if (expectation.getAttributesAbsent() != null)
+		{
+			assertAttributesAbsent(expectation.getAttributesAbsent(), cu);
 		}
 	}
 
