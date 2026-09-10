@@ -33,20 +33,18 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.StockChangeDetailQuery;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
 @Service
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class StockEstimateEventService
 {
 	@NonNull
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
-
-	public StockEstimateEventService(@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
-	{
-		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
-	}
 
 	@Nullable
 	public Candidate retrieveExistingStockEstimateCandidateOrNull(@NonNull final AbstractStockEstimateEvent event)

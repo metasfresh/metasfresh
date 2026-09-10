@@ -33,7 +33,9 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -42,18 +44,11 @@ import java.util.Collection;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class StockEstimateCreatedHandler implements MaterialEventHandler<AbstractStockEstimateEvent>
 {
-	private final CandidateChangeService candidateChangeHandler;
-	private final StockEstimateEventService stockEstimateEventService;
-
-	public StockEstimateCreatedHandler(
-			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final StockEstimateEventService stockEstimateEventService)
-	{
-		this.candidateChangeHandler = candidateChangeHandler;
-		this.stockEstimateEventService = stockEstimateEventService;
-	}
+	@NonNull private final CandidateChangeService candidateChangeHandler;
+	@NonNull private final StockEstimateEventService stockEstimateEventService;
 
 	@Override
 	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandledEventType()
