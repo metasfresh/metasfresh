@@ -23,6 +23,10 @@
 -- generate-receipt / generate-shipment processes, and the multi-row receive back when it grouped per
 -- planning), so all of its material lines belong to that one planning. Restricted to lines that carry an
 -- order line: a packing-material line has none, and belongs to no planning.
+-- Back up the UPDATE's target before writing it. The backup further down covers M_InOut, and only for its
+-- DROP COLUMN; the bulk backfill below writes M_InOutLine, so that table needs its own pre-write backup.
+SELECT backup_table('m_inoutline', '_31789_M_Delivery_Planning_ID_backfill');
+
 UPDATE M_InOutLine iol
    SET M_Delivery_Planning_ID = io.M_Delivery_Planning_ID,
        Updated = TO_TIMESTAMP('2026-09-09 00:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
