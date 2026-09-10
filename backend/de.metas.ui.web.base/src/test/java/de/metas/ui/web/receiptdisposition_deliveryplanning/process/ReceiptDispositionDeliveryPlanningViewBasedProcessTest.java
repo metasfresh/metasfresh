@@ -122,12 +122,19 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 				.build();
 	}
 
+	/**
+	 * A plainly RECEIVABLE planning. {@code readyForReceipt} is stated explicitly because its unset value is
+	 * the restrictive one - a planning that says nothing is treated as not yet on a completed delivery
+	 * instruction, so leaving it out here would make every caller of this builder a not-ready row and the
+	 * tests would pass for the wrong reason. A test that wants the not-ready case overrides it.
+	 */
 	private static DeliveryPlanning.DeliveryPlanningBuilder planning()
 	{
 		return DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
-				.transportDirection(TransportDirection.Incoming);
+				.transportDirection(TransportDirection.Incoming)
+				.readyForReceipt(true);
 	}
 
 	@Nested
@@ -194,6 +201,28 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 		}
 
 		@Test
+		@DisplayName("a row not yet on a completed delivery instruction is refused, and refuses its whole selection")
+		void notReadyForReceipt_refused()
+		{
+			final DeliveryPlanning notReady = planning().readyForReceipt(false).build();
+			assertThat(process.checkNoneProcessed(DeliveryPlanningList.of(notReady)).isAccepted()).isFalse();
+
+			// all-or-nothing, like every selection-shaped action here: one early row holds back the rest
+			assertThat(process.checkNoneProcessed(DeliveryPlanningList.of(planning().build(), notReady)).isAccepted())
+					.isFalse();
+		}
+
+		@Test
+		@DisplayName("the runtime backstop refuses a not-ready row too, before anything is received")
+		void notReadyForReceipt_backstopThrows()
+		{
+			final DeliveryPlanningList selection = DeliveryPlanningList.of(planning().readyForReceipt(false).build());
+
+			assertThatThrownBy(() -> process.receive(selection)).isInstanceOf(AdempiereException.class);
+			assertThat(process.received).isEmpty();
+		}
+
+		@Test
 		@DisplayName("a selection with no planning at all - only unplanned rows - is accepted")
 		void allUnplannedSelectionIsAccepted()
 		{
@@ -201,7 +230,8 @@ class ReceiptDispositionDeliveryPlanningViewBasedProcessTest
 		}
 
 		// Migration 5823350 put DROPSHIP plannings on this window, so every action here is now offered on them
-		// too. Pinned rather than assumed: the precondition must go on deciding by Processed alone.
+		// too. Pinned rather than assumed: the precondition must go on judging a dropship row by exactly the
+		// same rules as an incoming one - Processed and receipt-readiness - never by direction.
 		@Test
 		@DisplayName("a DROPSHIP planning is judged exactly like an incoming one")
 		void dropshipIsJudgedLikeIncoming()

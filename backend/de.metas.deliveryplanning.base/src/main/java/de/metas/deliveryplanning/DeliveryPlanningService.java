@@ -63,7 +63,6 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -92,7 +91,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
@@ -100,7 +98,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -135,17 +132,6 @@ public class DeliveryPlanningService
 
 	public static final AdMessageKey MSG_M_Delivery_Planning_Processed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Processed");
 	public static final AdMessageKey MSG_M_Delivery_Planning_NotReadyForReceipt = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.NotReadyForReceipt");
-
-	/**
-	 * Whether a receipt requires the planning to sit on a COMPLETED delivery instruction. Core ships this
-	 * OFF (the {@code AD_SysConfig} row is {@code 'N'} at client/org 0, {@code EntityType='D'}, since
-	 * gh14843), so receiving an unallocated planning is the default-permitted behaviour and enabling the
-	 * gate is a per-org opt-in - not something this code may decide on a customer's behalf.
-	 * <p>
-	 * Held here rather than in the webui process that first used it, so the single-record precondition and
-	 * the selection-shaped one below cannot end up obeying different switches.
-	 */
-	public static final String SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS = "de.metas.deliveryplanning.webui.process.PreventReceiptIfMissingDeliveryInstructions";
 
 	/** The mirror of {@link #MSG_M_Delivery_Planning_Closed}: rejects RE-OPENING a planning that is still open. */
 	public static final AdMessageKey MSG_M_Delivery_Planning_Open = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.Open");
@@ -224,7 +210,6 @@ public class DeliveryPlanningService
 	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
@@ -1119,39 +1104,28 @@ public class DeliveryPlanningService
 					toIdList(selectedDeliveryPlannings.processedOnes())));
 		}
 
-		// A planning is receivable only once it sits on a COMPLETED delivery instruction. The window shows
+		// A planning is receivable only once it sits on a COMPLETED delivery instruction - the predicate
+		// IsReadyForReceipt records, maintained by the M_Delivery_Planning_Alloc interceptor. The window shows
 		// that flag as a column, so without this the operator was told "not ready" and still offered the
-		// receive action. This is the same condition the OUTGOING path enforces
-		// (DeliveryPlanningGenerateProcessesHelper -> hasCompleteDeliveryInstruction); the two differ only in
-		// form, both reducing to "an active allocation whose M_ShipperTransportation is Completed".
-		// Read here from the STORED IsReadyForReceipt column that the M_Delivery_Planning_Alloc interceptor
-		// maintains, because these records are already loaded - the live predicate would cost one query per
-		// selected row. The single-record preconditions gate on the live form instead.
-		final DeliveryPlanningList gatedNotReadyOnes = selectedDeliveryPlannings.notReadyForReceiptOnes()
-				.stream()
-				.filter(deliveryPlanning -> isPreventReceiptIfMissingDeliveryInstructions(deliveryPlanning.getOrgId()))
-				.collect(DeliveryPlanningList.collect());
-		if (!gatedNotReadyOnes.isEmpty())
+		// receive action.
+		//
+		// Unconditional, not behind the PreventReceiptIfMissingDeliveryInstructions SysConfig: delivery
+		// planning is a fresh feature with no active use, so there is no prior permissive behaviour to
+		// preserve for anybody, and a switch guarding a premise of the feature itself is dead weight. Every
+		// caller of this method deals in delivery plannings only (the receipt-disposition window, and
+		// WEBUI_M_HU_CreateReceipt_Base, which passes delivery-planning rows), so the whole surface is that
+		// same fresh feature.
+		//
+		// Read from the STORED column because these records are already loaded; the live form of the same
+		// predicate is hasCompleteDeliveryInstruction, which the single-record preconditions use.
+		if (selectedDeliveryPlannings.anyNotReadyForReceipt())
 		{
 			return Optional.of(TranslatableStrings.adMessage(
 					MSG_M_Delivery_Planning_NotReadyForReceipt,
-					toIdList(gatedNotReadyOnes)));
+					toIdList(selectedDeliveryPlannings.notReadyForReceiptOnes())));
 		}
 
 		return Optional.empty();
-	}
-
-	/**
-	 * Evaluated per ROW's org, not once for the selection: the underlying {@code AD_SysConfig} is
-	 * {@code ConfigurationLevel='O'}, so two orgs in one selection may legitimately answer differently and
-	 * only the rows whose own org opted in may be rejected.
-	 */
-	private boolean isPreventReceiptIfMissingDeliveryInstructions(@NonNull final OrgId orgId)
-	{
-		return sysConfigBL.getBooleanValue(
-				SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS,
-				false,
-				ClientAndOrgId.ofClientAndOrg(Env.getClientId(), orgId));
 	}
 
 	/**

@@ -29,10 +29,7 @@ import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.TransportDirection;
-import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,38 +37,34 @@ import org.mockito.Mockito;
 
 import java.util.Optional;
 
-import static de.metas.deliveryplanning.DeliveryPlanningService.SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Whether a selection may be RECEIVED when its plannings are not yet on a completed delivery instruction.
+ * Whether a selection may be RECEIVED when its plannings are not yet on a COMPLETED delivery instruction.
  * <p>
- * The condition itself is not in question - a receipt before the instruction is completed is what
- * {@code IsReadyForReceipt} exists to describe. What these tests pin is WHO decides it is enforced: core ships
- * the {@code PreventReceiptIfMissingDeliveryInstructions} SysConfig OFF (gh14843, 2023), so receiving an
- * unallocated planning is the default-permitted behaviour and this method must NOT reject it on its own
- * authority. It is shared with the plain HU receipt window ({@code WEBUI_M_HU_CreateReceipt_Base}), so an
- * unconditional gate here would silently change behaviour for every customer that left the switch alone.
+ * It may not, unconditionally: receiving before the instruction is completed makes no business sense, and the
+ * window shows {@code IsReadyForReceipt} as a column - so offering the action on a row it just labelled "not
+ * ready" is the defect these pin. There is deliberately no SysConfig in the way. The
+ * {@code PreventReceiptIfMissingDeliveryInstructions} switch (gh14843, 2023) used to gate the Delivery
+ * Planning window's equivalent check with a default of OFF; delivery planning is a fresh feature with no
+ * active use, so there was no permissive behaviour to preserve and the switch only kept the defect alive.
  * <p>
- * The single-record precondition on the Delivery Planning window reads the same switch
- * ({@code DeliveryPlanningGenerateProcessesHelper}), which is why the switch name lives on the service.
+ * Every caller of this method deals in delivery plannings only, so the reach is that same fresh feature:
+ * {@code WEBUI_M_HU_CreateReceipt_Base} consults it solely for the plannings a receipt launch references and
+ * returns early when there are none, leaving a plain receipt-schedule confirm untouched.
  */
 class DeliveryPlanningReceiveReadinessGateTest
 {
 	private static int nextId = 1;
 
-	private static final OrgId ORG_OPTED_IN = OrgId.ofRepoId(1000000);
-	private static final OrgId ORG_DEFAULT = OrgId.ofRepoId(1000001);
+	private static final OrgId ORG = OrgId.ofRepoId(1000000);
 
 	private DeliveryPlanningService deliveryPlanningService;
-	private ISysConfigBL sysConfigBL;
 
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
-
-		sysConfigBL = Services.get(ISysConfigBL.class);
 
 		final DeliveryPlanningRepository deliveryPlanningRepository = Mockito.mock(DeliveryPlanningRepository.class);
 		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
@@ -89,11 +82,6 @@ class DeliveryPlanningReceiveReadinessGateTest
 				new ShipperTransportationDocSubTypeGuard());
 	}
 
-	private void optIn(final OrgId orgId)
-	{
-		sysConfigBL.setValue(SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS, true, Env.getClientId(), orgId);
-	}
-
 	private static DeliveryPlanning planning(final OrgId orgId, final boolean readyForReceipt)
 	{
 		return DeliveryPlanning.builder()
@@ -105,60 +93,49 @@ class DeliveryPlanningReceiveReadinessGateTest
 	}
 
 	@Test
-	@DisplayName("switch left at the core default: a not-ready planning is NOT rejected")
-	void notReady_switchOff_notRejected()
+	@DisplayName("a not-ready planning is rejected - no switch required")
+	void notReady_rejected()
 	{
 		final Optional<ITranslatableString> rejection = deliveryPlanningService.getReceiveRejectionReason(
-				DeliveryPlanningList.of(planning(ORG_DEFAULT, false)));
-
-		assertThat(rejection).isEmpty();
-	}
-
-	@Test
-	@DisplayName("org opted in: a not-ready planning IS rejected")
-	void notReady_switchOn_rejected()
-	{
-		optIn(ORG_OPTED_IN);
-
-		final Optional<ITranslatableString> rejection = deliveryPlanningService.getReceiveRejectionReason(
-				DeliveryPlanningList.of(planning(ORG_OPTED_IN, false)));
+				DeliveryPlanningList.of(planning(ORG, false)));
 
 		assertThat(rejection).isPresent();
 	}
 
 	@Test
-	@DisplayName("org opted in, but the planning IS ready: not rejected")
-	void ready_switchOn_notRejected()
+	@DisplayName("a ready planning is not rejected")
+	void ready_notRejected()
 	{
-		optIn(ORG_OPTED_IN);
-
 		final Optional<ITranslatableString> rejection = deliveryPlanningService.getReceiveRejectionReason(
-				DeliveryPlanningList.of(planning(ORG_OPTED_IN, true)));
+				DeliveryPlanningList.of(planning(ORG, true)));
 
 		assertThat(rejection).isEmpty();
 	}
 
 	@Test
-	@DisplayName("the switch is evaluated per ROW's org: a row in a non-opted-in org does not trigger the rejection")
-	void notReady_onlyOtherOrgOptedIn_notRejected()
+	@DisplayName("all-or-nothing: one not-ready row refuses the whole selection")
+	void oneNotReadyAmongReady_wholeSelectionRejected()
 	{
-		optIn(ORG_OPTED_IN);
-
 		final Optional<ITranslatableString> rejection = deliveryPlanningService.getReceiveRejectionReason(
-				DeliveryPlanningList.of(planning(ORG_DEFAULT, false)));
+				DeliveryPlanningList.of(planning(ORG, true), planning(ORG, false), planning(ORG, true)));
 
-		assertThat(rejection).isEmpty();
+		assertThat(rejection).isPresent();
+	}
+
+	@Test
+	@DisplayName("an empty selection has nothing to object to")
+	void emptySelection_notRejected()
+	{
+		assertThat(deliveryPlanningService.getReceiveRejectionReason(DeliveryPlanningList.EMPTY)).isEmpty();
 	}
 
 	@Test
 	@DisplayName("processed still wins: it is reported before readiness is even consulted")
 	void processed_reportedBeforeReadiness()
 	{
-		optIn(ORG_OPTED_IN);
-
 		final DeliveryPlanning processed = DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
-				.orgId(ORG_OPTED_IN)
+				.orgId(ORG)
 				.transportDirection(TransportDirection.Incoming)
 				.processed(true)
 				.readyForReceipt(false)

@@ -32,7 +32,6 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
@@ -48,9 +47,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -87,7 +84,6 @@ class DeliveryPlanningGenerateProcessesHelper
 				.inOutDAO(Services.get(IInOutDAO.class))
 				.asyncBatchBL(Services.get(IAsyncBatchBL.class))
 				.msgBL(Services.get(IMsgBL.class))
-				.sysConfigBL(Services.get(ISysConfigBL.class))
 				.receiptFromReceiptScheduleService(SpringContextHolder.instance.getBean(ReceiptFromReceiptScheduleService.class))
 				.build();
 	}
@@ -116,7 +112,6 @@ class DeliveryPlanningGenerateProcessesHelper
 	private final IInOutDAO inOutDAO;
 	private final IAsyncBatchBL asyncBatchBL;
 	private final IMsgBL msgBL;
-	private final ISysConfigBL sysConfigBL;
 
 	/**
 	 * The ONE receive path - shared with the receipt-disposition delivery-planning window's actions.
@@ -131,9 +126,6 @@ class DeliveryPlanningGenerateProcessesHelper
 	private final HashMap<OrderAndLineId, Optional<DeliveryPlanningShipmentInfo>> shipmentInfosByPurchaseOrderLineId = new HashMap<>();
 
 	private static final AdMessageKey MSG_ERROR_GOODS_ISSUE_QUANTITY = AdMessageKey.of("GoodsIssueQuantityParameterError");
-	/** The switch itself lives on {@link DeliveryPlanningService}, so this precondition and the
-	 * selection-shaped one in that service cannot obey different switches. */
-	private static final String SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS = DeliveryPlanningService.SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS;
 
 	@Builder
 	private DeliveryPlanningGenerateProcessesHelper(
@@ -146,7 +138,6 @@ class DeliveryPlanningGenerateProcessesHelper
 			@NonNull final IInOutDAO inOutDAO,
 			@NonNull final IAsyncBatchBL asyncBatchBL,
 			@NonNull final IMsgBL msgBL,
-			@NonNull final ISysConfigBL sysConfigBL,
 			@NonNull final ReceiptFromReceiptScheduleService receiptFromReceiptScheduleService)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
@@ -158,7 +149,6 @@ class DeliveryPlanningGenerateProcessesHelper
 		this.inOutDAO = inOutDAO;
 		this.asyncBatchBL = asyncBatchBL;
 		this.msgBL = msgBL;
-		this.sysConfigBL = sysConfigBL;
 		this.receiptFromReceiptScheduleService = receiptFromReceiptScheduleService;
 	}
 
@@ -312,10 +302,13 @@ class DeliveryPlanningGenerateProcessesHelper
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not an order based delivery planning");
 		}
 
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), receiptInfo.getOrgId());
-
-		final boolean preventReceiptIfMissingDeliveryInstructions = sysConfigBL.getBooleanValue(SYSCONFIG_PREVENT_RECEIPT_IF_MISSING_DELIVERY_INSTRUCTIONS, false, clientAndOrgId);
-		if (preventReceiptIfMissingDeliveryInstructions && !deliveryPlanningService.hasCompleteDeliveryInstruction(deliveryPlanningId))
+		// Receiving before the planning's delivery instruction is COMPLETED makes no sense, so this is not
+		// optional. It used to sit behind the PreventReceiptIfMissingDeliveryInstructions SysConfig
+		// (default OFF), which left the action offered on a planning the window itself showed as not ready.
+		// Delivery planning is a fresh feature with no active use, so there is no permissive behaviour to
+		// preserve for anyone - and the OUTGOING sibling checkEligibleToCreateShipment has always enforced
+		// the same condition unconditionally, so this also makes the two directions symmetric.
+		if (!deliveryPlanningService.hasCompleteDeliveryInstruction(deliveryPlanningId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");
 		}
