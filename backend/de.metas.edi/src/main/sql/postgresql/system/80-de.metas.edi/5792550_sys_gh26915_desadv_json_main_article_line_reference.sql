@@ -1,7 +1,17 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- gh#26915: Improve MainArticleLine cross-reference in DESADV JSON export
+--
+-- Changes:
+-- 1. Add top-level DesadvLineNo to each LineItem (was only available buried inside DesadvLine.DesadvLine)
+-- 2. MainArticleLine now references the main article's pack_item Line (not the desadv line number),
+--    so receivers can unambiguously match sub-articles to their main article LineItem
+--    even when one desadv line is spread across multiple LineItems (different lots/BBDs).
+
+-- Drop dependent view first
+DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V;
+
+-- Drop and recreate the function with updated output
+DROP FUNCTION IF EXISTS "de.metas.edi".get_desadv_packs_json_fn(NUMERIC, NUMERIC);
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC, p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS
@@ -218,3 +228,67 @@ END;
 $$
     LANGUAGE plpgsql STABLE
 ;
+
+-- Recreate the view (same definition as before, just needs to exist after function recreation)
+DROP VIEW IF EXISTS M_InOut_Export_EDI_DESADV_JSON_V;
+
+CREATE OR REPLACE VIEW M_InOut_Export_EDI_DESADV_JSON_V AS
+SELECT io.m_inout_id,
+       JSONB_BUILD_OBJECT(
+               'metasfresh_DESADV', JSONB_BUILD_OBJECT(
+                       'Version', '0.2',
+                       'M_InOut_ID', io.m_inout_id,
+                       'EDI_Desadv_ID', d.edi_desadv_id,
+                       'ShipmentDocumentNo', io.documentno,
+                       'POReference', d.poreference,
+                       'DateOrdered', d.dateordered,
+                       'MovementDate', io.movementdate,
+                       'DatePromised', d.datepromised,
+                       'DeliveryViaRule', io.deliveryviarule,
+                       'InvoicableQtyBasedOn', d.invoicableqtybasedon,
+                       'TechnicalRecipientGLN', d.recipientgln,
+                       'Parties', JSONB_BUILD_OBJECT(
+                               'Buyer', COALESCE(buyer.partner_json, '{}'::jsonb),
+                               'Buyer_Location', COALESCE(buyer_loc.location_json, '{}'::jsonb),
+                               'DeliveryParty', COALESCE(delivery.partner_json, '{}'::jsonb),
+                               'DeliveryParty_Location', COALESCE(delivery_loc.location_json, '{}'::jsonb),
+                               'Supplier', COALESCE(supplier.partner_json, '{}'::jsonb),
+                               'Supplier_Location', COALESCE(supplier_loc.location_json, '{}'::jsonb),
+                               'Invoicee', COALESCE(invoicee.partner_json, '{}'::jsonb),
+                               'Invoicee_Location', COALESCE(invoicee_loc.location_json, '{}'::jsonb),
+                               'UltimateConsignee', COALESCE(consignee.partner_json, '{}'::jsonb),
+                               'UltimateConsignee_Location', COALESCE(consignee_loc.location_json, '{}'::jsonb)
+                                  ),
+                       'Currency', COALESCE(curr.currency_json, '{}'::jsonb),
+                       'Packings', "de.metas.edi".get_desadv_packs_json_fn(d.edi_desadv_id, io.m_inout_id),
+                       'DesadvLineWithNoPacking',
+                       "de.metas.edi".get_desadv_lines_no_pack_json_fn(d.edi_desadv_id, io.m_inout_id)
+                                  )
+       ) AS embedded_json
+FROM m_inout io
+         JOIN edi_desadv d ON d.edi_desadv_id = io.edi_desadv_id
+    -- Buyer
+         LEFT JOIN "de.metas.edi".edi_bpartner_object_v buyer ON buyer.c_bpartner_id = d.c_bpartner_id
+         LEFT JOIN "de.metas.edi".edi_bpartner_location_object_v buyer_loc
+                   ON buyer_loc.c_bpartner_location_id = d.c_bpartner_location_id
+    -- DeliveryParty
+         LEFT JOIN "de.metas.edi".edi_bpartner_object_v delivery ON delivery.c_bpartner_id = d.handover_partner_id
+         LEFT JOIN "de.metas.edi".edi_bpartner_location_object_v delivery_loc
+                   ON delivery_loc.c_bpartner_location_id = d.handover_location_id
+    -- Supplier
+         LEFT JOIN "de.metas.edi".edi_bpartner_object_v supplier
+                   ON supplier.c_bpartner_id = d.bill_bpartner_id
+         LEFT JOIN "de.metas.edi".edi_bpartner_location_object_v supplier_loc
+                   ON supplier_loc.c_bpartner_location_id = d.bill_location_id
+    -- Invoicee
+         LEFT JOIN "de.metas.edi".edi_bpartner_object_v invoicee
+                   ON invoicee.c_bpartner_id = d.c_invoice_bpartner_id
+         LEFT JOIN "de.metas.edi".edi_bpartner_location_object_v invoicee_loc
+                   ON invoicee_loc.c_bpartner_location_id = d.c_invoice_location_id
+    -- UltimateConsignee
+         LEFT JOIN "de.metas.edi".edi_bpartner_object_v consignee
+                   ON consignee.c_bpartner_id = d.dropship_bpartner_id
+         LEFT JOIN "de.metas.edi".edi_bpartner_location_object_v consignee_loc
+                   ON consignee_loc.c_bpartner_location_id = d.dropship_location_id
+    -- Currency
+         LEFT JOIN "de.metas.edi".edi_currency_object_v curr ON curr.c_currency_id = d.c_currency_id;
