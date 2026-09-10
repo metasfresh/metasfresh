@@ -23,6 +23,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
@@ -233,6 +234,63 @@ public class DemandCandiateHandlerTest
 		//noinspection deprecation
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
 				.enqueueEventNow(Mockito.any());
+	}
+
+	/**
+	 * An {@link CandidateType#ATTRIBUTES_CHANGED_FROM} candidate carries a negative quantity, so its qtyDelta is
+	 * negative and the "supply-required-decreased" branch fires. That branch must not pass a non-DEMAND candidate
+	 * into {@link SupplyRequiredEventCreator#createSupplyRequiredDecreasedEvent(Candidate, BigDecimal)}, whose guard
+	 * accepts only DEMAND/STOCK_UP; the decreased event must fire for DEMAND only.
+	 */
+	@Test
+	public void onCandidateNewOrChange_attributesChangedFrom_negativeQty_doesNotFireDecreasedEvent()
+	{
+		final Candidate candidate = createCandidate(CandidateType.ATTRIBUTES_CHANGED_FROM, "-1");
+
+		// must not throw: the decrease branch would otherwise call verifyCandidateType with a non-DEMAND type
+		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+
+		// no supply-required-decreased event may be enqueued for an ATTRIBUTES_CHANGED_FROM candidate
+		Mockito.verify(postMaterialEventService, Mockito.never()).enqueueEventAfterNextCommit(Mockito.any());
+	}
+
+	/**
+	 * Positive counterpart: a DEMAND candidate whose quantity DECREASES must still fire a
+	 * {@link SupplyRequiredDecreasedEvent} — the DEMAND-only guard must not suppress the legitimate case.
+	 */
+	@Test
+	public void onCandidateNewOrChange_demand_quantityDecrease_firesDecreasedEvent()
+	{
+		final Candidate candidate = createCandidate(CandidateType.DEMAND, "23");
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
+				availableToPromiseRepository, candidate.getMaterialDescriptor(), "0");
+
+		// establish the demand at qty 23 (positive delta: no decreased event yet)
+		demandCandidateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+
+		// decrease the demand to qty 20 -> negative delta -> a decreased event must be enqueued
+		final Candidate decreased = candidate.withQuantity(new BigDecimal("20"));
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
+				availableToPromiseRepository, decreased.getMaterialDescriptor(), "0");
+		demandCandidateHandler.onCandidateNewOrChange(decreased, OnNewOrChangeAdvise.DEFAULT);
+
+		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
+		Mockito.verify(postMaterialEventService, Mockito.atLeastOnce()).enqueueEventAfterNextCommit(eventCaptor.capture());
+		assertThat(eventCaptor.getAllValues()).anyMatch(SupplyRequiredDecreasedEvent.class::isInstance);
+	}
+
+	private static Candidate createCandidate(@NonNull final CandidateType type, @NonNull final String quantity)
+	{
+		return Candidate.builder()
+				.type(type)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptor())
+						.warehouseId(WAREHOUSE_ID)
+						.quantity(new BigDecimal(quantity))
+						.date(NOW)
+						.build())
+				.build();
 	}
 
 	@SuppressWarnings("SameParameterValue")

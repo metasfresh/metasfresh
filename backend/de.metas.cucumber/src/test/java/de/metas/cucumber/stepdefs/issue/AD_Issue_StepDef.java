@@ -26,46 +26,46 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.error.AdIssueId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_M_Product;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class AD_Issue_StepDef
 {
-	private final AD_Issue_StepDefData issueTable;
+	@NonNull private final AD_Issue_StepDefData issueTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final TestContext testContext;
 
 	private PInstanceId pInstanceId;
-	private final TestContext testContext;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public AD_Issue_StepDef(
-			@NonNull final AD_Issue_StepDefData issueTable,
-			@NonNull final TestContext testContext)
-	{
-		this.issueTable = issueTable;
-		this.testContext = testContext;
-	}
 
 	@Given("I_AD_PInstance with id {int} is created")
 	public void new_PInstanceId_is_created(final int pInstanceIdString)
@@ -114,6 +114,44 @@ public class AD_Issue_StepDef
 		assertThat(issue.getAD_PInstance_ID()).isEqualTo(pInstanceId.getRepoId());
 		assertThat(orgId).isNotNull();
 		assertThat(issue.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
+	}
+
+	/**
+	 * Asserts that NO {@code AD_Issue} was logged whose stack trace references the given product(s).
+	 * <p>
+	 * Scoped by product repo-id ({@code productId=<id>}, as it appears in a candidate's toString inside the logged
+	 * stack trace) so it is robust on a shared, non-reset local stack: each scenario uses a fresh product, so
+	 * unrelated {@code AD_Issue} rows left over from other scenarios/runs are ignored.
+	 * <p>
+	 * Used to assert that a storage-attribute change did NOT trigger the swallowed
+	 * {@code SupplyRequiredEventCreator.verifyCandidateType} {@code IllegalArgumentException} (which, when it happened,
+	 * aborted the material-dispo {@code AttributesChangedEventHandler} and left a half-applied attributes change).
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * And there is no AD_Issue whose stack trace references product
+	 *   | M_Product_ID.Identifier |
+	 *   | rekeyProduct            |
+	 * </pre>
+	 */
+	@And("there is no AD_Issue whose stack trace references product")
+	public void there_is_no_AD_Issue_referencing_product(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final ProductId productId = productTable.getId(row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID));
+			final String needle = "productId=" + productId.getRepoId() + ",";
+
+			final List<I_AD_Issue> issues = queryBL.createQueryBuilderOutOfTrx(I_AD_Issue.class)
+					.addStringLikeFilter(I_AD_Issue.COLUMNNAME_StackTrace, needle, true)
+					.create()
+					.list();
+
+			assertThat(issues)
+					.as("Expected no AD_Issue referencing product %s (needle '%s'), but found %s: %s",
+							productId.getRepoId(), needle, issues.size(),
+							issues.stream().map(I_AD_Issue::getIssueSummary).collect(Collectors.toList()))
+					.isEmpty();
+		});
 	}
 
 	@And("validate AD_Issue")
