@@ -44,6 +44,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 	private final HashSet<DDOrderId> pendingCollectProductsFromDDOrderIds = new HashSet<>();
 	private final HashSet<DDOrderId> pendingCollectQuantitiesFromDDOrderIds = new HashSet<>();
 	private final HashSet<DDOrderId> pendingCollectCarrierFromDDOrderIds = new HashSet<>();
+	private final HashSet<DDOrderId> pendingCollectSalesOrderFromDDOrderIds = new HashSet<>();
 	private final HashMultiset<DistributionFacetId> counters = HashMultiset.create();
 
 	private final HashMap<WarehouseId, ITranslatableString> warehouseNames = new HashMap<>();
@@ -108,14 +109,22 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 		);
 	}
 
+	/**
+	 * Batched like {@link #collectCarrier(I_DD_Order)} — a job's sales order is cut off from the order by
+	 * aggregation the same way its carrier is (two of the same demand routes, plus the header), so the batch
+	 * result must come back as {@code (DD_Order_ID, value)} pairs, not a plain distinct set of order ids, and the
+	 * header route is folded into the SAME batch rather than read here directly: a real candidate order normally
+	 * carries both the header and one line-level route (both aggregation sysconfigs default {@code true}), and
+	 * reading the header separately would double the hit count for such an order. See
+	 * {@code DDOrderLineDemandSqlHelper#getSalesOrderIdsByDDOrderIds} for the full routing.
+	 */
 	private void collectSalesOrder(final I_DD_Order ddOrder)
 	{
-		final OrderId salesOrderId = OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID());
-		if (salesOrderId == null)
-		{
-			return;
-		}
+		pendingCollectSalesOrderFromDDOrderIds.add(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+	}
 
+	private void collectSalesOrder(final OrderId salesOrderId)
+	{
 		collect(
 				DistributionFacetId.ofSalesOrderId(salesOrderId),
 				builder -> builder.caption(getSalesOrderDocumentNo(salesOrderId))
@@ -312,6 +321,14 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 					.values()
 					.forEach(this::collectCarrier);
 			pendingCollectCarrierFromDDOrderIds.clear();
+		}
+
+		if (!pendingCollectSalesOrderFromDDOrderIds.isEmpty())
+		{
+			ddOrderService.getSalesOrderIdsByDDOrderIds(pendingCollectSalesOrderFromDDOrderIds)
+					.values()
+					.forEach(this::collectSalesOrder);
+			pendingCollectSalesOrderFromDDOrderIds.clear();
 		}
 	}
 

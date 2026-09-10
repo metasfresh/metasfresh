@@ -19,6 +19,7 @@ import de.metas.distribution.mobileui.job.service.DistributionJobQueries;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetIdsCollection;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollection;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollector;
+import de.metas.order.OrderId;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.shipping.CarrierProductId;
@@ -191,20 +192,29 @@ public class DistributionWorkflowLaunchersProvider
 
 	/**
 	 * Builds the opaque line-id restrictions for the not-assigned stream, one entry per active facet that
-	 * contributes a demand-side restriction. Today that is only the carrier facet, and only when its active-id set
-	 * is non-empty — an empty {@link DDOrderLineDemandSqlHelper#byCarrierProductIds} call would be a bug
-	 * (it asserts non-empty), not "match everything".
+	 * contributes a demand-side restriction (carrier, sales order) — each only when its active-id set is
+	 * non-empty, since an empty set passed to {@link DDOrderLineDemandSqlHelper#byCarrierProductIds} /
+	 * {@link DDOrderLineDemandSqlHelper#bySalesOrderIds} would be a bug (both assert non-empty), not
+	 * "match everything".
 	 */
 	@NonNull
 	private ImmutableList<IQuery<?>> buildLineIdRestrictions(@NonNull final DDOrderReferenceQuery query)
 	{
+		final ImmutableList.Builder<IQuery<?>> restrictions = ImmutableList.builder();
+
 		final Set<CarrierProductId> carrierProductIds = query.getActiveFacetIds().getCarrierProductIds();
-		if (carrierProductIds.isEmpty())
+		if (!carrierProductIds.isEmpty())
 		{
-			return ImmutableList.of();
+			restrictions.add(DDOrderLineDemandSqlHelper.byCarrierProductIds(carrierProductIds));
 		}
 
-		return ImmutableList.of(DDOrderLineDemandSqlHelper.byCarrierProductIds(carrierProductIds));
+		final Set<OrderId> salesOrderIds = query.getActiveFacetIds().getSalesOrderIds();
+		if (!salesOrderIds.isEmpty())
+		{
+			restrictions.add(DDOrderLineDemandSqlHelper.bySalesOrderIds(salesOrderIds));
+		}
+
+		return restrictions.build();
 	}
 
 	@NonNull

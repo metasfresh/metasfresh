@@ -29,6 +29,7 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.shipping.CarrierProductId;
@@ -402,6 +403,15 @@ public class DDOrderService
 	public ImmutableSetMultimap<DDOrderId, CarrierProductId> getCarrierProductIdsByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
 	{
 		return DDOrderLineDemandSqlHelper.getCarrierProductIdsByDDOrderIds(ddOrderIds);
+	}
+
+	/**
+	 * The batched pair lookup behind the sales-order facet's chip counts. Delegates to {@link DDOrderLineDemandSqlHelper}
+	 * for the same reason as {@link #getCarrierProductIdsByDDOrderIds(Collection)}.
+	 */
+	public ImmutableSetMultimap<DDOrderId, OrderId> getSalesOrderIdsByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
+	{
+		return DDOrderLineDemandSqlHelper.getSalesOrderIdsByDDOrderIds(ddOrderIds);
 	}
 
 }
