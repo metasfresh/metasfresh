@@ -167,7 +167,6 @@ Feature: ATP reconciliation process - dry run and selection filter
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_cut_a  | so_cut_a   | p_cut_a      | 30         |
     And the order identified by so_cut_a is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_cut_a    | DEMAND            | SHIPMENT                  | p_cut_a      | 2024-09-21T21:00:00Z | -30 | 70  | WH_BASE        |
@@ -180,7 +179,6 @@ Feature: ATP reconciliation process - dry run and selection filter
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_cut_b  | so_cut_b   | p_cut_a      | 20         |
     And the order identified by so_cut_b is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_cut_b    | DEMAND            | SHIPMENT                  | p_cut_a      | 2024-09-24T21:00:00Z | -20 | 50  | WH_BASE        |

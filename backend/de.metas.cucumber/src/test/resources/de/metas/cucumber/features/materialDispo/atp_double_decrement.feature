@@ -67,7 +67,6 @@ Feature: ATP double decrement — a never-issued BOM demand plus the inventory t
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
       | ppo_dd                 | MOP         | fin_dd                  | 1          | plant_dd                 | WH_DD                         | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | Y                |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     # the component's ATP must now be 100 - 20 = 80 while its stock is untouched at 100
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | ATP | M_Warehouse_ID |

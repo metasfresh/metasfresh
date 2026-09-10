@@ -62,7 +62,6 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_od_1   | so_od_1    | p_od_1       | 30         |
     And the order identified by so_od_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_od_1     | DEMAND            | SHIPMENT                  | p_od_1       | 2024-09-21T21:00:00Z | -30 | 70  | WH_OD          |
@@ -142,7 +141,6 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
     When metasfresh receives a StockChangedEvent for the current MD_Stock
       | M_Product_ID | OPT.ChangeDate       |
       | p_od_2       | 2024-09-23T06:00:00Z |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # business-correct expectation: the later demand still applies -> 200 - 30 = 170
     Then after not more than 60s, MD_Candidates are found
@@ -180,7 +178,6 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_od_3   | so_od_3    | p_od_3       | 30         |
     And the order identified by so_od_3 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_od_3     | DEMAND            | SHIPMENT                  | p_od_3       | 2024-09-21T21:00:00Z | -30 | 70  | WH_OD          |
@@ -240,7 +237,6 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_od_4   | so_od_4    | p_od_4       | 30         |
     And the order identified by so_od_4 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_od_4     | DEMAND            | SHIPMENT                  | p_od_4       | 2024-09-21T21:00:00Z | -30 | 170 | WH_OD          |
@@ -292,7 +288,6 @@ Feature: ATP baseline from MD_Stock when an open sales order precedes it
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_od_5   | so_od_5    | p_od_5       | 30         |
     And the order identified by so_od_5 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_od_5     | DEMAND            | SHIPMENT                  | p_od_5       | 2024-09-21T21:00:00Z | -30 | 170 | WH_OD          |

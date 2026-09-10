@@ -155,7 +155,6 @@ Feature: ATP divergence report - read-only preview of stored vs. expected ATP
       | sol_cov_a   | so_cov_a   | p_cov_a      | 50         |
     And the order identified by so_uncov_a is completed
     And the order identified by so_cov_a is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_uncov_a  | DEMAND            | SHIPMENT                  | p_uncov_a    | 2024-09-21T21:00:00Z | -30 | -30 | WH_BASE        |

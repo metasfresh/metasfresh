@@ -81,7 +81,6 @@ Feature: ATP reconciliation regression coverage
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | OPT.M_Warehouse_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
       | ppo_reg1               | MOP         | fin_reg1                | 1          | plant_reg                | WH_REG                        | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | 2024-09-21T07:00:00.00Z | Y                |
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected           | Qty | ATP | M_Warehouse_ID |
       | dem_reg1   | DEMAND            | PRODUCTION                | comp_reg1    | 2024-09-21T07:00:00.00Z | -20 | 80  | WH_REG         |
@@ -99,7 +98,6 @@ Feature: ATP reconciliation regression coverage
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_reg1   | so_reg1    | comp_reg1    | 30         |
     And the order identified by so_reg1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_reg1     | DEMAND            | SHIPMENT                  | comp_reg1    | 2024-09-22T21:00:00Z | -30 | 50  | WH_REG         |
@@ -165,7 +163,6 @@ Feature: ATP reconciliation regression coverage
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_reg2   | so_reg2    | p_reg2       | 40         |
     And the order identified by so_reg2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # --- the chain builds forward from the reconciled 100, not from the pre-reconciliation drift of 0:
     # a silently discarded reconciliation would show ATP 0 - 40 = -40 here instead --------------------
@@ -201,7 +198,6 @@ Feature: ATP reconciliation regression coverage
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_reg3a  | so_reg3a   | p_reg3a      | 25         |
     And the order identified by so_reg3a is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_reg3a    | DEMAND            | SHIPMENT                  | p_reg3a      | 2024-09-20T21:00:00Z | -25 | 75  | WH_REG         |
@@ -221,7 +217,6 @@ Feature: ATP reconciliation regression coverage
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_reg3b  | so_reg3b   | p_reg3b      | 25         |
     And the order identified by so_reg3b is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | d_reg3b    | DEMAND            | SHIPMENT                  | p_reg3b      | 2024-09-20T21:00:00Z | -25 | 75  | WH_REG         |
