@@ -5,7 +5,7 @@
 @allure.label.feature:F01010.3_Match_Invoice
 @F00701
 @ghActions:run_on_executor5
-Feature: Closing an undelivered receipt disposition closes the purchase invoice candidate
+Feature: Closing a receipt disposition closes the purchase invoice candidate only when nothing was received
 ## F00701: Invoice Candidates
 
   Background:
@@ -82,3 +82,71 @@ Feature: Closing an undelivered receipt disposition closes the purchase invoice 
     Then validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.IsDeliveryClosed | OPT.Processed |
       | invoiceCand_1                     | 0            | true                 | true          |
+
+  @Id:S0164_110
+  @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01010.3_Match_Invoice
+@F00701
+  Scenario: Closing a partially received receipt disposition keeps the purchase invoice candidate open
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DocBaseType | DateOrdered |
+      | po2        | false   | bpartner_1    | POO         | 2022-07-26  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | QtyEnteredTU | M_HU_PI_Item_Product_ID |
+      | po2_l1     | po2        | product      | 100        | 10           | product_TU_10CU         |
+    And the order identified by po2 is completed
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
+      | receiptSchedule2                | po2                   | po2_l1                    | bpartner_1               | l_1                               | product                 | 100        | warehouseStd              | 10               |
+
+    # Only 40 of the 100 ordered PCE arrive: one LU carrying 4 TUs of 10 CU each.
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig2                         | hu2                | receiptSchedule2                | N               | 1     | N               | 4     | N               | 10          | product_TU_10CU                    | LU                           |
+    And create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | hu2                | receiptSchedule2                | materialReceipt2      |
+    And validate M_In_Out status
+      | M_InOut_ID.Identifier | DocStatus |
+      | materialReceipt2      | CO        |
+
+    # The disposition now reports 40 of the 100 ordered PCE as received and stays open.
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.IsClosed |
+      | receiptSchedule2                | po2                   | po2_l1                    | bpartner_1               | l_1                               | product                 | 100        | warehouseStd              | 40           | false        |
+    And after not more than 120s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyDelivered | QtyToInvoice |
+      | invoiceCand_2                     | po2_l1                    | 40           | 40           |
+
+    When the M_ReceiptSchedule identified by receiptSchedule2 is closed
+
+    # IsDeliveryClosed is display-only and is set either way; the candidate itself must stay open,
+    # so the 40 PCE that were actually received can still be invoiced.
+    Then validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyDelivered | QtyToInvoice | IsDeliveryClosed | Processed |
+      | invoiceCand_2                     | 40           | 40           | true             | false     |
+
+    # An open candidate is worth nothing unless it still invoices: run "Create Invoices" for it.
+    When run the invoicing process for invoice candidates:
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCand_2                     |
+
+    Then after not more than 120s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_2               | invoiceCand_2                     |
+    And validate created invoices
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | processed | DocStatus |
+      | invoice_2               | bpartner_1               | l_1                               | true      | CO        |
+
+    # The invoice covers the 40 PCE received, not the 100 ordered: 40 PCE * 10.00 EUR.
+    And validate invoice lines for invoice_2:
+      | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceActual | OPT.LineNetAmt |
+      | invoiceLine_2               | product                 | 40          | true      | 10              | 400            |
+
+    # Only now is the candidate done: its delivered part is invoiced, nothing is left to invoice.
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | QtyInvoiced | QtyToInvoice | Processed |
+      | invoiceCand_2                     | 40          | 0            | true      |
