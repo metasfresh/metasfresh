@@ -135,14 +135,29 @@ public class DescriptionAboveLineBandTest
 
 	/**
 	 * Matches a comparison of two NUMBER literals, e.g. {@code 0 == 1} or {@code 1 != 1} - the other everyday way of
-	 * writing a constant, and one that carries no {@code false} to look for. BOTH operands have to be literals:
-	 * the real guards compare something against a literal ({@code $F{qtyentered}.floatValue() != 0},
-	 * {@code $V{PAGE_COUNT}.intValue() > 1}) and must not match, which is what the leading lookbehind rules out -
-	 * it rejects a number that follows an identifier character or a closing {@code )} / {@code ]}.
-	 * Whether a match is actually false is then decided by {@link #isConstantlyFalse(double, String, double)}.
+	 * writing a constant, and one that carries no {@code false} to look for.
+	 * <p>
+	 * A match is only a CANDIDATE. Two literals around an operator are not necessarily the whole comparison:
+	 * {@code $F{x}.intValue() - 1 == 0} contains the text {@code 1 == 0} while being an entirely data-dependent
+	 * condition, and reporting that as a constant would fail a legitimate guard with an actively misleading message.
+	 * {@link #isStandaloneComparison(String, int, int)} therefore has to confirm the match IS the comparison before
+	 * {@link #isConstantlyFalse(double, String, double)} judges it.
 	 */
-	private static final Pattern LITERAL_COMPARISON_PATTERN = Pattern.compile(
-			"(?<![A-Za-z0-9_$.)\\]])(\\d+(?:\\.\\d+)?)\\s*(==|!=|<=|>=|<|>)\\s*(\\d+(?:\\.\\d+)?)(?![A-Za-z0-9_$.])");
+	private static final Pattern LITERAL_COMPARISON_PATTERN =
+			Pattern.compile("(\\d+(?:\\.\\d+)?)\\s*(==|!=|<=|>=|<|>)\\s*(\\d+(?:\\.\\d+)?)");
+
+	/**
+	 * The only things that may PRECEDE a literal comparison and still leave it a comparison in its own right: the
+	 * start of the expression, an opening bracket, a boolean connective or a ternary. Deliberately a WHITELIST and
+	 * not a blacklist of arithmetic operators: a whitelist fails CLOSED - anything unforeseen makes invariant 5b say
+	 * nothing rather than fail a correct template - which is the right way round for a check that breaks the build.
+	 */
+	private static final Pattern LITERAL_COMPARISON_CONTEXT_BEFORE = Pattern.compile("(?:^|\\(|&&|\\|\\||\\?|:)\\s*$");
+
+	/**
+	 * @see #LITERAL_COMPARISON_CONTEXT_BEFORE - the same whitelist for what may FOLLOW.
+	 */
+	private static final Pattern LITERAL_COMPARISON_CONTEXT_AFTER = Pattern.compile("^\\s*(?:$|\\)|&&|\\|\\||\\?|:)");
 
 	/**
 	 * Matches a java string or character literal, including its escapes. Removed before {@code false} is looked for,
@@ -308,21 +323,27 @@ public class DescriptionAboveLineBandTest
 			//
 			// WHAT IT COVERS: the shapes a leftover debug toggle or a bad merge is actually written in - `false`,
 			// `new Boolean(false)`, `new Boolean (false)`, `Boolean.valueOf(false)`, `Boolean.FALSE`, and a
-			// comparison of two number literals such as `0 == 1` or `1 != 1`.
+			// comparison of two number literals such as `0 == 1` or `1 != 1` - the latter only where the two
+			// literals really are the whole comparison, so that a data-dependent `$F{x}.intValue() - 1 == 0` is
+			// left alone (see LITERAL_COMPARISON_CONTEXT_BEFORE).
 			// WHAT IT DOES NOT COVER: a constant built out of anything else - a `$P{...}` a caller always passes
 			// false, `!Boolean.TRUE`, `"a".equals("b")`, an always-empty string. Ruling those out needs an evaluator
 			// for jasper expressions; this is deliberately a syntactic check over the plausible shapes, because
 			// catching those is worth far more than catching none.
 			//
 			// It is applied to OUR band's guard ONLY, never to any other band's and never to a nested expression, and
-			// that restriction is load-bearing rather than incidental. Measured over the 23 scanned templates: TWELVE
-			// of them carry a `false` literal in an ELEMENT-level `printWhenExpression` (mostly
-			// `$V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false)`, which is a real condition),
-			// and NONE carries one in a band-level guard. A whole band deliberately switched off with
-			// `new Boolean (false)` is a legitimate thing in this tree too - `invoice/report.jrxml`, which does not
-			// carry our field and so is not scanned, disables its `<detail>` band exactly like that. So only the
-			// band-level guard of the band that prints the customer's text is read, which is what
-			// bandLevelPrintWhenExpression already restricts us to.
+			// that restriction is load-bearing rather than incidental. Measured over the 23 scanned templates,
+			// counting only what this test actually parses - element-level `printWhenExpression`s INSIDE `<detail>`:
+			// THREE templates carry a `false` literal in one (`inout_org_data_right`, `invoice_org_data_right`,
+			// `order_org_data_right` - the same three cited at JAVA_COMMENT_PATTERN, hiding a column with
+			// `//hide column for now` + `new Boolean (false)`), and NONE carries one in a band-level guard.
+			// (Nine further templates carry `$V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false)`
+			// - a real condition - but only in `columnHeader`/`pageHeader`/`pageFooter`/`lastPageFooter`, which this
+			// test never looks at, so they are no evidence either way.)
+			// A whole band deliberately switched off with `new Boolean (false)` is a legitimate thing in this tree
+			// too - `invoice/report.jrxml`, which does not carry our field and so is not scanned, disables its
+			// `<detail>` band exactly like that. So only the band-level guard of the band that prints the customer's
+			// text is read, which is what bandLevelPrintWhenExpression already restricts us to.
 			//
 			// It is also deliberately position-blind: ANY false literal in this one guard is rejected, even one that
 			// would not make the whole expression constant (`X || false`). None of the 23 legitimate guards contains
@@ -336,8 +357,9 @@ public class DescriptionAboveLineBandTest
 			final Matcher literalComparison = LITERAL_COMPARISON_PATTERN.matcher(sanitizedGuard);
 			while (literalComparison.find())
 			{
-				if (isConstantlyFalse(Double.parseDouble(literalComparison.group(1)), literalComparison.group(2),
-						Double.parseDouble(literalComparison.group(3))))
+				if (isStandaloneComparison(sanitizedGuard, literalComparison.start(), literalComparison.end())
+						&& isConstantlyFalse(Double.parseDouble(literalComparison.group(1)),
+						literalComparison.group(2), Double.parseDouble(literalComparison.group(3))))
 				{
 					constantFalseFindings.add("the constantly false comparison `" + literalComparison.group() + "`");
 				}
@@ -377,8 +399,11 @@ public class DescriptionAboveLineBandTest
 			//
 			// Why NOT the tempting "at most as far as the content row": that bound is WRONG here.
 			// `pickingv2/report_details` legitimately ends at x=584 while the widest element of its other `<detail>`
-			// bands ends at x=504, so a content-row upper bound would fail a correct template. (Widening the
-			// yardstick to include the `pageHeader` band instead fails four templates, so that is no way out either.)
+			// bands ends at x=504, so a content-row upper bound would fail a correct template. Nor is widening the
+			// yardstick to take in the `pageHeader` band a way out: folded into invariant 6's content row it makes
+			// FOUR templates fail (`inout/report_details`, `inout/report_details_v2`, `order/report_details`,
+			// `order/report_details_v2`), because the page header reaches further LEFT than the content row (x=34
+			// against x=37) and the lower bound then rejects a correct block.
 			// The page is the one yardstick no template in the tree argues with: all 23 blocks sit inside it, the
 			// tightest by 11pt (`pickingv2` again, 584 of 595).
 			//
@@ -679,6 +704,19 @@ public class DescriptionAboveLineBandTest
 		sanitized = JAVA_COMMENT_PATTERN.matcher(sanitized).replaceAll(" ");
 		sanitized = EXPRESSION_REFERENCE_PATTERN.matcher(sanitized).replaceAll("_REF_");
 		return sanitized;
+	}
+
+	/**
+	 * @return {@code true} if the region {@code [start, end)} of {@code expression} - a
+	 * 		{@link #LITERAL_COMPARISON_PATTERN} match - is a comparison in its own right rather than the tail of a
+	 * 		bigger one. {@code $F{x}.intValue() - 1 == 0} matches that pattern at {@code 1 == 0} but is a real
+	 * 		condition, and only what SURROUNDS the match can tell the two apart: a constant comparison is flanked by
+	 * 		boolean context on both sides, an arithmetic one is not.
+	 */
+	private static boolean isStandaloneComparison(final String expression, final int start, final int end)
+	{
+		return LITERAL_COMPARISON_CONTEXT_BEFORE.matcher(expression.substring(0, start)).find()
+				&& LITERAL_COMPARISON_CONTEXT_AFTER.matcher(expression.substring(end)).find();
 	}
 
 	/**
