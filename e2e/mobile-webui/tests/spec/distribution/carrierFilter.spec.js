@@ -107,7 +107,8 @@ test('A worker at a packing workplace narrows the mixed-carrier job list by carr
     await test.step('Selecting CarrierA keeps the mixed-carrier job listed', async () => {
         await DistributionJobsListScreen.filterByFacetId({ facetId: carrierAFacetId, expectHitCount: 1 });
         // The badge count alone only proves the facet's internal hit count -- assert the RENDERED
-        // list actually narrowed to the one mixed-carrier job (AC3: the job stays listed).
+        // list actually narrowed to the one mixed-carrier job, which must stay listed under a
+        // carrier it carries.
         await DistributionJobsListScreen.expectJobButtons([{ index: 1 }]);
     });
 
@@ -125,7 +126,7 @@ test('A worker at a packing workplace narrows the mixed-carrier job list by carr
         await DistributionJobsListScreen.expectJobButtons([{ index: 1 }, { index: 2 }]);
         await DistributionJobsListScreen.filterByFacetId({ facetId: carrierCFacetId, expectHitCount: 1 });
         // The rendered list narrowed to one job again -- this time the mixed-carrier job must be GONE
-        // (AC4), leaving only the carrierC job.
+        // -- a job is offered only under a carrier it actually carries -- leaving only the carrierC job.
         await DistributionJobsListScreen.expectJobButtons([{ index: 1 }]);
     });
 });

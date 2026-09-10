@@ -34,7 +34,8 @@ test('A replenishment job is found by the sales order behind its contributing sc
     //
     // Scoped to one workplace (matching both jobs' locatorTo) so the launcher offers exactly these two
     // jobs -- not every not-started distribution order this shared local stack has accumulated across
-    // other runs (the workplace-scoping trap Task 6 already paid for).
+    // other runs. Without this scoping the launcher lists that accumulated backlog too and the
+    // count assertions below fail for a reason unrelated to the filter.
     const masterdata = await Backend.createMasterdata({
         language: "de_DE",
         request: {
