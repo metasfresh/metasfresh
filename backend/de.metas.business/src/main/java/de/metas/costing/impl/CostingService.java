@@ -414,7 +414,7 @@ public class CostingService implements ICostingService
 			final CostElementId costElementId = initialDocCostDetail.getCostElementId();
 			final CostAmountType amtType = initialDocCostDetail.getAmtType();
 			final CostDetail existingCostDetail = existingCostDetailsList.stream()
-					.filter(existing -> Objects.equals(existing.getCostElementId(), costElementId) && existing.getAmtType() == amtType)
+					.filter(existing -> CostElementId.equals(existing.getCostElementId(), costElementId) && existing.getAmtType() == amtType)
 					.findFirst()
 					.orElse(null);
 			if (existingCostDetail != null)
