@@ -151,6 +151,11 @@ public class DescriptionAboveLineBandTest
 	 * start of the expression, an opening bracket, a boolean connective or a ternary. Deliberately a WHITELIST and
 	 * not a blacklist of arithmetic operators: a whitelist fails CLOSED - anything unforeseen makes invariant 5b say
 	 * nothing rather than fail a correct template - which is the right way round for a check that breaks the build.
+	 * <p>
+	 * One qualification, found by review and worth stating rather than implying: an opening bracket is accepted
+	 * WITHOUT looking at what precedes the bracket, so this pattern alone does not distinguish {@code (1 == 0)} from
+	 * {@code !(1 == 0)}. The negation is what decides whether the constant is false or true, and it is handled
+	 * separately - see {@link #negationsDirectlyWrapping(String, int, int)}.
 	 */
 	private static final Pattern LITERAL_COMPARISON_CONTEXT_BEFORE = Pattern.compile("(?:^|\\(|&&|\\|\\||\\?|:)\\s*$");
 
@@ -357,11 +362,28 @@ public class DescriptionAboveLineBandTest
 			final Matcher literalComparison = LITERAL_COMPARISON_PATTERN.matcher(sanitizedGuard);
 			while (literalComparison.find())
 			{
-				if (isStandaloneComparison(sanitizedGuard, literalComparison.start(), literalComparison.end())
-						&& isConstantlyFalse(Double.parseDouble(literalComparison.group(1)),
-						literalComparison.group(2), Double.parseDouble(literalComparison.group(3))))
+				if (!isStandaloneComparison(sanitizedGuard, literalComparison.start(), literalComparison.end()))
 				{
-					constantFalseFindings.add("the constantly false comparison `" + literalComparison.group() + "`");
+					continue;
+				}
+				final Boolean comparisonValue = evaluateLiteralComparison(
+						Double.parseDouble(literalComparison.group(1)),
+						literalComparison.group(2),
+						Double.parseDouble(literalComparison.group(3)));
+				if (comparisonValue == null)
+				{
+					continue; // an operator this check does not know: report nothing rather than invent a violation
+				}
+				// `!(1 == 0)` is constantly TRUE and therefore harmless, while `!(1 == 1)` is constantly false just
+				// as much as `1 == 0` is. So a directly wrapping negation flips the verdict rather than suppressing
+				// it - see negationsDirectlyWrapping.
+				final int negations = negationsDirectlyWrapping(
+						sanitizedGuard, literalComparison.start(), literalComparison.end());
+				final boolean effectiveValue = negations % 2 == 0 ? comparisonValue : !comparisonValue;
+				if (!effectiveValue)
+				{
+					constantFalseFindings.add("the constantly false comparison `" + literalComparison.group() + "`"
+							+ (negations == 0 ? "" : " under " + negations + " negation(s)"));
 				}
 			}
 			if (!constantFalseFindings.isEmpty())
@@ -720,30 +742,87 @@ public class DescriptionAboveLineBandTest
 	}
 
 	/**
-	 * @return {@code true} if comparing the two given NUMBER LITERALS with the given java operator yields
-	 * 		{@code false} for every possible input - which is what makes {@code 0 == 1} and {@code 1 != 1} constants
-	 * 		rather than conditions. Only ever called with two literals, so "for every possible input" is simply
-	 * 		"once"; an unknown operator is reported as not constant, i.e. this never invents a violation.
+	 * @return the value of comparing the two given NUMBER LITERALS with the given java operator - which is a
+	 * 		constant, since both sides are literals, and is what makes {@code 0 == 1} and {@code 1 != 1} constants
+	 * 		rather than conditions. {@code null} for an operator this check does not know, so that an unrecognised
+	 * 		comparison is reported as nothing at all rather than as a violation.
 	 */
-	private static boolean isConstantlyFalse(final double left, final String operator, final double right)
+	@Nullable
+	private static Boolean evaluateLiteralComparison(final double left, final String operator, final double right)
 	{
 		switch (operator)
 		{
 			case "==":
-				return left != right;
-			case "!=":
 				return left == right;
+			case "!=":
+				return left != right;
 			case "<":
-				return !(left < right);
+				return left < right;
 			case "<=":
-				return !(left <= right);
+				return left <= right;
 			case ">":
-				return !(left > right);
+				return left > right;
 			case ">=":
-				return !(left >= right);
+				return left >= right;
 			default:
-				return false;
+				return null;
 		}
+	}
+
+	/**
+	 * @return how many {@code !} operators directly wrap the region {@code [start, end)} of {@code expression} - a
+	 * 		{@link #LITERAL_COMPARISON_PATTERN} match - counting only the unambiguous shape {@code !(<comparison>)},
+	 * 		{@code !!(<comparison>)} and so on, where the parentheses contain the comparison and NOTHING else.
+	 * 		<p>
+	 * 		This exists because a negation flips what the constant MEANS, and both directions matter: {@code !(1 == 0)}
+	 * 		is constantly TRUE, so flagging it would fail a legitimate (if pointless) guard, while {@code !(1 == 1)} is
+	 * 		constantly false exactly as {@code 1 == 0} is and must still be caught. Suppressing every negated
+	 * 		comparison would fix the first at the price of opening the second.
+	 * 		<p>
+	 * 		Deliberately narrow: a comparison negated at a distance ({@code !(A && (1 == 0))}) returns 0 here and is
+	 * 		therefore judged un-negated, which can only make this check say nothing - the safe direction. Untangling
+	 * 		that needs a real expression evaluator, which is out of scope for a syntactic check (see the class
+	 * 		javadoc).
+	 */
+	private static int negationsDirectlyWrapping(final String expression, final int start, final int end)
+	{
+		int before = start - 1;
+		while (before >= 0 && Character.isWhitespace(expression.charAt(before)))
+		{
+			before--;
+		}
+		if (before < 0 || expression.charAt(before) != '(')
+		{
+			return 0;
+		}
+		int after = end;
+		while (after < expression.length() && Character.isWhitespace(expression.charAt(after)))
+		{
+			after++;
+		}
+		if (after >= expression.length() || expression.charAt(after) != ')')
+		{
+			return 0; // the parenthesis holds more than this comparison, so the `!` does not negate it alone
+		}
+		int negations = 0;
+		int candidate = before - 1;
+		while (candidate >= 0)
+		{
+			if (Character.isWhitespace(expression.charAt(candidate)))
+			{
+				candidate--;
+			}
+			else if (expression.charAt(candidate) == '!')
+			{
+				negations++;
+				candidate--;
+			}
+			else
+			{
+				break;
+			}
+		}
+		return negations;
 	}
 
 	/**
