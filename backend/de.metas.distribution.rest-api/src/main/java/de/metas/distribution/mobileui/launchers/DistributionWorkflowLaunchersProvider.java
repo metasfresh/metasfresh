@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineDemandSqlHelper;
 import de.metas.distribution.mobileui.DistributionMobileApplication;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
@@ -20,6 +21,7 @@ import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollect
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollector;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
+import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
@@ -32,9 +34,11 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
+import org.compiere.model.IQuery;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -166,6 +170,8 @@ public class DistributionWorkflowLaunchersProvider
 	{
 		//
 		// Already started jobs
+		// NOTE: facets (incl. the carrier restriction below) do not apply to this stream, matching today's
+		// behaviour: already-started/assigned jobs stay unfiltered by facets.
 		if (!query.isExcludeAlreadyStarted())
 		{
 			ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
@@ -177,10 +183,28 @@ public class DistributionWorkflowLaunchersProvider
 		@NonNull final QueryLimit suggestedLimit = query.getSuggestedLimit();
 		if (suggestedLimit.isNoLimit() || !suggestedLimit.isLimitHitOrExceeded(collector.getCollectedItems()))
 		{
-			ddOrderService.streamDDOrders(DistributionJobQueries.toActiveNotAssignedDDOrderQuery(query))
+			ddOrderService.streamDDOrders(DistributionJobQueries.toActiveNotAssignedDDOrderQuery(query), buildLineIdRestrictions(query))
 					.limit(suggestedLimit.minusSizeOf(collector.getCollectedItems()).toIntOr(Integer.MAX_VALUE))
 					.forEach(collector::collect);
 		}
+	}
+
+	/**
+	 * Builds the opaque line-id restrictions for the not-assigned stream, one entry per active facet that
+	 * contributes a demand-side restriction. Today that is only the carrier facet, and only when its active-id set
+	 * is non-empty — an empty {@link DDOrderLineDemandSqlHelper#byCarrierProductIds} call would be a bug
+	 * (it asserts non-empty), not "match everything".
+	 */
+	@NonNull
+	private ImmutableList<IQuery<?>> buildLineIdRestrictions(@NonNull final DDOrderReferenceQuery query)
+	{
+		final Set<CarrierProductId> carrierProductIds = query.getActiveFacetIds().getCarrierProductIds();
+		if (carrierProductIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return ImmutableList.of(DDOrderLineDemandSqlHelper.byCarrierProductIds(carrierProductIds));
 	}
 
 	@NonNull

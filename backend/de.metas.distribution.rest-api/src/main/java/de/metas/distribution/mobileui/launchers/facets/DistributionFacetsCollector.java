@@ -15,6 +15,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,6 +43,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 	private final HashSet<DistributionFacet> _result = new HashSet<>();
 	private final HashSet<DDOrderId> pendingCollectProductsFromDDOrderIds = new HashSet<>();
 	private final HashSet<DDOrderId> pendingCollectQuantitiesFromDDOrderIds = new HashSet<>();
+	private final HashSet<DDOrderId> pendingCollectCarrierFromDDOrderIds = new HashSet<>();
 	private final HashMultiset<DistributionFacetId> counters = HashMultiset.create();
 
 	private final HashMap<WarehouseId, ITranslatableString> warehouseNames = new HashMap<>();
@@ -49,6 +51,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 	private final HashMap<PPOrderId, ITranslatableString> manufacturingOrderDocumentNos = new HashMap<>();
 	private final HashMap<ProductId, ITranslatableString> productNames = new HashMap<>();
 	private final HashMap<ResourceId, ITranslatableString> resourceNames = new HashMap<>();
+	private final HashMap<CarrierProductId, ITranslatableString> carrierProductNames = new HashMap<>();
 
 	@Override
 	public List<DistributionFacet> getCollectedItems()
@@ -74,6 +77,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 		collectProducts(ddOrder);
 		collectQuantities(ddOrder);
 		collectPlant(ddOrder);
+		collectCarrier(ddOrder);
 	}
 
 	private void collectWarehouseFrom(final I_DD_Order ddOrder)
@@ -174,6 +178,31 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 		pendingCollectQuantitiesFromDDOrderIds.add(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
 	}
 
+	/**
+	 * Batched like {@link #collectProducts(I_DD_Order)} — but unlike that one, the batch result MUST come back as
+	 * {@code (DD_Order_ID, value)} pairs, not a plain distinct set of carrier ids: a job's carrier is cut off from
+	 * the order by aggregation (two demand routes, see {@code DDOrderLineDemandSqlHelper}), so the per-job
+	 * association has to survive the batch for the hit counter to increment once per job that actually carries the
+	 * chip's carrier — not once per carrier, period.
+	 * <p>
+	 * {@link #processPendingRequests()} consumes the pairs via the returned multimap's {@code values()}, which — for
+	 * an {@code ImmutableSetMultimap} — yields exactly one element per distinct {@code (DD_Order_ID, value)} entry
+	 * (never one per distinct value only), so {@link #collectCarrier(CarrierProductId)} below is invoked once per
+	 * job that carries that carrier, giving the correct per-job hit count.
+	 */
+	private void collectCarrier(final I_DD_Order ddOrder)
+	{
+		pendingCollectCarrierFromDDOrderIds.add(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+	}
+
+	private void collectCarrier(final CarrierProductId carrierProductId)
+	{
+		collect(
+				DistributionFacetId.ofCarrierProductId(carrierProductId),
+				builder -> builder.caption(getCarrierProductName(carrierProductId))
+		);
+	}
+
 	private void collectQuantity(final I_DD_OrderLine ddOrderLine)
 	{
 		collectQuantity(extractQtyEntered(ddOrderLine));
@@ -245,6 +274,16 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 		return TranslatableStrings.anyLanguage(productService.getProductValueAndName(productId));
 	}
 
+	private ITranslatableString getCarrierProductName(final CarrierProductId carrierProductId)
+	{
+		return carrierProductNames.computeIfAbsent(carrierProductId, this::retrieveCarrierProductName);
+	}
+
+	private ITranslatableString retrieveCarrierProductName(final CarrierProductId carrierProductId)
+	{
+		return TranslatableStrings.anyLanguage(sourceDocService.getCarrierProductName(carrierProductId));
+	}
+
 	@NonNull
 	public static Quantity extractQtyEntered(final I_DD_OrderLine ddOrderLine)
 	{
@@ -265,6 +304,14 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			ddOrderService.streamLinesByDDOrderIds(pendingCollectQuantitiesFromDDOrderIds)
 					.forEach(this::collectQuantity);
 			pendingCollectQuantitiesFromDDOrderIds.clear();
+		}
+
+		if (!pendingCollectCarrierFromDDOrderIds.isEmpty())
+		{
+			ddOrderService.getCarrierProductIdsByDDOrderIds(pendingCollectCarrierFromDDOrderIds)
+					.values()
+					.forEach(this::collectCarrier);
+			pendingCollectCarrierFromDDOrderIds.clear();
 		}
 	}
 

@@ -9,6 +9,9 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.product.ResourceId;
+import de.metas.shipper.gateway.commons.model.CarrierProduct;
+import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
+import de.metas.shipping.CarrierProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -28,6 +31,12 @@ public class DistributionSourceDocService
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final CarrierProductRepository carrierProductRepository;
+
+	public DistributionSourceDocService(@NonNull final CarrierProductRepository carrierProductRepository)
+	{
+		this.carrierProductRepository = carrierProductRepository;
+	}
 
 	@NonNull
 	public PlantInfo getPlantInfo(@NonNull final ResourceId plantId)
@@ -41,6 +50,13 @@ public class DistributionSourceDocService
 	public String getPlantName(@NonNull final ResourceId plantId)
 	{
 		return ppOrderBL.getResourceName(plantId);
+	}
+
+	@NonNull
+	public String getCarrierProductName(@NonNull final CarrierProductId carrierProductId)
+	{
+		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
+		return carrierProduct.getName();
 	}
 
 	public ImmutablePair<ITranslatableString, String> getDocumentTypeAndName(@NonNull OrderId salesOrderId)

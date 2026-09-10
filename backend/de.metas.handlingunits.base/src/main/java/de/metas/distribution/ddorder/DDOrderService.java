@@ -3,11 +3,13 @@ package de.metas.distribution.ddorder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineDemandSqlHelper;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
 import de.metas.distribution.ddorder.movement.generate.DirectMovementsFromSchedulesGenerator;
@@ -29,6 +31,7 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
@@ -387,6 +390,18 @@ public class DDOrderService
 	public Stream<I_DD_OrderLine> streamLinesByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
 	{
 		return ddOrderLowLevelDAO.streamLinesByDDOrderIds(ddOrderIds);
+	}
+
+	/**
+	 * The batched pair lookup behind the carrier facet's chip counts. Delegates to {@link DDOrderLineDemandSqlHelper}
+	 * rather than {@link #ddOrderLowLevelDAO} — see that method's javadoc for why: the join needs
+	 * {@code M_ShipmentSchedule} / {@code M_Picking_Job_Schedule} (module {@code de.metas.swat.base}) and
+	 * {@code DD_OrderLine_PickingJobSchedule} (this module), neither reachable from
+	 * {@code de.metas.manufacturing}, which must gain no new dependency.
+	 */
+	public ImmutableSetMultimap<DDOrderId, CarrierProductId> getCarrierProductIdsByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
+	{
+		return DDOrderLineDemandSqlHelper.getCarrierProductIdsByDDOrderIds(ddOrderIds);
 	}
 
 }
