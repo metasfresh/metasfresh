@@ -50,9 +50,14 @@ import java.util.Collection;
  * {@code AD_Window_ParentChildTableNames_v1}, which already registers root {@code M_ShipperTransportation} +
  * child {@code M_ShippingPackage} via {@code M_ShipperTransportation_ID}. The blocker is the link instead: the
  * descriptor carries ONE source and ONE target link column and applies them as a single
- * {@code addEqualsFilter}, but {@code M_Delivery_Planning} and {@code M_ShippingPackage} share no column -
- * neither carries the other's FK, and the linkage lives in {@code M_Delivery_Planning_Alloc}. That is two hops,
- * which the single-hop descriptor cannot traverse.</li>
+ * {@code addEqualsFilter}, and neither {@code M_Delivery_Planning} nor {@code M_ShippingPackage} carries the
+ * other's FK: the planning-to-package linkage lives in {@code M_Delivery_Planning_Alloc}, the only table
+ * holding both ids, and the factory does not re-enter the group, so there is no second hop to chain.
+ * <br>
+ * The two tables DO share {@code C_Order_ID} / {@code C_OrderLine_ID}, so a single hop on those is
+ * expressible - but it emits a DIFFERENT set: every package line of that order line, sibling plannings'
+ * packages included. It is not provably even a superset, because nothing constrains an allocated package to
+ * share its planning's order line. So it is not a substitute.</li>
  * </ul>
  * So the routable shape is root {@code M_ShipperTransportation} + child {@code M_ShippingPackage}, built here
  * from the allocation because only the allocation knows both ids.
