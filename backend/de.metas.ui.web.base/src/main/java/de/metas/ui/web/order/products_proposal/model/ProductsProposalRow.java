@@ -276,8 +276,19 @@ public class ProductsProposalRow implements IViewRow
 
 	public boolean isMatching(@NonNull final ProductsProposalViewFilter filter)
 	{
+		return isMatchingProductName(filter)
+				&& isMatchingOnlyDelivered(filter);
+	}
+
+	private boolean isMatchingProductName(@NonNull final ProductsProposalViewFilter filter)
+	{
 		return Check.isEmpty(filter.getProductName())
 				|| getProductName().toLowerCase().contains(filter.getProductName().toLowerCase());
+	}
+
+	private boolean isMatchingOnlyDelivered(@NonNull final ProductsProposalViewFilter filter)
+	{
+		return !filter.isOnlyDelivered() || lastShipmentDays != null;
 	}
 
 	public ProductsProposalRow withExistingOrderLine(@Nullable final OrderLine existingOrderLine)
