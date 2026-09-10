@@ -10,6 +10,7 @@ import de.metas.pricing.rules.campaign_price.CampaignPriceService;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
+import de.metas.ui.web.order.products_proposal.filters.OrderProductsProposalViewFilters;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_Order_ProductsProposal_Launcher;
@@ -20,11 +21,14 @@ import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_Sh
 import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.order.products_proposal.service.OrderLinesFromProductProposalsProducer;
 import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
@@ -34,6 +38,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -94,6 +99,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				.setCaption(caption)
 				.allowViewCloseAction(ViewCloseAction.CANCEL)
 				.allowViewCloseAction(ViewCloseAction.DONE)
+				.setFilters(OrderProductsProposalViewFilters.getDescriptors().getAll())
 				//
 				.setFocusOnFieldName(ProductsProposalRow.FIELD_Qty)
 				.addElementsFromViewRowClassAndFieldNames(
@@ -180,6 +186,17 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList.class),
 				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers.class),
 				createProcessDescriptor(WEBUI_ProductsProposal_Delete.class));
+	}
+
+	@Override
+	public ProductsProposalView filterView(
+			final IView view,
+			final JSONFilterViewRequest filterViewRequest,
+			final Supplier<IViewsRepository> viewsRepo)
+	{
+		final ProductsProposalView productsProposalView = ProductsProposalView.cast(view);
+		productsProposalView.filter(OrderProductsProposalViewFilters.extractFilter(filterViewRequest));
+		return productsProposalView;
 	}
 
 	@Override
