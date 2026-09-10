@@ -544,6 +544,7 @@ export class RawWidget extends PureComponent {
     const {
       caption,
       description,
+      help,
       captionElement,
       fields,
       type,
@@ -643,11 +644,20 @@ export class RawWidget extends PureComponent {
           <label
             className={classnames('form-control-label', labelClass, {
               'zoom-into': fields[0].supportZoomInto,
+              'field-tooltip-trigger': !!(description || help),
             })}
-            title={description || caption}
+            title={!description && !help ? caption : undefined}
             {...labelProps}
           >
             {caption}
+            {(description || help) && (
+              <div className="field-tooltip-popup">
+                {description && (
+                  <div className="field-tooltip-description">{description}</div>
+                )}
+                {help && <div className="field-tooltip-help">{help}</div>}
+              </div>
+            )}
           </label>
         )}
         <div
@@ -765,6 +775,7 @@ RawWidget.propTypes = {
   barcodeScannerType: PropTypes.string,
   layoutType: PropTypes.string,
   description: PropTypes.string,
+  help: PropTypes.string,
   captionElement: PropTypes.string,
   //
   // Callbacks and other functions:
