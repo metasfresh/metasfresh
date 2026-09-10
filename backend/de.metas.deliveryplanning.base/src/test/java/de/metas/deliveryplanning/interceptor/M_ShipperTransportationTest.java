@@ -23,7 +23,7 @@
 package de.metas.deliveryplanning.interceptor;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.deliveryplanning.DeliveryPlanningAllocRepository;
+import de.metas.deliveryplanning.DeliveryPlanningAllocService;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.event.IEventBusFactory;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -64,7 +64,7 @@ class M_ShipperTransportationTest
 		Services.registerService(IBPartnerStatisticsUpdater.class, Mockito.mock(IBPartnerStatisticsUpdater.class));
 
 		deliveryPlanningService = Mockito.mock(DeliveryPlanningService.class);
-		interceptor = new M_ShipperTransportation(deliveryPlanningService, new DeliveryPlanningAllocRepository(), Mockito.mock(IEventBusFactory.class));
+		interceptor = new M_ShipperTransportation(deliveryPlanningService, Mockito.mock(DeliveryPlanningAllocService.class), Mockito.mock(IEventBusFactory.class));
 	}
 
 	private static Method methodNamed(final String name)

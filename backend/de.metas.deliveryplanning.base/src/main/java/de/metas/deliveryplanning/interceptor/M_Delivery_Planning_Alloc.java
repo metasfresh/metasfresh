@@ -23,7 +23,8 @@
 package de.metas.deliveryplanning.interceptor;
 
 import de.metas.deliveryplanning.DeliveryPlanningId;
-import de.metas.deliveryplanning.DeliveryPlanningAllocRepository;
+import com.google.common.collect.ImmutableSet;
+import de.metas.deliveryplanning.DeliveryPlanningAllocService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -44,17 +45,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class M_Delivery_Planning_Alloc
 {
-	@NonNull private final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	@NonNull private final DeliveryPlanningAllocService deliveryPlanningAllocService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_Delivery_Planning_Alloc.COLUMNNAME_IsActive)
 	public void onActiveStateChanged(@NonNull final I_M_Delivery_Planning_Alloc allocRecord)
 	{
-		deliveryPlanningAllocRepository.refreshAllocationDerivedFlags(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
+		deliveryPlanningAllocService.refreshDerivedFlags(ImmutableSet.of(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID())));
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void onDelete(@NonNull final I_M_Delivery_Planning_Alloc allocRecord)
 	{
-		deliveryPlanningAllocRepository.refreshAllocationDerivedFlags(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID()));
+		deliveryPlanningAllocService.refreshDerivedFlags(ImmutableSet.of(DeliveryPlanningId.ofRepoId(allocRecord.getM_Delivery_Planning_ID())));
 	}
 }

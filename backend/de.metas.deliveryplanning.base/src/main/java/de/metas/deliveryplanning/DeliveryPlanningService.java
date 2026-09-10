@@ -659,7 +659,7 @@ public class DeliveryPlanningService
 
 		return toDeliveryPlanningList(
 				deliveryPlanningRecords,
-				deliveryPlanningAllocRepository.getAllocationsByPlanningId(
+				deliveryPlanningAllocRepository.getByDeliveryPlanningIds(
 						deliveryPlanningRecords.stream()
 								.map(record -> DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()))
 								.collect(ImmutableSet.toImmutableSet())));
@@ -1987,7 +1987,7 @@ public class DeliveryPlanningService
 
 		// snapshot, taken before the loop below voids anything - see the Javadoc above
 		final ImmutableSet<DeliveryPlanningId> allocatedIds = deliveryPlanningAllocRepository
-				.getAllocationsByPlanningId(selectedDeliveryPlanningIds)
+				.getByDeliveryPlanningIds(selectedDeliveryPlanningIds)
 				.keySet();
 
 		final ImmutableList.Builder<DeliveryPlanningId> cancelledIds = ImmutableList.builder();

@@ -35,6 +35,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
+import com.google.common.collect.ImmutableSet;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -184,10 +185,28 @@ public class DeliveryInstructionRepository
 
 	public boolean hasCompletedAmong(@NonNull final Collection<ShipperTransportationId> deliveryInstructionIds)
 	{
+		return !getCompletedAmong(deliveryInstructionIds).isEmpty();
+	}
+
+	/**
+	 * WHICH of the given instructions are completed, in one query - the batch form the alloc service needs to
+	 * decide receipt-readiness for a whole set of plannings without asking per planning.
+	 */
+	public ImmutableSet<ShipperTransportationId> getCompletedAmong(@NonNull final Collection<ShipperTransportationId> deliveryInstructionIds)
+	{
+		if (deliveryInstructionIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
 		return queryBL.createQueryBuilder(I_M_ShipperTransportation.class)
 				.addInArrayFilter(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, deliveryInstructionIds)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.anyMatch();
+				.create()
+				.listDistinct(I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, Integer.class)
+				.stream()
+				.map(ShipperTransportationId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public ShippingPackageId createShippingPackage(

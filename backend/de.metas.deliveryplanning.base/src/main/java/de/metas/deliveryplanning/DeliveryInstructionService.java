@@ -286,7 +286,7 @@ public class DeliveryInstructionService
 	public void invalidateDeliveryInstructionLinesFor(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		final CacheInvalidateMultiRequest request = DeliveryInstructionLineCacheInvalidation.requestForAllocationsOrNull(
-				deliveryPlanningAllocRepository.getAllocationsByPlanningId(ImmutableList.of(deliveryPlanningId)).values());
+				deliveryPlanningAllocRepository.getByDeliveryPlanningIds(ImmutableList.of(deliveryPlanningId)).values());
 		if (request == null)
 		{
 			return;

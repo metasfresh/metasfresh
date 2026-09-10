@@ -314,7 +314,7 @@ class DeliveryPlanningAllocLifecycleTest
 				deliveryInstructionService.createAllocations(target, ImmutableList.of(allocRequestFor(planningId)));
 
 		assertThat(newAllocIds).hasSize(1);
-		assertThat(deliveryPlanningAllocRepository.getAllocationsByPlanningId(ImmutableList.of(planningId)).get(planningId))
+		assertThat(deliveryPlanningAllocRepository.getByDeliveryPlanningIds(ImmutableList.of(planningId)).get(planningId))
 				.as("the fresh allocation on the target is the only ACTIVE one reported for this planning")
 				.extracting(DeliveryPlanningAlloc::getDeliveryInstructionId)
 				.containsExactly(target);
@@ -335,7 +335,7 @@ class DeliveryPlanningAllocLifecycleTest
 		deliveryInstructionService.deactivateAllocations(voidedInstructionId, REMOVED_AT.toInstant());
 
 		final ImmutableListMultimap<DeliveryPlanningId, DeliveryPlanningAlloc> allocations =
-				deliveryPlanningAllocRepository.getAllocationsByPlanningId(ImmutableList.of(allocated, unallocated, deactivated));
+				deliveryPlanningAllocRepository.getByDeliveryPlanningIds(ImmutableList.of(allocated, unallocated, deactivated));
 
 		assertThat(allocations.keySet()).containsExactly(allocated);
 		assertThat(allocations.get(allocated))

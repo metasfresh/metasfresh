@@ -134,25 +134,65 @@ public class DeliveryPlanningRepository
 	 * reads every row TWICE, once as models and again as records to write. {@code DeliveryPlanningBatchLoadingTest}
 	 * pins the load count on these paths, which is what caught that.
 	 */
-	public void updateAll(
+	public void updateByIds(
 			@NonNull final Set<DeliveryPlanningId> deliveryPlanningIds,
-			@NonNull final UnaryOperator<DeliveryPlanning> transform)
+			@NonNull final UnaryOperator<DeliveryPlanning> updater)
 	{
 		for (final I_M_Delivery_Planning record : getRecordsByIds(deliveryPlanningIds))
 		{
-			applyTo(record, transform.apply(fromRecord(record)));
+			applyTo(record, updater.apply(fromRecord(record)));
 			saveRecord(record);
 		}
 	}
 
+	/**
+	 * Stores the allocation-derived flags. Narrow on purpose: these two columns are a PROJECTION of the
+	 * allocations, not planning state, so they are written by their own method rather than becoming fields on
+	 * {@link DeliveryPlanning} where they could disagree with the allocations they project.
+	 * <p>
+	 * The computation belongs to {@link DeliveryPlanningAllocService}, which owns the leading data; this
+	 * repository only owns the table the projection is stored on.
+	 */
+	public void updateAllocationDerivedFlags(@NonNull final Map<DeliveryPlanningId, AllocationDerivedFlags> flagsByPlanningId)
+	{
+		if (flagsByPlanningId.isEmpty())
+		{
+			return;
+		}
+
+		for (final I_M_Delivery_Planning record : getRecordsByIds(ImmutableSet.copyOf(flagsByPlanningId.keySet())))
+		{
+			final AllocationDerivedFlags flags = flagsByPlanningId.get(DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID()));
+			record.setIsAllocated(flags.isAllocated());
+			record.setIsReadyForReceipt(flags.isReadyForReceipt());
+			saveRecord(record);
+		}
+	}
+
+	/**
+	 * Single-row form, matching the {@code updateById}/{@code updateByIds} pair other repositories expose
+	 * (InvoicePayScheduleRepository, OrderPayScheduleRepository, SAPGLJournalService). Those take a
+	 * {@code Consumer} because their models mutate in place; {@link DeliveryPlanning} is a {@code @Value},
+	 * so the equivalent for an immutable model is a {@link UnaryOperator} returning the changed copy.
+	 * <p>
+	 * Note this is an id plus an updater, NOT a detached model - the model handed to the updater always
+	 * comes from the row it will be written back to, which is what keeps it from blanking untouched columns.
+	 */
+	public void updateById(
+			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final UnaryOperator<DeliveryPlanning> updater)
+	{
+		updateByIds(ImmutableSet.of(deliveryPlanningId), updater);
+	}
+
 	/** The filter-shaped sibling: same one-load read-modify-write, for the selection-based writers. */
-	public void updateAll(
+	public void updateByFilter(
 			@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter,
-			@NonNull final UnaryOperator<DeliveryPlanning> transform)
+			@NonNull final UnaryOperator<DeliveryPlanning> updater)
 	{
 		for (final I_M_Delivery_Planning record : getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter).create().list())
 		{
-			applyTo(record, transform.apply(fromRecord(record)));
+			applyTo(record, updater.apply(fromRecord(record)));
 			saveRecord(record);
 		}
 	}
@@ -420,7 +460,7 @@ public class DeliveryPlanningRepository
 	 */
 	public void clearActualQtyOnReverse(@NonNull final DeliveryPlanningId deliveryPlanningId, final boolean isReceipt)
 	{
-		updateAll(ImmutableSet.of(deliveryPlanningId), deliveryPlanning -> {
+		updateById(deliveryPlanningId, deliveryPlanning -> {
 			final Quantity zero = deliveryPlanning.getActualDischargeQty().toZero();
 
 			final DeliveryPlanning.DeliveryPlanningBuilder builder = deliveryPlanning.toBuilder();
@@ -698,7 +738,7 @@ public class DeliveryPlanningRepository
 	{
 		assertNoneMatches(selectedDeliveryPlanningsFilter, DeliveryPlanning::isClosed, alreadyClosedMessage);
 
-		updateAll(selectedDeliveryPlanningsFilter, deliveryPlanning -> deliveryPlanning.toBuilder()
+		updateByFilter(selectedDeliveryPlanningsFilter, deliveryPlanning -> deliveryPlanning.toBuilder()
 				.closed(true)
 				// Processed tracks IsClosed || IsDelivered, so closing always processes
 				.processed(true)
@@ -722,7 +762,7 @@ public class DeliveryPlanningRepository
 	{
 		assertNoneMatches(selectedDeliveryPlanningsFilter, deliveryPlanning -> !deliveryPlanning.isClosed(), stillOpenMessage);
 
-		updateAll(selectedDeliveryPlanningsFilter, deliveryPlanning -> deliveryPlanning.toBuilder()
+		updateByFilter(selectedDeliveryPlanningsFilter, deliveryPlanning -> deliveryPlanning.toBuilder()
 				.closed(false)
 				// ... and re-opening only un-processes a planning that has no receipt/shipment of its own
 				.processed(deliveryPlanning.getInOutId() != null)
@@ -827,7 +867,7 @@ public class DeliveryPlanningRepository
 	{
 		final String created = new SimpleDateFormat("yyyyMMdd-HHmm").format(deliveryInstruction.getCreated());
 
-		updateAll(ImmutableSet.copyOf(deliveryPlanningIds), deliveryPlanning -> deliveryPlanning.toBuilder()
+		updateByIds(ImmutableSet.copyOf(deliveryPlanningIds), deliveryPlanning -> deliveryPlanning.toBuilder()
 				// the release number embeds the planning's OWN id, which is why this is a per-model transform
 				// and not a set-based update of one constant
 				.releaseNo(deliveryInstruction.getDocumentNo() + "-" + deliveryPlanning.getId().getRepoId() + "-" + created)
@@ -847,12 +887,12 @@ public class DeliveryPlanningRepository
 	 */
 	public void clearInstructionReference(@NonNull final Collection<DeliveryPlanningId> deliveryPlanningIds)
 	{
-		updateAll(ImmutableSet.copyOf(deliveryPlanningIds), CLEAR_INSTRUCTION_REFERENCE);
+		updateByIds(ImmutableSet.copyOf(deliveryPlanningIds), CLEAR_INSTRUCTION_REFERENCE);
 	}
 
 	public void clearInstructionReferenceOfInstruction(@NonNull final ShipperTransportationId deliveryInstructionId)
 	{
-		updateAll(getPlanningIdsOfInstruction(deliveryInstructionId), CLEAR_INSTRUCTION_REFERENCE);
+		updateByIds(getPlanningIdsOfInstruction(deliveryInstructionId), CLEAR_INSTRUCTION_REFERENCE);
 	}
 
 	/**
@@ -938,7 +978,7 @@ public class DeliveryPlanningRepository
 	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
 		// the Quantity carries its own UOM, so C_UOM_ID no longer has to be remembered alongside it
-		updateAll(ImmutableSet.of(deliveryPlanningId), deliveryPlanning -> deliveryPlanning.toBuilder()
+		updateById(deliveryPlanningId, deliveryPlanning -> deliveryPlanning.toBuilder()
 				.plannedLoadedQty(quantity)
 				.uomId(quantity.getUomId())
 				.build());
@@ -946,7 +986,7 @@ public class DeliveryPlanningRepository
 
 	public void setPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
-		updateAll(ImmutableSet.of(deliveryPlanningId), deliveryPlanning -> deliveryPlanning.toBuilder()
+		updateById(deliveryPlanningId, deliveryPlanning -> deliveryPlanning.toBuilder()
 				.plannedDischargeQty(quantity)
 				.uomId(quantity.getUomId())
 				.build());

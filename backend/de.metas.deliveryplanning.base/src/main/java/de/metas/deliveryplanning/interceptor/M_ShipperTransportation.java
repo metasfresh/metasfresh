@@ -2,7 +2,7 @@ package de.metas.deliveryplanning.interceptor;
 
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.deliveryplanning.DeliveryInstructionUserNotificationsProducer;
-import de.metas.deliveryplanning.DeliveryPlanningAllocRepository;
+import de.metas.deliveryplanning.DeliveryPlanningAllocService;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.event.IEventBusFactory;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 public class M_ShipperTransportation
 {
 	@NonNull private final DeliveryPlanningService deliveryPlanningService;
-	@NonNull private final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	@NonNull private final DeliveryPlanningAllocService deliveryPlanningAllocService;
 	@NonNull private final IEventBusFactory eventBusFactory;
 
 	@NonNull private final IBPartnerStatisticsUpdater bpartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
@@ -122,7 +122,7 @@ public class M_ShipperTransportation
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_ShipperTransportation.COLUMNNAME_DocStatus)
 	public void refreshReadyForReceiptOfAllocatedPlannings(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		deliveryPlanningAllocRepository.refreshAllocationDerivedFlags(
+		deliveryPlanningAllocService.refreshDerivedFlagsOfInstruction(
 				ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 	}
 

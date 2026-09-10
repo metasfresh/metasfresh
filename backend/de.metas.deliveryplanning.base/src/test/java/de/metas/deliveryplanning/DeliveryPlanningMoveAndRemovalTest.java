@@ -406,7 +406,7 @@ class DeliveryPlanningMoveAndRemovalTest
 		assertThatThrownBy(() -> deliveryPlanningService.addTo(selectionOf(allocated, notAllocated), target))
 				.hasMessageContaining(DeliveryPlanningService.MSG_M_Delivery_Planning_AlreadyOnDeliveryInstruction_UseMove.toAD_Message());
 
-		assertThat(deliveryPlanningAllocRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(notAllocated))).isEmpty())
+		assertThat(deliveryPlanningAllocRepository.getByDeliveryPlanningIds(ImmutableList.of(idOf(notAllocated))).isEmpty())
 				.as("all-or-nothing: the unallocated row was not put on the target either")
 				.isTrue();
 		assertNoOrphanedShippingPackages();
@@ -465,7 +465,7 @@ class DeliveryPlanningMoveAndRemovalTest
 		assertThat(InterfaceWrapperHelper.load(leavingAllocationId, I_M_Delivery_Planning_Alloc.class).isActive())
 				.as("the removed planning's own allocation row survives, deactivated")
 				.isFalse();
-		assertThat(deliveryPlanningAllocRepository.getAllocationsByPlanningId(ImmutableList.of(idOf(leaving))).isEmpty())
+		assertThat(deliveryPlanningAllocRepository.getByDeliveryPlanningIds(ImmutableList.of(idOf(leaving))).isEmpty())
 				.as("the retired allocation must not leak into an active-filtered lookup")
 				.isTrue();
 

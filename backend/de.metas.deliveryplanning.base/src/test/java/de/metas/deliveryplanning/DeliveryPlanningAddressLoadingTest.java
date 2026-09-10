@@ -181,7 +181,7 @@ class DeliveryPlanningAddressLoadingTest
 		Mockito.doAnswer(invocation -> records.iterator())
 				.when(deliveryPlanningRepository).extractDeliveryPlannings(filter);
 		Mockito.doReturn(allocations.build())
-				.when(deliveryPlanningAllocRepository).getAllocationsByPlanningId(Mockito.any());
+				.when(deliveryPlanningAllocRepository).getByDeliveryPlanningIds(Mockito.any());
 
 		return deliveryPlanningService.getBySelection(filter);
 	}
@@ -287,7 +287,7 @@ class DeliveryPlanningAddressLoadingTest
 		Mockito.verify(warehouseDAO, Mockito.times(1)).getByIds(Mockito.any());
 		Mockito.verify(warehouseDAO, Mockito.never()).getById(Mockito.any());
 		Mockito.verify(warehouseDAO, Mockito.never()).getById(Mockito.any(), Mockito.any());
-		Mockito.verify(deliveryPlanningAllocRepository, Mockito.times(1)).getAllocationsByPlanningId(Mockito.any());
+		Mockito.verify(deliveryPlanningAllocRepository, Mockito.times(1)).getByDeliveryPlanningIds(Mockito.any());
 	}
 
 	@Test
