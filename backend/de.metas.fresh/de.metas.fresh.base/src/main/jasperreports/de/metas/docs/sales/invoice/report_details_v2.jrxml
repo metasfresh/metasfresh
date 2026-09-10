@@ -595,7 +595,7 @@ $F{shiplocation}
 	<detail>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean ( !$F{ishu} ) && $F{descriptionaboveline} != null && !$F{descriptionaboveline}.trim().isEmpty()]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean ( !$F{ishu} || "Y".equals($F{isprintwhenpackingmaterial}) ) && $F{descriptionaboveline} != null && !$F{descriptionaboveline}.trim().isEmpty()]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-descAboveLine" mode="Transparent" x="37" y="0" width="544" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="a5b0aa13-bf57-40b9-b5a1-a5082506928b"/>
 				<box rightPadding="3">

@@ -357,7 +357,7 @@ export class SalesOrderPage {
       const effectiveRecordId = recordId || this.getRecordId();
 
       // Right-click the first order-line row: that selects it AND opens its context menu.
-      const lineRow = page.locator('table tbody tr').first();
+      const lineRow = page.locator('.table-flex-wrapper table tbody tr, table tbody tr').first();
       await lineRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await lineRow.click({ button: 'right' });
 
