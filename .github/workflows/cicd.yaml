@@ -1615,8 +1615,18 @@ jobs:
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}' >> $GITHUB_STEP_SUMMARY
       - name: Install xmllint
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libxml2-utils
+          # The next step ("assert success") uses xmllint to decide the cucumber verdict, so this
+          # step must not fail for reasons unrelated to xmllint: when it fails, "assert success" is
+          # SKIPPED and failing cucumber tests are never evaluated at all.
+          # A bare `apt-get update` also refreshes the runner image's pre-baked third-party repos
+          # (chrome, docker, nodesource, ...); a single bad index makes apt exit 100 and takes the
+          # whole job down with it. So: skip apt entirely when xmllint is already there, never let a
+          # repo-refresh error fail the step, and let the final `xmllint --version` be the real gate.
+          if ! command -v xmllint >/dev/null 2>&1; then
+            sudo apt-get update || echo "apt-get update reported errors - continuing to install anyway"
+            sudo apt-get install -y libxml2-utils
+          fi
+          xmllint --version
       - name: assert success
         run: |
           junit_xml_path="cucumber/cucumber-junit.xml"
