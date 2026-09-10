@@ -293,14 +293,11 @@ public class DeliveryPlanningRepository
 	 * Writes the actual quantities a completed document booked onto this planning, and marks it
 	 * {@code Processed}. Which end(s) a document occupies is a business decision and is made by
 	 * {@link DeliveryPlanningService#recordActualQtyOnComplete}, which passes the resolved values in.
+	 * <p>
+	 * Takes the RECORD, not the id: that same caller has already loaded it to resolve the direction and the
+	 * booked quantity, so an id parameter here would make this method load the very same row a second time.
 	 *
 	 * @param actualLoadQty the load end, or {@code null} to leave it untouched
-	 */
-	/**
-	 * Takes the RECORD, not the id: the only caller
-	 * ({@link DeliveryPlanningService#recordActualQtyOnComplete}) has already loaded it to resolve the
-	 * direction and the booked quantity, so an id parameter here would make this method load the very same
-	 * row a second time.
 	 */
 	public void recordActualQuantities(
 			@NonNull final I_M_Delivery_Planning record,
