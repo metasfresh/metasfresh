@@ -197,6 +197,40 @@ public class AtpReconciliationBackupTest
 		assertThat(backedUpCorrectionCandidate.getQtyAfter()).isEqualByComparingTo("50");
 	}
 
+	/**
+	 * A STOCK candidate backed up by one reconciliation run can legitimately be backed up again by a LATER
+	 * run whose window still reaches it - {@code MD_ATP_Reconciliation_Backup} has no uniqueness on
+	 * {@code MD_Candidate_ID} (its own migration header: "one row per STOCK candidate a run touched"), so
+	 * that candidate ends up with two rows sharing its id. {@code AtpReconciliationDetailRepo} reuses the
+	 * same table for a DIFFERENT purpose - naming the correction candidate's OWN business-case detail - and
+	 * originally looked a candidate up by {@code MD_Candidate_ID} alone, so re-reading a twice-audited STOCK
+	 * candidate hit {@code DBMoreThanOneRecordsFoundException}. This is the normal, expected operational
+	 * pattern (reconciling the same key repeatedly over time), not an edge case.
+	 */
+	@Test
+	public void reconcilingTwiceOverlappingTheSameStockCandidate_doesNotThrow()
+	{
+		final int stockId = createStockRecord(new BigDecimal("100"));
+
+		final AtpReconciliationRunLog firstRun = atpReconciliationCommand.reconcileAndLog(KEY, D1, false);
+		assertThat(firstRun.getRunUuid()).isNotNull();
+		assertThat(retrieveStockQtyUpTo(D1)).isEqualByComparingTo("100");
+
+		// a second, later divergence reconciled at the SAME D1 - its before/after STOCK read reaches the
+		// very STOCK candidate the first run's own correction already created and backed up
+		updateStockQtyOnHand(stockId, new BigDecimal("150"));
+
+		final AtpReconciliationRunLog secondRun = atpReconciliationCommand.reconcileAndLog(KEY, D1, false);
+
+		assertThat(secondRun.getRunUuid()).isNotNull();
+		assertThat(secondRun.getDivergence().getDifference()).isEqualByComparingTo("50");
+		assertThat(retrieveStockQtyUpTo(D1)).isEqualByComparingTo("150");
+
+		// the twice-audited STOCK candidate must still resolve to a Candidate with no business-case detail -
+		// re-reading it is exactly the operation that used to throw
+		assertThat(retrieveStockCandidateUpTo(D1).getBusinessCase()).isNull();
+	}
+
 	@Test
 	public void reconcileAndLog_writesNothingOnADryRun()
 	{

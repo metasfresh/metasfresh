@@ -27,7 +27,10 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.businesscase.AtpReconciliationDetail;
 import de.metas.material.dispo.model.I_MD_ATP_Reconciliation_Backup;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
@@ -37,19 +40,29 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Persists the one {@link I_MD_ATP_Reconciliation_Backup} row that names a correction candidate's own creation -
- * reusing the same table {@link de.metas.material.dispo.reconcile.AtpReconciliationBackupRepository}-equivalent
- * classes elsewhere back up the STOCK candidates a run touches (those never share a row with this one: they're
- * keyed by their own, different {@code MD_Candidate_ID}).
+ * Persists the one {@link I_MD_ATP_Reconciliation_Backup} row that names a correction candidate's own creation.
+ * <p>
+ * Reuses the same table {@link de.metas.material.dispo.reconcile.AtpReconciliationBackupRepository}-equivalent
+ * classes back up the STOCK candidates a run touches - but unlike this repo's row, THOSE rows are not unique
+ * per candidate: a candidate reconciled by two separate runs legitimately accumulates two backup rows sharing
+ * its {@code MD_Candidate_ID} (the table's own migration header: "one row per STOCK candidate a run touched").
+ * Looking a candidate up by {@code MD_Candidate_ID} alone would therefore hit
+ * {@code DBMoreThanOneRecordsFoundException} on the second overlapping run - {@code IsCandidateOwnDetail}
+ * (migration {@code 5824060}) marks the ONE row this repo itself created, so every query here filters on it too,
+ * and a partial unique index on the same column enforces "at most one" at the database level.
  */
 @Service
 public class AtpReconciliationDetailRepo
 {
+	private static final String COLUMNNAME_IsCandidateOwnDetail = "IsCandidateOwnDetail";
+
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Nullable
 	public AtpReconciliationDetail getSingleForCandidateRecordOrNull(@NonNull final CandidateId candidateId)
 	{
-		final I_MD_ATP_Reconciliation_Backup record = RepositoryCommons
-				.createCandidateDetailQueryBuilder(candidateId, I_MD_ATP_Reconciliation_Backup.class)
+		final I_MD_ATP_Reconciliation_Backup record = ownDetailQueryBuilder(candidateId)
+				.create()
 				.firstOnly(I_MD_ATP_Reconciliation_Backup.class);
 
 		return ofRecord(record);
@@ -65,9 +78,9 @@ public class AtpReconciliationDetailRepo
 		}
 
 		final CandidateId candidateId = CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID());
-		I_MD_ATP_Reconciliation_Backup recordToUpdate = RepositoryCommons.retrieveSingleCandidateDetail(
-				candidateId,
-				I_MD_ATP_Reconciliation_Backup.class);
+		I_MD_ATP_Reconciliation_Backup recordToUpdate = ownDetailQueryBuilder(candidateId)
+				.create()
+				.firstOnly(I_MD_ATP_Reconciliation_Backup.class);
 
 		if (recordToUpdate == null)
 		{
@@ -78,6 +91,7 @@ public class AtpReconciliationDetailRepo
 			recordToUpdate.setStorageAttributesKey(candidateRecord.getStorageAttributesKey());
 			recordToUpdate.setDateProjected(candidateRecord.getDateProjected());
 			recordToUpdate.setReconciliationRunUUID(atpReconciliationDetail.getReconciliationRunUUID());
+			InterfaceWrapperHelper.setValue(recordToUpdate, COLUMNNAME_IsCandidateOwnDetail, Boolean.TRUE);
 		}
 
 		if (atpReconciliationDetail.getQtyBefore() != null)
@@ -87,6 +101,15 @@ public class AtpReconciliationDetailRepo
 		recordToUpdate.setQtyAfter(atpReconciliationDetail.getQtyAfter());
 
 		saveRecord(recordToUpdate);
+	}
+
+	private IQueryBuilder<I_MD_ATP_Reconciliation_Backup> ownDetailQueryBuilder(@NonNull final CandidateId candidateId)
+	{
+		return queryBL
+				.createQueryBuilder(I_MD_ATP_Reconciliation_Backup.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_ATP_Reconciliation_Backup.COLUMNNAME_MD_Candidate_ID, candidateId.getRepoId())
+				.addEqualsFilter(COLUMNNAME_IsCandidateOwnDetail, true);
 	}
 
 	@Nullable
