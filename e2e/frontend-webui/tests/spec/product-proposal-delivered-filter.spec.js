@@ -171,8 +171,11 @@ the customer has never bought.
       // helper - see compensation-group-bundle.spec.js's own note on addOrderLine's fragility). A
       // full reload guarantees the batch-entry panel starts closed for the second call.
       await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${historyOrderId}`);
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await page.waitForTimeout(1000);
+      // Deterministic readiness signal instead of a fixed pause: addOrderLine's very first action is
+      // to scroll to and click this toggle, so the page is ready exactly when the toggle is visible.
+      await page
+        .getByTestId('batch-entry-toggle')
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
       await SalesOrderPage.addOrderLine({
         product: product2Code,
@@ -308,7 +311,11 @@ the customer has never bought.
 
       expect(await ProductProposalPage.getRowCount(page)).toBe(0);
 
+      // A negative assertion needs a settle window, otherwise it passes simply because nothing has
+      // rendered yet: toHaveCount(0) matches an empty DOM immediately. Give the filter round-trip
+      // time to surface a toast, then assert none did.
       const errorToast = page.locator('.Toastify div[role="alert"].Toastify__toast-body');
+      await page.waitForTimeout(3000);
       await expect(errorToast).toHaveCount(0);
     });
   });
