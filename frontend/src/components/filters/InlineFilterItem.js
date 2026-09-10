@@ -36,12 +36,13 @@ const InlineFilterItem = ({
     setParameterValue(value ? value : '');
   };
 
-  // `handlePatch` (passed to the widget as `handlePatch={handleApply}`) is called by some widgets
-  // (e.g. Checkbox for a YesNo filter) directly with the freshly toggled value, WITHOUT having gone
-  // through `setValue`/`onChange` first - Checkbox only wires `handlePatch`, never `onChange`. So the
-  // value actually being applied must be the one passed in here when present, falling back to the
-  // locally tracked `parameterValue` (kept up to date by `onChange`-driven widgets, e.g. Text on
-  // Enter/Tab) only when no value was passed. Also keep `parameterValue` itself in sync so a second
+  // `handlePatch` (passed to the widget as `handlePatch={handleApply}`) is called with the freshly
+  // produced value, WITHOUT that value having gone through `setValue`/`onChange` first. A Checkbox
+  // (a YesNo filter) only ever wires `handlePatch`, so for it that is the ONLY way the value
+  // arrives; a Text filter reaches the same path on Enter/blur (RawWidget#handleKeyDown /
+  // #handleBlurWithParams -> #handlePatch), where the value happens to match what `onChange` already
+  // tracked. So the value actually applied must be the one passed in here when present, falling back
+  // to the locally tracked `parameterValue` only when no value was passed. Also keep `parameterValue` itself in sync so a second
   // toggle (e.g. turning the filter back off) does not read a stale value on the next call.
   //
   // Checkbox additionally expects `handlePatch(...)` to return a thenable - same contract as the

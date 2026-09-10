@@ -320,6 +320,12 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 
 	private synchronized void addRow(final ProductsProposalRow row)
 	{
+		// Deliberately added to the FILTERED list too, without consulting the active filter: a product
+		// the user just picked from "Andere Produkte" must appear, or it would vanish on arrival (a
+		// freshly added row carries no quantity yet, so the delivery-history criterion alone would
+		// exclude it) and there would be no row to type a quantity into. It is dropped again the next
+		// time the filter is applied, which costs nothing: a row with no quantity produces no order
+		// line either way (OrderLinesFromProductProposalsProducer gates on isQtySet()).
 		rowIdsOrderedAndFiltered.add(0, row.getId()); // add first
 		rowIdsOrdered.add(0, row.getId()); // add first
 
