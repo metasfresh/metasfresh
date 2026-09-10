@@ -45,11 +45,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import java.math.BigDecimal;
-import java.util.Optional;
+
 import javax.annotation.Nullable;
 
-
+import java.math.BigDecimal;
+import java.util.Optional;
 
 import static de.metas.deliveryplanning.DeliveryPlanningAllocTestHelper.allocatedTo;
 import static org.assertj.core.api.Assertions.assertThat;

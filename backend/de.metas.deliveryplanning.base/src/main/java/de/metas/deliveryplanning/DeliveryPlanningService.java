@@ -2170,11 +2170,11 @@ public class DeliveryPlanningService
 
 		if (isReceipt)
 		{
-			deliveryPlanningRepository.recordActualQuantities(deliveryPlanningId, null, bookedQty);
+			deliveryPlanningRepository.recordActualQuantities(record, null, bookedQty);
 		}
 		else if (DeliveryPlanningRepository.hasOwnShipment(direction))
 		{
-			deliveryPlanningRepository.recordActualQuantities(deliveryPlanningId, bookedQty, bookedQty);
+			deliveryPlanningRepository.recordActualQuantities(record, bookedQty, bookedQty);
 		}
 		else
 		{

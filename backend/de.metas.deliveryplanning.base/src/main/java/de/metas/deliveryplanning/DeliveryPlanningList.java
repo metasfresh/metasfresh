@@ -34,7 +34,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+
 import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
@@ -49,8 +51,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
-
-
 
 /**
  * An immutable selection of delivery plannings, loaded once per invocation, with every selection predicate the

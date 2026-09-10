@@ -296,13 +296,17 @@ public class DeliveryPlanningRepository
 	 *
 	 * @param actualLoadQty the load end, or {@code null} to leave it untouched
 	 */
+	/**
+	 * Takes the RECORD, not the id: the only caller
+	 * ({@link DeliveryPlanningService#recordActualQtyOnComplete}) has already loaded it to resolve the
+	 * direction and the booked quantity, so an id parameter here would make this method load the very same
+	 * row a second time.
+	 */
 	public void recordActualQuantities(
-			@NonNull final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final I_M_Delivery_Planning record,
 			@Nullable final BigDecimal actualLoadQty,
 			@NonNull final BigDecimal actualDischargeQuantity)
 	{
-		final I_M_Delivery_Planning record = getById(deliveryPlanningId);
-
 		if (actualLoadQty != null)
 		{
 			record.setActualLoadQty(actualLoadQty);
