@@ -1,5 +1,3 @@
-DROP VIEW IF EXISTS QtyDemand_QtySupply_V
-;
 
 CREATE OR REPLACE VIEW QtyDemand_QtySupply_V AS
 

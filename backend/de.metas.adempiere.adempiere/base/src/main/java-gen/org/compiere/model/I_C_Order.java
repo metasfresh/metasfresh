@@ -291,9 +291,7 @@ public interface I_C_Order
 
 	/**
 	 * Set B/L Date.
-	 * Date when the Bill of Lading was issued by the carrier.
-	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
-	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -303,9 +301,7 @@ public interface I_C_Order
 
 	/**
 	 * Get B/L Date.
-	 * Date when the Bill of Lading was issued by the carrier.
-	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
-	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -904,7 +900,7 @@ public interface I_C_Order
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -914,7 +910,7 @@ public interface I_C_Order
 	 * Get Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1491,9 +1487,7 @@ public interface I_C_Order
 
 	/**
 	 * Set ETA.
-	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
-	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
-	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1503,9 +1497,7 @@ public interface I_C_Order
 
 	/**
 	 * Get ETA.
-	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
-	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
-	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1559,6 +1551,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_ExternalPurchaseOrderURL = new ModelColumn<>(I_C_Order.class, "ExternalPurchaseOrderURL", null);
 	String COLUMNNAME_ExternalPurchaseOrderURL = "ExternalPurchaseOrderURL";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Order.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set Freight Amount.
@@ -1785,9 +1798,6 @@ public interface I_C_Order
 
 	/**
 	 * Set Invoice date.
-	 * Date when the supplier’s invoice was issued.
-	 * The Invoice Date is automatically synchronized from the Supplier Invoice to the Purchase Order when the invoice is received or posted in the system.
-	 * Manual changes of the Invoice Date in the Purchase Order are not allowed — it is always derived from the corresponding Supplier Invoice.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1797,9 +1807,6 @@ public interface I_C_Order
 
 	/**
 	 * Get Invoice date.
-	 * Date when the supplier’s invoice was issued.
-	 * The Invoice Date is automatically synchronized from the Supplier Invoice to the Purchase Order when the invoice is received or posted in the system.
-	 * Manual changes of the Invoice Date in the Purchase Order are not allowed — it is always derived from the corresponding Supplier Invoice.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1903,6 +1910,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_IsApproved = new ModelColumn<>(I_C_Order.class, "IsApproved", null);
 	String COLUMNNAME_IsApproved = "IsApproved";
+
+	/**
+	 * Set Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoice (boolean IsAutoInvoice);
+
+	/**
+	 * Get Auto Invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoInvoice();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsAutoInvoice = new ModelColumn<>(I_C_Order.class, "IsAutoInvoice", null);
+	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
 
 	/**
 	 * Set Credit Approved.
@@ -2848,32 +2876,6 @@ public interface I_C_Order
 	String COLUMNNAME_PromotionCode = "PromotionCode";
 
 	/**
-	 * Set Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setPurchaser_User_ID (int Purchaser_User_ID);
-
-	/**
-	 * Get Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	int getPurchaser_User_ID();
-
-	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
-
-	/**
 	 * Set Qty without Trading Unit.
 	 * Mengen-Schnelleingabe
 	 *
@@ -3273,25 +3275,4 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_Weight = new ModelColumn<>(I_C_Order.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
-
-	/**
-	 * Set External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystem_ID (int ExternalSystem_ID);
-
-	/**
-	 * Get External System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternalSystem_ID();
-
-	ModelColumn<I_C_Order, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Order.class, "ExternalSystem_ID", null);
-	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }
