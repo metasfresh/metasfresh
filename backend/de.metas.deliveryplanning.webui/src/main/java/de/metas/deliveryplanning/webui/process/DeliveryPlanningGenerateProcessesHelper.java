@@ -377,7 +377,7 @@ class DeliveryPlanningGenerateProcessesHelper
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.isCompleteShipment(Boolean.TRUE)
 				.waitForShipments(true)
-				.deliveryPlanningId(deliveryPlanningId.getRepoId())
+				.deliveryPlanningId(deliveryPlanningId)
 				.build());
 
 		final Set<InOutId> shipmentIds = shipmentService.retrieveInOutIdsByScheduleIds(ImmutableSet.of(shipmentScheduleId));

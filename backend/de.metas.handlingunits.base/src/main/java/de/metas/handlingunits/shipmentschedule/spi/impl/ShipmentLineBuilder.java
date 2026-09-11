@@ -89,6 +89,7 @@ import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 /**
  * Aggregates given {@link ShipmentScheduleWithHU}s (see {@link #add(ShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
@@ -153,8 +154,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	// Manual packing materials related:
 	private boolean _manualPackingMaterial = false;
 
-	/** The planning this line is shipped out of, or {@code 0} for none. */
-	private int _deliveryPlanningId = 0;
+	/** The planning this line is shipped out of, or {@code null} for none. */
+	@Nullable private DeliveryPlanningId _deliveryPlanningId = null;
 
 	private final TreeSet<I_M_HU_PI_Item_Product> packingMaterial_huPIItemProducts = new TreeSet<>(Comparator.comparing(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID));
 
@@ -531,7 +532,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				.map(FlatrateTermId::getRepoId)
 				.ifPresent(shipmentLine::setC_Flatrate_Term_ID);
 
-		shipmentLine.setM_Delivery_Planning_ID(_deliveryPlanningId);
+		shipmentLine.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(_deliveryPlanningId));
 
 		// Save Shipment Line
 		inoutDAO.save(shipmentLine);
@@ -767,7 +768,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	 * On the LINE rather than the header because a shipment can aggregate lines of several plannings - and,
 	 * when it consolidates onto an already-drafted document, lines of no planning at all.
 	 */
-	public void setDeliveryPlanningId(final int deliveryPlanningId)
+	public void setDeliveryPlanningId(@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		this._deliveryPlanningId = deliveryPlanningId;
 	}

@@ -42,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Set;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 @Value
 @Builder
@@ -88,12 +89,11 @@ public class ShipmentScheduleWorkPackageParameters
 	@Nullable QtyToDeliverMap qtysToDeliverOverride;
 
 	/**
-	 * {@code M_Delivery_Planning_ID} to stamp onto every shipment LINE this workpackage creates, or
-	 * {@code 0} for none.
+	 * The planning to stamp onto every shipment LINE this workpackage creates, or {@code null} for none.
 	 *
 	 * @see GenerateShipmentsRequest#getDeliveryPlanningId()
 	 */
-	int deliveryPlanningId;
+	@Nullable DeliveryPlanningId deliveryPlanningId;
 
 	public IQueryFilter<I_M_ShipmentSchedule> getShipmentSchedulesQueryFiltersEffective()
 	{

@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
@@ -107,9 +108,11 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = extractScheduleId2ExternalInfo(parameters);
 
-		// 0 for every caller but the delivery-planning generate-shipment process; see
-		// GenerateShipmentsRequest#getDeliveryPlanningId() for why it travels with the request.
-		final int deliveryPlanningId = parameters.getParameterAsInt(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, 0);
+		// null for every caller but the delivery-planning generate-shipment process; see
+		// GenerateShipmentsRequest#getDeliveryPlanningId() for why it travels with the request. The workpackage
+		// parameter map is int-typed, so this is where the id regains its type.
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoIdOrNull(
+				parameters.getParameterAsInt(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, 0));
 
 		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
