@@ -82,8 +82,8 @@ public class ColumnBL implements IColumnBL
 	@Override
 	public Optional<String> getTableIdColumnName(final String tableName, final String recordIdColumnName)
 	{
-		Check.assumeNotEmpty(tableName, "Paramter 'tableName' is empty; recordColumnName={}", tableName, recordIdColumnName);
-		Check.assumeNotEmpty(recordIdColumnName, "Paramter 'recordColumnName' is empty; tableName={}", recordIdColumnName, tableName);
+		Check.assumeNotEmpty(tableName, "Parameter 'tableName' is empty; recordColumnName={}", tableName, recordIdColumnName);
+		Check.assumeNotEmpty(recordIdColumnName, "Parameter 'recordColumnName' is empty; tableName={}", recordIdColumnName, tableName);
 
 		final String prefix = extractPrefixFromRecordColumn(recordIdColumnName);
 
