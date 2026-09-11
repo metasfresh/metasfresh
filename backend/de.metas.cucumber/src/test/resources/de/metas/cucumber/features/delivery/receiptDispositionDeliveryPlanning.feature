@@ -1235,3 +1235,101 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
     And after not more than 60s, the C_Order identified by orderContainerPlain_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID      | OPT.IsPlanned | OPT.ContainerNo | OPT.IsBLReceived | OPT.IsBookingConfirmed | OPT.IsWENotice |
       | rowContainerPlain_RL                      | null                   | scheduleContainerPlain_RL | false         | CONT-RL-003     | true             | false                  | true           |
+
+  @Id:S31789_TC9g
+  Scenario: The batch receive packs into the row's OWN configuration, and a split row is packed to ITS share
+
+    # The gap this pins. The batch receive builds a packing-free planning VHU, so a product WITH a packing
+    # instruction is received loose - the configuration the operator maintains is ignored, which the per-row
+    # HU actions on this same window honour. Owner 2026-09-11: "align new window process with existing, so
+    # including packing and that is it", plus "our window process needs to respect planning qty if split".
+    #
+    # Those two pull against each other, which is the whole reason this scenario exists: ReceiptScheduleHUGenerator
+    # sizes from the SCHEDULE, and a split leaves N plannings sharing ONE schedule - so packing naively would let
+    # this row pack the whole order line. capToPlannedShare is what keeps the two compatible, exactly as the
+    # per-row actions already use it.
+    #
+    # A DEDICATED product: product_RL and product2_RL are Background fixtures shared with every other scenario
+    # here, and an M_HU_PI_Item_Product is a global row keyed on the product - attaching one to either of those
+    # would silently hand packing to scenarios that assert loose receipts.
+
+    Given metasfresh contains M_Products:
+      | Identifier      |
+      | productPacked_RL |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_RL_PO            | productPacked_RL        | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendor_RL                | productPacked_RL        |
+
+    # 10 CUs per TU, and the TU sits on an LU - so a correctly-packed receive of a 5-CU share is ONE TU on ONE LU,
+    # not a loose CU heap and not the two TUs the full order line would need.
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID   | Name           |
+      | tuPiPk_RL    | RL_TU_PI_Pk    |
+      | luPiPk_RL    | RL_LU_PI_Pk    |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | tuPiVerPk_RL       | tuPiPk_RL  | TU          | Y         |
+      | luPiVerPk_RL       | luPiPk_RL  | LU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | tuMiItemPk_RL   | tuPiVerPk_RL       | 0   | MI       |                   |
+      | luHuItemPk_RL   | luPiVerPk_RL       | 100 | HU       | tuPiPk_RL         |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID     | Qty | ValidFrom  |
+      | pipTUPk_RL              | tuMiItemPk_RL   | productPacked_RL | 10  | 2000-01-01 |
+
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderPacked_RL | false  | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLinePacked_RL | orderPacked_RL        | productPacked_RL        | 10         | shipperPlanning_RL          |
+
+    When the order identified by orderPacked_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | schedulePacked_RL               | orderPacked_RL        | orderLinePacked_RL        | vendor_RL                | vendorLocation_RL                 | productPacked_RL        | 10         | warehouse_RL              |
+    And after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID     |
+      | planningPacked1_RL     | orderLinePacked_RL |
+
+    # Split 10 into two plannings of 5, so both share schedulePacked_RL.
+    When generate 1 additional M_Delivery_Planning records for: planningPacked1_RL
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                    | C_OrderLine_ID     |
+      | planningPacked1_RL,planningPacked2_RL     | orderLinePacked_RL |
+    And after not more than 60s, the C_Order identified by orderPacked_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned |
+      | rowPacked1_RL                             | planningPacked1_RL     | schedulePacked_RL    | true          |
+      | rowPacked2_RL                             | planningPacked2_RL     | schedulePacked_RL    | true          |
+
+    # Receive ONE of the two, so the share and the packing are exercised together.
+    When the receipt-disposition delivery-planning rows identified by rowPacked1_RL are received together:
+      | M_InOut_ID.Identifier |
+      | receiptPacked_RL      |
+
+    Then validate M_In_Out status
+      | M_InOut_ID.Identifier | DocStatus |
+      | receiptPacked_RL      | CO        |
+
+    # BOTH halves of the owner's instruction, on one row.
+    #
+    # M_HU_PI_Item_Product_ID is THE PACKING: the receipt line records the configuration its HUs were built to,
+    # so a receive that ignored the configuration and made a bare virtual HU leaves it unset. That is what fails
+    # today.
+    #
+    # MovementQty is THE SHARE: 5, not the line's 10. Packing sized from the SCHEDULE rather than the planning
+    # would receive the whole line here and starve planningPacked2_RL.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID       | C_OrderLine_ID     | M_Delivery_Planning_ID | OPT.MovementQty | OPT.M_HU_PI_Item_Product_ID |
+      | receiptPacked_RL | orderLinePacked_RL | planningPacked1_RL     | 5               | pipTUPk_RL                  |
+
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | IsClosed | Processed |
+      | planningPacked1_RL     | 10         | 5            | 5                        | 5                       | Incoming           | false    | true      |
+      | planningPacked2_RL     | 10         | 5            | 5                        | 0                       | Incoming           | false    | false     |

@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -73,6 +74,7 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 	@NonNull private final M_Delivery_Planning_StepDefData deliveryPlanningTable;
 	@NonNull private final M_InOut_StepDefData inOutTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -185,9 +187,9 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * Then validate the delivery planning link of the material receipt lines:
-	 *   | M_InOut_ID | C_OrderLine_ID | M_Delivery_Planning_ID | OPT.MovementQty |
-	 *   | receipt_1  | orderLine_1    | planning_1             | 4               |
-	 *   | receipt_1  | orderLine_1    | planning_2             | 3               |
+	 *   | M_InOut_ID | C_OrderLine_ID | M_Delivery_Planning_ID | OPT.MovementQty | OPT.M_HU_PI_Item_Product_ID |
+	 *   | receipt_1  | orderLine_1    | planning_1             | 4               | pip_1                       |
+	 *   | receipt_1  | orderLine_1    | planning_2             | 3               |                             |
 	 * </pre>
 	 */
 	@Then("^validate the delivery planning link of the material receipt lines:$")
@@ -225,10 +227,23 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 				.as("(C_OrderLine_ID, M_Delivery_Planning_ID) of the lines of receipt %s", receipt.getDocumentNo())
 				.containsExactlyInAnyOrderElementsOf(expectedByKey.keySet());
 
-		expectedByKey.forEach((key, expectedRow) -> expectedRow.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty)
-				.ifPresent(expectedMovementQty -> assertThat(actualByKey.get(key).getMovementQty())
-						.as("MovementQty of the line %s of receipt %s", key, receipt.getDocumentNo())
-						.isEqualByComparingTo(expectedMovementQty)));
+		expectedByKey.forEach((key, expectedRow) -> {
+			expectedRow.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty)
+					.ifPresent(expectedMovementQty -> assertThat(actualByKey.get(key).getMovementQty())
+							.as("MovementQty of the line %s of receipt %s", key, receipt.getDocumentNo())
+							.isEqualByComparingTo(expectedMovementQty));
+
+			// The PACKING the line was received into. Asserted on the LINE because that is where it survives:
+			// M_InOutLine.M_HU_PI_Item_Product_ID records the configuration the HUs were built to, so a receive
+			// that ignored the configuration and produced a bare virtual HU leaves it unset.
+			//
+			// Via de.metas.handlingunits.model.I_M_InOutLine - the HU columns are not on org.compiere.model's
+			// generated interface, they live on the hand-written handling-units view of the same table.
+			expectedRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
+					.ifPresent(expectedPip -> assertThat(InterfaceWrapperHelper.create(actualByKey.get(key), de.metas.handlingunits.model.I_M_InOutLine.class).getM_HU_PI_Item_Product_ID())
+							.as("M_HU_PI_Item_Product_ID of the line %s of receipt %s", key, receipt.getDocumentNo())
+							.isEqualTo(expectedPip.lookupNotNullIn(huPiItemProductTable).getM_HU_PI_Item_Product_ID()));
+		});
 	}
 
 	private OrderLineAndDeliveryPlanning extractExpectedKey(@NonNull final DataTableRow row)
