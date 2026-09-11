@@ -275,23 +275,21 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
-	 * {@code QtyTotalOpen}'s sibling figure, over the PLANNED quantities. Not floored at zero for the same reason:
-	 * an over-planned line legitimately shows negative (D16).
+	 * {@code QtyTotalOpen}'s sibling figure: how much of the order line nobody has claimed yet, where a sibling's
+	 * claim is its ACTUAL once one is recorded and its PLANNED figure until then. Not floored at zero for the
+	 * same reason as {@code QtyTotalOpen}: an over-planned line legitimately shows negative (D16).
+	 * <p>
+	 * This is {@link #openPlanQty} with nothing excluded, and it delegates rather than repeating the sum. It
+	 * previously summed the RAW planned figures, which made a sibling that was received SHORT keep claiming its
+	 * full plan: an order of 100 split 50/50 whose first planning received only 40 reported 0 open-planned
+	 * instead of 10, while QtyTotalOpen correctly reported 60. Two near-identical sums, one using
+	 * {@link PoolEnd#effectiveQty} and one not, is exactly how that drift happened - hence the delegation.
 	 */
 	public Quantity qtyTotalOpenPlanned(@NonNull final PoolEnd end)
 	{
 		Check.assumeNotEmpty(list, "Cannot compute QtyTotalOpenPlanned of an empty DeliveryPlanningList");
 
-		final Quantity qtyOrdered = list.get(0).getQtyOrdered();
-
-		Quantity plannedSum = null;
-		for (final DeliveryPlanning deliveryPlanning : list)
-		{
-			final Quantity planned = end.planned(deliveryPlanning);
-			plannedSum = plannedSum == null ? planned : plannedSum.add(planned);
-		}
-
-		return qtyOrdered.subtract(plannedSum);
+		return openPlanQty(null, end);
 	}
 
 	/**

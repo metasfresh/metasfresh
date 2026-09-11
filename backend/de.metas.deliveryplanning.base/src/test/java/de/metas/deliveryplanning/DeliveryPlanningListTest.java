@@ -96,6 +96,72 @@ class DeliveryPlanningListTest
 				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()));
 	}
 
+	@Nested
+	@DisplayName("QtyTotalOpenPlanned counts a RECEIVED sibling by what it actually took")
+	class QtyTotalOpenPlannedCountsActuals
+	{
+		/**
+		 * Reported from the window: an order of 100 split into two plannings of 50. The first is allocated to a
+		 * completed instruction and received, but only 40 of its 50. QtyTotalOpen correctly reads 60 (100 - 40),
+		 * while QtyTotalOpenPlanned read 0 - as if both plannings still claimed their full 50 - when the honest
+		 * figure is 10: the first sibling's claim is settled at the 40 it actually took, so 100 - 40 - 50.
+		 * <p>
+		 * openPlanQty already applied exactly this rule via PoolEnd#effectiveQty; qtyTotalOpenPlanned summed the
+		 * RAW planned figures instead, and the two drifted.
+		 */
+		private DeliveryPlanningList orderOf100SplitInTwo(final int firstActualDischarge)
+		{
+			return DeliveryPlanningList.of(
+					planning()
+							.transportDirection(TransportDirection.Incoming)
+							.qtyOrdered(qty(100))
+							.plannedDischargeQty(qty(50))
+							.actualDischargeQty(qty(firstActualDischarge))
+							.build(),
+					planning()
+							.transportDirection(TransportDirection.Incoming)
+							.qtyOrdered(qty(100))
+							.plannedDischargeQty(qty(50))
+							.actualDischargeQty(qty(0))
+							.build());
+		}
+
+		@Test
+		@DisplayName("a sibling received SHORT settles its claim at the actual, so the line still has 10 unplanned")
+		void receivedShortSettlesAtTheActual()
+		{
+			final DeliveryPlanningList list = orderOf100SplitInTwo(40);
+
+			assertThat(list.qtyTotalOpen(DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal())
+					.as("the delivered side was already right: 100 - 40")
+					.isEqualByComparingTo("60");
+			assertThat(list.qtyTotalOpenPlanned(DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal())
+					.as("100 - 40 (settled by what the first sibling took) - 50 (the second still claims its plan)")
+					.isEqualByComparingTo("10");
+		}
+
+		@Test
+		@DisplayName("with nothing received yet, both siblings still claim their plan and nothing is open")
+		void nothingReceivedKeepsThePlannedClaim()
+		{
+			final DeliveryPlanningList list = orderOf100SplitInTwo(0);
+
+			assertThat(list.qtyTotalOpenPlanned(DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal())
+					.as("a zero actual is not a settlement - the planned 50 + 50 still claim the whole line")
+					.isEqualByComparingTo("0");
+		}
+
+		@Test
+		@DisplayName("it agrees with openPlanQty, which excludes nothing - the two must not drift again")
+		void agreesWithOpenPlanQty()
+		{
+			final DeliveryPlanningList list = orderOf100SplitInTwo(40);
+
+			assertThat(list.qtyTotalOpenPlanned(DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal())
+					.isEqualByComparingTo(list.openPlanQty(null, DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal());
+		}
+	}
+
 	private static DeliveryPlanning withShipper(@Nullable final Integer shipperRepoId)
 	{
 		return planning()
