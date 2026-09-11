@@ -6,9 +6,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.IQuery;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
@@ -22,13 +24,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  * correlated {@code EXISTS} rather than an {@code IN} (which it emits when parent and sub table are the same —
  * {@code InSubQueryFilter#buildSql}).
  * <p>
- * This test builds the query directly via {@link TypedSqlQuery} (bypassing {@code IQueryBL}/{@code Services.get})
- * so the emitted SQL can be inspected deterministically, regardless of whether some other test in this module's
- * Surefire fork has already flipped the process into POJO/in-memory query mode.
+ * The restriction is built directly via {@link TypedSqlQuery} rather than through {@code IQueryBL}, so the emitted
+ * SQL can be inspected deterministically: unit-test mode routes {@code IQueryBuilder#create()} to the in-memory POJO
+ * engine, which has no SQL to read. Reading the composite filter's SQL does not go through that engine, so the
+ * assertion holds either way.
  */
 class DDOrderLowLevelDAOTest
 {
 	private final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+	}
 
 	@Test
 	void restrictionsRenderAsExists()
