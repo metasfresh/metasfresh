@@ -12,6 +12,13 @@
 -- statement for statement; the shared elements keep the general meaning 5823750 correctly gave them.
 --
 -- Also undoes 5823750's AD_Column writes, so a stack that already applied it converges with a fresh one.
+-- That convergence covers the COLUMN text, which is the defect. It assumes the shared elements 581795/581796
+-- already carry their general description - true on a fresh install, and verified on the deep_tundra_release
+-- stack. 5823750 originally guarded its element UPDATEs on the description still being empty, so on a stack
+-- where somebody had typed one first the element would hold that text instead; the guard is removed as of
+-- this change, but a stack that ran the guarded version is not rewritten here. Nothing observed is in that
+-- state, and blind element UPDATEs to cover an unevidenced case would be the same defensive-guard mistake in
+-- reverse.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-11:
 --   AD_Element 585456 (PlannedDischargeQuantity, this view's field only)

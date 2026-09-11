@@ -14,31 +14,38 @@
 --
 -- Shape follows IsReadyForReceipt (5823480): element + element_trl, German on
 -- de_DE/de_CH, English on en_US, and fr_CH mirroring en_US per this change set's stated convention.
--- IsTranslated is left alone -- adding a description does not translate a name. Each UPDATE is guarded on
--- the description still being empty, so it cannot overwrite a text somebody has since written.
+-- IsTranslated is left alone -- adding a description does not translate a name.
+--
+-- The UPDATEs are UNCONDITIONAL. They previously carried "AND COALESCE(Description,'')=''" to avoid
+-- overwriting a text somebody had since written; that guard was wrong. A migration's job is to bring every
+-- instance to the SAME known state, and a data-dependent guard silently leaves some instances elsewhere with
+-- no error and no signal (metasfresh-db: a silent guard hides the condition instead of surfacing it; and
+-- migrations must produce deterministic, reproducible results across environments). These are system
+-- elements at AD_Client_ID=0 that shipped with no description at all; customer-specific wording belongs in a
+-- customer migration on its own element, not typed over a core one.
 
 UPDATE AD_Element SET Description='Die für die Entladung geplante Menge.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
- WHERE AD_Element_ID=581795 AND COALESCE(Description,'')=''
+ WHERE AD_Element_ID=581795
 ;
 
 UPDATE AD_Element_Trl SET Description='Die für die Entladung geplante Menge.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
- WHERE AD_Element_ID=581795 AND AD_Language IN ('de_DE','de_CH') AND COALESCE(Description,'')=''
+ WHERE AD_Element_ID=581795 AND AD_Language IN ('de_DE','de_CH')
 ;
 
 UPDATE AD_Element_Trl SET Description='The quantity planned for discharge.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
- WHERE AD_Element_ID=581795 AND AD_Language IN ('en_US','fr_CH') AND COALESCE(Description,'')=''
+ WHERE AD_Element_ID=581795 AND AD_Language IN ('en_US','fr_CH')
 ;
 
 UPDATE AD_Element SET Description='Die tatsächlich entladene Menge.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
- WHERE AD_Element_ID=581796 AND COALESCE(Description,'')=''
+ WHERE AD_Element_ID=581796
 ;
 
 UPDATE AD_Element_Trl SET Description='Die tatsächlich entladene Menge.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
- WHERE AD_Element_ID=581796 AND AD_Language IN ('de_DE','de_CH') AND COALESCE(Description,'')=''
+ WHERE AD_Element_ID=581796 AND AD_Language IN ('de_DE','de_CH')
 ;
 
 UPDATE AD_Element_Trl SET Description='The quantity actually discharged.', Updated=TO_TIMESTAMP('2026-09-10 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
- WHERE AD_Element_ID=581796 AND AD_Language IN ('en_US','fr_CH') AND COALESCE(Description,'')=''
+ WHERE AD_Element_ID=581796 AND AD_Language IN ('en_US','fr_CH')
 ;
 
 
