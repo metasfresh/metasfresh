@@ -653,8 +653,8 @@ Feature: Delivery planning quantities
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity |
       | deliveryPlanningDischRem_1 | 13         | 13           | Outgoing            | 13                       | 2                       |
-      | deliveryPlanningDischRem_2 | 13         | 13           | Outgoing            | 5                        | 0                       |
-      | deliveryPlanningDischRem_3 | 13         | 13           | Outgoing            | 6                        | 0                       |
+      | deliveryPlanningDischRem_2 | 13         | 13           | Outgoing            | 5                        | 5                       |
+      | deliveryPlanningDischRem_3 | 13         | 13           | Outgoing            | 6                        | 6                       |
 
   @Id:S31789_TC_Q7c_SplitSeedsOwnPlannedLoad
   Scenario: Splitting an incoming delivery planning seeds each new planning's ActualLoadQty from its OWN planned load, never copied from the target
@@ -735,8 +735,8 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | C_OrderLine_ID     |
       | deliveryPlanningCancel | orderLineQtyCancel |
     And validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
-      | deliveryPlanningCancel | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 0                       |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
+      | deliveryPlanningCancel | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 10                      | 0                   |
 
     And generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID  | M_Delivery_Planning_ID | IsComplete |
@@ -748,8 +748,8 @@ Feature: Delivery planning quantities
     When M_Delivery_Planning identified by deliveryPlanningCancel is canceled, retaining planned figures for: deliveryPlanningCancel
 
     Then validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed | OrderStatus | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
-      | deliveryPlanningCancel | 10         | 10           | Outgoing            | true     | true      | Canceled    | 10                    | 10                       | 0             | 0                       |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed | OrderStatus | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
+      | deliveryPlanningCancel | 10         | 10           | Outgoing            | true     | true      | Canceled    | 10                    | 10                       | 0             | 10                      | 10                  |
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionCancelQty           | shipper_DHL              | customer                        | customerLocation                | VO             |
@@ -877,9 +877,23 @@ Feature: Delivery planning quantities
     # take. What is under test is the arithmetic over planned-vs-actual, not how the actual came to be; doing it
     # for real would additionally need an instruction, stock and HUs, none of which this figure depends on.
 
-    Given metasfresh contains C_BPartners:
-      | Identifier    | Name          | OPT.IsVendor | OPT.IsCustomer |
-      | vendorQ8Short | vendorQ8Short | true         | false          |
+    # The vendor needs a pricing system, or completing the purchase order fails outright with
+    # "Unable to find pricing system for BPartner" - same setup shape as TC_Q4_Incoming above.
+    Given metasfresh contains M_PricingSystems
+      | Identifier            |
+      | pricingSystemQ8Short  |
+    And metasfresh contains M_PriceLists
+      | Identifier        | M_PricingSystem_ID.Identifier | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | priceList_Q8Short | pricingSystemQ8Short          | DE                    | EUR                 | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier               | M_PriceList_ID.Identifier |
+      | priceListVersion_Q8Short | priceList_Q8Short         |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_Q8Short          | product                 | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier |
+      | vendorQ8Short | Y        | N          | pricingSystemQ8Short          |
     And metasfresh contains C_BPartner_Locations:
       | C_BPartner_ID.Identifier | Identifier            | GLN           | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | vendorQ8Short            | vendorLocationQ8Short | 1234564396496 | true                | true                |
@@ -1283,7 +1297,7 @@ Feature: Delivery planning quantities
     # was booked onto it - it must certainly not have picked up the document's quantity either.
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
-      | deliveryPlanningQ11C_Other | 12         | 12           | Outgoing            | 12                    | 0             | 0                       | false    | false     | null       |
+      | deliveryPlanningQ11C_Other | 12         | 12           | Outgoing            | 12                    | 0             | 12                      | false    | false     | null       |
 
   @Id:S31789_TC_Q11_SplitSiblingsBookOnlyTheirOwnShare
   Scenario: Two plannings SPLIT from one order line each book only their own share, never the line's whole quantity
@@ -1326,8 +1340,8 @@ Feature: Delivery planning quantities
       | deliveryPlanningQ11S_1,deliveryPlanningQ11S_2 | orderLineQ11S  |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
-      | deliveryPlanningQ11S_1 | 10         | 10           | Outgoing           | 5                     | 0             | 0                       | false    | false     | null       |
-      | deliveryPlanningQ11S_2 | 10         | 10           | Outgoing           | 5                     | 0             | 0                       | false    | false     | null       |
+      | deliveryPlanningQ11S_1 | 10         | 10           | Outgoing           | 5                     | 0             | 5                       | false    | false     | null       |
+      | deliveryPlanningQ11S_2 | 10         | 10           | Outgoing           | 5                     | 0             | 5                       | false    | false     | null       |
 
     When the delivery planning identified by deliveryPlanningQ11S_1 generates a shipment:
       | DeliveryDate | Qty | OPT.M_InOut_ID |
@@ -1338,7 +1352,7 @@ Feature: Delivery planning quantities
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID     |
       | deliveryPlanningQ11S_1 | 10         | 5            | Outgoing           | 5                     | 5             | 5                       | false    | true      | shipmentQ11S_1 |
-      | deliveryPlanningQ11S_2 | 10         | 5            | Outgoing           | 5                     | 0             | 0                       | false    | false     | null           |
+      | deliveryPlanningQ11S_2 | 10         | 5            | Outgoing           | 5                     | 0             | 5                       | false    | false     | null           |
 
     When the delivery planning identified by deliveryPlanningQ11S_2 generates a shipment:
       | DeliveryDate | Qty | OPT.M_InOut_ID |
@@ -1585,7 +1599,7 @@ Feature: Delivery planning quantities
       | planningSyncQty        | orderLineSyncQty |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
-      | planningSyncQty        | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 0                       |
+      | planningSyncQty        | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 10                      |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
@@ -1598,7 +1612,7 @@ Feature: Delivery planning quantities
     # task, since createShippingPackage no longer copies anything; there is simply nothing else to show yet
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID   | ActualLoadQty | ActualDischargeQuantity | PlannedLoadedQuantity | PlannedDischargeQuantity |
-      | shippingPackageSyncQty | 0             | 0                       | 10                    | 10                       |
+      | shippingPackageSyncQty | 0             | 10                      | 10                    | 10                       |
 
     # edit all four planning figures directly - no generate, no receipt/shipment completion in this
     # scenario, and no dedicated "propagate to package" step exists: the mirror is the only mechanism

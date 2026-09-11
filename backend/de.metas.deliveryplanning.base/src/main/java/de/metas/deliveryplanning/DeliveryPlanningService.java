@@ -366,10 +366,13 @@ public class DeliveryPlanningService
 				? plannedLoadedQty
 				: Quantity.zero(uomToUse);
 
-		// The mirror on the other end, for the same reason: the far end of the transport is never reported back to
-		// us, so it is assumed from the plan. Inbound, the unseen end is the vendor's LOAD (above); outbound and
-		// dropship, it is the customer's DISCHARGE.
-		final Quantity actualDischargeQty = transportDirection.isOutgoingOrDropship()
+		// The mirror on the other end, for the same reason: the end nothing reports back to us is assumed from the
+		// plan. Inbound that is the vendor's LOAD (above); OUTGOING it is the customer's DISCHARGE.
+		//
+		// Dropship is deliberately NOT included, even though it ends at a customer too: metasfresh still books our
+		// own receipt for a dropship, and that receipt reports the discharge. So a dropship's discharge is observed
+		// exactly like a plain inbound's, and assuming it from the plan would overwrite a figure we actually have.
+		final Quantity actualDischargeQty = transportDirection.isOutgoing()
 				? plannedDischargeQty
 				: Quantity.zero(uomToUse);
 

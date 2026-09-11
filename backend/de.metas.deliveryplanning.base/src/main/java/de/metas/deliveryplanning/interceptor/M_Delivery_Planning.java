@@ -100,7 +100,7 @@ public class M_Delivery_Planning
 	public void onPlannedDischargeQuantityChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		final TransportDirection transportDirection = TransportDirection.ofCode(deliveryPlanning.getTransportDirection());
-		if (!transportDirection.isOutgoingOrDropship())
+		if (!transportDirection.isOutgoing())
 		{
 			return;
 		}

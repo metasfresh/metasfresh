@@ -135,6 +135,21 @@ class M_Delivery_PlanningEndCouplingTest
 	}
 
 	@Test
+	@DisplayName("a DROPSHIP planning's actual discharge is NOT assumed either - metasfresh books our own receipt for it")
+	void dropshipActualDischargeIsNotAssumed()
+	{
+		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship, 7);
+		record.setActualDischargeQuantity(BigDecimal.ZERO);
+
+		interceptor.onPlannedDischargeQuantityChanged(record);
+
+		assertThat(record.getActualDischargeQuantity())
+				.as("a dropship ends at a customer, but we still book a receipt against it and that receipt reports "
+						+ "the discharge - so the figure is observed, not assumed, exactly as for a plain inbound")
+				.isEqualByComparingTo("0");
+	}
+
+	@Test
 	@DisplayName("the two rules compose: a loaded quantity settles BOTH ends of an outgoing planning")
 	void loadSettlesBothEndsOfAnOutgoingPlanning()
 	{
