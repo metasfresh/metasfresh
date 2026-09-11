@@ -29,6 +29,7 @@ import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.receipt.ReceiptFromReceiptScheduleService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.shipping.TransportDirection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.NonNull;
@@ -36,7 +37,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import de.metas.shipping.TransportDirection;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
 
