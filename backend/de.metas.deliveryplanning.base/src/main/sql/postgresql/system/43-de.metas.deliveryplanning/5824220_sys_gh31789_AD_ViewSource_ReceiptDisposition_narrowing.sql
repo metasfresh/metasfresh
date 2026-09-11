@@ -32,11 +32,22 @@
 -- Setting all five everywhere would fire on events that cannot move the view, which is the very
 -- over-firing this migration exists to remove.
 --
--- THE CLOSING TRIGGER ROW. An AD_ViewSource-built request names the VIEW table, because this view
--- registers in AD_Window_ParentChildTableNames_v1 as a parent with a NULL child, so the Direct factory
--- emits rootRecord(<view table>, rowId). Without a WEBUI_ViewInvalidateOnChange row for the VIEW TABLE
--- (542644) the request reaches no listener and nothing refreshes - the piece that makes the other two
--- pieces do anything at all.
+-- TWO GATES, not one - they are easy to conflate and they read from DIFFERENT tables:
+--
+--   Gate 1, building the request. ViewSourceCacheInvalidateRequestFactory#createRequestsFromModel starts with
+--   getFactoriesByTableName(<view name>) and returns EMPTY if none is registered - logged at DEBUG only, so a
+--   miss here is silent. That lookup is populated from AD_Window_ParentChildTableNames_v1, NOT from
+--   WEBUI_ViewInvalidateOnChange. Verified for this view: one row, ParentTableName
+--   RV_ReceiptDisposition_DeliveryPlanning, ChildTableName NULL, AD_Window_ID 542190 - so a factory exists and
+--   the Direct factory emits rootRecord(<view table>, rowId). Nothing in this migration creates that row; if it
+--   ever disappears, all six AD_ViewSource rows below go quietly inert.
+--
+--   Gate 2, delivering it. The request names the VIEW table, so the WEBUI listener needs a
+--   WEBUI_ViewInvalidateOnChange row for the VIEW TABLE (542644) - inserted below. Without it the request is
+--   built and then reaches nobody.
+--
+-- Both must hold. An earlier version of this comment credited gate 1's behaviour to the trigger row, which
+-- would tell a reader that a WEBUI row alone is enough to make AD_ViewSource work on any view. It is not.
 
 -- ---------------------------------------------------------------------------------------------------
 -- AD_ViewSource - one per routable source
