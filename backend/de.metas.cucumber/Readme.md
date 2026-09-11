@@ -154,6 +154,45 @@ so a multi-word needle stops matching as soon as the layout wraps between two of
 (an empty line inside a text block, or the absence of a suppressed block), text adjacency cannot see it
 — use the `vertical distance … equals …` step against a reference block of known height.
 
+## Checking the layout: nothing printed on top of anything else
+
+```gherkin
+Then the PDF archived for the record identified by "order" has no overlapping text
+Then the PDF archived for the record identified by "order" has no overlapping text within 2 points
+```
+
+A generic layout net. It needs no knowledge of the document, so it can be added to any scenario that
+already prints one. It builds a bounding box per glyph and flags a pair only when the boxes intersect by
+more than the tolerance in **both** dimensions, so glyphs that merely share a column or a baseline are
+not a collision. The tolerance is in PDF user-space **points** (not pixels) and defaults to 2.
+
+It catches an element that stretches or is positioned into its neighbour: a long product name running
+into the quantity column, a block that grew into the row beneath.
+
+**It does not catch clipping**, which is the more common Jasper failure. An element too small for its
+content with `isStretchWithOverflow` off does not overlap anything - it silently truncates. That shows
+up as *missing* text, so assert `contains text` on a word you expect near the end of the content.
+
+Measured on a plain three-position order confirmation: 775 glyphs examined, 0 overlaps at the default
+tolerance.
+
+### Why this works per GLYPH, and not per word
+
+Worth knowing before you "improve" it, because two coarser groupings were tried first and both failed
+against a real document:
+
+- **Per content-stream run** (no `setSortByPosition`): a run in these documents spans several visually
+  separate columns - one came back as `10,00AlphaItem`. Boxes built from that span the whole row and
+  collide with everything on it, so every row reported overlaps a reader cannot see.
+- **Per word** (`setSortByPosition(true)`, which is what makes `writeString` fire once per word): the
+  same sorting that produces words also **fuses colliding glyphs into one word**. With a field
+  deliberately moved on top of the product name, the two texts came back as the single word
+  `ASltpkhaItem` - so there were no longer two boxes to compare, and the real collision was invisible.
+
+Per glyph neither happens: characters inside a word merely abut, because the advance width places the
+next glyph exactly where the previous one ends, so their horizontal overlap is about 0 and stays under
+the tolerance; whereas two texts printed on top of each other overlap by most of a glyph width.
+
 ## The PDF is attached to the Allure report
 
 Every PDF a scenario asserts against is attached to that scenario's Allure report automatically,

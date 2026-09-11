@@ -239,6 +239,58 @@ public class AD_Archive_StepDef
 				.isCloseTo(secondDistance, within(0.5f));
 	}
 
+	/**
+	 * Asserts that no two words in the archived PDF are printed on top of each other.
+	 * <p>
+	 * A generic layout net: it needs no knowledge of the document, so it can be added to any scenario that
+	 * already prints one. It catches the failure where an element stretches or is positioned into its
+	 * neighbour — a long product name running into the quantity column, a block that grew into the row
+	 * beneath.
+	 * <p>
+	 * It does NOT catch CLIPPING, which is the more common Jasper failure: an element too small for its
+	 * content with {@code isStretchWithOverflow} off does not overlap anything, it silently truncates. That
+	 * shows up as MISSING text, so assert on a word you expect near the end of the content instead.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PDF archived for the record identified by "order" has no overlapping text
+	 * </pre>
+	 */
+	@Then("the PDF archived for the record identified by {string} has no overlapping text")
+	public void assert_archived_pdf_has_no_overlapping_text(@NonNull final String recordIdentifier)
+	{
+		assert_archived_pdf_has_no_overlapping_text_within(recordIdentifier, DEFAULT_OVERLAP_TOLERANCE_POINTS);
+	}
+
+	/**
+	 * Same as {@link #assert_archived_pdf_has_no_overlapping_text(String)} with an explicit tolerance.
+	 * <p>
+	 * The unit is PDF user-space POINTS, not pixels. Two boxes count as overlapping only when they intersect
+	 * by more than the tolerance in BOTH dimensions, so words merely sharing a column or a baseline are not
+	 * flagged; only a true two-dimensional collision is.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PDF archived for the record identified by "order" has no overlapping text within 2 points
+	 * </pre>
+	 */
+	@Then("the PDF archived for the record identified by {string} has no overlapping text within {int} points")
+	public void assert_archived_pdf_has_no_overlapping_text_within(
+			@NonNull final String recordIdentifier,
+			final int tolerancePoints)
+	{
+		final List<PdfWord> words = extractPdfWords(recordIdentifier);
+		final List<String> overlaps = detectOverlaps(words, tolerancePoints);
+
+		assertThat(overlaps)
+				.as("Overlapping text in the PDF archived for record %s (tolerance %s points, %s words examined)",
+						recordIdentifier, tolerancePoints, words.size())
+				.isEmpty();
+	}
+
+
 	private static float verticalDistance(
 			@NonNull final List<PdfLine> lines,
 			@NonNull final String fromText,
@@ -481,4 +533,146 @@ public class AD_Archive_StepDef
 			return lines;
 		}
 	}
+
+	/** Tolerance in PDF user-space points, matching the frontend PdfLayoutValidator default. */
+	private static final int DEFAULT_OVERLAP_TOLERANCE_POINTS = 2;
+
+	/**
+	 * Every pair of words whose bounding boxes intersect by more than {@code tolerancePoints} in BOTH
+	 * dimensions, described for the failure message.
+	 * <p>
+	 * Requiring both dimensions is what keeps this quiet on a normal document: words in the same column share
+	 * an x-range and words on the same line share a y-range, and neither alone is a collision. Pairwise is
+	 * O(n^2), which is fine at document scale.
+	 */
+	private static List<String> detectOverlaps(@NonNull final List<PdfWord> words, final int tolerancePoints)
+	{
+		final List<String> overlaps = new ArrayList<>();
+
+		for (int i = 0; i < words.size(); i++)
+		{
+			final PdfWord one = words.get(i);
+			for (int j = i + 1; j < words.size(); j++)
+			{
+				final PdfWord other = words.get(j);
+				if (one.getPageIndex() != other.getPageIndex())
+				{
+					continue;
+				}
+
+				final float overlapX = Math.min(one.getRight(), other.getRight()) - Math.max(one.getLeft(), other.getLeft());
+				final float overlapY = Math.min(one.getBottom(), other.getBottom()) - Math.max(one.getTop(), other.getTop());
+
+				if (overlapX > tolerancePoints && overlapY > tolerancePoints)
+				{
+					overlaps.add(String.format(
+							"page %s: '%s' and '%s' overlap by %.1f x %.1f points",
+							one.getPageIndex(), one.getText(), other.getText(), overlapX, overlapY));
+				}
+			}
+		}
+
+		return overlaps;
+	}
+
+	/**
+	 * Extracts the archived PDF as one bounding box per WORD.
+	 * <p>
+	 * Word granularity comes free: PDFBox 2.x calls {@code writeString} once per word (see
+	 * {@link #extractPdfVisualLines(String)}). It is also the right unit here — per glyph would flag normal
+	 * kerning, per line would be too coarse to see a collision within a row.
+	 */
+	private List<PdfWord> extractPdfWords(@NonNull final String recordIdentifier)
+	{
+		final byte[] pdfBytes = getLatestArchivedPdfBytes(recordIdentifier);
+
+		final List<PdfWord> words;
+		try (final PDDocument document = PDDocument.load(pdfBytes))
+		{
+			final PdfWordStripper stripper = new PdfWordStripper();
+			stripper.getText(document);
+			words = stripper.getWords();
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed to extract words from the PDF archived for record " + recordIdentifier, e);
+		}
+
+		assertThat(words)
+				.as("Words extracted from the PDF archived for record %s", recordIdentifier)
+				.isNotEmpty();
+
+		return words;
+	}
+
+	/** One word of the PDF with the box it occupies, in PDF user-space points, y growing downwards. */
+	@Value
+	private static class PdfWord
+	{
+		int pageIndex;
+		float left;
+		float right;
+		float top;
+		float bottom;
+		@NonNull String text;
+	}
+
+	/**
+	 * Collects one {@link PdfWord} per GLYPH, with its bounding box.
+	 * <p>
+	 * Glyph level, not word level, and the reason is measured rather than theoretical. Two higher-level
+	 * groupings were tried first and both fail:
+	 * <ul>
+	 * <li><b>Unsorted runs</b> — PDFBox hands back raw content-stream runs, and a run in these documents spans
+	 * several visually separate columns: one came back as {@code "10,00AlphaItem"}. Boxes built from those
+	 * span the whole row and collide with everything on it, so every row reports overlaps a reader cannot see.
+	 * <li><b>Sorted words</b> ({@code setSortByPosition(true)}, which makes {@code writeString} fire per word)
+	 * — the sorting that produces words also FUSES colliding glyphs into one word. With a field deliberately
+	 * moved on top of the product name, the two texts came back as the single word {@code "ASltpkhaItem"}, so
+	 * there were no longer two boxes to compare and the collision was invisible.
+	 * </ul>
+	 * Per glyph, neither happens: characters within a word merely abut (the advance width puts the next glyph
+	 * exactly where the previous ends, so their horizontal overlap is ~0 and stays under the tolerance), while
+	 * two texts printed on top of each other overlap by most of a glyph width and are flagged.
+	 */
+	private static final class PdfWordStripper extends PDFTextStripper
+	{
+		private final List<PdfWord> words = new ArrayList<>();
+
+		PdfWordStripper() throws IOException
+		{
+			super();
+		}
+
+		List<PdfWord> getWords()
+		{
+			return words;
+		}
+
+		@Override
+		protected void writeString(final String text, final List<TextPosition> textPositions)
+		{
+			for (final TextPosition position : textPositions)
+			{
+				final String glyph = position.getUnicode();
+				if (glyph == null || glyph.trim().isEmpty())
+				{
+					continue; // whitespace lays down no ink and cannot collide with anything
+				}
+
+				final float x = position.getXDirAdj();
+				final float y = position.getYDirAdj();
+				final float height = position.getHeightDir();
+
+				words.add(new PdfWord(
+						getCurrentPageNo(),
+						x,
+						x + position.getWidthDirAdj(),
+						y - height,
+						y,
+						glyph));
+			}
+		}
+	}
+
 }
