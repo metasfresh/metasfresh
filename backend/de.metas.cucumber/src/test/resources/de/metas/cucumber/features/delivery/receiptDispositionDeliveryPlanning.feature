@@ -1319,9 +1319,12 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
 
     # BOTH halves of the owner's instruction, on one row.
     #
-    # QtyTU_Calculated is THE PACKING: the producer writes it from the HUs actually received, so a receive that
-    # built a real TU from the row's configuration reports 1, while one that made a bare virtual HU has no TU to
-    # count and reports 0. That is what fails today.
+    # QtyTU_Calculated is THE PACKING, but read it as a FLAG rather than as a count. The producer sets it from
+    # packingMaterialsCollector.getAndResetCountTUs() (InOutProducerFromReceiptScheduleHU, around :700), i.e. the
+    # packing materials collected for this receipt line - NOT the number of TUs received. It discriminates
+    # exactly what this scenario needs: a receive built from the row's configuration reports a packed HU, while
+    # one that made a bare virtual HU has nothing to collect and reports 0. Do not read the VALUE as a TU count;
+    # TC9h receives a share spanning two TUs and this column still says 1.
     #
     # MovementQty is THE SHARE: 5, not the line's 10. Packing sized from the SCHEDULE rather than the planning
     # would receive the whole line here and starve planningPacked2_RL.
