@@ -48,7 +48,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -202,7 +201,6 @@ public class DeliveryPlanningService
 	public static final AdMessageKey MSG_M_Delivery_Planning_EmptyDeliveryInstruction = AdMessageKey.of("de.metas.deliveryplanning.CompleteDeliveryInstruction.EmptyDeliveryInstruction");
 
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -366,15 +364,12 @@ public class DeliveryPlanningService
 				? plannedLoadedQty
 				: Quantity.zero(uomToUse);
 
-		// The mirror on the other end, for the same reason: the end nothing reports back to us is assumed from the
-		// plan. Inbound that is the vendor's LOAD (above); OUTGOING it is the customer's DISCHARGE.
-		//
-		// Dropship is deliberately NOT included, even though it ends at a customer too: metasfresh still books our
-		// own receipt for a dropship, and that receipt reports the discharge. So a dropship's discharge is observed
-		// exactly like a plain inbound's, and assuming it from the plan would overwrite a figure we actually have.
-		final Quantity actualDischargeQty = transportDirection.isOutgoing()
-				? plannedDischargeQty
-				: Quantity.zero(uomToUse);
+		// ZERO in every direction. The inbound seeding above is a PLAN feeding an ACTUAL only because the vendor's
+		// load is genuinely unreported and the plan is the sole figure that exists for it. The discharge end has no
+		// such excuse: on an outgoing planning it follows the ACTUAL LOAD (M_Delivery_Planning#settleEnds), and a
+		// freshly split planning has loaded nothing - so seeding it from the plan would state that goods were
+		// discharged which never left the building, once per sibling.
+		final Quantity actualDischargeQty = Quantity.zero(uomToUse);
 
 		return DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
@@ -2219,7 +2214,7 @@ public class DeliveryPlanningService
 		final I_C_UOM uom = uomDAO.getById(planningRecord.getC_UOM_ID());
 		final int planningRepoId = planningRecord.getM_Delivery_Planning_ID();
 
-		return inOutDAO.retrieveLines(inout).stream()
+		return inOutBL.getLines(inout).stream()
 				.filter(line -> line.getM_Product_ID() == productId.getRepoId())
 				.filter(line -> line.getM_Delivery_Planning_ID() == planningRepoId)
 				.map(inOutBL::getMovementQty)

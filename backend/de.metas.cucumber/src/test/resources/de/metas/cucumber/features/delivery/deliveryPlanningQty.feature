@@ -55,7 +55,7 @@ Feature: Delivery planning quantities
       | deliveryPlanningQtySeed | orderLineQtySeed |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
-      | deliveryPlanningQtySeed | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 10                      | 0                   |
+      | deliveryPlanningQtySeed | 10         | 10           | Outgoing           | 10                    | 10                       | 0             | 0                       | 0                   |
 
   @Id:S31789_TC_Q4_Incoming
   Scenario: Creating an incoming delivery planning from a purchase order line seeds the planned discharge quantity from the planned load
@@ -252,8 +252,8 @@ Feature: Delivery planning quantities
       | deliveryPlanningQty_1,deliveryPlanningQty_2 | orderLineQty   |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
-      | deliveryPlanningQty_1  | 10         | 10           | Outgoing            | 5                     | 5                        | 0             | 5                       | 0                   |
-      | deliveryPlanningQty_2  | 10         | 10           | Outgoing            | 5                     | 5                        | 0             | 5                       | 0                   |
+      | deliveryPlanningQty_1  | 10         | 10           | Outgoing           | 5                     | 5                        | 0             | 0                       | 0                   |
+      | deliveryPlanningQty_2  | 10         | 10           | Outgoing           | 5                     | 5                        | 0             | 0                       | 0                   |
 
   @Id:S31789_TC_Q3_Remainder
   Scenario: Splitting an unallocated delivery planning with an uneven divisor puts the remainder on the original for both quantities
@@ -281,9 +281,9 @@ Feature: Delivery planning quantities
       | deliveryPlanningRem_1,deliveryPlanningRem_2,deliveryPlanningRem_3 | orderLineQtyRem |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
-      | deliveryPlanningRem_1  | 10         | 10           | Outgoing            | 4                     | 4                        | 0             | 4                       | 0                   |
-      | deliveryPlanningRem_2  | 10         | 10           | Outgoing            | 3                     | 3                        | 0             | 3                       | 0                   |
-      | deliveryPlanningRem_3  | 10         | 10           | Outgoing            | 3                     | 3                        | 0             | 3                       | 0                   |
+      | deliveryPlanningRem_1  | 10         | 10           | Outgoing           | 4                     | 4                        | 0             | 0                       | 0                   |
+      | deliveryPlanningRem_2  | 10         | 10           | Outgoing           | 3                     | 3                        | 0             | 0                       | 0                   |
+      | deliveryPlanningRem_3  | 10         | 10           | Outgoing           | 3                     | 3                        | 0             | 0                       | 0                   |
 
   @Id:S31789_TC_Q5_Allocated
   Scenario: Splitting a delivery planning allocated to an instruction leaves its planned figures untouched and gives the new planning the remaining uncommitted amount
@@ -319,8 +319,8 @@ Feature: Delivery planning quantities
       | deliveryPlanningAlloc_1,deliveryPlanningAlloc_2 | orderLineQtyAlloc |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID  | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
-      | deliveryPlanningAlloc_1 | 10         | 10           | Outgoing            | 6                     | 10                       | 0             | 10                      | 0                   |
-      | deliveryPlanningAlloc_2 | 10         | 10           | Outgoing            | 4                     | 0                        | 0             | 0                       | 0                   |
+      | deliveryPlanningAlloc_1 | 10         | 10           | Outgoing           | 6                     | 6                        | 0             | 0                       | 0                   |
+      | deliveryPlanningAlloc_2 | 10         | 10           | Outgoing           | 4                     | 4                        | 0             | 0                       | 0                   |
 
   @Id:S31789_TC_Q5_AllocatedRemainder
   Scenario: Splitting an allocated delivery planning with an uneven divisor puts the remainder on the last new planning
@@ -356,10 +356,10 @@ Feature: Delivery planning quantities
       | deliveryPlanningAllocRem_1,deliveryPlanningAllocRem_2,deliveryPlanningAllocRem_3,deliveryPlanningAllocRem_4 | orderLineQtyAllocRem |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
-      | deliveryPlanningAllocRem_1 | 13         | 13           | Outgoing            | 3                     | 13                       | 0             | 13                      | 0                   |
-      | deliveryPlanningAllocRem_2 | 13         | 13           | Outgoing            | 3                     | 0                        | 0             | 0                       | 0                   |
-      | deliveryPlanningAllocRem_3 | 13         | 13           | Outgoing            | 3                     | 0                        | 0             | 0                       | 0                   |
-      | deliveryPlanningAllocRem_4 | 13         | 13           | Outgoing            | 4                     | 0                        | 0             | 0                       | 0                   |
+      | deliveryPlanningAllocRem_1 | 13         | 13           | Outgoing           | 3                     | 3                        | 0             | 0                       | 0                   |
+      | deliveryPlanningAllocRem_2 | 13         | 13           | Outgoing           | 3                     | 3                        | 0             | 0                       | 0                   |
+      | deliveryPlanningAllocRem_3 | 13         | 13           | Outgoing           | 3                     | 3                        | 0             | 0                       | 0                   |
+      | deliveryPlanningAllocRem_4 | 13         | 13           | Outgoing           | 4                     | 4                        | 0             | 0                       | 0                   |
 
   @Id:S31789_TC_Q5_FullyAllocated
   Scenario: Splitting a fully allocated delivery planning still creates the new planning, carrying 0
@@ -391,8 +391,8 @@ Feature: Delivery planning quantities
       | deliveryPlanningFull_1,deliveryPlanningFull_2 | orderLineQtyFull |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
-      | deliveryPlanningFull_1 | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 10                      | 0                   |
-      | deliveryPlanningFull_2 | 10         | 10           | Outgoing            | 0                     | 0                        | 0             | 0                       | 0                   |
+      | deliveryPlanningFull_1 | 10         | 10           | Outgoing           | 10                    | 10                       | 0             | 0                       | 0                   |
+      | deliveryPlanningFull_2 | 10         | 10           | Outgoing           | 0                     | 0                        | 0             | 0                       | 0                   |
 
   @Id:S31789_TC_Q5_FullyAllocatedMultiple
   Scenario: Splitting a fully allocated delivery planning into MORE THAN ONE new planning still creates them, all carrying 0
@@ -427,9 +427,9 @@ Feature: Delivery planning quantities
       | deliveryPlanningFullMult_1,deliveryPlanningFullMult_2,deliveryPlanningFullMult_3 | orderLineQtyFullMult |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
-      | deliveryPlanningFullMult_1 | 5          | 5            | Outgoing            | 5                     | 5                        | 0             | 5                       | 0                   |
-      | deliveryPlanningFullMult_2 | 5          | 5            | Outgoing            | 0                     | 0                        | 0             | 0                       | 0                   |
-      | deliveryPlanningFullMult_3 | 5          | 5            | Outgoing            | 0                     | 0                        | 0             | 0                       | 0                   |
+      | deliveryPlanningFullMult_1 | 5          | 5            | Outgoing           | 5                     | 5                        | 0             | 0                       | 0                   |
+      | deliveryPlanningFullMult_2 | 5          | 5            | Outgoing           | 0                     | 0                        | 0             | 0                       | 0                   |
+      | deliveryPlanningFullMult_3 | 5          | 5            | Outgoing           | 0                     | 0                        | 0             | 0                       | 0                   |
 
   @Id:S31789_TC12
   Scenario: TC12 - Splitting a planning with both an allocation and a partial receipt leaves the received figure, the allocated portion and the original's planned figure unchanged
@@ -656,9 +656,9 @@ Feature: Delivery planning quantities
       | deliveryPlanningDischRem_1,deliveryPlanningDischRem_2,deliveryPlanningDischRem_3 | orderLineQtyDischRem |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity |
-      | deliveryPlanningDischRem_1 | 13         | 13           | Outgoing            | 13                       | 2                       |
-      | deliveryPlanningDischRem_2 | 13         | 13           | Outgoing            | 5                        | 5                       |
-      | deliveryPlanningDischRem_3 | 13         | 13           | Outgoing            | 6                        | 6                       |
+      | deliveryPlanningDischRem_1 | 13         | 13           | Outgoing           | 13                       | 2                       |
+      | deliveryPlanningDischRem_2 | 13         | 13           | Outgoing           | 5                        | 0                       |
+      | deliveryPlanningDischRem_3 | 13         | 13           | Outgoing           | 6                        | 0                       |
 
   @Id:S31789_TC_Q7c_SplitSeedsOwnPlannedLoad
   Scenario: Splitting an incoming delivery planning seeds each new planning's ActualLoadQty from its OWN planned load, never copied from the target
@@ -740,7 +740,7 @@ Feature: Delivery planning quantities
       | deliveryPlanningCancel | orderLineQtyCancel |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
-      | deliveryPlanningCancel | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 10                      | 0                   |
+      | deliveryPlanningCancel | 10         | 10           | Outgoing           | 10                    | 10                       | 0             | 0                       | 0                   |
 
     And generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID  | M_Delivery_Planning_ID | IsComplete |
@@ -753,7 +753,7 @@ Feature: Delivery planning quantities
 
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed | OrderStatus | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | QtyTotalOpenPlanned |
-      | deliveryPlanningCancel | 10         | 10           | Outgoing            | true     | true      | Canceled    | 10                    | 10                       | 0             | 10                      | 10                  |
+      | deliveryPlanningCancel | 10         | 10           | Outgoing           | true     | true      | Canceled    | 10                    | 10                       | 0             | 0                       | 10                  |
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | deliveryInstructionCancelQty           | shipper_DHL              | customer                        | customerLocation                | VO             |
@@ -1171,7 +1171,7 @@ Feature: Delivery planning quantities
       | deliveryPlanningQ11Out | orderLineQ11Out |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
-      | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 10                    | 0             | 10                      | false    | false     |
+      | deliveryPlanningQ11Out | 10         | 10           | Outgoing           | 10                    | 0             | 0                       | false    | false     |
 
     # A shipment is the only document an Outgoing planning ever gets, so - unlike a receipt, which writes only its
     # own end - completion books the SAME quantity onto BOTH ends. A partial booking (7 of the 10 planned) makes it
@@ -1202,7 +1202,7 @@ Feature: Delivery planning quantities
     # the column mean something different after a reversal than before the shipment.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
-      | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 7                     | 7                        | 0             | 7                       | false    | false     | null       |
+      | deliveryPlanningQ11Out | 10         | 10           | Outgoing           | 7                     | 7                        | 0             | 0                       | false    | false     | null       |
 
   @Id:S31789_TC_Q11_ConsolidatedShipmentBooksOnlyItsOwnLine
   Scenario: A consolidated shipment books only THIS planning's own line onto it, never the whole document
@@ -1301,7 +1301,7 @@ Feature: Delivery planning quantities
     # was booked onto it - it must certainly not have picked up the document's quantity either.
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID     | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
-      | deliveryPlanningQ11C_Other | 12         | 12           | Outgoing            | 12                    | 0             | 12                      | false    | false     | null       |
+      | deliveryPlanningQ11C_Other | 12         | 12           | Outgoing           | 12                    | 0             | 0                       | false    | false     | null       |
 
   @Id:S31789_TC_Q11_SplitSiblingsBookOnlyTheirOwnShare
   Scenario: Two plannings SPLIT from one order line each book only their own share, never the line's whole quantity
@@ -1344,8 +1344,8 @@ Feature: Delivery planning quantities
       | deliveryPlanningQ11S_1,deliveryPlanningQ11S_2 | orderLineQ11S  |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
-      | deliveryPlanningQ11S_1 | 10         | 10           | Outgoing           | 5                     | 0             | 5                       | false    | false     | null       |
-      | deliveryPlanningQ11S_2 | 10         | 10           | Outgoing           | 5                     | 0             | 5                       | false    | false     | null       |
+      | deliveryPlanningQ11S_1 | 10         | 10           | Outgoing           | 5                     | 0             | 0                       | false    | false     | null       |
+      | deliveryPlanningQ11S_2 | 10         | 10           | Outgoing           | 5                     | 0             | 0                       | false    | false     | null       |
 
     When the delivery planning identified by deliveryPlanningQ11S_1 generates a shipment:
       | DeliveryDate | Qty | OPT.M_InOut_ID |
@@ -1356,7 +1356,7 @@ Feature: Delivery planning quantities
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID     |
       | deliveryPlanningQ11S_1 | 10         | 5            | Outgoing           | 5                     | 5             | 5                       | false    | true      | shipmentQ11S_1 |
-      | deliveryPlanningQ11S_2 | 10         | 5            | Outgoing           | 5                     | 0             | 5                       | false    | false     | null           |
+      | deliveryPlanningQ11S_2 | 10         | 5            | Outgoing           | 5                     | 0             | 0                       | false    | false     | null           |
 
     When the delivery planning identified by deliveryPlanningQ11S_2 generates a shipment:
       | DeliveryDate | Qty | OPT.M_InOut_ID |
@@ -1603,7 +1603,7 @@ Feature: Delivery planning quantities
       | planningSyncQty        | orderLineSyncQty |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
-      | planningSyncQty        | 10         | 10           | Outgoing            | 10                    | 10                       | 0             | 10                      |
+      | planningSyncQty        | 10         | 10           | Outgoing           | 10                    | 10                       | 0             | 0                       |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
@@ -1616,7 +1616,7 @@ Feature: Delivery planning quantities
     # task, since createShippingPackage no longer copies anything; there is simply nothing else to show yet
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID   | ActualLoadQty | ActualDischargeQuantity | PlannedLoadedQuantity | PlannedDischargeQuantity |
-      | shippingPackageSyncQty | 0             | 10                      | 10                    | 10                       |
+      | shippingPackageSyncQty | 0             | 0                       | 10                    | 10                       |
 
     # edit all four planning figures directly - no generate, no receipt/shipment completion in this
     # scenario, and no dedicated "propagate to package" step exists: the mirror is the only mechanism
@@ -1633,10 +1633,13 @@ Feature: Delivery planning quantities
     # The consequence worth knowing: on an OUTGOING planning the discharge pair cannot be set independently in the
     # same edit as the actual load - set the load first, then the discharge, in two saves.
     #
-    # PlannedLoadedQuantity keeps the requested 6: nothing couples back onto the load end from the discharge side.
+    # The edit types all four columns at once, so this pins the PRECEDENCE. PlannedLoadedQuantity keeps the
+    # requested 6 - nothing couples back onto the load end. The typed PlannedDischargeQuantity of 7 does NOT
+    # survive: plan feeds plan, so it follows the planned load to 6. The typed ActualDischargeQuantity of 9
+    # does not survive either: actual feeds actual, so it follows the actual load to 8.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
-      | planningSyncQty        | 10         | 2            | Outgoing           | 6                     | 8                        | 8             | 8                       |
+      | planningSyncQty        | 10         | 2            | Outgoing           | 6                     | 6                        | 8             | 8                       |
 
     # nothing MUTATING between the edit further above and the assertion below - the validate step in between
     # is read-only: no re-load step, no propagation step. The
@@ -1644,7 +1647,7 @@ Feature: Delivery planning quantities
     # which the derived columns require - so this asserts the mirror, not a cucumber-harness reload.
     Then validate M_Shipping_Package:
       | M_ShippingPackage_ID   | ActualLoadQty | ActualDischargeQuantity | PlannedLoadedQuantity | PlannedDischargeQuantity |
-      | shippingPackageSyncQty | 8             | 8                       | 6                     | 8                        |
+      | shippingPackageSyncQty | 8             | 8                       | 6                     | 6                        |
 
   @Id:S31789_TC_Q8_ClosedWithNothingTakenReleasesItsShare
   Scenario: A CLOSED planning that took nothing stops claiming its plan, handing that share back to the open pool

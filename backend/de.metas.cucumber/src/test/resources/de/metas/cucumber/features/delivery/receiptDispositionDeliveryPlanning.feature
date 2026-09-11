@@ -47,22 +47,27 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | Identifier      | IsVendor | IsCustomer | M_PricingSystem_ID    |
       | vendor_RL       | Y        | N          | pricingSystem_RL31789 |
       | customer_RL     | N        | Y          | pricingSystem_RL31789 |
-      | warehouseBP_RL  |          |            |                       |
     And metasfresh contains C_BPartner_Locations:
       | Identifier           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | vendorLocation_RL    | vendor_RL                | true                | true                |
       | customerLocation_RL  | customer_RL              | true                | true                |
-      | warehouseLocation_RL | warehouseBP_RL           | true                | true                |
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | vendor_RL                | product_RL              |
       | vendor_RL                | product2_RL             |
-    And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | warehouse_RL              | warehouseBP_RL               | warehouseLocation_RL                  |
-    And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier |
-      | locator_RL              | warehouse_RL              |
+    # The SEEDED warehouse, not a fresh one. A receive that builds a real LU collects that LU's packing material
+    # and hands it to EmptiesMovementProducer, which resolves the empties warehouse through the "Gebinde"
+    # distribution network - and that network has exactly ONE line, StdWarehouse -> Leergebindelager. A
+    # purpose-built warehouse has no line at all, so HUEmptiesService#getEmptiesWarehouse throws
+    # "@NotFound@ @M_Warehouse_ID@ (@IsHUDestroyed@=@Y@)" and, because the exception escapes into the shared
+    # executor, it fails UNRELATED scenarios on executor5 rather than this feature's own.
+    #
+    # This bit the feature once before on the HU-editor path (see the packing-instruction note further down) and
+    # again once the batch receive started building LUs instead of a bare virtual HU. Loading StdWarehouse fixes
+    # the cause rather than routing around it, and keeps these scenarios exercising the real packing path.
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        | OPT.C_BPartner_Location_ID |
+      | warehouse_RL              | StdWarehouse | warehouseLocation_RL       |
     And contains M_Shippers
       | Identifier          | OPT.IsCreateDeliveryPlanning |
       | shipperPlanning_RL  | true                         |
@@ -1285,8 +1290,8 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | Identifier    | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderPacked_RL | false  | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
     And metasfresh contains C_OrderLines:
-      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
-      | orderLinePacked_RL | orderPacked_RL        | productPacked_RL        | 10         | shipperPlanning_RL          |
+      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier | OPT.M_HU_PI_Item_Product_ID |
+      | orderLinePacked_RL | orderPacked_RL        | productPacked_RL        | 10         | shipperPlanning_RL          | pipTUPk_RL                  |
 
     When the order identified by orderPacked_RL is completed
 
@@ -1319,18 +1324,23 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
 
     # BOTH halves of the owner's instruction, on one row.
     #
-    # QtyTU_Calculated is THE PACKING, but read it as a FLAG rather than as a count. The producer sets it from
-    # packingMaterialsCollector.getAndResetCountTUs() (InOutProducerFromReceiptScheduleHU, around :700), i.e. the
-    # packing materials collected for this receipt line - NOT the number of TUs received. It discriminates
-    # exactly what this scenario needs: a receive built from the row's configuration reports a packed HU, while
-    # one that made a bare virtual HU has nothing to collect and reports 0. Do not read the VALUE as a TU count;
-    # TC9h receives a share spanning two TUs and this column still says 1.
-    #
     # MovementQty is THE SHARE: 5, not the line's 10. Packing sized from the SCHEDULE rather than the planning
     # would receive the whole line here and starve planningPacked2_RL.
+    #
+    # QtyTU_Calculated is asserted only as a FLAG - zero means no TU/LU hierarchy was built at all. Its VALUE is
+    # not a trustworthy TU count: transferHandlingUnits feeds the collector only for HUs whose packing material
+    # is not our own, and the collector de-duplicates by M_HU_ID. The PACKING itself is asserted below, on the
+    # handling units.
     And validate the delivery planning link of the material receipt lines:
       | M_InOut_ID       | C_OrderLine_ID     | M_Delivery_Planning_ID | OPT.MovementQty | OPT.QtyTU_Calculated |
       | receiptPacked_RL | orderLinePacked_RL | planningPacked1_RL     | 5               | 1                    |
+
+    # THE PACKING, on the HUs themselves. A share of 5 against a ten-per-TU instruction is ONE TU holding five -
+    # capToPlannedShare shrinks that TU's contents to the share rather than letting the producer fill it to ten.
+    # A receive that ignored the configuration would leave a bare virtual HU here and no TU at all.
+    And validate the handling units behind the material receipt:
+      | M_InOut_ID       | TUCount | OPT.QtyCUsPerTU |
+      | receiptPacked_RL | 1       | 5               |
 
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | IsClosed | Processed |
@@ -1386,8 +1396,8 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderSpan_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
     And metasfresh contains C_OrderLines:
-      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
-      | orderLineSpan_RL | orderSpan_RL          | productSpan_RL          | 20         | shipperPlanning_RL          |
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier | OPT.M_HU_PI_Item_Product_ID |
+      | orderLineSpan_RL | orderSpan_RL          | productSpan_RL          | 20         | shipperPlanning_RL          | pipTUSpan_RL                |
 
     When the order identified by orderSpan_RL is completed
 
@@ -1426,14 +1436,20 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
 
     # 15, NOT the configuration's capacity of 20 - that is the clamp, and it is the whole point of this scenario.
     #
-    # QtyTU_Calculated is deliberately NOT asserted here. It comes back as 1, where a share of 15 against a
-    # ten-per-TU packing should need two TUs (one full, one holding the remaining five). Either the count means
-    # something other than "TUs received" on this path, or the allocation overfills a single TU - and asserting
-    # either number before knowing which would be inventing agreement. The open question is recorded in
-    # ai-work/31789/pending-questions.md; MovementQty is what guards the clamp and it is exact.
+    # QtyTU_Calculated is deliberately NOT asserted here: it comes back as 1, and a count of 1 is equally
+    # consistent with "one TU" and with "two TUs, only one of them counted" - the collector skips an HU whose
+    # packing material is our own and de-duplicates by M_HU_ID. Asserting it would be inventing agreement.
     And validate the delivery planning link of the material receipt lines:
       | M_InOut_ID     | C_OrderLine_ID   | M_Delivery_Planning_ID | OPT.MovementQty |
       | receiptSpan_RL | orderLineSpan_RL | planningSpan1_RL       | 15              |
+
+    # The HUs THEMSELVES, which is what the derived count above cannot tell us: a share of 15 against a
+    # ten-per-TU packing instruction has to arrive as TWO TUs - one full, one holding the remaining five. One TU
+    # of 15 would mean the receive filled a TU past the instruction it was built from, i.e. the packing the owner
+    # asked this process to align with is not actually being honoured.
+    And validate the handling units behind the material receipt:
+      | M_InOut_ID     | TUCount | OPT.QtyCUsPerTU |
+      | receiptSpan_RL | 2       | 5,10            |
 
   @Id:S31789_TC9i
   Scenario: TWO packed plannings of one schedule received together keep each other's HUs
@@ -1478,8 +1494,8 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
       | orderBoth_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
     And metasfresh contains C_OrderLines:
-      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
-      | orderLineBoth_RL | orderBoth_RL          | productBoth_RL          | 20         | shipperPlanning_RL          |
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier | OPT.M_HU_PI_Item_Product_ID |
+      | orderLineBoth_RL | orderBoth_RL          | productBoth_RL          | 20         | shipperPlanning_RL          | pipTUBoth_RL                |
 
     When the order identified by orderBoth_RL is completed
 

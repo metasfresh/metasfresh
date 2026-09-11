@@ -37,16 +37,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
- * The two ends of a planning do not drift apart: settling one constrains the other's plan.
+ * The two ends of a planning do not drift apart - and the rule that keeps them together is which KIND of figure
+ * may feed which.
  * <p>
- * One half is about the LOAD end: a changed {@code PlannedLoadedQuantity} writes {@code ActualLoadQty} on an
- * incoming planning, where the load happens at the vendor and is taken to match the plan. The other is about
- * what that load then permits: what was ACTUALLY loaded is the upper bound on what can ever be discharged, so
- * a planned discharge left at the original figure describes an impossibility - discharging goods that were
- * never loaded.
- * <p>
- * That constraint is physical and applies in EVERY direction; it does not care who did the loading. What does
- * gate it is a zero actual, which means "not loaded yet" rather than "none will be".
+ * <b>A plan is fed by a plan; an actual is fed by an actual.</b> Three couplings follow, and nothing else:
+ * <ul>
+ * <li><b>plan to plan, every direction</b> - what we intend to load is what we intend to discharge.</li>
+ * <li><b>plan to actual, inbound only</b> - a vendor never reports what they loaded, so the plan is the only
+ * figure there is. An outgoing load is ours, and only a shipment writes it.</li>
+ * <li><b>actual to actual, outbound only</b> - the customer's unload is never reported back, so what actually
+ * left our dock is the best knowledge there is. An incoming or dropship discharge is observed on our own
+ * receipt and must never be guessed.</li>
+ * </ul>
+ * What is deliberately NOT a coupling: an actual load does not touch the planned discharge. A short load leaves
+ * the plan standing to be re-planned rather than silently rewriting what was agreed - and a plan never creates
+ * an actual, which would let typing a figure mark goods as delivered that never left the building.
  */
 class M_Delivery_PlanningEndCouplingTest
 {
@@ -68,57 +73,102 @@ class M_Delivery_PlanningEndCouplingTest
 	}
 
 	@Test
-	@DisplayName("an OUTGOING planning's planned discharge follows the quantity actually loaded")
-	void outgoingPlannedDischargeFollowsActualLoad()
+	@DisplayName("plan to plan: an OUTGOING planning's planned discharge follows the planned LOAD")
+	void outgoingPlannedDischargeFollowsPlannedLoad()
+	{
+		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 10);
+		record.setPlannedLoadedQuantity(BigDecimal.valueOf(3));
+
+		interceptor.settleEnds(record, true, false);
+
+		assertThat(record.getPlannedDischargeQuantity())
+				.as("planning to load 3 and still planning to discharge 10 is not a plan, it is two plans")
+				.isEqualByComparingTo("3");
+	}
+
+	@Test
+	@DisplayName("plan to plan: an INCOMING planning follows it too")
+	void incomingPlannedDischargeFollowsPlannedLoad()
+	{
+		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, 10);
+		record.setPlannedLoadedQuantity(BigDecimal.valueOf(3));
+
+		interceptor.settleEnds(record, true, false);
+
+		assertThat(record.getPlannedDischargeQuantity()).isEqualByComparingTo("3");
+	}
+
+	@Test
+	@DisplayName("plan to plan: a DROPSHIP planning follows it as well - the third direction is not a special case")
+	void dropshipPlannedDischargeFollowsPlannedLoad()
+	{
+		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship, 10);
+		record.setPlannedLoadedQuantity(BigDecimal.valueOf(3));
+
+		interceptor.settleEnds(record, true, false);
+
+		assertThat(record.getPlannedDischargeQuantity()).isEqualByComparingTo("3");
+	}
+
+	@Test
+	@DisplayName("an ACTUAL load NEVER rewrites the planned discharge - a short load is re-planned, not hidden")
+	void actualLoadDoesNotTouchThePlannedDischarge()
 	{
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 10);
 		record.setActualLoadQty(BigDecimal.valueOf(5));
 
-		interceptor.settleEnds(record, false, true, false);
+		interceptor.settleEnds(record, false, true);
 
 		assertThat(record.getPlannedDischargeQuantity())
-				.as("only 5 was loaded, so planning to discharge 10 describes goods that were never loaded")
-				.isEqualByComparingTo("5");
+				.as("loading 5 of a planned 10 is a fact about the load, not a new agreement about the discharge")
+				.isEqualByComparingTo("10");
 	}
 
 	@Test
-	@DisplayName("an INCOMING planning follows it too - you cannot receive more than the vendor loaded")
-	void incomingFollowsAsWell()
+	@DisplayName("an ACTUAL load does not touch an INCOMING planning's planned discharge either")
+	void actualLoadDoesNotTouchThePlannedDischargeIncoming()
 	{
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, 10);
 		record.setActualLoadQty(BigDecimal.valueOf(5));
 
-		interceptor.settleEnds(record, false, true, false);
+		interceptor.settleEnds(record, false, true);
 
-		assertThat(record.getPlannedDischargeQuantity())
-				.as("the constraint is physical, not directional - a receipt settles the ACTUAL discharge, not the plan")
-				.isEqualByComparingTo("5");
+		assertThat(record.getPlannedDischargeQuantity()).isEqualByComparingTo("10");
 	}
 
 	@Test
-	@DisplayName("a DROPSHIP planning follows it as well - the third direction is not a special case either")
-	void dropshipFollowsAsWell()
-	{
-		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship, 10);
-		record.setActualLoadQty(BigDecimal.valueOf(5));
-
-		interceptor.settleEnds(record, false, true, false);
-
-		assertThat(record.getPlannedDischargeQuantity()).isEqualByComparingTo("5");
-	}
-
-	@Test
-	@DisplayName("an OUTGOING planning's actual discharge is assumed from its plan - we never see the customer unload")
-	void outgoingActualDischargeFollowsThePlan()
+	@DisplayName("actual to actual: an OUTGOING planning's actual discharge follows what was ACTUALLY LOADED")
+	void outgoingActualDischargeFollowsTheActualLoad()
 	{
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 7);
 		record.setActualDischargeQuantity(BigDecimal.ZERO);
+		record.setActualLoadQty(BigDecimal.valueOf(4));
 
-		interceptor.settleEnds(record, false, false, true);
+		interceptor.settleEnds(record, false, true);
 
 		assertThat(record.getActualDischargeQuantity())
-				.as("the mirror of the incoming load rule: the end we cannot observe takes its plan as the actual")
-				.isEqualByComparingTo("7");
+				.as("the customer never reports back, so what left our dock is the best knowledge there is")
+				.isEqualByComparingTo("4");
+	}
+
+	@Test
+	@DisplayName("a PLAN never creates an actual discharge - typing a figure is not an event")
+	void plannedLoadEditDoesNotCreateAnActualDischarge()
+	{
+		// The owner found this on deliveryPlanningProcesses.feature: a planning whose plan was typed came out
+		// with ActualDischargeQuantity = 5 while nothing had been loaded.
+		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 7);
+		record.setActualDischargeQuantity(BigDecimal.ZERO);
+		record.setPlannedLoadedQuantity(BigDecimal.valueOf(5));
+
+		interceptor.settleEnds(record, true, false);
+
+		assertThat(record.getPlannedDischargeQuantity())
+				.as("the plan side does move - that is the plan-to-plan rule")
+				.isEqualByComparingTo("5");
+		assertThat(record.getActualDischargeQuantity())
+				.as("nothing was loaded, so nothing can have been discharged")
+				.isEqualByComparingTo("0");
 	}
 
 	@Test
@@ -127,8 +177,11 @@ class M_Delivery_PlanningEndCouplingTest
 	{
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, 7);
 		record.setActualDischargeQuantity(BigDecimal.ZERO);
+		record.setActualLoadQty(BigDecimal.valueOf(4));
 
-		interceptor.settleEnds(record, false, false, true);
+		// Driven by an ACTUAL LOAD, which is exactly what carries across on an outgoing planning - so this proves
+		// the direction guard, not merely that an inert trigger stayed inert.
+		interceptor.settleEnds(record, false, true);
 
 		assertThat(record.getActualDischargeQuantity())
 				.as("receiving short of plan is the whole point - assuming the actual here would erase it")
@@ -141,8 +194,9 @@ class M_Delivery_PlanningEndCouplingTest
 	{
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship, 7);
 		record.setActualDischargeQuantity(BigDecimal.ZERO);
+		record.setActualLoadQty(BigDecimal.valueOf(4));
 
-		interceptor.settleEnds(record, false, false, true);
+		interceptor.settleEnds(record, false, true);
 
 		assertThat(record.getActualDischargeQuantity())
 				.as("a dropship ends at a customer, but we still book a receipt against it and that receipt reports "
@@ -151,60 +205,55 @@ class M_Delivery_PlanningEndCouplingTest
 	}
 
 	@Test
-	@DisplayName("the two rules compose: a loaded quantity settles BOTH ends of an outgoing planning")
-	void loadSettlesBothEndsOfAnOutgoingPlanning()
+	@DisplayName("editing an INCOMING planning's planned LOAD settles BOTH the actual load and the planned discharge, in one pass")
+	void editingIncomingPlannedLoadSettlesBothSides()
 	{
-		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 10);
-		record.setActualDischargeQuantity(BigDecimal.valueOf(10));
-		record.setActualLoadQty(BigDecimal.valueOf(6));
-
-		// ONE call, deliberately: the cascade orders itself, so this asserts composition as production performs it.
-		// Invoking the rules separately here would let the test pick the order and prove only its own choice.
-		interceptor.settleEnds(record, false, true, false);
-
-		assertThat(record.getPlannedDischargeQuantity()).isEqualByComparingTo("6");
-		assertThat(record.getActualDischargeQuantity())
-				.as("loading 6 of a planned 10 leaves all three discharge-side figures at 6, not a phantom 10")
-				.isEqualByComparingTo("6");
-	}
-
-	@Test
-	@DisplayName("editing an INCOMING planning's planned LOAD carries all the way to the planned discharge, in one pass")
-	void editingIncomingPlannedLoadReachesThePlannedDischarge()
-	{
-		// The case that proves the cascade is ORDERED: the planned discharge is reached only INDIRECTLY here, via
-		// the ActualLoadQty that step 1 derives from the edited plan. Any arrangement that evaluates the
-		// load-to-discharge rule before step 1 has run leaves the planned discharge at 9 while only 3 will ever be
-		// loaded. deliveryPlanningQty.feature's TC_Q7c_FollowsPlanEdit pins the same thing through a real edit.
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, 9);
 		record.setPlannedLoadedQuantity(BigDecimal.valueOf(3));
 		record.setActualLoadQty(BigDecimal.valueOf(9));
 
-		interceptor.settleEnds(record, true, false, false);
+		interceptor.settleEnds(record, true, false);
 
 		assertThat(record.getActualLoadQty())
-				.as("step 1: an inbound load is never reported, so it takes the plan")
+				.as("an inbound load is never reported, so it takes the plan")
 				.isEqualByComparingTo("3");
 		assertThat(record.getPlannedDischargeQuantity())
-				.as("step 2, which only works because step 1 ran FIRST: you cannot plan to discharge 9 when 3 was loaded")
+				.as("and the plan side follows the plan, directly - not via the actual")
 				.isEqualByComparingTo("3");
 		assertThat(record.getActualDischargeQuantity())
-				.as("step 3 is outgoing-only - an incoming planning's discharge is our own receipt, left untouched")
+				.as("the actual discharge is outgoing-only - an incoming planning's discharge is our own receipt")
 				.isEqualByComparingTo("0");
 	}
 
 	@Test
-	@DisplayName("a ZERO actual load is not a settlement - it means not loaded yet, and leaves the plan alone")
+	@DisplayName("editing an OUTGOING planning's planned LOAD does NOT write the actual load - only a shipment does")
+	void editingOutgoingPlannedLoadLeavesTheActualAlone()
+	{
+		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 9);
+		record.setPlannedLoadedQuantity(BigDecimal.valueOf(3));
+
+		interceptor.settleEnds(record, true, false);
+
+		assertThat(record.getActualLoadQty())
+				.as("our own dock reports itself - assuming it would claim goods were loaded that never moved")
+				.isEqualByComparingTo("0");
+	}
+
+	@Test
+	@DisplayName("a ZERO actual load clears the actual discharge but leaves the PLAN standing")
 	void zeroActualLeavesThePlanAlone()
 	{
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 10);
 		record.setActualLoadQty(BigDecimal.ZERO);
 
-		interceptor.settleEnds(record, false, true, false);
+		interceptor.settleEnds(record, false, true);
 
 		assertThat(record.getPlannedDischargeQuantity())
-				.as("the same reading of a zero actual as PoolEnd#effectiveQty - otherwise a reversal plans the "
-						+ "discharge down to nothing instead of returning it to be re-planned")
+				.as("the plan survives a not-yet-loaded row - otherwise a reversal plans the discharge down to "
+						+ "nothing instead of returning it to be re-planned")
 				.isEqualByComparingTo("10");
+		assertThat(record.getActualDischargeQuantity())
+				.as("the ACTUAL side takes the zero: claiming a discharge that never happened does not survive")
+				.isEqualByComparingTo("0");
 	}
 }

@@ -646,14 +646,14 @@ Feature: Several delivery plannings on one delivery instruction
     # four: M_Delivery_Planning_Delivery_Instructions_V exposes only the two ACTUALs, and
     # M_ShipperTransportation_Delivery_Instructions_V only the two PLANNED. Together they pin every one.
     #
-    # ActualLoadQty is 0 on both because these are OUTGOING plannings and nothing has shipped - that end is ours
-    # and only a shipment writes it. ActualDischargeQuantity is NOT 0: the customer's unload is never reported to
-    # us, so on an outgoing planning it is assumed from that planning's own planned discharge (7 and 3 below,
-    # matching the planned figures in the sibling view).
+    # BOTH actuals are 0 because these are OUTGOING plannings and nothing has shipped: the load end is ours and
+    # only a shipment writes it, and the discharge end follows the ACTUAL LOAD - never the planned discharge.
+    # Assuming a discharge from a plan would report goods as delivered that never left our dock; the planned
+    # figures (7 and 3) live in the sibling view below, which is where a plan belongs.
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_Delivery_Planning_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | ActualLoadQty | ActualDischargeQuantity |
-      | planningView_1         | product      | 0             | 7                        |
-      | planningView_2         | product2     | 0             | 3                        |
+      | planningView_1         | product      | 0             | 0                       |
+      | planningView_2         | product2     | 0             | 0                       |
 
     # the sibling view over the same allocations owes the same one-row-per-planning identity
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_ShipperTransportation_Delivery_Instructions_V:

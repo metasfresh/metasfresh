@@ -35,8 +35,6 @@ import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
 import static org.adempiere.model.InterfaceWrapperHelper.isUIAction;
 
 @Interceptor(I_M_Delivery_Planning.class)
@@ -70,40 +68,38 @@ public class M_Delivery_Planning
 	}
 
 	/**
-	 * The three quantity-coupling rules, applied as ONE ORDERED PASS.
+	 * The quantity-coupling rules, applied as ONE ORDERED PASS.
 	 * <p>
-	 * They belong in a single pointcut because each one's input can be another one's output, and
-	 * {@code ModelValidationEngine} orders pointcuts by declaring class and then METHOD NAME. Split across three
-	 * {@code @ModelChange} methods, the rules would run in alphabetical order - an order no reader chose, that no
-	 * test could pin, and that a rename would silently change - and a rule whose input is produced by a
-	 * later-sorting rule would read a stale value with nothing to re-run it.
+	 * They belong in a single pointcut because one rule's input is another's output, and
+	 * {@code ModelValidationEngine} orders pointcuts by declaring class and then METHOD NAME. Split across
+	 * separate {@code @ModelChange} methods, the rules would run in alphabetical order - an order no reader
+	 * chose, that no test could pin, and that a rename would silently change - and a rule whose input is produced
+	 * by a later-sorting rule would read a stale value with nothing to re-run it.
 	 * <p>
-	 * The order is therefore stated once, here, as a cascade:
+	 * <b>A plan is fed by a plan; an actual is fed by an actual.</b> That one sentence decides all three:
 	 * <ol>
-	 * <li>an inbound or dropship planning has no vendor load report, so its plan is the only source of
-	 * {@code ActualLoadQty};</li>
-	 * <li>what was ACTUALLY loaded is the upper bound on what can ever be discharged, so the planned discharge
-	 * follows it - in EVERY direction, because the constraint is physical and does not care who loaded. A zero
-	 * actual load is NOT a settlement: it means "not loaded yet", the same reading of a zero that
-	 * {@code DeliveryPlanningList.PoolEnd#effectiveQty} applies, and without it a reversal would plan the discharge
-	 * down to nothing instead of returning it to be re-planned;</li>
-	 * <li>an OUTGOING planning discharges at the customer, which nobody reports back to us, so that actual is
-	 * assumed from its plan. Incoming and dropship are excluded for the one good reason: their discharge IS our own
-	 * receipt, which settles the actual for real.</li>
+	 * <li><b>plan to plan, every direction</b> - what we intend to load is what we intend to discharge;</li>
+	 * <li><b>plan to actual, inbound only</b> - a vendor never reports what they loaded, so the plan is the only
+	 * figure that exists for that end. An outgoing load is ours, and only a shipment writes it;</li>
+	 * <li><b>actual to actual, outbound only</b> - the customer's unload is never reported back, so what actually
+	 * left our dock is the best knowledge there is. Incoming and dropship are excluded for one good reason: their
+	 * discharge IS our own receipt, which settles the actual for real.</li>
 	 * </ol>
-	 * Step 1 feeds step 2 and step 2 feeds step 3, which is why each step keys off whether an EARLIER STEP settled
-	 * the value rather than only off what the user edited.
+	 * Rule 2 feeds rule 3, which is why rule 3 keys off whether an EARLIER RULE settled the actual load rather
+	 * than only off what the user edited.
+	 * <p>
+	 * What is deliberately NOT a coupling: an actual load does not touch the planned discharge. A short load
+	 * leaves the plan standing to be re-planned rather than silently rewriting what was agreed - so a directly
+	 * edited {@code PlannedDischargeQuantity} settles nothing downstream, and is not a trigger column.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
 			I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity,
-			I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty,
-			I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity })
+			I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty })
 	public void onQuantityEdited(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		settleEnds(deliveryPlanning,
 				InterfaceWrapperHelper.isValueChanged(deliveryPlanning, I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity),
-				InterfaceWrapperHelper.isValueChanged(deliveryPlanning, I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty),
-				InterfaceWrapperHelper.isValueChanged(deliveryPlanning, I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity));
+				InterfaceWrapperHelper.isValueChanged(deliveryPlanning, I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty));
 	}
 
 	/**
@@ -114,11 +110,20 @@ public class M_Delivery_Planning
 	void settleEnds(
 			@NonNull final I_M_Delivery_Planning deliveryPlanning,
 			final boolean plannedLoadEdited,
-			final boolean actualLoadEdited,
-			final boolean plannedDischargeEdited)
+			final boolean actualLoadEdited)
 	{
 		final TransportDirection transportDirection = TransportDirection.ofCode(deliveryPlanning.getTransportDirection());
 
+		// PLAN to PLAN, every direction. What we intend to load is what we intend to discharge; the planned
+		// discharge is NEVER touched by an actual, so a short load leaves the plan standing to be re-planned
+		// rather than silently rewriting what was agreed.
+		if (plannedLoadEdited)
+		{
+			deliveryPlanning.setPlannedDischargeQuantity(deliveryPlanning.getPlannedLoadedQuantity());
+		}
+
+		// PLAN to ACTUAL, inbound only: a vendor never reports what they loaded, so the plan is the only figure
+		// there is. An outgoing load is ours and only a shipment writes it.
 		boolean actualLoadSettled = actualLoadEdited;
 		if (plannedLoadEdited && transportDirection.isIncomingOrDropship())
 		{
@@ -126,20 +131,16 @@ public class M_Delivery_Planning
 			actualLoadSettled = true;
 		}
 
-		boolean plannedDischargeSettled = plannedDischargeEdited;
-		if (actualLoadSettled)
+		// ACTUAL to ACTUAL, outbound only: the customer's unload is never reported back, so what actually left
+		// our dock is the best knowledge there is. An incoming or dropship discharge is observed on our own
+		// receipt and must not be guessed.
+		//
+		// An ACTUAL is only ever derived from another ACTUAL. Taking this from the planned discharge - as an
+		// earlier version did - let a planner who merely typed a plan mark goods as discharged that were never
+		// loaded.
+		if (actualLoadSettled && transportDirection.isOutgoing())
 		{
-			final BigDecimal actualLoadQty = deliveryPlanning.getActualLoadQty();
-			if (actualLoadQty != null && actualLoadQty.signum() > 0)
-			{
-				deliveryPlanning.setPlannedDischargeQuantity(actualLoadQty);
-				plannedDischargeSettled = true;
-			}
-		}
-
-		if (plannedDischargeSettled && transportDirection.isOutgoing())
-		{
-			deliveryPlanning.setActualDischargeQuantity(deliveryPlanning.getPlannedDischargeQuantity());
+			deliveryPlanning.setActualDischargeQuantity(deliveryPlanning.getActualLoadQty());
 		}
 	}
 
