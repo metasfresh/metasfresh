@@ -40,7 +40,7 @@ import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.MaterialRequest;
-import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -227,7 +227,6 @@ class PPOrderCandidateAdvisedEventCreatorTest
 	@Nested
 	class createAdvisedEvents
 	{
-		PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
 		PPOrderCandidatePojoSupplier ppOrderCandidatePojoSupplier;
 		PPOrderCandidateDAO ppOrderCandidateDAO;
 		CandidateRepositoryWriteService candidateRepositoryWriteService;
@@ -239,12 +238,11 @@ class PPOrderCandidateAdvisedEventCreatorTest
 		@BeforeEach
 		void beforeEach()
 		{
-			ppOrderCandidateDemandMatcher = Mockito.mock(PPOrderCandidateDemandMatcher.class);
 			ppOrderCandidatePojoSupplier = Mockito.mock(PPOrderCandidatePojoSupplier.class);
 			candidateRepositoryWriteService = Mockito.mock(CandidateRepositoryWriteService.class);
 			candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
 			ppOrderCandidateDAO = Mockito.mock(PPOrderCandidateDAO.class);
-			ppOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier, candidateRepositoryWriteService,candidateRepositoryRetrieval,ppOrderCandidateDAO);
+			ppOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidatePojoSupplier, candidateRepositoryWriteService, candidateRepositoryRetrieval, ppOrderCandidateDAO);
 
 			product = newInstance(I_M_Product.class);
 			product.setC_UOM_ID(uomId.getRepoId());
@@ -278,14 +276,16 @@ class PPOrderCandidateAdvisedEventCreatorTest
 					.clientAndOrgId(CLIENT_AND_ORG_ID)
 					.build();
 
-			Mockito.when(ppOrderCandidateDemandMatcher.matches(Mockito.any(MaterialPlanningContext.class))).thenReturn(true);
 			Mockito.when(ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(Mockito.any(MaterialRequest.class))).thenReturn(newDummyPPOrderCandidate());
 
 			final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
+			final Quantity remainingQty = qty("10");
 
-			final List<PPOrderCandidateAdvisedEvent> events = ppOrderCandidateAdvisedCreator.createAdvisedEvents(supplyRequiredDescriptor, context);
-			assertThat(events).hasSize(1);
-			assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+			final SupplyAdvice advice = ppOrderCandidateAdvisedCreator.createAdvisedEvents(supplyRequiredDescriptor, context, remainingQty);
+			assertThat(advice.getEvents()).hasSize(1);
+			assertThat(advice.getEvents().get(0)).isInstanceOf(PPOrderCandidateAdvisedEvent.class);
+			assertThat(((PPOrderCandidateAdvisedEvent)advice.getEvents().get(0)).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+			assertThat(advice.getConsumedQty()).isEqualTo(remainingQty);
 		}
 	}
 }

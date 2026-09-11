@@ -12,10 +12,15 @@ import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.pricing.conditions.BreakValueType;
+import de.metas.business.BusinessTestHelper;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.user.UserRepository;
@@ -106,22 +111,24 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 				.build();
 
 		final PurchaseCandidateAdvisedEventCreator purchaseCandidateAdvisedEventCreator = new PurchaseCandidateAdvisedEventCreator(
-				new PurchaseOrderDemandMatcher(),
 				new VendorProductInfoService(new BPartnerBL(new UserRepository())),
 				Mockito.mock(CandidateRepositoryRetrieval.class),
 				Mockito.mock(CandidateRepositoryWriteService.class),
 				Mockito.mock(PurchaseCandidateRepository.class));
 
 		// invoke the method under test
-		final List<PurchaseCandidateAdvisedEvent> purchaseAdvisedEvents = purchaseCandidateAdvisedEventCreator
-				.createAdvisedEvents(
-						supplyRequiredDescriptor,
-						context);
+		final Quantity remainingQty = Quantitys.of(TEN, UomId.ofRepoId(BusinessTestHelper.createUomKg().getC_UOM_ID()));
+		final SupplyAdvice advice = purchaseCandidateAdvisedEventCreator.createAdvisedEvents(
+				supplyRequiredDescriptor,
+				context,
+				remainingQty);
 
-		assertThat(purchaseAdvisedEvents).hasSize(1);
-		assertThat(purchaseAdvisedEvents.get(0).getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
-		assertThat(purchaseAdvisedEvents.get(0).getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
-		assertThat(purchaseAdvisedEvents.get(0).getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+		assertThat(advice.getEvents()).hasSize(1);
+		final PurchaseCandidateAdvisedEvent purchaseAdvisedEvent = (PurchaseCandidateAdvisedEvent)advice.getEvents().get(0);
+		assertThat(purchaseAdvisedEvent.getProductPlanningId()).isEqualTo(productPlanning.getIdNotNull().getRepoId());
+		assertThat(purchaseAdvisedEvent.getVendorId()).isEqualTo(bPartnerVendorRecord.getC_BPartner_ID());
+		assertThat(purchaseAdvisedEvent.getSupplyRequiredDescriptor()).isEqualTo(supplyRequiredDescriptor);
+		assertThat(advice.getConsumedQty()).isEqualTo(remainingQty);
 	}
 
 	static MaterialDescriptor createMaterialDescriptor()

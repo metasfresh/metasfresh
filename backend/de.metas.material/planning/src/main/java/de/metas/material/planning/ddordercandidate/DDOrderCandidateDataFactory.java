@@ -40,6 +40,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -50,27 +51,48 @@ public class DDOrderCandidateDataFactory
 	@NonNull final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull private final ReplenishInfoRepository replenishInfoRepository;
+	/**
+	 * Source-warehouse ATP provider used to clip each candidate so the remainder can spill
+	 * over to manufacturing / purchasing (me03#28877). Pass {@link SourceWarehouseAvailableQtyProvider#UNLIMITED}
+	 * when clipping is not desired (e.g. in tests that exercise the pre-ATP behavior).
+	 */
+	@NonNull private final SourceWarehouseAvailableQtyProvider availableQtyProvider;
 
 	public List<DDOrderCandidateData> create(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
+		return create(supplyRequiredDescriptor, context, extractQtyToSupply(supplyRequiredDescriptor));
+	}
+
+	/**
+	 * Variant that accepts an explicit {@code qtyToSupply} — used by the leftover-quantity
+	 * dispatch in {@code SupplyRequiredHandler}, so that when a higher-priority advisor has
+	 * already claimed part of the demand, the distribution candidates only cover the remainder.
+	 */
+	public List<DDOrderCandidateData> create(
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity qtyToSupply)
+	{
 		try
 		{
-			return create0(supplyRequiredDescriptor, context);
+			return create0(supplyRequiredDescriptor, context, qtyToSupply);
 		}
 		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e)
 					.appendParametersToMessage()
 					.setParameter("supplyRequiredDescriptor", supplyRequiredDescriptor)
-					.setParameter("context", context);
+					.setParameter("context", context)
+					.setParameter("qtyToSupply", qtyToSupply);
 		}
 	}
 
-	public List<DDOrderCandidateData> create0(
+	private List<DDOrderCandidateData> create0(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final MaterialPlanningContext context)
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity qtyToSupplyTotal)
 	{
 		if (context.getProductId().getRepoId() != supplyRequiredDescriptor.getProductId())
 		{
@@ -105,7 +127,6 @@ public class DDOrderCandidateDataFactory
 			return ImmutableList.of();
 		}
 
-		final Quantity qtyToSupplyTotal = extractQtyToSupply(supplyRequiredDescriptor);
 		Quantity qtyToSupplyRemaining = qtyToSupplyTotal;
 		for (final DistributionNetworkLine networkLine : networkLines)
 		{
@@ -128,10 +149,41 @@ public class DDOrderCandidateDataFactory
 				continue;
 			}
 
-			final Quantity qtyToMove = qtyToSupplyRemaining.multiply(networkLine.getTransferPercent());
+			Quantity qtyToMove = qtyToSupplyRemaining.multiply(networkLine.getTransferPercent());
 			if (qtyToMove.signum() == 0)
 			{
 				continue;
+			}
+
+			// Clip the line's share by the source warehouse's ATP. If the source cannot cover
+			// the requested share, we take what we can and let the unclaimed remainder fall
+			// through to the next advisor (manufacturing / purchasing) via the leftover-qty
+			// dispatch in SupplyRequiredHandler. See me03#28877.
+			final Optional<Quantity> atpAtSource = availableQtyProvider.availableQtyAtSource(
+					sourceWarehouseId,
+					context.getProductId(),
+					extractStorageAttributesKey(context),
+					supplyRequiredDescriptor.getDemandDate());
+			if (atpAtSource.isPresent())
+			{
+				final Quantity atpInLineUOM = uomConversionBL.convertQuantityTo(
+						atpAtSource.get(),
+						context.getProductId(),
+						qtyToMove.getUomId());
+				if (atpInLineUOM.signum() <= 0)
+				{
+					Loggables.addLog(
+							"Source warehouse {} has no ATP for product {}; skipping this network line; atp={}",
+							sourceWarehouseId, context.getProductId(), atpAtSource.get());
+					continue;
+				}
+				if (atpInLineUOM.compareTo(qtyToMove) < 0)
+				{
+					Loggables.addLog(
+							"Clipping DD candidate qty {} to source-warehouse ATP {} (source {}, product {})",
+							qtyToMove, atpInLineUOM, sourceWarehouseId, context.getProductId());
+					qtyToMove = atpInLineUOM;
+				}
 			}
 
 			final ProductPlanning productPlanning = context.getProductPlanning();
@@ -168,17 +220,24 @@ public class DDOrderCandidateDataFactory
 		} // end of the for-loop over networkLines
 
 		//
-		// Check: remaining qtyToSupply shall be ZERO
-		if (qtyToSupplyRemaining.signum() != 0)
+		// Leftover check: with source-warehouse ATP clipping, it is a legitimate outcome to end up
+		// with qtyToSupplyRemaining > 0 (partial DD fulfillment). That remainder is handed back to
+		// SupplyRequiredHandler via the advisor's consumedQty so the next advisor (manufacturing /
+		// purchasing) can cover it. Log the shortfall for observability but do NOT throw.
+		if (qtyToSupplyRemaining.signum() > 0)
 		{
-			throw new AdempiereException("Cannot create DD Order Candidate for required Qty To Supply.")
-					.setParameter("QtyToSupply", qtyToSupplyTotal)
-					.setParameter("QtyToSupply (remaining)", qtyToSupplyRemaining)
-					.setParameter("@DD_NetworkDistribution_ID@", network)
-					.setParameter("context", context);
+			Loggables.addLog(
+					"DD_NetworkDistribution {} could only cover {} of the requested {}; remaining {} will be delegated to the next advisor",
+					network, qtyToSupplyTotal.subtract(qtyToSupplyRemaining), qtyToSupplyTotal, qtyToSupplyRemaining);
 		}
 
 		return result;
+	}
+
+	private static AttributesKey extractStorageAttributesKey(@NonNull final MaterialPlanningContext context)
+	{
+		return AttributesKeys.createAttributesKeyFromASIStorageAttributes(context.getAttributeSetInstanceId())
+				.orElse(AttributesKey.NONE);
 	}
 
 	private static ProductDescriptor createProductDescriptor(final @NonNull MaterialPlanningContext context)
