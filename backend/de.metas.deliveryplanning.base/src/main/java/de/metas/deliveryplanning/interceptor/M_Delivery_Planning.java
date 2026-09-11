@@ -30,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_Delivery_Planning;
+
+import java.math.BigDecimal;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -81,27 +83,61 @@ public class M_Delivery_Planning
 	}
 
 	/**
-	 * The outgoing mirror of {@link #onPlannedLoadedQuantityChanged}: what was ACTUALLY loaded is the upper
-	 * bound on what can ever be discharged, so the planned discharge follows it.
+	 * The unobserved end's ACTUAL is assumed from its plan. This is the mirror of
+	 * {@link #onPlannedLoadedQuantityChanged}: that one covers the LOAD end for incoming and dropship, where
+	 * the loading happens at the vendor and we never see it; this one covers the DISCHARGE end for outgoing and
+	 * dropship, where the goods are discharged at the customer and we never see that either.
 	 * <p>
-	 * Without this the two ends drift: a shipment writes back only the planned LOAD
-	 * ({@code M_Delivery_Planning_GenerateShipment} calls {@code writeBackPlannedLoadedQuantity}, and there is
-	 * no discharge counterpart), so a planning loaded short of its plan kept a planned discharge describing
-	 * goods that were never loaded. The split creates both ends equal; nothing else kept them so.
+	 * Dropship is in both, deliberately - neither end of a dropship is ours to observe, so both actuals follow
+	 * their plans. Incoming is excluded here for the one good reason: its discharge IS our own receipt, which
+	 * settles the actual for real.
 	 * <p>
-	 * Incoming is deliberately untouched. There the discharge IS the receipt - it is settled by what arrives,
-	 * not derived from a loading that happened at the vendor - and that end already has its own rule above.
+	 * Together with {@link #onActualLoadQtyChanged} this reproduces, for any write, what a completing shipment
+	 * does through its own path - actual load settles the planned discharge, which in turn settles the actual
+	 * discharge, so "the booked quantity lands on BOTH ends" stops depending on the completion interceptor.
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty)
-	public void onActualLoadQtyChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity)
+	public void onPlannedDischargeQuantityChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		final TransportDirection transportDirection = TransportDirection.ofCode(deliveryPlanning.getTransportDirection());
-		if (transportDirection.isIncomingOrDropship())
+		if (!transportDirection.isOutgoingOrDropship())
 		{
 			return;
 		}
 
-		deliveryPlanning.setPlannedDischargeQuantity(deliveryPlanning.getActualLoadQty());
+		deliveryPlanning.setActualDischargeQuantity(deliveryPlanning.getPlannedDischargeQuantity());
+	}
+
+	/**
+	 * What was ACTUALLY loaded is the upper bound on what can ever be discharged, so the planned discharge
+	 * follows it. The companion of {@link #onPlannedLoadedQuantityChanged}, which keeps the same two ends in
+	 * step from the other side.
+	 * <p>
+	 * Without this the ends drift: a shipment writes back only the planned LOAD
+	 * ({@code M_Delivery_Planning_GenerateShipment} calls {@code writeBackPlannedLoadedQuantity}, and there is
+	 * no discharge counterpart), so a planning loaded short of its plan kept a planned discharge describing
+	 * goods that were never loaded. The split creates both ends equal; nothing else kept them so.
+	 * <p>
+	 * Applies in EVERY direction. The constraint is physical - you cannot discharge what was not loaded - and
+	 * it does not care who did the loading. An earlier version of this rule skipped incoming on the grounds
+	 * that "the discharge is the receipt", which confused the ACTUAL discharge (settled by what arrives) with
+	 * the PLANNED one (which is still a plan, and still cannot exceed the load).
+	 * <p>
+	 * A zero actual load is NOT a settlement - it means nothing has been loaded yet, not that nothing will be -
+	 * so it leaves the plan alone. That is the same reading of a zero actual that
+	 * {@code DeliveryPlanningList.PoolEnd#effectiveQty} applies ({@code nullif(actual, 0)}), and without it a
+	 * reversal would silently plan the discharge down to nothing instead of returning it to be re-planned.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty)
+	public void onActualLoadQtyChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		final BigDecimal actualLoadQty = deliveryPlanning.getActualLoadQty();
+		if (actualLoadQty == null || actualLoadQty.signum() <= 0)
+		{
+			return;
+		}
+
+		deliveryPlanning.setPlannedDischargeQuantity(actualLoadQty);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
