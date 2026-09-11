@@ -1431,3 +1431,83 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
     And validate the delivery planning link of the material receipt lines:
       | M_InOut_ID     | C_OrderLine_ID   | M_Delivery_Planning_ID | OPT.MovementQty |
       | receiptSpan_RL | orderLineSpan_RL | planningSpan1_RL       | 15              |
+
+  @Id:S31789_TC9i
+  Scenario: TWO packed plannings of one schedule received together keep each other's HUs
+
+    # The positive test for setReuseExistingPlanningHUs(false). Every other packed scenario receives ONE sibling,
+    # so none of them exercises the case the flag exists for.
+    #
+    # A split copies M_ReceiptSchedule_ID onto both plannings, so ONE schedule carries two sets of planning HUs at
+    # once. With the generator's default the second row's generation finds the first row's HUs, judges them unfit
+    # for a configuration capped to a different share, and DESTROYS them - the first planning then reaches the
+    # receipt with nothing, or the receipt refuses the destroyed HU outright ("Ungültig: Gebinde Status").
+    #
+    # Both rows are received in ONE gesture, which is the whole point.
+
+    Given metasfresh contains M_Products:
+      | Identifier     |
+      | productBoth_RL |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_RL_PO            | productBoth_RL          | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendor_RL                | productBoth_RL          |
+
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID   | Name          |
+      | tuPiBoth_RL  | RL_TU_PI_Both |
+      | luPiBoth_RL  | RL_LU_PI_Both |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID  | HU_UnitType | IsCurrent |
+      | tuPiVerBoth_RL     | tuPiBoth_RL | TU          | Y         |
+      | luPiVerBoth_RL     | luPiBoth_RL | LU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | tuMiItemBoth_RL | tuPiVerBoth_RL     | 0   | MI       |                   |
+      | luHuItemBoth_RL | luPiVerBoth_RL     | 100 | HU       | tuPiBoth_RL       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID   | Qty | ValidFrom  |
+      | pipTUBoth_RL            | tuMiItemBoth_RL | productBoth_RL | 10  | 2000-01-01 |
+
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderBoth_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineBoth_RL | orderBoth_RL          | productBoth_RL          | 20         | shipperPlanning_RL          |
+
+    When the order identified by orderBoth_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleBoth_RL                 | orderBoth_RL          | orderLineBoth_RL          | vendor_RL                | vendorLocation_RL                 | productBoth_RL          | 20         | warehouse_RL              |
+    And after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID   |
+      | planningBoth1_RL       | orderLineBoth_RL |
+
+    When generate 1 additional M_Delivery_Planning records for: planningBoth1_RL
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID            | C_OrderLine_ID   |
+      | planningBoth1_RL,planningBoth2_RL | orderLineBoth_RL |
+    And after not more than 60s, the C_Order identified by orderBoth_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned |
+      | rowBoth1_RL                               | planningBoth1_RL       | scheduleBoth_RL      | true          |
+      | rowBoth2_RL                               | planningBoth2_RL       | scheduleBoth_RL      | true          |
+
+    When the receipt-disposition delivery-planning rows identified by rowBoth1_RL, rowBoth2_RL are received together:
+      | M_InOut_ID.Identifier |
+      | receiptBoth_RL        |
+
+    Then validate M_In_Out status
+      | M_InOut_ID.Identifier | DocStatus |
+      | receiptBoth_RL        | CO        |
+
+    # BOTH plannings present, each with its own half. If the second generation had destroyed the first's HUs,
+    # planningBoth1_RL would be missing from this table entirely - or the receive would have failed outright.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID     | C_OrderLine_ID   | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptBoth_RL | orderLineBoth_RL | planningBoth1_RL       | 10              |
+      | receiptBoth_RL | orderLineBoth_RL | planningBoth2_RL       | 10              |

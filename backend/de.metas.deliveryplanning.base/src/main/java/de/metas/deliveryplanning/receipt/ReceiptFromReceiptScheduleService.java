@@ -34,6 +34,7 @@ import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.handlingunits.receiptschedule.ReceiptScheduleLUTUConfigurations;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -122,6 +123,7 @@ public class ReceiptFromReceiptScheduleService
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
@@ -164,6 +166,30 @@ public class ReceiptFromReceiptScheduleService
 	 */
 	public ImmutableList<InOutId> receiveRows(@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> rows)
 	{
+		// Every HU this call creates, tracked so a failure part-way through can undo them.
+		//
+		// The generation commits in its OWN transaction (ReceiptScheduleHUGenerator#generateWithinOwnTransaction)
+		// and allocates against the receipt schedule as it goes - QtyMoved moves THERE, not at the receipt. So an
+		// exception on a later row would otherwise leave the earlier rows' HUs committed, counted against the
+		// schedule, and attached to no receipt at all; a retry would then read a smaller remainder and silently
+		// skip the row whose goods were never booked. The generator's own reuse pass is what normally reclaims
+		// such strays, and this call deliberately turns that off (see createPackedHUs), so the cleanup is ours.
+		final List<HuId> createdHuIds = new ArrayList<>();
+		try
+		{
+			return receiveRows0(rows, createdHuIds);
+		}
+		catch (final RuntimeException ex)
+		{
+			destroyQuietly(createdHuIds, ex);
+			throw ex;
+		}
+	}
+
+	private ImmutableList<InOutId> receiveRows0(
+			@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> rows,
+			@NonNull final List<HuId> createdHuIds)
+	{
 		final List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<>();
 		final LinkedHashMap<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId = new LinkedHashMap<>();
 		final ImmutableSet.Builder<HuId> huIdsToReceive = ImmutableSet.builder();
@@ -177,6 +203,7 @@ public class ReceiptFromReceiptScheduleService
 
 			final DeliveryPlanningId deliveryPlanningId = row.getDeliveryPlanningId();
 			final ImmutableSet<HuId> rowHuIds = createPackedHUs(receiptSchedule, deliveryPlanningId);
+			createdHuIds.addAll(rowHuIds);
 			if (rowHuIds.isEmpty())
 			{
 				// Nothing left on this schedule: skip the row rather than failing the whole selection - the
@@ -212,6 +239,36 @@ public class ReceiptFromReceiptScheduleService
 		return result.getInOuts().stream()
 				.map(receipt -> InOutId.ofRepoId(receipt.getM_InOut_ID()))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Destroys HUs a failed batch created, so they stop counting against their receipt schedule. Swallows its own
+	 * failures onto the original exception: the caller is already on the way out with a real error, and losing
+	 * that error to a cleanup problem would hide why the receive failed in the first place.
+	 */
+	private void destroyQuietly(@NonNull final List<HuId> huIds, @NonNull final RuntimeException cause)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+		try
+		{
+			final List<I_M_HU> hus = handlingUnitsBL.getByIds(huIds);
+			if (hus.isEmpty())
+			{
+				return;
+			}
+			final I_M_HU first = hus.get(0);
+			final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(
+					Env.getCtx(),
+					ClientAndOrgId.ofClientAndOrg(first.getAD_Client_ID(), first.getAD_Org_ID()));
+			handlingUnitsBL.markDestroyed(huContext, hus);
+		}
+		catch (final RuntimeException cleanupFailure)
+		{
+			cause.addSuppressed(cleanupFailure);
+		}
 	}
 
 	/**
