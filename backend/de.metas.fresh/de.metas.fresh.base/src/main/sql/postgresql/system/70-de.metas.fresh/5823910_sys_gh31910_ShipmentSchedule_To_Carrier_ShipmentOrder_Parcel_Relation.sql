@@ -28,4 +28,5 @@ VALUES (0,0,540507,TO_TIMESTAMP('2026-09-10 12:00:00','YYYY-MM-DD HH24:MI:SS')::
 ;
 
 -- 4. Index coverage:
-CREATE INDEX IF NOT EXISTS Carrier_ShipmentOrder_Parcel_Package ON Carrier_ShipmentOrder_Parcel (M_Package_ID);
+CREATE INDEX IF NOT EXISTS Carrier_ShipmentOrder_Parcel_M_Package_ID ON Carrier_ShipmentOrder_Parcel (M_Package_ID);
+CREATE INDEX IF NOT EXISTS M_PackageLine_M_InOutLine_ID ON M_PackageLine (M_InOutLine_ID);
