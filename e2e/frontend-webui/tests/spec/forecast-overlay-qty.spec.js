@@ -124,8 +124,9 @@ async function createIncludedRecord(page, windowId, recordId, detailId, fields) 
 
 test.describe('Forecast overlay — Menge is scoped to the cockpit product', () => {
   test('Sprung zu Prognose shows only the cockpit product\'s forecast quantity', async ({ page }) => {
-    allure.epic('E0300: Planning');
-    allure.tag('F19042');
+    allure.epic('E0155: Material Disposition');
+    allure.tag('F19011: Material Cockpit v2');
+    allure.tag('F19011');
     allure.story('Sprung zu Prognose: per-product Menge in the forecast overlay');
     allure.severity('critical');
     allure.description(`
