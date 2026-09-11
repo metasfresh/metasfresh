@@ -129,9 +129,13 @@ Feature: Delivery planning processes interaction
 
     When M_Delivery_Planning identified by deliveryPlanning_2 is closed
 
+    # QtyTotalOpenPlanned is 2, not 0. Closing deliveryPlanning_2 settles its claim at the 0 it ever loaded, so
+    # the line's 5 is claimed only by deliveryPlanning's 3 and the other 2 are open for replanning. Its own
+    # PlannedLoadedQuantity stays at 2 - the plan it was closed on is a record of what was intended, not a live
+    # claim.
     Then validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed | PlannedLoadedQuantity |
-      | deliveryPlanning_2     | 5          | 5            | Outgoing           | true     | true      | 2                     |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | IsClosed | Processed | PlannedLoadedQuantity | QtyTotalOpenPlanned |
+      | deliveryPlanning_2     | 5          | 5            | Outgoing           | true     | true      | 2                     | 2                   |
 
     When M_Delivery_Planning identified by deliveryPlanning_2 is opened
 

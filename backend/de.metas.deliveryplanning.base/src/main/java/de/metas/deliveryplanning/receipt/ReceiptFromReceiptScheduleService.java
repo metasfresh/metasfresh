@@ -122,6 +122,7 @@ public class ReceiptFromReceiptScheduleService
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	public CreateReceiptFromReceiptScheduleResult receiveCUs(
@@ -368,7 +369,7 @@ public class ReceiptFromReceiptScheduleService
 		final I_M_HU_LUTU_Configuration lutuConfig = ReceiptScheduleLUTUConfigurations.getCurrent(receiptSchedule);
 		final I_M_HU_LUTU_Configuration effectiveConfig = ReceiptScheduleLUTUConfigurations.newDefaultCopy(lutuConfig, receiptSchedule);
 		ReceiptScheduleLUTUConfigurations.capToPlannedShare(effectiveConfig, plannedShare);
-		Services.get(ILUTUConfigurationFactory.class).save(effectiveConfig);
+		lutuConfigurationFactory.save(effectiveConfig);
 
 		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContext)
 				.addM_ReceiptSchedule(receiptSchedule)
@@ -381,13 +382,19 @@ public class ReceiptFromReceiptScheduleService
 			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + effectiveConfig);
 		}
 
-		if (qtyCUsTotal.signum() <= 0)
+		// The configuration's capacity is NOT the share, and assuming it was is how a sibling gets robbed.
+		// capToPlannedShare rounds the TU count UP - it has to, because a partial TU still has to be received -
+		// so for any share that is not an exact multiple of QtyCUsPerTU the capped configuration holds MORE than
+		// the share: 15 CUs at ten per TU gives two TUs, i.e. capacity 20. Allocating that capacity would draw
+		// five units belonging to the planning's sibling on the same receipt schedule. The allocation is
+		// therefore clamped separately, exactly as the per-row receive does it
+		// (ReceiptDispositionDeliveryPlanningReceiveHUsProcess#getQtyToAllocate).
+		final Quantity qtyToAllocate = plannedShare != null ? qtyCUsTotal.min(plannedShare) : qtyCUsTotal;
+		if (qtyToAllocate.signum() <= 0)
 		{
 			return ImmutableSet.of();
 		}
-		// The configuration already carries the share - capToPlannedShare above capped either the TU count or,
-		// for a share smaller than one TU, the CUs that TU holds - so the producer's own total IS the share.
-		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
+		huGenerator.setQtyToAllocateTarget(qtyToAllocate);
 
 		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
 

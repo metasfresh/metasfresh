@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -21,21 +22,12 @@ import java.util.Set;
  * several repositories; a repository may not write a table it does not own.
  */
 @Service
+@RequiredArgsConstructor
 public class DeliveryPlanningAllocService
 {
 	@NonNull private final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
 	@NonNull private final DeliveryPlanningRepository deliveryPlanningRepository;
 	@NonNull private final DeliveryInstructionRepository deliveryInstructionRepository;
-
-	public DeliveryPlanningAllocService(
-			@NonNull final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository,
-			@NonNull final DeliveryPlanningRepository deliveryPlanningRepository,
-			@NonNull final DeliveryInstructionRepository deliveryInstructionRepository)
-	{
-		this.deliveryPlanningAllocRepository = deliveryPlanningAllocRepository;
-		this.deliveryPlanningRepository = deliveryPlanningRepository;
-		this.deliveryInstructionRepository = deliveryInstructionRepository;
-	}
 
 	/**
 	 * Recomputes {@code IsAllocated} and {@code IsReadyForReceipt} for the given plannings and stores them.

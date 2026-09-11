@@ -124,6 +124,44 @@ class ReceiptDispositionDeliveryPlanningPlannedShareCapTest
 	}
 
 	@Test
+	void aShareSmallerThanOneTU_shrinksThatTUsContentsInsteadOfItsCount()
+	{
+		final I_M_HU_LUTU_Configuration lutuConfig = wholeOrderLineConfiguration();
+
+		ReceiptScheduleLUTUConfigurations.capToPlannedShare(lutuConfig, share("5"));
+
+		assertThat(lutuConfig.getQtyTU())
+				.as("five CUs of a ten-per-TU packing is still ONE TU - the count cannot express the share")
+				.isEqualByComparingTo("1");
+		assertThat(lutuConfig.getQtyCUsPerTU())
+				.as("so the share has to come out of what that TU HOLDS, or the producer fills it to ten")
+				.isEqualByComparingTo("5");
+		assertThat(lutuConfig.isInfiniteQtyCU())
+				.as("a capped CU count is meaningless while the CU quantity is still infinite")
+				.isFalse();
+	}
+
+	@Test
+	void roundingUpTheTUCountLeavesTheCONFIGURATIONHoldingMoreThanTheShare()
+	{
+		// The reason the caller must clamp the ALLOCATION separately and cannot trust the configuration's own
+		// capacity. 15 CUs at ten per TU rounds up to two TUs, and QtyCUsPerTU stays ten - so the configuration
+		// can hold 20 while only 15 is owed to this planning. Allocating the capacity would draw five units
+		// belonging to the sibling planning on the same receipt schedule.
+		final I_M_HU_LUTU_Configuration lutuConfig = wholeOrderLineConfiguration();
+
+		ReceiptScheduleLUTUConfigurations.capToPlannedShare(lutuConfig, share("15"));
+
+		assertThat(lutuConfig.getQtyTU()).isEqualByComparingTo("2");
+		assertThat(lutuConfig.getQtyCUsPerTU())
+				.as("left at the packing's own figure - this is what makes capacity exceed the share")
+				.isEqualByComparingTo("10");
+		assertThat(lutuConfig.getQtyTU().multiply(lutuConfig.getQtyCUsPerTU()))
+				.as("capacity 20 against a share of 15: the gap the allocation clamp exists to close")
+				.isEqualByComparingTo("20");
+	}
+
+	@Test
 	void aPartialTUStillHasToBeReceived_soRoundingIsUp()
 	{
 		final I_M_HU_LUTU_Configuration lutuConfig = wholeOrderLineConfiguration();
