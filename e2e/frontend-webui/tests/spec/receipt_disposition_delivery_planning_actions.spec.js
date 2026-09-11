@@ -357,7 +357,12 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       await dropdownToggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await dropdownToggle.click();
       await expect(page.locator(`[data-testid="quick-action-${MULTI_ROW_RECEIVE_INTERNAL_NAME}"]`)).toHaveCount(0);
-      await dropdownToggle.click(); // close
+
+      // Clicked AWAY, exactly as in the step above and for the same reason: an OPEN dropdown puts `btn-disabled`
+      // on this toggle and `quick-actions-wrapper` intercepts the pointer, so clicking the toggle a second time
+      // never lands - Playwright retries it for the full 180s test timeout. This is the site that kept
+      // `frontend webui test (3/3)` red after the sibling site was fixed.
+      await page.locator('body').click({ position: { x: 5, y: 5 } });
 
       // Action menu: the header's "..." button (.meta-icon-more) opens the subheader panel, whose entries carry
       // data-testid="action-<internalName>". The multi-row receive must be present there (WEBUI_ViewAction='Y').
