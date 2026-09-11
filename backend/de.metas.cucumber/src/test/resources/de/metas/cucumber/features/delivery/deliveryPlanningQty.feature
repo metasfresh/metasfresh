@@ -862,6 +862,70 @@ Feature: Delivery planning quantities
       | deliveryPlanningDelete2_1 | 30         | 30           | Outgoing            | 10                    | 0             | 10                   |
       | deliveryPlanningDelete2_2 | 30         | 30           | Outgoing            | 10                    | 0             | 10                   |
 
+  @Id:S31789_TC_Q8_ReceivedShortFreesTheDifference
+  Scenario: A planning received SHORT of its plan settles its claim at what it actually took, freeing the difference on the order line
+
+    # The owner-reported case. It has to be INCOMING, and that is the whole point of the scenario.
+    #
+    # A shipment calls writeBackPlannedLoadedQuantity, so after a real ship the planned load EQUALS the actual
+    # and the settled-claim rule and the raw-planned rule agree - this divergence cannot occur on the outgoing
+    # path, so the Outgoing scenarios above cannot exercise it however their actuals are produced. There is no
+    # writeBackPlannedDischargeQuantity: a receipt leaves PlannedDischargeQuantity at its planned figure while
+    # ActualDischargeQuantity takes the received one. That gap exists only here.
+    #
+    # The actual is written directly rather than by driving a receipt - the same shortcut the scenarios above
+    # take. What is under test is the arithmetic over planned-vs-actual, not how the actual came to be; doing it
+    # for real would additionally need an instruction, stock and HUs, none of which this figure depends on.
+
+    Given metasfresh contains C_BPartners:
+      | Identifier    | Name          | OPT.IsVendor | OPT.IsCustomer |
+      | vendorQ8Short | vendorQ8Short | true         | false          |
+    And metasfresh contains C_BPartner_Locations:
+      | C_BPartner_ID.Identifier | Identifier            | GLN           | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | vendorQ8Short            | vendorLocationQ8Short | 1234564396496 | true                | true                |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendorQ8Short            | product                 |
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.DocBaseType |
+      | orderQ8Short | false   | vendorQ8Short            | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocationQ8Short                 | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineQ8Short | orderQ8Short          | product                 | 100        | shipper_DHL                 |
+
+    When the order identified by orderQ8Short is completed
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | C_OrderLine_ID   |
+      | deliveryPlanningQ8Short_1 | orderLineQ8Short |
+
+    # Split 100 into two plannings of 50.
+    When generate 1 additional M_Delivery_Planning records for: deliveryPlanningQ8Short_1
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID                              | C_OrderLine_ID   |
+      | deliveryPlanningQ8Short_1,deliveryPlanningQ8Short_2 | orderLineQ8Short |
+    And validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity | QtyTotalOpenPlanned |
+      | deliveryPlanningQ8Short_1 | 100        | 100          | Incoming            | 50                       | 0                       | 0                    |
+      | deliveryPlanningQ8Short_2 | 100        | 100          | Incoming            | 50                       | 0                       | 0                    |
+
+    # Only 40 of the first planning's planned 50 actually arrives.
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | ActualDischargeQuantity |
+      | deliveryPlanningQ8Short_1 | 40                      |
+
+    # QtyTotalOpen is 60 - the order line minus what arrived (100 - 40).
+    #
+    # QtyTotalOpenPlanned is 10, not 0. PlannedDischargeQuantity is still 50 on the received planning, but that
+    # planning's claim on the line is settled at the 40 it actually took, so 100 - 40 - 50. Reading the RAW
+    # planned figures answers 100 - 50 - 50 = 0 and reports the line as fully planned while 10 of it is neither
+    # received nor planned by anybody - which is the defect this scenario pins.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedDischargeQuantity | ActualDischargeQuantity | QtyTotalOpenPlanned |
+      | deliveryPlanningQ8Short_1 | 100        | 60           | Incoming            | 50                       | 40                      | 10                   |
+      | deliveryPlanningQ8Short_2 | 100        | 60           | Incoming            | 50                       | 0                       | 10                   |
+
   @Id:S31789_TC_Q10_DeliveredKeepsProcessed
   Scenario: Reopening a closed AND delivered planning keeps Processed set - the invariant Processed == (IsClosed or IsDelivered) survives the reopen
 
