@@ -76,6 +76,12 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 	{
 		final String externalParameterName = parameter.getColumnName();
 
+		if (PARAM_Qty.equals(externalParameterName))
+		{
+			// The planning's own share. Without this the mandatory field opens empty and the operator retypes a
+			// figure the row already carries - wrong by default on a split, where the share is not the order line.
+			return helper.getPlannedDischargeQuantity(getDeliveryPlanningId());
+		}
 		if (PARAM_IsB2B.equals(externalParameterName))
 		{
 			return getB2BShipmentInfo().isPresent();

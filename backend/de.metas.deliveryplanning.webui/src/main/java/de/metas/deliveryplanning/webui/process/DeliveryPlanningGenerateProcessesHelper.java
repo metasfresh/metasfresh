@@ -418,6 +418,21 @@ class DeliveryPlanningGenerateProcessesHelper
 		}
 	}
 
+	/**
+	 * What the generate processes PRE-FILL as Qty. On a split planning this is that planning's own share, which
+	 * is the figure the operator would otherwise have to read off the row and retype.
+	 */
+	public BigDecimal getPlannedDischargeQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningService.getPlannedDischargeQuantity(deliveryPlanningId);
+	}
+
+	/** The outgoing mirror of {@link #getPlannedDischargeQuantity}. */
+	public BigDecimal getPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningService.getPlannedLoadedQuantity(deliveryPlanningId);
+	}
+
 	public BigDecimal getQtyToDeliverByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleBL.getById(shipmentScheduleId));

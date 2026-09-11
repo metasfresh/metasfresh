@@ -63,6 +63,12 @@ public class M_Delivery_Planning_GenerateShipment extends JavaProcess
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
+		if(parameter.getColumnName().equals(PARAM_Qty))
+		{
+			// The planning's own share - the mirror of the receipt process's planned-DISCHARGE default. The two
+			// fields below are informational (order-line open qty, on-hand); this is the one actually booked.
+			return helper.getPlannedLoadedQuantity(getDeliveryPlanningId());
+		}
 		if(parameter.getColumnName().equals(PARAM_QtyToDeliver))
 		{
 			final ShipmentScheduleId shipmentScheduleId = helper.getShipmentInfo(getDeliveryPlanningId()).getShipmentScheduleId();

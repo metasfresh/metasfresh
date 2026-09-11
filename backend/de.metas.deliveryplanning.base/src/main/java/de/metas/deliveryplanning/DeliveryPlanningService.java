@@ -557,6 +557,12 @@ public class DeliveryPlanningService
 		return deliveryPlanningRepository.getById(deliveryPlanningId).getPlannedDischargeQuantity();
 	}
 
+	/** The outgoing mirror of {@link #getPlannedDischargeQuantity}; same UOM caveat. */
+	public BigDecimal getPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return deliveryPlanningRepository.getById(deliveryPlanningId).getPlannedLoadedQuantity();
+	}
+
 	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
 		deliveryPlanningRepository.setPlannedLoadedQuantity(deliveryPlanningId, quantity);
