@@ -280,6 +280,22 @@ public class ReceiptFromReceiptScheduleService
 	 * <p>
 	 * Failures are suppressed onto the original exception: the caller is already leaving with a real error, and
 	 * losing it to a cleanup problem would hide why the receive failed in the first place.
+	 * <p>
+	 * Two properties of the collaborator worth knowing before changing anything here, both checked rather than
+	 * assumed:
+	 * <ul>
+	 * <li>{@code AbstractHUAllocations#destroyAssignedHU} deletes the allocation FIRST and marks the HU destroyed
+	 * second, so an HU that refused would be left with its allocation already gone. Not reachable from here: the
+	 * only refusal {@code markDestroyed} raises is {@code ERR_HUHasPackages}, and an HU generated seconds earlier
+	 * in this very batch carries no {@code M_Package}. Catching per HU does not widen that either - the delete
+	 * precedes the throw whether or not the loop goes on.</li>
+	 * <li>{@code generateWithinOwnTransaction} returns TOP-LEVEL HUs, so these can be LUs whose TUs are not
+	 * listed. Enough for the quantity, which is what this cleanup is for:
+	 * {@code HUReceiptScheduleDAO#deleteHandlingUnitAllocations} matches {@code M_LU_HU_ID} as well as
+	 * {@code M_TU_HU_ID}, so every nested TU's allocation row goes with its LU's. The nested TUs keep their own
+	 * status under the destroyed LU - as they do after the generator's own reuse pass, which destroys top-level
+	 * HUs the same way.</li>
+	 * </ul>
 	 */
 	private void destroyQuietly(@NonNull final List<GeneratedHUs> generated, @NonNull final RuntimeException cause)
 	{

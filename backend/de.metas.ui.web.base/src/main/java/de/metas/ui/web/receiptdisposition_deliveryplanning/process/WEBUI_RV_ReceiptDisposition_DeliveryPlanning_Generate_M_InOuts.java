@@ -52,17 +52,19 @@ import java.util.List;
  * {@code getProcessInfo().getQueryFilterOrElseTrue()} into that query. The warehouse is mandatory because the
  * same process is reachable from the menu, where there is no selection to narrow anything. This one takes the
  * selection alone ({@code getSelectedRowIds()}, refusing an empty one), so it needs no scoping parameters.</li>
- * <li><b>Packing.</b> 540557 calls {@code generateHUsIfNeeded}, building the real LU/TU structure from each
- * schedule's packing configuration. This one creates one PLANNING VHU per row carrying the quantity alone
- * ({@code ReceiptFromReceiptScheduleService#createPlanningVHU}), because the delivery-planning quantity is the
- * thing being received - so the receipt is unpacked.</li>
+ * <li><b>Packing.</b> Both build the real LU/TU structure from the schedule's packing configuration - this one
+ * through {@code ReceiptFromReceiptScheduleService#createPackedHUs}, deliberately aligned with 540557 so the
+ * two do not produce differently-packed receipts for the same goods. What this one adds is the planning: the
+ * configuration is capped at the ROW's planned share before anything is generated, so a split's sibling cannot
+ * draw the whole order line.</li>
  * <li><b>Grouping.</b> 540557 drives a {@code TrxItemProcessorExecutorService} over the schedules ONE AT A TIME,
  * committing after each, and creates that schedule's receipt inside the loop - so two schedules of the SAME order
  * still land on two separate receipts; nothing aggregates across them. This one collects every VHU first and
  * hands them to a single {@code generateReceipts} call, so one receipt covers the whole selection.</li>
  * </ul>
- * Receiving WITH packing from this window is the job of the per-row HU actions
- * ({@code ..._ReceiveHUs_UsingDefaults} / {@code ..._UsingConfig}), not of this batch action.
+ * The per-row HU actions ({@code ..._ReceiveHUs_UsingDefaults} / {@code ..._UsingConfig}) remain the way to
+ * receive ONE row with a configuration the operator gets to see and change first; this batch action takes the
+ * schedule's configuration as it stands.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_Generate_M_InOuts extends ReceiptDispositionDeliveryPlanningViewBasedProcess
