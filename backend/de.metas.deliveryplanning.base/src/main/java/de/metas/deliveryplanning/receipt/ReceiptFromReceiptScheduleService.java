@@ -373,7 +373,12 @@ public class ReceiptFromReceiptScheduleService
 
 		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContext)
 				.addM_ReceiptSchedule(receiptSchedule)
-				.setUpdateReceiptScheduleDefaultConfiguration(false);
+				.setUpdateReceiptScheduleDefaultConfiguration(false)
+				// A batch receives SEVERAL plannings of one schedule, each with its own share, so their HUs have
+				// to coexist. The generator's default would let this row's generation find the previous row's
+				// planning HUs, judge them unfit for a configuration capped to a different share, and destroy
+				// them - the split's first sibling would silently lose its goods on the way to the receipt.
+				.setReuseExistingPlanningHUs(false);
 		huGenerator.setM_HU_LUTU_Configuration(effectiveConfig);
 
 		final Quantity qtyCUsTotal = huGenerator.getLUTUProducerAllocationDestination().calculateTotalQtyCU();
