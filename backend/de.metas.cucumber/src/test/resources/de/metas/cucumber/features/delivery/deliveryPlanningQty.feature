@@ -1620,12 +1620,26 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
       | planningSyncQty        | 6                     | 7                        | 8             | 9                        |
 
+    # The edit above asks for four independent figures but only THREE of them survive, and that is the coupling
+    # rules working as specified rather than the mirror failing. Within the one save: ActualLoadQty becomes 8, which
+    # settles PlannedDischargeQuantity to 8 (you cannot plan to discharge more than was actually loaded), which in
+    # turn settles ActualDischargeQuantity to 8 (on an outgoing planning that end is assumed from its plan). So the
+    # requested planned-discharge 7 and actual-discharge 9 are both overwritten by the 8 the load end dictates.
+    #
+    # The consequence worth knowing: on an OUTGOING planning the discharge pair cannot be set independently in the
+    # same edit as the actual load - set the load first, then the discharge, in two saves.
+    #
+    # PlannedLoadedQuantity keeps the requested 6: nothing couples back onto the load end from the discharge side.
+    Then validate M_Delivery_Planning:
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | planningSyncQty        | 10         | 2            | Outgoing           | 6                     | 8                        | 8             | 8                       |
+
     # nothing between the edit above and the assertion below: no re-load step, no propagation step. The
     # step-def re-reads the package from the database itself (M_ShippingPackage_StepDef#reloadFromDatabase),
     # which the derived columns require - so this asserts the mirror, not a cucumber-harness reload.
     Then validate M_Shipping_Package:
       | M_ShippingPackage_ID   | ActualLoadQty | ActualDischargeQuantity | PlannedLoadedQuantity | PlannedDischargeQuantity |
-      | shippingPackageSyncQty | 8             | 9                       | 6                     | 7                        |
+      | shippingPackageSyncQty | 8             | 8                       | 6                     | 8                       |
 
   @Id:S31789_TC_Q8_ClosedWithNothingTakenReleasesItsShare
   Scenario: A CLOSED planning that took nothing stops claiming its plan, handing that share back to the open pool
