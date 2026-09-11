@@ -327,12 +327,22 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 		/**
 		 * A sibling's effective claim: its actual once one is recorded ({@code nullif(actual, 0)}), otherwise its planned figure.
+		 * <p>
+		 * A CLOSED planning is the exception, and the zero is the whole point of it: an open planning that has taken
+		 * nothing is still going to happen, so it keeps claiming its plan, but a closed one never will - whatever it
+		 * took is all it is ever going to take. Letting a closed planning fall back to its planned figure lets a dead
+		 * row keep reserving quantity that can never be delivered, so the order line reads fully planned while part of
+		 * it is in fact unplannable and needs a new planning.
 		 */
 		private Quantity effectiveQty(@NonNull final DeliveryPlanning deliveryPlanning)
 		{
 			final Quantity actual = actualExtractor.apply(deliveryPlanning);
+			if (deliveryPlanning.isProcessed())
+			{
+				return actual;
+			}
 			final Quantity planned = plannedExtractor.apply(deliveryPlanning);
-			return actual != null && !actual.isZero() ? actual : planned;
+			return !actual.isZero() ? actual : planned;
 		}
 
 		/** This planning's own actual figure for this end - raw, no nullif fallback. */

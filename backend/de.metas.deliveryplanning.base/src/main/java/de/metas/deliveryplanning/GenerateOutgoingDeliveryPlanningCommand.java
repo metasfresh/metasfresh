@@ -109,7 +109,12 @@ public class GenerateOutgoingDeliveryPlanningCommand
 				.actualLoadedQty(Quantity.zero(uomOfProduct))
 				.plannedLoadedQty(qtyOrdered)
 				.plannedDischargeQty(qtyOrdered)
-				.actualDischargeQty(Quantity.zero(uomOfProduct))
+				// The exact mirror of D22 on the inbound side: nothing ever reports the CUSTOMER's unload, so an
+				// outbound planning's actual discharge starts equal to the planned discharge - never zero. Seeding
+				// zero here made the mirror depend on how the planning came to be: the BEFORE_CHANGE rule applied it
+				// on every later edit of the planned discharge, so an edited planning and a freshly created one with
+				// the same plan disagreed on this column.
+				.actualDischargeQty(qtyOrdered)
 				.uom(uomOfProduct)
 				.plannedDeliveryDate(TimeUtil.asInstant(deliveryDate_effective))
 				.batch(huBatchNo)

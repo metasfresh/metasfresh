@@ -124,6 +124,14 @@ public class GenerateIncomingDeliveryPlanningCommand
 		{
 			final I_C_Order order = orderDAO.getById(orderId);
 
+			// A DROPSHIP discharges at the customer, not at us, so that end is never reported and is mirrored from
+			// the plan exactly as the outbound one is. A plain inbound keeps its zero: its discharge IS our own
+			// receipt, which does report itself.
+			if (order.isDropShip())
+			{
+				requestBuilder.actualDischargeQty(qtyOrdered);
+			}
+
 			requestBuilder.transportDirection(order.isDropShip() ? TransportDirection.Dropship : TransportDirection.Incoming)
 					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
 					.incotermLocation(order.getIncotermLocation())

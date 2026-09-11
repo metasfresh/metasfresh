@@ -366,6 +366,13 @@ public class DeliveryPlanningService
 				? plannedLoadedQty
 				: Quantity.zero(uomToUse);
 
+		// The mirror on the other end, for the same reason: the far end of the transport is never reported back to
+		// us, so it is assumed from the plan. Inbound, the unseen end is the vendor's LOAD (above); outbound and
+		// dropship, it is the customer's DISCHARGE.
+		final Quantity actualDischargeQty = transportDirection.isOutgoingOrDropship()
+				? plannedDischargeQty
+				: Quantity.zero(uomToUse);
+
 		return DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
@@ -388,7 +395,7 @@ public class DeliveryPlanningService
 
 				.plannedLoadedQty(plannedLoadedQty)
 				.plannedDischargeQty(plannedDischargeQty)
-				.actualDischargeQty(Quantity.zero(uomToUse))
+				.actualDischargeQty(actualDischargeQty)
 
 				.uom(uomToUse)
 				.plannedLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getETD()))

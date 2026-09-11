@@ -1019,4 +1019,62 @@ class DeliveryPlanningListTest
 			assertThat(PoolEnd.forDirection(TransportDirection.Outgoing)).isEqualTo(PoolEnd.LOAD);
 		}
 	}
+
+	@Nested
+	@DisplayName("A closed planning's actual is final, zero included")
+	class ProcessedPlanningClaimsItsActual
+	{
+		/**
+		 * Reported from the window: an open planning with a zero actual is still going to happen, so it claims its
+		 * PLANNED figure. A CLOSED one never will - whatever it took is all it is ever going to take - so a closed
+		 * planning that took nothing must claim NOTHING, releasing its share back to the open pool. Falling back to
+		 * its planned figure instead lets a dead planning keep reserving quantity that can never be delivered, and
+		 * the order line reads fully planned while part of it is unplannable.
+		 */
+		private DeliveryPlanningList orderOf100SplitInTwo(final int firstActualDischarge, final boolean firstProcessed)
+		{
+			return DeliveryPlanningList.of(
+					planning()
+							.transportDirection(TransportDirection.Incoming)
+							.qtyOrdered(qty(100))
+							.plannedDischargeQty(qty(50))
+							.actualDischargeQty(qty(firstActualDischarge))
+							.processed(firstProcessed)
+							.build(),
+					planning()
+							.transportDirection(TransportDirection.Incoming)
+							.qtyOrdered(qty(100))
+							.plannedDischargeQty(qty(50))
+							.actualDischargeQty(qty(0))
+							.build());
+		}
+
+		@Test
+		@DisplayName("closed having taken nothing: its 50 goes back to the open pool")
+		void closedWithZeroActualClaimsNothing()
+		{
+			assertThat(orderOf100SplitInTwo(0, true).qtyTotalOpenPlanned(PoolEnd.DISCHARGE)).isEqualTo(qty(50));
+		}
+
+		@Test
+		@DisplayName("still open having taken nothing: it keeps claiming its planned 50")
+		void openWithZeroActualStillClaimsItsPlan()
+		{
+			assertThat(orderOf100SplitInTwo(0, false).qtyTotalOpenPlanned(PoolEnd.DISCHARGE)).isEqualTo(qty(0));
+		}
+
+		@Test
+		@DisplayName("closed short: it claims the 40 it took, not the 50 it planned")
+		void closedShortClaimsWhatItTook()
+		{
+			assertThat(orderOf100SplitInTwo(40, true).qtyTotalOpenPlanned(PoolEnd.DISCHARGE)).isEqualTo(qty(10));
+		}
+
+		@Test
+		@DisplayName("openPlanQty applies the same rule, so the two computations cannot drift")
+		void openPlanQtyAppliesTheSameRule()
+		{
+			assertThat(orderOf100SplitInTwo(0, true).openPlanQty(null, PoolEnd.DISCHARGE)).isEqualTo(qty(50));
+		}
+	}
 }

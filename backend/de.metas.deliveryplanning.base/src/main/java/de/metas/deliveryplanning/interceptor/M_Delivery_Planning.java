@@ -154,7 +154,13 @@ public class M_Delivery_Planning
 			I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity,
 			I_M_Delivery_Planning.COLUMNNAME_PlannedDischargeQuantity,
 			I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty,
-			I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity })
+			I_M_Delivery_Planning.COLUMNNAME_ActualDischargeQuantity,
+			// Closing changes no quantity, but it DOES change what this planning claims: a closed planning's actual
+			// is final, so one that took nothing stops claiming its plan and hands that share back to the open pool
+			// (DeliveryPlanningList.PoolEnd#effectiveQty). Without these two columns here the computation is right
+			// and the stored QtyTotalOpenPlanned is stale - it would only catch up on some later, unrelated qty edit.
+			I_M_Delivery_Planning.COLUMNNAME_Processed,
+			I_M_Delivery_Planning.COLUMNNAME_IsClosed })
 	public void onQuantityChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		deliveryPlanningService.recomputeOpenQuantitiesForOrderLine(deliveryPlanning);
