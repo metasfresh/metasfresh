@@ -157,8 +157,8 @@ class M_Delivery_PlanningEndCouplingTest
 		record.setActualDischargeQuantity(BigDecimal.valueOf(10));
 		record.setActualLoadQty(BigDecimal.valueOf(6));
 
-		// ONE call: the cascade orders itself. This test used to invoke the two rules by hand, in an order the
-		// test chose - which is exactly the assumption that turned out to be wrong in production.
+		// ONE call, deliberately: the cascade orders itself, so this asserts composition as production performs it.
+		// Invoking the rules separately here would let the test pick the order and prove only its own choice.
 		interceptor.settleEnds(record, false, true, false);
 
 		assertThat(record.getPlannedDischargeQuantity()).isEqualByComparingTo("6");
@@ -171,11 +171,10 @@ class M_Delivery_PlanningEndCouplingTest
 	@DisplayName("editing an INCOMING planning's planned LOAD carries all the way to the planned discharge, in one pass")
 	void editingIncomingPlannedLoadReachesThePlannedDischarge()
 	{
-		// The regression the owner spotted. As three separate @ModelChange methods these fired in ALPHABETICAL
-		// method order, so the load-to-discharge rule ran BEFORE the rule that derives ActualLoadQty from the plan
-		// had set it - and nothing re-ran it. The planned discharge kept its original 9 while only 3 would ever be
-		// loaded. Pinned here at the unit level; deliveryPlanningQty.feature's TC_Q7c_FollowsPlanEdit pins the same
-		// thing through a real edit.
+		// The case that proves the cascade is ORDERED: the planned discharge is reached only INDIRECTLY here, via
+		// the ActualLoadQty that step 1 derives from the edited plan. Any arrangement that evaluates the
+		// load-to-discharge rule before step 1 has run leaves the planned discharge at 9 while only 3 will ever be
+		// loaded. deliveryPlanningQty.feature's TC_Q7c_FollowsPlanEdit pins the same thing through a real edit.
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, 9);
 		record.setPlannedLoadedQuantity(BigDecimal.valueOf(3));
 		record.setActualLoadQty(BigDecimal.valueOf(9));

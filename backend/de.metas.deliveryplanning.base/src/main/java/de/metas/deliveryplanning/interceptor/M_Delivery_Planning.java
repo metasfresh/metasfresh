@@ -72,15 +72,13 @@ public class M_Delivery_Planning
 	/**
 	 * The three quantity-coupling rules, applied as ONE ORDERED PASS.
 	 * <p>
-	 * They used to be three separate {@code @ModelChange} methods, and that was a latent bug rather than a style
-	 * choice. {@code ModelValidationEngine} sorts pointcuts by declaring class and then METHOD NAME, so the firing
-	 * order was alphabetical: {@code onActualLoadQtyChanged}, {@code onPlannedDischargeQuantityChanged},
-	 * {@code onPlannedLoadedQuantityChanged}. Editing the planned load of an INCOMING planning therefore ran the
-	 * load-to-discharge rule FIRST - before the rule that derives {@code ActualLoadQty} from the plan had set it -
-	 * so the planned discharge kept describing goods that would never be loaded. Nothing re-ran it. A rename of any
-	 * of those methods would have silently reshuffled the semantics again.
+	 * They belong in a single pointcut because each one's input can be another one's output, and
+	 * {@code ModelValidationEngine} orders pointcuts by declaring class and then METHOD NAME. Split across three
+	 * {@code @ModelChange} methods, the rules would run in alphabetical order - an order no reader chose, that no
+	 * test could pin, and that a rename would silently change - and a rule whose input is produced by a
+	 * later-sorting rule would read a stale value with nothing to re-run it.
 	 * <p>
-	 * Order matters and is now stated once, here, as a cascade:
+	 * The order is therefore stated once, here, as a cascade:
 	 * <ol>
 	 * <li>an inbound or dropship planning has no vendor load report, so its plan is the only source of
 	 * {@code ActualLoadQty};</li>
@@ -93,8 +91,8 @@ public class M_Delivery_Planning
 	 * assumed from its plan. Incoming and dropship are excluded for the one good reason: their discharge IS our own
 	 * receipt, which settles the actual for real.</li>
 	 * </ol>
-	 * Each step feeds the next, which is why a later step keys off "was it settled by an earlier step" and not
-	 * merely off what the user edited.
+	 * Step 1 feeds step 2 and step 2 feeds step 3, which is why each step keys off whether an EARLIER STEP settled
+	 * the value rather than only off what the user edited.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
 			I_M_Delivery_Planning.COLUMNNAME_PlannedLoadedQuantity,
@@ -109,8 +107,8 @@ public class M_Delivery_Planning
 	}
 
 	/**
-	 * The cascade itself, taking WHAT THE USER EDITED as plain flags so the ordering can be tested without
-	 * standing up a record's change-tracking state. See {@link #onQuantityEdited} for why the order is the point.
+	 * The cascade itself, taking WHAT THE USER EDITED as plain flags so the ordering is testable without standing
+	 * up a record's change-tracking state. See {@link #onQuantityEdited} for why the order is the point.
 	 */
 	@VisibleForTesting
 	void settleEnds(

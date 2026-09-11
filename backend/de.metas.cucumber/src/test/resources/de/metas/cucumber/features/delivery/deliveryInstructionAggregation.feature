@@ -640,7 +640,16 @@ Feature: Several delivery plannings on one delivery instruction
       | shippingPackageView_2 | 0             |
 
     # two plannings, two consignment rows - not the 2 x 2 an uncorrelated package join returns,
-    # and each row carries its OWN planning's article and quantities
+    # and each row carries its OWN planning's article and quantities.
+    #
+    # The two views carry COMPLEMENTARY halves of the quantity set, which is why neither table below asserts all
+    # four: M_Delivery_Planning_Delivery_Instructions_V exposes only the two ACTUALs, and
+    # M_ShipperTransportation_Delivery_Instructions_V only the two PLANNED. Together they pin every one.
+    #
+    # ActualLoadQty is 0 on both because these are OUTGOING plannings and nothing has shipped - that end is ours
+    # and only a shipment writes it. ActualDischargeQuantity is NOT 0: the customer's unload is never reported to
+    # us, so on an outgoing planning it is assumed from that planning's own planned discharge (7 and 3 below,
+    # matching the planned figures in the sibling view).
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_Delivery_Planning_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | ActualLoadQty | ActualDischargeQuantity |
       | planningView_1         | product      | 0             | 7                        |
