@@ -1634,12 +1634,13 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
       | planningSyncQty        | 10         | 2            | Outgoing           | 6                     | 8                        | 8             | 8                       |
 
-    # nothing between the edit above and the assertion below: no re-load step, no propagation step. The
+    # nothing MUTATING between the edit further above and the assertion below - the validate step in between
+    # is read-only: no re-load step, no propagation step. The
     # step-def re-reads the package from the database itself (M_ShippingPackage_StepDef#reloadFromDatabase),
     # which the derived columns require - so this asserts the mirror, not a cucumber-harness reload.
     Then validate M_Shipping_Package:
       | M_ShippingPackage_ID   | ActualLoadQty | ActualDischargeQuantity | PlannedLoadedQuantity | PlannedDischargeQuantity |
-      | shippingPackageSyncQty | 8             | 8                       | 6                     | 8                       |
+      | shippingPackageSyncQty | 8             | 8                       | 6                     | 8                        |
 
   @Id:S31789_TC_Q8_ClosedWithNothingTakenReleasesItsShare
   Scenario: A CLOSED planning that took nothing stops claiming its plan, handing that share back to the open pool
