@@ -279,11 +279,11 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 * claim is its ACTUAL once one is recorded and its PLANNED figure until then. Not floored at zero for the
 	 * same reason as {@code QtyTotalOpen}: an over-planned line legitimately shows negative (D16).
 	 * <p>
-	 * This is {@link #openPlanQty} with nothing excluded, and it delegates rather than repeating the sum. It
-	 * previously summed the RAW planned figures, which made a sibling that was received SHORT keep claiming its
-	 * full plan: an order of 100 split 50/50 whose first planning received only 40 reported 0 open-planned
-	 * instead of 10, while QtyTotalOpen correctly reported 60. Two near-identical sums, one using
-	 * {@link PoolEnd#effectiveQty} and one not, is exactly how that drift happened - hence the delegation.
+	 * This is {@link #openPlanQty} with nothing excluded, and it DELEGATES rather than repeating the sum. Two
+	 * near-identical sums, one applying {@link PoolEnd#effectiveQty} and one reading the RAW planned figures,
+	 * drift apart the moment a sibling is received SHORT: on an order of 100 split 50/50 whose first planning
+	 * received only 40, the raw sum reports 0 open-planned where the honest figure is 10, while QtyTotalOpen
+	 * independently reports 60. One sum cannot disagree with itself.
 	 */
 	public Quantity qtyTotalOpenPlanned(@NonNull final PoolEnd end)
 	{

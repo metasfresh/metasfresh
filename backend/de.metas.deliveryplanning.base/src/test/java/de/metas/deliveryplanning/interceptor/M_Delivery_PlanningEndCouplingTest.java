@@ -39,10 +39,11 @@ import static org.mockito.Mockito.mock;
 /**
  * The two ends of a planning do not drift apart: settling one constrains the other's plan.
  * <p>
- * One half already existed - a changed {@code PlannedLoadedQuantity} writes {@code ActualLoadQty} on an
- * incoming planning, where the load happens at the vendor and is taken to match the plan. The other was
- * missing: what was ACTUALLY loaded is the upper bound on what can ever be discharged, so a planned discharge
- * left at the original figure describes an impossibility - discharging goods that were never loaded.
+ * One half is about the LOAD end: a changed {@code PlannedLoadedQuantity} writes {@code ActualLoadQty} on an
+ * incoming planning, where the load happens at the vendor and is taken to match the plan. The other is about
+ * what that load then permits: what was ACTUALLY loaded is the upper bound on what can ever be discharged, so
+ * a planned discharge left at the original figure describes an impossibility - discharging goods that were
+ * never loaded.
  * <p>
  * That constraint is physical and applies in EVERY direction; it does not care who did the loading. What does
  * gate it is a zero actual, which means "not loaded yet" rather than "none will be".

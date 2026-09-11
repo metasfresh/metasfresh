@@ -303,11 +303,11 @@ class DeliveryPlanningGenerateProcessesHelper
 		}
 
 		// Receiving before the planning's delivery instruction is COMPLETED makes no sense, so this is not
-		// optional. It used to sit behind the PreventReceiptIfMissingDeliveryInstructions SysConfig
-		// (default OFF), which left the action offered on a planning the window itself showed as not ready.
-		// Delivery planning is a fresh feature with no active use, so there is no permissive behaviour to
-		// preserve for anyone - and the OUTGOING sibling checkEligibleToCreateShipment has always enforced
-		// the same condition unconditionally, so this also makes the two directions symmetric.
+		// optional, and deliberately NOT behind the PreventReceiptIfMissingDeliveryInstructions SysConfig
+		// (default OFF): gating it there would leave the action offered on a planning the window itself shows
+		// as not ready. Delivery planning is a fresh feature with no active use, so there is no permissive
+		// behaviour owed to anyone - and the OUTGOING sibling checkEligibleToCreateShipment enforces the same
+		// condition unconditionally, so this keeps the two directions symmetric.
 		if (!deliveryPlanningService.hasCompleteDeliveryInstruction(deliveryPlanningId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No completed delivery instruction");

@@ -2201,7 +2201,7 @@ public class DeliveryPlanningService
 	}
 
 	/**
-	 * Scoped by the LINE's own {@code M_Delivery_Planning_ID}, not by document and no longer by
+	 * Scoped by the LINE's own {@code M_Delivery_Planning_ID} - neither by document nor by
 	 * {@code C_OrderLine_ID}: a document can carry other schedules' lines (a consolidating shipment) and even
 	 * other PLANNINGS' lines of the very same order line (siblings of a split received together), so both wider
 	 * scopes book quantities that are not this planning's. The schedule-to-line allocation tables

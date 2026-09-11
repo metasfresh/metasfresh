@@ -15,11 +15,10 @@ import java.util.Set;
  * instruction's {@code DocStatus} qualifies it, and the two resulting flags are stored on
  * {@code M_Delivery_Planning}.
  * <p>
- * It exists because that derivation used to live in {@link DeliveryPlanningAllocRepository}, which meant a
- * repository named for one table issued {@code UPDATE M_Delivery_Planning SET ...} against another
- * aggregate's root - and then had to reset that table's cache by hand, precisely because it had written
- * rows behind their owner's back. A service may call several repositories; a repository may not write a
- * table it does not own.
+ * It exists to keep that derivation OUT of {@link DeliveryPlanningAllocRepository}: a repository named for one
+ * table must not issue {@code UPDATE M_Delivery_Planning SET ...} against another aggregate's root, because
+ * writing rows behind their owner's back forces it to reset that table's cache by hand. A service may call
+ * several repositories; a repository may not write a table it does not own.
  */
 @Service
 public class DeliveryPlanningAllocService

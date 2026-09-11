@@ -51,7 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * It may not, unconditionally: receiving before the instruction is completed makes no business sense, and the
  * window shows {@code IsReadyForReceipt} as a column - so offering the action on a row it just labelled "not
  * ready" is the defect these pin. There is deliberately no SysConfig in the way. The
- * {@code PreventReceiptIfMissingDeliveryInstructions} switch (gh14843, 2023) used to gate the Delivery
+ * {@code PreventReceiptIfMissingDeliveryInstructions} switch (gh14843, 2023) gates the Delivery
  * Planning window's equivalent check with a default of OFF; delivery planning is a fresh feature with no
  * active use, so there was no permissive behaviour to preserve and the switch only kept the defect alive.
  * <p>

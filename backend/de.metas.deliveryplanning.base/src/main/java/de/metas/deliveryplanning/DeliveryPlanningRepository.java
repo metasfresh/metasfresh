@@ -91,8 +91,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * DeliveryInstructionRepository, ShipperTransportationDAO, PurchaseOrderToShipperTransportationRepository
  * (M_ShipperTransportation is shared with the transport-order role, which knows nothing of delivery planning)
  * <p>
- * M_Delivery_Planning_Alloc moved to {@link DeliveryPlanningAllocRepository}, and M_ShippingPackage / M_Package
- * to {@link DeliveryInstructionRepository} / MPackageRepository, so this class no longer owns them.
+ * M_Delivery_Planning_Alloc belongs to {@link DeliveryPlanningAllocRepository}, and M_ShippingPackage / M_Package
+ * to {@link DeliveryInstructionRepository} / MPackageRepository; this class owns none of them.
  * <p>
  * The one injected collaborator is {@link DimensionService}: a dimension is copied from the source row onto the
  * target row as that row is written, which is persistence rather than a delivery-planning decision.
@@ -604,8 +604,8 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Every planning of the given order line, fully populated - see {@link #fromRecordBuilder}. This used to
-	 * carry only the quantity fields the pool needs, with every other field a placeholder; it no longer does.
+	 * Every planning of the given order line, FULLY populated - see {@link #fromRecordBuilder}. Not just the
+	 * quantity fields the pool needs: no field is a placeholder.
 	 */
 	public DeliveryPlanningList getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
@@ -619,13 +619,12 @@ public class DeliveryPlanningRepository
 	 * two location fields (which need the batch-loaded addresses) and the allocations (which need the allocation
 	 * multimap) are added on top, by {@link DeliveryPlanningService}.
 	 * <p>
-	 * There used to be three partial variants - one per caller, each carrying "only what my guard reads" and
-	 * stamping placeholders into the rest, including a hardcoded {@code TransportDirection.Outgoing} for records
-	 * that were frequently Incoming. That is a hazard, not an optimisation: none of them saved a query (all read
-	 * the same already-loaded record), every new field had to be hand-copied into all of them, and any
-	 * downstream code that began reading a placeholder field would silently get a fabricated value. Adding
-	 * {@code IsReadyForReceipt} demonstrated it - one of the four sites was missed on the first pass, and for
-	 * that flag the unset value is the restrictive one.
+	 * ONE builder, never a per-caller partial variant carrying "only what my guard reads" and stamping
+	 * placeholders into the rest. A partial variant is a hazard rather than an optimisation: it saves no query
+	 * (the record is already loaded either way), every new field must be hand-copied into each variant, and any
+	 * downstream code that starts reading a placeholder field silently gets a fabricated value - a hardcoded
+	 * {@code TransportDirection.Outgoing} on a record that is frequently Incoming, say, or an unset
+	 * {@code IsReadyForReceipt} whose default is the restrictive one.
 	 * <p>
 	 * Does NOT populate {@code allocations} - the alloc rows live in another table and are not read here. So
 	 * {@link DeliveryPlanning#isAllocated()} and {@link DeliveryPlanningList#allocatedOnes()} /
@@ -978,7 +977,7 @@ public class DeliveryPlanningRepository
 
 	public void setPlannedLoadedQuantity(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity quantity)
 	{
-		// the Quantity carries its own UOM, so C_UOM_ID no longer has to be remembered alongside it
+		// the Quantity carries its own UOM, so C_UOM_ID does not have to be remembered alongside it
 		updateById(deliveryPlanningId, deliveryPlanning -> deliveryPlanning.toBuilder()
 				.plannedLoadedQty(quantity)
 				.uomId(quantity.getUomId())
