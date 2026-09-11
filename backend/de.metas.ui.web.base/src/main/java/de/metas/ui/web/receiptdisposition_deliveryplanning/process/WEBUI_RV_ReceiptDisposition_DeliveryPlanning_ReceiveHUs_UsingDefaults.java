@@ -39,8 +39,21 @@ import javax.annotation.Nullable;
  * "HUs annehmen Voreinst." on the receipt-disposition delivery-planning window - the one-click primary path and
  * the window's default quick action.
  * <p>
- * Rejects on the same two conditions as {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults}, so a row where
- * no packing instruction resolves hides this action and "CUs annehmen" stays the one-click fallback.
+ * Rejects on the same two conditions as {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults}: a quantity to
+ * receive of zero, and an empty default packing info.
+ * <p>
+ * Note what that does NOT amount to, because the obvious reading is wrong. A row whose product has no
+ * {@code M_HU_PI_Item_Product} does NOT hide this action. {@link HUPackingInfoFormatter} appends the TU name only
+ * for a non-virtual TU, but appends the CU quantity whenever it is positive, and returns {@code null} only when
+ * the whole string came out empty - so such a row still yields a caption like {@code "5 Stk"}, which is not
+ * empty, and the action stays visible captioned by the quantity alone. The empty branch is reachable only when
+ * the quantity is also zero, which the {@code getQtyToMoveTU} guard above has already rejected. "CUs annehmen"
+ * is therefore NOT the one-click fallback for an unpacked product.
+ * <p>
+ * AC7b asks for exactly that fallback, so the acceptance criterion and the shipped behaviour disagree, and the
+ * Playwright spec asserting AC7b fails on purpose rather than being relaxed to match. Which side gives is open -
+ * see {@code ai-work/31789/pending-questions.md}, "QUEUED GATE: AC7b's fallback branch is effectively dead in the
+ * SHARED implementation". This paragraph describes the code as it stands and is accurate either way.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveHUs_UsingDefaults extends ReceiptDispositionDeliveryPlanningReceiveHUsProcess
