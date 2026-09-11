@@ -3,6 +3,8 @@ package de.metas.material.dispo.commons.repository;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.DimensionService;
@@ -14,6 +16,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.CandidatesGroup;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.AtpReconciliationDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
@@ -23,6 +26,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.AtpReconciliationDetailRepo;
 import de.metas.material.dispo.commons.repository.repohelpers.DemandDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
@@ -46,17 +50,21 @@ import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
@@ -88,19 +96,40 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
  * #L%
  */
 
+/**
+ * Repository Tables: MD_Candidate, MD_Candidate_Demand_Detail, MD_Candidate_Dist_Detail, MD_Candidate_Prod_Detail,
+ * MD_Candidate_Transaction_Detail
+ * Repository Cluster: CandidateRepositoryRetrieval, CandidateRepositoryWriteService
+ * <p>
+ * The read side of the {@code MD_Candidate} aggregate: loads {@link Candidate}s (and their business-case detail)
+ * by id, by natural-key query, by group, or by owning {@code PP_Order}. {@link CandidateRepositoryWriteService} is
+ * the write side of the same cluster; together they are the sole owners of {@code MD_Candidate} and the four
+ * detail tables listed above.
+ * <p>
+ * {@code MD_Candidate_Purchase_Detail}, {@code MD_Candidate_StockChange_Detail} and {@code MD_ATP_Reconciliation_Backup}
+ * (the correction candidate's own row only) are read here too, but only by delegating to their own repo helpers
+ * ({@link PurchaseDetailRepoHelper}, {@link StockChangeDetailRepo}, {@link AtpReconciliationDetailRepo}) - this
+ * class claims no ownership of those tables.
+ */
 @Service
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class CandidateRepositoryRetrieval
 {
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final DimensionService dimensionService;
-	private final StockChangeDetailRepo stockChangeDetailRepo;
+	@NonNull private final DimensionService dimensionService;
+	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
+	@NonNull private final AtpReconciliationDetailRepo atpReconciliationDetailRepo;
 
+	/**
+	 * Legacy 2-arg shape, kept so the many existing test call sites that construct this class directly don't all
+	 * need touching for one new business-case detail repo - delegates with a bare {@code new}, harmless since
+	 * {@link AtpReconciliationDetailRepo} carries no state of its own (same as {@link StockChangeDetailRepo}).
+	 */
 	public CandidateRepositoryRetrieval(
 			@NonNull final DimensionService dimensionService,
 			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
 	{
-		this.dimensionService = dimensionService;
-		this.stockChangeDetailRepo = stockChangeDetailRepo;
+		this(dimensionService, stockChangeDetailRepo, new AtpReconciliationDetailRepo());
 	}
 
 	public Candidate retrieveById(@NonNull final CandidateId candidateId)
@@ -108,6 +137,70 @@ public class CandidateRepositoryRetrieval
 		candidateId.assertRegular();
 		return retrieveLatestMatch(CandidatesQuery.fromId(candidateId))
 				.orElseThrow(() -> new AdempiereException("No candidate found for " + candidateId));
+	}
+
+	/**
+	 * Reads {@code QtyFulfilled} for the given candidates in ONE query. That column is not part of the
+	 * {@link Candidate} value object, so a caller that needs it has to come back here for it; doing so per
+	 * candidate via {@link #retrieveById(CandidateId)} would turn one candidate chain into as many round
+	 * trips as it has positions.
+	 *
+	 * @return the {@code QtyFulfilled} per candidate id. An id without a matching record is simply absent
+	 * from the map, so callers have to decide themselves what a missing id means (usually
+	 * {@link BigDecimal#ZERO}).
+	 */
+	public ImmutableMap<CandidateId, BigDecimal> getQtyFulfilledByCandidateIds(@NonNull final Collection<CandidateId> candidateIds)
+	{
+		if (candidateIds.isEmpty())
+		{
+			// short-circuit *before* querying: an empty addInArrayFilter would be no filter at all, and the
+			// query would then select the whole MD_Candidate table
+			return ImmutableMap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addInArrayFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> CandidateId.ofRepoId(record.getMD_Candidate_ID()),
+						I_MD_Candidate::getQtyFulfilled));
+	}
+
+	/**
+	 * Types whose candidates are <b>planned</b> movements: they move the chain's running balance before
+	 * anything physical has happened, which is why a chain that carries one legitimately disagrees with
+	 * {@code MD_Stock.QtyOnHand}.
+	 * <p>
+	 * Every other non-{@code STOCK} type is deliberately left out. {@code UNEXPECTED_INCREASE}/
+	 * {@code _DECREASE}, {@code INVENTORY_UP}/{@code _DOWN} and {@code ATTRIBUTES_CHANGED_FROM}/{@code _TO}
+	 * all record something that already happened physically, so they belong to the physical baseline rather
+	 * than to the positions - and the last four of them are known to keep a {@code Qty}/{@code QtyFulfilled}
+	 * gap regardless, so counting them would report a position on nearly every key. {@code STOCK_UP} creates
+	 * no stock candidate at all and therefore never moves the running balance.
+	 */
+	private static final ImmutableSet<String> PLANNED_POSITION_TYPES = ImmutableSet.of(
+			X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND,
+			X_MD_Candidate.MD_CANDIDATE_TYPE_SUPPLY);
+
+	/**
+	 * Does the queried part of the chain carry at least one planned position that has not been fully
+	 * realized yet, i.e. one whose {@code Qty} is not (yet) matched by its {@code QtyFulfilled}?
+	 * <p>
+	 * This is deliberately a coarse <b>quantity</b> test and says nothing about whether the position's
+	 * source document is still open - that question needs the document tables, which are owned by modules
+	 * downstream of this one. It answers only "is this chain's running balance carrying anything besides
+	 * the physical baseline?", and it answers it conservatively: a leftover position of a document that has
+	 * meanwhile been closed still counts. A caller may therefore use the {@code true} answer only to
+	 * <i>refrain</i> from treating the bare physical quantity as the chain's correct balance - never to
+	 * derive a balance from it.
+	 */
+	public boolean hasUnfulfilledPlannedPositions(@NonNull final CandidatesQuery query)
+	{
+		return RepositoryCommons.mkQueryBuilder(query)
+				.addInArrayFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, PLANNED_POSITION_TYPES)
+				.filter(TypedSqlQueryFilter.of(I_MD_Candidate.COLUMNNAME_Qty + " <> COALESCE(" + I_MD_Candidate.COLUMNNAME_QtyFulfilled + ", 0)"))
+				.anyMatch();
 	}
 
 	/**
@@ -171,19 +264,21 @@ public class CandidateRepositoryRetrieval
 		final DistributionDetail distributionDetailOrNull = retrieveDistributionDetailOrNull(candidateId);
 		final PurchaseDetail purchaseDetailOrNull = PurchaseDetailRepoHelper.getSingleForCandidateRecordOrNull(candidateId);
 		final StockChangeDetail stockChangeDetailOrNull = stockChangeDetailRepo.getSingleForCandidateRecordOrNull(candidateId);
+		final AtpReconciliationDetail atpReconciliationDetailOrNull = atpReconciliationDetailRepo.getSingleForCandidateRecordOrNull(candidateId);
 
 		final int hasProductionDetail = productionDetailOrNull == null ? 0 : 1;
 		final int hasDistributionDetail = distributionDetailOrNull == null ? 0 : 1;
 		final int hasPurchaseDetail = purchaseDetailOrNull == null ? 0 : 1;
 		final int hasStockChangeDetail = stockChangeDetailOrNull == null ? 0 : 1;
+		final int hasAtpReconciliationDetail = atpReconciliationDetailOrNull == null ? 0 : 1;
 
-		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail + hasStockChangeDetail > 1,
-				"A candidate may not have both a distribution, production, production detail and a hasStockChangeDetail; candidateRecord={}", candidateRecordOrNull);
+		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail + hasStockChangeDetail + hasAtpReconciliationDetail > 1,
+				"A candidate may not have more than one of a distribution, production, purchase, stock-change or atp-reconciliation detail; candidateRecord={}", candidateRecordOrNull);
 
 		final DemandDetail demandDetailOrNull = retrieveDemandDetailOrNull(candidateId);
 
 		final BusinessCaseDetail businessCaseDetail = CoalesceUtil.coalesce(productionDetailOrNull, distributionDetailOrNull, purchaseDetailOrNull,
-				demandDetailOrNull, stockChangeDetailOrNull);
+				demandDetailOrNull, stockChangeDetailOrNull, atpReconciliationDetailOrNull);
 		builder.businessCaseDetail(businessCaseDetail);
 		if (hasProductionDetail > 0 || hasDistributionDetail > 0 || hasPurchaseDetail > 0)
 		{

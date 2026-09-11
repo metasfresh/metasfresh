@@ -148,8 +148,6 @@ Feature: MD_Candidate_Remove_From_ATP process
       | pol_atp_003 | po_atp_003 | product_atp  | 150        |
     And the order identified by po_atp_003 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
-
     # Verify all candidates
     And after not more than 10s, MD_Candidates are found
       | Identifier             | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty  | ATP | M_Warehouse_ID |
@@ -236,7 +234,6 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_004_3  | so_004_3   | product_atp  | 35         |
     And the order identified by so_004_3 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     # Verify all candidates are present with correct ATP chain
     And after not more than 10s, MD_Candidates are found

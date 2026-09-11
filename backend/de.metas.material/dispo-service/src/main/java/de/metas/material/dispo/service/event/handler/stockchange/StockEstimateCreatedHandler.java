@@ -33,7 +33,9 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -42,18 +44,11 @@ import java.util.Collection;
 
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class StockEstimateCreatedHandler implements MaterialEventHandler<AbstractStockEstimateEvent>
 {
-	private final CandidateChangeService candidateChangeHandler;
-	private final StockEstimateEventService stockEstimateEventService;
-
-	public StockEstimateCreatedHandler(
-			@NonNull final CandidateChangeService candidateChangeHandler,
-			@NonNull final StockEstimateEventService stockEstimateEventService)
-	{
-		this.candidateChangeHandler = candidateChangeHandler;
-		this.stockEstimateEventService = stockEstimateEventService;
-	}
+	@NonNull private final CandidateChangeService candidateChangeHandler;
+	@NonNull private final StockEstimateEventService stockEstimateEventService;
 
 	@Override
 	public Collection<Class<? extends AbstractStockEstimateEvent>> getHandledEventType()
@@ -71,6 +66,14 @@ public class StockEstimateCreatedHandler implements MaterialEventHandler<Abstrac
 			throw new AdempiereException("No candidate should exist for event, but an actual candidate was returned")
 					.appendParametersToMessage()
 					.setParameter("StockEstimateCreatedEvent", event);
+		}
+
+		if (stockEstimateEventService.hasUnfulfilledPlannedPositions(event))
+		{
+			// re-baselining onto the bare counted qty would silently absorb it - unlike StockChangedEventHandler,
+			// this event carries no old/new pair to fall back to a physical-movement delta, so the safe choice is
+			// to write nothing and leave the correction to the ATP reconciliation process.
+			return;
 		}
 
 		final Candidate previousStockOrNull = stockEstimateEventService.retrievePreviousStockCandidateOrNull(event);
