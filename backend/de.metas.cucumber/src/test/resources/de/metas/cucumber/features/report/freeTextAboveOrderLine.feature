@@ -192,9 +192,11 @@ Feature: Free text above an order line
 
   @Id:S27486_60
   Scenario: A free text prints as the line directly above its own position on the invoice
+    # InvoiceRule=D pins the candidates to the DELIVERED quantity; without it the rule the order inherits
+    # decides whether the invoice waits for the shipment below, which is not this scenario's to assume
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
-      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID | InvoiceRule |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 | D           |
     # position 10 carries no free text and only serves as the anchor above position 20
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
@@ -207,7 +209,7 @@ Feature: Free text above an order line
       | Identifier       | C_OrderLine_ID | IsToRecompute |
       | scheduleLeadIn   | lineLeadIn     | N             |
       | scheduleWithText | lineWithText   | N             |
-    # AUTO_SHIP_AND_INVOICE is off, so the invoice candidates only become invoiceable once delivered
+    # AUTO_SHIP_AND_INVOICE is off, so the delivery is made here rather than by order completion
     And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
       | M_ShipmentSchedule_ID |
       | scheduleLeadIn        |
