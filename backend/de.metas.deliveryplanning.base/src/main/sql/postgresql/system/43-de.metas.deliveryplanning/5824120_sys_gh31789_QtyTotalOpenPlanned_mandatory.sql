@@ -15,19 +15,24 @@
 -- unplanned. That is also why generateDeliveryPlanning seeds QtyTotalOpen and needs no separate seed here -
 -- the default expresses the same fact.
 --
--- Safe to enforce: 0 of 6224 rows on the deep_tundra stack are null, and the DEFAULT is applied before the
--- NOT NULL so any row the AFTER_NEW recompute has not reached yet - including a planning with no order line,
--- where that recompute returns early - carries 0 rather than blocking the migration.
+-- Safe to enforce: 0 of 6224 rows on the deep_tundra stack are null, and the DEFAULT is applied before BOTH the
+-- backfill and the NOT NULL, so any row the AFTER_NEW recompute has not reached yet - including a planning with
+-- no order line, where that recompute returns early - carries 0 rather than blocking the migration.
 
 -- backup_table because this backfills a business table before making the column NOT NULL.
 
 SELECT backup_table('m_delivery_planning', '_gh31789_QtyTotalOpenPlanned_mandatory')
 ;
 
-UPDATE M_Delivery_Planning SET QtyTotalOpenPlanned = 0 WHERE QtyTotalOpenPlanned IS NULL
-;
+-- DEFAULT first, THEN the backfill, THEN NOT NULL - the order matters and is not interchangeable.
+-- Backfilling first would leave a window between the UPDATE and the DEFAULT in which a row inserted with no
+-- value for this column is still NULL, and the NOT NULL that follows would then fail on it. Setting the DEFAULT
+-- first means every row created from that point carries 0, so the backfill has a closed set to fix.
 
 /* DDL */ SELECT public.db_alter_table('M_Delivery_Planning','ALTER TABLE public.M_Delivery_Planning ALTER COLUMN QtyTotalOpenPlanned SET DEFAULT 0')
+;
+
+UPDATE M_Delivery_Planning SET QtyTotalOpenPlanned = 0 WHERE QtyTotalOpenPlanned IS NULL
 ;
 
 /* DDL */ SELECT public.db_alter_table('M_Delivery_Planning','ALTER TABLE public.M_Delivery_Planning ALTER COLUMN QtyTotalOpenPlanned SET NOT NULL')
