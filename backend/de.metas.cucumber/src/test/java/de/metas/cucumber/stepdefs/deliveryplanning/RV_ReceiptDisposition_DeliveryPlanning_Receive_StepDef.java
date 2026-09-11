@@ -24,7 +24,10 @@ package de.metas.cucumber.stepdefs.deliveryplanning;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -233,9 +236,13 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 							.as("MovementQty of the line %s of receipt %s", key, receipt.getDocumentNo())
 							.isEqualByComparingTo(expectedMovementQty));
 
-			// The PACKING the line was received into. Asserted on the LINE because that is where it survives:
-			// M_InOutLine.M_HU_PI_Item_Product_ID records the configuration the HUs were built to, so a receive
-			// that ignored the configuration and produced a bare virtual HU leaves it unset.
+			// The TUs the line's goods arrived in, as the producer counted them:
+			// InOutProducerFromReceiptScheduleHU#transferHandlingUnits resets HUPackingMaterialsCollector's TU
+			// tally per line and writes it here, and that tally is incremented from the HU's UNIT TYPE - one per
+			// TU, an aggregate's represented count for a "bag", zero for anything else. A receive that ignored
+			// the configuration and produced a bare virtual HU therefore leaves this at zero.
+			//
+			// To assert the HUs THEMSELVES rather than this derived count, use the handling-units step below.
 			//
 			// Via de.metas.handlingunits.model.I_M_InOutLine - the HU columns are not on org.compiere.model's
 			// generated interface, they live on the hand-written handling-units view of the same table.
@@ -244,6 +251,94 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 							.as("QtyTU_Calculated of the line %s of receipt %s", key, receipt.getDocumentNo())
 							.isEqualByComparingTo(expectedQtyTU));
 		});
+	}
+
+	/**
+	 * Asserts the HANDLING UNITS a receipt's goods actually arrived in, rather than the TU count the producer
+	 * derived onto the line.
+	 * <p>
+	 * Needed because {@code QtyTU_Calculated} cannot answer the question it looks like it answers. It is
+	 * {@code HUPackingMaterialsCollector}'s TU tally, reset per line, and the collector skips any HU whose
+	 * packing material is our own ({@code isHUPlanningReceiptOwnerPM}) and de-duplicates by {@code M_HU_ID} - so
+	 * a count of one is equally consistent with "one TU" and with "several TUs, only one of them counted". The
+	 * assignments are the ground truth: one row per TU that reached the receipt.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> - (required, identifier-ref) the receipt<br>
+	 *   <b>TUCount</b> - (required, number) how many DISTINCT TU handling units its lines are assigned to<br>
+	 *   <b>OPT.QtyCUsPerTU</b> - (optional, comma-separated numbers, ascending) each TU's stocked quantity, so a
+	 *   TU filled past its packing instruction is visible<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate the handling units behind the material receipt:
+	 *   | M_InOut_ID | TUCount | OPT.QtyCUsPerTU |
+	 *   | receipt_1  | 2       | 5,10            |
+	 * </pre>
+	 */
+	@Then("^validate the handling units behind the material receipt:$")
+	public void validateHandlingUnitsBehindTheReceipt(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::validateHandlingUnitsOfOneReceipt);
+	}
+
+	private void validateHandlingUnitsOfOneReceipt(@NonNull final DataTableRow row)
+	{
+		final I_M_InOut receipt = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inOutTable);
+
+		final ImmutableSet<Integer> lineIds = queryBL
+				.createQueryBuilder(I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, receipt.getM_InOut_ID())
+				.create()
+				.stream()
+				// Packing-material lines carry no goods, so no TU of their own.
+				.filter(line -> line.getC_OrderLine_ID() > 0)
+				.map(I_M_InOutLine::getM_InOutLine_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<Integer> tuHuIds = queryBL
+				.createQueryBuilder(I_M_HU_Assignment.class)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, lineIds)
+				.create()
+				.stream()
+				.map(I_M_HU_Assignment::getM_TU_HU_ID)
+				.filter(tuHuId -> tuHuId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		assertThat(tuHuIds)
+				.as("DISTINCT TU handling units assigned to the lines of receipt %s", receipt.getDocumentNo())
+				.hasSize(row.getAsInt("TUCount"));
+
+		row.getAsOptionalString("QtyCUsPerTU").ifPresent(expected -> {
+			final List<BigDecimal> actualQtys = tuHuIds.stream()
+					.map(this::stockedQtyOfHU)
+					.sorted()
+					.collect(ImmutableList.toImmutableList());
+
+			final List<BigDecimal> expectedQtys = Stream.of(expected.split(","))
+					.map(String::trim)
+					.map(BigDecimal::new)
+					.sorted()
+					.collect(ImmutableList.toImmutableList());
+
+			assertThat(actualQtys)
+					.as("stocked quantity per TU of receipt %s - a TU holding more than its packing instruction allows shows up here", receipt.getDocumentNo())
+					.usingElementComparator(BigDecimal::compareTo)
+					.containsExactlyElementsOf(expectedQtys);
+		});
+	}
+
+	private BigDecimal stockedQtyOfHU(final int huId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_HU_Storage.class)
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.stream()
+				.map(I_M_HU_Storage::getQty)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	private OrderLineAndDeliveryPlanning extractExpectedKey(@NonNull final DataTableRow row)
