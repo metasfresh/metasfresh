@@ -56,7 +56,10 @@ public class DistributionJobQueries
 				.warehouseToIds(warehouseToIds)
 				.locatorToIds(InSetPredicate.onlyOrAny(query.getLocatorToId()))
 				.excludeLocatorToIds(query.getExcludeLocatorToIds())
-				.salesOrderIds(activeFacetIds.getSalesOrderIds())
+				// NOT .salesOrderIds(...) here: that would filter on the header DD_Order.C_Order_ID only, which
+				// the replenishment path never sets. The sales-order facet is carried by the demand-side line
+				// restriction instead (DistributionWorkflowLaunchersProvider#buildLineIdRestrictions ->
+				// DDOrderLineDemandSqlHelper#bySalesOrderIds), which ORs the header back in as one of its routes.
 				.manufacturingOrderIds(activeFacetIds.getManufacturingOrderIds())
 				.datesPromised(activeFacetIds.getDatesPromised())
 				.productIds(activeFacetIds.getProductIds())
