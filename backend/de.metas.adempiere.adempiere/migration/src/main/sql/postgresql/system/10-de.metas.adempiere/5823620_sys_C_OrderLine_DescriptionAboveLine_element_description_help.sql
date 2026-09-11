@@ -25,32 +25,32 @@
 -- propagation call, with the base language (de_DE) additionally syncing the base AD_Element row.
 
 -- Element: DescriptionAboveLine (de_CH mirrors de_DE base text)
--- 2026-09-11T09:30:00.000Z
-UPDATE AD_Element_Trl SET Description='Freier Text, der auf den Dokumenten als eigener Block direkt über dieser Auftragsposition gedruckt wird.', Help='Der Text wird auf Auftragsbestätigung, Lieferschein, Pickliste und Rechnung als eigener Block über die volle Breite unmittelbar über der Artikelzeile dieser Position gedruckt. Gemeint ist dabei die Pickliste der Druckaktion "Pickliste drucken"; auf der Pickliste des Traffic Managers (Druckaktion "Pickliste drucken (Traffic Manager)") wird der Text nicht gedruckt. Er gilt nur für diese Position; jede Auftragsposition hat ihr eigenes Feld. Ist das Feld leer oder enthält es nur Leerzeichen, wird nichts gedruckt und es bleibt auch keine Leerzeile stehen. Längerer Text wird automatisch auf mehrere Zeilen umgebrochen. Bitte beachten: Emojis und andere Sonderzeichen (zum Beispiel Häkchen oder Pfeile) werden im Eingabefeld angezeigt, fehlen auf dem gedruckten Dokument aber vollständig, ohne Ersatzzeichen. Verwenden Sie daher nur normale Buchstaben, Zahlen und Satzzeichen; Umlaute, ß und das Euro-Zeichen werden korrekt gedruckt.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-11 09:30:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585448 AND AD_Language='de_CH'
+-- 2026-09-11T09:45:00.000Z
+UPDATE AD_Element_Trl SET Description='Freier Text, der auf den Dokumenten als eigener Block direkt über dieser Auftragsposition gedruckt wird.', Help='Der Text wird auf Auftragsbestätigung, Lieferschein, Pickliste und Rechnung als eigener Block über die volle Breite unmittelbar über der Artikelzeile dieser Position gedruckt. Gemeint ist dabei die Pickliste der Aktion "Pickliste drucken"; auf der Pickliste des Traffic Managers (Aktion "Pickliste drucken (Traffic Manager)") wird der Text nicht gedruckt. Er gilt nur für diese Position; jede Auftragsposition hat ihr eigenes Feld. Ist das Feld leer oder enthält es nur Leerzeichen, wird nichts gedruckt und es bleibt auch keine Leerzeile stehen. Längerer Text wird automatisch auf mehrere Zeilen umgebrochen. Bitte beachten: Emojis und andere Sonderzeichen (zum Beispiel Häkchen oder Pfeile) werden im Eingabefeld angezeigt, fehlen auf dem gedruckten Dokument aber vollständig, ohne Ersatzzeichen. Verwenden Sie daher nur normale Buchstaben, Zahlen und Satzzeichen; Umlaute, ß und das Euro-Zeichen werden korrekt gedruckt.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-11 09:45:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585448 AND AD_Language='de_CH'
 ;
 
--- 2026-09-11T09:30:01.000Z
+-- 2026-09-11T09:45:01.000Z
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585448,'de_CH')
 ;
 
 -- Element: DescriptionAboveLine (de_DE base language)
--- 2026-09-11T09:30:02.000Z
-UPDATE AD_Element_Trl SET Description='Freier Text, der auf den Dokumenten als eigener Block direkt über dieser Auftragsposition gedruckt wird.', Help='Der Text wird auf Auftragsbestätigung, Lieferschein, Pickliste und Rechnung als eigener Block über die volle Breite unmittelbar über der Artikelzeile dieser Position gedruckt. Gemeint ist dabei die Pickliste der Druckaktion "Pickliste drucken"; auf der Pickliste des Traffic Managers (Druckaktion "Pickliste drucken (Traffic Manager)") wird der Text nicht gedruckt. Er gilt nur für diese Position; jede Auftragsposition hat ihr eigenes Feld. Ist das Feld leer oder enthält es nur Leerzeichen, wird nichts gedruckt und es bleibt auch keine Leerzeile stehen. Längerer Text wird automatisch auf mehrere Zeilen umgebrochen. Bitte beachten: Emojis und andere Sonderzeichen (zum Beispiel Häkchen oder Pfeile) werden im Eingabefeld angezeigt, fehlen auf dem gedruckten Dokument aber vollständig, ohne Ersatzzeichen. Verwenden Sie daher nur normale Buchstaben, Zahlen und Satzzeichen; Umlaute, ß und das Euro-Zeichen werden korrekt gedruckt.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-11 09:30:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585448 AND AD_Language='de_DE'
+-- 2026-09-11T09:45:02.000Z
+UPDATE AD_Element_Trl SET Description='Freier Text, der auf den Dokumenten als eigener Block direkt über dieser Auftragsposition gedruckt wird.', Help='Der Text wird auf Auftragsbestätigung, Lieferschein, Pickliste und Rechnung als eigener Block über die volle Breite unmittelbar über der Artikelzeile dieser Position gedruckt. Gemeint ist dabei die Pickliste der Aktion "Pickliste drucken"; auf der Pickliste des Traffic Managers (Aktion "Pickliste drucken (Traffic Manager)") wird der Text nicht gedruckt. Er gilt nur für diese Position; jede Auftragsposition hat ihr eigenes Feld. Ist das Feld leer oder enthält es nur Leerzeichen, wird nichts gedruckt und es bleibt auch keine Leerzeile stehen. Längerer Text wird automatisch auf mehrere Zeilen umgebrochen. Bitte beachten: Emojis und andere Sonderzeichen (zum Beispiel Häkchen oder Pfeile) werden im Eingabefeld angezeigt, fehlen auf dem gedruckten Dokument aber vollständig, ohne Ersatzzeichen. Verwenden Sie daher nur normale Buchstaben, Zahlen und Satzzeichen; Umlaute, ß und das Euro-Zeichen werden korrekt gedruckt.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-11 09:45:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585448 AND AD_Language='de_DE'
 ;
 
--- 2026-09-11T09:30:03.000Z
+-- 2026-09-11T09:45:03.000Z
 /* DDL */ select update_ad_element_on_ad_element_trl_update(585448,'de_DE')
 ;
 
--- 2026-09-11T09:30:04.000Z
+-- 2026-09-11T09:45:04.000Z
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585448,'de_DE')
 ;
 
 -- Element: DescriptionAboveLine (en_US override)
--- 2026-09-11T09:30:05.000Z
-UPDATE AD_Element_Trl SET Description='Free text that is printed on the documents as a separate block directly above this order line.', Help='The text is printed on the order confirmation, the delivery note, the picking list and the invoice as a separate, full-width block immediately above the article row of this line. The picking list meant here is the one of the "Print Picking list" action; the text is not printed on the Traffic Manager picking list (the "Print Picking List (Traffic Manager)" action). It applies to this line only; every order line has its own field. If the field is empty or contains only blanks, nothing is printed and no empty gap is left behind. Longer text wraps automatically onto several lines. Please note: emoji and other special symbols (a check mark or an arrow, for example) are shown in the input field, but they are missing entirely from the printed document, with no replacement character. Use ordinary letters, digits and punctuation; German umlauts, sharp s, accented Western European letters and the euro sign are printed correctly.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-11 09:30:05','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585448 AND AD_Language='en_US'
+-- 2026-09-11T09:45:05.000Z
+UPDATE AD_Element_Trl SET Description='Free text that is printed on the documents as a separate block directly above this order line.', Help='The text is printed on the order confirmation, the delivery note, the picking list and the invoice as a separate, full-width block immediately above the article row of this line. The picking list meant here is the one printed by the "Print Picking list" action; the text is not printed on the Traffic Manager picking list (the "Print Picking List (Traffic Manager)" action). It applies to this line only; every order line has its own field. If the field is empty or contains only blanks, nothing is printed and no empty gap is left behind. Longer text wraps automatically onto several lines. Please note: emoji and other special symbols (a check mark or an arrow, for example) are shown in the input field, but they are missing entirely from the printed document, with no replacement character. Use ordinary letters, digits and punctuation; German umlauts, sharp s, accented Western European letters and the euro sign are printed correctly.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-11 09:45:05','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=585448 AND AD_Language='en_US'
 ;
 
--- 2026-09-11T09:30:06.000Z
+-- 2026-09-11T09:45:06.000Z
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585448,'en_US')
 ;
