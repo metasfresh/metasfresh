@@ -47,16 +47,19 @@ import java.util.List;
  * <b>It shares its name with {@code M_ReceiptSchedule_Generate_M_InOuts} (540557) but is NOT the same
  * operation</b>, and the difference is visible in what the operator gets back:
  * <ul>
- * <li><b>Scope.</b> 540557 carries no selection handling at all - it queries every unprocessed schedule matching
- * its mandatory warehouse plus optional date range, so running it on a single row does not limit it to that row.
- * This one is driven by {@code getSelectedRowIds()} and refuses an empty selection, which is why it needs none of
- * those parameters.</li>
+ * <li><b>Scope.</b> 540557 selects by QUERY: `Processed='N'` + `QtyToMove>0`, narrowed by a mandatory warehouse
+ * and an optional date range, and ALSO by the window selection when one exists - it passes
+ * {@code getProcessInfo().getQueryFilterOrElseTrue()} into that query. The warehouse is mandatory because the
+ * same process is reachable from the menu, where there is no selection to narrow anything. This one takes the
+ * selection alone ({@code getSelectedRowIds()}, refusing an empty one), so it needs no scoping parameters.</li>
  * <li><b>Packing.</b> 540557 calls {@code generateHUsIfNeeded}, building the real LU/TU structure from each
  * schedule's packing configuration. This one creates one PLANNING VHU per row carrying the quantity alone
  * ({@code ReceiptFromReceiptScheduleService#createPlanningVHU}), because the delivery-planning quantity is the
  * thing being received - so the receipt is unpacked.</li>
- * <li><b>Grouping.</b> 540557 builds its receipts per schedule. This one hands every VHU to a single
- * {@code generateReceipts} call, so one receipt can cover several lines.</li>
+ * <li><b>Grouping.</b> 540557 drives a {@code TrxItemProcessorExecutorService} over the schedules ONE AT A TIME,
+ * committing after each, and creates that schedule's receipt inside the loop - so two schedules of the SAME order
+ * still land on two separate receipts; nothing aggregates across them. This one collects every VHU first and
+ * hands them to a single {@code generateReceipts} call, so one receipt covers the whole selection.</li>
  * </ul>
  * Receiving WITH packing from this window is the job of the per-row HU actions
  * ({@code ..._ReceiveHUs_UsingDefaults} / {@code ..._UsingConfig}), not of this batch action.
