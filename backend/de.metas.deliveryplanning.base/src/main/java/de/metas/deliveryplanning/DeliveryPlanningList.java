@@ -341,12 +341,6 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 			return actualExtractor.apply(deliveryPlanning);
 		}
 
-		/** This planning's own planned figure for this end. */
-		public Quantity planned(@NonNull final DeliveryPlanning deliveryPlanning)
-		{
-			return plannedExtractor.apply(deliveryPlanning);
-		}
-
 		/**
 		 * Decided by DIRECTION: a receipt (incoming or dropship) nets discharge, a shipment nets load.
 		 */
