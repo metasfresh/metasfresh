@@ -304,7 +304,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 
 	private BigDecimal currentCostPriceOf(final CostDetailCreateRequest request)
 	{
-		return utils.getCurrentCost(request).getCostPrice().toBigDecimal();
+		return utils.getCurrentCostForUpdate(request).getCostPrice().toBigDecimal();
 	}
 
 	//
