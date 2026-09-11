@@ -582,11 +582,16 @@ Feature: Delivery planning quantities
 
     # QtyTotalOpen is a live ORDER-LINE total (not a per-row figure) - Outgoing nets load, so the
     # write above moves BOTH rows at once from 20 (QtyOrdered - actual 0) to 14 (QtyOrdered - actual 6),
-    # before any second split exists. QtyTotalOpenPlanned is untouched (0): nothing PLANNED changed here.
+    # before any second split exists.
+    #
+    # QtyTotalOpenPlanned moves too, to 4. A sibling's CLAIM on the line is its actual once one is recorded
+    # and its planned figure until then, so deliveryPlanningPartial_2's claim is now settled at the 6 it
+    # actually took rather than the 10 it planned: 20 - 10 - 6. Delivering SHORT of plan frees the difference,
+    # which is the same rule the pool below applies - these two figures must not disagree.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | ActualLoadQty | QtyTotalOpenPlanned |
-      | deliveryPlanningPartial_1 | 20         | 14           | Outgoing            | 0             | 0                    |
-      | deliveryPlanningPartial_2 | 20         | 14           | Outgoing            | 6             | 0                    |
+      | deliveryPlanningPartial_1 | 20         | 14           | Outgoing            | 0             | 4                    |
+      | deliveryPlanningPartial_2 | 20         | 14           | Outgoing            | 6             | 4                    |
 
     # The pool for deliveryPlanningPartial_1's split nets deliveryPlanningPartial_2's ACTUAL (6, nonzero) -
     # QtyOrdered(20) - 6 = 14 - not its still-fully-claimed PLANNED figure (10), which would answer a pool of
@@ -596,15 +601,17 @@ Feature: Delivery planning quantities
     Then after not more than 30s, load created M_Delivery_Planning:
       | M_Delivery_Planning_ID                                                        | C_OrderLine_ID      |
       | deliveryPlanningPartial_1,deliveryPlanningPartial_2,deliveryPlanningPartial_3 | orderLineQtyPartial |
-    # QtyTotalOpen stays 14 - the split touches no actual. QtyTotalOpenPlanned, however, now goes NEGATIVE
-    # (-4): the three planned loads sum to 24 (7+10+7), more than QtyOrdered(20) - the split legitimately grew
-    # the order line's total planned figure by distributing against the ACTUAL-aware pool (D16's signal for
-    # "over-planned", not an arithmetic error - see the plan's Global Constraints, "Two consequences").
+    # QtyTotalOpen stays 14 - the split touches no actual. QtyTotalOpenPlanned returns to 0: the claims are
+    # 7 + 6 + 7 = 20, exactly QtyOrdered. The raw planned figures do sum to 24, but deliveryPlanningPartial_2
+    # no longer claims its planned 10 - it claims the 6 it actually took - so the line is fully claimed and
+    # nothing is over-planned. Reading the RAW planned sum here reported -4, which is the defect this
+    # scenario now pins: it looked like an over-planned line when nothing had been over-planned.
+    # (D16's genuine negative case - more PLANNED than ordered with nothing delivered - is unaffected.)
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | QtyTotalOpenPlanned |
-      | deliveryPlanningPartial_1 | 20         | 14           | Outgoing            | 7                     | 0             | -4                   |
-      | deliveryPlanningPartial_2 | 20         | 14           | Outgoing            | 10                    | 6             | -4                   |
-      | deliveryPlanningPartial_3 | 20         | 14           | Outgoing            | 7                     | 0             | -4                   |
+      | deliveryPlanningPartial_1 | 20         | 14           | Outgoing            | 7                     | 0             | 0                    |
+      | deliveryPlanningPartial_2 | 20         | 14           | Outgoing            | 10                    | 6             | 0                    |
+      | deliveryPlanningPartial_3 | 20         | 14           | Outgoing            | 7                     | 0             | 0                    |
 
   @Id:S31789_TC_Q8_AllocatedDischargeRemainder
   Scenario: Splitting an allocated planning with an uneven discharge pool and more than one additional line puts the remainder on the LAST new planning, not the target
@@ -779,10 +786,12 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID    | ActualLoadQty |
       | deliveryPlanningDelete1_2 | 3             |
 
+    # QtyTotalOpenPlanned is 5, not 0: deliveryPlanningDelete1_2's claim is now settled at the 3 it actually
+    # took rather than the 8 it planned, so 16 - 8 - 3. Delivering short of plan frees the difference.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | ActualLoadQty | QtyTotalOpenPlanned |
-      | deliveryPlanningDelete1_1 | 16         | 13           | Outgoing            | 0             | 0                    |
-      | deliveryPlanningDelete1_2 | 16         | 13           | Outgoing            | 3             | 0                    |
+      | deliveryPlanningDelete1_1 | 16         | 13           | Outgoing            | 0             | 5                    |
+      | deliveryPlanningDelete1_2 | 16         | 13           | Outgoing            | 3             | 5                    |
 
     # Manual user-action delete (path 1 of the inventory: the direct/UI delete a planner triggers from the
     # window) - succeeds because a survivor remains (deliveryPlanningDelete1_1).
@@ -790,8 +799,9 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID    | ErrorCode |
       | deliveryPlanningDelete1_2 |           |
 
-    # QtyTotalOpen/QtyTotalOpenPlanned on the SURVIVOR now reflect the line with the
-    # deleted planning's claim gone - both climb back up (16/8), not left frozen at the pre-delete 13/0.
+    # QtyTotalOpen/QtyTotalOpenPlanned on the SURVIVOR now reflect the line with the deleted planning's claim
+    # gone - both climb back up (16/8), not left frozen at the pre-delete 13/5. The survivor never had an
+    # actual, so its own claim is still its planned 8.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | QtyTotalOpenPlanned |
       | deliveryPlanningDelete1_1 | 16         | 16           | Outgoing            | 8                     | 0             | 8                    |
@@ -827,11 +837,13 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID    | ActualLoadQty |
       | deliveryPlanningDelete2_3 | 5             |
 
+    # QtyTotalOpenPlanned is 5, not 0: deliveryPlanningDelete2_3 claims the 5 it actually took, not its
+    # planned 10, so 30 - 10 - 10 - 5.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID    | QtyOrdered | QtyTotalOpen | TransportDirection | ActualLoadQty | QtyTotalOpenPlanned |
-      | deliveryPlanningDelete2_1 | 30         | 25           | Outgoing            | 0             | 0                    |
-      | deliveryPlanningDelete2_2 | 30         | 25           | Outgoing            | 0             | 0                    |
-      | deliveryPlanningDelete2_3 | 30         | 25           | Outgoing            | 5             | 0                    |
+      | deliveryPlanningDelete2_1 | 30         | 25           | Outgoing            | 0             | 5                    |
+      | deliveryPlanningDelete2_2 | 30         | 25           | Outgoing            | 0             | 5                    |
+      | deliveryPlanningDelete2_3 | 30         | 25           | Outgoing            | 5             | 5                    |
 
     # Non-UI-action delete (OPT.IsUIAction=false) - the programmatic shape M_ReceiptSchedule/M_ShipmentSchedule
     # deletion takes (DeliveryPlanningRepository#deleteForReceiptSchedule / #deleteForShipmentSchedule), which
@@ -841,8 +853,8 @@ Feature: Delivery planning quantities
       | M_Delivery_Planning_ID    | OPT.IsUIAction | ErrorCode |
       | deliveryPlanningDelete2_3 | false          |           |
 
-    # Both survivors climb from 25 to 30 (their actual sum drops from 5 to 0) and from 0 to 10 planned-open
-    # (the deleted planning's 10 planned no longer counts) - the SAME recompute the UI-delete scenario above
+    # Both survivors climb from 25 to 30 (their actual sum drops from 5 to 0) and from 5 to 10 planned-open
+    # (the deleted planning's claim no longer counts) - the SAME recompute the UI-delete scenario above
     # exercises, since AFTER_DELETE fires identically regardless of which of the three inventoried paths
     # triggered it.
     Then validate M_Delivery_Planning:
