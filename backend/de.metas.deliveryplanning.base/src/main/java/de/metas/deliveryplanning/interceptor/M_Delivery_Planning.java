@@ -80,6 +80,30 @@ public class M_Delivery_Planning
 		deliveryPlanning.setActualLoadQty(deliveryPlanning.getPlannedLoadedQuantity());
 	}
 
+	/**
+	 * The outgoing mirror of {@link #onPlannedLoadedQuantityChanged}: what was ACTUALLY loaded is the upper
+	 * bound on what can ever be discharged, so the planned discharge follows it.
+	 * <p>
+	 * Without this the two ends drift: a shipment writes back only the planned LOAD
+	 * ({@code M_Delivery_Planning_GenerateShipment} calls {@code writeBackPlannedLoadedQuantity}, and there is
+	 * no discharge counterpart), so a planning loaded short of its plan kept a planned discharge describing
+	 * goods that were never loaded. The split creates both ends equal; nothing else kept them so.
+	 * <p>
+	 * Incoming is deliberately untouched. There the discharge IS the receipt - it is settled by what arrives,
+	 * not derived from a loading that happened at the vendor - and that end already has its own rule above.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_Delivery_Planning.COLUMNNAME_ActualLoadQty)
+	public void onActualLoadQtyChanged(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		final TransportDirection transportDirection = TransportDirection.ofCode(deliveryPlanning.getTransportDirection());
+		if (transportDirection.isIncomingOrDropship())
+		{
+			return;
+		}
+
+		deliveryPlanning.setPlannedDischargeQuantity(deliveryPlanning.getActualLoadQty());
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void onNew(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
