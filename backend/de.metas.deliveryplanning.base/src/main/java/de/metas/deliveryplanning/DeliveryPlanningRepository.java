@@ -605,7 +605,9 @@ public class DeliveryPlanningRepository
 
 	/**
 	 * Every planning of the given order line, FULLY populated - see {@link #fromRecordBuilder}. Not just the
-	 * quantity fields the pool needs: no field is a placeholder.
+	 * quantity fields the pool needs, and no field carries a placeholder value. The one exception is
+	 * {@code allocations}, which this path leaves empty - {@link #fromRecordBuilder} documents what that costs and
+	 * why callers reading {@code isAllocated()} must not use a model built here.
 	 */
 	public DeliveryPlanningList getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{

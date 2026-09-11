@@ -50,10 +50,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * It may not, unconditionally: receiving before the instruction is completed makes no business sense, and the
  * window shows {@code IsReadyForReceipt} as a column - so offering the action on a row it just labelled "not
- * ready" is the defect these pin. There is deliberately no SysConfig in the way. The
- * {@code PreventReceiptIfMissingDeliveryInstructions} switch (gh14843, 2023) gates the Delivery
- * Planning window's equivalent check with a default of OFF; delivery planning is a fresh feature with no
- * active use, so there was no permissive behaviour to preserve and the switch only kept the defect alive.
+ * ready" is the defect these pin. There is deliberately no SysConfig in the way: the
+ * {@code PreventReceiptIfMissingDeliveryInstructions} switch (gh14843, 2023) that gated the Delivery Planning
+ * window's equivalent check, defaulting to OFF, is retired on this branch (migration
+ * {@code 5824080_sys_gh31789_retire_PreventReceiptIfMissingDeliveryInstructions}). Delivery planning is a fresh
+ * feature with no active use, so no permissive behaviour was owed to anyone and the switch served only to keep
+ * the defect reachable.
  * <p>
  * Every caller of this method deals in delivery plannings only, so the reach is that same fresh feature:
  * {@code WEBUI_M_HU_CreateReceipt_Base} consults it solely for the plannings a receipt launch references and
