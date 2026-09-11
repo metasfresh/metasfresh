@@ -39,7 +39,14 @@
       var li = document.createElement('li');
       var a = document.createElement('a');
       a.href = Permalink.buildRedirectUrl(version, kind, entry, s.suite);
-      a.textContent = s.suite + ' — ' + s.count + (s.count === 1 ? ' test' : ' tests') + (i === 0 ? ' (most)' : '');
+      // `count` is what the link will actually show; `tagged` is how many tests
+      // carry the F-code. They differ whenever the specs tag instead of calling
+      // allure.feature(), so say both rather than let the link look complete.
+      var label = s.suite + ' — ' + s.count + (s.count === 1 ? ' test' : ' tests');
+      if (s.tagged > s.count) { label += ' shown of ' + s.tagged + ' tagged'; }
+      if (!s.uid) { label = s.suite + ' — ' + s.tagged + ' tagged, no linkable node'; }
+      a.textContent = label + (i === 0 && s.uid ? ' (most)' : '');
+      if (!s.uid) { a.removeAttribute('href'); }
       li.appendChild(a);
       ul.appendChild(li);
     });
