@@ -23,6 +23,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * Owns the move-schedule aggregate persistence (DD_Order_MoveSchedule header + its HU candidates);
+ * loading and saving of the aggregate is delegated to {@link DDOrderMoveScheduleLoaderAndSaver}.
+ *
+ * Repository Tables: DD_Order_MoveSchedule, DD_OrderLine_HU_Candidate
+ * Repository Cluster: DDOrderMoveScheduleRepository, DDOrderMoveScheduleLoaderAndSaver
+ */
 @Repository
 public class DDOrderMoveScheduleRepository
 {
@@ -219,6 +226,22 @@ public class DDOrderMoveScheduleRepository
 				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_Status, DDOrderMoveScheduleStatus.IN_PROGRESS)
 				.create()
 				.listDistinctAsImmutableSet(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_ID, DDOrderId.class);
+	}
+
+	/** The batch flavour of {@link #hasInProgressSchedules(DDOrderLineId)}, for a caller that has to ask about a whole set of lines. */
+	public ImmutableSet<DDOrderLineId> retrieveLineIdsWithInProgressSchedules(@NonNull final Set<DDOrderLineId> ddOrderLineIds)
+	{
+		if (ddOrderLineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order_MoveSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID, ddOrderLineIds)
+				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_Status, DDOrderMoveScheduleStatus.IN_PROGRESS)
+				.create()
+				.listDistinctAsImmutableSet(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID, DDOrderLineId.class);
 	}
 
 	public Set<DDOrderId> retrieveDDOrderIdsInTransit(@NonNull final LocatorId inTransitLocatorId)

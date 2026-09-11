@@ -46,12 +46,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -67,6 +71,10 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 
 	private DDOrderPickingReplenishmentService service;
 	private DDOrderLineContributorRepository contributorRepository;
+	private DDOrderMoveScheduleService ddOrderMoveScheduleService;
+
+	/** The lines each test froze via {@link #createDDOrderLine}; the source of truth both freeze stubs answer from. */
+	private final Set<DDOrderLineId> linesWithMoveInProgress = new HashSet<>();
 
 	private I_C_UOM uomEach;   // product stocking UOM (e.g. PCE)
 	private I_C_UOM uomCase;   // assignment / demand UOM (e.g. a 6-pack case)
@@ -81,6 +89,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	{
 		AdempiereTestHelper.get().init();
 		contributorRepository = mock(DDOrderLineContributorRepository.class);
+		ddOrderMoveScheduleService = mock(DDOrderMoveScheduleService.class);
 
 		uomEach = BusinessTestHelper.createUOM("Each", 0, 0);
 		uomCase = BusinessTestHelper.createUOM("Case", 0, 0);
@@ -103,10 +112,21 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				mock(DDOrderReplenishmentEventPublisher.class),
 				mock(PickingJobScheduleService.class),
 				mock(WorkplaceService.class),
-				mock(DDOrderMoveScheduleService.class),
+				ddOrderMoveScheduleService,
 				new WarehouseRepository(),
 				contributorRepository
 		);
+
+		// Default: no line is under movement. Each test that needs a frozen line states its own freeze set via
+		// createDDOrderLine(..., hasMoveInProgress=true), which records the line id in linesWithMoveInProgress. Both the
+		// single-id form (the in-place write site) and the batched form (computeFrozenSplit's pre-loop resolution) answer
+		// from that same set.
+		when(ddOrderMoveScheduleService.hasInProgressSchedules(any(DDOrderLineId.class)))
+				.thenAnswer(invocation -> linesWithMoveInProgress.contains(invocation.<DDOrderLineId>getArgument(0)));
+		when(ddOrderMoveScheduleService.retrieveLineIdsWithInProgressSchedules(any()))
+				.thenAnswer(invocation -> invocation.<Set<DDOrderLineId>>getArgument(0).stream()
+						.filter(linesWithMoveInProgress::contains)
+						.collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf)));
 	}
 
 	private PickingJobSchedule contributor(final int jobScheduleRepoId, final String qtyToPickEach)
@@ -179,15 +199,24 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		return LocatorId.ofRepoId(warehouseId, loc.getM_Locator_ID());
 	}
 
-	private static I_DD_OrderLine createDDOrderLine(final int lineRepoId, final String qtyOrdered, final String qtyDelivered)
+	/**
+	 * @param hasMoveInProgress the REAL "the mover has picked and not yet dropped" signal — an IN_PROGRESS
+	 *                          DD_Order_MoveSchedule. {@code QtyDelivered} is deliberately NOT set: no production flow
+	 *                          writes it, so a fixture that freezes through it proves nothing about production.
+	 */
+	private I_DD_OrderLine createDDOrderLine(final int lineRepoId, final String qtyOrdered, final boolean hasMoveInProgress)
 	{
 		final I_DD_OrderLine line = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class);
 		line.setDD_OrderLine_ID(lineRepoId);
 		line.setQtyEntered(new BigDecimal(qtyOrdered));
 		line.setQtyOrdered(new BigDecimal(qtyOrdered));
 		line.setTargetQty(new BigDecimal(qtyOrdered));
-		line.setQtyDelivered(new BigDecimal(qtyDelivered));
 		InterfaceWrapperHelper.saveRecord(line);
+
+		if (hasMoveInProgress)
+		{
+			linesWithMoveInProgress.add(DDOrderLineId.ofRepoId(lineRepoId));
+		}
 		return line;
 	}
 
@@ -487,8 +516,8 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final PickingJobSchedule p1 = contributor(1, "10");
 		final PickingJobSchedule p2 = contributor(2, "10");
 
-		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "4");
-		final I_DD_OrderLine lineL2 = createDDOrderLine(102, "12", "3");
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", true);
+		final I_DD_OrderLine lineL2 = createDDOrderLine(102, "12", true);
 		final ImmutableList<DDOrderLineContributor> sharesOfL1 = ImmutableList.of(
 				DDOrderLineContributor.of(p1.getId(), each("6")),
 				DDOrderLineContributor.of(p2.getId(), each("4")));
@@ -519,7 +548,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final LocatorId l2 = createLocator("20-B", 50);
 		final PickingJobSchedule p1 = contributor(1, "12");
 
-		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "5");
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", true);
 		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
 				.thenReturn(ImmutableList.of(DDOrderLineContributor.of(p1.getId(), each("6"))));
 
@@ -567,7 +596,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final LocatorId l2 = createLocator("20-B", 50);
 		final PickingJobSchedule p1 = contributor(1, "12");
 
-		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "5");
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", true);
 		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
 				.thenReturn(ImmutableList.of(DDOrderLineContributor.of(p1.getId(), each("6"))));
 
@@ -583,6 +612,39 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		assertThat(split.getAttribution().get(l2))
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
 				.containsExactly(tuple(p1.getId(), 6));
+	}
+
+	/**
+	 * The freeze is symmetric in the batched fixed-point path too: the {@code frozenLineIds} form of the guard must
+	 * refuse a GROW to a line under movement, not only a shrink. The frozen locator's newly-required qty (15) is
+	 * HIGHER than the line's QtyOrdered (10), yet the frozen line stays put — the grown qty lands in the refused map
+	 * and only the remainder flows on to the idle locator. Mirrors {@code aFrozenLine_isNotGrown}, which pins the same
+	 * grow-refusal for the single-line {@code updateDDOrderLineQtyInPlace} overload.
+	 */
+	@Test
+	void frozenSplit_doesNotGrowAFrozenLineUnderMovement()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "20");
+
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", true); // frozen; currently carries QtyOrdered 10
+		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
+				.thenReturn(ImmutableList.of(DDOrderLineContributor.of(p1.getId(), each("6"))));
+
+		// Required at the frozen locator (15) EXCEEDS its QtyOrdered (10) -> a grow, which must be refused just like a shrink.
+		final DDOrderPickingReplenishmentService.FrozenSplit split = service.computeFrozenSplit(
+				ImmutableList.of(p1),
+				ImmutableMap.of(l1, each("15"), l2, each("5")),
+				ImmutableMap.of(l1, lineL1),
+				ImmutableMap.of());
+
+		assertThat(split.getRefusedQtyByLocator()).containsOnlyKeys(l1);
+		assertThat(split.getRefusedQtyByLocator().get(l1).toBigDecimal()).isEqualByComparingTo("15");
+		assertThat(split.getAttribution()).containsOnlyKeys(l2);
+		assertThat(split.getAttribution().get(l2))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(p1.getId(), 5));
 	}
 
 	@Test

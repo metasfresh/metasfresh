@@ -93,6 +93,12 @@ public class DDOrderMoveScheduleService
 		return ddOrderMoveScheduleRepository.hasInProgressSchedules(ddOrderLineId);
 	}
 
+	/** The batch flavour of {@link #hasInProgressSchedules(DDOrderLineId)}, for a caller that has to ask about a whole set of lines. */
+	public ImmutableSet<DDOrderLineId> retrieveLineIdsWithInProgressSchedules(@NonNull final Set<DDOrderLineId> ddOrderLineIds)
+	{
+		return ddOrderMoveScheduleRepository.retrieveLineIdsWithInProgressSchedules(ddOrderLineIds);
+	}
+
 	public void removeFromHUsScheduledToPickList(final DDOrderLineId ddOrderLineId, final Set<HuId> huIdsToUnAssign)
 	{
 		ddOrderMoveScheduleRepository.removeFromHUsScheduledToMoveList(ddOrderLineId, huIdsToUnAssign);
