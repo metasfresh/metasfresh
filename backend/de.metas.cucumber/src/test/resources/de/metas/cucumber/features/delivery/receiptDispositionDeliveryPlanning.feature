@@ -1333,3 +1333,101 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | IsClosed | Processed |
       | planningPacked1_RL     | 10         | 5            | 5                        | 5                       | Incoming           | false    | true      |
       | planningPacked2_RL     | 10         | 5            | 5                        | 0                       | Incoming           | false    | false     |
+
+  @Id:S31789_TC9h
+  Scenario: A share spanning MORE than one TU is received at the share, not at the packing's capacity
+
+    # The regression guard for the allocation clamp in ReceiptFromReceiptScheduleService#createPackedHUs.
+    #
+    # capToPlannedShare rounds the TU COUNT up - a partial TU still has to be received - and leaves QtyCUsPerTU
+    # alone. So a share of 15 against a ten-per-TU packing gives TWO TUs, i.e. a configuration that can hold 20.
+    # Allocating that capacity would draw five units belonging to the sibling planning on the same receipt
+    # schedule. The clamp is what keeps the receipt at 15.
+    #
+    # TC9g cannot catch this: its share of 5 is SMALLER than one TU, so capToPlannedShare shrinks that TU's
+    # contents to 5 and capacity equals the share exactly - min(5,5) is a no-op there, and the clamp could be
+    # deleted without the scenario noticing.
+    #
+    # Only ONE of the two plannings is received, deliberately: ReceiptScheduleHUGenerator is scoped to the
+    # receipt SCHEDULE, so receiving both siblings in one gesture is the separate, already-recorded defect. One
+    # row means one generation and keeps this scenario about the clamp alone.
+
+    Given metasfresh contains M_Products:
+      | Identifier        |
+      | productSpan_RL    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | priceListVersion_RL_PO            | productSpan_RL          | 5.0      | PCE               | Normal                        |
+    And metasfresh contains C_BPartner_Products:
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
+      | vendor_RL                | productSpan_RL          |
+
+    # Ten CUs per TU, the TU on an LU - so a share of 15 needs two TUs and the configuration can hold 20.
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID   | Name          |
+      | tuPiSpan_RL  | RL_TU_PI_Span |
+      | luPiSpan_RL  | RL_LU_PI_Span |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID  | HU_UnitType | IsCurrent |
+      | tuPiVerSpan_RL     | tuPiSpan_RL | TU          | Y         |
+      | luPiVerSpan_RL     | luPiSpan_RL | LU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | tuMiItemSpan_RL | tuPiVerSpan_RL     | 0   | MI       |                   |
+      | luHuItemSpan_RL | luPiVerSpan_RL     | 100 | HU       | tuPiSpan_RL       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID   | Qty | ValidFrom  |
+      | pipTUSpan_RL            | tuMiItemSpan_RL | productSpan_RL | 10  | 2000-01-01 |
+
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DatePromised     | OPT.C_BPartner_Location_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.DocBaseType |
+      | orderSpan_RL | false   | vendor_RL                | 2023-02-03  | 2023-02-20T00:00:00Z | vendorLocation_RL                     | warehouse_RL                  | POO             |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_Shipper_ID.Identifier |
+      | orderLineSpan_RL | orderSpan_RL          | productSpan_RL          | 20         | shipperPlanning_RL          |
+
+    When the order identified by orderSpan_RL is completed
+
+    Then after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | scheduleSpan_RL                 | orderSpan_RL          | orderLineSpan_RL          | vendor_RL                | vendorLocation_RL                 | productSpan_RL          | 20         | warehouse_RL              |
+    And after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID | C_OrderLine_ID   |
+      | planningSpan1_RL       | orderLineSpan_RL |
+
+    When generate 1 additional M_Delivery_Planning records for: planningSpan1_RL
+
+    Then after not more than 30s, load created M_Delivery_Planning:
+      | M_Delivery_Planning_ID             | C_OrderLine_ID   |
+      | planningSpan1_RL,planningSpan2_RL  | orderLineSpan_RL |
+
+    # The split halves 20 into 10/10, which is an exact multiple of the ten-per-TU packing and would leave
+    # capacity equal to the share again. Moving the first planning to 15 is what makes the share span two TUs
+    # UNEVENLY - the only shape in which the clamp does any work.
+    And update M_Delivery_Planning:
+      | M_Delivery_Planning_ID | PlannedDischargeQuantity |
+      | planningSpan1_RL       | 15                       |
+
+    And after not more than 60s, the C_Order identified by orderSpan_RL has exactly the following rows in RV_ReceiptDisposition_DeliveryPlanning:
+      | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID | OPT.IsPlanned |
+      | rowSpan1_RL                               | planningSpan1_RL       | scheduleSpan_RL      | true          |
+      | rowSpan2_RL                               | planningSpan2_RL       | scheduleSpan_RL      | true          |
+
+    When the receipt-disposition delivery-planning rows identified by rowSpan1_RL are received together:
+      | M_InOut_ID.Identifier |
+      | receiptSpan_RL        |
+
+    Then validate M_In_Out status
+      | M_InOut_ID.Identifier | DocStatus |
+      | receiptSpan_RL        | CO        |
+
+    # 15, NOT the configuration's capacity of 20 - that is the clamp, and it is the whole point of this scenario.
+    #
+    # QtyTU_Calculated is deliberately NOT asserted here. It comes back as 1, where a share of 15 against a
+    # ten-per-TU packing should need two TUs (one full, one holding the remaining five). Either the count means
+    # something other than "TUs received" on this path, or the allocation overfills a single TU - and asserting
+    # either number before knowing which would be inventing agreement. The open question is recorded in
+    # ai-work/31789/pending-questions.md; MovementQty is what guards the clamp and it is exact.
+    And validate the delivery planning link of the material receipt lines:
+      | M_InOut_ID     | C_OrderLine_ID   | M_Delivery_Planning_ID | OPT.MovementQty |
+      | receiptSpan_RL | orderLineSpan_RL | planningSpan1_RL       | 15              |
