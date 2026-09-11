@@ -76,9 +76,11 @@ def test_feature_aliased_by_fcode_when_node_name_has_description():
 
 
 # --- extract_features: a node WITHOUT an F-code prefix is indexed by name only ---
-def test_feature_without_fcode_indexed_by_name_only():
-    """Documents the by-node-name limitation: indexing is keyed off the Allure grouping
-    node NAME, not test tags. A node whose name carries no F-code gets no F-code key."""
+def test_feature_node_without_fcode_yields_no_fcode_key_from_the_NODE_route():
+    """The node route is keyed off the Allure grouping node NAME: a node whose name
+    carries no F-code contributes no F-code key. The TAG route (below) is what covers
+    the far commoner case where the F-code is on the test rather than the node; these
+    leaves carry no tags, so neither route produces one here."""
     root = {"children": [
         {"name": "E2300 Attributes", "uid": "e".ljust(32, "0"), "children": [
             {"name": "HU_DateReceived attribute population", "uid": "b".ljust(32, "0"),
@@ -87,7 +89,7 @@ def test_feature_without_fcode_indexed_by_name_only():
     ]}
     feats = gp.extract_features(root)
     assert "HU_DateReceived attribute population" in feats
-    assert not any(k.startswith("F") for k in feats)  # no tag-derived F-code key
+    assert not any(k.startswith("F") for k in feats)
 
 
 # --- _count_leaves: leaf (children=None) -> 1; empty group ([]) -> 0 ---
@@ -108,3 +110,97 @@ def test_spec_indexed_for_feature_extension():
     ]}
     specs = gp.extract_specs(root)
     assert specs["receiving.feature"] == ("c".ljust(32, "0"), 1)
+
+
+# --- the TAG route: where the F-code actually lives -------------------------
+
+def _leaf(uid, *tags):
+    return {"name": "t-" + uid, "uid": uid, "tags": list(tags)}
+
+
+def test_a_tag_carries_the_fcode_even_with_no_grouping_node():
+    """`allure.tag('F00230')` creates no Behaviours node, so the node route sees
+    nothing. This is the case that made a permalink show 1 test of 141."""
+    root = {"children": [
+        {"name": "some.feature", "uid": "s".ljust(32, "0"), "children": [
+            _leaf("1".ljust(32, "0"), "F00700: Invoicing", "F00700"),
+            _leaf("2".ljust(32, "0"), "F00700"),
+        ]},
+    ]}
+    assert gp.extract_tagged_features(root) == {"F00700": 2}
+    assert gp.extract_features(root) == {"some.feature": ("s".ljust(32, "0"), 2)}
+
+
+def test_a_test_listed_twice_in_the_tree_is_counted_once():
+    """Cucumber lists every test under its .feature file AND again under
+    Epic -> Feature. Counting occurrences inflated F00230 from 190 to 293."""
+    leaf = _leaf("d".ljust(32, "0"), "F00230")
+    root = {"children": [
+        {"name": "some.feature", "uid": "s".ljust(32, "0"), "children": [leaf]},
+        {"name": "E0105 Picking", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "F00230 MobileUI Picking", "uid": "f".ljust(32, "0"), "children": [leaf]},
+        ]},
+    ]}
+    assert gp.extract_tagged_features(root) == {"F00230": 1}
+
+
+def test_the_named_and_bare_tag_of_one_test_count_once():
+    """The specs emit BOTH `F00900: Business Partner` and a standalone `F00900`."""
+    root = {"children": [{"name": "g", "uid": "s".ljust(32, "0"), "children": [
+        _leaf("a".ljust(32, "0"), "F00900: Business Partner", "F00900", "en_US")]}]}
+    assert gp.extract_tagged_features(root) == {"F00900": 1}
+
+
+def test_the_underscore_and_dot_subfeature_spellings_index_as_one():
+    """Cucumber tags `F5001_1`, the Playwright specs tag `F5001.1` -- one subfeature."""
+    root = {"children": [{"name": "g", "uid": "s".ljust(32, "0"), "children": [
+        _leaf("a".ljust(32, "0"), "F5001_1"),
+        _leaf("b".ljust(32, "0"), "F5001.1: Consolidate CU-TU Allocation")]}]}
+    assert gp.extract_tagged_features(root) == {"F5001.1": 2}
+
+
+def test_a_customer_suffix_is_not_a_subfeature_separator():
+    """`F00138_se203` scopes a feature to one customer; folding it into `F00138`
+    would be the same class of defect in a new place."""
+    root = {"children": [{"name": "g", "uid": "s".ljust(32, "0"), "children": [
+        _leaf("a".ljust(32, "0"), "F00138_se203")]}]}
+    assert gp.extract_tagged_features(root) == {}
+
+
+def test_a_tag_only_feature_is_published_with_a_null_uid(tmp_path):
+    """It must appear in the index -- with nothing to deep-link to -- rather than
+    look absent. Previously such a feature was simply not in permalinks.json."""
+    bdir = tmp_path / "allure" / "cucumber" / "data"
+    bdir.mkdir(parents=True)
+    (bdir / "behaviors.json").write_text(json.dumps({"children": [
+        {"name": "some.feature", "uid": "s".ljust(32, "0"), "children": [
+            _leaf("a".ljust(32, "0"), "F12345")]}]}), encoding="utf-8")
+    feats, _ = gp.build_index(str(tmp_path))
+    assert feats["F12345"]["cucumber"] == {"uid": None, "count": 0, "tagged": 1}
+
+
+def test_a_node_backed_feature_keeps_its_uid_and_gains_the_tagged_count(tmp_path):
+    bdir = tmp_path / "allure" / "cucumber" / "data"
+    bdir.mkdir(parents=True)
+    (bdir / "behaviors.json").write_text(json.dumps({"children": [
+        {"name": "E0105 Picking", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "F00230 MobileUI Picking", "uid": "f".ljust(32, "0"), "children": [
+                _leaf("a".ljust(32, "0"), "F00230"),
+                _leaf("b".ljust(32, "0"), "F00230")]}]}]}), encoding="utf-8")
+    feats, _ = gp.build_index(str(tmp_path))
+    assert feats["F00230"]["cucumber"] == {
+        "uid": "f".ljust(32, "0"), "count": 2, "tagged": 2}
+
+
+def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
+    """Pins `_canonical_fcode` DIRECTLY.
+
+    `test_a_customer_suffix_is_not_a_subfeature_separator` above goes through
+    TAG_FCODE_RE, which rejects `F00138_se203` before this function is reached —
+    so it passes even if this guard is deleted. Without this test the guard is
+    unpinned, which is how a defence quietly stops defending."""
+    assert gp._canonical_fcode("F5001_1") == "F5001.1"
+    assert gp._canonical_fcode("F5001.1") == "F5001.1"
+    assert gp._canonical_fcode("F5001") == "F5001"
+    assert gp._canonical_fcode("F00138_se203") == "F00138_se203"
+    assert gp._canonical_fcode("F00762.1_is184") == "F00762.1_is184"
