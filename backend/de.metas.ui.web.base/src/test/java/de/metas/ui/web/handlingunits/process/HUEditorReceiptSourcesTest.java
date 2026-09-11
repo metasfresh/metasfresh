@@ -37,6 +37,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -68,6 +69,9 @@ class HUEditorReceiptSourcesTest
 
 	/** The receipt-schedule window - the only provenance that existed until now. */
 	private static final WindowId RECEIPT_SCHEDULE_WINDOW_ID = WindowId.of(540196);
+
+	/** The delivery-planning window - pre-existing, and a launcher of this same editor. */
+	private static final WindowId DELIVERY_PLANNING_WINDOW_ID = WindowId.of(541928);
 
 	private IContextAware context;
 	private DocumentCollection documentsCollection;
@@ -109,6 +113,27 @@ class HUEditorReceiptSourcesTest
 				TableRecordReference.of(
 						I_RV_ReceiptDisposition_DeliveryPlanning.Table_Name,
 						row.getRV_ReceiptDisposition_DeliveryPlanning_ID()));
+	}
+
+	/**
+	 * A launch whose referencing row is the PLANNING record itself. Two launchers produce this shape, which is
+	 * why it is not an edge case: the delivery-planning window, whose rows simply ARE {@code M_Delivery_Planning};
+	 * and a PLANNED row of the receipt-disposition window, which is keyed on its planning rather than on the view
+	 * (see {@code WEBUI_M_HU_CreateReceipt_Base}'s note about the launching window's rows).
+	 */
+	private DocumentPath deliveryPlanningRow(
+			final I_M_ReceiptSchedule receiptSchedule,
+			final WindowId launchedFrom)
+	{
+		final I_M_Delivery_Planning deliveryPlanning = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		deliveryPlanning.setM_ReceiptSchedule_ID(receiptSchedule.getM_ReceiptSchedule_ID());
+		InterfaceWrapperHelper.save(deliveryPlanning);
+
+		return documentPathFor(
+				launchedFrom,
+				TableRecordReference.of(
+						I_M_Delivery_Planning.Table_Name,
+						deliveryPlanning.getM_Delivery_Planning_ID()));
 	}
 
 	/** One row of the receipt-schedule window - today's only shape. */
@@ -168,6 +193,39 @@ class HUEditorReceiptSourcesTest
 			assertThat(sources.get(0).getDeliveryPlanningId())
 					.as("an unplanned row is a bare receipt schedule - null, not a zero")
 					.isNull();
+		}
+
+		@Test
+		@DisplayName("a PLANNING row from the receipt-disposition window yields its schedule AND itself as the planning")
+		void planningRowFromReceiptDispositionWindow()
+		{
+			final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule();
+			final DocumentPath row = deliveryPlanningRow(receiptSchedule, RECEIPT_DISPOSITION_WINDOW_ID);
+
+			final ImmutableList<ReferencedReceiptSource> sources = HUEditorReceiptSources.resolve(
+					documentsCollection, context, ImmutableList.of(row));
+
+			assertThat(sources).hasSize(1);
+			assertThat(sources.get(0).getReceiptSchedule().getM_ReceiptSchedule_ID())
+					.isEqualTo(receiptSchedule.getM_ReceiptSchedule_ID());
+			assertThat(sources.get(0).getDeliveryPlanningId())
+					.as("the planning the operator received for, so the confirm books against it")
+					.isNotNull();
+		}
+
+		@Test
+		@DisplayName("a PLANNING row from the delivery-planning window resolves too - that window predates this feature")
+		void planningRowFromDeliveryPlanningWindow()
+		{
+			final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule();
+			final DocumentPath row = deliveryPlanningRow(receiptSchedule, DELIVERY_PLANNING_WINDOW_ID);
+
+			final ImmutableList<ReferencedReceiptSource> sources = HUEditorReceiptSources.resolve(
+					documentsCollection, context, ImmutableList.of(row));
+
+			assertThat(sources).hasSize(1);
+			assertThat(sources.get(0).getReceiptSchedule().getM_ReceiptSchedule_ID())
+					.isEqualTo(receiptSchedule.getM_ReceiptSchedule_ID());
 		}
 
 		@Test

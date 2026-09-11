@@ -36,6 +36,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
 
 import javax.annotation.Nullable;
@@ -111,6 +112,32 @@ final class HUEditorReceiptSources
 					TableRecordReference.of(I_M_ReceiptSchedule.Table_Name, row.getM_ReceiptSchedule_ID())
 							.getModelNonNull(context, I_M_ReceiptSchedule.class),
 					DeliveryPlanningId.ofRepoIdOrNull(row.getM_Delivery_Planning_ID()));
+		}
+
+		//
+		// The PLANNING record itself. Two launchers arrive here, which is why this is not an edge case:
+		// the delivery-planning window, whose rows simply ARE M_Delivery_Planning; and a PLANNED row of the
+		// receipt-disposition window, which the grid keys on its planning rather than on the view (the same
+		// keying WEBUI_M_HU_CreateReceipt_Base relies on when it notifies the launching window's rows).
+		if (I_M_Delivery_Planning.Table_Name.equals(tableName))
+		{
+			final I_M_Delivery_Planning deliveryPlanning =
+					recordRef.getModelNonNull(context, I_M_Delivery_Planning.class);
+
+			final int receiptScheduleRepoId = deliveryPlanning.getM_ReceiptSchedule_ID();
+			if (receiptScheduleRepoId <= 0)
+			{
+				// An OUTGOING planning has no receipt schedule, so there is nothing to receive against. Said
+				// here rather than letting the load below fail on id 0, which reads like a missing record.
+				throw new AdempiereException("Cannot receive for " + recordRef + ": this delivery planning has no receipt schedule")
+						.appendParametersToMessage()
+						.setParameter("M_Delivery_Planning_ID", deliveryPlanning.getM_Delivery_Planning_ID());
+			}
+
+			return new ReferencedReceiptSource(
+					TableRecordReference.of(I_M_ReceiptSchedule.Table_Name, receiptScheduleRepoId)
+							.getModelNonNull(context, I_M_ReceiptSchedule.class),
+					DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
 		}
 
 		throw new AdempiereException("Cannot receive for " + recordRef + ": the HU editor was launched from a window this receive does not know")

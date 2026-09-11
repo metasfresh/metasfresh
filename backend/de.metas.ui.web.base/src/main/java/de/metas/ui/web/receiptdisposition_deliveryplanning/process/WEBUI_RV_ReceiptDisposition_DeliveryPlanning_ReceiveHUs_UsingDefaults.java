@@ -42,18 +42,27 @@ import javax.annotation.Nullable;
  * Rejects on the same two conditions as {@code WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults}: a quantity to
  * receive of zero, and an empty default packing info.
  * <p>
- * Note what that does NOT amount to, because the obvious reading is wrong. A row whose product has no
- * {@code M_HU_PI_Item_Product} does NOT hide this action. {@link HUPackingInfoFormatter} appends the TU name only
- * for a non-virtual TU, but appends the CU quantity whenever it is positive, and returns {@code null} only when
- * the whole string came out empty - so such a row still yields a caption like {@code "5 Stk"}, which is not
- * empty, and the action stays visible captioned by the quantity alone. The empty branch is reachable only when
- * the quantity is also zero, which the {@code getQtyToMoveTU} guard above has already rejected. "CUs annehmen"
- * is therefore NOT the one-click fallback for an unpacked product.
+ * Whether a product with no {@code M_HU_PI_Item_Product} hides this action turns on the HU packing DATA, not on
+ * the code alone, so neither "it hides" nor "it stays visible" is true unconditionally.
  * <p>
- * AC7b asks for exactly that fallback, so the acceptance criterion and the shipped behaviour disagree, and the
- * Playwright spec asserting AC7b fails on purpose rather than being relaxed to match. Which side gives is open -
- * see {@code ai-work/31789/pending-questions.md}, "QUEUED GATE: AC7b's fallback branch is effectively dead in the
- * SHARED implementation". This paragraph describes the code as it stands and is accurate either way.
+ * {@link HUPackingInfoFormatter} appends the TU name only for a non-virtual TU, appends the CU quantity only when
+ * {@code isInfiniteQtyCUsPerTU()} is false AND the quantity is positive, and returns {@code null} when nothing was
+ * appended. Such a product falls back to the virtual "No Packing Item", which carries INFINITE capacity, and only
+ * {@link ReceiptScheduleLUTUConfigurations#adjustToDefaults} can turn that finite - which it does in its
+ * non-{@code isNoLU} branch only. So:
+ * <ul>
+ * <li>the virtual TU HAS an LU parent association ({@code M_HU_PI_Item}): the CU becomes finite, the caption reads
+ * e.g. {@code "5 Stk"}, and the action stays visible captioned by the quantity alone;</li>
+ * <li>it has NONE: the configuration stays infinite-CU, the formatter skips the TU (virtual) and the CU (infinite)
+ * alike, the caption is empty, and this action IS rejected - the empty branch fires without the quantity being
+ * zero.</li>
+ * </ul>
+ * The association is client data ({@code AD_Client_ID} 1000000 on the reference stacks), not core, so the first
+ * case is the current dataset's behaviour rather than a guarantee of this code.
+ * <p>
+ * AC7b asks for the "CUs annehmen" fallback, and on data carrying the association it does not appear - which is
+ * what the Playwright spec asserting AC7b reports, failing on purpose rather than being relaxed to match. Which
+ * side gives is open; see {@code ai-work/31789/pending-questions.md}, the AC7b gate entry.
  */
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_RV_ReceiptDisposition_DeliveryPlanning_ReceiveHUs_UsingDefaults extends ReceiptDispositionDeliveryPlanningReceiveHUsProcess
