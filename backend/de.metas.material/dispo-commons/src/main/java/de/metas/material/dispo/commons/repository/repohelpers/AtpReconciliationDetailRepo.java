@@ -43,13 +43,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * Persists the one {@link I_MD_ATP_Reconciliation_Backup} row that names a correction candidate's own creation.
  * <p>
  * Reuses the same table {@link de.metas.material.dispo.reconcile.AtpReconciliationBackupRepository}-equivalent
- * classes back up the STOCK candidates a run touches - but unlike this repo's row, THOSE rows are not unique
- * per candidate: a candidate reconciled by two separate runs legitimately accumulates two backup rows sharing
- * its {@code MD_Candidate_ID} (the table's own migration header: "one row per STOCK candidate a run touched").
- * Looking a candidate up by {@code MD_Candidate_ID} alone would therefore hit
- * {@code DBMoreThanOneRecordsFoundException} on the second overlapping run - {@code IsCandidateOwnDetail}
- * (migration {@code 5824060}) marks the ONE row this repo itself created, so every query here filters on it too,
- * and a partial unique index on the same column enforces "at most one" at the database level.
+ * classes back up the STOCK candidates a run touches - every query here filters on {@code IsCandidateOwnDetail}
+ * to stay disjoint from those rows (see migration {@code 5824060} for why that column exists).
  */
 @Service
 public class AtpReconciliationDetailRepo
