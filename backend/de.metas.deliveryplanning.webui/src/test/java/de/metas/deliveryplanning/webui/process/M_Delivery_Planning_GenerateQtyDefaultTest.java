@@ -167,6 +167,41 @@ class M_Delivery_Planning_GenerateQtyDefaultTest
 	}
 
 	@Test
+	@DisplayName("the REAL helper reads discharge and load off the planning, and does not cross them over")
+	void realHelperReadsEachQuantityFromItsOwnColumn()
+	{
+		// Deliberately NOT the mock: the two getters are new, adjacent and near-identical mirrors, so the
+		// mistake they invite is a crossed delegate - which a stubbed helper can never catch, because the stub
+		// replaces the very body that would be wrong. The two values differ so a swap cannot pass.
+		final DeliveryPlanningGenerateProcessesHelper realHelper = DeliveryPlanningGenerateProcessesHelper.newInstance();
+
+		assertThat(realHelper.getPlannedDischargeQuantity(deliveryPlanningId))
+				.as("discharge must come from PlannedDischargeQuantity")
+				.isEqualByComparingTo(PLANNED_DISCHARGE);
+		assertThat(realHelper.getPlannedLoadedQuantity(deliveryPlanningId))
+				.as("load must come from PlannedLoadedQuantity")
+				.isEqualByComparingTo(PLANNED_LOAD);
+	}
+
+	@Test
+	@DisplayName("a planning that states no quantity leaves the field EMPTY, never a pre-filled 0")
+	void zeroQuantityLeavesTheFieldEmpty()
+	{
+		// A split whose remainder was nothing still creates its siblings carrying 0, and those plannings are
+		// open and reach this dialog. A pre-filled 0 reads as an entered value and is only refused after submit.
+		final DeliveryPlanningGenerateProcessesHelper mockHelper = mock(DeliveryPlanningGenerateProcessesHelper.class);
+		when(mockHelper.getPlannedDischargeQuantity(deliveryPlanningId)).thenReturn(BigDecimal.ZERO);
+
+		final M_Delivery_Planning_GenerateReceipt process = new M_Delivery_Planning_GenerateReceipt();
+		process.helper = mockHelper;
+		process.init(processInfo());
+
+		assertThat(process.getParameterDefaultValue(parameterNamed("Qty")))
+				.as("empty visibly asks for input; 0 looks answered and fails only at assumePositive")
+				.isNull();
+	}
+
+	@Test
 	@DisplayName("an unrelated parameter is still left to its own default")
 	void unrelatedParameterIsUntouched()
 	{

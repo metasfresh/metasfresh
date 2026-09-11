@@ -32,6 +32,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -121,13 +122,16 @@ class HUEditorReceiptSourcesTest
 	 * and a PLANNED row of the receipt-disposition window, which is keyed on its planning rather than on the view
 	 * (see {@code WEBUI_M_HU_CreateReceipt_Base}'s note about the launching window's rows).
 	 */
+	private I_M_Delivery_Planning lastDeliveryPlanning;
+
 	private DocumentPath deliveryPlanningRow(
-			final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final I_M_ReceiptSchedule receiptSchedule,
 			final WindowId launchedFrom)
 	{
 		final I_M_Delivery_Planning deliveryPlanning = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
-		deliveryPlanning.setM_ReceiptSchedule_ID(receiptSchedule.getM_ReceiptSchedule_ID());
+		deliveryPlanning.setM_ReceiptSchedule_ID(receiptSchedule != null ? receiptSchedule.getM_ReceiptSchedule_ID() : 0);
 		InterfaceWrapperHelper.save(deliveryPlanning);
+		lastDeliveryPlanning = deliveryPlanning;
 
 		return documentPathFor(
 				launchedFrom,
@@ -201,6 +205,7 @@ class HUEditorReceiptSourcesTest
 		{
 			final I_M_ReceiptSchedule receiptSchedule = createReceiptSchedule();
 			final DocumentPath row = deliveryPlanningRow(receiptSchedule, RECEIPT_DISPOSITION_WINDOW_ID);
+			final DeliveryPlanningId planningId = DeliveryPlanningId.ofRepoId(lastDeliveryPlanning.getM_Delivery_Planning_ID());
 
 			final ImmutableList<ReferencedReceiptSource> sources = HUEditorReceiptSources.resolve(
 					documentsCollection, context, ImmutableList.of(row));
@@ -209,8 +214,9 @@ class HUEditorReceiptSourcesTest
 			assertThat(sources.get(0).getReceiptSchedule().getM_ReceiptSchedule_ID())
 					.isEqualTo(receiptSchedule.getM_ReceiptSchedule_ID());
 			assertThat(sources.get(0).getDeliveryPlanningId())
-					.as("the planning the operator received for, so the confirm books against it")
-					.isNotNull();
+					.as("the planning the operator received for - the clicked record's OWN id, since a split "
+							+ "gives several plannings one schedule and only this id tells them apart")
+					.isEqualTo(planningId);
 		}
 
 		@Test
@@ -226,6 +232,21 @@ class HUEditorReceiptSourcesTest
 			assertThat(sources).hasSize(1);
 			assertThat(sources.get(0).getReceiptSchedule().getM_ReceiptSchedule_ID())
 					.isEqualTo(receiptSchedule.getM_ReceiptSchedule_ID());
+			assertThat(sources.get(0).getDeliveryPlanningId())
+					.as("this window's rows ARE plannings, so the confirm must still book against the clicked one")
+					.isEqualTo(DeliveryPlanningId.ofRepoId(lastDeliveryPlanning.getM_Delivery_Planning_ID()));
+		}
+
+		@Test
+		@DisplayName("a planning with NO receipt schedule is refused saying so, not by failing to load record 0")
+		void planningWithoutReceiptScheduleIsRefused()
+		{
+			final DocumentPath row = deliveryPlanningRow(null, DELIVERY_PLANNING_WINDOW_ID);
+
+			assertThatThrownBy(() -> HUEditorReceiptSources.resolve(
+					documentsCollection, context, ImmutableList.of(row)))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("has no receipt schedule");
 		}
 
 		@Test

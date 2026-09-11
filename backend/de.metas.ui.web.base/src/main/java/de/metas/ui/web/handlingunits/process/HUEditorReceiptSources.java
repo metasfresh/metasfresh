@@ -36,6 +36,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import de.metas.shipping.TransportDirection;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.I_RV_ReceiptDisposition_DeliveryPlanning;
 
@@ -124,11 +125,24 @@ final class HUEditorReceiptSources
 			final I_M_Delivery_Planning deliveryPlanning =
 					recordRef.getModelNonNull(context, I_M_Delivery_Planning.class);
 
+			// Direction is the canonical discriminator - the same one DeliveryPlanningRepository#assertHasReceipt
+			// uses - rather than inferring "outgoing" from the FK being unset, which is only a side effect of how
+			// the two generate commands seed a planning and could drift without this line noticing.
+			final TransportDirection transportDirection =
+					TransportDirection.ofNullableCode(deliveryPlanning.getTransportDirection());
+			if (transportDirection != null && !transportDirection.isIncomingOrDropship())
+			{
+				throw new AdempiereException("Cannot receive for " + recordRef + ": an outgoing delivery planning has nothing to receive")
+						.appendParametersToMessage()
+						.setParameter("M_Delivery_Planning_ID", deliveryPlanning.getM_Delivery_Planning_ID())
+						.setParameter("TransportDirection", transportDirection);
+			}
+
 			final int receiptScheduleRepoId = deliveryPlanning.getM_ReceiptSchedule_ID();
 			if (receiptScheduleRepoId <= 0)
 			{
-				// An OUTGOING planning has no receipt schedule, so there is nothing to receive against. Said
-				// here rather than letting the load below fail on id 0, which reads like a missing record.
+				// Incoming, yet no schedule: not a shape the generate commands produce, so say that rather than
+				// letting the load below fail on record id 0, which reads like a deleted schedule.
 				throw new AdempiereException("Cannot receive for " + recordRef + ": this delivery planning has no receipt schedule")
 						.appendParametersToMessage()
 						.setParameter("M_Delivery_Planning_ID", deliveryPlanning.getM_Delivery_Planning_ID());

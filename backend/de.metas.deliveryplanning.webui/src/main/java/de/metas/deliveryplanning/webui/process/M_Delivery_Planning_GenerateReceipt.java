@@ -80,7 +80,13 @@ public class M_Delivery_Planning_GenerateReceipt extends JavaProcess
 		{
 			// The planning's own share. Without this the mandatory field opens empty and the operator retypes a
 			// figure the row already carries - wrong by default on a split, where the share is not the order line.
-			return helper.getPlannedDischargeQuantity(getDeliveryPlanningId());
+			final BigDecimal plannedQty = helper.getPlannedDischargeQuantity(getDeliveryPlanningId());
+			// <= 0 means the planning has not stated a figure - a split whose remainder was nothing still
+			// creates its siblings carrying 0 (DeliveryPlanningService#createAdditionalDeliveryPlannings).
+			// Pre-filling that 0 would look like an entered value and only be refused by assumePositive AFTER
+			// submit; an empty field visibly asks for input, which is what it did before this default existed.
+			// Same reading as ReceiptFromReceiptScheduleService#getPlannedShareToReceive.
+			return plannedQty != null && plannedQty.signum() > 0 ? plannedQty : null;
 		}
 		if (PARAM_IsB2B.equals(externalParameterName))
 		{

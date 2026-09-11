@@ -67,7 +67,13 @@ public class M_Delivery_Planning_GenerateShipment extends JavaProcess
 		{
 			// The planning's own share - the mirror of the receipt process's planned-DISCHARGE default. The two
 			// fields below are informational (order-line open qty, on-hand); this is the one actually booked.
-			return helper.getPlannedLoadedQuantity(getDeliveryPlanningId());
+			final BigDecimal plannedQty = helper.getPlannedLoadedQuantity(getDeliveryPlanningId());
+			// <= 0 means the planning has not stated a figure - a split whose remainder was nothing still
+			// creates its siblings carrying 0 (DeliveryPlanningService#createAdditionalDeliveryPlannings).
+			// Pre-filling that 0 would look like an entered value and only be refused by assumePositive AFTER
+			// submit; an empty field visibly asks for input, which is what it did before this default existed.
+			// Same reading as ReceiptFromReceiptScheduleService#getPlannedShareToReceive.
+			return plannedQty != null && plannedQty.signum() > 0 ? plannedQty : null;
 		}
 		if(parameter.getColumnName().equals(PARAM_QtyToDeliver))
 		{
