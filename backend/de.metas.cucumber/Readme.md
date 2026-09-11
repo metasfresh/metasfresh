@@ -89,3 +89,94 @@ If subsequent test runs fail unexpectedly or use data from a previous run, the l
 ### Shutting Down
 
 To cleanly shut down the server and exit the runner, type `exit` at the `>>>` prompt and hit `ENTER`.
+
+# Asserting on a rendered document PDF
+
+`AD_Archive_StepDef` lets a scenario assert against the **actual PDF** metasfresh rendered and archived
+for a document — not against the report's SQL, and not against a mock. Use it whenever the thing under
+test is what the customer or the warehouse will physically read.
+
+The steps resolve the record through the normal step-def identifier mechanism, so they work for **any**
+record that archives a PDF — sales order, shipment, invoice, and so on.
+
+## Getting a PDF to assert on
+
+Two sysconfigs must be set in your `Background`, or you will assert against a placeholder:
+
+```gherkin
+# render the real jasper report; the mock report service would archive a placeholder PDF instead
+And set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
+# keep the archive in the DB, so the steps can read it back
+And update AD_Client
+  | Identifier | StoreArchiveOnFileSystem |
+  | 1000000    | false                    |
+```
+
+Then complete the document and run its jasper process — the `Value` is the `AD_Process.Value`, so a
+different document just means a different process:
+
+```gherkin
+When the order identified by order is completed
+And The jasper process is run
+  | Value            | Record_ID |
+  | Auftrag (Jasper) | order     |
+```
+
+`Lieferschein (Jasper)`, `Rechnung (Jasper)`, `Bestellung (Jasper)`, `Wareneingang (Jasper)` and the
+rest work the same way.
+
+## The steps
+
+```gherkin
+# the document was archived at all
+Then an AD_Archive exists for the record identified by "order"
+
+# the text reached the PDF (or must not be there)
+Then the PDF archived for the record identified by "order" contains text "Bitte gekuehlt liefern"
+Then the PDF archived for the record identified by "order" does not contain text "Zwischenpalette"
+
+# WHERE the text sits — counted in rendered visual lines
+Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "BetaItem"
+Then in the PDF archived for the record identified by "order", at least 2 lines appear between text "Diese Position" and text "BetaItem"
+
+# geometry — compare one vertical gap against another
+Then in the PDF archived for the record identified by "order", the vertical distance from text "A" to text "B" equals the distance from text "C" to text "D"
+```
+
+**Prefer the positional steps over `contains text` alone.** "The text is somewhere in the document" is a
+weak assertion: it passes even when the text lands in the wrong block, above the wrong article, or on
+the wrong page. The `lines between` and `vertical distance` steps are what make *placement* testable.
+
+**Pick single distinctive words as needles.** The extraction yields one entry per rendered visual line,
+so a multi-word needle stops matching as soon as the layout wraps between two of its words.
+
+**A blank line emits no glyphs.** If what you are testing is that something occupies vertical *space*
+(an empty line inside a text block, or the absence of a suppressed block), text adjacency cannot see it
+— use the `vertical distance … equals …` step against a reference block of known height.
+
+## The PDF is attached to the Allure report
+
+Every PDF a scenario asserts against is attached to that scenario's Allure report automatically,
+deduplicated per archive, on pass as well as on failure. That gives a reviewer the actual document
+instead of a description of it.
+
+Allure nests the attachment **under the step that read the PDF**, so the test-case page looks empty
+until you expand that step; the entry is named `PDF archived for <identifier> (AD_Archive_ID=…)`.
+
+To get direct links out of a published report instead of clicking through, for a report base
+`https://test-reports.metasfresh.com/branches/<branch>/builds/<build-tag>/allure/cucumber`:
+
+1. `data/suites.json` → walk to the leaf nodes for each scenario's `uid`
+2. `data/test-cases/<uid>.json` → walk `testStage` recursively over `steps`, collecting `attachments`
+   whose `type` is `application/pdf`; each carries a `source`
+3. the file is at `data/attachments/<source>.pdf`
+
+## How it works, in case a step surprises you
+
+Text is extracted with PDFBox (`PDFTextStripper`, `setSortByPosition(true)`), grouped into visual lines
+by page and y-coordinate. "Lines between" counts those rendered lines, not `\n` characters in the source
+data — which is the point: it measures what the reader sees.
+
+PDFBox is pinned to 2.0.27 in this module's `pom.xml` on purpose: `PDDocument.load(byte[])` exists in
+PDFBox 2 but not in 3, and this module skips the enforcer, so an unpinned transitive bump would break
+these steps with nothing else catching it.
