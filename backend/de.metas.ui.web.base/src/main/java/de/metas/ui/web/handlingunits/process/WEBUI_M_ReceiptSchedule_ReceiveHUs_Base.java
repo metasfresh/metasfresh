@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
+import de.metas.handlingunits.receiptschedule.ReceiptScheduleLUTUConfigurations;
 import java.util.List;
 
 import de.metas.handlingunits.IHUContextFactory;

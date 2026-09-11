@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
+import de.metas.handlingunits.receiptschedule.ReceiptScheduleLUTUConfigurations;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;

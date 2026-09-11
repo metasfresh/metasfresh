@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.receiptdisposition_deliveryplanning.process;
 
+import de.metas.handlingunits.receiptschedule.ReceiptScheduleLUTUConfigurations;
 import de.metas.Profiles;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -29,7 +30,6 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
-import de.metas.ui.web.handlingunits.process.ReceiptScheduleLUTUConfigurations;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.FillMandatoryException;

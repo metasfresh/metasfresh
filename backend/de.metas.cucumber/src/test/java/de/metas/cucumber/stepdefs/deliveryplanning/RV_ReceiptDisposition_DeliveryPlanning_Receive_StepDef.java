@@ -187,8 +187,8 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * Then validate the delivery planning link of the material receipt lines:
-	 *   | M_InOut_ID | C_OrderLine_ID | M_Delivery_Planning_ID | OPT.MovementQty | OPT.M_HU_PI_Item_Product_ID |
-	 *   | receipt_1  | orderLine_1    | planning_1             | 4               | pip_1                       |
+	 *   | M_InOut_ID | C_OrderLine_ID | M_Delivery_Planning_ID | OPT.MovementQty | OPT.QtyTU_Calculated |
+	 *   | receipt_1  | orderLine_1    | planning_1             | 4               | 1                    |
 	 *   | receipt_1  | orderLine_1    | planning_2             | 3               |                             |
 	 * </pre>
 	 */
@@ -239,10 +239,10 @@ public class RV_ReceiptDisposition_DeliveryPlanning_Receive_StepDef
 			//
 			// Via de.metas.handlingunits.model.I_M_InOutLine - the HU columns are not on org.compiere.model's
 			// generated interface, they live on the hand-written handling-units view of the same table.
-			expectedRow.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
-					.ifPresent(expectedPip -> assertThat(InterfaceWrapperHelper.create(actualByKey.get(key), de.metas.handlingunits.model.I_M_InOutLine.class).getM_HU_PI_Item_Product_ID())
-							.as("M_HU_PI_Item_Product_ID of the line %s of receipt %s", key, receipt.getDocumentNo())
-							.isEqualTo(expectedPip.lookupNotNullIn(huPiItemProductTable).getM_HU_PI_Item_Product_ID()));
+			expectedRow.getAsOptionalBigDecimal(de.metas.handlingunits.model.I_M_InOutLine.COLUMNNAME_QtyTU_Calculated)
+					.ifPresent(expectedQtyTU -> assertThat(InterfaceWrapperHelper.create(actualByKey.get(key), de.metas.handlingunits.model.I_M_InOutLine.class).getQtyTU_Calculated())
+							.as("QtyTU_Calculated of the line %s of receipt %s", key, receipt.getDocumentNo())
+							.isEqualByComparingTo(expectedQtyTU));
 		});
 	}
 

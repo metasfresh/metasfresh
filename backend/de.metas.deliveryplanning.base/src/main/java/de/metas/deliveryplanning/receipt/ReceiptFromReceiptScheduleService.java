@@ -34,6 +34,10 @@ import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
+import de.metas.handlingunits.receiptschedule.ReceiptScheduleLUTUConfigurations;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
@@ -170,9 +174,9 @@ public class ReceiptFromReceiptScheduleService
 			// plannings share one. Without this the row would draw the quantity that receive already took.
 			InterfaceWrapperHelper.refresh(receiptSchedule);
 
-			final Quantity qtyToReceive = getQtyToReceive(receiptSchedule, row.getDeliveryPlanningId());
-			final HuId vhuId = createPlanningVHU(receiptSchedule, qtyToReceive);
-			if (vhuId == null)
+			final DeliveryPlanningId deliveryPlanningId = row.getDeliveryPlanningId();
+			final ImmutableSet<HuId> rowHuIds = createPackedHUs(receiptSchedule, deliveryPlanningId);
+			if (rowHuIds.isEmpty())
 			{
 				// Nothing left on this schedule: skip the row rather than failing the whole selection - the
 				// batch behaviour a dispatcher receiving a screenful of rows needs.
@@ -185,12 +189,13 @@ public class ReceiptFromReceiptScheduleService
 			{
 				receiptSchedules.add(receiptSchedule);
 			}
-			huIdsToReceive.add(vhuId);
+			huIdsToReceive.addAll(rowHuIds);
 
-			final DeliveryPlanningId deliveryPlanningId = row.getDeliveryPlanningId();
 			if (deliveryPlanningId != null)
 			{
-				deliveryPlanningIdByHuId.put(vhuId, deliveryPlanningId);
+				// EVERY HU of the row, not one: a packed row can yield several TUs and an LU, and the receipt
+				// line's planning is resolved per HU (InOutProducerFromReceiptScheduleHU#extractDeliveryPlanningId).
+				rowHuIds.forEach(huId -> deliveryPlanningIdByHuId.put(huId, deliveryPlanningId));
 			}
 		}
 
@@ -338,6 +343,63 @@ public class ReceiptFromReceiptScheduleService
 			@NonNull final Quantity qtyToReceive)
 	{
 		return createPlanningVHU(huReceiptScheduleBL.getById(receiptScheduleId), qtyToReceive);
+	}
+
+	/**
+	 * The HUs to receive for ONE row, built to that row's own packing configuration.
+	 * <p>
+	 * Empty when there is nothing left to receive, which a batch skips rather than failing on.
+	 * <p>
+	 * The cap is the whole difficulty. {@link ReceiptScheduleLUTUConfigurations#adjustToDefaults} derives the
+	 * LU/TU quantities from the SCHEDULE, and a split copies {@code M_ReceiptSchedule_ID} onto every planning it
+	 * creates - so without {@link ReceiptScheduleLUTUConfigurations#capToPlannedShare} the first planning of a
+	 * split would pack, and book, the entire order line and starve its siblings. An UNPLANNED row has no share
+	 * and is left at the schedule-derived figure, which is the right one there.
+	 */
+	private ImmutableSet<HuId> createPackedHUs(
+			@NonNull final I_M_ReceiptSchedule receiptSchedule,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID());
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(Env.getCtx(), clientAndOrgId);
+
+		final Quantity plannedShare = getPlannedShareToReceive(receiptSchedule, deliveryPlanningId).orElse(null);
+
+		final I_M_HU_LUTU_Configuration lutuConfig = ReceiptScheduleLUTUConfigurations.getCurrent(receiptSchedule);
+		final I_M_HU_LUTU_Configuration effectiveConfig = ReceiptScheduleLUTUConfigurations.newDefaultCopy(lutuConfig, receiptSchedule);
+		ReceiptScheduleLUTUConfigurations.capToPlannedShare(effectiveConfig, plannedShare);
+		Services.get(ILUTUConfigurationFactory.class).save(effectiveConfig);
+
+		final ReceiptScheduleHUGenerator huGenerator = ReceiptScheduleHUGenerator.newInstance(huContext)
+				.addM_ReceiptSchedule(receiptSchedule)
+				.setUpdateReceiptScheduleDefaultConfiguration(false);
+		huGenerator.setM_HU_LUTU_Configuration(effectiveConfig);
+
+		final Quantity qtyCUsTotal = huGenerator.getLUTUProducerAllocationDestination().calculateTotalQtyCU();
+		if (qtyCUsTotal.isInfinite())
+		{
+			throw new AdempiereException("LU/TU configuration is resulting to infinite quantity: " + effectiveConfig);
+		}
+
+		if (qtyCUsTotal.signum() <= 0)
+		{
+			return ImmutableSet.of();
+		}
+		// The configuration already carries the share - capToPlannedShare above capped either the TU count or,
+		// for a share smaller than one TU, the CUs that TU holds - so the producer's own total IS the share.
+		huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
+
+		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
+
+		// The same finishing step the per-row receive applies to the HUs it generates
+		// (ReceiptDispositionDeliveryPlanningReceiveHUsProcess). Without it the HUs reach createReceipts in a
+		// state it refuses ("Ungültig: Gebinde Status"), because generation alone does not put them into the
+		// planning state a receipt is built from.
+		updatePlanningHUAttributes(hus, receiptSchedule);
+
+		return hus.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Nullable

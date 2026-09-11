@@ -334,7 +334,14 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       // asserted while the fallback was expected to fire.
       await page.locator('[data-testid="quick-action-dropdown-toggle"]').click();
       await expect(page.locator(`[data-testid="quick-action-${HUS_VOREINST_INTERNAL_NAME}"]`)).toHaveCount(1);
-      await page.locator('[data-testid="quick-action-dropdown-toggle"]').click(); // close
+
+      // Closed by clicking AWAY, not by clicking the toggle again and not with Escape. Two properties of
+      // QuickActions.js decide this: it puts `btn-disabled` on the toggle while the dropdown is open
+      // ('btn-disabled': isDropdownOpen || disabledDuringProcessing) and `quick-actions-wrapper` then intercepts
+      // the pointer, so a second click on the toggle can never land - Playwright just retries it until the test
+      // times out. And QuickActionsDropdown's key handler covers ArrowUp/ArrowDown/Enter only, so Escape does
+      // nothing. What the component does offer is handleClickOutside -> hideDropdown, wired whenever it is open.
+      await page.locator('body').click({ position: { x: 5, y: 5 } });
     });
 
     await test.step('the multi-row receive is reachable from the action menu only', async () => {

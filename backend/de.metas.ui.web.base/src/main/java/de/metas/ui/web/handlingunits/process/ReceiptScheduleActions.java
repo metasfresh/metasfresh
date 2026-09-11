@@ -101,11 +101,17 @@ public class ReceiptScheduleActions
 		}
 		catch (final IOException ex)
 		{
-			// The message is deliberately the IOException's OWN, not a wrapped one. The caller used to declare
-			// `throws Exception` and let this reach JavaProcess's handler, which shows getLocalizedMessage();
-			// AdempiereException.wrapIfNeeded would prefix it with "IOException: " and change what the operator
-			// reads on a window whose behaviour must not move.
-			throw new AdempiereException(ex.getLocalizedMessage(), ex);
+			// The message is deliberately the IOException's OWN, not a wrapped one, because this reaches
+			// JavaProcess#setProcessResultError, which shows getLocalizedMessage(). AdempiereException.wrapIfNeeded
+			// would prefix it with "IOException: " and change what the operator reads on a window whose behaviour
+			// must not move.
+			//
+			// The toString() fallback matters for the same reason and is not defensive padding: when an
+			// IOException carries NO message, setProcessResultError finds the text empty and falls back to
+			// e.toString(). Passing a null message here makes that e the wrapper, so the operator would read
+			// "org.adempiere.exceptions.AdempiereException: " where the raw exception's own class name belongs.
+			final String message = ex.getLocalizedMessage() != null ? ex.getLocalizedMessage() : ex.toString();
+			throw new AdempiereException(message, ex);
 		}
 
 		huReceiptScheduleBL.attachPhoto(receiptSchedule, name, image);

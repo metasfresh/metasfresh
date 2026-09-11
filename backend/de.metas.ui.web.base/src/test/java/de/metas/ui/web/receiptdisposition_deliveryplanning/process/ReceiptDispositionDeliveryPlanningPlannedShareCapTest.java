@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.receiptdisposition_deliveryplanning.process;
 
+import de.metas.handlingunits.receiptschedule.ReceiptScheduleLUTUConfigurations;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.quantity.Quantity;
@@ -92,7 +93,7 @@ class ReceiptDispositionDeliveryPlanningPlannedShareCapTest
 	{
 		final I_M_HU_LUTU_Configuration lutuConfig = wholeOrderLineConfiguration();
 
-		ReceiptDispositionDeliveryPlanningReceiveHUsProcess.capToPlannedShare(lutuConfig, share("50"));
+		ReceiptScheduleLUTUConfigurations.capToPlannedShare(lutuConfig, share("50"));
 
 		assertThat(lutuConfig.getQtyTU())
 				.as("a row planned for 50 of a 100 order line must offer 5 TUs of 10, not the schedule's 10")
@@ -105,7 +106,7 @@ class ReceiptDispositionDeliveryPlanningPlannedShareCapTest
 		final I_M_HU_LUTU_Configuration lutuConfig = wholeOrderLineConfiguration();
 
 		// null share = an UNPLANNED row: there the schedule-derived configuration is the correct one.
-		ReceiptDispositionDeliveryPlanningReceiveHUsProcess.capToPlannedShare(lutuConfig, null);
+		ReceiptScheduleLUTUConfigurations.capToPlannedShare(lutuConfig, null);
 
 		assertThat(lutuConfig.getQtyTU()).isEqualByComparingTo("10");
 	}
@@ -115,7 +116,7 @@ class ReceiptDispositionDeliveryPlanningPlannedShareCapTest
 	{
 		final I_M_HU_LUTU_Configuration lutuConfig = wholeOrderLineConfiguration();
 
-		ReceiptDispositionDeliveryPlanningReceiveHUsProcess.capToPlannedShare(lutuConfig, share("500"));
+		ReceiptScheduleLUTUConfigurations.capToPlannedShare(lutuConfig, share("500"));
 
 		assertThat(lutuConfig.getQtyTU())
 				.as("the packing already fits inside the share, so it must be left alone")
@@ -127,7 +128,7 @@ class ReceiptDispositionDeliveryPlanningPlannedShareCapTest
 	{
 		final I_M_HU_LUTU_Configuration lutuConfig = wholeOrderLineConfiguration();
 
-		ReceiptDispositionDeliveryPlanningReceiveHUsProcess.capToPlannedShare(lutuConfig, share("55"));
+		ReceiptScheduleLUTUConfigurations.capToPlannedShare(lutuConfig, share("55"));
 
 		assertThat(lutuConfig.getQtyTU())
 				.as("55 CUs at 10 per TU needs 6 TUs, not 5 - a partial TU still has to be received")

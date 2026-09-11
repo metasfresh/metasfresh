@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.receiptdisposition_deliveryplanning.process;
 
+import de.metas.handlingunits.receiptschedule.ReceiptScheduleLUTUConfigurations;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningList;
@@ -37,7 +38,6 @@ import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.handlingunits.process.ReceiptScheduleLUTUConfigurations;
 import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -175,53 +175,9 @@ abstract class ReceiptDispositionDeliveryPlanningReceiveHUsProcess extends Recei
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
 			@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
-		capToPlannedShare(lutuConfig, receiptFromReceiptScheduleService
+		ReceiptScheduleLUTUConfigurations.capToPlannedShare(lutuConfig, receiptFromReceiptScheduleService
 				.getPlannedShareToReceive(receiptSchedule, deliveryPlanningId)
 				.orElse(null));
-	}
-
-	/**
-	 * The capping itself, split from the share lookup so it can be exercised without constructing a
-	 * process - {@code ViewBasedProcessTemplate}'s constructor pulls a whole Spring graph that has nothing
-	 * to do with this arithmetic.
-	 *
-	 * @param plannedShare {@code null} for an UNPLANNED row, which is left alone: there the
-	 *                     schedule-derived configuration is the correct one.
-	 */
-	@VisibleForTesting
-	static void capToPlannedShare(
-			@NonNull final I_M_HU_LUTU_Configuration lutuConfig,
-			@Nullable final Quantity plannedShare)
-	{
-		if (plannedShare == null)
-		{
-			return;
-		}
-
-		final BigDecimal qtyCUsPerTU = lutuConfig.getQtyCUsPerTU();
-		if (lutuConfig.isInfiniteQtyCU() || qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
-		{
-			// Nothing to divide by: leave the configuration as derived rather than guess a TU count.
-			return;
-		}
-
-		// UP, not HALF_UP: a partial TU still has to be received, so 55 CUs at 10 per TU needs 6 TUs.
-		final BigDecimal cappedQtyTU = plannedShare.toBigDecimal().divide(qtyCUsPerTU, 0, RoundingMode.UP);
-		if (cappedQtyTU.signum() <= 0 || cappedQtyTU.compareTo(lutuConfig.getQtyTU()) >= 0)
-		{
-			// The share is not the binding limit - the packing already fits inside it.
-			return;
-		}
-
-		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		lutuConfig.setIsInfiniteQtyTU(false);
-		lutuConfig.setQtyTU(cappedQtyTU);
-		if (!lutuConfigurationFactory.isNoLU(lutuConfig))
-		{
-			lutuConfig.setIsInfiniteQtyLU(false);
-			lutuConfig.setQtyLU(BigDecimal.valueOf(
-					lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfig, cappedQtyTU)));
-		}
 	}
 
 	/**

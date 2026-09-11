@@ -1319,15 +1319,15 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
 
     # BOTH halves of the owner's instruction, on one row.
     #
-    # M_HU_PI_Item_Product_ID is THE PACKING: the receipt line records the configuration its HUs were built to,
-    # so a receive that ignored the configuration and made a bare virtual HU leaves it unset. That is what fails
-    # today.
+    # QtyTU_Calculated is THE PACKING: the producer writes it from the HUs actually received, so a receive that
+    # built a real TU from the row's configuration reports 1, while one that made a bare virtual HU has no TU to
+    # count and reports 0. That is what fails today.
     #
     # MovementQty is THE SHARE: 5, not the line's 10. Packing sized from the SCHEDULE rather than the planning
     # would receive the whole line here and starve planningPacked2_RL.
     And validate the delivery planning link of the material receipt lines:
-      | M_InOut_ID       | C_OrderLine_ID     | M_Delivery_Planning_ID | OPT.MovementQty | OPT.M_HU_PI_Item_Product_ID |
-      | receiptPacked_RL | orderLinePacked_RL | planningPacked1_RL     | 5               | pipTUPk_RL                  |
+      | M_InOut_ID       | C_OrderLine_ID     | M_Delivery_Planning_ID | OPT.MovementQty | OPT.QtyTU_Calculated |
+      | receiptPacked_RL | orderLinePacked_RL | planningPacked1_RL     | 5               | 1                    |
 
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | PlannedDischargeQuantity | ActualDischargeQuantity | TransportDirection | IsClosed | Processed |
