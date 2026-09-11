@@ -22,6 +22,7 @@
 
 package de.metas.deliveryplanning.receipt;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -34,7 +35,8 @@ import de.metas.deliveryplanning.ReceiptScheduleAndDeliveryPlanningId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.DocSequenceId;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUAllocations;
+import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
 import de.metas.handlingunits.receiptschedule.ReceiptScheduleLUTUConfigurations;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -76,6 +78,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Value;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -93,6 +96,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.function.Function;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -123,7 +127,6 @@ public class ReceiptFromReceiptScheduleService
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
@@ -174,21 +177,21 @@ public class ReceiptFromReceiptScheduleService
 		// schedule, and attached to no receipt at all; a retry would then read a smaller remainder and silently
 		// skip the row whose goods were never booked. The generator's own reuse pass is what normally reclaims
 		// such strays, and this call deliberately turns that off (see createPackedHUs), so the cleanup is ours.
-		final List<HuId> createdHuIds = new ArrayList<>();
+		final List<GeneratedHUs> generated = new ArrayList<>();
 		try
 		{
-			return receiveRows0(rows, createdHuIds);
+			return receiveRows0(rows, generated);
 		}
 		catch (final RuntimeException ex)
 		{
-			destroyQuietly(createdHuIds, ex);
+			destroyQuietly(generated, ex);
 			throw ex;
 		}
 	}
 
 	private ImmutableList<InOutId> receiveRows0(
 			@NonNull final List<ReceiptScheduleAndDeliveryPlanningId> rows,
-			@NonNull final List<HuId> createdHuIds)
+			@NonNull final List<GeneratedHUs> generated)
 	{
 		final List<I_M_ReceiptSchedule> receiptSchedules = new ArrayList<>();
 		final LinkedHashMap<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId = new LinkedHashMap<>();
@@ -202,8 +205,7 @@ public class ReceiptFromReceiptScheduleService
 			InterfaceWrapperHelper.refresh(receiptSchedule);
 
 			final DeliveryPlanningId deliveryPlanningId = row.getDeliveryPlanningId();
-			final ImmutableSet<HuId> rowHuIds = createPackedHUs(receiptSchedule, deliveryPlanningId);
-			createdHuIds.addAll(rowHuIds);
+			final ImmutableSet<HuId> rowHuIds = createPackedHUs(receiptSchedule, deliveryPlanningId, generated);
 			if (rowHuIds.isEmpty())
 			{
 				// Nothing left on this schedule: skip the row rather than failing the whole selection - the
@@ -242,32 +244,73 @@ public class ReceiptFromReceiptScheduleService
 	}
 
 	/**
-	 * Destroys HUs a failed batch created, so they stop counting against their receipt schedule. Swallows its own
-	 * failures onto the original exception: the caller is already on the way out with a real error, and losing
-	 * that error to a cleanup problem would hide why the receive failed in the first place.
+	 * Split out so a test can substitute the allocations without standing up an HU graph - the cleanup's own
+	 * logic (which schedule each HU is destroyed against, and that one failure does not abandon the rest) is what
+	 * needs covering, not this construction.
 	 */
-	private void destroyQuietly(@NonNull final List<HuId> huIds, @NonNull final RuntimeException cause)
+	@VisibleForTesting
+	IHUAllocations huAllocationsFor(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		if (huIds.isEmpty())
+		return new ReceiptScheduleHUAllocations(receiptSchedule);
+	}
+
+	/** One row's generated HUs together with the schedule they were allocated against. */
+	@Value
+	@VisibleForTesting
+	static class GeneratedHUs
+	{
+		@NonNull I_M_ReceiptSchedule receiptSchedule;
+		@NonNull List<I_M_HU> hus;
+	}
+
+	/**
+	 * Undoes what a failed batch created, so nothing stays counted against a receipt schedule it never reached a
+	 * receipt on.
+	 * <p>
+	 * Via {@link IHUAllocations#destroyAssignedHU}, NOT a bare {@code markDestroyed}. Destroying the HU alone
+	 * flips its status and nothing else: the {@code M_ReceiptSchedule_Alloc} row survives, pointing at a
+	 * destroyed HU, and {@code QtyMoved} - which that table's AFTER_DELETE hook is what decrements - stays
+	 * inflated. A retry would then read a smaller remainder and silently skip the row whose goods were never
+	 * booked, which is the whole failure this cleanup exists to prevent. Deleting the allocation is what reverts
+	 * the quantity; the destroy on its own would only look like a fix.
+	 * <p>
+	 * Each HU is destroyed against ITS OWN schedule's allocations, and one HU's failure does not abandon the
+	 * rest - {@code markDestroyed(Collection)} aborts the whole loop on the first HU that refuses (one that has
+	 * packages assigned, say), which in a cleanup path would silently leave everything after it behind.
+	 * <p>
+	 * Failures are suppressed onto the original exception: the caller is already leaving with a real error, and
+	 * losing it to a cleanup problem would hide why the receive failed in the first place.
+	 */
+	private void destroyQuietly(@NonNull final List<GeneratedHUs> generated, @NonNull final RuntimeException cause)
+	{
+		destroyQuietly(generated, cause, this::huAllocationsFor);
+	}
+
+	/**
+	 * The cleanup loop itself, taking the allocations lookup as a function so it can be exercised without
+	 * constructing this service - its own constructor needs a Spring context, which has nothing to do with the
+	 * decisions being made here.
+	 */
+	@VisibleForTesting
+	static void destroyQuietly(
+			@NonNull final List<GeneratedHUs> generated,
+			@NonNull final RuntimeException cause,
+			@NonNull final Function<I_M_ReceiptSchedule, IHUAllocations> allocationsFactory)
+	{
+		for (final GeneratedHUs entry : generated)
 		{
-			return;
-		}
-		try
-		{
-			final List<I_M_HU> hus = handlingUnitsBL.getByIds(huIds);
-			if (hus.isEmpty())
+			final IHUAllocations huAllocations = allocationsFactory.apply(entry.getReceiptSchedule());
+			for (final I_M_HU hu : entry.getHus())
 			{
-				return;
+				try
+				{
+					huAllocations.destroyAssignedHU(hu);
+				}
+				catch (final RuntimeException cleanupFailure)
+				{
+					cause.addSuppressed(cleanupFailure);
+				}
 			}
-			final I_M_HU first = hus.get(0);
-			final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(
-					Env.getCtx(),
-					ClientAndOrgId.ofClientAndOrg(first.getAD_Client_ID(), first.getAD_Org_ID()));
-			handlingUnitsBL.markDestroyed(huContext, hus);
-		}
-		catch (final RuntimeException cleanupFailure)
-		{
-			cause.addSuppressed(cleanupFailure);
 		}
 	}
 
@@ -416,7 +459,8 @@ public class ReceiptFromReceiptScheduleService
 	 */
 	private ImmutableSet<HuId> createPackedHUs(
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
-			@Nullable final DeliveryPlanningId deliveryPlanningId)
+			@Nullable final DeliveryPlanningId deliveryPlanningId,
+			@NonNull final List<GeneratedHUs> generated)
 	{
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID());
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing(Env.getCtx(), clientAndOrgId);
@@ -459,6 +503,12 @@ public class ReceiptFromReceiptScheduleService
 		huGenerator.setQtyToAllocateTarget(qtyToAllocate);
 
 		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
+
+		// Recorded HERE, not where this method returns. generateWithinOwnTransaction has already COMMITTED these
+		// in its own transaction, so anything that throws below - updatePlanningHUAttributes writes attributes and
+		// draws a lot number from a sequence - would otherwise leave them committed and untracked, and the cleanup
+		// would never learn they exist.
+		generated.add(new GeneratedHUs(receiptSchedule, hus));
 
 		// The same finishing step the per-row receive applies to the HUs it generates
 		// (ReceiptDispositionDeliveryPlanningReceiveHUsProcess): lot number, best-before and vendor, read off the
