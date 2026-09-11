@@ -63,11 +63,15 @@ handleMouseDown(option) {
 - **Input field**: `#lookup_C_BPartner_ID input.input-field`
 - **Dropdown list**: `.input-dropdown-list`
 - **Dropdown options**: `.input-dropdown-list-option`
-- **Loading spinner**: `#lookup_C_BPartner_ID .rotating`
+- **Loading spinner**: none — `#lookup_C_BPartner_ID .rotating` and `.indicator-pending` are **never rendered** by the frontend (verified: `grep -rn "indicator-pending\|rotating" frontend/src frontend/scss` matches only `window-indicator.scss`'s `@keyframes`/`animation-name`, never a class on an element). A `waitFor({ state: 'detached' })` on either resolves on the first poll and proves nothing. See [claude-docs/selectors-and-gotchas.md](claude-docs/selectors-and-gotchas.md) § "Dead Settle-Wait" — the authoritative writeup, with the worked `page.waitForResponse` replacement.
 
 **Working Interaction Pattern**:
 ```javascript
-// CORRECT PATTERN - Verified against frontend source code
+// Debounce timeout + dropdown-visibility wait below are the real, verified signals this
+// interaction depends on. Earlier versions of this pattern also waited on `#lookup_${fieldName}
+// .rotating` / `.indicator-pending` / `networkidle` as "loading" signals — none of those are ever
+// emitted by the frontend (see claude-docs/selectors-and-gotchas.md § "Dead Settle-Wait" for why
+// and for the page.waitForResponse pattern this suite actually uses instead); removed here.
 static async selectLookupValue(fieldName, searchText, optionText) {
   const page = getPage();
 
@@ -78,63 +82,46 @@ static async selectLookupValue(fieldName, searchText, optionText) {
   // 2. Click to focus the field
   await lookupInput.click();
 
-  // 3. Wait for any initial loading to complete
-  await page.locator(`#lookup_${fieldName} .rotating`).waitFor({
-    state: 'detached',
-    timeout: 10000,
-  }).catch(() => {});
-
-  // 4. Clear and type search text
+  // 3. Clear and type search text
   await lookupInput.fill('');
   await page.waitForTimeout(200);
   await lookupInput.fill(searchText);
 
-  // 5. Wait for dropdown to load (debounce + API call)
+  // 4. Wait for dropdown to load (debounce + API call), then for options to render
   await page.waitForTimeout(500);
-  await page.locator(`#lookup_${fieldName} .rotating`).waitFor({
-    state: 'detached',
-    timeout: 10000,
-  }).catch(() => {});
-
-  // 6. Wait for dropdown options to appear
   const dropdownList = page.locator('.input-dropdown-list');
   await dropdownList.waitFor({ state: 'visible', timeout: 10000 });
 
-  // 7. Find the specific option (use filter for partial match)
+  // 5. Find the specific option (use filter for partial match)
   const option = page.locator('.input-dropdown-list-option')
     .filter({ hasText: optionText })
     .first();
 
-  // 8. Verify option exists
+  // 6. Verify option exists
   const optionCount = await option.count();
   if (optionCount === 0) {
     const allOptions = await page.locator('.input-dropdown-list-option').allTextContents();
     throw new Error(`Option "${optionText}" not found. Available: ${allOptions.join(', ')}`);
   }
 
-  // 9. Click the option (triggers onMouseDown → handleSelect)
+  // 7. Click the option (triggers onMouseDown → handleSelect)
   await option.click();
 
-  // 10. Wait for dropdown to close
+  // 8. Wait for dropdown to close
   await dropdownList.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
 
-  // 11. Press Tab to confirm and trigger save
+  // 9. Press Tab to confirm and trigger save
   await page.keyboard.press('Tab');
 
-  // 12. Wait for save to complete
+  // 10. Wait for save to complete — for a real save-completion signal, wait on the
+  // page.waitForResponse for the field's PATCH/edit call (see claude-docs/selectors-and-gotchas.md
+  // § "Dead Settle-Wait" for the worked example), not on a fixed timeout.
   await page.waitForTimeout(300);
-  await page.locator('.rotating, .indicator-pending').waitFor({
-    state: 'detached',
-    timeout: 10000,
-  }).catch(() => {});
-
-  // 13. Wait for network idle (auto-save)
-  await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 }
 ```
 
 **Common Pitfalls**:
-1. **Not waiting for spinner**: The lookup makes API calls - always wait for `.rotating` to detach
+1. **`.rotating`/`.indicator-pending` are not real signals**: never rendered by the frontend — a `waitFor({ state: 'detached' })` on either resolves instantly and proves nothing. Wait on the debounce timeout + dropdown visibility, or better, `page.waitForResponse` on the actual network call (see [claude-docs/selectors-and-gotchas.md](claude-docs/selectors-and-gotchas.md) § "Dead Settle-Wait")
 2. **Clicking too fast**: Allow 500ms debounce after typing before clicking option
 3. **Not pressing Tab**: Selection commits on blur - Tab ensures the save triggers
 4. **Wrong selector scope**: Dropdown list is NOT inside `#lookup_X`, it's a separate element
