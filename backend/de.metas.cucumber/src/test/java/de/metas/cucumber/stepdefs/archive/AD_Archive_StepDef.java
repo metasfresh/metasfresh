@@ -118,6 +118,35 @@ public class AD_Archive_StepDef
 	}
 
 	/**
+	 * The negative of {@link #assert_archived_pdf_contains_text(String, String)}: asserts that the text does
+	 * not appear ANYWHERE in the archived PDF. This is the assertion for "the text is gone", which no
+	 * positional step can make — those only ever say what is not between two anchors, while an orphaned
+	 * value could have landed above another line or at the end of the document.
+	 * <p>
+	 * Use a single distinctive word, for the same reason as the positive step: a needle that the layout can
+	 * wrap in the middle would be absent from the extracted text even when the value did print.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PDF archived for the record identified by "order" does not contain text "Zwischenpalette"
+	 * </pre>
+	 */
+	@Then("the PDF archived for the record identified by {string} does not contain text {string}")
+	public void assert_archived_pdf_does_not_contain_text(
+			@NonNull final String recordIdentifier,
+			@NonNull final String unexpectedText)
+	{
+		final String pdfText = extractPdfVisualLines(recordIdentifier).stream()
+				.map(PdfLine::getText)
+				.collect(Collectors.joining("\n"));
+
+		assertThat(pdfText)
+				.as("Text extracted from the PDF archived for record %s", recordIdentifier)
+				.doesNotContain(unexpectedText);
+	}
+
+	/**
 	 * Verifies that, in the visual (top-to-bottom, left-to-right) reading order of the archived PDF, exactly
 	 * {@code linesBetween} other text lines separate {@code earlierText} from {@code laterText} — no more,
 	 * no fewer. Pass 0 to pin adjacency: the two texts then sit on consecutive lines, so nothing was printed

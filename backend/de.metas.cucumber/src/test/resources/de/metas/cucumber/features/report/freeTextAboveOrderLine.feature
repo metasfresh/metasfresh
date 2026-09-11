@@ -268,3 +268,34 @@ Feature: Free text above an order line
     And in the PDF archived for the record identified by "order", the vertical distance from text "Truhe:" to text "beschriften" equals the distance from text "Erste" to text "Vierte"
     # and the whole block still sits directly above its own article row
     And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "beschriften" and text "AlphaItem"
+
+  @Id:S27486_80
+  Scenario: Deleting the position that carries the free text takes the text with it
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lineLeadIn | order      | productA     | 1          |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine     |
+      | lineWithText | order      | productB     | 1          | Zwischenpalette einlegen |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
+      | lineTrailing | order      | productC     | 1          |
+    # A completed order's positions are read-only, so the deletion a user actually performs is on the draft.
+    # This is the only order-line delete step there is; its "keep its id" half is for callers that assert on
+    # the gone record's id afterwards, which this scenario does not.
+    When delete C_OrderLine identified by lineWithText, but keep its id into identifierIds table
+    And the order identified by order is completed
+    And The jasper process is run
+      | Value            | Record_ID |
+      | Auftrag (Jasper) | order     |
+    # the text left with its position: not above another position, and not orphaned anywhere else
+    Then the PDF archived for the record identified by "order" does not contain text "Zwischenpalette"
+    # positions 10 and 30 both still print, and position 30's article row follows position 10's product number directly
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "GammaItem"
+    # ... one band below it, measured inside position 10: the deleted position left no empty band's worth of space either
+    And in the PDF archived for the record identified by "order", the vertical distance from text "ALPHA-NR" to text "GammaItem" equals the distance from text "AlphaItem" to text "ALPHA-NR"
+    # position 30's own article row is complete: its product number printed below its name
+    And the PDF archived for the record identified by "order" contains text "GAMMA-NR"
