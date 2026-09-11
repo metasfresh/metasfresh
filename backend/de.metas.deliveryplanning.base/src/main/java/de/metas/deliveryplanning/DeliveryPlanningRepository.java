@@ -115,12 +115,6 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * The records of the given delivery plannings, in ONE round trip, in the caller's id order.
-	 * Unfiltered by {@code IsActive}: a selection can legitimately name a closed planning.
-	 *
-	 * @throws AdempiereException for an id with no matching row - a dangling reference, not a row to drop silently.
-	 */
-	/**
 	 * UPDATE, never create - creation goes through {@link #generateDeliveryPlanning}. Read-modify-write
 	 * over ONE load: the records are fetched once, each is handed to the caller AS THE MODEL, and the
 	 * returned model is written straight back onto the record it came from.
@@ -626,6 +620,12 @@ public class DeliveryPlanningRepository
 	 * downstream code that began reading a placeholder field would silently get a fabricated value. Adding
 	 * {@code IsReadyForReceipt} demonstrated it - one of the four sites was missed on the first pass, and for
 	 * that flag the unset value is the restrictive one.
+	 * <p>
+	 * Does NOT populate {@code allocations} - the alloc rows live in another table and are not read here. So
+	 * {@link DeliveryPlanning#isAllocated()} and {@link DeliveryPlanningList#allocatedOnes()} /
+	 * {@link DeliveryPlanningList#unallocatedOnes()} answer as if nothing were allocated on any model built
+	 * through this path ({@link #getByIds}). Read the stored {@code IsReadyForReceipt} instead, or load the
+	 * allocations explicitly; see REPO-REFACTOR-PLAN.md, which tracks closing this properly.
 	 */
 	static DeliveryPlanning.DeliveryPlanningBuilder fromRecordBuilder(@NonNull final I_M_Delivery_Planning record)
 	{
@@ -896,14 +896,9 @@ public class DeliveryPlanningRepository
 	}
 
 	/**
-	 * Private and record-taking: the only way in is
-	 * {@link #updateDeliveryPlanningsFromInstruction(Collection, I_M_ShipperTransportation)}, which loads its whole
-	 * argument in ONE round trip; an id-taking counterpart invites the per-row load it exists to prevent.
-	 * <p>
-	 * Also conforms the planning's own date fields to the instruction's - unconditionally overwritten, and only in
-	 * that direction: instruction to planning, never back.
+	 * The records matching a selection filter, streamed rather than materialised - the callers walk a whole view
+	 * selection, which can be large.
 	 */
-
 	public Iterator<I_M_Delivery_Planning> extractDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		return getDeliveryPlanningQueryBuilder(selectedDeliveryPlanningsFilter)

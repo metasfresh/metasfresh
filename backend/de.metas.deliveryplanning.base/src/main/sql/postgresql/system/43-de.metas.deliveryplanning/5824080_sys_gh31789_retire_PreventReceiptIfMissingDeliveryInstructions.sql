@@ -14,5 +14,10 @@
 -- of the getBooleanValue call that read it is false - the same answer - so a branch whose code still reads
 -- this name behaves identically with the row gone. An org-level override is untouched, since this targets
 -- AD_SysConfig_ID 541601, the system row at client/org 0.
+-- backup_table because AD_SysConfig holds operator-configurable data and this step DELETEs from it.
+
+SELECT backup_table('ad_sysconfig', '_gh31789_retire_PreventReceiptIfMissingDeliveryInstructions')
+;
+
 DELETE FROM AD_SysConfig WHERE AD_SysConfig_ID=541601
 ;

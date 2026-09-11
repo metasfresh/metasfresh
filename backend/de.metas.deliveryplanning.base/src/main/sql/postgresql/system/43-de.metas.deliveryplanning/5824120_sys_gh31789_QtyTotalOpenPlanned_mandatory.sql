@@ -19,6 +19,11 @@
 -- NOT NULL so any row the AFTER_NEW recompute has not reached yet - including a planning with no order line,
 -- where that recompute returns early - carries 0 rather than blocking the migration.
 
+-- backup_table because this backfills a business table before making the column NOT NULL.
+
+SELECT backup_table('m_delivery_planning', '_gh31789_QtyTotalOpenPlanned_mandatory')
+;
+
 UPDATE M_Delivery_Planning SET QtyTotalOpenPlanned = 0 WHERE QtyTotalOpenPlanned IS NULL
 ;
 

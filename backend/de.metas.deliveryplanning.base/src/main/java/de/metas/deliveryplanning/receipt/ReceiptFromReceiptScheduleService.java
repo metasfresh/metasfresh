@@ -72,6 +72,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -102,16 +103,12 @@ import java.util.function.Supplier;
  * of two copies, as the HU-editor path does today.
  */
 @Service
+@RequiredArgsConstructor
 public class ReceiptFromReceiptScheduleService
 {
 	private static final AdMessageKey MESSAGE_ClearanceStatusInfo_Receipt = AdMessageKey.of("ClearanceStatusInfo.Receipt");
 
 	@NonNull private final DeliveryPlanningService deliveryPlanningService;
-
-	public ReceiptFromReceiptScheduleService(@NonNull final DeliveryPlanningService deliveryPlanningService)
-	{
-		this.deliveryPlanningService = deliveryPlanningService;
-	}
 
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -120,8 +117,8 @@ public class ReceiptFromReceiptScheduleService
 	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	@NonNull private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	public CreateReceiptFromReceiptScheduleResult receiveCUs(
 			@NonNull final ReceiptScheduleAndDeliveryPlanningId sourceIds,

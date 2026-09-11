@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.organization.OrgId;
-import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.model.ShippingPackageId;
 import de.metas.util.Services;
@@ -50,15 +49,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Repository Tables: M_Delivery_Planning_Alloc, M_Delivery_Planning, M_ShipperTransportation
+ * Repository Tables: M_Delivery_Planning_Alloc
  * Repository Cluster: DeliveryPlanningAllocRepository (sole owner of M_Delivery_Planning_Alloc),
  * DeliveryPlanningRepository, DeliveryInstructionRepository
  * <p>
- * Writes {@code M_Delivery_Planning.IsAllocated} and {@code IsReadyForReceipt} as the one deliberate exception
- * to single-table ownership: both columns are this table's mirrors, and folding their {@code EXISTS} into the
- * {@code UPDATE}'s own {@code SET} clause is what keeps
- * the flags are now derived and stored by DeliveryPlanningAllocService, which may call several
- * repositories - this one no longer writes M_Delivery_Planning at all.
+ * This class writes {@code M_Delivery_Planning_Alloc} and nothing else. The derived flags
+ * {@code M_Delivery_Planning.IsAllocated} and {@code IsReadyForReceipt} mirror this table, but they are
+ * computed and stored by {@link DeliveryPlanningAllocService}, which is free to call several repositories -
+ * so a single-table repository does not have to reach across an aggregate boundary to keep them in step.
  */
 @Repository
 public class DeliveryPlanningAllocRepository
