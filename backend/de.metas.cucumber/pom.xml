@@ -136,6 +136,18 @@
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <!--
+                Used by AD_Archive_StepDef to read the text out of an archived document PDF.
+                Pinned deliberately: it otherwise only arrives transitively and unversioned, and
+                PDDocument.load(byte[]) exists in PDFBox 2 but not in 3, so a transitive bump
+                would break those steps. This module skips the enforcer, so nothing else catches it.
+            -->
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.27</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- JUnit 5 and Cucumber JUnit Platform Engine -->
         <dependency>
