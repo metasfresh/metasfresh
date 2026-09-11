@@ -399,9 +399,9 @@ public class ReceiptFromReceiptScheduleService
 		final List<I_M_HU> hus = huGenerator.generateWithinOwnTransaction();
 
 		// The same finishing step the per-row receive applies to the HUs it generates
-		// (ReceiptDispositionDeliveryPlanningReceiveHUsProcess). Without it the HUs reach createReceipts in a
-		// state it refuses ("Ungültig: Gebinde Status"), because generation alone does not put them into the
-		// planning state a receipt is built from.
+		// (ReceiptDispositionDeliveryPlanningReceiveHUsProcess): lot number, best-before and vendor, read off the
+		// receipt schedule. It sets ATTRIBUTES only and deliberately does not touch HUStatus - the generator
+		// already creates these in Planning, which is what createReceipts requires.
 		updatePlanningHUAttributes(hus, receiptSchedule);
 
 		return hus.stream()
