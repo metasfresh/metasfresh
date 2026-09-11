@@ -107,7 +107,10 @@ SELECT ol.line,
        report.getQtyPattern(uom.StdPrecision)                 AS QtyPattern,
        ol.iswithoutcharge,
        ol.reason,
-       ol.descriptionaboveline
+       CASE
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'descriptionaboveline') = 'N' THEN
+               ol.descriptionaboveline
+       END                                                    AS descriptionaboveline
 FROM C_OrderLine ol
          INNER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
