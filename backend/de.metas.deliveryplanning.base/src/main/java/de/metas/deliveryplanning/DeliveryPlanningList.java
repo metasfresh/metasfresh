@@ -328,7 +328,10 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 		/**
 		 * A sibling's effective claim: its actual once one is recorded ({@code nullif(actual, 0)}), otherwise its planned figure.
 		 * <p>
-		 * A CLOSED planning is the exception, and the zero is the whole point of it: an open planning that has taken
+		 * A CLOSED OR DELIVERED planning is the exception, and the zero is the whole point of it: the guard is
+		 * {@code isProcessed()}, which by this model's invariant is {@code IsClosed || IsDelivered} - a delivered
+		 * planning is as settled as a closed one, because a planning maps 1:1 onto its own document. An open
+		 * planning that has taken
 		 * nothing is still going to happen, so it keeps claiming its plan, but a closed one never will - whatever it
 		 * took is all it is ever going to take. Letting a closed planning fall back to its planned figure lets a dead
 		 * row keep reserving quantity that can never be delivered, so the order line reads fully planned while part of

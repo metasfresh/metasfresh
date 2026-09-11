@@ -464,7 +464,13 @@ public class DeliveryPlanningRepository
 			}
 			else if (hasOwnShipment(deliveryPlanning.getTransportDirection()))
 			{
-				builder.actualLoadedQty(deliveryPlanning.getActualLoadedQty().toZero()).actualDischargeQty(zero);
+				// The load end goes back to zero - that end IS ours, and after the reversal nothing is loaded. The
+				// discharge end goes back to MIRRORING THE PLAN rather than to a literal zero: we never see the
+				// customer unload, so on an outgoing planning that column is an assumption from the plan, and a
+				// reversed planning is back to being merely planned. Zeroing it would state "nothing was ever
+				// reported" on the one end that is never reported at all.
+				builder.actualLoadedQty(deliveryPlanning.getActualLoadedQty().toZero())
+						.actualDischargeQty(deliveryPlanning.getPlannedDischargeQty());
 			}
 			else
 			{

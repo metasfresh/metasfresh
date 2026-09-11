@@ -1153,7 +1153,7 @@ Feature: Delivery planning quantities
       | deliveryPlanningQ11Out | orderLineQ11Out |
     And validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed |
-      | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 10                    | 0             | 0                       | false    | false     |
+      | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 10                    | 0             | 10                      | false    | false     |
 
     # A shipment is the only document an Outgoing planning ever gets, so - unlike a receipt, which writes only its
     # own end - completion books the SAME quantity onto BOTH ends. A partial booking (7 of the 10 planned) makes it
@@ -1172,12 +1172,19 @@ Feature: Delivery planning quantities
 
     When the shipment identified by shipmentQ11Out is reversed
 
-    # Reversal is symmetric: both ends the shipment wrote clear back to empty, and Processed clears -
-    # the planning is not closed, so it is unlocked again. The planned load stays at the 7 the process
-    # wrote; only the actuals are the reversal's to undo.
+    # Reversal undoes what the shipment wrote, and Processed clears - the planning is not closed, so it is
+    # unlocked again. The planned load stays at the 7 the process wrote; only the actuals are the reversal's
+    # to undo.
+    #
+    # The two ends do NOT come back to the same value, and that asymmetry is the point. ActualLoadQty is OUR
+    # end - we load, so after the reversal nothing is loaded and it is truly 0. ActualDischargeQuantity is the
+    # CUSTOMER's end, which nothing ever reports to us: on an outgoing planning that column is an assumption
+    # read off the plan, so a reversed planning - back to merely planned - shows the plan's 7 again. Zeroing it
+    # would assert "nothing was ever reported" about the one end that is never reported at all, and would make
+    # the column mean something different after a reversal than before the shipment.
     Then validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
-      | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 7                     | 0             | 0                       | false    | false     | null       |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity | IsClosed | Processed | M_InOut_ID |
+      | deliveryPlanningQ11Out | 10         | 10           | Outgoing            | 7                     | 7                        | 0             | 7                       | false    | false     | null       |
 
   @Id:S31789_TC_Q11_ConsolidatedShipmentBooksOnlyItsOwnLine
   Scenario: A consolidated shipment books only THIS planning's own line onto it, never the whole document
