@@ -20,11 +20,13 @@ SELECT
 	l.x,
 	l.y,
 	l.z,
-	l.x1
+	l.x1,
+	ol.descriptionaboveline
 FROM m_picking_candidate pc
 	JOIN m_packageable_v v  on pc.m_shipmentschedule_id = v.m_shipmentschedule_id
     JOIN m_product p on p.m_product_id = v.m_product_id
 	JOIN C_Uom u on u.C_Uom_id = v.C_Uom_id
 	LEFT JOIN M_HU hu on hu.M_hu_id = pc.pickfrom_hu_id
 	LEFT JOIN m_locator l on l.m_locator_id = hu.m_locator_id
+	LEFT JOIN C_OrderLine ol on ol.C_OrderLine_ID = v.c_orderlineso_id AND ol.isActive = 'Y'
 ORDER BY l.value, l.x, l.y, l.z, l.x1;

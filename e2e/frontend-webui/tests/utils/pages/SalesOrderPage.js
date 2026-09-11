@@ -1,7 +1,8 @@
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
-import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
+import { waitForRecordSaved, waitForTabAllowsNew, WEBAPI_BASE_URL } from '../WebAPIValidation';
+import { AdvancedEdit } from '../AdvancedEdit';
 import { PdfDownloader } from '../PdfDownloader';
 import { openRelatedDocument, REFERENCE_DATA_CY } from '../DocumentReferences';
 
@@ -335,6 +336,79 @@ export class SalesOrderPage {
   }
 
   /**
+   * Set a free-text field on the FIRST order line through that row's Advanced Edit modal, and
+   * confirm the value reached the system of record.
+   *
+   * An order line is a SUBTABLE row, so the window-level Alt+E (`AdvancedEdit.open`) is the wrong
+   * entry point — it edits the HEADER. The frontend wires Advanced Edit for a subtable row via the
+   * row's right-click context menu (`containers/Table.handleAdvancedEdit` → modal with the selected
+   * rowId), so that is the path taken here. Same pattern as
+   * `tests/spec/invoice-line-account-override.spec.js`.
+   *
+   * Language-independent: selects on the DB ColumnName and on structural classes only.
+   *
+   * @param {string} columnName - DB column name of the text field (e.g. 'DescriptionAboveLine')
+   * @param {string} value - Text to set
+   * @param {string} [recordId] - Sales order record ID (extracted from the URL if not provided)
+   */
+  static async setOrderLineTextField(columnName, value, recordId) {
+    return await test.step(`SalesOrderPage - Set order line ${columnName} to "${value}"`, async () => {
+      const page = getPage();
+      const effectiveRecordId = recordId || this.getRecordId();
+
+      // Right-click the first order-line row: that selects it AND opens its context menu.
+      const lineRow = page.locator('.table-flex-wrapper table tbody tr, table tbody tr').first();
+      await lineRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await lineRow.click({ button: 'right' });
+
+      const advancedEditItem = page
+        .locator('.context-menu-open .context-menu-item:has(.meta-icon-edit)')
+        .first();
+      await advancedEditItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await advancedEditItem.click();
+
+      await page.locator('.panel-modal').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await page
+        .locator('.panel-modal-content')
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      // Arm the wait BEFORE typing: blurring the widget PATCHes the row, and the read-back below
+      // must not race that request (a blind sleep here would).
+      const rowSaved = page.waitForResponse(
+        (response) =>
+          response.request().method() === 'PATCH' &&
+          response.url().includes(`/window/${SALES_ORDER_WINDOW_ID}/${effectiveRecordId}/`),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      await AdvancedEdit.setTextField(columnName, value);
+      await page.keyboard.press('Tab');
+      await rowSaved;
+      await AdvancedEdit.close();
+
+      // Read the value back off the order-line tab from the system of record, so a widget that
+      // silently discarded the input fails HERE instead of surfacing much later as a missing text
+      // in a printed PDF.
+      const response = await page.request.get(
+        `${WEBAPI_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${effectiveRecordId}/AD_Tab-187`,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+      if (!response.ok()) {
+        throw new Error(
+          `Could not read back the order-line tab: HTTP ${response.status()} ${response.statusText()}`
+        );
+      }
+      const body = await response.text();
+      if (!body.includes(value)) {
+        throw new Error(
+          `Order line ${columnName} was not persisted: "${value}" is absent from the ` +
+            `order-line tab of sales order ${effectiveRecordId}`
+        );
+      }
+      console.log(`[PASS] Order line ${columnName} persisted: "${value}"`);
+    });
+  }
+
+  /**
    * Open the batch-entry (quick input) form and select a product, then STOP — leaving the form open so
    * the caller can inspect what the backend defaulted into it.
    *
@@ -650,6 +724,7 @@ export class SalesOrderPage {
         customerName: expectedData.customerName,
         productCode: expectedData.productCode,
         quantity: expectedData.quantity,
+        expectedTexts: expectedData.expectedTexts,
         language: expectedData.language,
         checkOverlaps: true,         // Enabled - detects true 2D overlaps
         checkMargins: false,         // Disabled - not needed yet

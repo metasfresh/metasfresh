@@ -6,14 +6,16 @@ RETURNS TABLE
 (
 	MovementQty numeric,
 	Name Character Varying,
-	UOMSymbol Character Varying (10)
+	UOMSymbol Character Varying (10),
+	DescriptionAboveLine Character Varying
 )
 AS
 $$
 SELECT
 	SUM(ol.QtyEntered)			AS MovementQty,
 	COALESCE(pt.Name, p.name)		AS Name,
-	COALESCE(uomt.UOMSymbol, uom.UOMSymbol)	AS UOMSymbol
+	COALESCE(uomt.UOMSymbol, uom.UOMSymbol)	AS UOMSymbol,
+	ol.DescriptionAboveLine
 FROM
 	C_Order o
 	INNER JOIN C_OrderLine ol 			ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
@@ -38,8 +40,12 @@ WHERE
 	o.C_Order_ID = $1 AND o.isActive = 'Y'
 	AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 	AND QtyEntered != 0 -- Don't display lines without a Qty. See 08293
+-- DescriptionAboveLine is one of the grouping keys, so packing-material rows that agree on
+-- product, UOM and description but carry different free texts are now reported as separate
+-- rows instead of being summed into one. That is intended: the free text belongs to its own
+-- order line and a summed row could not carry two different texts.
 GROUP BY
-	 COALESCE(pt.Name, p.name), COALESCE(uomt.UOMSymbol, uom.UOMSymbol), dlsi.SeqNo, ol.description
+	 COALESCE(pt.Name, p.name), COALESCE(uomt.UOMSymbol, uom.UOMSymbol), dlsi.SeqNo, ol.description, ol.DescriptionAboveLine
 ORDER BY 
 	dlsi.SeqNo NULLS LAST
 	

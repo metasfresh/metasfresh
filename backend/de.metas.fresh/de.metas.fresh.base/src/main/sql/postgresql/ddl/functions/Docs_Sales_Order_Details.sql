@@ -40,7 +40,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 AmountPattern                text,
                 QtyPattern                   text,
                 iswithoutcharge              character(1),
-                reason                       character(1)
+                reason                       character(1),
+                descriptionaboveline         character varying
 
             )
 AS
@@ -105,7 +106,11 @@ SELECT ol.line,
        report.getAmountPatternForJasper(c.c_currency_id)      AS AmountPattern,
        report.getQtyPattern(uom.StdPrecision)                 AS QtyPattern,
        ol.iswithoutcharge,
-       ol.reason
+       ol.reason,
+       CASE
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'descriptionaboveline') = 'N' THEN
+               ol.descriptionaboveline
+       END                                                    AS descriptionaboveline
 FROM C_OrderLine ol
          INNER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID

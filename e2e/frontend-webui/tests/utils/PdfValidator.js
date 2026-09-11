@@ -39,6 +39,10 @@ class PdfValidator {
    * @param {string} options.customerName - Customer name/code to validate
    * @param {string} [options.productCode] - Product code to validate (optional)
    * @param {string} [options.quantity] - Quantity to validate (optional, requires productCode)
+   * @param {string[]} [options.expectedTexts=[]] - Arbitrary strings that must appear in the PDF text.
+   *        Each entry is matched against the normalized text AND the whitespace-stripped text, so an
+   *        entry still matches when the PDF renderer split it across line fragments. On failure the
+   *        error names the entry that was missing.
    * @param {string} [options.language] - Language for logging (e.g., 'en_US', 'de_DE')
    * @param {boolean} [options.checkOverlaps=true] - Enable overlap detection
    * @param {boolean} [options.checkMargins=false] - Enable margin validation
@@ -58,6 +62,7 @@ class PdfValidator {
         customerName,
         productCode,
         quantity,
+        expectedTexts = [],
         language = 'unknown',
         checkOverlaps = true,
         checkMargins = false,
@@ -207,6 +212,32 @@ class PdfValidator {
               console.log('[PASS] Quantity validated:', quantity);
             }
           }
+        }
+      }
+
+      // Validate arbitrary expected texts (if provided).
+      // Matched against BOTH variants for the reason `textNoSpaces` exists: PDF text extraction
+      // inserts fragment breaks inside a long string. The needle is stripped the same way before
+      // it is looked up in `textNoSpaces`, so an expected text that itself contains spaces can
+      // still match there — the raw needle never would.
+      //
+      // A bare string here would silently pass: `for...of` iterates it CHARACTER by character, and
+      // every single character is present in any non-empty PDF text. Fail loudly instead.
+      if (!Array.isArray(expectedTexts)) {
+        throw new Error(`expectedTexts must be an array of strings, got ${typeof expectedTexts}`);
+      }
+      for (const expectedText of expectedTexts) {
+        const needle = String(expectedText);
+        const needleNoSpaces = needle.replace(/\s+/g, '');
+        if (!text.includes(needle) && !textNoSpaces.includes(needleNoSpaces)) {
+          errors.push(
+            `Expected Text Validation Failed:\n` +
+              `  Field: Expected Text\n` +
+              `  Expected: "${needle}"\n` +
+              `  Actual: Not found in PDF`
+          );
+        } else {
+          console.log('[PASS] Expected text validated:', needle);
         }
       }
 

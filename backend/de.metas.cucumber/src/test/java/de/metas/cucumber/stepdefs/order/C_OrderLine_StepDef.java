@@ -131,6 +131,9 @@ public class C_OrderLine_StepDef
 {
 	private static final String COLUMNNAME_PREFIX_ATTRIBUTE = "attribute:";
 
+	/** Column-namespaced, so the bare word stays usable as a real value; see {@link #resolveDescriptionAboveLine(String)}. */
+	private static final String DESCRIPTION_ABOVE_LINE_WHITESPACE_ONLY_SENTINEL = "DescriptionAboveLine:WHITESPACE_ONLY";
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -171,6 +174,10 @@ public class C_OrderLine_StepDef
 	 *       change. Preparation-date overrides belong on {@code M_ShipmentSchedule.PreparationDate_Override}. Parsed as
 	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
+	 *   <li>{@code DescriptionAboveLine} (optional) — free text printed as a standalone block directly above
+	 *       this line's own row on order/delivery/invoice documents. For a whitespace-only value pass the
+	 *       sentinel {@value #DESCRIPTION_ABOVE_LINE_WHITESPACE_ONLY_SENTINEL}, per
+	 *       {@link #resolveDescriptionAboveLine(String)}.</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_OrderLines:")
@@ -294,6 +301,10 @@ public class C_OrderLine_StepDef
 		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
 				.ifPresent(orderLine::setDescription);
 
+		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_DescriptionAboveLine)
+				.map(C_OrderLine_StepDef::resolveDescriptionAboveLine)
+				.ifPresent(orderLine::setDescriptionAboveLine);
+
 		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
 				.ifPresent(orderLine::setExternalId);
 
@@ -315,6 +326,17 @@ public class C_OrderLine_StepDef
 				.ifPresent(identifier -> orderLineTable.putOrReplace(identifier, orderLine));
 
 		restTestContext.setIntVariableFromRow(tableRow, orderLine::getC_OrderLine_ID);
+	}
+
+	/**
+	 * A cucumber DataTable cell that contains only spaces is trimmed to an empty string by the Gherkin parser
+	 * before this step def ever sees it, so a whitespace-only {@code DescriptionAboveLine} value cannot be
+	 * expressed literally. This resolves the documented sentinel {@value #DESCRIPTION_ABOVE_LINE_WHITESPACE_ONLY_SENTINEL}
+	 * to a real whitespace-only value; every other value passes through unchanged.
+	 */
+	private static String resolveDescriptionAboveLine(@NonNull final String rawValue)
+	{
+		return DESCRIPTION_ABOVE_LINE_WHITESPACE_ONLY_SENTINEL.equals(rawValue) ? "   " : rawValue;
 	}
 
 	/**

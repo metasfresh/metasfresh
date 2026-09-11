@@ -189,6 +189,7 @@ export class InvoicePage {
         customerName: expectedData.customerName,
         productCode: expectedData.productCode,
         quantity: expectedData.quantity,
+        expectedTexts: expectedData.expectedTexts,
         language: expectedData.language,
         checkOverlaps: true, // Enabled - detects true 2D overlaps
         checkMargins: false, // Disabled - not needed yet
