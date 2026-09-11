@@ -6,6 +6,8 @@ Feature: Free text above an order line
 ## F00144: Free Text Above Order Lines
   A sales order line can carry a free text.
   It prints as a standalone block directly above that line's own article row on the order confirmation.
+  The documents that follow from that line print the same block in the same shape: the delivery note of
+  its shipment, and the invoice.
   No text means no block: an unset value prints nothing and a whitespace-only value prints nothing.
   A blank band emits no glyphs whether it printed or was suppressed.
   So the whitespace-only scenario also compares vertical positions, where extra space would show up.
@@ -154,3 +156,81 @@ Feature: Free text above an order line
     And in the PDF archived for the record identified by "order", at least 2 lines appear between text "Diese Position" and text "BetaItem"
     # the last word is still on the page, so nothing was clipped off the end
     And the PDF archived for the record identified by "order" contains text "Teillieferungsavis"
+
+  @Id:S27486_50
+  Scenario: A free text prints as the line directly above its own position on the delivery note
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    # position 10 carries no free text and only serves as the anchor above position 20
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lineLeadIn | order      | productA     | 1          |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine |
+      | lineWithText | order      | productB     | 1          | Kuehlkettenhinweis   |
+    When the order identified by order is completed
+    # IsToRecompute=N is the wait for the completion's recompute to land before the schedules are enqueued
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | scheduleLeadIn   | lineLeadIn     | N             |
+      | scheduleWithText | lineWithText   | N             |
+    # both schedules go into ONE workpackage, so both positions land on ONE delivery note
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | scheduleLeadIn        |
+      | scheduleWithText      |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | scheduleWithText      | shipment   |
+    And The jasper process is run
+      | Value                 | Record_ID |
+      | Lieferschein (Jasper) | shipment  |
+    Then the PDF archived for the record identified by "shipment" contains text "Kuehlkettenhinweis"
+    And in the PDF archived for the record identified by "shipment", exactly 0 lines appear between text "ALPHA-NR" and text "Kuehlkettenhinweis"
+    And in the PDF archived for the record identified by "shipment", exactly 0 lines appear between text "Kuehlkettenhinweis" and text "BetaItem"
+
+  @Id:S27486_60
+  Scenario: A free text prints as the line directly above its own position on the invoice
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    # position 10 carries no free text and only serves as the anchor above position 20
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | lineLeadIn | order      | productA     | 1          |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine |
+      | lineWithText | order      | productB     | 1          | Nachlieferungsavis   |
+    When the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | scheduleLeadIn   | lineLeadIn     | N             |
+      | scheduleWithText | lineWithText   | N             |
+    # AUTO_SHIP_AND_INVOICE is off, so the invoice candidates only become invoiceable once delivered
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | scheduleLeadIn        |
+      | scheduleWithText      |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | scheduleWithText      | shipment   |
+    # QtyToInvoice=1 is the wait for the delivery to have reached the candidates
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID   | C_OrderLine_ID | QtyToInvoice |
+      | invoiceCandidateLeadIn   | lineLeadIn     | 1            |
+      | invoiceCandidateWithText | lineWithText   | 1            |
+    # both candidates go into ONE selection, so both positions land on ONE invoice
+    When process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID   |
+      | invoiceCandidateLeadIn   |
+      | invoiceCandidateWithText |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID   | C_Invoice_ID |
+      | invoiceCandidateWithText | invoice      |
+    And The jasper process is run
+      | Value             | Record_ID |
+      | Rechnung (Jasper) | invoice   |
+    And the PDF archived for the record identified by "invoice" contains text "Nachlieferungsavis"
+    And in the PDF archived for the record identified by "invoice", exactly 0 lines appear between text "ALPHA-NR" and text "Nachlieferungsavis"
+    And in the PDF archived for the record identified by "invoice", exactly 0 lines appear between text "Nachlieferungsavis" and text "BetaItem"
