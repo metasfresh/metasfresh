@@ -236,3 +236,35 @@ Feature: Free text above an order line
     And the PDF archived for the record identified by "invoice" contains text "Nachlieferungsavis"
     And in the PDF archived for the record identified by "invoice", exactly 0 lines appear between text "ALPHA-NR" and text "Nachlieferungsavis"
     And in the PDF archived for the record identified by "invoice", exactly 0 lines appear between text "Nachlieferungsavis" and text "BetaItem"
+
+  @Id:S27486_70
+  Scenario: A multi-line free text prints its lines as entered, the empty one included
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    # the customer's own four-line note, on the FIRST position of the order; its third line is empty.
+    # Single-word needles below: the dev-note in scenario _40 applies here too, and additionally the
+    # first line's umlaut is not something an assertion should depend on extracting.
+    And metasfresh contains C_OrderLines:
+      | Identifier        | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine                                                                                             |
+      | lineWithBlankLine | order      | productA     | 1          | Für die Truhe:\nBitte saubere Schalen mit ordentlichem beklebten Deckel\n\nKartons bitte mit "Truhe" beschriften |
+    # four lines of which the third is NOT empty: the reference for "the empty line took a line's height".
+    # A blank line emits no glyphs, so no text-based assertion can tell three rendered lines from four;
+    # only the height of a block known to have four of them can.
+    And metasfresh contains C_OrderLines:
+      | Identifier           | C_Order_ID | M_Product_ID | QtyEntered | DescriptionAboveLine                                                                  |
+      | lineControlFourLines | order      | productB     | 1          | Erste Kontrollzeile\nZweite Kontrollzeile\nDritte Kontrollzeile\nVierte Kontrollzeile |
+    When the order identified by order is completed
+    And The jasper process is run
+      | Value            | Record_ID |
+      | Auftrag (Jasper) | order     |
+    # the first two lines of the note print in that order, with nothing between them ...
+    Then in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Truhe:" and text "ordentlichem"
+    # ... and the fourth line follows the second with no other TEXT between them, which is what an
+    # empty third line looks like to text extraction: it printed, but it printed no glyphs
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ordentlichem" and text "beschriften"
+    # the empty line did take a line's height: the note's first-to-last line spans exactly as far as
+    # the four-line control block's does. Three line heights if the empty line printed, two if it was dropped.
+    And in the PDF archived for the record identified by "order", the vertical distance from text "Truhe:" to text "beschriften" equals the distance from text "Erste" to text "Vierte"
+    # and the whole block still sits directly above its own article row
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "beschriften" and text "AlphaItem"
