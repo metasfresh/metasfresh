@@ -59,9 +59,10 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
 2. Selecting the packed-product row: the quick-action button reads the RESOLVED PACKING INFO
    (\`1 <its own PI> x 10 Stk\`), not the static label - the action overrides its caption with the
    configuration it resolved, and rejects when none resolves, so the caption is the evidence.
-3. Selecting the unpacked-product row: the quick-action button reads "CUs annehmen" (the fallback), and
-   opening the quick-actions dropdown never shows "HUs annehmen Voreinst." at all — it hides itself
-   rather than merely disabling.
+3. Selecting the unpacked-product row: the quick-action button reads the BARE QUANTITY (\`5 Stk\`) with no
+   TU name, because no packing instruction resolves and the virtual one is skipped - and
+   "HUs annehmen Voreinst." stays available rather than hiding (owner decision 2026-09-11: keep the
+   behaviour shared with the receipt-schedule window instead of diverging).
 4. Selecting BOTH rows: the multi-row receive ("Wareneingangsdispo zu Wareneingang") is absent from the
    quick-actions dropdown and present in the action menu (Alt+... / actions panel).
     `);
@@ -312,18 +313,27 @@ test.describe('Receipt-disposition delivery-planning — quick-action default an
       await expect(quickActionButton).toHaveText(/^1 RL_TU_PI_\S+ x 10 Stk$/);
     });
 
-    await test.step('the interesting case: the unpacked-product row falls back to "CUs annehmen", and the HU default genuinely hides itself', async () => {
+    await test.step('the unpacked-product row keeps the HU default, captioned by the bare quantity', async () => {
       const row = rowForProduct(unpackedProductName);
       await row.click();
 
       const quickActionButton = page.locator('[data-testid="quick-action-button"]');
       await expect(quickActionButton).toBeVisible();
-      await expect(quickActionButton).toHaveText('CUs annehmen');
 
-      // Open the dropdown of the OTHER quick actions and assert the HU default is not merely disabled
-      // in there — it must be ABSENT ("the HU default genuinely hides itself").
+      // OWNER DECISION 2026-09-11: accept the shared behaviour. The action rejects only on an EMPTY packing
+      // info, and an unpacked product still resolves one: it falls back to the virtual "No Packing Item", whose
+      // CU capacity the reference HU data makes finite, so the formatter skips the virtual TU and emits the CU
+      // quantity alone. Hence a bare "5 Stk" (the 5 this test orders) rather than the "1 <PI> x 10 Stk" shape
+      // the packed row shows above - the absence of a TU name IS the assertion that no packing instruction
+      // resolved. The core class this mirrors behaves identically, which is why the decision was to keep them
+      // the same rather than diverge on our window alone.
+      await expect(quickActionButton).toHaveText('5 Stk');
+
+      // ...and consequently "HUs annehmen Voreinst." is PRESENT, not hidden. The dropdown renders every action
+      // including the one on the button, so this is count 1, and it is the direct inverse of what this step
+      // asserted while the fallback was expected to fire.
       await page.locator('[data-testid="quick-action-dropdown-toggle"]').click();
-      await expect(page.locator(`[data-testid="quick-action-${HUS_VOREINST_INTERNAL_NAME}"]`)).toHaveCount(0);
+      await expect(page.locator(`[data-testid="quick-action-${HUS_VOREINST_INTERNAL_NAME}"]`)).toHaveCount(1);
       await page.locator('[data-testid="quick-action-dropdown-toggle"]').click(); // close
     });
 

@@ -218,9 +218,13 @@ Feature: Delivery planning quantities
 
     # PlannedLoadedQuantity does not feed QtyTotalOpen for Incoming (it nets discharge), so it stays at 5 -
     # only the discharge actual moves it, never the load side.
+    #
+    # PlannedDischargeQuantity is asserted here because the edit above reaches it INDIRECTLY and that is the
+    # whole point: the edit moves ActualLoadQty to 3, and "the planned discharge follows the actual load"
+    # applies in every direction, so the plan to discharge 9 cannot stand once only 3 will be loaded.
     Then validate M_Delivery_Planning:
-      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | ActualLoadQty | ActualDischargeQuantity |
-      | deliveryPlanningFollow | 9          | 5            | Incoming            | 3                     | 3             | 4                       |
+      | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
+      | deliveryPlanningFollow | 9          | 5            | Incoming            | 3                     | 3                        | 3             | 4                       |
 
   @Id:S31789_TC_Q3_Split
   Scenario: Splitting an unallocated delivery planning divides both the loaded and discharge planned quantities

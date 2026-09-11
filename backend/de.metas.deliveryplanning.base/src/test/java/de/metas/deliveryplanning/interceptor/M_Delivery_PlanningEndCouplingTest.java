@@ -73,7 +73,7 @@ class M_Delivery_PlanningEndCouplingTest
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 10);
 		record.setActualLoadQty(BigDecimal.valueOf(5));
 
-		interceptor.onActualLoadQtyChanged(record);
+		interceptor.settleEnds(record, false, true, false);
 
 		assertThat(record.getPlannedDischargeQuantity())
 				.as("only 5 was loaded, so planning to discharge 10 describes goods that were never loaded")
@@ -87,7 +87,7 @@ class M_Delivery_PlanningEndCouplingTest
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, 10);
 		record.setActualLoadQty(BigDecimal.valueOf(5));
 
-		interceptor.onActualLoadQtyChanged(record);
+		interceptor.settleEnds(record, false, true, false);
 
 		assertThat(record.getPlannedDischargeQuantity())
 				.as("the constraint is physical, not directional - a receipt settles the ACTUAL discharge, not the plan")
@@ -101,7 +101,7 @@ class M_Delivery_PlanningEndCouplingTest
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship, 10);
 		record.setActualLoadQty(BigDecimal.valueOf(5));
 
-		interceptor.onActualLoadQtyChanged(record);
+		interceptor.settleEnds(record, false, true, false);
 
 		assertThat(record.getPlannedDischargeQuantity()).isEqualByComparingTo("5");
 	}
@@ -113,7 +113,7 @@ class M_Delivery_PlanningEndCouplingTest
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 7);
 		record.setActualDischargeQuantity(BigDecimal.ZERO);
 
-		interceptor.onPlannedDischargeQuantityChanged(record);
+		interceptor.settleEnds(record, false, false, true);
 
 		assertThat(record.getActualDischargeQuantity())
 				.as("the mirror of the incoming load rule: the end we cannot observe takes its plan as the actual")
@@ -127,7 +127,7 @@ class M_Delivery_PlanningEndCouplingTest
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, 7);
 		record.setActualDischargeQuantity(BigDecimal.ZERO);
 
-		interceptor.onPlannedDischargeQuantityChanged(record);
+		interceptor.settleEnds(record, false, false, true);
 
 		assertThat(record.getActualDischargeQuantity())
 				.as("receiving short of plan is the whole point - assuming the actual here would erase it")
@@ -141,7 +141,7 @@ class M_Delivery_PlanningEndCouplingTest
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Dropship, 7);
 		record.setActualDischargeQuantity(BigDecimal.ZERO);
 
-		interceptor.onPlannedDischargeQuantityChanged(record);
+		interceptor.settleEnds(record, false, false, true);
 
 		assertThat(record.getActualDischargeQuantity())
 				.as("a dropship ends at a customer, but we still book a receipt against it and that receipt reports "
@@ -157,13 +157,40 @@ class M_Delivery_PlanningEndCouplingTest
 		record.setActualDischargeQuantity(BigDecimal.valueOf(10));
 		record.setActualLoadQty(BigDecimal.valueOf(6));
 
-		interceptor.onActualLoadQtyChanged(record);
-		interceptor.onPlannedDischargeQuantityChanged(record);
+		// ONE call: the cascade orders itself. This test used to invoke the two rules by hand, in an order the
+		// test chose - which is exactly the assumption that turned out to be wrong in production.
+		interceptor.settleEnds(record, false, true, false);
 
 		assertThat(record.getPlannedDischargeQuantity()).isEqualByComparingTo("6");
 		assertThat(record.getActualDischargeQuantity())
 				.as("loading 6 of a planned 10 leaves all three discharge-side figures at 6, not a phantom 10")
 				.isEqualByComparingTo("6");
+	}
+
+	@Test
+	@DisplayName("editing an INCOMING planning's planned LOAD carries all the way to the planned discharge, in one pass")
+	void editingIncomingPlannedLoadReachesThePlannedDischarge()
+	{
+		// The regression the owner spotted. As three separate @ModelChange methods these fired in ALPHABETICAL
+		// method order, so the load-to-discharge rule ran BEFORE the rule that derives ActualLoadQty from the plan
+		// had set it - and nothing re-ran it. The planned discharge kept its original 9 while only 3 would ever be
+		// loaded. Pinned here at the unit level; deliveryPlanningQty.feature's TC_Q7c_FollowsPlanEdit pins the same
+		// thing through a real edit.
+		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Incoming, 9);
+		record.setPlannedLoadedQuantity(BigDecimal.valueOf(3));
+		record.setActualLoadQty(BigDecimal.valueOf(9));
+
+		interceptor.settleEnds(record, true, false, false);
+
+		assertThat(record.getActualLoadQty())
+				.as("step 1: an inbound load is never reported, so it takes the plan")
+				.isEqualByComparingTo("3");
+		assertThat(record.getPlannedDischargeQuantity())
+				.as("step 2, which only works because step 1 ran FIRST: you cannot plan to discharge 9 when 3 was loaded")
+				.isEqualByComparingTo("3");
+		assertThat(record.getActualDischargeQuantity())
+				.as("step 3 is outgoing-only - an incoming planning's discharge is our own receipt, left untouched")
+				.isEqualByComparingTo("0");
 	}
 
 	@Test
@@ -173,7 +200,7 @@ class M_Delivery_PlanningEndCouplingTest
 		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 10);
 		record.setActualLoadQty(BigDecimal.ZERO);
 
-		interceptor.onActualLoadQtyChanged(record);
+		interceptor.settleEnds(record, false, true, false);
 
 		assertThat(record.getPlannedDischargeQuantity())
 				.as("the same reading of a zero actual as PoolEnd#effectiveQty - otherwise a reversal plans the "

@@ -643,8 +643,8 @@ Feature: Several delivery plannings on one delivery instruction
     # and each row carries its OWN planning's article and quantities
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_Delivery_Planning_Delivery_Instructions_V:
       | M_Delivery_Planning_ID | M_Product_ID | ActualLoadQty | ActualDischargeQuantity |
-      | planningView_1         | product      | 0             | 0                        |
-      | planningView_2         | product2     | 0             | 0                        |
+      | planningView_1         | product      | 0             | 7                        |
+      | planningView_2         | product2     | 0             | 3                        |
 
     # the sibling view over the same allocations owes the same one-row-per-planning identity
     And the M_ShipperTransportation identified by deliveryInstructionView has exactly the following rows in M_ShipperTransportation_Delivery_Instructions_V:
