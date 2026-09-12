@@ -51,10 +51,27 @@
            encodeURIComponent(feature);
   }
 
-  // A branch name as the host spells it: underscores become dashes. Accepting
-  // the git spelling too means a reader can paste either.
+  // A branch name as the host spells it. This MUST mirror the server's
+  // sanitize-branch-for-gh-pages step in cicd.yaml exactly, or the fetch 404s
+  // on a branch that was published perfectly well:
+  //
+  //   tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]'
+  //     | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//'
+  //
+  // Lower-casing is the one that bites hardest: this repo's own convention is
+  // `{base_branch}_{FeatureDescription}`, so essentially every feature branch
+  // is mixed-case. Handling only `_` -> `-` (as this did at first) 404s on
+  // `new_dawn_uat_CoveragePageAllBranches` while the server holds
+  // `new-dawn-uat-coveragepageallbranches`.
   function normaliseBranch(branch) {
-    return String(branch || '').trim().replace(/_/g, '-');
+    return String(branch || '')
+      .trim()
+      .replace(/[/_]/g, '-')
+      .replace(/[^a-zA-Z0-9.-]/g, '')   // tr -cd: DROPS, never substitutes
+      .toLowerCase()
+      .replace(/-{2,}/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
   }
 
   var api = { formatResult: formatResult, featureRows: featureRows, summarise: summarise,

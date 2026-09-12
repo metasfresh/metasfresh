@@ -86,11 +86,21 @@ def _leaf_features(node, inherited, out):
     """Collect {F-code: {uid: status}} for one subtree.
 
     Mirrors the semantics the Knowledge Map recipe established against real
-    builds, because the two must agree: the F-code comes from the leaf's own
-    tags FIRST and an enclosing `Fxxxx` node only as a fallback; results are
-    de-duplicated on Allure's `uid` (a test is listed more than once in the
-    tree); and an enclosing node that is merely the PARENT of a tag-named
-    subfeature is not credited, so `F5001` does not inherit `F5001.1`'s tests.
+    builds, because the two must agree:
+
+    - a leaf is credited to the UNION of the F-codes in its own `tags` and the
+      enclosing `Fxxxx` node, not to whichever comes first. Both routes are
+      real and neither is sufficient alone: `allure.tag` lands in `tags` and
+      builds no node, `allure.feature` builds a node and sets no tag, and a
+      spec can use either. Reading tags *instead of* the node (which this
+      docstring wrongly described until 2026-09-12) drops 39 leaves on
+      5.175-intensive-care-release.43591 and loses `F01010`, `F01010.3`,
+      `F01010.5` and `F8016` entirely — while leaving the headline totals
+      untouched, so the numbers in the tests do not catch it;
+    - results are de-duplicated on Allure's `uid`, because a test is listed
+      more than once in the tree;
+    - an enclosing node that is merely the PARENT of a tag-named subfeature is
+      not credited, so `F5001` does not inherit `F5001.1`'s tests.
     """
     ch = node.get("children")
     if ch is None:
@@ -110,6 +120,26 @@ def _leaf_features(node, inherited, out):
     nf = _canonical_fcode(m.group(1)) if m else inherited
     for c in ch:
         _leaf_features(c, nf, out)
+
+
+def _count_distinct_leaves(behaviors_root):
+    """Every distinct leaf uid in the tree, annotated or not.
+
+    The figure to reconcile against `failures.json`. Counting only LABELLED
+    leaves would compare a subset against the whole and disagree on any suite
+    holding an unannotated test — which is every suite here.
+    """
+    seen = set()
+    def walk(node):
+        ch = node.get("children")
+        if ch is None:
+            seen.add(node.get("uid") or node.get("name"))
+            return
+        for c in ch:
+            walk(c)
+    for top in behaviors_root.get("children") or []:
+        walk(top)
+    return len(seen)
 
 
 def extract_coverage(behaviors_root):
@@ -143,9 +173,17 @@ def build_coverage(build_dir):
     """The whole-branch coverage answer, for `coverage.html` to render.
 
     Published alongside the permalink index so ANY branch can be answered from
-    a browser: the Knowledge Map page could only ever show one branch, because
-    a static capture is one branch by construction and test-reports sends no
-    CORS headers, so a page hosted elsewhere cannot read this data at all.
+    a browser. The published Knowledge Map answer can only ever show one
+    branch, because a static capture is one branch by construction; this is
+    the live counterpart.
+
+    It is served from this host so it is same-origin with the data and with
+    the per-feature permalinks it links to, and so it cannot break when
+    someone else's CORS configuration changes. (An earlier version of this
+    comment claimed the host sends no CORS headers and that a page elsewhere
+    therefore could not read this data. That was wrong: it sends
+    `access-control-allow-origin: *`. A cross-origin page IS possible; this
+    one is same-origin by choice, not by necessity.)
     """
     reported = read_suite_totals(build_dir)
     suites, features = {}, {}
@@ -157,22 +195,35 @@ def build_coverage(build_dir):
                              "ran": total, "tests": None, "labelled": None}
             continue
         with open(bpath, encoding="utf-8") as f:
-            per_feature = extract_coverage(json.load(f))
-        universe, labelled = set(), set()
-        for code, tests in per_feature.items():
-            labelled |= set(tests)
+            behaviors = json.load(f)
+        per_feature = extract_coverage(behaviors)
+        # Two INDEPENDENT measurements, and they must be kept independent:
+        #   `parsed`   — every distinct leaf in the tree, labelled or not
+        #   `total`    — what failures.json says the suite ran
+        # `labelled` is a subset of `parsed` by construction, so comparing
+        # `labelled` against `total` is not a reconciliation — it is a
+        # guaranteed mismatch on any suite with an unannotated test.
+        parsed = _count_distinct_leaves(behaviors)
+        labelled = {uid for tests in per_feature.values() for uid in tests}
+        if total is not None and parsed != total:
+            # A tree that does not reconcile is not an answer. The recipe drops
+            # the suite's per-feature data here rather than publish counts from
+            # a mis-parsed tree, and so must this: every miscount this code has
+            # had (occurrence-counting, hierarchy-only reading, the dropped bare
+            # node) showed up first as exactly this disagreement.
+            suites[suite] = {"state": "unknown", "ran": total, "tests": None,
+                             "labelled": None, "parsed": parsed,
+                             "reason": f"parsed {parsed} distinct test(s) but "
+                                       f"failures.json reports {total}"}
+            continue
         for code, tests in per_feature.items():
             for uid, status in tests.items():
-                universe.add(uid)
                 entry = features.setdefault(code, {}).setdefault(
                     suite, {"tests": 0, "status": {}})
                 entry["tests"] += 1
                 entry["status"][status] = entry["status"].get(status, 0) + 1
-        # The tree holds only the tests it groups; failures.json is the independent
-        # total. Report both rather than asserting one — a mismatch is information.
-        suites[suite] = {"state": "measured", "ran": total,
-                         "tests": total if total is not None else len(universe),
-                         "labelled": len(labelled)}
+        suites[suite] = {"state": "measured", "ran": total, "tests": parsed,
+                         "labelled": len(labelled), "parsed": parsed}
     for suite in NO_ALLURE_SUITES:
         total = reported.get(suite)
         if total is not None:
@@ -220,12 +271,17 @@ def main(argv):
     base = argv[3] if len(argv) > 3 else "/var/www/test-reports"
     build_dir = os.path.join(base, "branches", branch, "builds", version)
     features, specs = build_index(build_dir)
+    # Parse BEFORE creating the temp file. Anything that can raise belongs
+    # outside the mkstemp block: this directory is served by nginx, and an
+    # exception between mkstemp and os.replace would strand a `*.tmp` there on
+    # every build -- silently, because the calling step is continue-on-error.
+    coverage = build_coverage(build_dir)
     out_dir = os.path.join(base, "branches", branch)
     os.makedirs(out_dir, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=out_dir, suffix=".tmp")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump({"version": version, "features": features, "specs": specs,
-                   "coverage": build_coverage(build_dir)}, f, indent=2, ensure_ascii=False)
+                   "coverage": coverage}, f, indent=2, ensure_ascii=False)
     # mkstemp creates the temp file 0600; the web server runs as a different user and
     # must be able to read the published file (else nginx serves 403). Widen to 0644
     # before the atomic rename so the served file is group+other readable.

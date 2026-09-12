@@ -162,9 +162,10 @@ def test_the_underscore_and_dot_subfeature_spellings_index_as_one():
 def test_an_unrecognised_suffix_is_dropped_not_folded_into_the_parent():
     """An `F00138_se203`-shaped tag is NOT a known convention: measured
     2026-09-12, zero such tags exist on `new_dawn_uat`,
-    `intensive_care_release` or `intensive_care_hotfix`, and zero of the 2180
-    tags in build 5.175-intensive-care-release.43591 carry any non-numeric
-    suffix. It is pinned only as the generic unrecognised-suffix case, to fix
+    `intensive_care_release` or `intensive_care_hotfix`, and no F-code tag in
+    build 5.175-intensive-care-release.43591 carries a non-numeric suffix
+    (2180 tag occurrences across the three suites). It is pinned only as the
+    generic unrecognised-suffix case, to fix
     the behaviour if the form ever appears: the tag is skipped, so nothing is
     silently credited to `F00138`. Folding it into the parent would be the
     subfeature-rollup defect in a new place; dropping it is the safe default
@@ -210,8 +211,15 @@ def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
 
     The separator this guard DOES exist for is real and in daily use: measured
     2026-09-12 on build 5.175-intensive-care-release.43591, cucumber writes the
-    subfeature with `_` (14 tags) while both Playwright suites write it with
-    `.` (42 tags). Without the rewrite those index as two different features."""
+    subfeature with `_` (7 distinct tests) while both Playwright suites write
+    it with `.` (33: 10 frontend-webui, 23 mobile-webui). Without the rewrite
+    those index as two different features.
+
+    Those are DISTINCT TESTS, not tag occurrences — the occurrence counts are
+    14 and 42, inflated by the same listed-twice duplication that
+    `extract_tagged_features` de-duplicates above. Stating a tag-occurrence
+    count as if it were a test count is the very defect this module exists to
+    avoid, so the unit is named here rather than left to the reader."""
     assert gp._canonical_fcode("F5001_1") == "F5001.1"
     assert gp._canonical_fcode("F5001.1") == "F5001.1"
     assert gp._canonical_fcode("F5001") == "F5001"
@@ -300,3 +308,100 @@ def test_build_coverage_is_published_inside_permalinks_json(tmp_path):
     out = json.loads((base / "branches" / "b" / "permalinks.json").read_text(encoding="utf-8"))
     assert out["coverage"]["features"]["F1000"]["cucumber"]["tests"] == 1
     assert out["features"], "the existing permalink index must still be published"
+
+
+# --- the figures the page actually prints, and the reconciliation gate ------
+# Every test below was written because the mutation it describes SURVIVED the
+# suite as it stood on 2026-09-12. A published number that no test constrains
+# is a number free to drift.
+
+
+def _suite_build(tmp_path, leaves, total, suite="cucumber"):
+    (tmp_path / "failures.json").write_text(
+        json.dumps({"suites": {suite: {"total": total}}}), encoding="utf-8")
+    d = tmp_path / "allure" / suite / "data"
+    d.mkdir(parents=True)
+    (d / "behaviors.json").write_text(json.dumps(_cov_tree(*leaves)), encoding="utf-8")
+    return gp.build_coverage(str(tmp_path))
+
+
+def test_labelled_counts_only_the_tests_carrying_a_feature_id(tmp_path):
+    """`labelled` is a headline figure on the page ("N carrying an F-id") and
+    was asserted nowhere: replacing it with a constant kept the suite green."""
+    cov = _suite_build(tmp_path, [
+        _cleaf("a".ljust(32, "0"), "passed", "F1000"),
+        _cleaf("b".ljust(32, "0"), "passed", "F1000"),
+        _cleaf("c".ljust(32, "0"), "passed"),          # no tag: parsed, not labelled
+    ], total=3)
+    assert cov["suites"]["cucumber"]["labelled"] == 2
+    assert cov["suites"]["cucumber"]["parsed"] == 3
+    assert cov["suites"]["cucumber"]["tests"] == 3
+
+
+def test_a_tree_that_does_not_reconcile_is_unknown_and_publishes_no_features(tmp_path):
+    """The safety gate. Every miscount this code has had showed up first as the
+    parsed tree disagreeing with failures.json, so a disagreement must refuse to
+    answer rather than publish per-feature counts from a mis-parsed tree."""
+    cov = _suite_build(tmp_path, [
+        _cleaf("a".ljust(32, "0"), "passed", "F1000")], total=99)
+    assert cov["suites"]["cucumber"]["state"] == "unknown"
+    assert cov["suites"]["cucumber"]["tests"] is None
+    assert "99" in cov["suites"]["cucumber"]["reason"]
+    assert cov["features"] == {}, "no per-feature data may survive a failed reconciliation"
+
+
+def test_reconciliation_compares_distinct_tests_not_labelled_ones(tmp_path):
+    """`labelled` is a SUBSET of `parsed`, so reconciling `labelled` against the
+    reported total would fail on any suite holding an unannotated test — i.e.
+    all of them. This build has one unannotated test and must still reconcile."""
+    cov = _suite_build(tmp_path, [
+        _cleaf("a".ljust(32, "0"), "passed", "F1000"),
+        _cleaf("b".ljust(32, "0"), "passed"),
+    ], total=2)
+    assert cov["suites"]["cucumber"]["state"] == "measured"
+
+
+def test_a_test_listed_twice_reconciles_once(tmp_path):
+    """Allure lists a cucumber test under both its .feature file and its Epic.
+    If the reconciliation counted occurrences it would see 2 against a reported
+    1 and wrongly refuse the whole suite."""
+    dup = "a".ljust(32, "0")
+    cov = _suite_build(tmp_path, [
+        _cleaf(dup, "passed", "F1000"), _cleaf(dup, "passed", "F1000")], total=1)
+    assert cov["suites"]["cucumber"]["state"] == "measured"
+    assert cov["suites"]["cucumber"]["parsed"] == 1
+    assert cov["features"]["F1000"]["cucumber"]["tests"] == 1
+
+
+def test_a_no_allure_suite_is_only_reported_when_it_actually_ran(tmp_path):
+    """"No test" means "no cucumber and no Playwright test" only because these
+    suites are shown WITH their real totals. Reporting one that failures.json
+    never mentioned would invent a suite; the guard was unpinned."""
+    (tmp_path / "failures.json").write_text(
+        json.dumps({"suites": {"junit/backend": {"total": 11077}}}), encoding="utf-8")
+    cov = gp.build_coverage(str(tmp_path))
+    assert cov["suites"]["junit/backend"] == {
+        "state": "absent", "ran": 11077, "tests": None, "labelled": None}
+    assert "junit/camel" not in cov["suites"], "a suite with no reported total is not invented"
+
+
+def test_a_non_integer_total_is_not_a_total(tmp_path):
+    """`failures.json` is read off a live host; a null/string total must be
+    treated as absent rather than compared against or published."""
+    (tmp_path / "failures.json").write_text(json.dumps({"suites": {
+        "junit/backend": {"total": None}, "junit/camel": {"total": "250"}}}), encoding="utf-8")
+    cov = gp.build_coverage(str(tmp_path))
+    assert "junit/backend" not in cov["suites"]
+    assert "junit/camel" not in cov["suites"]
+
+
+def test_the_union_of_tag_and_node_is_taken_not_one_or_the_other(tmp_path):
+    """A leaf tagged `F00700` under a node named `F01010 …` covers BOTH. Reading
+    tags INSTEAD of the node (which this module's docstring wrongly described)
+    silently drops 39 leaves on the real build while leaving every headline
+    figure identical — so only a test shaped like this can catch it."""
+    root = {"children": [{"name": "E1 Epic", "uid": "e".ljust(32, "0"), "children": [
+        {"name": "F01010 Something", "uid": "f".ljust(32, "0"), "children": [
+            _cleaf("a".ljust(32, "0"), "passed", "F00700")]}]}]}
+    per_feature = gp.extract_coverage(root)
+    assert set(per_feature) == {"F00700", "F01010"}

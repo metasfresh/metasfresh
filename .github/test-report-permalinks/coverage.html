@@ -94,6 +94,14 @@ branch's newest report.</p>
     });
     var h2 = document.createElement('h2'); h2.textContent = 'Suites'; out.appendChild(h2);
     var st = document.createElement('table');
+    var shead = document.createElement('tr');
+    ['suite', 'tests', 'state', 'carrying an F-id'].forEach(function (label, i) {
+      var th = document.createElement('th');
+      th.textContent = label;
+      if (i === 1) th.className = 'n';
+      shead.appendChild(th);
+    });
+    st.appendChild(shead);
     suiteRows.forEach(function (r) {
       var tr = document.createElement('tr');
       cell(tr, r.feature); cell(tr, r.tests, 'n'); cell(tr, r.result); cell(tr, r.suites[0]);
@@ -121,8 +129,11 @@ branch's newest report.</p>
     var limits = document.createElement('p'); limits.className = 'muted';
     limits.textContent = '“No test” here always means no cucumber and no Playwright test — ' +
       'the JUnit suites publish no Allure report, so nothing joins them to a feature. ' +
-      'A link shows the tests Allure grouped under the feature, which for a spec annotated ' +
-      'with allure.tag rather than allure.feature is fewer than the count beside it.';
+      'The count beside a feature is every test reaching it by either route: its own ' +
+      'allure.tag, or an enclosing allure.feature group. Following the link usually shows ' +
+      'fewer, because it opens Allure’s Behaviours tree, which only allure.feature builds — ' +
+      'and the resolver page there reports a third number, counting the tag route alone. ' +
+      'The count here is the honest total of the three.';
     out.appendChild(limits);
   }
 

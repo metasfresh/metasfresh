@@ -60,11 +60,33 @@ assert.strictEqual(sLoud.labelled, 8, 'an absent suite must not contribute label
 // --- the link is branch-scoped, and both branch spellings work ------------
 assert.strictEqual(C.permalinkFor('intensive-care-hotfix', 'F00230'),
   'branches/intensive-care-hotfix/permalink.html?feature=F00230');
-assert.ok(C.permalinkFor('x', 'F1').indexOf('builds/') === -1, 'must not be build-scoped');
+assert.strictEqual(C.permalinkFor('x', 'F1'),
+  'branches/x/permalink.html?feature=F1', 'branch-scoped, never build-scoped');
 assert.strictEqual(C.normaliseBranch('intensive_care_hotfix'), 'intensive-care-hotfix');
 assert.strictEqual(C.normaliseBranch('intensive-care-hotfix'), 'intensive-care-hotfix');
 assert.strictEqual(C.normaliseBranch('  new_dawn_uat  '), 'new-dawn-uat');
 assert.strictEqual(C.normaliseBranch(null), '');
+
+// normaliseBranch must mirror cicd.yaml's sanitize-branch-for-gh-pages EXACTLY.
+// Each case below is one stage of that pipeline; dropping any stage 404s on a
+// branch the host published fine. Verified 2026-09-12 against the shell
+// pipeline over all 142 branches the host holds plus 167 local git branch
+// names: identical output on all 309.
+assert.strictEqual(C.normaliseBranch('new_dawn_uat_CoveragePageAllBranches'),
+  'new-dawn-uat-coveragepageallbranches',
+  'lower-cases: EVERY feature branch here is {base}_{MixedCaseDescription}');
+assert.strictEqual(C.normaliseBranch('deep_tundra_release_31039_ManufacturingReceiptGuard'),
+  'deep-tundra-release-31039-manufacturingreceiptguard',
+  'a real branch on the host; the underscore-only version 404s on it');
+assert.strictEqual(C.normaliseBranch('merge/keen_hawk_release-to-new_dawn_uat'),
+  'merge-keen-hawk-release-to-new-dawn-uat', 'slash is a separator, like underscore');
+assert.strictEqual(C.normaliseBranch('release@2.0+rc1'), 'release2.0rc1',
+  'tr -cd DROPS a disallowed char, it does not substitute a dash');
+assert.strictEqual(C.normaliseBranch('feature/Foo__Bar'), 'feature-foo-bar',
+  'runs of dashes collapse to one');
+assert.strictEqual(C.normaliseBranch('--leading-and-trailing--'), 'leading-and-trailing',
+  'leading and trailing dashes are stripped');
+assert.strictEqual(C.normaliseBranch('___'), '', 'a name that sanitises to nothing yields nothing');
 
 // --- a branch/feature name is URL-encoded into the href -------------------
 assert.ok(C.permalinkFor('a/b', 'F1&x').indexOf('a%2Fb') !== -1);

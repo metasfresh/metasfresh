@@ -2576,10 +2576,12 @@ jobs:
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.html" < "$DIR/permalink.html"
           # The coverage page answers for ANY branch from ONE URL, so it is deployed to the
           # server ROOT rather than per branch: it takes ?branch= and reads that branch's
-          # permalinks.json. Same-origin is the point -- this host sends no CORS headers, so
-          # a page served from anywhere else cannot read these reports at all.
-          ssh reports-server "cat > /var/www/test-reports/coverage.js"   < "$DIR/coverage.js"
-          ssh reports-server "cat > /var/www/test-reports/coverage.html" < "$DIR/coverage.html"
+          # permalinks.json. Content is identical for every branch, so whichever build
+          # publishes last simply rewrites it with the same bytes.
+          # Write-then-rename: `cat >` truncates in place, so a dropped ssh mid-write would
+          # leave a half-page served to whoever loads it next. rename is atomic on the server.
+          ssh reports-server "cat > /var/www/test-reports/coverage.js.tmp && mv /var/www/test-reports/coverage.js.tmp /var/www/test-reports/coverage.js"     < "$DIR/coverage.js"
+          ssh reports-server "cat > /var/www/test-reports/coverage.html.tmp && mv /var/www/test-reports/coverage.html.tmp /var/www/test-reports/coverage.html" < "$DIR/coverage.html"
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
           echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
 
@@ -2613,6 +2615,7 @@ jobs:
           <body>
               <div class="container">
                   <h1>📊 Test Reports</h1>
+                  <p><a href="coverage.html">Automated test coverage by feature</a> — which tests cover a feature on a given branch, and did they pass.</p>
                   <div id="branches"><p class="loading">Loading reports...</p></div>
               </div>
               <script>
