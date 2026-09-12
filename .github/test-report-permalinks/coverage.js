@@ -65,6 +65,9 @@
   // `new-dawn-uat-coveragepageallbranches`.
   function normaliseBranch(branch) {
     return String(branch || '')
+      // The ONE deliberate deviation from the server pipeline: a name pasted
+      // into the box or a URL carries whitespace the server never sees, and
+      // trimming it cannot change any name git will actually produce.
       .trim()
       .replace(/[/_]/g, '-')
       .replace(/[^a-zA-Z0-9.-]/g, '')   // tr -cd: DROPS, never substitutes

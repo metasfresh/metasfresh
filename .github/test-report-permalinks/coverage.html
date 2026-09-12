@@ -86,11 +86,23 @@ branch's newest report.</p>
 
     var suiteRows = Object.keys(cov.suites || {}).map(function (k) {
       var v = cov.suites[k];
+      var state;
+      if (v.state === 'absent') {
+        state = 'absent — ran ' + v.ran + ' test(s) but publishes no Allure report';
+      } else if (v.state === 'unknown') {
+        // A dropped suite contributes NO features, so every feature it covers is
+        // under-counted in the tables below. Saying only "unknown" would hide that.
+        state = 'unknown — ' + (v.reason || 'could not be read') +
+                ', so this suite adds nothing to the counts below';
+      } else {
+        state = v.state;
+      }
       return { feature: k, tests: v.tests === null || v.tests === undefined ? '' : v.tests,
-               result: v.state === 'absent'
-                 ? 'absent — ran ' + v.ran + ' test(s) but publishes no Allure report'
-                 : v.state,
+               result: state,
                suites: [v.labelled === null || v.labelled === undefined ? '' : v.labelled + ' labelled'] };
+    });
+    var dropped = Object.keys(cov.suites || {}).filter(function (k) {
+      return cov.suites[k].state === 'unknown' && cov.suites[k].ran;
     });
     var h2 = document.createElement('h2'); h2.textContent = 'Suites'; out.appendChild(h2);
     var st = document.createElement('table');
@@ -108,6 +120,15 @@ branch's newest report.</p>
       st.appendChild(tr);
     });
     out.appendChild(st);
+
+    if (dropped.length) {
+      var warn = document.createElement('p');
+      warn.className = 'bad';
+      warn.textContent = 'Incomplete: ' + dropped.join(', ') + ' could not be reconciled against ' +
+        'the build’s own totals, so ' + (dropped.length > 1 ? 'those suites are' : 'that suite is') +
+        ' excluded entirely. Every count below is a lower bound.';
+      out.appendChild(warn);
+    }
 
     if (s.notPassing) {
       var h = document.createElement('h2');
@@ -133,7 +154,7 @@ branch's newest report.</p>
       'allure.tag, or an enclosing allure.feature group. Following the link usually shows ' +
       'fewer, because it opens Allure’s Behaviours tree, which only allure.feature builds — ' +
       'and the resolver page there reports a third number, counting the tag route alone. ' +
-      'The count here is the honest total of the three.';
+      'The count here is the most inclusive of the three, and the one to trust.';
     out.appendChild(limits);
   }
 

@@ -206,11 +206,13 @@ def build_coverage(build_dir):
         parsed = _count_distinct_leaves(behaviors)
         labelled = {uid for tests in per_feature.values() for uid in tests}
         if total is not None and parsed != total:
-            # A tree that does not reconcile is not an answer. The recipe drops
-            # the suite's per-feature data here rather than publish counts from
-            # a mis-parsed tree, and so must this: every miscount this code has
-            # had (occurrence-counting, hierarchy-only reading, the dropped bare
-            # node) showed up first as exactly this disagreement.
+            # A tree that does not reconcile is not an answer: drop the suite's
+            # per-feature data rather than publish counts from a mis-parsed tree.
+            # This catches the miscounts that change the LEAF SET -- occurrence
+            # counting and the dropped bare node both did. It does NOT catch a
+            # mis-ATTRIBUTION: reading tags instead of the union moves 27 leaves
+            # between features and still reconciles perfectly. Tests, not this
+            # gate, are what guard attribution.
             suites[suite] = {"state": "unknown", "ran": total, "tests": None,
                              "labelled": None, "parsed": parsed,
                              "reason": f"parsed {parsed} distinct test(s) but "

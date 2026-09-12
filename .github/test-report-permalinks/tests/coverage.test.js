@@ -97,4 +97,24 @@ assert.deepStrictEqual(C.featureRows(undefined), []);
 assert.deepStrictEqual(C.featureRows({}), []);
 assert.strictEqual(C.summarise([], {}).features, 0);
 
+// --- a feature failing in TWO suites reports the SUM, not the last one -----
+// The cross-suite merge in featureRows was unpinned: replacing `+=` with `=`
+// survived the whole suite, because every fixture above has each status in one
+// suite only. A feature red in two suites is exactly the row a reader acts on.
+var covTwo = { suites: { cucumber: { state: 'measured', tests: 10, labelled: 10 },
+                         'frontend-webui': { state: 'measured', tests: 10, labelled: 10 } },
+  features: { F00700: { cucumber: { tests: 5, status: { passed: 3, failed: 2 } },
+                        'frontend-webui': { tests: 4, status: { passed: 1, failed: 3 } } } } };
+var rowTwo = C.featureRows(covTwo)[0];
+assert.strictEqual(rowTwo.tests, 9, 'tests sum across suites');
+assert.deepStrictEqual(rowTwo.status, { passed: 4, failed: 5 }, 'statuses SUM across suites');
+assert.strictEqual(rowTwo.result, '5 failed', 'the merged count is what the reader sees');
+assert.deepStrictEqual(rowTwo.suites, ['cucumber', 'frontend-webui']);
+
+// Sorted, counted, and every non-passing status named -- pins the sort in
+// formatResult, which insertion order alone would otherwise satisfy.
+assert.strictEqual(C.formatResult({ passed: 1, failed: 2, broken: 1 }), '1 broken, 2 failed');
+assert.strictEqual(C.formatResult({ failed: 2, broken: 1, passed: 1 }), '1 broken, 2 failed',
+  'same result whatever order the statuses arrive in');
+
 console.log('coverage.test.js: all assertions passed');

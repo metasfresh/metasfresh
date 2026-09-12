@@ -2578,10 +2578,28 @@ jobs:
           # server ROOT rather than per branch: it takes ?branch= and reads that branch's
           # permalinks.json. Content is identical for every branch, so whichever build
           # publishes last simply rewrites it with the same bytes.
-          # Write-then-rename: `cat >` truncates in place, so a dropped ssh mid-write would
-          # leave a half-page served to whoever loads it next. rename is atomic on the server.
-          ssh reports-server "cat > /var/www/test-reports/coverage.js.tmp && mv /var/www/test-reports/coverage.js.tmp /var/www/test-reports/coverage.js"     < "$DIR/coverage.js"
-          ssh reports-server "cat > /var/www/test-reports/coverage.html.tmp && mv /var/www/test-reports/coverage.html.tmp /var/www/test-reports/coverage.html" < "$DIR/coverage.html"
+          # Ship ONE self-contained file. coverage.js stays a separate source file so node can
+          # unit-test it, but it is inlined here for two reasons:
+          #   1. this host serves .js as `public, immutable, max-age=604800` (verified 2026-09-12)
+          #      while .html carries no cache header -- so a separate script would freeze for a
+          #      week and could pair a stale script with a fresh page;
+          #   2. one file is one atomic rename. Two files have a window where the page and its
+          #      script disagree, which matters more here than for the per-branch resolver
+          #      because EVERY branch's build rewrites this root path.
+          # mktemp gives a unique name, so two branches publishing at once cannot collide on it.
+          python3 - "$DIR" > /tmp/coverage.inlined.html <<'INLINEEOF'
+          import sys, pathlib
+          d = pathlib.Path(sys.argv[1])
+          js = (d / "coverage.js").read_text(encoding="utf-8")
+          html = (d / "coverage.html").read_text(encoding="utf-8")
+          needle = '<script src="coverage.js"></script>'
+          if needle not in html:
+              sys.exit("coverage.html no longer loads coverage.js by that exact tag; inlining aborted")
+          # No user data flows through here -- both files are repo content -- but a literal
+          # </script> inside the JS would still close the tag early.
+          sys.stdout.write(html.replace(needle, "<script>\n" + js.replace("</script>", "<\\/script>") + "\n</script>"))
+          INLINEEOF
+          ssh reports-server 'T=$(mktemp /var/www/test-reports/.coverage.XXXXXX) && cat > "$T" && chmod 644 "$T" && mv "$T" /var/www/test-reports/coverage.html' < /tmp/coverage.inlined.html
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
           echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
 

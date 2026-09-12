@@ -354,7 +354,12 @@ def test_a_tree_that_does_not_reconcile_is_unknown_and_publishes_no_features(tmp
         _cleaf("a".ljust(32, "0"), "passed", "F1000")], total=99)
     assert cov["suites"]["cucumber"]["state"] == "unknown"
     assert cov["suites"]["cucumber"]["tests"] is None
-    assert "99" in cov["suites"]["cucumber"]["reason"]
+    assert cov["suites"]["cucumber"]["parsed"] == 1
+    assert cov["suites"]["cucumber"]["ran"] == 99
+    # The reason is rendered to the reader, so the two numbers must not be
+    # transposed. Asserting only that "99" appears passes with them swapped.
+    assert cov["suites"]["cucumber"]["reason"] == (
+        "parsed 1 distinct test(s) but failures.json reports 99")
     assert cov["features"] == {}, "no per-feature data may survive a failed reconciliation"
 
 
@@ -406,10 +411,40 @@ def test_a_non_integer_total_is_not_a_total(tmp_path):
 def test_the_union_of_tag_and_node_is_taken_not_one_or_the_other(tmp_path):
     """A leaf tagged `F00700` under a node named `F01010 …` covers BOTH. Reading
     tags INSTEAD of the node (which this module's docstring wrongly described)
-    silently drops 39 leaves on the real build while leaving every headline
-    figure identical — so only a test shaped like this can catch it."""
+    silently drops 27 attributions on 5.175-intensive-care-release.43783 while
+    leaving every headline figure identical — so only a test shaped like this
+    can catch it."""
     root = {"children": [{"name": "E1 Epic", "uid": "e".ljust(32, "0"), "children": [
         {"name": "F01010 Something", "uid": "f".ljust(32, "0"), "children": [
             _cleaf("a".ljust(32, "0"), "passed", "F00700")]}]}]}
     per_feature = gp.extract_coverage(root)
     assert set(per_feature) == {"F00700", "F01010"}
+
+
+def test_a_node_named_for_a_subfeature_is_read_as_that_subfeature(tmp_path):
+    """Pins FCODE_RE's `(?:\\.\\d+)?` group DIRECTLY.
+
+    Dropping it survived all 31 tests while collapsing `F01010.3` into
+    `F01010` — silently moving 8 real attributions to the parent, which is the
+    subfeature-rollup defect this module exists to prevent. Nothing else
+    exercises the node route with a dotted name, because the tag route usually
+    supplies the subfeature first.
+    """
+    root = {"children": [{"name": "F01010.3 Payment Allocation",
+                          "uid": "f".ljust(32, "0"), "children": [
+        {"name": "t1", "uid": "a".ljust(32, "0"), "status": "passed"}]}]}
+    assert set(gp.extract_coverage(root)) == {"F01010.3"}
+
+
+def test_the_parent_guard_requires_the_dot_not_a_bare_prefix():
+    """`F1200` must not be suppressed by a leaf tagged `F12000`.
+
+    The guard is `startswith(inherited + ".")`; written as `startswith(inherited)`
+    it survives every other test, because no fixture pairs two F-codes where one
+    id is a string prefix of the other. Real ids do collide that way.
+    """
+    root = {"children": [{"name": "F1200 Parent", "uid": "f".ljust(32, "0"), "children": [
+        {"name": "t", "uid": "a".ljust(32, "0"), "status": "passed", "tags": ["F12000"]}]}]}
+    found = gp.extract_coverage(root)
+    assert set(found) == {"F1200", "F12000"}, \
+        "F12000 is a different feature, not a subfeature of F1200"
