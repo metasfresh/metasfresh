@@ -219,9 +219,12 @@ Feature: Delivery planning quantities
     # PlannedLoadedQuantity does not feed QtyTotalOpen for Incoming (it nets discharge), so it stays at 5 -
     # only the discharge actual moves it, never the load side.
     #
-    # PlannedDischargeQuantity is asserted here because the edit above reaches it INDIRECTLY and that is the
-    # whole point: the edit moves ActualLoadQty to 3, and "the planned discharge follows the actual load"
-    # applies in every direction, so the plan to discharge 9 cannot stand once only 3 will be loaded.
+    # PlannedDischargeQuantity is asserted here because the planned-load edit reaches it DIRECTLY: plan feeds
+    # plan, in every direction, so planning to load 3 means planning to discharge 3 and the earlier plan of 9
+    # cannot stand. It does NOT arrive via the actual - an actual never touches the planned discharge, which is
+    # the coupling this rewrite removed. ActualLoadQty separately becomes 3 by the inbound-only plan-to-actual
+    # rule (a vendor never reports their load), and that is a SIBLING effect of the same edit, not the cause of
+    # the planned discharge moving.
     Then validate M_Delivery_Planning:
       | M_Delivery_Planning_ID | QtyOrdered | QtyTotalOpen | TransportDirection | PlannedLoadedQuantity | PlannedDischargeQuantity | ActualLoadQty | ActualDischargeQuantity |
       | deliveryPlanningFollow | 9          | 5            | Incoming            | 3                     | 3                        | 3             | 4                       |

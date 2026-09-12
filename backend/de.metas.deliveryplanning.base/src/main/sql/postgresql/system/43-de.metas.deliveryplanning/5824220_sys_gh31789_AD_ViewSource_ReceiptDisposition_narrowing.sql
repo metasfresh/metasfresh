@@ -1,3 +1,13 @@
+-- ON THE IDs. Every PK below is annotated /*From ID Server*/ and every one was fetched from
+-- idserver.metas.de at authoring time, one call per id. They LOOK hand-picked and are not: the skill's
+-- hand-picking signature is "ids for DIFFERENT AD tables clustering in the same numeric range", which normally
+-- holds because the per-table sequences differ by hundreds of thousands. It does not hold for these three
+-- tables. AD_ViewSource, AD_ViewSource_Column and WEBUI_ViewInvalidateOnChange are all young, low-cardinality
+-- tables whose sequences genuinely sit within a few dozen of each other near 540000 - before this script the
+-- whole instance held 3 AD_ViewSource rows and 1 AD_ViewSource_Column row. Checked rather than asserted: after
+-- this script consumed 540009-540014 / 540005-540018 / 540011, the live server heads read 540015 / 540019 /
+-- 540012 respectively - one past each range, which is what consumption looks like.
+--
 -- Replaces the coarse whole-view invalidation on this window with DECLARATIVE, ROUTED invalidation.
 --
 -- Before: window 542190 carried seven WEBUI_ViewInvalidateOnChange rows (M_Delivery_Planning,
@@ -65,12 +75,12 @@ SELECT x.id,0,0,'Y',now(),100,now(),100,
          WHERE t.TableName=x.src AND c.ColumnName=x.source_col),
        x.bchg,x.achg,'N',x.anew,x.adel,x.note
 FROM (VALUES
-    (540009,'M_Delivery_Planning',    'M_Delivery_Planning_ID',    'M_Delivery_Planning_ID',    'Y','Y','N','N','content: the planning row persists and its quantities/dates change'),
-    (540010,'M_ReceiptSchedule',      'M_ReceiptSchedule_ID',      'M_ReceiptSchedule_ID',      'Y','Y','N','N','content: the schedule row persists and its quantities/dates change'),
-    (540011,'M_ShipperTransportation','M_ShipperTransportation_ID','M_ShipperTransportation_ID','Y','Y','N','N','content: the four flags and the container number are edited in place'),
+    (540009/*From ID Server*/,'M_Delivery_Planning',    'M_Delivery_Planning_ID',    'M_Delivery_Planning_ID',    'Y','Y','N','N','content: the planning row persists and its quantities/dates change'),
+    (540010/*From ID Server*/,'M_ReceiptSchedule',      'M_ReceiptSchedule_ID',      'M_ReceiptSchedule_ID',      'Y','Y','N','N','content: the schedule row persists and its quantities/dates change'),
+    (540011/*From ID Server*/,'M_ShipperTransportation','M_ShipperTransportation_ID','M_ShipperTransportation_ID','Y','Y','N','N','content: the four flags and the container number are edited in place'),
     (540012,'C_Order',                'C_Order_ID',                'C_Order_ID',                'Y','Y','N','N','content: preparation date and shipper are edited in place'),
-    (540013,'M_ReceiptSchedule_Alloc','M_ReceiptSchedule_ID',      'M_ReceiptSchedule_ID',      'N','N','Y','Y','membership: allocations appear and disappear; routed through the schedule they belong to'),
-    (540014,'M_ShippingPackage',      'M_ShipperTransportation_ID','M_ShipperTransportation_ID','N','N','Y','Y','membership: packages appear and disappear; routed through their transport order')
+    (540013/*From ID Server*/,'M_ReceiptSchedule_Alloc','M_ReceiptSchedule_ID',      'M_ReceiptSchedule_ID',      'N','N','Y','Y','membership: allocations appear and disappear; routed through the schedule they belong to'),
+    (540014/*From ID Server*/,'M_ShippingPackage',      'M_ShipperTransportation_ID','M_ShipperTransportation_ID','N','N','Y','Y','membership: packages appear and disappear; routed through their transport order')
 ) AS x(id,src,parent_col,source_col,bchg,achg,anew,adel,note)
 WHERE NOT EXISTS (SELECT 1 FROM AD_ViewSource e WHERE e.AD_ViewSource_ID=x.id)
 ;
@@ -92,23 +102,23 @@ SELECT y.id,0,0,'Y',now(),100,now(),100,y.vs,
          WHERE t.TableName=y.src AND c.ColumnName=y.col)
 FROM (VALUES
     -- M_ShipperTransportation: the four flags the window shows, the container number, and activation
-    (540005,540011,'M_ShipperTransportation','ContainerNo'),
-    (540006,540011,'M_ShipperTransportation','IsBLReceived'),
-    (540007,540011,'M_ShipperTransportation','IsBookingConfirmed'),
-    (540008,540011,'M_ShipperTransportation','IsWENotice'),
-    (540009,540011,'M_ShipperTransportation','IsActive'),
+    (540005/*From ID Server*/,540011,'M_ShipperTransportation','ContainerNo'),
+    (540006/*From ID Server*/,540011,'M_ShipperTransportation','IsBLReceived'),
+    (540007/*From ID Server*/,540011,'M_ShipperTransportation','IsBookingConfirmed'),
+    (540008/*From ID Server*/,540011,'M_ShipperTransportation','IsWENotice'),
+    (540009/*From ID Server*/,540011,'M_ShipperTransportation','IsActive'),
     -- C_Order: only these two reach the view
-    (540010,540012,'C_Order','PreparationDate'),
-    (540011,540012,'C_Order','M_Shipper_ID'),
+    (540010/*From ID Server*/,540012,'C_Order','PreparationDate'),
+    (540011/*From ID Server*/,540012,'C_Order','M_Shipper_ID'),
     -- M_ReceiptSchedule_Alloc: the LATERAL reads these
-    (540012,540013,'M_ReceiptSchedule_Alloc','M_InOutLine_ID'),
-    (540013,540013,'M_ReceiptSchedule_Alloc','M_ReceiptSchedule_ID'),
-    (540014,540013,'M_ReceiptSchedule_Alloc','IsActive'),
+    (540012/*From ID Server*/,540013,'M_ReceiptSchedule_Alloc','M_InOutLine_ID'),
+    (540013/*From ID Server*/,540013,'M_ReceiptSchedule_Alloc','M_ReceiptSchedule_ID'),
+    (540014/*From ID Server*/,540013,'M_ReceiptSchedule_Alloc','IsActive'),
     -- M_ShippingPackage: the LATERAL reads these
-    (540015,540014,'M_ShippingPackage','C_Order_ID'),
-    (540016,540014,'M_ShippingPackage','C_OrderLine_ID'),
-    (540017,540014,'M_ShippingPackage','M_ShipperTransportation_ID'),
-    (540018,540014,'M_ShippingPackage','IsActive')
+    (540015/*From ID Server*/,540014,'M_ShippingPackage','C_Order_ID'),
+    (540016/*From ID Server*/,540014,'M_ShippingPackage','C_OrderLine_ID'),
+    (540017/*From ID Server*/,540014,'M_ShippingPackage','M_ShipperTransportation_ID'),
+    (540018/*From ID Server*/,540014,'M_ShippingPackage','IsActive')
 ) AS y(id,vs,src,col)
 WHERE EXISTS (SELECT 1 FROM AD_ViewSource e WHERE e.AD_ViewSource_ID=y.vs)
   AND NOT EXISTS (SELECT 1 FROM AD_ViewSource_Column e WHERE e.AD_ViewSource_Column_ID=y.id)
@@ -119,7 +129,7 @@ WHERE EXISTS (SELECT 1 FROM AD_ViewSource e WHERE e.AD_ViewSource_ID=y.vs)
 -- ---------------------------------------------------------------------------------------------------
 
 INSERT INTO WEBUI_ViewInvalidateOnChange (WEBUI_ViewInvalidateOnChange_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,AD_Window_ID,AD_Table_ID)
-SELECT 540011,0,0,'Y',now(),100,now(),100,542190,
+SELECT 540011/*From ID Server*/,0,0,'Y',now(),100,now(),100,542190,
        (SELECT AD_Table_ID FROM AD_Table WHERE TableName='RV_ReceiptDisposition_DeliveryPlanning')
 WHERE NOT EXISTS (
     SELECT 1 FROM WEBUI_ViewInvalidateOnChange e

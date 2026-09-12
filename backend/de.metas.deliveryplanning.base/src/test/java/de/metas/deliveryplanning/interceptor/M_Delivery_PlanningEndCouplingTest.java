@@ -240,6 +240,31 @@ class M_Delivery_PlanningEndCouplingTest
 	}
 
 	@Test
+	@DisplayName("editing the planned discharge ALONE settles nothing - it is not even a trigger column")
+	void directPlannedDischargeEditSettlesNothing()
+	{
+		// The class javadoc says a directly edited PlannedDischargeQuantity settles nothing downstream and is
+		// not a trigger column. Until now that held only by code inspection: no test called settleEnds with
+		// BOTH flags false, so removing the guards would not have failed anything here.
+		final I_M_Delivery_Planning record = planning(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing, 7);
+		record.setPlannedLoadedQuantity(BigDecimal.valueOf(2));
+		record.setActualLoadQty(BigDecimal.valueOf(4));
+		record.setActualDischargeQuantity(BigDecimal.ZERO);
+
+		interceptor.settleEnds(record, false, false);
+
+		assertThat(record.getPlannedDischargeQuantity())
+				.as("the typed plan stands - nothing rewrites it, least of all the load figures")
+				.isEqualByComparingTo("7");
+		assertThat(record.getActualLoadQty())
+				.as("untouched: no rule writes the load end unless the PLANNED load was edited")
+				.isEqualByComparingTo("4");
+		assertThat(record.getActualDischargeQuantity())
+				.as("untouched: the actual discharge moves only when the ACTUAL LOAD is settled")
+				.isEqualByComparingTo("0");
+	}
+
+	@Test
 	@DisplayName("a ZERO actual load clears the actual discharge but leaves the PLAN standing")
 	void zeroActualLeavesThePlanAlone()
 	{
