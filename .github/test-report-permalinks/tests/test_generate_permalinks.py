@@ -203,7 +203,7 @@ def test_a_node_backed_feature_keeps_its_uid_and_gains_the_tagged_count(tmp_path
 
 
 def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
-    """Pins `_canonical_fcode` DIRECTLY.
+    r"""Pins `_canonical_fcode` DIRECTLY.
 
     `test_an_unrecognised_suffix_is_dropped_not_folded_into_the_parent` above
     goes through TAG_FCODE_RE, which rejects `F00138_se203` before this
@@ -218,10 +218,20 @@ def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
     those index as two different features.
 
     Note an underscore after the F-number is USUALLY part of a name, not a
-    subfeature: cucumber labels features `F00701_Sales_Invoice_Candidates` (78
-    distinct such ids on intensive_care_release). Those are safe because the
-    rewrite fires only when a DIGIT follows the underscore, which across all
-    three branches is the single genuine subfeature `F5001_1`.
+    subfeature: cucumber labels features `@allure.label.feature:F00701_Sales_
+    Invoice_Candidates`. Measured 2026-09-12, distinct ids in such labels in
+    `*.feature` files: 70 on intensive_care_release, 71 on new_dawn_uat, 40 on
+    intensive_care_hotfix. (Counting every `F\d+_Word` token in those files
+    instead gives 78/79/41 -- the extras are scenario ids like
+    `@Id:F36025_sql_default_resolves` and test data like `F00127_E2E`, not
+    feature labels. The predicate matters, so it is stated rather than implied.)
+
+    None of them reach THIS parser in that form: Allure renders the label as a
+    node name with the underscores turned into spaces (`F00701 Sales Invoice
+    Candidates`), and FCODE_RE's `\b` would not match the underscore form
+    anyway. The dot-rewrite in `_canonical_fcode` is a separate guard, and it
+    fires only when a DIGIT follows the underscore -- across all three branches
+    that is the single genuine subfeature `F5001_1`.
 
     Those are DISTINCT TESTS, not tag occurrences — the occurrence counts are
     14 and 42, inflated by the same listed-twice duplication that
