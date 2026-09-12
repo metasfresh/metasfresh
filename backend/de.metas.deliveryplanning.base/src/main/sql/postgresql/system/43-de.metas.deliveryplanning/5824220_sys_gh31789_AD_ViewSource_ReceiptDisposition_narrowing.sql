@@ -78,7 +78,7 @@ FROM (VALUES
     (540009/*From ID Server*/,'M_Delivery_Planning',    'M_Delivery_Planning_ID',    'M_Delivery_Planning_ID',    'Y','Y','N','N','content: the planning row persists and its quantities/dates change'),
     (540010/*From ID Server*/,'M_ReceiptSchedule',      'M_ReceiptSchedule_ID',      'M_ReceiptSchedule_ID',      'Y','Y','N','N','content: the schedule row persists and its quantities/dates change'),
     (540011/*From ID Server*/,'M_ShipperTransportation','M_ShipperTransportation_ID','M_ShipperTransportation_ID','Y','Y','N','N','content: the four flags and the container number are edited in place'),
-    (540012,'C_Order',                'C_Order_ID',                'C_Order_ID',                'Y','Y','N','N','content: preparation date and shipper are edited in place'),
+    (540012/*From ID Server*/,'C_Order',                'C_Order_ID',                'C_Order_ID',                'Y','Y','N','N','content: preparation date and shipper are edited in place'),
     (540013/*From ID Server*/,'M_ReceiptSchedule_Alloc','M_ReceiptSchedule_ID',      'M_ReceiptSchedule_ID',      'N','N','Y','Y','membership: allocations appear and disappear; routed through the schedule they belong to'),
     (540014/*From ID Server*/,'M_ShippingPackage',      'M_ShipperTransportation_ID','M_ShipperTransportation_ID','N','N','Y','Y','membership: packages appear and disappear; routed through their transport order')
 ) AS x(id,src,parent_col,source_col,bchg,achg,anew,adel,note)
