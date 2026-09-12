@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Automated test coverage by feature</title>
+<script src="coverage.js"></script>
+<style>
+ body{font:14px/1.5 system-ui,sans-serif;margin:2rem auto;max-width:70rem;padding:0 1rem;color:#222}
+ h1{font-size:1.4rem} h2{font-size:1.1rem;margin-top:2rem}
+ table{border-collapse:collapse;width:100%;margin:.5rem 0 1.5rem}
+ th,td{border-bottom:1px solid #ddd;padding:.3rem .5rem;text-align:left}
+ td.n,th.n{text-align:right}
+ .bad{color:#a00;font-weight:600}
+ .muted{color:#666} code{background:#f4f4f4;padding:0 .2rem}
+ form{margin:1rem 0} input{padding:.3rem;font:inherit}
+</style>
+</head>
+<body>
+<h1>Automated test coverage by feature</h1>
+<p class="muted">Which automated tests cover a feature on a given branch, and did they pass —
+read from the Allure reports this host already publishes. Every feature id links into that
+branch's newest report.</p>
+
+<form id="pick" onsubmit="return false">
+  <label>Branch: <input id="branch" size="42" placeholder="intensive_care_hotfix"></label>
+  <button id="go">Show</button>
+  <span class="muted">— underscores or dashes, either works</span>
+</form>
+
+<div id="msg" class="muted"></div>
+<div id="out"></div>
+
+<script>
+(function () {
+  var msg = document.getElementById('msg'), out = document.getElementById('out');
+  var input = document.getElementById('branch');
+
+  function text(el, s) { el.textContent = s; }
+  function cell(row, value, cls) {
+    var td = document.createElement('td');
+    if (cls) td.className = cls;
+    td.textContent = value;
+    row.appendChild(td);
+    return td;
+  }
+  function table(parent, headers, rows, branch) {
+    var t = document.createElement('table'), thead = document.createElement('tr');
+    headers.forEach(function (h) {
+      var th = document.createElement('th');
+      if (h.n) th.className = 'n';
+      th.textContent = h.label; thead.appendChild(th);
+    });
+    t.appendChild(thead);
+    rows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      var td = document.createElement('td');
+      var a = document.createElement('a');
+      // href is built from an encodeURIComponent'd branch+feature; the label is
+      // set via textContent, so nothing from the data is ever parsed as HTML.
+      a.href = Coverage.permalinkFor(branch, r.feature);
+      a.textContent = r.feature;
+      td.appendChild(a); tr.appendChild(td);
+      cell(tr, r.tests, 'n');
+      cell(tr, r.result, r.result === 'passed' ? '' : 'bad');
+      cell(tr, r.suites.join(', '));
+      t.appendChild(tr);
+    });
+    parent.appendChild(t);
+  }
+
+  function render(branch, data) {
+    out.innerHTML = '';
+    var cov = data && data.coverage;
+    if (!cov) {
+      text(msg, 'This branch’s index predates the coverage data — it will appear after its next build.');
+      return;
+    }
+    var rows = Coverage.featureRows(cov), s = Coverage.summarise(rows, cov);
+
+    var p = document.createElement('p');
+    p.textContent = 'Build ' + (data.version || 'unknown') + ' — ' + s.tests +
+      ' test(s) in the suites that carry feature labels, ' + s.labelled + ' carrying an F-id. ' +
+      s.features + ' feature(s) have at least one test: ' + s.fullyPassing +
+      ' fully passing, ' + s.notPassing + ' not.';
+    out.appendChild(p);
+
+    var suiteRows = Object.keys(cov.suites || {}).map(function (k) {
+      var v = cov.suites[k];
+      return { feature: k, tests: v.tests === null || v.tests === undefined ? '' : v.tests,
+               result: v.state === 'absent'
+                 ? 'absent — ran ' + v.ran + ' test(s) but publishes no Allure report'
+                 : v.state,
+               suites: [v.labelled === null || v.labelled === undefined ? '' : v.labelled + ' labelled'] };
+    });
+    var h2 = document.createElement('h2'); h2.textContent = 'Suites'; out.appendChild(h2);
+    var st = document.createElement('table');
+    suiteRows.forEach(function (r) {
+      var tr = document.createElement('tr');
+      cell(tr, r.feature); cell(tr, r.tests, 'n'); cell(tr, r.result); cell(tr, r.suites[0]);
+      st.appendChild(tr);
+    });
+    out.appendChild(st);
+
+    if (s.notPassing) {
+      var h = document.createElement('h2');
+      h.textContent = 'Not fully passing (' + s.notPassing + ')';
+      out.appendChild(h);
+      var note = document.createElement('p'); note.className = 'muted';
+      note.textContent = 'A feature that HAS automated coverage whose coverage is red — the rows worth acting on.';
+      out.appendChild(note);
+      table(out, [{label:'feature'},{label:'tests',n:true},{label:'result'},{label:'suites'}],
+            s.notPassingRows, branch);
+    }
+
+    var h3 = document.createElement('h2');
+    h3.textContent = 'Every feature with tests (' + s.features + ')';
+    out.appendChild(h3);
+    table(out, [{label:'feature'},{label:'tests',n:true},{label:'result'},{label:'suites'}],
+          rows, branch);
+
+    var limits = document.createElement('p'); limits.className = 'muted';
+    limits.textContent = '“No test” here always means no cucumber and no Playwright test — ' +
+      'the JUnit suites publish no Allure report, so nothing joins them to a feature. ' +
+      'A link shows the tests Allure grouped under the feature, which for a spec annotated ' +
+      'with allure.tag rather than allure.feature is fewer than the count beside it.';
+    out.appendChild(limits);
+  }
+
+  function load(branch) {
+    branch = Coverage.normaliseBranch(branch);
+    if (!branch) { text(msg, 'Enter a branch name.'); out.innerHTML = ''; return; }
+    text(msg, 'Loading ' + branch + ' …');
+    history.replaceState(null, '', '?branch=' + encodeURIComponent(branch));
+    fetch('branches/' + encodeURIComponent(branch) + '/permalinks.json', { cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('no published index for this branch (HTTP ' + r.status + ')');
+        return r.json();
+      })
+      .then(function (d) { text(msg, ''); render(branch, d); })
+      .catch(function (e) { out.innerHTML = ''; text(msg, 'Could not load ' + branch + ': ' + e.message); });
+  }
+
+  var q = new URLSearchParams(location.search).get('branch');
+  if (q) { input.value = q; load(q); }
+  else { text(msg, 'Pick a branch. Any branch this host has built works — base branches and feature branches alike.'); }
+  document.getElementById('go').addEventListener('click', function () { load(input.value); });
+  input.addEventListener('keydown', function (e) { if (e.key === 'Enter') load(input.value); });
+})();
+</script>
+</body>
+</html>

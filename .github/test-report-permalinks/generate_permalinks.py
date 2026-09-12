@@ -5,6 +5,10 @@ feature/spec -> {suite: {uid, count}} map. Runs server-side (piped over ssh) and
 import json, os, re, sys, tempfile
 
 ALLURE_SUITES = ["cucumber", "frontend-webui", "mobile-webui"]
+#: Suites that run and report totals but publish no Allure report at all, so
+#: they carry no feature labels. "No test" never means "no test" — it means no
+#: cucumber and no Playwright test.
+NO_ALLURE_SUITES = ["junit/backend", "junit/camel", "junit/jest"]
 FCODE_RE = re.compile(r"^(F\d+(?:\.\d+)?)\b")
 #: An F-code as it appears in a test's own `tags`: bare ("F00230") or with its
 #: name ("F00230: MobileUI Picking"). The subfeature separator is written "."
@@ -78,6 +82,104 @@ def extract_tagged_features(behaviors_root):
         walk(top)
     return {code: len(uids) for code, uids in seen.items()}
 
+def _leaf_features(node, inherited, out):
+    """Collect {F-code: {uid: status}} for one subtree.
+
+    Mirrors the semantics the Knowledge Map recipe established against real
+    builds, because the two must agree: the F-code comes from the leaf's own
+    tags FIRST and an enclosing `Fxxxx` node only as a fallback; results are
+    de-duplicated on Allure's `uid` (a test is listed more than once in the
+    tree); and an enclosing node that is merely the PARENT of a tag-named
+    subfeature is not credited, so `F5001` does not inherit `F5001.1`'s tests.
+    """
+    ch = node.get("children")
+    if ch is None:
+        uid = node.get("uid") or node.get("name")
+        status = node.get("status") or "unknown"
+        found = set()
+        for tag in node.get("tags") or []:
+            m = TAG_FCODE_RE.match(str(tag))
+            if m:
+                found.add(_canonical_fcode(m.group(1)))
+        if inherited and not any(f.startswith(inherited + ".") for f in found):
+            found.add(inherited)
+        for code in found:
+            out.setdefault(code, {})[uid] = status
+        return
+    m = FCODE_RE.match(node.get("name") or "")
+    nf = _canonical_fcode(m.group(1)) if m else inherited
+    for c in ch:
+        _leaf_features(c, nf, out)
+
+
+def extract_coverage(behaviors_root):
+    """{F-code: {uid: status}} across the whole tree — the per-feature answer."""
+    out = {}
+    for top in behaviors_root.get("children") or []:
+        _leaf_features(top, None, out)
+    return out
+
+
+def read_suite_totals(build_dir):
+    """Per-suite totals from the build's failures.json — the independent figure
+    a parsed tree is reconciled against, and the only evidence that a suite with
+    no Allure report nonetheless RAN."""
+    path = os.path.join(build_dir, "failures.json")
+    if not os.path.isfile(path):
+        return {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception:
+        return {}
+    suites = data.get("suites") if isinstance(data, dict) else None
+    if not isinstance(suites, dict):
+        return {}
+    return {k: v.get("total") for k, v in suites.items()
+            if isinstance(v, dict) and isinstance(v.get("total"), int)}
+
+
+def build_coverage(build_dir):
+    """The whole-branch coverage answer, for `coverage.html` to render.
+
+    Published alongside the permalink index so ANY branch can be answered from
+    a browser: the Knowledge Map page could only ever show one branch, because
+    a static capture is one branch by construction and test-reports sends no
+    CORS headers, so a page hosted elsewhere cannot read this data at all.
+    """
+    reported = read_suite_totals(build_dir)
+    suites, features = {}, {}
+    for suite in ALLURE_SUITES:
+        bpath = os.path.join(build_dir, "allure", suite, "data", "behaviors.json")
+        total = reported.get(suite)
+        if not os.path.isfile(bpath):
+            suites[suite] = {"state": "absent" if total is not None else "unknown",
+                             "ran": total, "tests": None, "labelled": None}
+            continue
+        with open(bpath, encoding="utf-8") as f:
+            per_feature = extract_coverage(json.load(f))
+        universe, labelled = set(), set()
+        for code, tests in per_feature.items():
+            labelled |= set(tests)
+        for code, tests in per_feature.items():
+            for uid, status in tests.items():
+                universe.add(uid)
+                entry = features.setdefault(code, {}).setdefault(
+                    suite, {"tests": 0, "status": {}})
+                entry["tests"] += 1
+                entry["status"][status] = entry["status"].get(status, 0) + 1
+        # The tree holds only the tests it groups; failures.json is the independent
+        # total. Report both rather than asserting one — a mismatch is information.
+        suites[suite] = {"state": "measured", "ran": total,
+                         "tests": total if total is not None else len(universe),
+                         "labelled": len(labelled)}
+    for suite in NO_ALLURE_SUITES:
+        total = reported.get(suite)
+        if total is not None:
+            suites[suite] = {"state": "absent", "ran": total, "tests": None, "labelled": None}
+    return {"suites": suites, "features": features}
+
+
 def extract_specs(suites_root):
     out = {}
     def walk(node):
@@ -122,7 +224,8 @@ def main(argv):
     os.makedirs(out_dir, exist_ok=True)
     fd, tmp = tempfile.mkstemp(dir=out_dir, suffix=".tmp")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
-        json.dump({"version": version, "features": features, "specs": specs}, f, indent=2, ensure_ascii=False)
+        json.dump({"version": version, "features": features, "specs": specs,
+                   "coverage": build_coverage(build_dir)}, f, indent=2, ensure_ascii=False)
     # mkstemp creates the temp file 0600; the web server runs as a different user and
     # must be able to read the published file (else nginx serves 403). Widen to 0644
     # before the atomic rename so the served file is group+other readable.

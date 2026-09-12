@@ -2574,7 +2574,14 @@ jobs:
           # deploy the static resolver (identical content per branch)
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.js"   < "$DIR/permalink.js"
           ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.html" < "$DIR/permalink.html"
+          # The coverage page answers for ANY branch from ONE URL, so it is deployed to the
+          # server ROOT rather than per branch: it takes ?branch= and reads that branch's
+          # permalinks.json. Same-origin is the point -- this host sends no CORS headers, so
+          # a page served from anywhere else cannot read these reports at all.
+          ssh reports-server "cat > /var/www/test-reports/coverage.js"   < "$DIR/coverage.js"
+          ssh reports-server "cat > /var/www/test-reports/coverage.html" < "$DIR/coverage.html"
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
+          echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
 
       - name: Update landing page
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'

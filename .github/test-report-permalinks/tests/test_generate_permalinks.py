@@ -159,9 +159,16 @@ def test_the_underscore_and_dot_subfeature_spellings_index_as_one():
     assert gp.extract_tagged_features(root) == {"F5001.1": 2}
 
 
-def test_a_customer_suffix_is_not_a_subfeature_separator():
-    """`F00138_se203` scopes a feature to one customer; folding it into `F00138`
-    would be the same class of defect in a new place."""
+def test_an_unrecognised_suffix_is_dropped_not_folded_into_the_parent():
+    """An `F00138_se203`-shaped tag is NOT a known convention: measured
+    2026-09-12, zero such tags exist on `new_dawn_uat`,
+    `intensive_care_release` or `intensive_care_hotfix`, and zero of the 2180
+    tags in build 5.175-intensive-care-release.43591 carry any non-numeric
+    suffix. It is pinned only as the generic unrecognised-suffix case, to fix
+    the behaviour if the form ever appears: the tag is skipped, so nothing is
+    silently credited to `F00138`. Folding it into the parent would be the
+    subfeature-rollup defect in a new place; dropping it is the safe default
+    because it under-reports visibly rather than over-reporting invisibly."""
     root = {"children": [{"name": "g", "uid": "s".ljust(32, "0"), "children": [
         _leaf("a".ljust(32, "0"), "F00138_se203")]}]}
     assert gp.extract_tagged_features(root) == {}
@@ -195,12 +202,101 @@ def test_a_node_backed_feature_keeps_its_uid_and_gains_the_tagged_count(tmp_path
 def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
     """Pins `_canonical_fcode` DIRECTLY.
 
-    `test_a_customer_suffix_is_not_a_subfeature_separator` above goes through
-    TAG_FCODE_RE, which rejects `F00138_se203` before this function is reached —
-    so it passes even if this guard is deleted. Without this test the guard is
-    unpinned, which is how a defence quietly stops defending."""
+    `test_an_unrecognised_suffix_is_dropped_not_folded_into_the_parent` above
+    goes through TAG_FCODE_RE, which rejects `F00138_se203` before this
+    function is reached — so it passes even if this guard is deleted. Without
+    this test the guard is unpinned, which is how a defence quietly stops
+    defending.
+
+    The separator this guard DOES exist for is real and in daily use: measured
+    2026-09-12 on build 5.175-intensive-care-release.43591, cucumber writes the
+    subfeature with `_` (14 tags) while both Playwright suites write it with
+    `.` (42 tags). Without the rewrite those index as two different features."""
     assert gp._canonical_fcode("F5001_1") == "F5001.1"
     assert gp._canonical_fcode("F5001.1") == "F5001.1"
     assert gp._canonical_fcode("F5001") == "F5001"
     assert gp._canonical_fcode("F00138_se203") == "F00138_se203"
     assert gp._canonical_fcode("F00762.1_is184") == "F00762.1_is184"
+
+
+# --- the coverage answer: same semantics as the Knowledge Map recipe --------
+
+def _cov_tree(*leaves):
+    return {"children": [{"name": "some.feature", "uid": "s".ljust(32, "0"),
+                          "children": list(leaves)}]}
+
+
+def _cleaf(uid, status, *tags):
+    return {"name": "t-" + uid, "uid": uid, "status": status, "tags": list(tags)}
+
+
+def test_coverage_counts_a_test_once_though_the_tree_lists_it_twice():
+    leaf = _cleaf("d".ljust(32, "0"), "passed", "F00230")
+    root = {"children": [
+        {"name": "some.feature", "uid": "s".ljust(32, "0"), "children": [leaf]},
+        {"name": "E0105 Picking", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "F00230 MobileUI Picking", "uid": "f".ljust(32, "0"), "children": [leaf]}]},
+    ]}
+    cov = gp.extract_coverage(root)
+    assert cov == {"F00230": {"d".ljust(32, "0"): "passed"}}
+
+
+def test_coverage_reads_the_fcode_from_a_tag_when_no_node_carries_it():
+    cov = gp.extract_coverage(_cov_tree(_cleaf("a".ljust(32, "0"), "passed", "F00700: Invoicing",
+                                               "F00700")))
+    assert cov == {"F00700": {"a".ljust(32, "0"): "passed"}}
+
+
+def test_coverage_does_not_credit_a_parent_with_its_subfeatures_tests():
+    """`F5001_1` tagged under a node Allure renders as `F5001 1 …` must not give
+    `F5001` the child's tests."""
+    root = {"children": [{"name": "F5001 1 Consolidate", "uid": "n".ljust(32, "0"), "children": [
+        _cleaf("a".ljust(32, "0"), "passed", "F5001_1")]}]}
+    cov = gp.extract_coverage(root)
+    assert set(cov) == {"F5001.1"}
+
+
+def test_coverage_keeps_each_tests_status():
+    cov = gp.extract_coverage(_cov_tree(
+        _cleaf("a".ljust(32, "0"), "passed", "F1000"),
+        _cleaf("b".ljust(32, "0"), "failed", "F1000")))
+    assert cov["F1000"] == {"a".ljust(32, "0"): "passed", "b".ljust(32, "0"): "failed"}
+
+
+def test_a_suite_that_ran_but_publishes_no_allure_report_is_absent(tmp_path):
+    (tmp_path / "failures.json").write_text(json.dumps({"suites": {
+        "cucumber": {"total": 2}, "junit/backend": {"total": 11077}}}), encoding="utf-8")
+    d = tmp_path / "allure" / "cucumber" / "data"
+    d.mkdir(parents=True)
+    (d / "behaviors.json").write_text(json.dumps(_cov_tree(
+        _cleaf("a".ljust(32, "0"), "passed", "F1000"),
+        _cleaf("b".ljust(32, "0"), "passed", "F1000"))), encoding="utf-8")
+    cov = gp.build_coverage(str(tmp_path))
+    assert cov["suites"]["junit/backend"] == {
+        "state": "absent", "ran": 11077, "tests": None, "labelled": None}
+    assert cov["suites"]["cucumber"]["state"] == "measured"
+    assert cov["suites"]["cucumber"]["ran"] == 2
+
+
+def test_a_suite_with_no_report_and_no_reported_total_is_unknown_not_absent(tmp_path):
+    """Nothing was verified about it — saying `absent` would claim knowledge."""
+    (tmp_path / "failures.json").write_text(json.dumps({"suites": {}}), encoding="utf-8")
+    cov = gp.build_coverage(str(tmp_path))
+    assert cov["suites"]["cucumber"]["state"] == "unknown"
+
+
+def test_build_coverage_is_published_inside_permalinks_json(tmp_path):
+    (tmp_path / "failures.json").write_text(json.dumps({"suites": {"cucumber": {"total": 1}}}),
+                                            encoding="utf-8")
+    d = tmp_path / "allure" / "cucumber" / "data"
+    d.mkdir(parents=True)
+    (d / "behaviors.json").write_text(json.dumps(_cov_tree(
+        _cleaf("a".ljust(32, "0"), "passed", "F1000"))), encoding="utf-8")
+    base = tmp_path.parent / "srv"
+    bdir = base / "branches" / "b" / "builds" / "v1"
+    bdir.parent.mkdir(parents=True)
+    bdir.symlink_to(tmp_path, target_is_directory=True)
+    gp.main(["prog", "b", "v1", str(base)])
+    out = json.loads((base / "branches" / "b" / "permalinks.json").read_text(encoding="utf-8"))
+    assert out["coverage"]["features"]["F1000"]["cucumber"]["tests"] == 1
+    assert out["features"], "the existing permalink index must still be published"
