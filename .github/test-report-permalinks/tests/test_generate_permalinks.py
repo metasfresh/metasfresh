@@ -161,11 +161,13 @@ def test_the_underscore_and_dot_subfeature_spellings_index_as_one():
 
 def test_an_unrecognised_suffix_is_dropped_not_folded_into_the_parent():
     """An `F00138_se203`-shaped tag is NOT a known convention: measured
-    2026-09-12, zero such tags exist on `new_dawn_uat`,
-    `intensive_care_release` or `intensive_care_hotfix`, and no F-code tag in
-    build 5.175-intensive-care-release.43591 carries a non-numeric suffix
-    (2180 tag occurrences across the three suites). It is pinned only as the
-    generic unrecognised-suffix case, to fix
+    2026-09-12, no F-code tag in build 5.175-intensive-care-release.43783
+    carries a non-numeric suffix (2182 tag occurrences across the three
+    suites), and no test annotation on `new_dawn_uat`,
+    `intensive_care_release` or `intensive_care_hotfix` uses the form. It IS a
+    real identifier in another namespace -- it names doc issues, e.g.
+    `F00652_se203` -- so it is pinned here as the generic unrecognised-suffix
+    case, to fix
     the behaviour if the form ever appears: the tag is skipped, so nothing is
     silently credited to `F00138`. Folding it into the parent would be the
     subfeature-rollup defect in a new place; dropping it is the safe default
@@ -210,10 +212,16 @@ def test_canonical_fcode_rewrites_only_a_numeric_subfeature_separator():
     defending.
 
     The separator this guard DOES exist for is real and in daily use: measured
-    2026-09-12 on build 5.175-intensive-care-release.43591, cucumber writes the
+    2026-09-12 on build 5.175-intensive-care-release.43783, cucumber writes the
     subfeature with `_` (7 distinct tests) while both Playwright suites write
     it with `.` (33: 10 frontend-webui, 23 mobile-webui). Without the rewrite
     those index as two different features.
+
+    Note an underscore after the F-number is USUALLY part of a name, not a
+    subfeature: cucumber labels features `F00701_Sales_Invoice_Candidates` (78
+    distinct such ids on intensive_care_release). Those are safe because the
+    rewrite fires only when a DIGIT follows the underscore, which across all
+    three branches is the single genuine subfeature `F5001_1`.
 
     Those are DISTINCT TESTS, not tag occurrences — the occurrence counts are
     14 and 42, inflated by the same listed-twice duplication that

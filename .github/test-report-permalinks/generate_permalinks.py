@@ -93,8 +93,8 @@ def _leaf_features(node, inherited, out):
       real and neither is sufficient alone: `allure.tag` lands in `tags` and
       builds no node, `allure.feature` builds a node and sets no tag, and a
       spec can use either. Reading tags *instead of* the node (which this
-      docstring wrongly described until 2026-09-12) drops 39 leaves on
-      5.175-intensive-care-release.43591 and loses `F01010`, `F01010.3`,
+      docstring wrongly described until 2026-09-12) drops 27 attributions on
+      5.175-intensive-care-release.43783 and loses `F01010`, `F01010.3`,
       `F01010.5` and `F8016` entirely — while leaving the headline totals
       untouched, so the numbers in the tests do not catch it;
     - results are de-duplicated on Allure's `uid`, because a test is listed
