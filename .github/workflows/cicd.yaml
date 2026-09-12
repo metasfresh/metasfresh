@@ -2591,7 +2591,7 @@ jobs:
           # and a fixed /tmp name would let two branches' builds clobber each other.
           INLINED=$(mktemp)
           python3 - "$DIR" > "$INLINED" <<'INLINEEOF'
-          import sys, pathlib
+          import re, sys, pathlib
           d = pathlib.Path(sys.argv[1])
           js = (d / "coverage.js").read_text(encoding="utf-8")
           html = (d / "coverage.html").read_text(encoding="utf-8")
@@ -2600,23 +2600,40 @@ jobs:
               sys.exit("coverage.html no longer loads coverage.js by that exact tag; inlining aborted")
           # No user data flows through here -- both files are repo content -- but a literal
           # </script> inside the JS would still close the tag early.
-          sys.stdout.write(html.replace(needle, "<script>\n" + js.replace("</script>", "<\\/script>") + "\n</script>"))
+          # Escape anything the HTML tokenizer treats as ending or nesting a script
+          # element: </script in any case or with trailing space/slash, and <!-- / <script
+          # (which put the tokenizer in a state where a later </script> does NOT close).
+          safe = re.sub(r"(?i)<(/?script|!--)", r"<\\\g<1>", js)
+          sys.stdout.write(html.replace(needle, "<script>\n" + safe + "\n</script>"))
           INLINEEOF
           # The `find -mmin +60` sweeps temp files left by an interrupted earlier deploy
           # (this whole step is continue-on-error, so a half-write is silent). The age
           # bound is what keeps it from deleting a CONCURRENT publish's in-flight temp.
           # `coverage.js` is removed because it was briefly deployed as a separate file
           # and nothing references it any more; leaving it would serve week-cached dead code.
-          ssh reports-server '
-            find /var/www/test-reports -maxdepth 1 -name ".coverage.*" -mmin +60 -delete 2>/dev/null
-            T=$(mktemp /var/www/test-reports/.coverage.XXXXXX) &&
-            cat > "$T" && chmod 644 "$T" &&
-            mv "$T" /var/www/test-reports/coverage.html &&
-            rm -f /var/www/test-reports/coverage.js
-          ' < "$INLINED"
+          # The size check is the load-bearing guard, not the rename. `cat` cannot tell
+          # "stdin ended" from "stdin was cut": on a mid-transfer disconnect it exits 0,
+          # chmod succeeds, and the rename atomically publishes a TRUNCATED page --
+          # verified locally, a 4000-byte cut of a 12847-byte page published with the
+          # whole chain reporting success. Inlining makes that worse, because the cut
+          # now lands inside the page's own <script>. Compare byte counts before renaming.
+          SIZE=$(wc -c < "$INLINED")
+          ssh reports-server "
+            find /var/www/test-reports -maxdepth 1 -name '.coverage.*' -mmin +60 -delete 2>/dev/null
+            T=\$(mktemp /var/www/test-reports/.coverage.XXXXXX) &&
+            cat > \"\$T\" && chmod 644 \"\$T\" &&
+            [ \"\$(wc -c < \"\$T\")\" -eq $SIZE ] &&
+            mv \"\$T\" /var/www/test-reports/coverage.html &&
+            rm -f /var/www/test-reports/coverage.js ||
+            { rm -f \"\$T\"; echo 'coverage deploy FAILED (incomplete transfer)' >&2; exit 1; }
+          " < "$INLINED" && COVERAGE_OK=1 || echo "::warning::coverage.html was not updated this build"
           rm -f "$INLINED"
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
-          echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
+          # Print the coverage URL only if the page actually got published. A banner
+          # that prints either way is a claim the step has not verified.
+          if [ -n "$COVERAGE_OK" ]; then
+            echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
+          fi
 
       - name: Update landing page
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'

@@ -89,11 +89,15 @@ branch's newest report.</p>
       var state;
       if (v.state === 'absent') {
         state = 'absent — ran ' + v.ran + ' test(s) but publishes no Allure report';
+      } else if (v.state === 'unknown' && v.reason) {
+        // Reconciliation failed: the suite RAN and was parsed, but the two counts
+        // disagreed, so its data was deliberately dropped. Every feature it covers
+        // is under-counted below, and saying only "unknown" would hide that.
+        state = 'unknown — ' + v.reason + ', so this suite adds nothing to the counts below';
       } else if (v.state === 'unknown') {
-        // A dropped suite contributes NO features, so every feature it covers is
-        // under-counted in the tables below. Saying only "unknown" would hide that.
-        state = 'unknown — ' + (v.reason || 'could not be read') +
-                ', so this suite adds nothing to the counts below';
+        // The other producer: no Allure report AND no reported total. Nothing was
+        // verified about this suite, which is a different thing from dropping it.
+        state = 'unknown — not run on this build, or its report could not be read';
       } else {
         state = v.state;
       }
@@ -101,9 +105,7 @@ branch's newest report.</p>
                result: state,
                suites: [v.labelled === null || v.labelled === undefined ? '' : v.labelled + ' labelled'] };
     });
-    var dropped = Object.keys(cov.suites || {}).filter(function (k) {
-      return cov.suites[k].state === 'unknown' && cov.suites[k].ran;
-    });
+    var dropped = Coverage.droppedSuites(cov);
     var h2 = document.createElement('h2'); h2.textContent = 'Suites'; out.appendChild(h2);
     var st = document.createElement('table');
     var shead = document.createElement('tr');

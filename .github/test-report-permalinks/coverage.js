@@ -77,8 +77,21 @@
       .replace(/-+$/, '');
   }
 
+  // Suites whose data was DROPPED by a failed reconciliation. `reason` is the
+  // marker and the only reliable one: keying off `ran` misses a suite whose
+  // reported total is 0, because 0 is falsy -- and that is the loudest
+  // disagreement there is. A dropped suite contributes no features, so every
+  // count on the page is a lower bound while one exists.
+  function droppedSuites(coverage) {
+    var suites = (coverage && coverage.suites) || {};
+    return Object.keys(suites).filter(function (k) {
+      return suites[k].state === 'unknown' && suites[k].reason;
+    }).sort();
+  }
+
   var api = { formatResult: formatResult, featureRows: featureRows, summarise: summarise,
-              permalinkFor: permalinkFor, normaliseBranch: normaliseBranch };
+              permalinkFor: permalinkFor, normaliseBranch: normaliseBranch,
+              droppedSuites: droppedSuites };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Coverage = api;
 })(typeof window !== 'undefined' ? window : this);

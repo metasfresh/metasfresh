@@ -117,4 +117,37 @@ assert.strictEqual(C.formatResult({ passed: 1, failed: 2, broken: 1 }), '1 broke
 assert.strictEqual(C.formatResult({ failed: 2, broken: 1, passed: 1 }), '1 broken, 2 failed',
   'same result whatever order the statuses arrive in');
 
+// --- a dropped suite is always announced, including when its total is 0 ----
+// `reason` marks a suite dropped by failed reconciliation. Keying the warning
+// off `ran` instead silently skipped the ran===0 case -- the loudest possible
+// disagreement -- because 0 is falsy. Reproduced in a browser before the fix.
+assert.deepStrictEqual(C.droppedSuites({ suites: {
+  cucumber: { state: 'unknown', ran: 0, parsed: 1390,
+              reason: 'parsed 1390 distinct test(s) but failures.json reports 0' } } }),
+  ['cucumber'], 'a dropped suite with ran:0 must still be announced');
+assert.deepStrictEqual(C.droppedSuites({ suites: {
+  cucumber: { state: 'unknown', ran: 99, parsed: 1, reason: 'parsed 1 ... reports 99' },
+  'mobile-webui': { state: 'measured', ran: 10, tests: 10, labelled: 8 } } }),
+  ['cucumber']);
+// `unknown` with NO reason is the never-ran case, not a drop: nothing was
+// verified about it, so there is no under-count to warn about.
+assert.deepStrictEqual(C.droppedSuites({ suites: {
+  cucumber: { state: 'unknown', ran: null, tests: null, labelled: null } } }), [],
+  'a suite that simply never ran is not a dropped suite');
+assert.deepStrictEqual(C.droppedSuites({}), []);
+assert.deepStrictEqual(C.droppedSuites(undefined), []);
+
+// --- the page must keep loading the script by the EXACT tag the deploy inlines
+// cicd.yaml replaces this byte string to ship one self-contained file. If the tag
+// is reformatted, the deploy aborts inside a continue-on-error step: the job stays
+// green and the published page silently stops updating. Fail here instead.
+const fs = require('fs'), path = require('path');
+const pageHtml = fs.readFileSync(path.join(__dirname, '..', 'coverage.html'), 'utf8');
+assert.ok(pageHtml.indexOf('<script src="coverage.js"></script>') !== -1,
+  'coverage.html must load coverage.js by the exact tag cicd.yaml inlines');
+assert.strictEqual(pageHtml.split('<script src="coverage.js"></script>').length - 1, 1,
+  'exactly one such tag, or the deploy would inline the script twice');
+assert.ok(!/<\/script|<!--|<script/i.test(fs.readFileSync(path.join(__dirname, '..', 'coverage.js'), 'utf8')),
+  'coverage.js must contain no sequence that can terminate or nest a script element once inlined');
+
 console.log('coverage.test.js: all assertions passed');

@@ -58,15 +58,24 @@ def extract_tagged_features(behaviors_root):
     `allure.tag('Fxxxx: Name')` + `allure.tag('Fxxxx')` instead, and a tag
     creates no grouping node -- so a feature can have many tests here and at
     most a token presence in the Behaviours tree. Measured on
-    5.175-intensive-care-release.43783: F00700's Behaviours node holds 1 test
-    while 141 carry its tag; for F00230 the node holds 67 against 190 tagged.
-    Indexing the tag route is what lets the resolver page say which of the two
-    numbers a link is about to show.
+    5.175-intensive-care-release.43783, and note all three columns are
+    DIFFERENT questions about the same feature:
+
+        feature   node (extract_features)   tag (this fn)   tag-or-node
+        F00700                          1             120           141
+        F00230                         67             158           190
+
+    This function returns the middle column. The right-hand column is what
+    `extract_coverage` produces and what the coverage page shows; quoting it
+    here as "the tag count" is an error this docstring carried until
+    2026-09-12. Indexing the tag route is what lets the resolver page say
+    which number a link is about to show -- the node column is what the link
+    opens, and it can be a tiny fraction of the other two.
     """
     seen = {}   # F-code -> set of leaf uids, because a test appears MORE THAN ONCE
                 # in the tree (cucumber lists every test under its .feature file AND
-                # again under Epic -> Feature). Counting occurrences inflated F00230
-                # from 190 real tests to 293 before this was de-duplicated.
+                # again under Epic -> Feature). For F00230 the tag occurs 293 times
+                # across the tree and belongs to 158 distinct tests.
     def walk(node):
         ch = node.get("children")
         if ch is None:
