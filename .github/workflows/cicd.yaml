@@ -2587,7 +2587,10 @@ jobs:
           #      script disagree, which matters more here than for the per-branch resolver
           #      because EVERY branch's build rewrites this root path.
           # mktemp gives a unique name, so two branches publishing at once cannot collide on it.
-          python3 - "$DIR" > /tmp/coverage.inlined.html <<'INLINEEOF'
+          # mktemp on the RUNNER too: a self-hosted runner can host concurrent jobs,
+          # and a fixed /tmp name would let two branches' builds clobber each other.
+          INLINED=$(mktemp)
+          python3 - "$DIR" > "$INLINED" <<'INLINEEOF'
           import sys, pathlib
           d = pathlib.Path(sys.argv[1])
           js = (d / "coverage.js").read_text(encoding="utf-8")
@@ -2599,7 +2602,19 @@ jobs:
           # </script> inside the JS would still close the tag early.
           sys.stdout.write(html.replace(needle, "<script>\n" + js.replace("</script>", "<\\/script>") + "\n</script>"))
           INLINEEOF
-          ssh reports-server 'T=$(mktemp /var/www/test-reports/.coverage.XXXXXX) && cat > "$T" && chmod 644 "$T" && mv "$T" /var/www/test-reports/coverage.html' < /tmp/coverage.inlined.html
+          # The `find -mmin +60` sweeps temp files left by an interrupted earlier deploy
+          # (this whole step is continue-on-error, so a half-write is silent). The age
+          # bound is what keeps it from deleting a CONCURRENT publish's in-flight temp.
+          # `coverage.js` is removed because it was briefly deployed as a separate file
+          # and nothing references it any more; leaving it would serve week-cached dead code.
+          ssh reports-server '
+            find /var/www/test-reports -maxdepth 1 -name ".coverage.*" -mmin +60 -delete 2>/dev/null
+            T=$(mktemp /var/www/test-reports/.coverage.XXXXXX) &&
+            cat > "$T" && chmod 644 "$T" &&
+            mv "$T" /var/www/test-reports/coverage.html &&
+            rm -f /var/www/test-reports/coverage.js
+          ' < "$INLINED"
+          rm -f "$INLINED"
           echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
           echo "Coverage:   https://test-reports.metasfresh.com/coverage.html?branch=${BRANCH}"
 
