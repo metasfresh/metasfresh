@@ -25,15 +25,19 @@ package de.metas.deliveryplanning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.TransportDirection;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
@@ -120,6 +124,21 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	}
 
 	/**
+	 * Deliberately WEAKER than {@link #getSingleTransportDirection()}: {@code Incoming} and {@code Dropship} map
+	 * onto the same DISCHARGE end, so a selection holding both has no single direction yet nets one well-defined
+	 * end. Asking the direction instead would reject a mix that is perfectly computable.
+	 */
+	public Optional<PoolEnd> getSinglePoolEnd()
+	{
+		final ImmutableSet<PoolEnd> ends = list.stream()
+				.map(DeliveryPlanning::getTransportDirection)
+				.map(PoolEnd::forDirection)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return ends.size() == 1 ? Optional.of(ends.iterator().next()) : Optional.empty();
+	}
+
+	/**
 	 * The one value the whole selection carries for the given key field. Empty in all three cases the caller has
 	 * to treat alike - the selection is empty, it disagrees with itself on this field, or the one value it agrees
 	 * on is {@code null} (a field none of the plannings has set).
@@ -147,6 +166,21 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 	 */
 	public DeliveryPlanningList openOnes() {return filter(deliveryPlanning -> !deliveryPlanning.isClosed());}
 
+	/**
+	 * ONE predicate rather than {@code anyClosed() || anyDelivered()}: the invariant
+	 * {@code Processed == (IsClosed || IsDelivered)} makes them the same question.
+	 * <p>
+	 * Affordable over a whole selection because {@code Processed} is a STORED column - deliberately NOT the shape
+	 * of {@link #anyAllocated()}, whose {@code IsAllocated} is a lazy-loading virtual column and costs a query per row.
+	 */
+	public boolean anyProcessed() {return list.stream().anyMatch(DeliveryPlanning::isProcessed);}
+
+	public DeliveryPlanningList processedOnes() {return filter(DeliveryPlanning::isProcessed);}
+
+	public boolean anyNotReadyForReceipt() {return list.stream().anyMatch(dp -> !dp.isReadyForReceipt());}
+
+	public DeliveryPlanningList notReadyForReceiptOnes() {return filter(dp -> !dp.isReadyForReceipt());}
+
 	public boolean anyAllocated() {return list.stream().anyMatch(DeliveryPlanning::isAllocated);}
 
 	public DeliveryPlanningList allocatedOnes() {return filter(DeliveryPlanning::isAllocated);}
@@ -159,9 +193,174 @@ public class DeliveryPlanningList implements Iterable<DeliveryPlanning>
 
 	public DeliveryPlanningList withoutShipper() {return filter(DeliveryPlanning::isWithoutShipper);}
 
+	/**
+	 * An empty selection - an instruction with no active allocation - answers {@code NotDelivered}, vacuously.
+	 * <p>
+	 * The ONE place this is computed, so the stored {@code DeliveredState} column cannot drift from a second copy
+	 * of the derivation.
+	 */
+	public DeliveryInstructionDeliveredState getDeliveredState()
+	{
+		if (isEmpty())
+		{
+			return DeliveryInstructionDeliveredState.NotDelivered;
+		}
+
+		final boolean allDelivered = list.stream().allMatch(DeliveryPlanning::isDelivered);
+		if (allDelivered)
+		{
+			return DeliveryInstructionDeliveredState.FullyDelivered;
+		}
+
+		final boolean anyDelivered = list.stream().anyMatch(DeliveryPlanning::isDelivered);
+		return anyDelivered ? DeliveryInstructionDeliveredState.PartlyDelivered : DeliveryInstructionDeliveredState.NotDelivered;
+	}
+
 	private DeliveryPlanningList filter(@NonNull final Predicate<DeliveryPlanning> predicate)
 	{
 		return list.stream().filter(predicate).collect(collect());
+	}
+
+	/**
+	 * {@code coalesce(nullif(actual, 0), planned)}: a zero actual (nothing recorded yet) falls back to the
+	 * sibling's planned share, instead of being read as a real zero that would inflate the pool by that sibling's
+	 * whole planned amount.
+	 * <p>
+	 * NOT floored at zero here - the clamp belongs to the SPLIT's use of this figure, not to this shared
+	 * calculation, which a display column also reads unclamped.
+	 *
+	 * @param excludePlanningId {@code null} to count every planning, including the split target's own claim; the
+	 * 		target's id to leave its claim out because that share is still up for redistribution.
+	 */
+	public Quantity openPlanQty(@Nullable final DeliveryPlanningId excludePlanningId, @NonNull final PoolEnd end)
+	{
+		Check.assumeNotEmpty(list, "Cannot compute the distributable pool of an empty DeliveryPlanningList");
+
+		final Quantity qtyOrdered = list.get(0).getQtyOrdered();
+
+		Quantity claimed = null;
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			if (excludePlanningId != null && excludePlanningId.equals(deliveryPlanning.getId()))
+			{
+				continue;
+			}
+
+			final Quantity effectiveQty = end.effectiveQty(deliveryPlanning);
+			claimed = claimed == null ? effectiveQty : claimed.add(effectiveQty);
+		}
+
+		return claimed == null ? qtyOrdered : qtyOrdered.subtract(claimed);
+	}
+
+	/**
+	 * Summed straight - unlike {@link #openPlanQty} there is no nullif/coalesce fallback here, because a zero
+	 * actual means exactly what it says: nothing delivered yet. NOT floored at zero: an over-delivered line
+	 * legitimately shows negative (D16).
+	 */
+	public Quantity qtyTotalOpen(@NonNull final PoolEnd end)
+	{
+		Check.assumeNotEmpty(list, "Cannot compute QtyTotalOpen of an empty DeliveryPlanningList");
+
+		final Quantity qtyOrdered = list.get(0).getQtyOrdered();
+
+		Quantity actualSum = null;
+		for (final DeliveryPlanning deliveryPlanning : list)
+		{
+			final Quantity actual = end.actual(deliveryPlanning);
+			actualSum = actualSum == null ? actual : actualSum.add(actual);
+		}
+
+		return qtyOrdered.subtract(actualSum);
+	}
+
+	/**
+	 * {@code QtyTotalOpen}'s sibling figure: how much of the order line nobody has claimed yet, where a sibling's
+	 * claim is its ACTUAL once one is recorded and its PLANNED figure until then. Not floored at zero for the
+	 * same reason as {@code QtyTotalOpen}: an over-planned line legitimately shows negative (D16).
+	 * <p>
+	 * This is {@link #openPlanQty} with nothing excluded, and it DELEGATES rather than repeating the sum. Two
+	 * near-identical sums, one applying {@link PoolEnd#effectiveQty} and one reading the RAW planned figures,
+	 * drift apart the moment a sibling is received SHORT: on an order of 100 split 50/50 whose first planning
+	 * received only 40, the raw sum reports 0 open-planned where the honest figure is 10, while QtyTotalOpen
+	 * independently reports 60. One sum cannot disagree with itself.
+	 */
+	public Quantity qtyTotalOpenPlanned(@NonNull final PoolEnd end)
+	{
+		Check.assumeNotEmpty(list, "Cannot compute QtyTotalOpenPlanned of an empty DeliveryPlanningList");
+
+		return openPlanQty(null, end);
+	}
+
+	/**
+	 * Both order-line totals in one value, because they are always written together (the two
+	 * {@code QtyTotalOpen*} columns of every planning on the line). Returned as {@link BigDecimal} - the shape
+	 * the caller stores - so the pair cannot be produced with two mismatched pool ends.
+	 */
+	public OpenTotals openTotals(@NonNull final PoolEnd end)
+	{
+		return new OpenTotals(qtyTotalOpen(end).toBigDecimal(), qtyTotalOpenPlanned(end).toBigDecimal());
+	}
+
+	@Value
+	public static class OpenTotals
+	{
+		@NonNull BigDecimal qtyTotalOpen;
+		@NonNull BigDecimal qtyTotalOpenPlanned;
+	}
+
+	public enum PoolEnd
+	{
+		LOAD(DeliveryPlanning::getPlannedLoadedQty, DeliveryPlanning::getActualLoadedQty),
+		DISCHARGE(DeliveryPlanning::getPlannedDischargeQty, DeliveryPlanning::getActualDischargeQty);
+
+		private final Function<DeliveryPlanning, Quantity> plannedExtractor;
+		private final Function<DeliveryPlanning, Quantity> actualExtractor;
+
+		PoolEnd(
+				@NonNull final Function<DeliveryPlanning, Quantity> plannedExtractor,
+				@NonNull final Function<DeliveryPlanning, Quantity> actualExtractor)
+		{
+			this.plannedExtractor = plannedExtractor;
+			this.actualExtractor = actualExtractor;
+		}
+
+		/**
+		 * A sibling's effective claim: its actual once one is recorded ({@code nullif(actual, 0)}), otherwise its planned figure.
+		 * <p>
+		 * A CLOSED OR DELIVERED planning is the exception, and the zero is the whole point of it. The guard is
+		 * {@code isProcessed()}, which by this model's invariant is {@code IsClosed || IsDelivered}: a delivered
+		 * planning is as settled as a closed one, because a planning maps 1:1 onto its own document.
+		 * <p>
+		 * An OPEN planning that has taken nothing is still going to happen, so it keeps claiming its plan. A CLOSED
+		 * one never will - whatever it took is all it is ever going to take. Letting it fall back to its planned
+		 * figure lets a dead row keep reserving quantity that can never be delivered, so the order line reads fully
+		 * planned while part of it is in fact unplannable and needs a new planning.
+		 */
+		private Quantity effectiveQty(@NonNull final DeliveryPlanning deliveryPlanning)
+		{
+			final Quantity actual = actualExtractor.apply(deliveryPlanning);
+			if (deliveryPlanning.isProcessed())
+			{
+				return actual;
+			}
+			final Quantity planned = plannedExtractor.apply(deliveryPlanning);
+			return !actual.isZero() ? actual : planned;
+		}
+
+		/** This planning's own actual figure for this end - raw, no nullif fallback. */
+		public Quantity actual(@NonNull final DeliveryPlanning deliveryPlanning)
+		{
+			return actualExtractor.apply(deliveryPlanning);
+		}
+
+		/**
+		 * Decided by DIRECTION: a receipt (incoming or dropship) nets discharge, a shipment nets load.
+		 */
+		public static PoolEnd forDirection(@NonNull final TransportDirection transportDirection)
+		{
+			return transportDirection.isIncomingOrDropship() ? DISCHARGE : LOAD;
+		}
 	}
 
 	/**

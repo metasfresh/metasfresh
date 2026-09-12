@@ -28,12 +28,13 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -70,6 +71,9 @@ class DeliveryPlanningCloseSemanticsTest
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private DeliveryPlanningRepository deliveryPlanningRepository;
+	private DeliveryPlanningAllocRepository deliveryPlanningAllocRepository;
+	private DeliveryInstructionRepository deliveryInstructionRepository;
+	private DeliveryInstructionService deliveryInstructionService;
 	private DeliveryPlanningService deliveryPlanningService;
 	private I_C_UOM uom;
 
@@ -79,10 +83,15 @@ class DeliveryPlanningCloseSemanticsTest
 		AdempiereTestHelper.get().init();
 
 		deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
 				deliveryPlanningRepository,
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
@@ -100,6 +109,7 @@ class DeliveryPlanningCloseSemanticsTest
 	private I_M_Delivery_Planning deliveryPlanning()
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		record.setC_BPartner_ID(2000000);
 		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
 		record.setM_Product_ID(PRODUCT_ID);
 		record.setC_UOM_ID(uom.getC_UOM_ID());
@@ -123,16 +133,17 @@ class DeliveryPlanningCloseSemanticsTest
 	{
 		final DeliveryPlanningId id = idOf(record);
 
-		deliveryPlanningRepository.createAllocations(
+		deliveryInstructionService.createAllocations(
 				deliveryInstructionId,
 				ImmutableList.of(DeliveryPlanningAllocCreateRequest.builder()
 						.deliveryPlanningId(id)
-						.productId(ProductId.ofRepoId(PRODUCT_ID))
-						.qtyLoaded(Quantity.of(BigDecimal.TEN, uom))
-						.qtyDischarged(Quantity.of(BigDecimal.ONE, uom))
+						.shippingPackage(DeliveryPlanningAllocCreateRequest.ShippingPackageData.builder()
+								.productId(ProductId.ofRepoId(PRODUCT_ID))
+								.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+								.build())
 						.build()));
 
-		deliveryPlanningRepository.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
+		deliveryInstructionService.updateDeliveryPlanningsFromInstruction(ImmutableList.of(id), deliveryInstructionId);
 	}
 
 	private static DeliveryPlanningId idOf(@NonNull final I_M_Delivery_Planning record)
@@ -320,5 +331,111 @@ class DeliveryPlanningCloseSemanticsTest
 		assertThat(deliveryPlanningService.getReOpenRejectionReason(
 				deliveryPlanningService.getBySelection(selectionOf(first, second))))
 				.isEmpty();
+	}
+
+	// ------------------------------------------------------------------ Processed follows closed-or-delivered
+
+	/**
+	 * Marks "delivered" the way {@code IsDelivered} defines it - an {@code M_InOut_ID} is set - without going
+	 * through the real receipt/shipment flow.
+	 */
+	private static void markDelivered(@NonNull final I_M_Delivery_Planning record)
+	{
+		record.setM_InOut_ID(999999);
+		InterfaceWrapperHelper.save(record);
+	}
+
+	/**
+	 * Reads {@code M_InOut_ID} directly rather than the generated {@code isDelivered()} getter: that getter proxies
+	 * a DB-side virtual column, which this POJO in-memory test infrastructure does not evaluate, so it would
+	 * misreport "delivered" as false even with {@code M_InOut_ID} set.
+	 */
+	private static void assertInvariantHolds(@NonNull final I_M_Delivery_Planning record)
+	{
+		final boolean isDelivered = record.getM_InOut_ID() > 0;
+		assertThat(record.isProcessed())
+				.as("invariant Processed == (IsClosed || IsDelivered) for M_Delivery_Planning_ID=%s (IsClosed=%s, IsDelivered=%s)",
+						record.getM_Delivery_Planning_ID(), record.isClosed(), isDelivered)
+				.isEqualTo(record.isClosed() || isDelivered);
+	}
+
+	@Test
+	@DisplayName("Q10: closing a delivered planning sets Processed, and reopening it KEEPS Processed set")
+	void reopen_closedAndDelivered_keepsProcessedSet()
+	{
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		markDelivered(planning);
+
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning closed = reload(planning);
+		assertInvariantHolds(closed);
+		assertThat(closed.isProcessed()).as("close always sets Processed").isTrue();
+
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning reopened = reload(planning);
+		assertInvariantHolds(reopened);
+		assertThat(reopened.isClosed()).isFalse();
+		assertThat(reopened.isProcessed()).as("a delivered planning keeps Processed after reopen").isTrue();
+	}
+
+	@Test
+	@DisplayName("Q10: closing an undelivered planning sets Processed, and reopening it CLEARS Processed")
+	void reopen_closedButNotDelivered_clearsProcessed()
+	{
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning closed = reload(planning);
+		assertInvariantHolds(closed);
+		assertThat(closed.isProcessed()).as("close always sets Processed").isTrue();
+
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning reopened = reload(planning);
+		assertInvariantHolds(reopened);
+		assertThat(reopened.isClosed()).isFalse();
+		assertThat(reopened.isProcessed()).as("an undelivered planning clears Processed after reopen").isFalse();
+	}
+
+	@Test
+	@DisplayName("Q10: closing a planning that is ALREADY Processed (delivered, then reopened) exercises the skip branch - Processed stays true, never toggled")
+	void close_alreadyProcessedFromDelivery_exercisesSkipBranch()
+	{
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		markDelivered(planning);
+
+		// closed once, then reopened while still delivered: the ONLY reachable state in which a SECOND close finds
+		// isProcessed() already true, i.e. the only state that exercises the skip branch
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning reopened = reload(planning);
+		assertInvariantHolds(reopened);
+		assertThat(reopened.isClosed()).isFalse();
+		assertThat(reopened.isProcessed()).as("delivered, so still Processed going into the second close").isTrue();
+
+		// the skip branch's own save() still runs unconditionally (IsClosed is changing false->true), so a save-count
+		// check would pass either way; the state assertion below is the discriminating one
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning closedAgain = reload(planning);
+		assertInvariantHolds(closedAgain);
+		assertThat(closedAgain.isClosed()).isTrue();
+		assertThat(closedAgain.isProcessed()).as("already Processed before this close - the skip branch must leave it true, not toggle it").isTrue();
+	}
+
+	@Test
+	@DisplayName("Q10: a planning delivered WHILE closed stays Processed on reopen too - IsClosed dominates until it is lifted")
+	void reopen_deliveredWhileClosed_keepsProcessed()
+	{
+		final I_M_Delivery_Planning planning = deliveryPlanning();
+		deliveryPlanningService.closeSelectedDeliveryPlannings(selectionOf(planning));
+		assertInvariantHolds(reload(planning));
+
+		// delivered AFTER close - simulates a document booked against an already-closed planning
+		markDelivered(reload(planning));
+		assertInvariantHolds(reload(planning));
+
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectionOf(planning));
+		final I_M_Delivery_Planning reopened = reload(planning);
+		assertInvariantHolds(reopened);
+		assertThat(reopened.isProcessed()).as("delivered before reopen, so Processed must survive it").isTrue();
 	}
 }

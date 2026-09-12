@@ -116,7 +116,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 							+ " | QtyOrdered: {}>{}, QtyToMove: {}>{}"
 							+ " | event={}, orderedQtyDelta={}, reservedQtyDelta={}",
 					schedule.getM_ReceiptSchedule_ID(), timing,
-					oldSchedule.isIsClosed(), schedule.isIsClosed(),
+					oldSchedule.isClosed(), schedule.isClosed(),
 					oldSchedule.isProcessed(), schedule.isProcessed(),
 					oldSchedule.isActive(), schedule.isActive(),
 					oldSchedule.getQtyOrdered(), schedule.getQtyOrdered(),
@@ -163,23 +163,23 @@ public class M_ReceiptSchedule_PostMaterialEvent
 	/** IsClosed changed from false to true — treat as deletion from material dispo perspective (lowers supply to already-received qty). */
 	private static boolean isJustClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		if (!receiptSchedule.isIsClosed())
+		if (!receiptSchedule.isClosed())
 		{
 			return false;
 		}
 		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
-		return !old.isIsClosed();
+		return !old.isClosed();
 	}
 
 	/** IsClosed changed from true to false — treat as creation from material dispo perspective (restores supply). */
 	private static boolean isJustReopened(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		if (receiptSchedule.isIsClosed())
+		if (receiptSchedule.isClosed())
 		{
 			return false;
 		}
 		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
-		return old.isIsClosed();
+		return old.isClosed();
 	}
 
 	private AbstractReceiptScheduleEvent createCreatedEvent(

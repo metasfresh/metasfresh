@@ -22,19 +22,24 @@
 
 package de.metas.deliveryplanning.process;
 
+import de.metas.deliveryplanning.DeliveryInstructionRepository;
+import de.metas.deliveryplanning.DeliveryInstructionService;
+import de.metas.deliveryplanning.DeliveryPlanningAllocRepository;
 import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
-import de.metas.deliveryplanning.DeliveryStatusColorPaletteService;
 import de.metas.deliveryplanning.MeansOfTransportationService;
 import de.metas.document.dimension.DimensionService;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.X_M_Delivery_Planning;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,10 +65,17 @@ class M_DeliveryPlanning_CreateAdditionalLinesClosedGuardTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final DeliveryPlanningRepository deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		final DeliveryInstructionRepository deliveryInstructionRepository = new DeliveryInstructionRepository(mock(DimensionService.class));
+		final DeliveryInstructionService deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
+
 		final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
-				new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)),
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
@@ -74,6 +86,12 @@ class M_DeliveryPlanning_CreateAdditionalLinesClosedGuardTest
 	private static int deliveryPlanning(final boolean closed)
 	{
 		final I_M_Delivery_Planning record = InterfaceWrapperHelper.newInstance(I_M_Delivery_Planning.class);
+		final I_C_UOM mandatoryUom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(mandatoryUom);
+		record.setC_UOM_ID(mandatoryUom.getC_UOM_ID());
+		// C_BPartner_ID is mandatory on the table too, so a fixture must supply one
+		record.setC_BPartner_ID(2000000);
+		record.setTransportDirection(X_M_Delivery_Planning.TRANSPORTDIRECTION_Outgoing);
 		record.setIsClosed(closed);
 		InterfaceWrapperHelper.save(record);
 		return record.getM_Delivery_Planning_ID();

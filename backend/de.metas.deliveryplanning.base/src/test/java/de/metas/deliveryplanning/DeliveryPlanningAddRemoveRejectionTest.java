@@ -28,6 +28,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
@@ -36,7 +38,10 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -45,6 +50,7 @@ import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static de.metas.deliveryplanning.DeliveryPlanningAllocTestHelper.allocatedTo;
@@ -56,6 +62,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DeliveryPlanningAddRemoveRejectionTest
 {
+	private static I_C_UOM uom;
+
+	private static Quantity zeroQty() {return Quantity.of(BigDecimal.ZERO, uom);}
+
 	private static int nextId = 1;
 
 	private DeliveryPlanningService deliveryPlanningService;
@@ -65,10 +75,22 @@ class DeliveryPlanningAddRemoveRejectionTest
 	{
 		AdempiereTestHelper.get().init();
 
+		// The five quantity columns are AD_IsMandatory='Y', so a planning always has them - and a
+		// quantity needs a UOM. Stated here rather than relying on a mapper to omit them.
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
+
+		final DeliveryPlanningRepository deliveryPlanningRepository = new DeliveryPlanningRepository(Mockito.mock(DimensionService.class));
+		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		final DeliveryInstructionRepository deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		final DeliveryInstructionService deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
+
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
-				new DeliveryPlanningRepository(Mockito.mock(DimensionService.class)),
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
@@ -82,7 +104,15 @@ class DeliveryPlanningAddRemoveRejectionTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
 				.transportDirection(TransportDirection.Outgoing)
-				.shipperId(ShipperId.ofRepoId(540001));
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
+				.shipperId(ShipperId.ofRepoId(540001))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()));
 	}
 
 	private static ShipperTransportationId deliveryInstruction(@NonNull final DocStatus docStatus)

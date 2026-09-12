@@ -75,7 +75,7 @@ Feature: Generate delivery instructions from delivery plannings
       | shippingPackageDI               | packageDI               | deliveryInstruction_SO                |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageDI               | packageDI               | deliveryInstruction_SO                | customerLocation                  | 10            | customer                     | product                     | orderLineDI_SO                |
+      | shippingPackageDI               | packageDI               | deliveryInstruction_SO                | customerLocation                  | 0             | customer                     | product                     | orderLineDI_SO                |
 
     When regenerate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID        | M_Delivery_Planning_ID |
@@ -96,7 +96,7 @@ Feature: Generate delivery instructions from delivery plannings
       | shippingPackageDI_RE            | packageDI_RE            | deliveryInstructionRegenerated_SO     |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageDI_RE            | packageDI_RE            | deliveryInstructionRegenerated_SO     | customerLocation                  | 10            | customer                     | product                     | orderLineDI_SO                |
+      | shippingPackageDI_RE            | packageDI_RE            | deliveryInstructionRegenerated_SO     | customerLocation                  | 0             | customer                     | product                     | orderLineDI_SO                |
 
 
 

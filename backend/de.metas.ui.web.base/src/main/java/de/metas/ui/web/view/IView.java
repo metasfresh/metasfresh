@@ -131,6 +131,17 @@ public interface IView
 	 */
 	void invalidateAll();
 
+	/**
+	 * Recomputes which rows belong to this view, discarding the current materialized selection.
+	 * <p>
+	 * This CHANGES WHAT THE USER IS LOOKING AT, so it is deliberately caller-driven rather than something the
+	 * invalidation machinery does on its own: every caller is the {@code postProcess} of a process the user just
+	 * ran on this view, where the user's own action is what changed membership. An ambient invalidation must use
+	 * {@link #invalidateAll()} instead, which refreshes the rows' VALUES and leaves membership alone.
+	 * <p>
+	 * Unsupported by default: only a selection-backed view can forget a selection, and a caller asking any other
+	 * view type to recompute its membership should fail loudly rather than silently do less than it asked for.
+	 */
 	default void invalidateSelection()
 	{
 		throw new UnsupportedOperationException();

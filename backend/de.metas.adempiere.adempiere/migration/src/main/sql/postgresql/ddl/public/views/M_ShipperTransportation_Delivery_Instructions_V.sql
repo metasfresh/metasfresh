@@ -1,7 +1,7 @@
-DROP VIEW M_ShipperTransportation_Delivery_Instructions_V
+DROP VIEW IF EXISTS M_ShipperTransportation_Delivery_Instructions_V$new
 ;
 
-CREATE OR REPLACE VIEW M_ShipperTransportation_Delivery_Instructions_V
+CREATE OR REPLACE VIEW M_ShipperTransportation_Delivery_Instructions_V$new
 AS
 SELECT di.documentno,
        di.m_shippertransportation_id,
@@ -17,8 +17,8 @@ SELECT di.documentno,
        di.m_meansoftransportation_id,
        sp.M_Product_ID,
        sp.m_locator_id,
-       sp.actualloadqty as plannedloadedquantity,
-       sp.actualdischargequantity as planneddischargequantity,
+       dp.plannedloadedquantity,
+       dp.planneddischargequantity,
        di.created,
        di.createdby,
        sp.m_shippertransportation_id AS M_Delivery_Planning_Delivery_Instructions_V_ID,
@@ -34,3 +34,13 @@ FROM M_ShipperTransportation di
          JOIN M_Delivery_Planning dp ON dp.m_delivery_planning_id = dpa.m_delivery_planning_id
 ;
 
+SELECT db_alter_view(
+               'm_shippertransportation_delivery_instructions_v',
+               (SELECT view_definition
+                FROM information_schema.views
+                WHERE lower(views.table_name) = lower('m_shippertransportation_delivery_instructions_v$new'))
+           )
+;
+
+DROP VIEW IF EXISTS m_shippertransportation_delivery_instructions_v$new
+;

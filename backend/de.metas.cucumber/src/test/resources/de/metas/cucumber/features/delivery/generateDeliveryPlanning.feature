@@ -83,9 +83,14 @@ Feature: Delivery planning automatically generated when M_ShipmentSchedule is cr
       | Identifier        | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipToDefault |
       | vendorLocation    | 1234564396446 | vendor                   | true                | true                |
       | warehouseLocation | 1203522892346 | warehouseBP              | true                | true                |
+    # No Name: DataTableRow#suggestValueAndName then derives a per-run-unique Value, and M_Product_StepDef
+    # upserts by that Value - so this scenario gets a FRESH product every run. With the literal, every run
+    # reused one product and the C_BPartner_Products row below hit UniqueCurrentVendor
+    # (iscurrentvendor, usedforvendor, m_product_id) against the row an earlier run had left behind, so the
+    # scenario could only pass on a freshly reset database.
     And metasfresh contains M_Products:
-      | Identifier | Name                         |
-      | product    | ProductNameIncoming_02022023 |
+      | Identifier |
+      | product    |
     And metasfresh contains M_ProductPrices
       | Identifier        | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | productPrice_PO_2 | priceListVersion_PO_2             | product                 | 5.0      | PCE               | Normal                        |

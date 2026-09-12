@@ -215,7 +215,7 @@ public class C_Order_ReceiptSchedule
 
 			// Return true only for schedules processed from REAL receipt activity,
 			// not schedules that are merely "parked" (IsClosed=Y) due to PO reactivation/void.
-			if (receiptSchedule != null && receiptSchedule.isProcessed() && !receiptSchedule.isIsClosed())
+			if (receiptSchedule != null && receiptSchedule.isProcessed() && !receiptSchedule.isClosed())
 			{
 				return true;
 			}

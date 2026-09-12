@@ -11,6 +11,8 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
 
 import java.util.List;
+import de.metas.deliveryplanning.DeliveryPlanningId;
+import javax.annotation.Nullable;
 
 /**
  * Interface responsible creating {@link I_M_InOut} shipments from {@link ShipmentScheduleWithHU}s.
@@ -38,6 +40,13 @@ public interface IInOutProducerFromShipmentScheduleWithHU
 	IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(CalculateShippingDateRule calculateShippingDateType);
 
 	IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo);
+
+	/**
+	 * The planning to stamp onto each shipment LINE this producer creates, or {@code null} for none.
+	 * Stamped on the draft, i.e. before the shipment is completed, so the document's
+	 * {@code TIMING_AFTER_COMPLETE} interceptors see it.
+	 */
+	IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable DeliveryPlanningId deliveryPlanningId);
 
 	IInOutProducerFromShipmentScheduleWithHU setTrxItemExceptionHandler(ITrxItemExceptionHandler trxItemExceptionHandler);
 }

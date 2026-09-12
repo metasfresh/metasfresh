@@ -1,6 +1,8 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
@@ -59,6 +61,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -66,6 +69,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -132,6 +136,13 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 	private final ISnapshotProducer<I_M_HU> huSnapshotProducer;
 
+	/**
+	 * The planning each selected HU is received for; empty when no HU is.
+	 *
+	 * @see CreateReceiptsParameters#getDeliveryPlanningIdByHuId()
+	 */
+	private final ImmutableMap<HuId, DeliveryPlanningId> deliveryPlanningIdByHuId;
+
 	public InOutProducerFromReceiptScheduleHU(
 			final CreateReceiptsParameters parameters,
 			final InOutGenerateResult result)
@@ -141,6 +152,9 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				parameters.getMovementDateRule(),
 				parameters.getExternalInfoByReceiptScheduleId());
 
+		this.deliveryPlanningIdByHuId = parameters.getDeliveryPlanningIdByHuId() != null
+				? ImmutableMap.copyOf(parameters.getDeliveryPlanningIdByHuId())
+				: ImmutableMap.of();
 		this.selectedHUIds = parameters.getSelectedHuIds();
 		Check.assume(selectedHUIds == null || !selectedHUIds.isEmpty(), "selectedHUIds shall be null or not empty: {}", selectedHUIds);
 
@@ -168,11 +182,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		final IHUContext huContext = getHUContext();
 		final I_M_ReceiptSchedule rs = InterfaceWrapperHelper.create(getCurrentReceiptSchedule(), I_M_ReceiptSchedule.class);
 
-		//
-		//
-		final HUReceiptLineCandidatesBuilder receiptLineCandidatesBuilder = new HUReceiptLineCandidatesBuilder(rs);
-		receiptLineCandidatesBuilder.setHUContext(huContext);
 		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(rs, huContext.getTrxName());
+		final LinkedHashMap<Optional<DeliveryPlanningId>, List<I_M_ReceiptSchedule_Alloc>> allocsByDeliveryPlanning = new LinkedHashMap<>();
 		for (final I_M_ReceiptSchedule_Alloc alloc : allocsAll)
 		{
 			if (!isRsaEligible(alloc))
@@ -189,22 +200,32 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				continue;
 			}
 
-			receiptLineCandidatesBuilder.add(alloc);
+			allocsByDeliveryPlanning
+					.computeIfAbsent(Optional.ofNullable(extractDeliveryPlanningId(alloc)), k -> new ArrayList<>())
+					.add(alloc);
 		}
 
 		//
-		// If total Qty to receive is ZERO, skip this receipt schedule
-		if (receiptLineCandidatesBuilder.getQtyAndQuality().isZero())
-		{
-			return Collections.emptyList();
-		}
-
-		//
-		// Create receipt lines from each receipt line candidate
+		// One candidates-builder PER planning, so that two plannings of this schedule never aggregate into one
+		// receipt line: the line carries the planning, and a merged line could name only one of them.
 		final List<I_M_InOutLine> receiptLines = new ArrayList<>();
-		for (final HUReceiptLineCandidate receiptLineCandidate : receiptLineCandidatesBuilder.getHUReceiptLineCandidates())
+		for (final Map.Entry<Optional<DeliveryPlanningId>, List<I_M_ReceiptSchedule_Alloc>> entry : allocsByDeliveryPlanning.entrySet())
 		{
-			receiptLines.addAll(createReceiptLines(receiptLineCandidate));
+			final HUReceiptLineCandidatesBuilder receiptLineCandidatesBuilder = new HUReceiptLineCandidatesBuilder(rs);
+			receiptLineCandidatesBuilder.setHUContext(huContext);
+			entry.getValue().forEach(receiptLineCandidatesBuilder::add);
+
+			// If total Qty to receive is ZERO, skip this planning's allocations
+			if (receiptLineCandidatesBuilder.getQtyAndQuality().isZero())
+			{
+				continue;
+			}
+
+			final DeliveryPlanningId deliveryPlanningId = entry.getKey().orElse(null);
+			for (final HUReceiptLineCandidate receiptLineCandidate : receiptLineCandidatesBuilder.getHUReceiptLineCandidates())
+			{
+				receiptLines.addAll(createReceiptLines(receiptLineCandidate, deliveryPlanningId));
+			}
 		}
 
 		//
@@ -212,7 +233,31 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		return receiptLines;
 	}
 
-	private List<I_M_InOutLine> createReceiptLines(@NonNull final HUReceiptLineCandidate receiptLineCandidate)
+	/**
+	 * The planning the allocation's HU is being received for; {@code null} when it is not being received for one.
+	 * TU before LU, mirroring {@link #isInSelectedHUs(I_M_ReceiptSchedule_Alloc)}: the caller keys the map by
+	 * whichever HU it handed over as selected.
+	 */
+	@Nullable
+	private DeliveryPlanningId extractDeliveryPlanningId(@NonNull final I_M_ReceiptSchedule_Alloc rsa)
+	{
+		final HuId tuHUId = HuId.ofRepoIdOrNull(rsa.getM_TU_HU_ID());
+		if (tuHUId != null)
+		{
+			final DeliveryPlanningId deliveryPlanningId = deliveryPlanningIdByHuId.get(tuHUId);
+			if (deliveryPlanningId != null)
+			{
+				return deliveryPlanningId;
+			}
+		}
+
+		final HuId luHUId = HuId.ofRepoIdOrNull(rsa.getM_LU_HU_ID());
+		return luHUId != null ? deliveryPlanningIdByHuId.get(luHUId) : null;
+	}
+
+	private List<I_M_InOutLine> createReceiptLines(
+			@NonNull final HUReceiptLineCandidate receiptLineCandidate,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		final IHUContext huContext = getHUContext();
 		final I_M_ReceiptSchedule rs = receiptLineCandidate.getM_ReceiptSchedule();
@@ -234,7 +279,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 					qtyWithoutIssues,
 					qualityDiscountPercent,
 					qualityNoticesString,
-					isInDispute);
+					isInDispute,
+					deliveryPlanningId);
 
 			//
 			// Assign handling units to receipt line
@@ -255,7 +301,8 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 					qtyWithIssues,
 					qualityDiscountPercent,
 					qualityNoticesString,
-					isInDispute);
+					isInDispute,
+					deliveryPlanningId);
 
 			// make sure the M_AttributeSetInstance of the new line also contains the QualityNotice attribute
 			addQualityToASI(receiptLineWithIssues, receiptLineCandidate);
@@ -438,13 +485,15 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			@NonNull final StockQtyAndUOMQty qtyToReceive,
 			@NonNull final Percent qualityDiscountPercent,
 			final String qualityNote,
-			final boolean isInDispute)
+			final boolean isInDispute,
+			@Nullable final DeliveryPlanningId deliveryPlanningId)
 	{
 		final I_M_ReceiptSchedule rs = receiptLineCandidate.getM_ReceiptSchedule();
 		//
 		// Create receipt line
 		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(newReceiptLine(), I_M_InOutLine.class);
 		updateReceiptLine(receiptLine, rs);
+		receiptLine.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
 
 		if (receiptLineCandidate.getSubProducer_BPartner_ID() > 0)
 		{

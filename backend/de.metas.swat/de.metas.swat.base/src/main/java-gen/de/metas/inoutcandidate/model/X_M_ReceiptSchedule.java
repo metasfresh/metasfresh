@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ReceiptSchedule
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_ReceiptSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -677561577L;
+	private static final long serialVersionUID = -1624475044L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (final Properties ctx, final int M_ReceiptSchedule_ID, @Nullable final String trxName)
@@ -665,6 +665,30 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setExternalHeaderId (final @Nullable java.lang.String ExternalHeaderId)
+	{
+		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
+	}
+
+	@Override
+	public java.lang.String getExternalHeaderId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalHeaderId);
+	}
+
+	@Override
+	public void setExternalLineId (final @Nullable java.lang.String ExternalLineId)
+	{
+		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+	}
+
+	@Override
+	public java.lang.String getExternalLineId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalLineId);
+	}
+
+	@Override
 	public void setExternalResourceURL (final @Nullable java.lang.String ExternalResourceURL)
 	{
 		set_Value (COLUMNNAME_ExternalResourceURL, ExternalResourceURL);
@@ -674,6 +698,21 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public java.lang.String getExternalResourceURL() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalResourceURL);
+	}
+
+	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 
 	@Override
@@ -734,13 +773,25 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public void setIsClosed (final boolean IsClosed)
+	{
+		set_Value (COLUMNNAME_IsClosed, IsClosed);
+	}
+
+	@Override
+	public boolean isClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	@Override
 	public void setIsConfirmedBySupplier (final boolean IsConfirmedBySupplier)
 	{
 		set_Value (COLUMNNAME_IsConfirmedBySupplier, IsConfirmedBySupplier);
 	}
 
 	@Override
-	public boolean isConfirmedBySupplier()
+	public boolean isConfirmedBySupplier() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsConfirmedBySupplier);
 	}
@@ -752,7 +803,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public boolean isDeliveryStop()
+	public boolean isDeliveryStop() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryStop);
 	}
@@ -938,6 +989,29 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getM_ReceiptSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ReceiptSchedule_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	@Override
+	public void setM_Shipper_ID (final int M_Shipper_ID)
+	{
+		throw new IllegalArgumentException ("M_Shipper_ID is virtual column");	}
+
+	@Override
+	public int getM_Shipper_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
 	}
 
 	@Override
@@ -1171,21 +1245,9 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public boolean isProcessed()
+	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
-	}
-
-	@Override
-	public void setIsClosed (final boolean IsClosed)
-	{
-		set_Value (COLUMNNAME_IsClosed, IsClosed);
-	}
-
-	@Override
-	public boolean isIsClosed()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
 	}
 
 	@Override
@@ -1496,44 +1558,5 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public java.lang.String getVesselName() 
 	{
 		return get_ValueAsString(COLUMNNAME_VesselName);
-	}
-
-	@Override
-	public void setExternalHeaderId (final @Nullable String ExternalHeaderId)
-	{
-		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
-	}
-
-	@Override
-	public String getExternalHeaderId()
-	{
-		return get_ValueAsString(COLUMNNAME_ExternalHeaderId);
-	}
-
-	@Override
-	public void setExternalLineId (final @Nullable String ExternalLineId)
-	{
-		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
-	}
-
-	@Override
-	public String getExternalLineId()
-	{
-		return get_ValueAsString(COLUMNNAME_ExternalLineId);
-	}
-
-	@Override
-	public void setExternalSystem_ID (final int ExternalSystem_ID)
-	{
-		if (ExternalSystem_ID < 1)
-			set_Value (COLUMNNAME_ExternalSystem_ID, null);
-		else
-			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
-	}
-
-	@Override
-	public int getExternalSystem_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 }

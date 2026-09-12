@@ -179,8 +179,13 @@ public class M_ReceiptSchedule_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
 		softly.assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
 
+		row.getAsOptionalBigDecimal(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove)
+				.ifPresent(qtyToMove -> softly.assertThat(receiptSchedule.getQtyToMove())
+						.as(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove)
+						.isEqualByComparingTo(qtyToMove));
+
 		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsClosed)
-				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isIsClosed()).as("IsClosed").isEqualTo(isClosed));
+				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isClosed()).as("IsClosed").isEqualTo(isClosed));
 
 		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
 		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop)
@@ -211,6 +216,42 @@ public class M_ReceiptSchedule_StepDef
 
 		final List<I_M_ReceiptSchedule> purchaseOrderReceiptSchedules = producer.createOrUpdateReceiptSchedules(purchaseOrderLine, Collections.emptyList());
 		assertThat(purchaseOrderReceiptSchedules).isNull();
+	}
+
+	/**
+	 * Applies the operator's own overrides to an existing receipt schedule.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ReceiptSchedule_ID</b> — (required, identifier-ref) the receipt schedule to update<br>
+	 *   <b>OPT.DatePromised_Override</b> — (optional) the date the operator promises instead of the one the
+	 *   order carries; it is what {@code DatePromised_Effective} resolves to from then on<br>
+	 *   <b>OPT.QtyMoved</b> — (optional) the quantity already received, i.e. a partial receipt stated directly -
+	 *   these scenarios drive no receipt process. Saving it recomputes {@code QtyToMove} as
+	 *   {@code QtyOrdered - QtyMoved} through the schedule's own interceptor, so the two figures diverge exactly
+	 *   as they would after a real partial receipt<br>
+	 * @cucumber.depends StepDefData: M_ReceiptSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_ReceiptSchedule:
+	 *   | M_ReceiptSchedule_ID | OPT.DatePromised_Override |
+	 *   | receiptSchedule      | 2023-03-15                |
+	 * </pre>
+	 */
+	@And("update M_ReceiptSchedule:")
+	public void update_M_ReceiptSchedule(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_ReceiptSchedule receiptSchedule = row.getAsIdentifier(COLUMNNAME_M_ReceiptSchedule_ID).lookupNotNullIn(receiptScheduleTable);
+
+			row.getAsOptionalLocalDateTimestamp(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override)
+					.ifPresent(receiptSchedule::setDatePromised_Override);
+
+			row.getAsOptionalBigDecimal(I_M_ReceiptSchedule.COLUMNNAME_QtyMoved)
+					.ifPresent(receiptSchedule::setQtyMoved);
+
+			saveRecord(receiptSchedule);
+		});
 	}
 
 	@And("^trigger (EMPTIES RECEIVE|EMPTIES RETURN) process:$")

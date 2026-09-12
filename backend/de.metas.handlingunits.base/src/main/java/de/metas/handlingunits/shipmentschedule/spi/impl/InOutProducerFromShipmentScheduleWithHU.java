@@ -100,6 +100,7 @@ import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY;
+import de.metas.deliveryplanning.DeliveryPlanningId;
 
 /**
  * Create Shipments from {@link ShipmentScheduleWithHU} records.
@@ -174,6 +175,15 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
+
+	/**
+	 * The planning to stamp onto each shipment LINE this producer creates, or {@code null} for none.
+	 * Every candidate of one run belongs to the one planning the request names, so the run-level scalar is
+	 * the line-level value.
+	 *
+	 * @see #setDeliveryPlanningId(DeliveryPlanningId)
+	 */
+	@Nullable private DeliveryPlanningId deliveryPlanningId = null;
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -690,6 +700,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment, shipmentLineNoInfo);
+			currentShipmentLineBuilder.setDeliveryPlanningId(deliveryPlanningId);
 			currentShipmentLineBuilder.setManualPackingMaterial(candidate.isAdviseManualPackingMaterial());
 			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
@@ -731,6 +742,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 	public IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo)
 	{
 		this.scheduleId2ExternalInfo.putAll(scheduleId2ExternalInfo);
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setDeliveryPlanningId(@Nullable final DeliveryPlanningId deliveryPlanningId)
+	{
+		this.deliveryPlanningId = deliveryPlanningId;
 		return this;
 	}
 
