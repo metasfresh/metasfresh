@@ -90,10 +90,9 @@ const startIssueStep = async (masterdata) => {
 
 // noinspection JSUnusedLocalSymbols
 test('TC6a: "Not Found" is recorded, no empty-HU write-off is triggered', async ({ page }) => {
-    // Same fixture shape as the core case (huQty === orderQty): this is the ONLY fixture that makes the
-    // qty-rejected-reason radio group reachable at all in manufacturing (`computeStepScanPropsFromActivity.js`:
-    // `qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsForStep(...) : null` — gated on the whole HU
-    // being the step's target, for EVERY reason, not just "empty").
+    // Same fixture shape as the core case (huQty === orderQty). The qty-rejected-reason radio group is
+    // reachable on any fixture now (`computeStepScanPropsFromActivity.js` offers the reasons on every
+    // step); what makes it RENDER is still a shortfall, `qtyRejected > 0` in `GetQuantityDialog.jsx`.
     const masterdata = await createManufacturingMasterdata({ huQty: 0.5, orderQty: 0.5 });
 
     await startIssueStep(masterdata);
@@ -188,16 +187,30 @@ test('TC6b: "Damaged" is recorded, no empty-HU write-off is triggered', async ({
 test('TC6c: picking no reason leaves a genuinely abundant HU\'s remaining quantity untouched', async ({ page }) => {
     // Unlike TC6a/TC6b, this fixture is deliberately NOT "issue whole HU": the HU (2 KGM) holds more
     // than the order needs (0.5 KGM), so the step's target is capped by the order's own remaining need,
-    // not by the HU's capacity (`isIssueWholeHU = qtyToIssueTarget >= qtyHUCapacity` is false here) — so
-    // the qty-rejected-reason radio group never renders (there is nothing to reject), matching AC12's
-    // "no reason" default exactly as it worked before this feature: a plain partial pick from an
-    // abundant HU, remainder genuinely left on the same HU.
+    // not by the HU's capacity. The reasons ARE offered on such a step (they are offered on every step),
+    // but a reason is only ASKED FOR once a shortfall is entered — so taking the full target asks
+    // nothing, matching AC12's "no reason" default exactly as it worked before this feature: a plain
+    // partial pick from an abundant HU, remainder genuinely left on the same HU.
     const masterdata = await createManufacturingMasterdata({ huQty: 2, orderQty: 0.5 });
 
     await startIssueStep(masterdata);
 
     await GetQuantityDialog.expectQtyEntered('0.5');
+
+    // The two halves, in the order an operator would meet them. Entering a shortfall on this
+    // bigger-than-needed HU offers the reasons (it used to offer none at all — that is the contract this
+    // spec change flips)...
+    await GetQuantityDialog.typeQtyEntered('0.498');
+    await GetQuantityDialog.expectQtyRejectedReasonsGroupVisible({ visible: true });
+    await GetQuantityDialog.expectQtyNotFoundReasonOffered({ reason: EMPTIED_REASON, offered: true });
+    await GetQuantityDialog.expectQtyNotFoundReasonOffered({ reason: QTY_NOT_FOUND_REASON_NOT_FOUND, offered: true });
+
+    // ...and typing the full target back removes the whole group again, so the do-nothing default below
+    // is genuinely reason-free rather than a reason left unselected.
+    await GetQuantityDialog.typeQtyEntered('0.5');
+    await GetQuantityDialog.expectQtyRejectedReasonsGroupVisible({ visible: false });
     await GetQuantityDialog.expectQtyNotFoundReasonOffered({ reason: EMPTIED_REASON, offered: false });
+
     await GetQuantityDialog.clickDone();
 
     await RawMaterialIssueLineScreen.waitForScreen();
