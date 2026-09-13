@@ -457,7 +457,8 @@ public interface I_M_DiscountSchema
 	String COLUMNNAME_ValidFrom = "ValidFrom";
 
 	/**
-	 * Set null.
+	 * Set Valid to.
+	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -466,7 +467,8 @@ public interface I_M_DiscountSchema
 	void setValidTo (@Nullable java.sql.Timestamp ValidTo);
 
 	/**
-	 * Get null.
+	 * Get Valid to.
+	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
