@@ -65,7 +65,18 @@ const RESULT_HOLD_MS = 500;
  * from a spec: e2e/mobile-webui/CLAUDE.md § "Test scenarios read like a real-life workflow".
  */
 export const holdForVideo = async () => {
-    await page.waitForTimeout(RESULT_HOLD_MS);
+    // Freezing blindly is not enough: the launcher list can go back into a spinner right after the
+    // assertions pass (a refetch lands), and then the held frames record a loading indicator instead
+    // of the result. Settle first, and re-settle if a refetch starts during the freeze, so the frames
+    // the recorder takes are of the painted result. Bounded to two attempts -- this only shapes the
+    // recording and must never turn into an open-ended wait.
+    for (let attempt = 0; attempt < 2; attempt++) {
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT }).catch(() => {});
+        await page.waitForTimeout(RESULT_HOLD_MS);
+        if ((await page.locator('.loading').count()) === 0) {
+            return;
+        }
+    }
 };
 
 let nextErrorWatcherId = 101;
