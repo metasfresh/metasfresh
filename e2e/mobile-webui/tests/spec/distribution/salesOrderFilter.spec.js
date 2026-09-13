@@ -40,10 +40,21 @@ test('A replenishment job is found by the sales order behind its contributing sc
         language: "de_DE",
         request: {
             login: { mover: { language: "de_DE", workplace: "packingWorkplace" } },
-            // Declare the distribution config this spec needs instead of inheriting whatever ran before:
-            // an absent field resets to its default (MobileConfigDistributionCommand), so an empty block is
-            // the default base. Without it a spec that set e.g. requireTrolley leaves this one on a scan screen.
-            mobileConfig: { distribution: {} },
+            // Declare the distribution config this spec depends on instead of inheriting whatever ran before.
+            // Most fields (requireTrolley, requireScanningProductCode, completeJobAutomatically, ...) are
+            // force-reset by MobileConfigDistributionCommand whenever the request carries a `distribution`
+            // block, so naming the block alone already protects against e.g. a spec that left requireTrolley
+            // on -- which otherwise leaves this one sitting on a scan screen with no jobs listed.
+            // allowPickingAnyHU, captionFormat and orderBys are NOT reset that way: they are written only
+            // when non-null (MobileConfigDistributionCommand:42/:47/:51) and otherwise keep the previous
+            // spec's value in one global unscoped row. Both matter here -- captionFormat decides whether the
+            // product name this spec identifies its jobs by is even in the caption -- so both are set.
+            mobileConfig: {
+                distribution: {
+                    allowPickingAnyHU: true,
+                    captionFormat: 'LocatorFrom,LocatorTo,ProductValueAndName,Qty',
+                }
+            },
             shippers: { carrierA: {} },
             products: { "P1": { price: 1 }, "P2": { price: 1 } },
             bpartners: { customerA: {} },
