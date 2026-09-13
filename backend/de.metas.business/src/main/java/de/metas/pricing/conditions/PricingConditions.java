@@ -51,6 +51,7 @@ public class PricingConditions
 
 	boolean active;
 	@NonNull Instant validFrom;
+	@Nullable Instant validTo;
 
 	PricingConditionsDiscountType discountType;
 
@@ -67,6 +68,7 @@ public class PricingConditions
 			PricingConditionsId id,
 			@Nullable Boolean active,
 			@NonNull Instant validFrom,
+			@Nullable Instant validTo,
 			PricingConditionsDiscountType discountType,
 			boolean bpartnerFlatDiscount,
 			Percent flatDiscount,
@@ -77,6 +79,7 @@ public class PricingConditions
 		this.id = id;
 		this.active = active != null && active;
 		this.validFrom = validFrom;
+		this.validTo = validTo;
 		this.discountType = discountType;
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
 		this.flatDiscount = flatDiscount;

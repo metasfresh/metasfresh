@@ -42,6 +42,7 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
@@ -184,7 +185,24 @@ public class Discount implements IPricingRule
 
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		final LocalDate validFrom = TimeUtil.asLocalDate(pricingConditions.getValidFrom(), timeZone);
-		return date.isAfter(validFrom) || date.isEqual(validFrom) ;
+		final LocalDate validTo = pricingConditions.getValidTo() != null
+				? TimeUtil.asLocalDate(pricingConditions.getValidTo(), timeZone)
+				: null;
+
+		return isDateWithinValidity(date, validFrom, validTo);
+	}
+
+	@VisibleForTesting
+	static boolean isDateWithinValidity(
+			@NonNull final LocalDate date,
+			@NonNull final LocalDate validFrom,
+			@Nullable final LocalDate validTo)
+	{
+		if (date.isBefore(validFrom))
+		{
+			return false;
+		}
+		return validTo == null || !date.isAfter(validTo);
 	}
 
 	private ImmutableAttributeSet getAttributes(final IPricingContext pricingCtx)
