@@ -66,9 +66,11 @@ const RESULT_SETTLE_TIMEOUT_MS = 1500;
  * specs. Typical is the 500ms hold itself, ~19s over a full run — the suite measured 2.1m before and
  * 2.3m after, granularity too coarse to pin the delta more exactly. The WORST case is larger and
  * worth stating: each call can also spend up to RESULT_SETTLE_TIMEOUT_MS twice before giving up, so
- * ~4s per call and ~2.5min over 38 of them if nothing ever settles. That case does not arise in a
- * passing run — a list that never settles fails the caller's visibility assertion long before this
- * runs — but the ceiling is real and belongs in the number, not left at the happy path.
+ * ~4s per call and ~2.5min over 38 of them if nothing ever settles. Nothing upstream rules that out:
+ * the launcher renders its buttons from the last loaded list and paints the spinner ALONGSIDE them
+ * (WFLaunchersScreen.jsx), so the caller's assertions pass on the stale-but-correct list while a
+ * refetch is still in flight — a refetch that then hangs is invisible to them. The warn below is the
+ * safety net for that, not the assertions above.
  *
  * Why no assertion can substitute, and why this may only be called from a screen object and never
  * from a spec: e2e/mobile-webui/CLAUDE.md § "Test scenarios read like a real-life workflow".
