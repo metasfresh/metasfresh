@@ -48,6 +48,11 @@ export const mashDeviceBack = async (times = 12) => await step(`Mash device/brow
 // speed someone uses when checking what a test actually did.
 const RESULT_HOLD_MS = 500;
 
+// How long to let a refetch finish before freezing. Deliberately NOT FAST_ACTION_TIMEOUT: this waits
+// out a brief post-assertion flicker (the observed refetches settle in ~110-170ms), not a general
+// action, and it multiplies into the suite's worst case — so it is sized for the flicker.
+const RESULT_SETTLE_TIMEOUT_MS = 1500;
+
 /**
  * Hold the painted screen so the recording shows the result the screen exists to display.
  *
@@ -57,9 +62,13 @@ const RESULT_HOLD_MS = 500;
  * practice. It used to be opt-in behind UAT_CAPTURE, which meant exactly the runs nobody watches
  * live — CI — were the ones whose recording showed nothing.
  *
- * Cost: one hold per assertion of a settled result list — 38 such call sites across the distribution
- * specs, so at most ~19s of held time for a run that reaches all of them. The suite measured 2.1m
- * before and 2.3m after; that reporting granularity is too coarse to pin the delta more exactly.
+ * Cost: one hold per assertion of a settled result list, across 38 call sites in the distribution
+ * specs. Typical is the 500ms hold itself, ~19s over a full run — the suite measured 2.1m before and
+ * 2.3m after, granularity too coarse to pin the delta more exactly. The WORST case is larger and
+ * worth stating: each call can also spend up to RESULT_SETTLE_TIMEOUT_MS twice before giving up, so
+ * ~4s per call and ~2.5min over 38 of them if nothing ever settles. That case does not arise in a
+ * passing run — a list that never settles fails the caller's visibility assertion long before this
+ * runs — but the ceiling is real and belongs in the number, not left at the happy path.
  *
  * Why no assertion can substitute, and why this may only be called from a screen object and never
  * from a spec: e2e/mobile-webui/CLAUDE.md § "Test scenarios read like a real-life workflow".
@@ -71,12 +80,15 @@ export const holdForVideo = async () => {
     // the recorder takes are of the painted result. Bounded to two attempts -- this only shapes the
     // recording and must never turn into an open-ended wait.
     for (let attempt = 0; attempt < 2; attempt++) {
-        await page.locator('.loading').waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT }).catch(() => {});
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: RESULT_SETTLE_TIMEOUT_MS }).catch(() => {});
         await page.waitForTimeout(RESULT_HOLD_MS);
         if ((await page.locator('.loading').count()) === 0) {
             return;
         }
     }
+    // Never fail a test that has already passed for a recording concern — but do say so, otherwise a
+    // creeping refetch latency shows up only as recordings that quietly stop being usable.
+    console.warn('[holdForVideo] screen still loading after both settle attempts — this frame will show a spinner');
 };
 
 let nextErrorWatcherId = 101;
