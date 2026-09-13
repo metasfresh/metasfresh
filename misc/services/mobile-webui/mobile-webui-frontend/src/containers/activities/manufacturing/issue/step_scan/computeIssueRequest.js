@@ -32,7 +32,13 @@ export const computeIssueRequest = ({ qty = 0, qtyRejected = 0, reason = null, r
   // task_force_hotfix, so keeping the predicates equivalent is what stops a third divergent variant of
   // these lines colliding at the next merge-up.
   const isQtyEnteredAsWeight = resolvedBarcodeData.uom === 'kg';
-  const isWeighedFullHU = isQtyEnteredAsWeight && qty >= resolvedBarcodeData.qtyHUCapacity;
+  // A missing capacity must NOT read as "weighed the whole HU": `qty >= null` coerces null to 0, so
+  // without this guard every positive kg entry on a step whose backend qtyHUCapacity is null would
+  // travel as the HU's gross weight (`undefined` already yields NaN >= ... === false). Unknown
+  // capacity means we cannot tell whether the container was weighed whole, so we send no weight.
+  const qtyHUCapacity = resolvedBarcodeData.qtyHUCapacity;
+  const isWeighedFullHU =
+    isQtyEnteredAsWeight && qtyHUCapacity !== null && qtyHUCapacity !== undefined && qty >= qtyHUCapacity;
 
   return {
     stepId: resolvedBarcodeData.stepId,
