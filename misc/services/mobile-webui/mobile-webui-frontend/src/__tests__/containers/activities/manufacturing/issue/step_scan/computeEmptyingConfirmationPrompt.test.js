@@ -54,6 +54,27 @@ describe('computeEmptyingConfirmationPrompt', () => {
     expect(prompt).toEqual('This will write off the remaining 2 g and empty the HU. Continue?');
   });
 
+  it('names a clean quantity even when the entered qty itself carries a float tail', () => {
+    // `qty` does not always arrive as the clean decimal the operator typed: with
+    // `qtyInput.ProcessedQtyIsStillOnScale` on, GetQuantityDialog hands over
+    // `Math.max(typed - qtyAlreadyOnScale, 0)` -- a float subtraction. Its 17-decimal tail must not
+    // become the precision the difference is rounded to, or the rounding is a no-op and the artefact
+    // is back on the dialog that destroys an HU.
+    // 0.79 typed with 0.3 already on the scale, i.e. the same 0.49 taken from this HU -- but as
+    // 0.49000000000000005, a 17-decimal number.
+    const qtyWithFloatTail = Math.max(0.79 - 0.3, 0);
+    expect(qtyWithFloatTail).not.toEqual(0.49);
+
+    const prompt = call_computeEmptyingConfirmationPrompt({
+      qty: qtyWithFloatTail,
+      qtyRejected: 0.01,
+      rejectedReason: REASON_EMPTIED,
+      resolvedBarcodeData: { qtyHUCapacity: 0.502 },
+    });
+
+    expect(prompt).toEqual('This will write off the remaining 12 g and empty the HU. Continue?');
+  });
+
   it('asks nothing for any other rejection reason', () => {
     const prompt = call_computeEmptyingConfirmationPrompt({
       qty: 0.49,

@@ -3,6 +3,8 @@ import { trl } from '../../../../../utils/translations';
 import { countDecimalPlaces, formatQtyToHumanReadableStr } from '../../../../../utils/qtys';
 import { round } from '../../../../../utils/numbers';
 
+const MAX_PRECISION = 6;
+
 /**
  * Computes the "empty (auto. inventory)" confirmation prompt shown before the write-off is posted
  * (only when the activity's `isConfirmEmptyingHU` flag is on). Returns `undefined` when nothing shall
@@ -62,8 +64,12 @@ export const computeEmptyingConfirmationPrompt = ({
   // operator would read "remaining 12.00000000000001 g" on the dialog that destroys an HU. Neither
   // operand carries more decimals than the UOM allows (both come from the same backend qty), so their
   // decimal count is the precision to round the difference to.
+  // ...capped, because `qty` is not always the clean decimal the operator typed: on the still-on-scale
+  // path the dialog hands over `Math.max(typed - qtyAlreadyOnScale, 0)` (GetQuantityDialog.jsx), whose
+  // own 17-decimal tail would otherwise become the precision and make this rounding a no-op. 6 decimals
+  // is past any UOM precision in play (KGM, the finest here, is configured with 5).
   // qtyHUCapacity is `@NonNull` on the wire (JsonRawMaterialsIssueLineStep), so no null guard here.
-  const precision = Math.max(countDecimalPlaces(qtyHUCapacity), countDecimalPlaces(qty));
+  const precision = Math.min(Math.max(countDecimalPlaces(qtyHUCapacity), countDecimalPlaces(qty)), MAX_PRECISION);
   // Math.max() only keeps the prompt sane if the operator was allowed to exceed the HU's capacity
   // (qtyToIssueMax is deliberately not capped by it — computeStepScanPropsFromActivity.js).
   const qtyToWriteOff = Math.max(round(qtyHUCapacity - qty, precision), 0);
