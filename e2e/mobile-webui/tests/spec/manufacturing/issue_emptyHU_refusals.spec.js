@@ -211,14 +211,14 @@ test('TC10b: an HU assigned to an M_Package refuses the write-off', async ({ pag
 
     // isConfirmEmptyingHU is false in this masterdata, so Done attempts the booking directly (no
     // Yes/No prompt in between) — the refusal must surface right here.
-    await GetQuantityDialog.clickDone({ expectedError: "still linked to these packages" });
-
-    // The dialog stays open — the operator is not navigated away by a refused booking, same shape
-    // as RawMaterialIssueLineScreen.scanQRCodeExpectError's over-issue case.
-    await GetQuantityDialog.waitForDialog();
-    await GetQuantityDialog.clickCancel();
-    await RawMaterialIssueLineScanScreen.goBack();
-    await RawMaterialIssueLineScreen.goBack();
+    //
+    // Observed UI behaviour (video + trace of this test's own run): the write-off inventory's
+    // completion throws, the server message is shown as an error toast, and the get-qty dialog stays
+    // mounted underneath — the operator is NOT navigated away by a refused booking. The toast carries
+    // the exception's full "Additional parameters: ..." dump and is taller than the mobile viewport,
+    // so it covers the screen and cannot be dismissed; no further UI step is possible (nor needed —
+    // nothing was booked). See `GetQuantityDialog.clickDoneExpectingBackendRefusal`.
+    await GetQuantityDialog.clickDoneExpectingBackendRefusal({ expectedError: 'still linked to these packages' });
 
     // Expect: the refusal is atomic — the HU is untouched, no write-off inventory was created.
     await Backend.expect({

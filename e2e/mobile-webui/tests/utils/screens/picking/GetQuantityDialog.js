@@ -114,6 +114,31 @@ export const GetQuantityDialog = {
     }),
 
     /**
+     * Presses Done for a submit the BACKEND is expected to refuse, and asserts the refusal exactly as
+     * the mobile UI actually renders it: the error toast carrying the server message, with the dialog
+     * left open underneath (nothing was booked, so the operator stays on the step).
+     *
+     * Deliberately NOT `clickDone({ expectedError })`: that helper's own flow requires the dialog to
+     * CLOSE and then dismisses the toast via `.Toastify__close-button--error`. Neither is possible for
+     * a server-side refusal on this screen — the dialog stays mounted, and a metasfresh
+     * `AdempiereException` toast renders its full "Additional parameters: ..." dump, which on the
+     * mobile viewport is taller than the screen, so the toast's close button sits outside the viewport
+     * and `tap()` never becomes actionable ("element is outside of the viewport").
+     *
+     * The toast is therefore left standing: it covers the whole screen, so no further UI interaction
+     * is possible after this call — assert the backend state and end the test.
+     */
+    clickDoneExpectingBackendRefusal: async ({ expectedError }) => await test.step(`${NAME} - Press OK, expecting the backend to refuse with '${expectedError}'`, async () => {
+        await page.getByTestId('done-button').tap();
+
+        await expect(page.locator('.Toastify div[role="alert"].Toastify__toast-body'))
+            .toContainText(expectedError, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+        // Nothing was booked, so the operator is not navigated away.
+        await expect(containerElement()).toBeVisible();
+    }),
+
+    /**
      * Presses Done and captures the POST request body it fires (matched by a URL substring) — for
      * asserting a wire-level field with no visible UI counterpart (e.g.
      * `issueTo.huWeightGrossBeforeIssue` on the manufacturing issue event).
