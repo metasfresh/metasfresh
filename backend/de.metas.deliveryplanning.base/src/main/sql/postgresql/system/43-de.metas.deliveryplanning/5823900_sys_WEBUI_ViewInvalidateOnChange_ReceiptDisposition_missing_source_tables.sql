@@ -89,7 +89,7 @@ WHERE NOT EXISTS (
 -- 2026-09-13: the four rows this script used to add for M_ShipperTransportation, M_ShippingPackage,
 -- C_Order and M_ReceiptSchedule_Alloc were REMOVED here rather than inserted-then-deleted. Migration
 -- 5824220 routes those four (and M_Delivery_Planning / M_ReceiptSchedule, whose script 5822560 is gone
--- for the same reason) through AD_ViewSource instead, so a fresh install must never create them. The
+-- for the same reason) through AD_ViewSource instead, so a fresh install must never create them.
 -- Editing an applied script is safe here because this branch is deployed NOWHERE: PR is open and never
 -- merged, and the tracking checklist has UAT / merge / rollout all unstarted. The only databases that ever
 -- applied the earlier version are ephemeral CI ones and a local dev stack, so no cleanup statement is
