@@ -20,15 +20,19 @@ export const computeIssueRequest = ({ qty = 0, qtyRejected = 0, reason = null, r
   // the backend.
   const isIssueWholeHU = !!resolvedBarcodeData.isIssueWholeHU;
 
-  // ...but the WEIGHT field answers a different question: "did the operator physically weigh the
-  // whole container?" That is a fact about what was measured (the entered qty), so it must NOT ride
-  // on the offer-time flag above. Predicate taken verbatim from
-  // https://github.com/metasfresh/metasfresh/pull/25716 (merged to new_dawn_uat as d58d99fa1c0),
-  // which fixed this independently on intensive_care_hotfix; that commit is not an ancestor of
-  // task_force_hotfix, so keeping the predicates identical is what stops a third divergent variant
-  // of these three lines colliding at the next merge-up.
+  // ...but the WEIGHT field answers a different question: "did the operator physically weigh the whole
+  // container?" That is a fact about what was actually measured, so it is decided by the TYPED qty, not
+  // by the offer-time flag above. Entering less than the HU's capacity is a short entry, not a weighing
+  // of the whole container: sending it as the gross weight makes the backend re-weigh the HU down to
+  // that qty BEFORE the issue, the issue then consumes everything, and the leftover write-off that the
+  // rejected-qty reason asked for never happens.
+  // Equivalent to the predicate of https://github.com/metasfresh/metasfresh/pull/25716 (merged to
+  // new_dawn_uat as d58d99fa1c0), `isWeightable && isIssueWholeHU && uom === 'kg'`, whose
+  // `isIssueWholeHU` is the submit-time `qty >= qtyHUCapacity` one; that commit is not an ancestor of
+  // task_force_hotfix, so keeping the predicates equivalent is what stops a third divergent variant of
+  // these lines colliding at the next merge-up.
   const isQtyEnteredAsWeight = resolvedBarcodeData.uom === 'kg';
-  const isWeighedFullHU = isIssueWholeHU && isQtyEnteredAsWeight;
+  const isWeighedFullHU = isQtyEnteredAsWeight && qty >= resolvedBarcodeData.qtyHUCapacity;
 
   return {
     stepId: resolvedBarcodeData.stepId,
