@@ -164,13 +164,22 @@ export const DistributionJobsListScreen = {
 //
 //
 
-const locateJobButtons = ({ index, testId } = {}) => {
+// `captionContains` identifies a job by a STABLE substring of its caption (typically the product
+// name) for jobs that have no masterdata key to give them a testId -- e.g. the ones the replenishment
+// engine generates from `autoDistributionOrder`. Prefer `testId` whenever the fixture declares the
+// job; prefer this over `caption`, whose exact-text match also pins qty/locator/priority formatting
+// that the assertion does not care about.
+const locateJobButtons = ({ index, testId, captionContains } = {}) => {
     let selector = '.wflauncher-button';
     if (testId != null) {
         selector += `[data-testid="${testId}"]`;
     }
 
     let locator = page.locator(selector);
+
+    if (captionContains != null) {
+        locator = locator.filter({ hasText: captionContains });
+    }
 
     if (index != null) {
         locator = locator.nth(index - 1);
@@ -189,6 +198,10 @@ const expectJobButton = async ({ name, button, expectation }) => await test.step
 
     if (expectation.caption != null) {
         await expect(button).toHaveText(expectation.caption);
+    }
+
+    if (expectation.captionContains != null) {
+        await expect(button).toContainText(expectation.captionContains);
     }
 
     if (expectation.disabled != null) {

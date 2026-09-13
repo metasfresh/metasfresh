@@ -81,7 +81,10 @@ test('A replenishment job is found by the sales order behind its contributing sc
     await DistributionJobsListScreen.waitForScreen();
 
     await test.step('Both the replenishment job and the candidate-generated job are offered', async () => {
-        await DistributionJobsListScreen.expectJobButtons([{ index: 1 }, { index: 2 }]);
+        await DistributionJobsListScreen.expectJobButtons([
+            { captionContains: masterdata.products.P1.productName },
+            { testId: masterdata.distributionOrders.candidateJob.launcherTestId },
+        ]);
     });
 
     let replSalesOrderFacetId;
@@ -100,12 +103,17 @@ test('A replenishment job is found by the sales order behind its contributing sc
 
     await test.step("Filtering by the replenishment job's sales order keeps only that job listed", async () => {
         await DistributionJobsListScreen.filterByFacetId({ facetId: replSalesOrderFacetId, expectHitCount: 1 });
-        await DistributionJobsListScreen.expectJobButtons([{ index: 1 }]);
+        // Identify the surviving job, not just count it: a bare count of 1 passes on either job.
+        // The replenishment job has no masterdata key (it is generated), so it is identified by its
+        // product P1; the candidate-generated job has a fixture and is identified by its testId.
+        await DistributionJobsListScreen.expectJobButtons([{ captionContains: masterdata.products.P1.productName }]);
     });
 
     await test.step("Deselecting it and filtering by the candidate-generated job's sales order keeps only that job listed", async () => {
         await DistributionJobsListScreen.filterByFacetId({ facetId: replSalesOrderFacetId });
         await DistributionJobsListScreen.filterByFacetId({ facetId: candidateSalesOrderFacetId, expectHitCount: 1 });
-        await DistributionJobsListScreen.expectJobButtons([{ index: 1 }]);
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.candidateJob.launcherTestId },
+        ]);
     });
 });
