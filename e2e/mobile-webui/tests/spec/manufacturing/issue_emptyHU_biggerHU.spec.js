@@ -7,6 +7,7 @@ import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/Manufa
 import { RawMaterialIssueLineScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
 import { RawMaterialIssueLineScanScreen } from '../../utils/screens/manufacturing/issue/RawMaterialIssueLineScanScreen';
 import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND, QTY_NOT_FOUND_REASON_DAMAGED } from '../../utils/screens/picking/GetQuantityDialog';
+import { YesNoDialog } from '../../utils/dialogs/YesNoDialog';
 
 /**
  * Empty HU write-off — an HU holding MORE than the step needs (addendum "always offer the reasons",
@@ -22,7 +23,7 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND, QTY_NOT_FOUND_REASON
  * The two tests are the two halves of the new contract:
  *  - AC-A1: entering a shortfall (0.49 of the 0.5 target) DOES offer the reasons, and picking
  *    "empty (auto. inventory)" books the HU's whole remaining 0.012 KGM (0.502 - 0.49, NOT the 0.01
- *    shortfall) to zero and destroys the HU.
+ *    shortfall) to zero and destroys the HU — and the confirmation prompt NAMES that same 12 g.
  *  - AC-A2: entering the full target (0.5) asks NOTHING — the reason group renders only once a
  *    shortfall exists (`qtyRejected > 0` in GetQuantityDialog.jsx) — and leaves the HU active with its
  *    0.002 KGM remainder, exactly as before this feature.
@@ -48,16 +49,16 @@ const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu 
  * `isAllowEmptyingHUs` / `isConfirmEmptyingHU` are CLIENT-level config (MobileUI_MFG_Config), not
  * per-user, so every test sets them explicitly on its own masterdata request rather than relying on
  * another test's value or run order (mobile-webui/CLAUDE.md "Debugging Flaky Tests" — sticky config).
- * `isConfirmEmptyingHU: false` here keeps these two tests on the offering/booking contract alone; the
- * confirmation prompt itself is pinned by issue_emptyHU_writeOff.spec.js.
+ * AC-A1 switches the confirmation ON because the prompt's WORDING is part of what it pins here; AC-A2
+ * leaves it off, having nothing to confirm.
  */
-const createManufacturingMasterdata = async ({ huQty, orderQty }) => {
+const createManufacturingMasterdata = async ({ huQty, orderQty, isConfirmEmptyingHU = false }) => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
             login: { user: { language: 'en_US' } },
             mobileConfig: {
-                manufacturing: { isAllowEmptyingHUs: true, isConfirmEmptyingHU: false },
+                manufacturing: { isAllowEmptyingHUs: true, isConfirmEmptyingHU },
             },
             uoms: { KGM: { precision: 5 } },
             warehouses: { wh: {} },
@@ -90,7 +91,7 @@ const startIssueStep = async (masterdata) => {
 
 // noinspection JSUnusedLocalSymbols
 test('AC-A1: an HU bigger than the need offers the reasons, and "empty" writes off its whole remainder', async ({ page }) => {
-    const masterdata = await createManufacturingMasterdata({ huQty: 0.502, orderQty: 0.5 });
+    const masterdata = await createManufacturingMasterdata({ huQty: 0.502, orderQty: 0.5, isConfirmEmptyingHU: true });
 
     await startIssueStep(masterdata);
 
@@ -108,6 +109,14 @@ test('AC-A1: an HU bigger than the need offers the reasons, and "empty" writes o
 
     await GetQuantityDialog.clickQtyNotFoundReason({ reason: EMPTIED_REASON });
     await GetQuantityDialog.clickDone();
+
+    // Expect: the confirmation prompt names what will ACTUALLY be written off — the HU's remainder
+    // 0.502 - 0.49 = ~12 g — and not the dialog's order-side shortfall 0.5 - 0.49 = 10 g. Regex, not a
+    // literal: the subtraction is not exact in IEEE-754 double, so the app (correctly) shows the tiny
+    // binary remainder, exactly as issue_emptyHU_writeOff.spec.js's 2 g assertion does.
+    await YesNoDialog.waitForDialog();
+    await YesNoDialog.expectPromptContains(/remaining 12(\.\d+)? g/);
+    await YesNoDialog.clickYesButton();
 
     await RawMaterialIssueLineScreen.waitForScreen();
     await RawMaterialIssueLineScreen.goBack();
