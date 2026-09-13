@@ -30,15 +30,40 @@ export const OVERLAY = '.raw-modal .panel-modal';
 export const ROWS = `${OVERLAY} table tbody tr`;
 
 /**
- * The delivery-history flag filter in the overlay's inline (frequent-used) filter line.
+ * The delivery-history filter.
  *
- * The <input> is visually replaced by `.input-checkbox-tick`, so the LABEL is what gets clicked
- * while the INPUT is what carries the checked state - hence both constants. `FILTER_CHECKBOX` is
- * derived from `FILTER_LABEL` (not written out a second time) so `setFilter` and any spec asserting
- * on the control cannot drift apart when the markup changes.
+ * It is a frequently-used filter rendered in BUTTON mode (`DocumentFilterInlineRenderMode.BUTTON`),
+ * so the filter line shows a button `Filter: <caption>` and the YesNo parameter lives in the
+ * dropdown panel that button opens (frontend/src/components/filters/FiltersNotIncluded.js -> FiltersItem).
+ *
+ * All four selectors are derived from `FILTER_ID` so they cannot drift apart from the backend
+ * descriptor (OrderProductsProposalViewFilters.FILTER_ID). The button and the apply button carry
+ * `data-testid`s, so no localized caption is used as a selector.
  */
-export const FILTER_LABEL = `${OVERLAY} .filters-frequent .inline-filters label.input-checkbox`;
-export const FILTER_CHECKBOX = `${FILTER_LABEL} input[type="checkbox"]`;
+const FILTER_ID = 'onlyDeliveredFilter';
+
+/** The `Filter: ...` button that opens the filter's parameter panel. */
+export const FILTER_BUTTON = `${OVERLAY} [data-testid="filter-button-${FILTER_ID}"]`;
+
+/** The opened parameter panel of that filter (FiltersItem's `filter-content filter-<filterId>`). */
+export const FILTER_PANEL = `${OVERLAY} .filter-content.filter-${FILTER_ID}`;
+
+/**
+ * The YesNo parameter inside the panel. The <input> is visually replaced by `.input-checkbox-tick`,
+ * so the LABEL is what gets clicked while the INPUT carries the checked state - hence both.
+ */
+export const FILTER_PANEL_LABEL = `${FILTER_PANEL} label.input-checkbox`;
+export const FILTER_CHECKBOX = `${FILTER_PANEL_LABEL} input[type="checkbox"]`;
+
+/** The panel's Apply button, which is what actually posts the filter. */
+export const FILTER_APPLY_BUTTON = `${OVERLAY} [data-testid="filter-apply-button"]`;
+
+/**
+ * The panel's "clear filter" link. FiltersItem renders it only while the filter IS active
+ * (`{isActive && <span className="filter-clear" ...>}`), so its presence doubles as the
+ * "is the filter currently applied?" read from inside the open panel.
+ */
+export const FILTER_CLEAR = `${OVERLAY} .filter-menu .filter-controls .filter-clear`;
 
 /**
  * Buttons of the order lines tab's filter line - the included-tab top actions come last.
@@ -151,31 +176,74 @@ export class ProductProposalPage {
   }
 
   /**
+   * Assert the filter control is present, and whether it currently reads as active.
+   *
+   * In BUTTON render mode the parameter checkbox only exists while the dropdown panel is open, so
+   * "is the filter on?" is read off the button instead: FiltersNotIncluded.js puts `btn-active` on
+   * the button exactly when the filter is active and not cleared.
+   *
+   * @param {import('@playwright/test').Page} page - Playwright page
+   * @param {boolean} active - expected active state of the filter
+   */
+  static async expectFilterState(page = getPage(), active = false) {
+    return await test.step(`ProductProposalPage - Expect delivery-history filter active: ${active}`, async () => {
+      const button = page.locator(FILTER_BUTTON);
+      await expect(button).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+
+      const activeButton = page.locator(`${FILTER_BUTTON}.btn-active`);
+      if (active) {
+        await expect(activeButton).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      } else {
+        await expect(activeButton).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+      }
+    });
+  }
+
+  /**
    * Turn the delivery-history filter on or off.
    *
-   * The filter is a frequently-used, inline-rendered (`INLINE_PARAMETERS`) `YesNo` filter parameter, so
-   * the frontend renders it via InlineFilterItem -> Checkbox as
-   * `.filter-wrapper.filters-frequent .inline-filters label.input-checkbox input[type="checkbox"]`
-   * (frontend/src/components/filters/FiltersNotIncluded.js, components/widget/Checkbox.js). Toggling the
-   * checkbox patches the filter parameter and re-applies the filter, which reloads the view.
+   * BUTTON render mode is not a single toggle - each direction is its own interaction, and both go
+   * through the `Filter: ...` button's dropdown panel:
+   *  - ON: open the panel, tick the YesNo parameter, press Apply. Ticking alone only changes local
+   *    widget state; only Apply posts the filter (FiltersItem#handleApply).
+   *  - OFF: open the panel and press "clear filter". Applying an UNTICKED checkbox is deliberately
+   *    not used: FiltersItem#handleApply still submits the filter (with value false), leaving it in
+   *    the view's active-filter list, whereas clearing removes it - which is what "off" means here,
+   *    and what a user does.
    *
    * @param {import('@playwright/test').Page} page - Playwright page
    * @param {boolean} on - true to activate the filter, false to deactivate it
    */
   static async setFilter(page = getPage(), on = true) {
     return await test.step(`ProductProposalPage - Set delivery-history filter: ${on}`, async () => {
-      const filterLabel = page.locator(FILTER_LABEL).first();
-      const checkbox = filterLabel.locator('input[type="checkbox"]');
+      const button = page.locator(FILTER_BUTTON);
+      await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await button.click();
 
-      await checkbox.waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
+      const panel = page.locator(FILTER_PANEL);
+      await panel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-      const isChecked = await checkbox.isChecked();
-      if (isChecked === on) {
-        console.log(`Delivery-history filter already ${on ? 'on' : 'off'} - nothing to toggle`);
+      const clearLink = page.locator(FILTER_CLEAR);
+      const isCurrentlyOn = await clearLink.isVisible();
+      if (isCurrentlyOn === on) {
+        console.log(`Delivery-history filter already ${on ? 'on' : 'off'} - closing the panel again`);
+        await button.click();
+        await expect(panel).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
         return;
       }
 
-      // Toggling runs DocumentListContainer's isNewFilter flow (handleFilterChange ->
+      if (on) {
+        const panelLabel = page.locator(FILTER_PANEL_LABEL).first();
+        await panelLabel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+        const checkbox = page.locator(FILTER_CHECKBOX).first();
+        if ((await checkbox.isChecked()) !== true) {
+          await panelLabel.click();
+        }
+        await expect(checkbox).toBeChecked({ timeout: FAST_ACTION_TIMEOUT });
+      }
+
+      // Applying (and clearing) runs DocumentListContainer's isNewFilter flow (handleFilterChange ->
       // fetchLayoutAndData -> filterCurrentView): a layout GET, then POST .../filter, then
       // GET .../<viewId>?firstRow=... - and only that last GET repaints the grid, so that is the
       // thing to wait for. Both promises must be created BEFORE the click or a fast response is
@@ -190,7 +258,7 @@ export class ProductProposalPage {
       //  - `waitForLoadState('networkidle')` resolves immediately on an already-loaded page and
       //    does not track XHRs started after the call.
       // Measured on C_Order_ID=1000030: with those two waits the row read landed before the
-      // repaint in 3 of 8 toggles - checkbox already on, grid still showing the unfiltered rows.
+      // repaint in 3 of 8 toggles - filter already applied, grid still showing the old rows.
       const filterApplied = page.waitForResponse(
         (response) =>
           /\/documentView\/[^/]+\/[^/]+\/filter$/.test(response.url()) &&
@@ -204,13 +272,16 @@ export class ProductProposalPage {
         { timeout: SLOW_ACTION_TIMEOUT }
       );
 
-      await filterLabel.click();
+      await page.locator(on ? FILTER_APPLY_BUTTON : FILTER_CLEAR).click();
 
       const filterResponse = await filterApplied;
       expect(filterResponse.status(), 'the filter round-trip must succeed').toBe(200);
       await rowsReloaded;
 
-      await expect(checkbox).toBeChecked({ checked: on, timeout: SLOW_ACTION_TIMEOUT });
+      // The panel closes on apply/clear (FiltersItem -> closeFilterMenu), and the button reflects
+      // the new state - both are what the next interaction depends on.
+      await expect(panel).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+      await this.expectFilterState(page, on);
     });
   }
 

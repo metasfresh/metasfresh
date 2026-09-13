@@ -9,7 +9,6 @@ import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
 import {
   ProductProposalPage,
   ROWS as OVERLAY_ROWS,
-  FILTER_CHECKBOX as OVERLAY_FILTER_CHECKBOX,
 } from '../utils/pages/ProductProposalPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
@@ -240,10 +239,8 @@ the customer has never bought.
       expect(hasDeliveryValue(row2.lastShipmentDays)).toBe(true);
       expect(hasDeliveryValue(row3.lastShipmentDays)).toBe(false); // Product3 was never shipped
 
-      // The filter control itself must be present, and unchecked (AC2, AC3)
-      const filterCheckbox = page.locator(OVERLAY_FILTER_CHECKBOX).first();
-      await expect(filterCheckbox).toBeAttached();
-      await expect(filterCheckbox).not.toBeChecked();
+      // The filter control itself must be present, and not active (AC2, AC3)
+      await ProductProposalPage.expectFilterState(page, false);
     });
 
     // === TC1: switch the filter on - only the delivered products remain ===

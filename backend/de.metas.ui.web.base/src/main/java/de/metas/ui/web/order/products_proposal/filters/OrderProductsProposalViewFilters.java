@@ -60,7 +60,7 @@ public class OrderProductsProposalViewFilters
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(FILTER_ID)
 				.setFrequentUsed(true)
-				.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
+				.setInlineRenderMode(DocumentFilterInlineRenderMode.BUTTON)
 				.setDisplayName(getOnlyDeliveredCaption())
 				.addParameter(DocumentFilterParamDescriptor.builder()
 						.fieldName(ProductsProposalViewFilter.PARAM_OnlyDelivered)
