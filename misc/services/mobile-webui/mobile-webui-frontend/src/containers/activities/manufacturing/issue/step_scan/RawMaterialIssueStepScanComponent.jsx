@@ -7,16 +7,12 @@ import { updateManufacturingIssue } from '../../../../../actions/ManufacturingAc
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../../../utils/qrCode/hu';
 import { computeIssueRequest } from './computeIssueRequest';
+import { computeEmptyingConfirmationPrompt } from './computeEmptyingConfirmationPrompt';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
-import {
-  getActivityById,
-  getStepByIdFromActivity,
-  QTY_REJECTED_REASON_EMPTIED_KEY,
-} from '../../../../../reducers/wfProcesses';
+import { getActivityById, getStepByIdFromActivity } from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
-import { formatQtyToHumanReadableStr } from '../../../../../utils/qtys';
 import { useBooleanSetting } from '../../../../../reducers/settings';
 import { useMobileNavigation } from '../../../../../hooks/useMobileNavigation';
 import {
@@ -92,15 +88,14 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   };
 
   // "Empty (auto. inventory)" write-off: on `isConfirmEmptyingHU`, confirm before booking, naming the
-  // leftover quantity and its UOM. Declining leaves the operator on this dialog and posts nothing.
-  const getEmptyingConfirmationPrompt = useCallback((qtyInput, { qtyRejected, rejectedReason, uom } = {}) => {
-    if (rejectedReason !== QTY_REJECTED_REASON_EMPTIED_KEY || !(qtyRejected > 0)) {
-      return undefined;
-    }
-    return trl('activities.manufacturing.confirmEmptyHUPrompt', {
-      qty: formatQtyToHumanReadableStr({ qty: qtyRejected, uom }),
-    });
-  }, []);
+  // quantity that will actually be written off. Declining leaves the operator on this dialog and posts
+  // nothing. See computeEmptyingConfirmationPrompt.js for why that quantity is NOT the dialog's own
+  // `qtyRejected`.
+  const getEmptyingConfirmationPrompt = useCallback(
+    (qtyInput, { qtyRejected, rejectedReason, resolvedBarcodeData } = {}) =>
+      computeEmptyingConfirmationPrompt({ qty: qtyInput, qtyRejected, rejectedReason, resolvedBarcodeData }),
+    []
+  );
 
   const dispatch = useDispatch();
   const history = useMobileNavigation();

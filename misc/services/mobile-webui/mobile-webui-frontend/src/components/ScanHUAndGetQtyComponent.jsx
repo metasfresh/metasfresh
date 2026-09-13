@@ -292,7 +292,14 @@ const ScanHUAndGetQtyComponent = ({
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
           //
-          getConfirmationPromptForQty={getConfirmationPromptForQty}
+          // The dialog knows the qty context (entered qty, rejected qty, reason); the caller's prompt
+          // may also need what the SCANNED HU is (e.g. the manufacturing issue screen names the HU's
+          // remainder, not the order-side shortfall), so `resolvedBarcodeData` is handed over too.
+          getConfirmationPromptForQty={
+            getConfirmationPromptForQty
+              ? (qtyInput, context) => getConfirmationPromptForQty(qtyInput, { ...context, resolvedBarcodeData })
+              : undefined
+          }
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={onCloseDialog}
