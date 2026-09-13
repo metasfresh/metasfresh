@@ -36,34 +36,35 @@ export const ROWS = `${OVERLAY} table tbody tr`;
  * so the filter line shows a button `Filter: <caption>` and the YesNo parameter lives in the
  * dropdown panel that button opens (frontend/src/components/filters/FiltersNotIncluded.js -> FiltersItem).
  *
- * All four selectors are derived from `FILTER_ID` so they cannot drift apart from the backend
+ * The selectors below are derived from `FILTER_ID` so they cannot drift apart from the backend
  * descriptor (OrderProductsProposalViewFilters.FILTER_ID). The button and the apply button carry
- * `data-testid`s, so no localized caption is used as a selector.
+ * `data-testid`s, so no localized caption is used as a selector. They are module-private: the specs
+ * drive the filter through `setFilter` / `expectFilterState`, never through the raw selectors.
  */
 const FILTER_ID = 'onlyDeliveredFilter';
 
 /** The `Filter: ...` button that opens the filter's parameter panel. */
-export const FILTER_BUTTON = `${OVERLAY} [data-testid="filter-button-${FILTER_ID}"]`;
+const FILTER_BUTTON = `${OVERLAY} [data-testid="filter-button-${FILTER_ID}"]`;
 
 /** The opened parameter panel of that filter (FiltersItem's `filter-content filter-<filterId>`). */
-export const FILTER_PANEL = `${OVERLAY} .filter-content.filter-${FILTER_ID}`;
+const FILTER_PANEL = `${OVERLAY} .filter-content.filter-${FILTER_ID}`;
 
 /**
  * The YesNo parameter inside the panel. The <input> is visually replaced by `.input-checkbox-tick`,
  * so the LABEL is what gets clicked while the INPUT carries the checked state - hence both.
  */
-export const FILTER_PANEL_LABEL = `${FILTER_PANEL} label.input-checkbox`;
-export const FILTER_CHECKBOX = `${FILTER_PANEL_LABEL} input[type="checkbox"]`;
+const FILTER_PANEL_LABEL = `${FILTER_PANEL} label.input-checkbox`;
+const FILTER_CHECKBOX = `${FILTER_PANEL_LABEL} input[type="checkbox"]`;
 
 /** The panel's Apply button, which is what actually posts the filter. */
-export const FILTER_APPLY_BUTTON = `${OVERLAY} [data-testid="filter-apply-button"]`;
+const FILTER_APPLY_BUTTON = `${OVERLAY} [data-testid="filter-apply-button"]`;
 
 /**
  * The panel's "clear filter" link. FiltersItem renders it only while the filter IS active
  * (`{isActive && <span className="filter-clear" ...>}`), so its presence doubles as the
  * "is the filter currently applied?" read from inside the open panel.
  */
-export const FILTER_CLEAR = `${OVERLAY} .filter-menu .filter-controls .filter-clear`;
+const FILTER_CLEAR = `${OVERLAY} .filter-menu .filter-controls .filter-clear`;
 
 /**
  * Buttons of the order lines tab's filter line - the included-tab top actions come last.
@@ -257,8 +258,10 @@ export class ProductProposalPage {
       //    either resolves on the very first poll;
       //  - `waitForLoadState('networkidle')` resolves immediately on an already-loaded page and
       //    does not track XHRs started after the call.
-      // Measured on C_Order_ID=1000030: with those two waits the row read landed before the
-      // repaint in 3 of 8 toggles - filter already applied, grid still showing the old rows.
+      // Measured previously on C_Order_ID=1000030, when the click target was the checkbox itself:
+      // with those two waits the row read landed before the repaint in 3 of 8 toggles - filter
+      // already applied, grid still showing the old rows. The click target is now the panel's
+      // Apply/Clear button, so the figure is historical; the round-trip it describes is unchanged.
       const filterApplied = page.waitForResponse(
         (response) =>
           /\/documentView\/[^/]+\/[^/]+\/filter$/.test(response.url()) &&

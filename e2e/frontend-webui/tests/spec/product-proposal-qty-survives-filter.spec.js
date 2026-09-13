@@ -216,7 +216,11 @@ that guarantee is pinned directly by ProductsProposalRowsDataTest.)
       // Read the result back from the reloaded order, not from in-page state.
       await page.reload();
       await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+      // No spinner wait here on purpose: `.rotating`/`.indicator-pending` are not classes the
+      // frontend emits (`indicator-pending` exists only as a @keyframes name in
+      // frontend/src/assets/css/window-indicator.scss), so a `detached` wait on them resolves on the
+      // first poll and proves nothing. The order-line assertion below is web-first and retries, and
+      // `goToOrderLineTab` waits for the tab itself - that is what actually synchronises the read.
 
       await SalesOrderPage.goToOrderLineTab();
 
