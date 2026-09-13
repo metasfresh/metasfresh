@@ -20,7 +20,7 @@ import { HUDisposalScreen, DISPOSAL_REASON_DAMAGED } from '../../utils/screens/h
 /**
  * Empty HU write-off — regression, leakage and no-op paths from REQUIREMENTS.md §5, TC6-TC8.
  *
- * TC1-TC3 (core case) live in empty-hu-core.spec.js; TC4-TC5 (scope) live in empty-hu-scope.spec.js.
+ * TC1-TC3 (core case) live in issue_emptyHU_writeOff.spec.js; TC4-TC5 (scope) live in issue_emptyHU_offering.spec.js.
  *
  * NOTE on file shape: `e2e/CLAUDE.md` "Test Organization" groups tests by their shared `createMasterdata`.
  * This file deliberately breaks that grouping for TC7 (unrelated builders per neighbour app: picking,
@@ -34,7 +34,7 @@ const EMPTIED_REASON = 'E';
 const NOT_FOUND_REASON_CAPTION = 'Not Found';
 const DAMAGED_REASON_CAPTION = 'Damaged';
 
-// Same helper as empty-hu-core.spec.js: the AD_Message text (system base language, de_DE) that
+// Same helper as issue_emptyHU_writeOff.spec.js: the AD_Message text (system base language, de_DE) that
 // `PPOrderIssueScheduleService#bookEmptiedHUToZero` writes as the write-off inventory's Description.
 const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu ${documentNo} geleert`;
 
@@ -44,7 +44,7 @@ const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu 
 // ---------------------------------------------------------------------------------------------
 
 /**
- * Same masterdata shape as empty-hu-core.spec.js: a KGM component with no packing instruction, a
+ * Same masterdata shape as issue_emptyHU_writeOff.spec.js: a KGM component with no packing instruction, a
  * single-line BOM, one standalone HU, one manufacturing order.
  *
  * `isAllowEmptyingHUs` / `isConfirmEmptyingHU` are CLIENT-level config (MobileUI_MFG_Config), not
@@ -131,7 +131,7 @@ test('TC6a: "Not Found" is recorded, no empty-HU write-off is triggered', async 
     // anywhere holding this product, confirmed via `M_HU_Storage` scoped to the product). AC11's "the
     // remaining quantity is untouched" holds in the sense that matters for this feature (no write-off
     // document from EMPTIED-adjacent machinery), not literally on this HU's own storage — a
-    // pre-existing behaviour, out of scope for this task, that empty-hu-scope.spec.js's TC4 also
+    // pre-existing behaviour, out of scope for this task, that issue_emptyHU_offering.spec.js's TC4 also
     // observed (same fixture shape, reason "N").
     await Backend.expect({
         hus: {
@@ -403,7 +403,7 @@ test('TC8: issuing the full booked quantity then applying the reason creates no 
 
     // Expect: the HU ends up fully issued (0 PCE remaining). No `inventories` assertion here: the
     // masterdata harness itself stocks every fresh HU via its own completed inventory count (same
-    // reasoning as empty-hu-core.spec.js's decline case), so a bare "an inventory exists" is never
+    // reasoning as issue_emptyHU_writeOff.spec.js's decline case), so a bare "an inventory exists" is never
     // discriminating — see the observed-result comment below.
     await Backend.expect({
         hus: {

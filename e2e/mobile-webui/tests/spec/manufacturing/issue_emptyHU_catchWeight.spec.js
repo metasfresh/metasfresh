@@ -47,7 +47,7 @@ const startIssueStep = async (masterdata) => {
 };
 
 /**
- * A weightable component on a whole-HU-offered step — same shape as empty-hu-core.spec.js's core
+ * A weightable component on a whole-HU-offered step — same shape as issue_emptyHU_writeOff.spec.js's core
  * case (a bare VHU, no packing instruction, sized so the HU's own content is the binding constraint),
  * parametrized only by the component's own UOM.
  */

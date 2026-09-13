@@ -11,8 +11,8 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/s
 /**
  * Empty HU write-off — refusals and the empties movement, from REQUIREMENTS.md §5, TC9-TC11.
  *
- * TC1-TC3 (core case) live in empty-hu-core.spec.js; TC4-TC5 (scope) live in empty-hu-scope.spec.js;
- * TC6-TC8 (regression/leakage/no-op) live in empty-hu-regression.spec.js.
+ * TC1-TC3 (core case) live in issue_emptyHU_writeOff.spec.js; TC4-TC5 (scope) live in issue_emptyHU_offering.spec.js;
+ * TC6-TC8 (regression/leakage/no-op) live in issue_emptyHU_otherReasonsUnchanged.spec.js.
  */
 
 const EMPTIED_REASON = 'E';
@@ -37,7 +37,7 @@ const startIssueStep = async (masterdata) => {
 // ---------------------------------------------------------------------------------------------
 
 /**
- * Same shape as empty-hu-core.spec.js's core case, plus `additionalProducts` (this task's harness
+ * Same shape as issue_emptyHU_writeOff.spec.js's core case, plus `additionalProducts` (this task's harness
  * extension, e7fa2b1) so the scanned HU carries storage of TWO distinct products — the exact
  * precondition `RawMaterialsIssueActivityHandler.isSingleProductStorage` gates on
  * (`getProductStorages(hu).size() <= 1`).
@@ -151,7 +151,7 @@ test('TC9: a multi-product HU does not offer the empty reason', async ({ page })
 // ---------------------------------------------------------------------------------------------
 
 /**
- * Same shape as empty-hu-core.spec.js's core case, plus a `packages` assignment (this task's harness
+ * Same shape as issue_emptyHU_writeOff.spec.js's core case, plus a `packages` assignment (this task's harness
  * extension, e7fa2b1) linking the HU to a freshly created `M_Package` via `M_Package_HU`.
  */
 const createPackageAssignedMasterdata = async ({ huQty, orderQty }) => {

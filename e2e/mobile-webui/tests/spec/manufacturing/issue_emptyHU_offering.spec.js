@@ -17,7 +17,7 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND, QTY_NOT_FOUND_REASON
  * primary step (TC5) nor a per-TU alternative step (TC5b). An HU standing on a pallet is emptied by
  * issuing it as its own line, never from the pallet line.
  *
- * TC1-TC3 (core case, decline/untick-confirm, dregs case) live in empty-hu-core.spec.js.
+ * TC1-TC3 (core case, decline/untick-confirm, dregs case) live in issue_emptyHU_writeOff.spec.js.
  */
 
 const EMPTIED_REASON = 'E';
@@ -27,7 +27,7 @@ const DAMAGED_REASON_CAPTION = 'Damaged';
 const emptiedHUInventoryDescription = (documentNo) => `Bei Materialzuteilung zu ${documentNo} geleert`;
 
 /**
- * Same masterdata shape as empty-hu-core.spec.js (same customer, same screen), but with
+ * Same masterdata shape as issue_emptyHU_writeOff.spec.js (same customer, same screen), but with
  * `isAllowEmptyingHUs` parameterized: TC4 needs it off.
  *
  * `isConfirmEmptyingHU` / `isAllowEmptyingHUs` are CLIENT-level config (MobileUI_MFG_Config), not
@@ -99,7 +99,7 @@ test('TC4: Unticking the offer flag restores today\'s screen', async ({ page }) 
     // The `inventories` assertion below scopes to the write-off's own description (rather than a bare
     // "an inventory document exists", which would always be true regardless of a write-off: the
     // masterdata harness itself stocks the HU via its own completed inventory count — same reasoning
-    // as empty-hu-core.spec.js's decline case) to confirm no write-off inventory was created.
+    // as issue_emptyHU_writeOff.spec.js's decline case) to confirm no write-off inventory was created.
     await GetQuantityDialog.clickQtyNotFoundReason({ reason: QTY_NOT_FOUND_REASON_NOT_FOUND });
     await GetQuantityDialog.clickDone();
 
@@ -127,7 +127,7 @@ test('TC4: Unticking the offer flag restores today\'s screen', async ({ page }) 
  * plan emits a primary LU step plus one zero-quantity alternative step per included TU
  * (`PPOrderIssuePlanCreateCommand`, per REQUIREMENTS.md §3 "The plan already decomposes an LU into
  * per-TU steps"). Built via `packingInstructions` with both `lu` and `tu` set, per the pattern in
- * `pick_from_LUs.spec.js` / `empty-hu-core.spec.js`'s own PI block (this one's `product` is the
+ * `pick_from_LUs.spec.js` / `issue_emptyHU_writeOff.spec.js`'s own PI block (this one's `product` is the
  * pallet's own content, not the finished good).
  *
  * The pallet's total (13 KGM) is an explicit `qty`, deliberately LESS than the exact 3x5=15 KGM the
