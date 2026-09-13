@@ -76,28 +76,6 @@
 -- Idempotent per row, and touches no row registered for another window.
 
 INSERT INTO WEBUI_ViewInvalidateOnChange (WEBUI_ViewInvalidateOnChange_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,AD_Window_ID,AD_Table_ID)
-SELECT 540005 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-10 09:00:02','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-10 09:00:02','YYYY-MM-DD HH24:MI:SS'),100,
-       542190,(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_ShipperTransportation')
-WHERE NOT EXISTS (
-    SELECT 1 FROM WEBUI_ViewInvalidateOnChange existing
-    WHERE existing.AD_Window_ID=542190
-      AND existing.AD_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_ShipperTransportation')
-      AND existing.IsActive='Y'
-)
-;
-
-INSERT INTO WEBUI_ViewInvalidateOnChange (WEBUI_ViewInvalidateOnChange_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,AD_Window_ID,AD_Table_ID)
-SELECT 540006 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-10 09:00:03','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-10 09:00:03','YYYY-MM-DD HH24:MI:SS'),100,
-       542190,(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_ShippingPackage')
-WHERE NOT EXISTS (
-    SELECT 1 FROM WEBUI_ViewInvalidateOnChange existing
-    WHERE existing.AD_Window_ID=542190
-      AND existing.AD_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_ShippingPackage')
-      AND existing.IsActive='Y'
-)
-;
-
-INSERT INTO WEBUI_ViewInvalidateOnChange (WEBUI_ViewInvalidateOnChange_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,AD_Window_ID,AD_Table_ID)
 SELECT 540007 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-10 09:00:04','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-10 09:00:04','YYYY-MM-DD HH24:MI:SS'),100,
        542190,(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_InOut')
 WHERE NOT EXISTS (
@@ -108,24 +86,13 @@ WHERE NOT EXISTS (
 )
 ;
 
-INSERT INTO WEBUI_ViewInvalidateOnChange (WEBUI_ViewInvalidateOnChange_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,AD_Window_ID,AD_Table_ID)
-SELECT 540009 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-10 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-10 09:00:06','YYYY-MM-DD HH24:MI:SS'),100,
-       542190,(SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_Order')
-WHERE NOT EXISTS (
-    SELECT 1 FROM WEBUI_ViewInvalidateOnChange existing
-    WHERE existing.AD_Window_ID=542190
-      AND existing.AD_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_Order')
-      AND existing.IsActive='Y'
-)
-;
-
-INSERT INTO WEBUI_ViewInvalidateOnChange (WEBUI_ViewInvalidateOnChange_ID,AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,AD_Window_ID,AD_Table_ID)
-SELECT 540010 /*From ID Server*/,0,0,'Y',TO_TIMESTAMP('2026-09-10 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2026-09-10 09:00:07','YYYY-MM-DD HH24:MI:SS'),100,
-       542190,(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_ReceiptSchedule_Alloc')
-WHERE NOT EXISTS (
-    SELECT 1 FROM WEBUI_ViewInvalidateOnChange existing
-    WHERE existing.AD_Window_ID=542190
-      AND existing.AD_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_ReceiptSchedule_Alloc')
-      AND existing.IsActive='Y'
-)
-;
+-- 2026-09-13: the four rows this script used to add for M_ShipperTransportation, M_ShippingPackage,
+-- C_Order and M_ReceiptSchedule_Alloc were REMOVED here rather than inserted-then-deleted. Migration
+-- 5824220 routes those four (and M_Delivery_Planning / M_ReceiptSchedule, whose script 5822560 is gone
+-- for the same reason) through AD_ViewSource instead, so a fresh install must never create them. The
+-- DELETE in 5824220 remains for databases that already applied the earlier version of this script -
+-- the migration runner will not re-run an edited script on those, so they need the explicit cleanup.
+--
+-- M_InOut's row is KEPT: the view exposes no m_inout_id to route on, and exposing one would mean another
+-- join on a view whose page-render cost was already a fought battle (202.6 ms -> 18.2 ms via the LATERAL
+-- collapse). Leaving it coarse is a cost/benefit call, not an impossibility.
