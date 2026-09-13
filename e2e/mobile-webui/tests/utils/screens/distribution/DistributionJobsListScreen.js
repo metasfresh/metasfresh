@@ -97,9 +97,9 @@ export const DistributionJobsListScreen = {
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
 
-        // The offered jobs are the result this screen exists to show, and the checks above settle in
-        // ~100ms -- faster than the recorder samples -- so without this hold the filtered list the
-        // test just proved never appears in the video of the run.
+        // The offered jobs are the result this screen exists to show, and the checks above settle
+        // within ~110-170ms -- two or three sampled frames out of the ~400 in a 16s recording -- so
+        // without this hold the list the test just proved is effectively unfindable in the video.
         await holdForVideo();
     }),
 

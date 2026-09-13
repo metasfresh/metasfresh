@@ -51,13 +51,15 @@ const RESULT_HOLD_MS = 500;
 /**
  * Hold the painted screen so the recording shows the result the screen exists to display.
  *
- * This runs on EVERY run, CI included, and that is the point: the assertions settle in ~100ms, far
- * quicker than the recorder samples, so without it the result the test just proved is absent from
- * the video and the run cannot be reviewed after the fact. It used to be opt-in behind UAT_CAPTURE,
- * which meant exactly the runs nobody watches live — CI — were the ones with nothing to watch.
+ * This runs on EVERY run, CI included, and that is the point. A result list is asserted and left
+ * behind within ~110-170ms (measured off a CI trace), which at the screencast's ~40ms sampling is
+ * two or three frames out of the ~400 in a 16s recording — present in principle, unfindable in
+ * practice. It used to be opt-in behind UAT_CAPTURE, which meant exactly the runs nobody watches
+ * live — CI — were the ones whose recording showed nothing.
  *
- * Cost is bounded: it is called once per assertion of a settled result list, so a distribution spec
- * pays a few hundred ms and the whole distribution suite a handful of seconds.
+ * Cost: one hold per assertion of a settled result list — 38 such call sites across the distribution
+ * specs, so at most ~19s of held time for a run that reaches all of them. The suite measured 2.1m
+ * before and 2.3m after; that reporting granularity is too coarse to pin the delta more exactly.
  *
  * Why no assertion can substitute, and why this may only be called from a screen object and never
  * from a spec: e2e/mobile-webui/CLAUDE.md § "Test scenarios read like a real-life workflow".
