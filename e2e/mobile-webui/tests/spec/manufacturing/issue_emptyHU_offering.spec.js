@@ -92,10 +92,15 @@ test('TC4: Unticking the offer flag restores today\'s screen', async ({ page }) 
     await GetQuantityDialog.expectQtyNotFoundReasonCaption({ reason: QTY_NOT_FOUND_REASON_NOT_FOUND, caption: NOT_FOUND_REASON_CAPTION });
     await GetQuantityDialog.expectQtyNotFoundReasonCaption({ reason: QTY_NOT_FOUND_REASON_DAMAGED, caption: DAMAGED_REASON_CAPTION });
 
-    // Nothing can be booked from this screen: pick "Not Found" (today's pre-existing behaviour, no
-    // confirmation prompt involved) and confirm the screen behaves exactly as it does today. A
-    // qty-reject reason (existing functionality, unrelated to this feature) already fully consumes
-    // the scanned VHU regardless of the reason picked — no separate inventory booking is involved.
+    // Finish the step the way today's screen allows: pick "Not Found" (pre-existing behaviour, no
+    // confirmation prompt involved) and confirm the outcome is the plain short-issue one.
+    //
+    // With the flag off no "empty" reason exists, so nothing ever reaches `bookEmptiedHUToZero`. The
+    // typed 0.498 is below the step's whole-HU capacity (0.5), so the frontend sends no
+    // `huWeightGrossBeforeIssue` (weight is sent only when `uom === 'kg' && typedQty >= qtyHUCapacity`)
+    // and the backend issues exactly the typed quantity: the HU stays ACTIVE with the 0.002 KGM
+    // remainder, and "N" is merely recorded on the issue schedule.
+    //
     // The `inventories` assertion below scopes to the write-off's own description (rather than a bare
     // "an inventory document exists", which would always be true regardless of a write-off: the
     // masterdata harness itself stocks the HU via its own completed inventory count — same reasoning
@@ -109,8 +114,8 @@ test('TC4: Unticking the offer flag restores today\'s screen', async ({ page }) 
     await Backend.expect({
         hus: {
             [masterdata.handlingUnits.HU.qrCode]: {
-                huStatus: 'D',
-                storages: { COMP: '0 KGM' },
+                huStatus: 'A',
+                storages: { COMP: '0.002 KGM' },
             },
         },
         inventories: {
