@@ -145,12 +145,14 @@ public class M_DiscountSchema_StepDef
 		final String discountType = DataTableUtil.extractStringForColumnName(tableRow, I_M_DiscountSchema.COLUMNNAME_DiscountType);
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_M_DiscountSchema.COLUMNNAME_Name);
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_M_DiscountSchema.COLUMNNAME_ValidFrom);
+		final Timestamp validTo = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, I_M_DiscountSchema.COLUMNNAME_ValidTo);
 
 		final I_M_DiscountSchema discountSchemaRecord = InterfaceWrapperHelper.newInstance(I_M_DiscountSchema.class);
 
 		discountSchemaRecord.setDiscountType(discountType);
 		discountSchemaRecord.setName(name);
 		discountSchemaRecord.setValidFrom(validFrom);
+		discountSchemaRecord.setValidTo(validTo);
 
 		saveRecord(discountSchemaRecord);
 
