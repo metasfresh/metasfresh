@@ -204,6 +204,28 @@ public class ReceiptFromReceiptScheduleService
 			// plannings share one. Without this the row would draw the quantity that receive already took.
 			InterfaceWrapperHelper.refresh(receiptSchedule);
 
+			// A schedule the receive does not apply to is skipped BEFORE any HU generation, because
+			// ReceiptScheduleHUGenerator asserts rather than refuses: a packing-material schedule trips
+			// Check.assume(!isPackagingMaterial) at ReceiptScheduleHUGenerator:220, which surfaces to the operator
+			// as the "please forward this message to metas" internal error and aborts the WHOLE selection - one
+			// Gebinde row is enough to stop a select-all. The pre-packing batch never reached that assumption
+			// because it built VHUs via HUProducerDestination.ofVirtualPI(); routing through the generator is what
+			// exposed it.
+			//
+			// Same rule the per-row receive applies through ReceiptScheduleReceiveEligibility - which cannot be
+			// called from here, because it lives in de.metas.ui.web.base and this module does not depend on the
+			// WebUI. The two predicates are read directly instead.
+			//
+			// Processed, not IsClosed: on M_ReceiptSchedule the two move together today only because close() is
+			// the single writer of both, which is an under-maintained flag rather than a designed equivalence.
+			// Processed is the one that NAMES "this schedule is done", so it keeps covering the case if a schedule
+			// ever becomes processed without being explicitly closed - and it is what M_ReceiptSchedule_Generate_M_InOuts
+			// already filters its own selection on.
+			if (receiptSchedule.isPackagingMaterial() || receiptSchedule.isProcessed())
+			{
+				continue;
+			}
+
 			final DeliveryPlanningId deliveryPlanningId = row.getDeliveryPlanningId();
 			final ImmutableSet<HuId> rowHuIds = createPackedHUs(receiptSchedule, deliveryPlanningId, generated);
 			if (rowHuIds.isEmpty())
