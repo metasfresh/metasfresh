@@ -64,7 +64,8 @@ public final class DocumentLayoutElementDescriptor
 
 		final Builder elementBuilder = new Builder()
 				.setCaption(firstField.getCaption())
-				// .setDescription(firstField.getDescription())
+				.setDescription(firstField.getDescription())
+				.setHelp(firstField.getHelp())
 				.setWidgetType(firstField.getWidgetType())
 				.setMaxLength(firstField.getFieldMaxLength())
 				.setWidgetSize(firstField.getWidgetSize());
@@ -106,6 +107,7 @@ public final class DocumentLayoutElementDescriptor
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
+	private final ITranslatableString help;
 
 	@Getter
 	private final DocumentFieldWidgetType widgetType;
@@ -154,6 +156,7 @@ public final class DocumentLayoutElementDescriptor
 
 		caption = builder.getCaption();
 		description = builder.getDescription();
+		help = builder.getHelp();
 
 		widgetType = builder.getWidgetType();
 
@@ -216,6 +219,11 @@ public final class DocumentLayoutElementDescriptor
 		return description.translate(adLanguage);
 	}
 
+	public String getHelp(final String adLanguage)
+	{
+		return help.translate(adLanguage);
+	}
+
 	public boolean isEmpty()
 	{
 		return getFields().isEmpty() && inlineTabId == null;
@@ -239,6 +247,7 @@ public final class DocumentLayoutElementDescriptor
 		private String _internalName;
 		private ITranslatableString _caption = null;
 		private ITranslatableString _description = null;
+		private ITranslatableString _help = null;
 
 		private DocumentFieldWidgetType _widgetType;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
@@ -411,6 +420,17 @@ public final class DocumentLayoutElementDescriptor
 		private ITranslatableString getDescription()
 		{
 			return TranslatableStrings.nullToEmpty(_description);
+		}
+
+		public Builder setHelp(@Nullable final ITranslatableString help)
+		{
+			_help = TranslatableStrings.nullToEmpty(help);
+			return this;
+		}
+
+		private ITranslatableString getHelp()
+		{
+			return TranslatableStrings.nullToEmpty(_help);
 		}
 
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
