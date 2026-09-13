@@ -108,40 +108,35 @@ test('TC6a: "Not Found" is recorded, no empty-HU write-off is triggered', async 
     await RawMaterialIssueLineScreen.waitForScreen();
     await RawMaterialIssueLineScreen.goBack();
 
-    // Expect: no NEW write-off happened — `PPOrderIssueScheduleService.issue` only invokes
-    // `bookEmptiedHUToZero` for `QtyRejectedReasonCode.EMPTIED` ("E"), never for "N"/"D" — confirmed by
-    // `git diff` on every commit this feature made to that file: the ONLY change is the
-    // `bookEmptiedHUToZero` method plus its `EMPTIED`-gated call site; the pre-existing `qtyIssued`/
-    // `husToNewCUs` block (the method's first half) is byte-for-byte untouched — so this feature adds
-    // nothing on this path.
+    // Expect: nothing was written off, and the HU is left exactly as a SHORT issue leaves it —
+    // still ACTIVE, carrying the 0.002 KGM the operator did not issue.
     //
-    // The scanned HU's OWN storage is asserted at what was VERIFIED BY DIRECT DB QUERY (psql,
-    // read-only, right after this run) — NOT the naively-expected "0.002 KGM left over" from a plain
-    // split reading. Verified sequence (`M_HU_Storage.Updated` timestamp postdates a second
-    // `M_Inventory` on this HU by ~280ms): (1) a PRE-EXISTING, feature-unrelated qty-confirmation step
-    // (`HUQtyService.updateQty`, the SAME primitive `bookEmptiedHUToZero` reuses, but reached from an
-    // unrelated caller — confirmed reachable via `WeightHUCommand.execute()`, `WeightHUCommand.java`
-    // — "mobile UI: mfg: weight before issue", pre-dating this feature) posts a real completed
-    // Inventory that corrects the HU's book qty down from 0.5 to the entered 0.498 (`PP_Order_
-    // IssueSchedule.QtyIssued=0.498, QtyRejected=0.002, RejectReason='N', Processed='Y'` — confirmed via
-    // psql); (2) with the HU's OWN capacity now exactly 0.498, the pre-existing
-    // `HUTransformService.cuToNewCU0`'s "complete cuHU" branch (`qtyCuExceedsCuHU && huIsCU &&
-    // isSameUOM`, HUTransformService.java:314-347) takes the whole-HU path and fully consumes it IN
-    // PLACE (no remainder HU is created or relocated — that reading is WRONG; there is no second HU
-    // anywhere holding this product, confirmed via `M_HU_Storage` scoped to the product). AC11's "the
-    // remaining quantity is untouched" holds in the sense that matters for this feature (no write-off
-    // document from EMPTIED-adjacent machinery), not literally on this HU's own storage — a
-    // pre-existing behaviour, out of scope for this task, that issue_emptyHU_offering.spec.js's TC4 also
-    // observed (same fixture shape, reason "N").
+    // Mechanism (AC11): the typed 0.498 is BELOW the step's whole-HU capacity (0.5), so the frontend
+    // sends NO `huWeightGrossBeforeIssue` on the issue event (it is sent only when
+    // `uom === 'kg' && typedQty >= qtyHUCapacity`). The backend therefore never re-weighs the HU down
+    // to the typed quantity before issuing (`WeightHUCommand` is not reached): it issues exactly the
+    // typed 0.498 and leaves the 0.002 KGM remainder on the HU, HUStatus 'A'.
+    //
+    // Clearing that remainder is what the NEW reason "E" alone does:
+    // `PPOrderIssueScheduleService.issue` calls `bookEmptiedHUToZero` only for
+    // `QtyRejectedReasonCode.EMPTIED`, never for "N"/"D". "N"/"D" are merely RECORDED on the issue
+    // schedule (`PP_Order_IssueSchedule.QtyIssued=0.498, QtyReject=0.002, RejectReason='N'`) and
+    // touch neither the HU nor any inventory document — which is exactly what this test pins.
+    //
+    // NOTE: the recorded `QtyReject`/`RejectReason` are NOT asserted here: the frontend-testing
+    // harness has no `PP_Order_IssueSchedule` expectation (`de.metas.frontend-testing/.../expectations/`
+    // offers hus / inventories / manufacturing-receivedHUs / picking / pickingSlots / movements only).
+    // Adding one is a separate decision; until then the "is recorded" half of this TC's title is
+    // covered by the UI accepting the reason, not by a backend assertion.
     await Backend.expect({
         hus: {
             [masterdata.handlingUnits.HU.qrCode]: {
-                huStatus: 'D',
-                storages: { COMP: '0 KGM' },
+                huStatus: 'A',
+                storages: { COMP: '0.002 KGM' },
             },
         },
-        // The HU already carries real inventory documents unrelated to this feature (the masterdata
-        // seed, plus the pre-existing qty-confirmation inventory traced above) — `isExists` alone would
+        // The HU already carries a real inventory document unrelated to this feature (the masterdata
+        // harness stocks every fresh HU via its own completed inventory count) — `isExists` alone would
         // always be true regardless of a write-off, so scope it to the write-off's own description.
         inventories: {
             [masterdata.handlingUnits.HU.qrCode]: {
@@ -168,12 +163,14 @@ test('TC6b: "Damaged" is recorded, no empty-HU write-off is triggered', async ({
     await RawMaterialIssueLineScreen.waitForScreen();
     await RawMaterialIssueLineScreen.goBack();
 
-    // Same reconciliation as TC6a above — observed state, not the naive "unchanged" reading.
+    // Same mechanism as TC6a above: short entry -> no weight sent -> only the typed 0.498 is issued ->
+    // the 0.002 KGM remainder stays on the still-ACTIVE HU, because "D" (like "N") is only recorded on
+    // the issue schedule and never reaches `bookEmptiedHUToZero`.
     await Backend.expect({
         hus: {
             [masterdata.handlingUnits.HU.qrCode]: {
-                huStatus: 'D',
-                storages: { COMP: '0 KGM' },
+                huStatus: 'A',
+                storages: { COMP: '0.002 KGM' },
             },
         },
         // Same reasoning as TC6a: scope the "no write-off" check to the write-off's own description.
