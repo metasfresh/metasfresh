@@ -11,7 +11,7 @@ import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
  * Product Proposals (Produktvorschläge) - the order line a typed quantity produces must not
- * depend on the filter state when the overlay is closed with DONE (TC8, AC7).
+ * depend on the filter state when the overlay is closed with DONE.
  *
  * `ProductsProposalRowsData.getAllRows()` streams the *filtered* row id list
  * (`rowIdsOrderedAndFiltered`), yet `OrderProductsProposalViewFactory.createOrderLines` reads the
