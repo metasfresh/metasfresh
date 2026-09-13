@@ -56,10 +56,15 @@ public class DistributionJobQueries
 				.warehouseToIds(warehouseToIds)
 				.locatorToIds(InSetPredicate.onlyOrAny(query.getLocatorToId()))
 				.excludeLocatorToIds(query.getExcludeLocatorToIds())
-				// NOT .salesOrderIds(...) here: that would filter on the header DD_Order.C_Order_ID only, which
-				// the replenishment path never sets. The sales-order facet is carried by the demand-side line
-				// restriction instead (DistributionWorkflowLaunchersProvider#buildLineIdRestrictions ->
-				// DDOrderLineDemandSqlHelper#bySalesOrderIds), which ORs the header back in as one of its routes.
+				// No sales-order restriction here by design, and DDOrderQuery deliberately has no salesOrderIds
+				// field to set: filtering on the header DD_Order.C_Order_ID alone misses the replenishment path,
+				// which never sets it. The whole sales-order facet is carried by the demand-side line restriction
+				// (DistributionWorkflowLaunchersProvider#buildLineIdRestrictions ->
+				// DDOrderLineDemandSqlHelper#bySalesOrderIds), which ORs the header column back in as one of its
+				// three routes. Re-adding the field would let that predicate be applied here as a SECOND top-level
+				// restriction -- top-level restrictions AND, so the header route would once again exclude exactly
+				// the jobs the three-route OR exists to find -- and would misrepresent the header column as the
+				// authoritative source of a job's sales order, which it is not.
 				.manufacturingOrderIds(activeFacetIds.getManufacturingOrderIds())
 				.datesPromised(activeFacetIds.getDatesPromised())
 				.productIds(activeFacetIds.getProductIds())
