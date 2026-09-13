@@ -10,8 +10,6 @@ const call_computeIssueRequest = ({ qty, qtyRejected = 0, reason = null, resolve
     resolvedBarcodeData: {
       stepId: 'S1',
       isWeightable: true,
-      // the step was offered as a whole-HU step (qtyToIssueTarget >= qtyHUCapacity)
-      isIssueWholeHU: true,
       uom: 'kg',
       qtyHUCapacity: 0.5,
       ...resolvedBarcodeData,
@@ -36,7 +34,7 @@ describe('computeIssueRequest', () => {
     // everything and the leftover write-off the reason asked for would never happen.
     expect(result.huWeightGrossBeforeIssue).toBeNull();
     expect(result.qtyIssued).toEqual(0.498);
-    // ...while the reason still rides on the offer-time whole-HU flag and reaches the backend:
+    // ...while the rejected qty and its reason always reach the backend:
     expect(result.qtyRejected).toEqual(0.002);
     expect(result.qtyRejectedReasonCode).toEqual(REASON_EMPTIED);
   });
@@ -57,33 +55,31 @@ describe('computeIssueRequest', () => {
     expect(result.huWeightGrossBeforeIssue).toBeNull();
   });
 
-  it('still sends the weight when the step was NOT offered as whole-HU but the typed qty reaches the capacity', () => {
-    // The weight and the rejection now ride on DIFFERENT flags: the weight on the TYPED qty, the
-    // rejection on the offer-time flag. qtyToIssueMax may exceed the offered target, so an operator
-    // can type up to the HU's capacity on a step that was not offered as whole-HU — that IS a weighing
-    // of the whole container, while qtyRejected/reason must still be dropped.
+  it('sends the weight when the typed qty reaches the capacity, and the rejection alongside it', () => {
+    // The weight is decided by the TYPED qty alone: typing up to the HU's capacity IS a weighing of
+    // the whole container. The rejection is independent of it and travels regardless.
     const result = call_computeIssueRequest({
       qty: 0.5,
       qtyRejected: 0.1,
       reason: REASON_EMPTIED,
-      resolvedBarcodeData: { isIssueWholeHU: false },
     });
 
     expect(result.huWeightGrossBeforeIssue).toEqual(0.5);
-    expect(result.qtyRejected).toEqual(0);
-    expect(result.qtyRejectedReasonCode).toBeNull();
+    expect(result.qtyRejected).toEqual(0.1);
+    expect(result.qtyRejectedReasonCode).toEqual(REASON_EMPTIED);
   });
 
-  it('drops qtyRejected and its reason when the step was not offered as a whole-HU step', () => {
+  it('sends qtyRejected and its reason on a step that takes only part of the HU', () => {
+    // HU capacity 0.5, target below it: the reason list is offered on every step now, so what the
+    // operator declared must reach the backend here too (it used to be silently dropped).
     const result = call_computeIssueRequest({
       qty: 0.2,
       qtyRejected: 0.3,
       reason: REASON_EMPTIED,
-      resolvedBarcodeData: { isIssueWholeHU: false },
     });
 
-    expect(result.qtyRejected).toEqual(0);
-    expect(result.qtyRejectedReasonCode).toBeNull();
+    expect(result.qtyRejected).toEqual(0.3);
+    expect(result.qtyRejectedReasonCode).toEqual(REASON_EMPTIED);
     expect(result.huWeightGrossBeforeIssue).toBeNull();
   });
 });
