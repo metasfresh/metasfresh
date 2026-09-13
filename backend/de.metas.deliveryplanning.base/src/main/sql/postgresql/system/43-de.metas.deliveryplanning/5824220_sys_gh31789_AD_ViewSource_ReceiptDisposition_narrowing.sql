@@ -136,24 +136,3 @@ WHERE NOT EXISTS (
      WHERE e.AD_Window_ID=542190
        AND e.AD_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='RV_ReceiptDisposition_DeliveryPlanning'))
 ;
-
--- ---------------------------------------------------------------------------------------------------
--- DELETE the six coarse rows the AD_ViewSource rows now replace. M_InOut's row (540007) stays ACTIVE: it
--- is the one source this mechanism cannot route, so whole-view invalidation is still the only correct
--- rule for it.
---
--- Deleted, not deactivated. All six were inserted by THIS SAME branch - 540003/540004 by 5822560 and
--- 540005/540006/540009/540010 by 5823900 - so there is no pre-existing state to preserve: the whole set
--- ships as one unit to instances that never had these rows. Deactivating would have a rollout create
--- rows and switch them off in the same breath, leaving dead config that reads as meaningful to the next
--- person who opens the table. An earlier draft kept them "so the previous behaviour is one UPDATE away",
--- which was protecting a rollback nobody would perform by a route nobody would find; the real rollback is
--- a new migration, as for any other AD change.
--- ---------------------------------------------------------------------------------------------------
-
-DELETE FROM WEBUI_ViewInvalidateOnChange w
- WHERE w.AD_Window_ID=542190
-   AND w.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Table WHERE TableName IN (
-        'M_Delivery_Planning','M_ReceiptSchedule','M_ShipperTransportation','C_Order',
-        'M_ReceiptSchedule_Alloc','M_ShippingPackage'))
-;
