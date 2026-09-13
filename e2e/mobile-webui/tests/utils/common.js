@@ -43,21 +43,27 @@ export const mashDeviceBack = async (times = 12) => await step(`Mash device/brow
     await page.waitForTimeout(FAST_ACTION_TIMEOUT);
 });
 
-// How long a capture run freezes an already-painted screen. Long enough for Playwright's screencast
-// (which samples at ~40ms) to capture a dozen frames of it.
-const UAT_CAPTURE_HOLD_MS = 500;
+// How long an already-painted result screen is held so the video recorder samples it. Playwright's
+// screencast samples at ~40ms, so 500ms yields a dozen-odd frames — about 2s at the 0.25x playback
+// speed someone uses when checking what a test actually did.
+const RESULT_HOLD_MS = 500;
 
 /**
- * Hold the painted screen briefly so the video recorder samples it. A NO-OP unless UAT_CAPTURE is
- * set — enable it only for a deliberate capture run: `UAT_CAPTURE=1 npx playwright test <spec>`.
+ * Hold the painted screen so the recording shows the result the screen exists to display.
+ *
+ * This runs on EVERY run, CI included, and that is the point: the assertions settle in ~100ms, far
+ * quicker than the recorder samples, so without it the result the test just proved is absent from
+ * the video and the run cannot be reviewed after the fact. It used to be opt-in behind UAT_CAPTURE,
+ * which meant exactly the runs nobody watches live — CI — were the ones with nothing to watch.
+ *
+ * Cost is bounded: it is called once per assertion of a settled result list, so a distribution spec
+ * pays a few hundred ms and the whole distribution suite a handful of seconds.
+ *
  * Why no assertion can substitute, and why this may only be called from a screen object and never
  * from a spec: e2e/mobile-webui/CLAUDE.md § "Test scenarios read like a real-life workflow".
  */
-export const holdForCaptureIfEnabled = async () => {
-    if (!process.env.UAT_CAPTURE) {
-        return;
-    }
-    await page.waitForTimeout(UAT_CAPTURE_HOLD_MS);
+export const holdForVideo = async () => {
+    await page.waitForTimeout(RESULT_HOLD_MS);
 };
 
 let nextErrorWatcherId = 101;

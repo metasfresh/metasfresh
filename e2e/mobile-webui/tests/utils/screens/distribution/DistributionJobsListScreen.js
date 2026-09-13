@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT, holdForCaptureIfEnabled } from "../../common";
+import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT, holdForVideo } from "../../common";
 import { DistributionJobScreen } from "./DistributionJobScreen";
 import { DistributionJobsListFiltersScreen } from "./DistributionJobsListFiltersScreen";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
@@ -97,10 +97,10 @@ export const DistributionJobsListScreen = {
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
 
-        // Nothing happens here unless a capture run asked for it (UAT_CAPTURE): the offered jobs are
-        // the result this screen exists to show, and the checks above can settle faster than the video
-        // recorder samples a frame, leaving them off the recording.
-        await holdForCaptureIfEnabled();
+        // The offered jobs are the result this screen exists to show, and the checks above settle in
+        // ~100ms -- faster than the recorder samples -- so without this hold the filtered list the
+        // test just proved never appears in the video of the run.
+        await holdForVideo();
     }),
 
     expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
