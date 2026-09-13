@@ -4,6 +4,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -71,6 +72,22 @@ public class AssertThat<T>
 	public AssertThat<T> isEqualTo(final T expected)
 	{
 		if (!Objects.equals(expected, actual))
+		{
+			fail("Expected " + what + " to be <" + expected + "> but was <" + actual + ">");
+		}
+
+		return this;
+	}
+
+	/**
+	 * Numeric equality, ignoring scale: {@code 0.002} equals {@code 0.00200}. {@link #isEqualTo(Object)}
+	 * compares BigDecimals with {@code equals()}, which is scale-sensitive, and a quantity read back from
+	 * the database carries its column's scale, not the one the expectation was written with.
+	 */
+	public AssertThat<T> isEqualByComparingTo(@NonNull final BigDecimal expected)
+	{
+		final BigDecimal actualBD = actual instanceof BigDecimal ? (BigDecimal)actual : null;
+		if (actualBD == null || actualBD.compareTo(expected) != 0)
 		{
 			fail("Expected " + what + " to be <" + expected + "> but was <" + actual + ">");
 		}

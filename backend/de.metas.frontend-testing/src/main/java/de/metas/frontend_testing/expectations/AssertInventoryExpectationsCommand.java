@@ -1,5 +1,7 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.frontend_testing.expectations.request.JsonInventoryExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -13,11 +15,13 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.fail;
@@ -110,6 +114,58 @@ class AssertInventoryExpectationsCommand
 			final long actualCount = countMatchingInventories(inventoryLines, description);
 			assertThat(actualCount).as(countAssertionLabel(expectation)).isEqualTo((long)expectation.getCount());
 		}
+
+		if (expectation.getQtyBook() != null || expectation.getQtyCount() != null)
+		{
+			// Same record as every check above: the DESCRIBED inventory when a description was given,
+			// else the latest one referencing the HU.
+			final Inventory inventory = description != null
+					? describedInventory
+					: (inventoryLines.isEmpty() ? null : getLatestInventory(inventoryLines));
+			if (inventory == null)
+			{
+				fail("Expected an inventory document"
+						+ (description != null ? " with description '" + description + "'" : "")
+						+ " to assert qtyBook/qtyCount on, but none was found");
+				return;
+			}
+
+			assertQtys(inventoryLines, inventory.getId(), expectation);
+		}
+	}
+
+	/**
+	 * Asserts the expectation's {@code qtyBook}/{@code qtyCount} against the HU's lines of {@code inventoryId},
+	 * summed because one inventory document may carry several lines for the same HU.
+	 */
+	@VisibleForTesting
+	static void assertQtys(
+			@NonNull final List<I_M_InventoryLine> inventoryLines,
+			@NonNull final InventoryId inventoryId,
+			@NonNull final JsonInventoryExpectation expectation)
+	{
+		final List<I_M_InventoryLine> linesOfInventory = inventoryLines.stream()
+				.filter(line -> line.getM_Inventory_ID() == inventoryId.getRepoId())
+				.collect(ImmutableList.toImmutableList());
+
+		if (expectation.getQtyBook() != null)
+		{
+			assertThat(sum(linesOfInventory, I_M_InventoryLine::getQtyBook)).as("QtyBook").isEqualByComparingTo(expectation.getQtyBook());
+		}
+		if (expectation.getQtyCount() != null)
+		{
+			assertThat(sum(linesOfInventory, I_M_InventoryLine::getQtyCount)).as("QtyCount").isEqualByComparingTo(expectation.getQtyCount());
+		}
+	}
+
+	private static BigDecimal sum(
+			@NonNull final List<I_M_InventoryLine> inventoryLines,
+			@NonNull final Function<I_M_InventoryLine, BigDecimal> qtyGetter)
+	{
+		return inventoryLines.stream()
+				.map(qtyGetter)
+				.map(qty -> qty != null ? qty : BigDecimal.ZERO)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	/**

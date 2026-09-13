@@ -5,6 +5,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
 @Builder
@@ -20,4 +21,11 @@ public class JsonInventoryExpectation
 	 * Additive to {@link #isExists} — asserts "exactly N", not merely "at least one".
 	 */
 	@Nullable Integer count;
+	/**
+	 * Expected {@code QtyBook} of the asserted inventory document's lines for the HU (summed when it has
+	 * more than one). Compared numerically, so scale does not matter ({@code 0.002} equals {@code 0.00200}).
+	 */
+	@Nullable BigDecimal qtyBook;
+	/** Expected {@code QtyCount}, same scoping and comparison as {@link #qtyBook}. */
+	@Nullable BigDecimal qtyCount;
 }
