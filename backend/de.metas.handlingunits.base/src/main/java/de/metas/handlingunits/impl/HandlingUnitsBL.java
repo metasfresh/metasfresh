@@ -29,6 +29,7 @@ import com.google.common.collect.Maps;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUContextHolder;
@@ -82,6 +83,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
@@ -1500,6 +1502,23 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU huId)
 	{
 		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
+	public List<I_M_HU> retrieveIncludedHUs(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
+	public Optional<ProductId> getFirstPackingMaterialProductId(@NonNull final HuId huId)
+	{
+		return handlingUnitsRepo.retrievePackingMaterialAndQtys(getById(huId))
+				.stream()
+				.findFirst()
+				.map(IPair::getLeft)
+				.map(IHUPackingMaterialDAO::extractProductOrNull)
+				.map(product -> ProductId.ofRepoId(product.getM_Product_ID()));
 	}
 
 	@Override

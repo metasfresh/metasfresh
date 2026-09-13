@@ -111,11 +111,17 @@ const GetQuantityDialog = ({
   const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
   const readOnly = readOnlyParam || isProcessing;
 
+  // `getConfirmationPromptForQty` is generic: callers (e.g. the manufacturing issue step-scan screen,
+  // mirroring the picking over-pick prompt) decide whether/what to prompt, using the qty entered plus
+  // the rejected-qty context this dialog alone knows about (the selected rejection reason and its qty).
   const getConfirmationPrompt = useCallback(
     async (qtyInput) => {
-      return getConfirmationPromptForQty && (await getConfirmationPromptForQty(qtyInput));
+      return (
+        getConfirmationPromptForQty &&
+        (await getConfirmationPromptForQty(qtyInput, { qtyRejected, rejectedReason, uom }))
+      );
     },
-    [getConfirmationPromptForQty]
+    [getConfirmationPromptForQty, qtyRejected, rejectedReason, uom]
   );
 
   const fireOnQtyChange = useCallback(

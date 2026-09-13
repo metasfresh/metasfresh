@@ -35,6 +35,7 @@ public class JsonRawMaterialsIssueLineStep
 	@Nullable String qtyRejectedReasonCode;
 	@Nullable JsonScaleTolerance scaleTolerance;
 	@Nullable JsonDisplayableQRCode huQRCode;
+	boolean isAllowEmptying;
 
 	public static JsonRawMaterialsIssueLineStep of(RawMaterialsIssueStep step, JsonOpts jsonOpts)
 	{
@@ -51,7 +52,8 @@ public class JsonRawMaterialsIssueLineStep
 				.huId(step.getIssueFromHU().getId().toHUValue())
 				.uom(step.getQtyToIssue().getUOMSymbol())
 				.qtyHUCapacity(step.getIssueFromHU().getHuCapacity().toBigDecimal())
-				.qtyToIssue(step.getQtyToIssue().toBigDecimal());
+				.qtyToIssue(step.getQtyToIssue().toBigDecimal())
+				.isAllowEmptying(step.isAllowEmptying());
 
 		final PPOrderIssueSchedule.Issued issued = step.getIssued();
 		if (issued != null)

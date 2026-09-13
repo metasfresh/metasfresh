@@ -295,7 +295,7 @@ public final class InventoryRepository
 
 		final ImmutableSet<InventoryAndLineId> linesViaHUAssignment = queryBL.createQueryBuilder(I_M_HU_Assignment.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, TableIdsCache.instance.getTableId(I_M_InventoryLine.Table_Name))
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, TableIdsCache.instance.getTableIdNotNull(I_M_InventoryLine.Table_Name))
 				.filter(queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
 						.setJoinOr()
 						.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)

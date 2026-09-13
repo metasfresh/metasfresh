@@ -79,5 +79,7 @@ public class JsonMobileConfigResponse
 	{
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
+		@Nullable Boolean isAllowEmptyingHUs;
+		@Nullable Boolean isConfirmEmptyingHU;
 	}
 }

@@ -170,6 +170,7 @@ registerHandler({
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
     draftActivityDataStored.scaleDevice = fromActivity.componentProps.scaleDevice;
     draftActivityDataStored.qtyRejectedReasons = fromActivity.componentProps.qtyRejectedReasons;
+    draftActivityDataStored.isConfirmEmptyingHU = fromActivity.componentProps.confirmEmptyingHU;
     updateActivityBottomUp({ draftActivityDataStored });
   },
 });

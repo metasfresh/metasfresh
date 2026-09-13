@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { toastError } from '../../../../../utils/toast';
@@ -6,11 +6,17 @@ import { updateManufacturingIssue } from '../../../../../actions/ManufacturingAc
 
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../../../utils/qrCode/hu';
+import { computeIssueRequest } from './computeIssueRequest';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
-import { getActivityById, getStepByIdFromActivity } from '../../../../../reducers/wfProcesses';
+import {
+  getActivityById,
+  getStepByIdFromActivity,
+  QTY_REJECTED_REASON_EMPTIED_KEY,
+} from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
+import { formatQtyToHumanReadableStr } from '../../../../../utils/qtys';
 import { useBooleanSetting } from '../../../../../reducers/settings';
 import { useMobileNavigation } from '../../../../../hooks/useMobileNavigation';
 import {
@@ -26,6 +32,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
+  const isConfirmEmptyingHU = activity?.dataStored?.isConfirmEmptyingHU;
 
   const eligibleBarcode =
     stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
@@ -51,6 +58,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       lineQtyToIssueRemaining,
       lineQtyIssued,
       isWeightable,
+      isIssueWholeHU,
       qtyRejectedReasons,
       scaleDevice,
       scaleTolerance,
@@ -81,28 +89,32 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       // Props which are needed by `onResult` function (see below):
       stepId: step.id,
       isWeightable,
+      isIssueWholeHU,
     };
   };
+
+  // "Empty (auto. inventory)" write-off: on `isConfirmEmptyingHU`, confirm before booking, naming the
+  // leftover quantity and its UOM. Declining leaves the operator on this dialog and posts nothing.
+  const getEmptyingConfirmationPrompt = useCallback((qtyInput, { qtyRejected, rejectedReason, uom } = {}) => {
+    if (rejectedReason !== QTY_REJECTED_REASON_EMPTIED_KEY || !(qtyRejected > 0)) {
+      return undefined;
+    }
+    return trl('activities.manufacturing.confirmEmptyHUPrompt', {
+      qty: formatQtyToHumanReadableStr({ qty: qtyRejected, uom }),
+    });
+  }, []);
 
   const dispatch = useDispatch();
   const history = useMobileNavigation();
   const onResult = ({ qty = 0, qtyRejected = 0, reason = null, resolvedBarcodeData }) => {
     console.log('onResult', { qty, qtyRejected, reason, resolvedBarcodeData });
 
-    const stepId = resolvedBarcodeData.stepId;
-    const isWeightable = !!resolvedBarcodeData.isWeightable;
-    const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
-
     return dispatch(
       updateManufacturingIssue({
         wfProcessId,
         activityId,
         lineId,
-        stepId,
-        huWeightGrossBeforeIssue: isWeightable && isIssueWholeHU ? qty : null,
-        qtyIssued: qty,
-        qtyRejected: isIssueWholeHU ? qtyRejected : 0,
-        qtyRejectedReasonCode: isIssueWholeHU ? reason : null,
+        ...computeIssueRequest({ qty, qtyRejected, reason, resolvedBarcodeData }),
       })
     )
       .then(() => history.goBack())
@@ -123,6 +135,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       // scaleDevice={scaleDevice}
       //
       // Callbacks:
+      getConfirmationPromptForQty={isConfirmEmptyingHU ? getEmptyingConfirmationPrompt : undefined}
       onResult={onResult}
     />
   );

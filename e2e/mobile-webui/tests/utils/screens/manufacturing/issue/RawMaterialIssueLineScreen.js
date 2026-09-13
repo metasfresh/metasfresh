@@ -18,6 +18,14 @@ export const RawMaterialIssueLineScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    // Opens the scan screen only, leaving the GetQuantityDialog interaction to the caller — used
+    // when the caller needs to assert on the dialog (e.g. a reason's caption, or the confirmation
+    // prompt) before/instead of the all-in-one `scanQRCode` closing it.
+    openScanScreen: async () => await test.step(`${NAME} - Open scan screen`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+        await RawMaterialIssueLineScanScreen.waitForScreen();
+    }),
+
     scanQRCode: async ({ qrCode, expectQtyEntered, expectQtyTarget, expectQtyRemaining, qtyEntered }) => await test.step(`${NAME} - Scan QR code`, async () => {
         await page.getByTestId('scanQRCode-button').tap();
         await RawMaterialIssueLineScanScreen.waitForScreen();

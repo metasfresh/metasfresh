@@ -5,6 +5,7 @@ import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCod
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
@@ -15,6 +16,7 @@ import de.metas.frontend_testing.masterdata.uom.JsonUOMRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceRequest;
@@ -37,6 +39,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonLoginUserRequest> login;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
+	@Nullable Map<String, JsonCreateShipperRequest> shippers;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonUOMRequest> uoms;
 	@Nullable Map<String, JsonCreateProductRequest> products;
@@ -45,6 +48,7 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonPickingSlotCreateRequest> pickingSlots;
 	@Nullable Map<String, JsonPackingInstructionsRequest> packingInstructions;
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
+	@Nullable Map<String, JsonPackageRequest> packages;
 	@Nullable Map<String, JsonGenerateHUQRCodeRequest> generatedHUQRCodes;
 	@Nullable Map<String, JsonSalesOrderCreateRequest> salesOrders;
 	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;

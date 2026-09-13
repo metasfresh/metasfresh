@@ -98,6 +98,29 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow emptying HUs.
+	 * Offers the reason "empty (auto. inventory)" on the raw-materials issue step. Choosing that reason books the HU's remaining quantity off stock automatically, through a completed inventory document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowEmptyingHUs (boolean IsAllowEmptyingHUs);
+
+	/**
+	 * Get Allow emptying HUs.
+	 * Offers the reason "empty (auto. inventory)" on the raw-materials issue step. Choosing that reason books the HU's remaining quantity off stock automatically, through a completed inventory document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowEmptyingHUs();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowEmptyingHUs = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowEmptyingHUs", null);
+	String COLUMNNAME_IsAllowEmptyingHUs = "IsAllowEmptyingHUs";
+
+	/**
 	 * Set Allow issuing any HU.
 	 *
 	 * <br>Type: YesNo
@@ -117,6 +140,29 @@ public interface I_MobileUI_MFG_Config
 
 	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowIssuingAnyHU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowIssuingAnyHU", null);
 	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
+
+	/**
+	 * Set Confirm before booking.
+	 * Asks the operator to confirm, showing the quantity about to be written off and its unit of measure, before the HU's remaining quantity is booked off stock.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsConfirmEmptyingHU (boolean IsConfirmEmptyingHU);
+
+	/**
+	 * Get Confirm before booking.
+	 * Asks the operator to confirm, showing the quantity about to be written off and its unit of measure, before the HU's remaining quantity is booked off stock.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isConfirmEmptyingHU();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsConfirmEmptyingHU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsConfirmEmptyingHU", null);
+	String COLUMNNAME_IsConfirmEmptyingHU = "IsConfirmEmptyingHU";
 
 	/**
 	 * Set Scan Resource QR Code.
