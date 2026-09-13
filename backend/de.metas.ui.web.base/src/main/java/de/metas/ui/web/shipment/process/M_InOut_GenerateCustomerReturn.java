@@ -14,6 +14,7 @@ import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -33,6 +34,9 @@ public class M_InOut_GenerateCustomerReturn extends JavaProcess implements IProc
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
+	@Param(parameterName = "M_Warehouse_ID", mandatory = false)
+	private int p_M_Warehouse_ID;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -70,7 +74,10 @@ public class M_InOut_GenerateCustomerReturn extends JavaProcess implements IProc
 				.adOrgId(shipment.getAD_Org_ID())
 				.build());
 
-		final WarehouseId warehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
+		final WarehouseId warehouseIdOverride = WarehouseId.ofRepoIdOrNull(p_M_Warehouse_ID);
+		final WarehouseId warehouseId = warehouseIdOverride != null
+				? warehouseIdOverride
+				: huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
 		final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 
 		final I_M_InOut customerReturn = InterfaceWrapperHelper.copy()
