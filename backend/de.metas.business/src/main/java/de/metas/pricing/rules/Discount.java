@@ -22,6 +22,8 @@ package de.metas.pricing.rules;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.lang.SOTrx;
@@ -42,7 +44,6 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
