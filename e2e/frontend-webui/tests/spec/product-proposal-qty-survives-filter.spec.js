@@ -31,7 +31,7 @@ const STATS_ASYNC_MECHANISM =
 const DAYS_PATTERN = /^\d+$/;
 const hasDeliveryValue = (lastShipmentDaysText) => DAYS_PATTERN.test((lastShipmentDaysText || '').trim());
 
-test.describe('Product Proposals - quantity survives the filter (AC7)', () => {
+test.describe('Product Proposals - quantity survives the filter', () => {
   test('A typed quantity becomes an order line whatever the filter is set to', async ({
     page,
   }) => {

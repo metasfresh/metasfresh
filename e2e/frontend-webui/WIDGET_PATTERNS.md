@@ -63,15 +63,15 @@ handleMouseDown(option) {
 - **Input field**: `#lookup_C_BPartner_ID input.input-field`
 - **Dropdown list**: `.input-dropdown-list`
 - **Dropdown options**: `.input-dropdown-list-option`
-- **Loading spinner**: none — `#lookup_C_BPartner_ID .rotating` and `.indicator-pending` are **never rendered** by the frontend (verified: `grep -rn "indicator-pending\|rotating" frontend/src frontend/scss` matches only `window-indicator.scss`'s `@keyframes`/`animation-name`, never a class on an element). A `waitFor({ state: 'detached' })` on either resolves on the first poll and proves nothing. See [claude-docs/selectors-and-gotchas.md](claude-docs/selectors-and-gotchas.md) § "Dead Settle-Wait" — the authoritative writeup, with the worked `page.waitForResponse` replacement.
+- **Loading spinner**: none — `#lookup_C_BPartner_ID .rotating` and `.indicator-pending` are **never rendered** by the frontend (verified: `grep -rn "indicator-pending\|rotating" frontend/src` matches only `frontend/src/assets/css/window-indicator.scss`'s `@keyframes`/`animation-name`, never a class on an element). A `waitFor({ state: 'detached' })` on either resolves on the first poll and proves nothing. Wait on the actual round-trip instead — `page.waitForResponse` on the request the interaction makes, with the promise created **before** the click that triggers it (worked example: `tests/utils/pages/ProductProposalPage.js`, `setFilter` / `enterQty`).
 
 **Working Interaction Pattern**:
 ```javascript
 // Debounce timeout + dropdown-visibility wait below are the real, verified signals this
 // interaction depends on. Earlier versions of this pattern also waited on `#lookup_${fieldName}
 // .rotating` / `.indicator-pending` / `networkidle` as "loading" signals — none of those are ever
-// emitted by the frontend (see claude-docs/selectors-and-gotchas.md § "Dead Settle-Wait" for why
-// and for the page.waitForResponse pattern this suite actually uses instead); removed here.
+// emitted by the frontend, and `networkidle` resolves immediately on an already-loaded page and
+// does not track XHRs started after the call; removed here.
 static async selectLookupValue(fieldName, searchText, optionText) {
   const page = getPage();
 
@@ -113,15 +113,15 @@ static async selectLookupValue(fieldName, searchText, optionText) {
   // 9. Press Tab to confirm and trigger save
   await page.keyboard.press('Tab');
 
-  // 10. Wait for save to complete — for a real save-completion signal, wait on the
-  // page.waitForResponse for the field's PATCH/edit call (see claude-docs/selectors-and-gotchas.md
-  // § "Dead Settle-Wait" for the worked example), not on a fixed timeout.
+  // 10. Wait for save to complete — for a real save-completion signal, wait on
+  // page.waitForResponse for the field's PATCH/edit call (armed before the blur), not on a fixed
+  // timeout.
   await page.waitForTimeout(300);
 }
 ```
 
 **Common Pitfalls**:
-1. **`.rotating`/`.indicator-pending` are not real signals**: never rendered by the frontend — a `waitFor({ state: 'detached' })` on either resolves instantly and proves nothing. Wait on the debounce timeout + dropdown visibility, or better, `page.waitForResponse` on the actual network call (see [claude-docs/selectors-and-gotchas.md](claude-docs/selectors-and-gotchas.md) § "Dead Settle-Wait")
+1. **`.rotating`/`.indicator-pending` are not real signals**: never rendered by the frontend — a `waitFor({ state: 'detached' })` on either resolves instantly and proves nothing. Wait on the debounce timeout + dropdown visibility, or better, `page.waitForResponse` on the actual network call — armed before the action that triggers it
 2. **Clicking too fast**: Allow 500ms debounce after typing before clicking option
 3. **Not pressing Tab**: Selection commits on blur - Tab ensures the save triggers
 4. **Wrong selector scope**: Dropdown list is NOT inside `#lookup_X`, it's a separate element
