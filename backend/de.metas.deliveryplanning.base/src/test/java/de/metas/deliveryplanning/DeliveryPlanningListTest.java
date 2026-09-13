@@ -24,22 +24,33 @@ package de.metas.deliveryplanning;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.deliveryplanning.DeliveryPlanningList.AggregationKeyField;
+import de.metas.deliveryplanning.DeliveryPlanningList.PoolEnd;
+import de.metas.inout.InOutId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 
 import static de.metas.deliveryplanning.DeliveryPlanningAllocTestHelper.allocatedTo;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Pure in-memory combinatorics of the aggregation admissibility rule.
@@ -52,18 +63,110 @@ class DeliveryPlanningListTest
 {
 	private static int nextId = 1;
 
+	private static I_C_UOM uom;
+
+	@BeforeAll
+	static void init()
+	{
+		// no database: AdempiereTestHelper wires only the in-memory POJO/model-instance framework Quantity's
+		// constructor needs to hold an I_C_UOM - nothing here touches a real (Postgres) connection.
+		AdempiereTestHelper.get().init();
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
+	}
+
+	private static Quantity qty(final int value)
+	{
+		return Quantity.of(BigDecimal.valueOf(value), uom);
+	}
+
 	private static DeliveryPlanning.DeliveryPlanningBuilder planning()
 	{
 		return DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
-				.transportDirection(TransportDirection.Outgoing);
+				.transportDirection(TransportDirection.Outgoing)
+				.qtyOrdered(qty(0))
+				.plannedLoadedQty(qty(0))
+				.actualLoadedQty(qty(0))
+				.plannedDischargeQty(qty(0))
+				.actualDischargeQty(qty(0))
+				.qtyTotalOpen(qty(0))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()));
+	}
+
+	@Nested
+	@DisplayName("QtyTotalOpenPlanned counts a RECEIVED sibling by what it actually took")
+	class QtyTotalOpenPlannedCountsActuals
+	{
+		/**
+		 * Reported from the window: an order of 100 split into two plannings of 50. The first is allocated to a
+		 * completed instruction and received, but only 40 of its 50. QtyTotalOpen correctly reads 60 (100 - 40),
+		 * while QtyTotalOpenPlanned read 0 - as if both plannings still claimed their full 50 - when the honest
+		 * figure is 10: the first sibling's claim is settled at the 40 it actually took, so 100 - 40 - 50.
+		 * <p>
+		 * openPlanQty already applied exactly this rule via PoolEnd#effectiveQty; qtyTotalOpenPlanned summed the
+		 * RAW planned figures instead, and the two drifted.
+		 */
+		private DeliveryPlanningList orderOf100SplitInTwo(final int firstActualDischarge)
+		{
+			return DeliveryPlanningList.of(
+					planning()
+							.transportDirection(TransportDirection.Incoming)
+							.qtyOrdered(qty(100))
+							.plannedDischargeQty(qty(50))
+							.actualDischargeQty(qty(firstActualDischarge))
+							.build(),
+					planning()
+							.transportDirection(TransportDirection.Incoming)
+							.qtyOrdered(qty(100))
+							.plannedDischargeQty(qty(50))
+							.actualDischargeQty(qty(0))
+							.build());
+		}
+
+		@Test
+		@DisplayName("a sibling received SHORT settles its claim at the actual, so the line still has 10 unplanned")
+		void receivedShortSettlesAtTheActual()
+		{
+			final DeliveryPlanningList list = orderOf100SplitInTwo(40);
+
+			assertThat(list.qtyTotalOpen(DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal())
+					.as("the delivered side was already right: 100 - 40")
+					.isEqualByComparingTo("60");
+			assertThat(list.qtyTotalOpenPlanned(DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal())
+					.as("100 - 40 (settled by what the first sibling took) - 50 (the second still claims its plan)")
+					.isEqualByComparingTo("10");
+		}
+
+		@Test
+		@DisplayName("with nothing received yet, both siblings still claim their plan and nothing is open")
+		void nothingReceivedKeepsThePlannedClaim()
+		{
+			final DeliveryPlanningList list = orderOf100SplitInTwo(0);
+
+			assertThat(list.qtyTotalOpenPlanned(DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal())
+					.as("a zero actual is not a settlement - the planned 50 + 50 still claim the whole line")
+					.isEqualByComparingTo("0");
+		}
+
+		@Test
+		@DisplayName("it agrees with openPlanQty, which excludes nothing - the two must not drift again")
+		void agreesWithOpenPlanQty()
+		{
+			final DeliveryPlanningList list = orderOf100SplitInTwo(40);
+
+			assertThat(list.qtyTotalOpenPlanned(DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal())
+					.isEqualByComparingTo(list.openPlanQty(null, DeliveryPlanningList.PoolEnd.DISCHARGE).toBigDecimal());
+		}
 	}
 
 	private static DeliveryPlanning withShipper(@Nullable final Integer shipperRepoId)
 	{
 		return planning()
 				.shipperId(shipperRepoId != null ? ShipperId.ofRepoId(shipperRepoId) : null)
+				.qtyTotalOpen(qty(0))
 				.build();
 	}
 
@@ -142,24 +245,40 @@ class DeliveryPlanningListTest
 					.id(DeliveryPlanningId.ofRepoId(nextId++))
 					.orgId(OrgId.ofRepoId(1000000))
 					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(0))
+					.plannedLoadedQty(qty(0))
+					.actualLoadedQty(qty(0))
+					.plannedDischargeQty(qty(0))
+					.actualDischargeQty(qty(0))
 					.shipperId(ShipperId.ofRepoId(540001))
 					.incotermsId(IncotermsId.ofRepoId(540002))
 					.incotermLocation("Hamburg")
 					.meansOfTransportationId(MeansOfTransportationId.ofRepoId(540003))
 					.loadingLocationId(BPartnerLocationId.ofRepoId(540004, 540005))
 					.deliveryLocationId(BPartnerLocationId.ofRepoId(540006, 540007))
+					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 					.build();
 
 			final DeliveryPlanning row2 = DeliveryPlanning.builder()
 					.id(DeliveryPlanningId.ofRepoId(nextId++))
 					.orgId(OrgId.ofRepoId(1000001))
 					.transportDirection(TransportDirection.Incoming)
+					.qtyOrdered(qty(0))
+					.plannedLoadedQty(qty(0))
+					.actualLoadedQty(qty(0))
+					.plannedDischargeQty(qty(0))
+					.actualDischargeQty(qty(0))
 					.shipperId(ShipperId.ofRepoId(540011))
 					.incotermsId(IncotermsId.ofRepoId(540012))
 					.incotermLocation("Rotterdam")
 					.meansOfTransportationId(MeansOfTransportationId.ofRepoId(540013))
 					.loadingLocationId(BPartnerLocationId.ofRepoId(540014, 540015))
 					.deliveryLocationId(BPartnerLocationId.ofRepoId(540016, 540017))
+					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 					.build();
 
 			assertThat(DeliveryPlanningList.of(row1, row2).aggregationKeyViolations())
@@ -177,7 +296,15 @@ class DeliveryPlanningListTest
 					.id(DeliveryPlanningId.ofRepoId(idRepoId))
 					.orgId(OrgId.ofRepoId(1000000))
 					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(0))
+					.plannedLoadedQty(qty(0))
+					.actualLoadedQty(qty(0))
+					.plannedDischargeQty(qty(0))
+					.actualDischargeQty(qty(0))
 					.etd(etd != null ? Instant.parse(etd) : null)
+					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 					.build();
 		}
 
@@ -308,6 +435,54 @@ class DeliveryPlanningListTest
 					withDirection(TransportDirection.Incoming));
 
 			assertThat(list.getSingleTransportDirection()).isEmpty();
+		}
+	}
+
+	@Nested
+	@DisplayName("getSinglePoolEnd")
+	class SinglePoolEnd
+	{
+		private DeliveryPlanning withDirection(final TransportDirection transportDirection)
+		{
+			return planning().transportDirection(transportDirection).build();
+		}
+
+		@Test
+		@DisplayName("an empty selection nets no end")
+		void emptySelection()
+		{
+			assertThat(DeliveryPlanningList.EMPTY.getSinglePoolEnd()).isEmpty();
+		}
+
+		@Test
+		@DisplayName("an Outgoing selection nets LOAD")
+		void outgoingSelection()
+		{
+			assertThat(DeliveryPlanningList.of(withDirection(TransportDirection.Outgoing)).getSinglePoolEnd())
+					.contains(DeliveryPlanningList.PoolEnd.LOAD);
+		}
+
+		@Test
+		@DisplayName("Incoming and Dropship are different directions but net the SAME end - the mix is admissible")
+		void incomingAndDropshipMix()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withDirection(TransportDirection.Incoming),
+					withDirection(TransportDirection.Dropship));
+
+			assertThat(list.getSingleTransportDirection()).as("the directions themselves disagree").isEmpty();
+			assertThat(list.getSinglePoolEnd()).contains(DeliveryPlanningList.PoolEnd.DISCHARGE);
+		}
+
+		@Test
+		@DisplayName("rows netting different ends carry none")
+		void bothEndsSelection()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					withDirection(TransportDirection.Outgoing),
+					withDirection(TransportDirection.Incoming));
+
+			assertThat(list.getSinglePoolEnd()).isEmpty();
 		}
 	}
 
@@ -536,6 +711,370 @@ class DeliveryPlanningListTest
 		void nullStaysNull()
 		{
 			assertThat(AggregationKeyField.toProcessParameterValue(null)).isNull();
+		}
+	}
+
+	@Nested
+	@DisplayName("openTotals")
+	class OpenTotals
+	{
+		private DeliveryPlanning row(final int qtyOrdered, final int plannedLoad, final int actualLoad)
+		{
+			return DeliveryPlanning.builder()
+					.id(DeliveryPlanningId.ofRepoId(nextId++))
+					.orgId(OrgId.ofRepoId(1000000))
+					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(qtyOrdered))
+					.plannedLoadedQty(qty(plannedLoad))
+					.actualLoadedQty(qty(actualLoad))
+					.plannedDischargeQty(qty(0))
+					.actualDischargeQty(qty(0))
+					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+					.build();
+		}
+
+		@Test
+		@DisplayName("returns exactly what the two single-value methods return, for the same pool end")
+		void agreesWithTheSingleValueMethods()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(row(100, 40, 25), row(50, 10, 10));
+
+			final DeliveryPlanningList.OpenTotals totals = list.openTotals(PoolEnd.LOAD);
+
+			assertThat(totals.getQtyTotalOpen()).isEqualByComparingTo(list.qtyTotalOpen(PoolEnd.LOAD).toBigDecimal());
+			assertThat(totals.getQtyTotalOpenPlanned()).isEqualByComparingTo(list.qtyTotalOpenPlanned(PoolEnd.LOAD).toBigDecimal());
+		}
+
+		@Test
+		@DisplayName("both halves come from the SAME pool end - the point of returning them together")
+		void bothHalvesUseTheGivenEnd()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(row(100, 40, 25));
+
+			final DeliveryPlanningList.OpenTotals load = list.openTotals(PoolEnd.LOAD);
+			final DeliveryPlanningList.OpenTotals discharge = list.openTotals(PoolEnd.DISCHARGE);
+
+			assertThat(load.getQtyTotalOpen()).isEqualByComparingTo(list.qtyTotalOpen(PoolEnd.LOAD).toBigDecimal());
+			assertThat(discharge.getQtyTotalOpen()).isEqualByComparingTo(list.qtyTotalOpen(PoolEnd.DISCHARGE).toBigDecimal());
+		}
+
+		@Test
+		@DisplayName("an empty selection is refused, exactly as the single-value methods refuse it")
+		void emptySelectionIsRefused()
+		{
+			// not a gap: qtyTotalOpen guards an empty list on purpose, and openTotals must not soften that
+			// into a silent zero, which would write 0 onto every planning of the line.
+			assertThatThrownBy(() -> DeliveryPlanningList.EMPTY.openTotals(DeliveryPlanningList.PoolEnd.LOAD))
+					.hasMessageContaining("empty DeliveryPlanningList");
+		}
+	}
+
+	@Nested
+	@DisplayName("openPlanQty")
+	class OpenPlanQty
+	{
+		private DeliveryPlanning poolPlanning(
+				final int idRepoId,
+				final int qtyOrdered,
+				final int plannedLoad,
+				final int actualLoad,
+				final int plannedDischarge,
+				final int actualDischarge)
+		{
+			return DeliveryPlanning.builder()
+					.id(DeliveryPlanningId.ofRepoId(idRepoId))
+					.orgId(OrgId.ofRepoId(1000000))
+					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(qtyOrdered))
+					.plannedLoadedQty(qty(plannedLoad))
+					.actualLoadedQty(qty(actualLoad))
+					.plannedDischargeQty(qty(plannedDischarge))
+					.actualDischargeQty(qty(actualDischarge))
+					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+					.build();
+		}
+
+		@Test
+		@DisplayName("a single planning, excluded from its own pool, leaves nothing claimed: the pool is the full QtyOrdered")
+		void singlePlanningExcludedIsTheFirstSplit()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(701);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(701, 10, 10, 0, 10, 0));
+
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD)).isEqualTo(qty(10));
+		}
+
+		@Test
+		@DisplayName("nullif: a sibling whose actual is 0 (nothing recorded yet) is claimed at its PLANNED figure, not zero")
+		void siblingActualZeroFallsBackToPlanned()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(702);
+			final DeliveryPlanning sibling = poolPlanning(703, 20, 10, 0, 10, 0);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(702, 20, 10, 0, 10, 0),
+					sibling);
+
+			// a planned-only-ignoring-nullif bug would read the sibling's actual (0) as a real zero and answer
+			// 20 here instead of 10 - exactly the inflation the nullif rule exists to prevent.
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD)).isEqualTo(qty(10));
+		}
+
+		@Test
+		@DisplayName("coalesce: a sibling with a recorded nonzero actual is claimed at its ACTUAL, not its planned figure")
+		void siblingWithActualIsClaimedAtItsActual()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(704);
+			final DeliveryPlanning sibling = poolPlanning(705, 20, 10, 6, 10, 6);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(704, 20, 10, 0, 10, 0),
+					sibling);
+
+			// a planned-only implementation would read the sibling's claim as its planned 10 and answer 10 here;
+			// the sibling actually delivered less (6) than planned, so more of the line is still open: 14.
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD)).isEqualTo(qty(14));
+		}
+
+		@Test
+		@DisplayName("excludePlanningId null (allocated target): every planning's claim counts, the target's own included")
+		void nullExcludeIncludesTheTargetItself()
+		{
+			final DeliveryPlanning allocatedTarget = poolPlanning(706, 10, 10, 0, 10, 0);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(allocatedTarget);
+
+			assertThat(list.openPlanQty(null, PoolEnd.LOAD)).isEqualTo(qty(0));
+		}
+
+		@Test
+		@DisplayName("load and discharge are independent pairs - each end nets only its own columns")
+		void loadAndDischargeAreIndependent()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(707);
+			final DeliveryPlanning sibling = poolPlanning(708, 20, 12, 0, 3, 0);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(707, 20, 0, 0, 0, 0),
+					sibling);
+
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD)).isEqualTo(qty(8));
+			assertThat(list.openPlanQty(target, PoolEnd.DISCHARGE)).isEqualTo(qty(17));
+		}
+
+		@Test
+		@DisplayName("the pool is NOT floored at zero here - an over-planned line answers negative, the split's own caller clamps")
+		void notClampedHere()
+		{
+			final DeliveryPlanningId target = DeliveryPlanningId.ofRepoId(709);
+			final DeliveryPlanning sibling = poolPlanning(710, 10, 15, 0, 10, 0);
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(709, 10, 0, 0, 0, 0),
+					sibling);
+
+			assertThat(list.openPlanQty(target, PoolEnd.LOAD).toBigDecimal())
+					.isEqualByComparingTo(BigDecimal.valueOf(-5));
+		}
+	}
+
+	@Nested
+	@DisplayName("getDeliveredState")
+	class GetDeliveredState
+	{
+		private DeliveryPlanning delivered()
+		{
+			return planning().inOutId(InOutId.ofRepoId(900001)).build();
+		}
+
+		private DeliveryPlanning notDelivered()
+		{
+			return planning().build();
+		}
+
+		@Test
+		@DisplayName("an empty selection (no active allocation) is NotDelivered - vacuously, same condition as an all-open one")
+		void emptySelectionIsNotDelivered()
+		{
+			assertThat(DeliveryPlanningList.EMPTY.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.NotDelivered);
+		}
+
+		@Test
+		@DisplayName("no allocation's planning is delivered")
+		void noneDelivered()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(notDelivered(), notDelivered());
+
+			assertThat(list.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.NotDelivered);
+		}
+
+		@Test
+		@DisplayName("some are delivered, some are not - the normal intermediate state, not an edge case")
+		void someDelivered()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(delivered(), notDelivered());
+
+			assertThat(list.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.PartlyDelivered);
+		}
+
+		@Test
+		@DisplayName("every allocation's planning is delivered")
+		void allDelivered()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(delivered(), delivered());
+
+			assertThat(list.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.FullyDelivered);
+		}
+
+		@Test
+		@DisplayName("a single delivered row is trivially FullyDelivered, never PartlyDelivered")
+		void singleDeliveredRow()
+		{
+			assertThat(DeliveryPlanningList.of(delivered()).getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.FullyDelivered);
+		}
+
+		@Test
+		@DisplayName("reversal: a FullyDelivered instruction whose one allocation loses its receipt/shipment link falls back to PartlyDelivered, never NotDelivered")
+		void reversalOfOneOfTwoFallsBackToPartlyDelivered()
+		{
+			final DeliveryPlanningList fully = DeliveryPlanningList.of(delivered(), delivered());
+			assertThat(fully.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.FullyDelivered);
+
+			// same two allocations, one now reversed (M_InOut_ID cleared) - exactly what afterReverseCorrect does
+			final DeliveryPlanningList afterReversal = DeliveryPlanningList.of(delivered(), notDelivered());
+			assertThat(afterReversal.getDeliveredState()).isEqualTo(DeliveryInstructionDeliveredState.PartlyDelivered);
+		}
+	}
+
+	/**
+	 * Order-line TOTALS, summed straight - no nullif/coalesce fallback and no target exclusion, unlike
+	 * {@link OpenPlanQty}'s split-facing pool.
+	 */
+	@Nested
+	@DisplayName("qtyTotalOpen / qtyTotalOpenPlanned")
+	class OpenQuantities
+	{
+		private DeliveryPlanning poolPlanning(
+				final int idRepoId,
+				final int qtyOrdered,
+				final int plannedLoad,
+				final int actualLoad,
+				final int plannedDischarge,
+				final int actualDischarge)
+		{
+			return DeliveryPlanning.builder()
+					.id(DeliveryPlanningId.ofRepoId(idRepoId))
+					.orgId(OrgId.ofRepoId(1000000))
+					.transportDirection(TransportDirection.Outgoing)
+					.qtyOrdered(qty(qtyOrdered))
+					.plannedLoadedQty(qty(plannedLoad))
+					.actualLoadedQty(qty(actualLoad))
+					.plannedDischargeQty(qty(plannedDischarge))
+					.actualDischargeQty(qty(actualDischarge))
+					.qtyTotalOpen(qty(0))
+					.bpartnerId(BPartnerId.ofRepoId(2000000))
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+					.build();
+		}
+
+		@Test
+		@DisplayName("QtyTotalOpen sums every sibling's ACTUAL, not just this row's own")
+		void qtyTotalOpenSumsAcrossSiblings()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(801, 20, 10, 3, 0, 0),
+					poolPlanning(802, 20, 10, 2, 0, 0));
+
+			assertThat(list.qtyTotalOpen(PoolEnd.LOAD)).isEqualTo(qty(15));
+		}
+
+		@Test
+		@DisplayName("QtyTotalOpen is NOT floored at zero - an over-delivered line answers negative")
+		void qtyTotalOpenNotClamped()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(803, 10, 0, 7, 0, 0),
+					poolPlanning(804, 10, 0, 6, 0, 0));
+
+			assertThat(list.qtyTotalOpen(PoolEnd.LOAD).toBigDecimal()).isEqualByComparingTo(BigDecimal.valueOf(-3));
+		}
+
+		@Test
+		@DisplayName("QtyTotalOpenPlanned sums every sibling's PLANNED, never falling back to actual")
+		void qtyTotalOpenPlannedSumsAcrossSiblings()
+		{
+			final DeliveryPlanningList list = DeliveryPlanningList.of(
+					poolPlanning(805, 20, 6, 0, 0, 0),
+					poolPlanning(806, 20, 6, 0, 0, 0));
+
+			assertThat(list.qtyTotalOpenPlanned(PoolEnd.LOAD)).isEqualTo(qty(8));
+		}
+
+		@Test
+		@DisplayName("PoolEnd.forDirection: a receipt (incoming or dropship) nets discharge, a shipment nets load")
+		void forDirection()
+		{
+			assertThat(PoolEnd.forDirection(TransportDirection.Incoming)).isEqualTo(PoolEnd.DISCHARGE);
+			assertThat(PoolEnd.forDirection(TransportDirection.Dropship)).isEqualTo(PoolEnd.DISCHARGE);
+			assertThat(PoolEnd.forDirection(TransportDirection.Outgoing)).isEqualTo(PoolEnd.LOAD);
+		}
+	}
+
+	@Nested
+	@DisplayName("A closed planning's actual is final, zero included")
+	class ProcessedPlanningClaimsItsActual
+	{
+		/**
+		 * Reported from the window: an open planning with a zero actual is still going to happen, so it claims its
+		 * PLANNED figure. A CLOSED one never will - whatever it took is all it is ever going to take - so a closed
+		 * planning that took nothing must claim NOTHING, releasing its share back to the open pool. Falling back to
+		 * its planned figure instead lets a dead planning keep reserving quantity that can never be delivered, and
+		 * the order line reads fully planned while part of it is unplannable.
+		 */
+		private DeliveryPlanningList orderOf100SplitInTwo(final int firstActualDischarge, final boolean firstProcessed)
+		{
+			return DeliveryPlanningList.of(
+					planning()
+							.transportDirection(TransportDirection.Incoming)
+							.qtyOrdered(qty(100))
+							.plannedDischargeQty(qty(50))
+							.actualDischargeQty(qty(firstActualDischarge))
+							.processed(firstProcessed)
+							.build(),
+					planning()
+							.transportDirection(TransportDirection.Incoming)
+							.qtyOrdered(qty(100))
+							.plannedDischargeQty(qty(50))
+							.actualDischargeQty(qty(0))
+							.build());
+		}
+
+		@Test
+		@DisplayName("closed having taken nothing: its 50 goes back to the open pool")
+		void closedWithZeroActualClaimsNothing()
+		{
+			assertThat(orderOf100SplitInTwo(0, true).qtyTotalOpenPlanned(PoolEnd.DISCHARGE)).isEqualTo(qty(50));
+		}
+
+		@Test
+		@DisplayName("still open having taken nothing: it keeps claiming its planned 50")
+		void openWithZeroActualStillClaimsItsPlan()
+		{
+			assertThat(orderOf100SplitInTwo(0, false).qtyTotalOpenPlanned(PoolEnd.DISCHARGE)).isEqualTo(qty(0));
+		}
+
+		@Test
+		@DisplayName("closed short: it claims the 40 it took, not the 50 it planned")
+		void closedShortClaimsWhatItTook()
+		{
+			assertThat(orderOf100SplitInTwo(40, true).qtyTotalOpenPlanned(PoolEnd.DISCHARGE)).isEqualTo(qty(10));
+		}
+
+		@Test
+		@DisplayName("openPlanQty applies the same rule, so the two computations cannot drift")
+		void openPlanQtyAppliesTheSameRule()
+		{
+			assertThat(orderOf100SplitInTwo(0, true).openPlanQty(null, PoolEnd.DISCHARGE)).isEqualTo(qty(50));
 		}
 	}
 }

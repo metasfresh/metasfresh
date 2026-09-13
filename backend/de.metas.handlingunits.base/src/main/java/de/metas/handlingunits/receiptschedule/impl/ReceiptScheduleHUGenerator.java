@@ -107,6 +107,13 @@ public class ReceiptScheduleHUGenerator
 	//
 	@Getter private boolean updateReceiptScheduleDefaultConfiguration = false; // default false, backward compatible; this flag is not considered by #generateAllPlanningHUs_InChunks()
 
+	/**
+	 * Whether the producer may CONSUME OR DESTROY the planning HUs already linked to the receipt schedule.
+	 * Default {@code true}, backward compatible - see {@link #setReuseExistingPlanningHUs(boolean)} for the one
+	 * case that turns it off.
+	 */
+	@Getter private boolean reuseExistingPlanningHUs = true;
+
 	//
 	// Status
 	private boolean _configurable = true;
@@ -154,6 +161,24 @@ public class ReceiptScheduleHUGenerator
 	{
 		assertConfigurable();
 		this.updateReceiptScheduleDefaultConfiguration = updateReceiptScheduleDefaultConfiguration;
+		return this;
+	}
+
+	/**
+	 * {@code false} keeps the planning HUs already linked to the receipt schedule out of this generation, so
+	 * they are neither reused nor destroyed.
+	 * <p>
+	 * The default {@code true} is right whenever a generation REPLACES what a schedule currently plans - one
+	 * schedule, one set of planning HUs, regenerated as the operator changes the configuration. It is wrong when
+	 * several generations have to COEXIST on one schedule, which happens when a delivery planning is split: the
+	 * split copies {@code M_ReceiptSchedule_ID} onto every new planning, so N plannings share ONE schedule and
+	 * each needs its own HUs sized to its own share. With the default, generating for the second planning finds
+	 * the first planning's HUs, decides they do not fit its configuration, and destroys them.
+	 */
+	public ReceiptScheduleHUGenerator setReuseExistingPlanningHUs(final boolean reuseExistingPlanningHUs)
+	{
+		assertConfigurable();
+		this.reuseExistingPlanningHUs = reuseExistingPlanningHUs;
 		return this;
 	}
 
@@ -514,7 +539,7 @@ public class ReceiptScheduleHUGenerator
 		// In case they are suitable, they will be used, else they will be destroyed.
 		// NOTE: we do this only if we have only one M_ReceiptSchedule
 		final I_M_ReceiptSchedule receiptSchedule = getSingleReceiptScheduleOrNull();
-		if (receiptSchedule != null)
+		if (receiptSchedule != null && isReuseExistingPlanningHUs())
 		{
 			final IHUAllocations huAllocations = getHUAllocations(receiptSchedule);
 			_lutuProducer.setExistingHUs(huAllocations);

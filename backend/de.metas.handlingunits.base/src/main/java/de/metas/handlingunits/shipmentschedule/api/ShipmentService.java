@@ -345,6 +345,7 @@ public class ShipmentService implements IShipmentService
 				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
+				.deliveryPlanningId(request.getDeliveryPlanningId())
 				.build();
 
 		return ShipmentScheduleEnqueuer.newInstance()

@@ -30,6 +30,10 @@ import lombok.Value;
 /**
  * What {@link DeliveryPlanningService#cancelDelivery} did with a selection, per row: cancelled, or skipped because
  * it was already closed ({@code Cancel} refuses only the closed rows, not the whole selection).
+ * <p>
+ * {@link #getSkippedAllocatedIds()} is a NARROWER skip than {@link #getSkippedClosedIds()}: a planning listed
+ * there IS fully cancelled, and is named only because its planned quantities were committed cargo and were left
+ * untouched. Such a planning appears in both {@link #getCancelledIds()} and there.
  */
 @Value
 @Builder
@@ -37,4 +41,5 @@ public class DeliveryPlanningCancelResult
 {
 	@NonNull ImmutableList<DeliveryPlanningId> cancelledIds;
 	@NonNull ImmutableList<DeliveryPlanningId> skippedClosedIds;
+	@NonNull ImmutableList<DeliveryPlanningId> skippedAllocatedIds;
 }
