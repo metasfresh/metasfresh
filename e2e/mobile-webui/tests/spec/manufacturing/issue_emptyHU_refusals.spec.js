@@ -297,12 +297,14 @@ test('TC11: a completed write-off inventory, and its packing material moved to t
 
     // Expect: the HU's quantity is zero and its HUStatus is closed (Destroyed) — AC21's "standard
     // behaviour" outcome — AND a completed write-off inventory carrying the AC4 description, same as
-    // the plain-VHU core case (TC1). On a PI-produced TU, the entered qty is routed through the HU's
-    // weight confirmation (`PPOrderIssueScheduleService.weightHU` -> `WeightHUCommand`, since a
-    // packing-material TU is weight-tracked) BEFORE the ordinary issue drains it the rest of the way,
-    // so the actual write-off is this weight-confirmation SingleHUInventory, not
-    // `bookEmptiedHUToZero`'s own (which by then finds the HU already empty and no-ops) — see the task
-    // report for the traced mechanism and the psql evidence.
+    // the plain-VHU core case (TC1).
+    //
+    // Mechanism: the typed 0.498 is BELOW the step's whole-HU capacity (0.5), so the frontend sends no
+    // `huWeightGrossBeforeIssue` (weight is sent only when `uom === 'kg' && typedQty >=
+    // qtyHUCapacity`) and no weight confirmation happens. The issue splits off exactly the typed
+    // 0.498, and it is `bookEmptiedHUToZero` — reached because the reason is "E" — that books the
+    // remaining 0.002 KGM to zero via the described, completed inventory asserted below, which then
+    // empties the TU's storage and destroys it.
     await Backend.expect({
         hus: {
             [masterdata.handlingUnits.HU.qrCode]: {
