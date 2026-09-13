@@ -6,6 +6,7 @@ import { updateManufacturingIssue } from '../../../../../actions/ManufacturingAc
 
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../../../utils/qrCode/hu';
+import { computeIssueRequest } from './computeIssueRequest';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
@@ -108,35 +109,12 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const onResult = ({ qty = 0, qtyRejected = 0, reason = null, resolvedBarcodeData }) => {
     console.log('onResult', { qty, qtyRejected, reason, resolvedBarcodeData });
 
-    const stepId = resolvedBarcodeData.stepId;
-    const isWeightable = !!resolvedBarcodeData.isWeightable;
-    // The whole-HU decision must be the one made when the step was offered (target vs the HU's own
-    // capacity — computeStepScanPropsFromActivity.js), not recomputed from the qty the operator
-    // actually typed: typing less than capacity is exactly the "issue a partial amount with a
-    // reason" case (not found / damaged / empty), and recomputing from the entered qty always
-    // evaluates false there, silently dropping qtyRejected/qtyRejectedReasonCode before they reach
-    // the backend.
-    const isIssueWholeHU = !!resolvedBarcodeData.isIssueWholeHU;
-    // ...but the WEIGHT field answers a different question: "did the operator physically weigh the
-    // whole container?" That is a fact about what was measured (the entered qty), so it must NOT ride
-    // on the offer-time flag above. Predicate taken verbatim from
-    // https://github.com/metasfresh/metasfresh/pull/25716 (merged to new_dawn_uat as d58d99fa1c0),
-    // which fixed this independently on intensive_care_hotfix; that commit is not an ancestor of
-    // task_force_hotfix, so keeping the predicates identical is what stops a third divergent variant
-    // of these three lines colliding at the next merge-up.
-    const isQtyEnteredAsWeight = resolvedBarcodeData.uom === 'kg';
-    const isWeighedFullHU = isIssueWholeHU && isQtyEnteredAsWeight;
-
     return dispatch(
       updateManufacturingIssue({
         wfProcessId,
         activityId,
         lineId,
-        stepId,
-        huWeightGrossBeforeIssue: isWeightable && isWeighedFullHU ? qty : null,
-        qtyIssued: qty,
-        qtyRejected: isIssueWholeHU ? qtyRejected : 0,
-        qtyRejectedReasonCode: isIssueWholeHU ? reason : null,
+        ...computeIssueRequest({ qty, qtyRejected, reason, resolvedBarcodeData }),
       })
     )
       .then(() => history.goBack())
