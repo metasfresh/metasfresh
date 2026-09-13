@@ -86,8 +86,17 @@ public class AssertThat<T>
 	 */
 	public AssertThat<T> isEqualByComparingTo(@NonNull final BigDecimal expected)
 	{
-		final BigDecimal actualBD = actual instanceof BigDecimal ? (BigDecimal)actual : null;
-		if (actualBD == null || actualBD.compareTo(expected) != 0)
+		if (!(actual instanceof BigDecimal))
+		{
+			// distinct from the value mismatch below: "but was <5>" for an Integer 5 reads as a value
+			// problem, while the actual defect is a caller handing in something that cannot be compared
+			// numerically at all.
+			fail("Expected " + what + " to be the BigDecimal <" + expected + "> but was "
+					+ (actual == null ? "null" : "a " + actual.getClass().getName() + " <" + actual + ">"));
+			return this;
+		}
+
+		if (((BigDecimal)actual).compareTo(expected) != 0)
 		{
 			fail("Expected " + what + " to be <" + expected + "> but was <" + actual + ">");
 		}
