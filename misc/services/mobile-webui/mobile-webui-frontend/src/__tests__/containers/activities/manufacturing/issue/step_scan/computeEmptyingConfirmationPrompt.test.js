@@ -37,8 +37,9 @@ describe('computeEmptyingConfirmationPrompt', () => {
       resolvedBarcodeData: { qtyHUCapacity: 0.502 },
     });
 
-    expect(prompt).toMatch(/remaining 12(\.\d+)? g/);
-    expect(prompt).not.toMatch(/remaining 10(\.\d+)? g/);
+    // Exact string, no regex tolerance: what the operator READS is the point of this function, and
+    // 0.502 - 0.49 is 0.012000000000000011 in IEEE-754 -- unrounded it renders as "12.00000000000001 g".
+    expect(prompt).toEqual('This will write off the remaining 12 g and empty the HU. Continue?');
   });
 
   it('still names the leftover on a step that takes the whole HU', () => {
@@ -50,7 +51,7 @@ describe('computeEmptyingConfirmationPrompt', () => {
       rejectedReason: REASON_EMPTIED,
     });
 
-    expect(prompt).toMatch(/remaining 2(\.\d+)? g/);
+    expect(prompt).toEqual('This will write off the remaining 2 g and empty the HU. Continue?');
   });
 
   it('asks nothing for any other rejection reason', () => {
