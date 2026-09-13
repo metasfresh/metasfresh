@@ -10,6 +10,14 @@ import { DistributionJobsListFiltersScreen } from "../../utils/screens/distribut
 const CARRIER_GROUP_ID = 'carrierProduct';
 const CARRIER_GROUP_CAPTION = 'Lieferweg-Produkt';
 
+// Both tests send this so MobileConfigCommand actually invokes MobileConfigDistributionCommand:
+// without a `distribution` block it is never called, so requireTrolley and its siblings keep
+// whatever a previously-run spec set and this spec lands on a scan screen with no jobs listed.
+// allowPickingAnyHU is named because it is sticky (MobileConfigDistributionCommand:42) -- absent,
+// it keeps the previous value. captionFormat and orderBys are sticky too, but this spec identifies
+// its jobs by testId, so neither can change what it asserts.
+const DISTRIBUTION_CONFIG = { allowPickingAnyHU: true };
+
 // noinspection JSUnusedLocalSymbols
 test('A candidate-generated job is offered under its carrier; a route-less job is offered under none and disappears once a carrier chip is selected', async ({ page }) => {
     // === ALLURE METADATA ===
@@ -37,16 +45,7 @@ test('A candidate-generated job is offered under its carrier; a route-less job i
         language: "de_DE",
         request: {
             login: { mover: { language: "de_DE", workplace: 'packingWorkplace' } },
-            // Sending a `distribution` block at all is what force-resets requireTrolley and friends;
-            // omit it and a spec that turned one on leaves this one on a scan screen with no jobs.
-            // allowPickingAnyHU is sticky (MobileConfigDistributionCommand:42) and so is set here
-            // rather than inherited. captionFormat/orderBys are sticky too but this spec identifies
-            // its jobs by testId, so neither can affect what it asserts.
-            mobileConfig: {
-                distribution: {
-                    allowPickingAnyHU: true,
-                }
-            },
+            mobileConfig: { distribution: DISTRIBUTION_CONFIG },
             shippers: { carrierA: {} },   // no gateway; isApiCarrierAdvise defaults false
             products: { "P1": { price: 1 } },
             bpartners: { customerA: {} },
@@ -124,16 +123,7 @@ test('With only a route-less job on offer, no carrier filter group is offered at
         language: "de_DE",
         request: {
             login: { mover: { language: "de_DE", workplace: 'packingWorkplace' } },
-            // Sending a `distribution` block at all is what force-resets requireTrolley and friends;
-            // omit it and a spec that turned one on leaves this one on a scan screen with no jobs.
-            // allowPickingAnyHU is sticky (MobileConfigDistributionCommand:42) and so is set here
-            // rather than inherited. captionFormat/orderBys are sticky too but this spec identifies
-            // its jobs by testId, so neither can affect what it asserts.
-            mobileConfig: {
-                distribution: {
-                    allowPickingAnyHU: true,
-                }
-            },
+            mobileConfig: { distribution: DISTRIBUTION_CONFIG },
             products: { "P1": {} },   // no `price`: no sales order in this scenario needs a price list
             warehouses: {
                 "wh1": { locators: { wh1Locator: {} } },
