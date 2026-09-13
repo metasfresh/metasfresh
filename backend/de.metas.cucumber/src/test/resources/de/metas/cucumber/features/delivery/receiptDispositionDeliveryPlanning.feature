@@ -1241,7 +1241,7 @@ Feature: The receipt-disposition delivery-planning window lists what is arriving
       | RV_ReceiptDisposition_DeliveryPlanning_ID | M_Delivery_Planning_ID | M_ReceiptSchedule_ID      | OPT.IsPlanned | OPT.ContainerNo | OPT.IsBLReceived | OPT.IsBookingConfirmed | OPT.IsWENotice |
       | rowContainerPlain_RL                      | null                   | scheduleContainerPlain_RL | false         | CONT-RL-003     | true             | false                  | true           |
 
-  @Id:S31789_TC9g
+  @Id:S31789_TC9j
   Scenario: The batch receive packs into the row's OWN configuration, and a split row is packed to ITS share
 
     # The gap this pins. The batch receive builds a packing-free planning VHU, so a product WITH a packing
