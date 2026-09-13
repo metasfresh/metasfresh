@@ -37,6 +37,16 @@ test('A candidate-generated job is offered under its carrier; a route-less job i
         language: "de_DE",
         request: {
             login: { mover: { language: "de_DE", workplace: 'packingWorkplace' } },
+            // Sending a `distribution` block at all is what force-resets requireTrolley and friends;
+            // omit it and a spec that turned one on leaves this one on a scan screen with no jobs.
+            // allowPickingAnyHU is sticky (MobileConfigDistributionCommand:42) and so is set here
+            // rather than inherited. captionFormat/orderBys are sticky too but this spec identifies
+            // its jobs by testId, so neither can affect what it asserts.
+            mobileConfig: {
+                distribution: {
+                    allowPickingAnyHU: true,
+                }
+            },
             shippers: { carrierA: {} },   // no gateway; isApiCarrierAdvise defaults false
             products: { "P1": { price: 1 } },
             bpartners: { customerA: {} },
@@ -114,6 +124,16 @@ test('With only a route-less job on offer, no carrier filter group is offered at
         language: "de_DE",
         request: {
             login: { mover: { language: "de_DE", workplace: 'packingWorkplace' } },
+            // Sending a `distribution` block at all is what force-resets requireTrolley and friends;
+            // omit it and a spec that turned one on leaves this one on a scan screen with no jobs.
+            // allowPickingAnyHU is sticky (MobileConfigDistributionCommand:42) and so is set here
+            // rather than inherited. captionFormat/orderBys are sticky too but this spec identifies
+            // its jobs by testId, so neither can affect what it asserts.
+            mobileConfig: {
+                distribution: {
+                    allowPickingAnyHU: true,
+                }
+            },
             products: { "P1": {} },   // no `price`: no sales order in this scenario needs a price list
             warehouses: {
                 "wh1": { locators: { wh1Locator: {} } },
