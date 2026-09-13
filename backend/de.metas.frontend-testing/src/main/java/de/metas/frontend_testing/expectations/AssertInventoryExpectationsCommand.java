@@ -62,13 +62,12 @@ class AssertInventoryExpectationsCommand
 	{
 		final String description = expectation.getDescription();
 
-		// When a description is given, resolve THAT SPECIFIC inventory up front (the one whose
-		// description matches) so every check below (isExists, docStatus) uses the SAME record —
-		// never "any inventory referencing the HU" / "the latest one", which can silently pass
-		// against an unrelated (e.g. seed/weight-confirm) inventory that merely happens to be newest.
-		final Inventory describedInventory = description != null
-				? inventoryLines.stream().map(this::getInventoryOf).filter(inventory -> Objects.equals(inventory.getDescription(), description)).findFirst().orElse(null)
-				: null;
+		// Resolve THE ONE record every check below (isExists, docStatus, qtyBook/qtyCount) runs against,
+		// up front: when a description is given that is the inventory whose description matches — never
+		// "any inventory referencing the HU" / "the latest one", which can silently pass against an
+		// unrelated (e.g. seed/weight-confirm) inventory that merely happens to be newest.
+		final Inventory selectedInventory = selectInventory(inventoryLines, description, this::getInventoryOf);
+		final Inventory describedInventory = description != null ? selectedInventory : null;
 
 		if (expectation.getIsExists() != null)
 		{
@@ -89,18 +88,16 @@ class AssertInventoryExpectationsCommand
 			}
 
 			// docStatus is asserted on the DESCRIBED inventory when a description was given (same-record
-			// guarantee with the isExists/description checks above); otherwise fall back to the latest
-			// inventory referencing the HU (pre-existing behaviour for a docStatus-only expectation).
-			final Inventory inventory = description != null ? describedInventory : getLatestInventory(inventoryLines);
-
+			// guarantee with the isExists/description checks above); otherwise selectInventory falls back
+			// to the latest inventory referencing the HU (pre-existing docStatus-only behaviour).
 			if (expectation.getDocStatus() != null)
 			{
-				if (inventory == null)
+				if (selectedInventory == null)
 				{
 					fail("Expected an inventory document with description '" + description + "' to assert docStatus on, but none was found");
 					return;
 				}
-				assertThat(inventory.getDocStatus().getCode()).as("DocStatus").isEqualTo(expectation.getDocStatus());
+				assertThat(selectedInventory.getDocStatus().getCode()).as("DocStatus").isEqualTo(expectation.getDocStatus());
 			}
 
 			if (assertDescriptionOnLatest)
@@ -119,19 +116,57 @@ class AssertInventoryExpectationsCommand
 		{
 			// Same record as every check above: the DESCRIBED inventory when a description was given,
 			// else the latest one referencing the HU.
-			final Inventory inventory = description != null
-					? describedInventory
-					: (inventoryLines.isEmpty() ? null : getLatestInventory(inventoryLines));
-			if (inventory == null)
-			{
-				fail("Expected an inventory document"
-						+ (description != null ? " with description '" + description + "'" : "")
-						+ " to assert qtyBook/qtyCount on, but none was found");
-				return;
-			}
-
-			assertQtys(inventoryLines, inventory.getId(), expectation);
+			assertQtysOfSelectedInventory(selectedInventory, inventoryLines, description, expectation);
 		}
+	}
+
+	/**
+	 * The ONE inventory document an expectation is asserted against: the one whose description matches
+	 * {@code description} when a description is given, else the latest one referencing the HU
+	 * ({@code null} when there is no such document).
+	 * <p>
+	 * Kept separate from the assertions because picking "the latest" where "the described one" was meant
+	 * is silent: the harness's own seed inventory also references the HU, so a regressed selection would
+	 * assert the seed's qtys/docStatus and pass against a broken write-off.
+	 */
+	@VisibleForTesting
+	@Nullable
+	static Inventory selectInventory(
+			@NonNull final List<I_M_InventoryLine> inventoryLines,
+			@Nullable final String description,
+			@NonNull final Function<I_M_InventoryLine, Inventory> inventoryLoader)
+	{
+		if (description != null)
+		{
+			return inventoryLines.stream()
+					.map(inventoryLoader)
+					.filter(inventory -> Objects.equals(inventory.getDescription(), description))
+					.findFirst()
+					.orElse(null);
+		}
+
+		return inventoryLines.stream()
+				.max(Comparator.comparing(I_M_InventoryLine::getM_InventoryLine_ID))
+				.map(inventoryLoader)
+				.orElse(null);
+	}
+
+	@VisibleForTesting
+	static void assertQtysOfSelectedInventory(
+			@Nullable final Inventory selectedInventory,
+			@NonNull final List<I_M_InventoryLine> inventoryLines,
+			@Nullable final String description,
+			@NonNull final JsonInventoryExpectation expectation)
+	{
+		if (selectedInventory == null)
+		{
+			fail("Expected an inventory document"
+					+ (description != null ? " with description '" + description + "'" : "")
+					+ " to assert qtyBook/qtyCount on, but none was found");
+			return;
+		}
+
+		assertQtys(inventoryLines, selectedInventory.getId(), expectation);
 	}
 
 	/**
