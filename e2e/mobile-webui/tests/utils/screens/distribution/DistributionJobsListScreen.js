@@ -77,12 +77,16 @@ export const DistributionJobsListScreen = {
         });
 
         //
-        // Check it again to make sure all expected buttons are still there and there is one of each
+        // Check it again to make sure all expected buttons are still there and there is one of each.
+        // An expectation that names the job (testId / captionContains) is looked up BY that name, so
+        // the check does not depend on the jobs rendering in the same order the array lists them;
+        // one that only says "a button" is still looked up positionally, as it always was.
         for (let i = 0; i < expectationsArray.length; i++) {
             const expectation = expectationsArray[i];
+            const identifiesTheJob = expectation.testId != null || expectation.captionContains != null;
             await expectJobButton({
                 name: `${i + 1}/${expectationsArray.length}`,
-                button: locateJobButtons({ index: i + 1 }),
+                button: identifiesTheJob ? locateJobButtons(expectation) : locateJobButtons({ index: i + 1 }),
                 expectation
             });
         }
