@@ -77,23 +77,14 @@ public class PPOrderIssueScheduleService
 					.setParameter("issueSchedule", issueSchedule);
 		}
 
-		//
-		// Qty Rejected (resolved early: a weight confirmation below, if any, may itself be the call
-		// that drains the HU to zero on the EMPTIED reason, so it must carry the same write-off
-		// description `bookEmptiedHUToZero` would otherwise apply).
-		final I_C_UOM uom = issueSchedule.getQtyToIssue().getUOM();
-		final QtyRejectedWithReason qtyRejected = getQtyRejectedWithReason(request, uom);
-		final String emptiedHUInventoryDescription = qtyRejected != null && QtyRejectedReasonCode.EMPTIED.equals(qtyRejected.getReasonCode())
-				? resolveEmptiedHUInventoryDescription(request.getPpOrderId())
-				: null;
-
 		if (request.getHuWeightGrossBeforeIssue() != null)
 		{
-			weightHU(issueSchedule.getIssueFromHUId(), request.getHuWeightGrossBeforeIssue(), emptiedHUInventoryDescription);
+			weightHU(issueSchedule.getIssueFromHUId(), request.getHuWeightGrossBeforeIssue());
 		}
 
 		//
 		// Qty Issued
+		final I_C_UOM uom = issueSchedule.getQtyToIssue().getUOM();
 		final Quantity qtyIssued = Quantity.of(request.getQtyIssued(), uom);
 		if (qtyIssued.signum() != 0)
 		{
@@ -120,9 +111,10 @@ public class PPOrderIssueScheduleService
 
 		//
 		// Qty Rejected
-		if (emptiedHUInventoryDescription != null)
+		final QtyRejectedWithReason qtyRejected = getQtyRejectedWithReason(request, uom);
+		if (qtyRejected != null && QtyRejectedReasonCode.EMPTIED.equals(qtyRejected.getReasonCode()))
 		{
-			bookEmptiedHUToZero(issueSchedule.getIssueFromHUId(), emptiedHUInventoryDescription);
+			bookEmptiedHUToZero(issueSchedule.getIssueFromHUId(), resolveEmptiedHUInventoryDescription(request.getPpOrderId()));
 		}
 
 		//
@@ -189,7 +181,7 @@ public class PPOrderIssueScheduleService
 				.build());
 	}
 
-	private void weightHU(@NonNull final HuId huId, @NonNull final BigDecimal weightGross, @Nullable final String description)
+	private void weightHU(@NonNull final HuId huId, @NonNull final BigDecimal weightGross)
 	{
 		if (weightGross.signum() < 0)
 		{
@@ -215,7 +207,6 @@ public class PPOrderIssueScheduleService
 				//
 				.huId(huId)
 				.targetWeight(targetWeight)
-				.description(description)
 				.build()
 				//
 				.execute();
