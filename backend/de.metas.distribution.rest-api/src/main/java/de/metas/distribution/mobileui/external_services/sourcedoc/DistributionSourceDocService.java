@@ -9,8 +9,12 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.product.ResourceId;
+import de.metas.shipper.gateway.commons.model.CarrierProduct;
+import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
+import de.metas.shipping.CarrierProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.eevolution.api.IPPOrderBL;
@@ -23,11 +27,13 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 
 @Service
+@RequiredArgsConstructor
 public class DistributionSourceDocService
 {
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final CarrierProductRepository carrierProductRepository;
 
 	@NonNull
 	public PlantInfo getPlantInfo(@NonNull final ResourceId plantId)
@@ -41,6 +47,20 @@ public class DistributionSourceDocService
 	public String getPlantName(@NonNull final ResourceId plantId)
 	{
 		return ppOrderBL.getResourceName(plantId);
+	}
+
+	@NonNull
+	public String getCarrierProductName(@NonNull final CarrierProductId carrierProductId)
+	{
+		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
+		if (carrierProduct == null)
+		{
+			// A dangling Carrier_Product_ID (the M_ShipmentSchedule row outlived its referenced Carrier_Product)
+			// must not NPE and blank the whole launcher screen: over-showing is preferred to under-showing
+			// (REQUIREMENTS.md §3).
+			return "Carrier product " + carrierProductId.getRepoId();
+		}
+		return carrierProduct.getName();
 	}
 
 	public ImmutablePair<ITranslatableString, String> getDocumentTypeAndName(@NonNull OrderId salesOrderId)
