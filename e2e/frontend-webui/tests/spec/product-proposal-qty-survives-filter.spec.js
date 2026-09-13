@@ -6,7 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
-import { ProductProposalPage, ROWS as OVERLAY_ROWS } from '../utils/pages/ProductProposalPage';
+import { ProductProposalPage } from '../utils/pages/ProductProposalPage';
 import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
@@ -31,28 +31,13 @@ const STATS_ASYNC_MECHANISM =
 const DAYS_PATTERN = /^\d+$/;
 const hasDeliveryValue = (lastShipmentDaysText) => DAYS_PATTERN.test((lastShipmentDaysText || '').trim());
 
-async function readOverlayRows(page) {
-  const rows = page.locator(OVERLAY_ROWS);
-  const count = await rows.count();
-
-  const result = [];
-  for (let i = 0; i < count; i += 1) {
-    const row = rows.nth(i);
-    const product = (await row.locator('td[data-cy="cell-product"]').innerText()).trim();
-    const lastShipmentDays = (await row.locator('td[data-cy="cell-lastShipmentDays"]').innerText()).trim();
-    result.push({ product, lastShipmentDays });
-  }
-
-  return result;
-}
-
 test.describe('Product Proposals - quantity survives the filter (AC7)', () => {
   test('A typed quantity becomes an order line whatever the filter is set to', async ({
     page,
   }) => {
     allure.epic('E0100: Sales');
-    allure.tag('F00140');
     allure.tag('F00140: Sales Order - Product Proposals');
+    allure.tag('F00140');
     allure.story('Produktvorschläge: order lines must not depend on the filter state');
     allure.severity('critical');
 
@@ -169,7 +154,7 @@ that guarantee is pinned directly by ProductsProposalRowsDataTest.)
         .poll(
           async () => {
             await ProductProposalPage.openFromSalesOrder(page);
-            const rows = await readOverlayRows(page);
+            const rows = await ProductProposalPage.readRows(page);
             await ProductProposalPage.closeWithDone(page);
 
             const row1 = rows.find((r) => r.product.includes(product1Code));
@@ -199,7 +184,7 @@ that guarantee is pinned directly by ProductsProposalRowsDataTest.)
       // Product3 has no delivery history, so the filter's criterion alone would hide it - but a row
       // carrying a typed quantity is exempt from that criterion precisely so the quantity stays
       // visible and correctable. Assert that exemption holds here, because it is what the user sees.
-      const rowsAfterFilter = await readOverlayRows(page);
+      const rowsAfterFilter = await ProductProposalPage.readRows(page);
       expect(
         rowsAfterFilter.some((r) => r.product.includes(product3Code)),
         'the row carrying a typed quantity was hidden by the filter'

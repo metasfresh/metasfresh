@@ -143,36 +143,32 @@ export class ProductProposalPage {
   }
 
   /**
-   * Read the product names of all rows currently rendered in the overlay grid.
+   * Read every row currently rendered in the overlay grid.
+   *
+   * Returns the two cells the delivery-history specs reason about: the product and the
+   * `lastShipmentDays` ("Tage vergangen") value that the filter keys off. Both specs go through this
+   * one reader so the cell selectors cannot drift apart between them.
    *
    * @param {import('@playwright/test').Page} page - Playwright page
-   * @returns {Promise<string[]>} Product names in grid order
+   * @returns {Promise<Array<{product: string, lastShipmentDays: string}>>} Rows in grid order
    */
-  static async getRowProductNames(page = getPage()) {
-    return await test.step('ProductProposalPage - Get row product names', async () => {
-      const productCells = page.locator(`${ROWS} td[data-cy="cell-product"]`);
-      const count = await productCells.count();
+  static async readRows(page = getPage()) {
+    return await test.step('ProductProposalPage - Read overlay rows', async () => {
+      const rows = page.locator(ROWS);
+      const count = await rows.count();
 
-      const names = [];
+      const result = [];
       for (let i = 0; i < count; i += 1) {
-        const text = await productCells.nth(i).innerText();
-        names.push(text.trim());
+        const row = rows.nth(i);
+        const product = (await row.locator('td[data-cy="cell-product"]').innerText()).trim();
+        const lastShipmentDays = (
+          await row.locator('td[data-cy="cell-lastShipmentDays"]').innerText()
+        ).trim();
+        result.push({ product, lastShipmentDays });
       }
 
-      console.log(`Overlay rows (${names.length}): ${JSON.stringify(names)}`);
-      return names;
-    });
-  }
-
-  /**
-   * Count the rows currently rendered in the overlay grid.
-   *
-   * @param {import('@playwright/test').Page} page - Playwright page
-   * @returns {Promise<number>} Number of rows
-   */
-  static async getRowCount(page = getPage()) {
-    return await test.step('ProductProposalPage - Get row count', async () => {
-      return await page.locator(ROWS).count();
+      console.log(`Overlay rows (${result.length}): ${JSON.stringify(result)}`);
+      return result;
     });
   }
 

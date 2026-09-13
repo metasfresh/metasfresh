@@ -10,8 +10,6 @@ import {
   ProductProposalPage,
   ROWS as OVERLAY_ROWS,
 } from '../utils/pages/ProductProposalPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
 /**
  * Product Proposals (Produktvorschläge) - "delivered-only" filter E2E (TC1-TC4).
@@ -50,26 +48,11 @@ const hasDeliveryValue = (lastShipmentDaysText) => DAYS_PATTERN.test((lastShipme
  * `inline-edit.spec.js` matching `masterdata.products.Product1.productCode` in rendered text) and
  * the raw "Tage vergangen" (lastShipmentDays) cell text ('' when the value is null).
  */
-async function readOverlayRows(page) {
-  const rows = page.locator(OVERLAY_ROWS);
-  const count = await rows.count();
-
-  const result = [];
-  for (let i = 0; i < count; i += 1) {
-    const row = rows.nth(i);
-    const product = (await row.locator('td[data-cy="cell-product"]').innerText()).trim();
-    const lastShipmentDays = (await row.locator('td[data-cy="cell-lastShipmentDays"]').innerText()).trim();
-    result.push({ product, lastShipmentDays });
-  }
-
-  return result;
-}
-
 test.describe('Product Proposals - delivered-only filter', () => {
   test('Filter Produktvorschläge to products already delivered to this partner', async ({ page }) => {
     allure.epic('E0100: Sales');
-    allure.tag('F00140');
     allure.tag('F00140: Sales Order - Product Proposals');
+    allure.tag('F00140');
     allure.story('Produktvorschläge: restrict to products already delivered');
     allure.severity('critical');
 
@@ -201,7 +184,7 @@ the customer has never bought.
         .poll(
           async () => {
             await ProductProposalPage.openFromSalesOrder(page);
-            const rows = await readOverlayRows(page);
+            const rows = await ProductProposalPage.readRows(page);
             await ProductProposalPage.closeWithDone(page);
 
             const row1 = rows.find((r) => r.product.includes(product1Code));
@@ -227,7 +210,7 @@ the customer has never bought.
 
       await expect(page.locator(OVERLAY_ROWS)).toHaveCount(3);
 
-      const rows = await readOverlayRows(page);
+      const rows = await ProductProposalPage.readRows(page);
       const row1 = rows.find((r) => r.product.includes(product1Code));
       const row2 = rows.find((r) => r.product.includes(product2Code));
       const row3 = rows.find((r) => r.product.includes(product3Code));
@@ -249,7 +232,7 @@ the customer has never bought.
 
       await expect(page.locator(OVERLAY_ROWS)).toHaveCount(2);
 
-      const rows = await readOverlayRows(page);
+      const rows = await ProductProposalPage.readRows(page);
       const productsShown = rows.map((r) => r.product);
 
       expect(productsShown.some((p) => p.includes(product1Code))).toBe(true);
@@ -269,7 +252,7 @@ the customer has never bought.
 
       await expect(page.locator(OVERLAY_ROWS)).toHaveCount(3);
 
-      const rows = await readOverlayRows(page);
+      const rows = await ProductProposalPage.readRows(page);
       const productsShown = rows.map((r) => r.product);
       expect(productsShown.some((p) => p.includes(product1Code))).toBe(true);
       expect(productsShown.some((p) => p.includes(product2Code))).toBe(true);
@@ -325,7 +308,7 @@ the customer has never bought.
       // Product1 + Product2 qualify on delivery history, Product3 only because of its quantity.
       await expect(page.locator(OVERLAY_ROWS)).toHaveCount(3);
 
-      const rows = await readOverlayRows(page);
+      const rows = await ProductProposalPage.readRows(page);
       const product3Row = rows.find((r) => r.product.includes(product3Code));
       expect(product3Row, 'the row with a typed quantity was hidden by the filter').toBeTruthy();
       expect(hasDeliveryValue(product3Row.lastShipmentDays)).toBe(false);
