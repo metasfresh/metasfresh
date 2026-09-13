@@ -9,6 +9,9 @@ import { page } from '../common';
 const containerElement = () => page.locator('.Toastify div[role="alert"].Toastify__toast-body');
 
 export const ErrorToast = {
+    /** @returns {import('@playwright/test').Locator} */
+    locator: () => containerElement(),
+
     waitToPopup: (callback, timeout) => {
         const toastLocator = containerElement();
         return toastLocator.waitFor({ state: 'attached', ...{ timeout } })

@@ -121,7 +121,8 @@ test('TC6a: "Not Found" is recorded, no empty-HU write-off is triggered', async 
     // `PPOrderIssueScheduleService.issue` calls `bookEmptiedHUToZero` only for
     // `QtyRejectedReasonCode.EMPTIED`, never for "N"/"D". "N"/"D" are merely RECORDED on the issue
     // schedule (`PP_Order_IssueSchedule.QtyIssued=0.498, QtyReject=0.002, RejectReason='N'`) and
-    // touch neither the HU nor any inventory document — which is exactly what this test pins.
+    // trigger no FURTHER change to the HU and no inventory document beyond the ordinary short issue
+    // above — which is exactly what this test pins.
     //
     // NOTE: the recorded `QtyReject`/`RejectReason` are NOT asserted here: the frontend-testing
     // harness has no `PP_Order_IssueSchedule` expectation (`de.metas.frontend-testing/.../expectations/`

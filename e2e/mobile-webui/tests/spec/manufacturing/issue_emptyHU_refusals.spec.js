@@ -317,6 +317,8 @@ test('TC11: a completed write-off inventory, and its packing material moved to t
                 isExists: true,
                 docStatus: 'CO',
                 description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+                qtyBook: 0.002,
+                qtyCount: 0,
             },
         },
         // AC21's actual subject: the packing material returned to the empties warehouse. Fires from the

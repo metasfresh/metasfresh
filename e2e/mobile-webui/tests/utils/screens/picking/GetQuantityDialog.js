@@ -1,6 +1,7 @@
 import { test } from "../../../../playwright.config";
 import { expectErrorToastIf, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
+import { ErrorToast } from "../../dialogs/ErrorToast";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -127,11 +128,16 @@ export const GetQuantityDialog = {
      *
      * The toast is therefore left standing: it covers the whole screen, so no further UI interaction
      * is possible after this call — assert the backend state and end the test.
+     *
+     * While the toast stands, any LATER call wrapped in `common.step()` (the exported `step()`, via
+     * `runAndWatchForErrors`) throws "Unexpected error toast detected" the moment it starts watching —
+     * so callers must use plain `test.step` calls after this one, exactly as `Backend.expect` does
+     * (`screens/Backend.js`), never `step()`.
      */
     clickDoneExpectingBackendRefusal: async ({ expectedError }) => await test.step(`${NAME} - Press OK, expecting the backend to refuse with '${expectedError}'`, async () => {
         await page.getByTestId('done-button').tap();
 
-        await expect(page.locator('.Toastify div[role="alert"].Toastify__toast-body'))
+        await expect(ErrorToast.locator())
             .toContainText(expectedError, { timeout: VERY_SLOW_ACTION_TIMEOUT });
 
         // Nothing was booked, so the operator is not navigated away.
