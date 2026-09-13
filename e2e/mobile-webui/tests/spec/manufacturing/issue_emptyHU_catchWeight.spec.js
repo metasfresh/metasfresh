@@ -16,9 +16,11 @@ import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog
  * All three cases exercise a weightable component (isWeightable=true) whose step is whole-HU-offered;
  * they differ in the two halves of that gate — the entered UOM's symbol, and whether the TYPED qty
  * reaches the HU's capacity:
- *  - TC-CW1: entered in a non-kg WEIGHT uom (Gramm/GRM — weight-typed, so `isWeightable` stays true,
- *    isolating the `uom === 'kg'` half of the gate) -> `huWeightGrossBeforeIssue` is null on the wire,
- *    and exactly one inventory carries the AC4 write-off description.
+ *  - TC-CW1: entered in a non-kg WEIGHT uom (Gramm/GRM — weight-typed, so `isWeightable` stays true),
+ *    at the FULL HU capacity so `qty >= qtyHUCapacity` is TRUE: the only term left that can explain a
+ *    null weight is `uom === 'kg'`, which is what makes this case discriminating for that half of the
+ *    gate -> `huWeightGrossBeforeIssue` is null on the wire. No shortfall and no reason, so nothing
+ *    carries the AC4 write-off description.
  *  - TC-CW2: kg, whole-HU-offered, entered SHORT with reason E -> the short entry is not a weighing of
  *    the whole container, so no weight is sent either (isolating the `qty >= qtyHUCapacity` half).
  *    The issue then takes only what was typed and leaves the remainder on the HU, which the write-off
@@ -77,15 +79,18 @@ const createMasterdata = async ({ uom }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC-CW1: a non-kg weight UOM entered short does not send the weight', async ({ page }) => {
+test('TC-CW1: a non-kg weight UOM does not send the weight even at the full HU capacity', async ({ page }) => {
     // Gramm (GRM) is WEIGHT-typed (same UOMType as Kilogramm) so `isWeightable` stays true — only its
-    // uom SYMBOL ('GRM', not 'kg') differs, isolating the `uom === 'kg'` half of the gate.
+    // uom SYMBOL ('GRM', not 'kg') differs.
     const masterdata = await createMasterdata({ uom: 'GRM' });
 
     await startIssueStep(masterdata);
     await GetQuantityDialog.expectQtyEntered('0.5');
-    await GetQuantityDialog.typeQtyEntered('0.48');
-    await GetQuantityDialog.clickQtyNotFoundReason({ reason: EMPTIED_REASON });
+    // The FULL HU capacity, deliberately: `qty >= qtyHUCapacity` is TRUE here, so it cannot be the term
+    // that suppresses the weight. Only `uom === 'kg'` is left — which is what makes this case
+    // discriminating for that half of the gate (typing short would make BOTH halves false, and the
+    // assertion below would hold with or without the kg check).
+    await GetQuantityDialog.typeQtyEntered('0.5');
 
     const requestBody = await GetQuantityDialog.clickDoneAndCaptureRequestBody({ urlFragment: MANUFACTURING_EVENT_URL_FRAGMENT });
     expect(requestBody.issueTo.huWeightGrossBeforeIssue).toBeNull();
@@ -93,10 +98,12 @@ test('TC-CW1: a non-kg weight UOM entered short does not send the weight', async
     await RawMaterialIssueLineScreen.waitForScreen();
     await RawMaterialIssueLineScreen.goBack();
 
+    // No shortfall and no rejection reason -> no write-off: nothing carries the AC4 description.
+    // (The write-off half of the feature is pinned by TC-CW2.)
     await Backend.expect({
         inventories: {
             [masterdata.handlingUnits.HU.qrCode]: {
-                count: 1,
+                isExists: false,
                 description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
             },
         },
