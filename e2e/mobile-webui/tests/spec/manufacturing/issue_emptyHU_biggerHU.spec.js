@@ -111,11 +111,11 @@ test('AC-A1: an HU bigger than the need offers the reasons, and "empty" writes o
     await GetQuantityDialog.clickDone();
 
     // Expect: the confirmation prompt names what will ACTUALLY be written off — the HU's remainder
-    // 0.502 - 0.49 = ~12 g — and not the dialog's order-side shortfall 0.5 - 0.49 = 10 g. Regex, not a
-    // literal: the subtraction is not exact in IEEE-754 double, so the app (correctly) shows the tiny
-    // binary remainder, exactly as issue_emptyHU_writeOff.spec.js's 2 g assertion does.
+    // 0.502 - 0.49 = 12 g — and not the dialog's order-side shortfall 0.5 - 0.49 = 10 g. Exact text:
+    // computeEmptyingConfirmationPrompt.js rounds the subtraction to the operands' precision, so the
+    // operator reads "12 g" and not the IEEE-754 tail "12.00000000000001 g".
     await YesNoDialog.waitForDialog();
-    await YesNoDialog.expectPromptContains(/remaining 12(\.\d+)? g/);
+    await YesNoDialog.expectPromptContains('remaining 12 g');
     await YesNoDialog.clickYesButton();
 
     await RawMaterialIssueLineScreen.waitForScreen();
@@ -174,6 +174,49 @@ test('AC-A2: taking the full target from a bigger HU still asks for no reason', 
             [masterdata.handlingUnits.HU.qrCode]: {
                 huStatus: 'A',
                 storages: { COMP: '0.002 KGM' },
+            },
+        },
+        inventories: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                isExists: false,
+                description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+            },
+        },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('AC-A3: a non-emptied reason on a bigger HU is accepted and leaves the HU alone', async ({ page }) => {
+    // The reasons being offered on every step means "not found" / "damaged" now travel to the backend
+    // from a step that takes only PART of its HU -- a combination the server never saw from this screen
+    // before (computeIssueRequest.js used to zero `qtyRejected` / null the reason code there). This test
+    // is that path's coverage, and the counterpart of AC-A1: same fixture, same shortfall, a reason that
+    // must NOT touch the HU.
+    const masterdata = await createManufacturingMasterdata({ huQty: 0.502, orderQty: 0.5 });
+
+    await startIssueStep(masterdata);
+
+    await GetQuantityDialog.expectQtyEntered('0.5');
+    await GetQuantityDialog.typeQtyEntered('0.49');
+    await GetQuantityDialog.expectQtyNotFoundReasonOffered({ reason: QTY_NOT_FOUND_REASON_NOT_FOUND, offered: true });
+    await GetQuantityDialog.clickQtyNotFoundReason({ reason: QTY_NOT_FOUND_REASON_NOT_FOUND });
+    await GetQuantityDialog.clickDone();
+
+    await RawMaterialIssueLineScreen.waitForScreen();
+    await RawMaterialIssueLineScreen.goBack();
+
+    // Expect: 0.49 issued and NOTHING else -- the HU keeps its 0.012 KGM and stays active, and no
+    // write-off inventory is created (only the "empty" reason books one).
+    //
+    // The `qtyRejected`/reason-code pair itself is verified only indirectly, by the backend ACCEPTING
+    // the request (a rejected qty the server refused would surface as an error toast and leave the
+    // dialog open, failing `RawMaterialIssueLineScreen.waitForScreen()` above): the masterdata harness
+    // has no expectation for the issue schedule's own qtyRejected -- pending question #20.
+    await Backend.expect({
+        hus: {
+            [masterdata.handlingUnits.HU.qrCode]: {
+                huStatus: 'A',
+                storages: { COMP: '0.012 KGM' },
             },
         },
         inventories: {
