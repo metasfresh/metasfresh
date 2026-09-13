@@ -245,11 +245,12 @@ class AssertInventoryExpectationsCommand
 
 	private Inventory getLatestInventory(@NonNull final List<I_M_InventoryLine> inventoryLines)
 	{
-		final I_M_InventoryLine latestLine = inventoryLines.stream()
-				.max(Comparator.comparing(I_M_InventoryLine::getM_InventoryLine_ID))
-				.orElseThrow(() -> new AdempiereException("inventoryLines is not empty")); // guarded by caller
-
-		return getInventoryById(InventoryId.ofRepoId(latestLine.getM_Inventory_ID()));
+		final Inventory latestInventory = selectInventory(inventoryLines, null, this::getInventoryOf);
+		if (latestInventory == null)
+		{
+			throw new AdempiereException("inventoryLines is not empty"); // guarded by caller
+		}
+		return latestInventory;
 	}
 
 	private HuId getHUIdByMatcherString(@NonNull final String matcherStr)

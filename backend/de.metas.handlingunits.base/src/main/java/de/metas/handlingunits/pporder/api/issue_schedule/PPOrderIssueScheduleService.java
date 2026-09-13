@@ -165,8 +165,8 @@ public class PPOrderIssueScheduleService
 		if (huStorage.getProductStorages().isEmpty())
 		{
 			// Nothing to write off: the HU stayed Active (the status guard above already returned for the
-			// consumed-as-a-whole case) but its storage is already empty, e.g. qtyIssued == 0 with a zero
-			// counted weight — there is no remainder left to book.
+			// consumed-as-a-whole case) but its storage is already empty, e.g. another caller drained the
+			// HU before the rejection reason arrived — there is no remainder left to book.
 			// HUQtyService.updateQty(huId=...) requires exactly one M_HU_Storage row (it throws "Empty HU is not handled"
 			// for zero storages), so calling it here would fail on an HU that is already effectively empty.
 			return;
