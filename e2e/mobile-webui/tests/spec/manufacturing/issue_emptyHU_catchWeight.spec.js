@@ -11,21 +11,22 @@ import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog
 
 /**
  * Empty HU write-off — the catch-weight gate on `RawMaterialIssueStepScanComponent.jsx`
- * (`isWeightable && isIssueWholeHU && uom === 'kg'` -> `huWeightGrossBeforeIssue`), PLAN.md Task 16e.
+ * (`computeIssueRequest`: `isWeightable && uom === 'kg' && qty >= qtyHUCapacity` -> `huWeightGrossBeforeIssue`).
  *
- * Both cases below exercise a weightable component (isWeightable=true) whose step is whole-HU-offered
- * (isIssueWholeHU=true) — only `uom` (the entered UOM's symbol) differs:
+ * All three cases exercise a weightable component (isWeightable=true) whose step is whole-HU-offered;
+ * they differ in the two halves of that gate — the entered UOM's symbol, and whether the TYPED qty
+ * reaches the HU's capacity:
  *  - TC-CW1: entered in a non-kg WEIGHT uom (Gramm/GRM — weight-typed, so `isWeightable` stays true,
  *    isolating the `uom === 'kg'` half of the gate) -> `huWeightGrossBeforeIssue` is null on the wire,
  *    and exactly one inventory carries the AC4 write-off description.
- *  - TC-CW2: kg, whole-HU, entered short with reason E -> the "complete cuHU" issue branch consumes
- *    the HU whole (HUStatus -> Issued) without touching its storage row, so `bookEmptiedHUToZero`
- *    must not book a second write-off against an HU the issue already consumed; exactly one inventory
- *    carries the AC4 description.
+ *  - TC-CW2: kg, whole-HU-offered, entered SHORT with reason E -> the short entry is not a weighing of
+ *    the whole container, so no weight is sent either (isolating the `qty >= qtyHUCapacity` half).
+ *    The issue then takes only what was typed and leaves the remainder on the HU, which the write-off
+ *    books to zero: exactly one inventory carries the AC4 description, over book 0.002 / count 0.
  *  - TC-CW3 (negative): kg, whole-HU, NO rejection reason, entered qty == the HU's already-recorded
- *    qty -> the weight-confirm is a zero-delta no-op (creates no inventory of its own; only the
- *    harness's seed inventory references the HU) and, in particular, nothing carries the AC4
- *    description (nothing was written off).
+ *    qty -> the weight IS sent, and the weight-confirm is a zero-delta no-op (creates no inventory of
+ *    its own; only the harness's seed inventory references the HU) and, in particular, nothing carries
+ *    the AC4 description (nothing was written off).
  */
 
 const EMPTIED_REASON = 'E';
@@ -103,7 +104,7 @@ test('TC-CW1: a non-kg weight UOM entered short does not send the weight', async
 });
 
 // noinspection JSUnusedLocalSymbols
-test('TC-CW2: a kg whole-HU issue entered short with the emptied reason books exactly one write-off', async ({ page }) => {
+test('TC-CW2: a kg whole-HU issue entered short sends no weight and writes off the remainder', async ({ page }) => {
     const masterdata = await createMasterdata({ uom: 'KGM' });
 
     await startIssueStep(masterdata);
@@ -111,18 +112,26 @@ test('TC-CW2: a kg whole-HU issue entered short with the emptied reason books ex
     await GetQuantityDialog.typeQtyEntered('0.498');
     await GetQuantityDialog.clickQtyNotFoundReason({ reason: EMPTIED_REASON });
 
-    await GetQuantityDialog.clickDoneAndCaptureRequestBody({ urlFragment: MANUFACTURING_EVENT_URL_FRAGMENT });
+    const requestBody = await GetQuantityDialog.clickDoneAndCaptureRequestBody({ urlFragment: MANUFACTURING_EVENT_URL_FRAGMENT });
+    // 0.498 < the HU's 0.5 capacity: the operator did not weigh the whole container, so the entered qty
+    // must NOT travel as its gross weight. Sending it would re-weigh the HU down to 0.498 BEFORE the
+    // issue, the issue would consume all of it, and the write-off below would have nothing left to book.
+    expect(requestBody.issueTo.huWeightGrossBeforeIssue).toBeNull();
 
     await RawMaterialIssueLineScreen.waitForScreen();
     await RawMaterialIssueLineScreen.goBack();
 
     // `count: 1` with a `description` filter pins DESCRIBED inventories only: an extra UNdescribed
     // write-off alongside it would not be caught here, but AC4 is specifically about the described document.
+    // qtyBook/qtyCount pin WHAT was written off: the 0.002 the issue left on the HU, booked to zero —
+    // not the 0.5/0.498 pair a pre-issue re-weighing would have produced.
     await Backend.expect({
         inventories: {
             [masterdata.handlingUnits.HU.qrCode]: {
                 count: 1,
                 description: emptiedHUInventoryDescription(masterdata.manufacturingOrders.PP1.documentNo),
+                qtyBook: 0.002,
+                qtyCount: 0,
             },
         },
     });
@@ -134,8 +143,8 @@ test('TC-CW3: a kg whole-HU issue without a reason creates no write-off and no w
 
     await startIssueStep(masterdata);
     await GetQuantityDialog.expectQtyEntered('0.5');
-    // The full booked qty, no shortfall -> no reason offered/selected; `isIssueWholeHU` is unaffected
-    // (it is fixed at offer time from capacity, not from what gets typed), so the weight is still sent.
+    // The full booked qty, no shortfall -> no reason offered/selected; the typed qty reaches the HU's
+    // capacity, so this IS a weighing of the whole container and the weight is sent.
     await GetQuantityDialog.typeQtyEntered('0.5');
 
     const requestBody = await GetQuantityDialog.clickDoneAndCaptureRequestBody({ urlFragment: MANUFACTURING_EVENT_URL_FRAGMENT });
