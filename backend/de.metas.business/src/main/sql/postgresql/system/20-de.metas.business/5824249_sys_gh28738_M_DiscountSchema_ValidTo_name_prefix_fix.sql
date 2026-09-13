@@ -9,6 +9,12 @@
 --
 -- Pre-populating AD_Column.Name/Description here (before 5824250 runs, per its lower numeric
 -- prefix) lets 5824250 proceed and succeed exactly as originally written.
+--
+-- A raw UPDATE (not update_column_translation_from_ad_element/update_TRL_Tables_On_AD_Element_TRL_Update)
+-- is used deliberately: 5824250's own Step 4 calls update_column_translation_from_ad_element(618, NULL)
+-- immediately after, which re-syncs Name/Description/Updated from AD_Element_Trl_Effective_v
+-- unconditionally (guarded only by updated<>e_trl.updated) -- so this raw seed is superseded within
+-- the same script/transaction and cannot leave stale data behind.
 
 UPDATE AD_Column c
 SET Name        = e.Name,
