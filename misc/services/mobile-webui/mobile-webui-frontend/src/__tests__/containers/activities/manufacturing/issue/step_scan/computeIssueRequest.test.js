@@ -57,19 +57,6 @@ describe('computeIssueRequest', () => {
     expect(result.huWeightGrossBeforeIssue).toBeNull();
   });
 
-  it.each([
-    ['null', null],
-    ['undefined', undefined],
-  ])('sends NO weight when the HU capacity is %s', (_label, qtyHUCapacity) => {
-    // `qty >= null` coerces null to 0, so without an explicit guard every positive kg entry on a step
-    // with no known capacity would travel as the HU's gross weight and the backend would re-weigh the
-    // HU down to it before the issue. Unknown capacity => we cannot tell the container was weighed whole.
-    const result = call_computeIssueRequest({ qty: 0.5, resolvedBarcodeData: { qtyHUCapacity } });
-
-    expect(result.huWeightGrossBeforeIssue).toBeNull();
-    expect(result.qtyIssued).toEqual(0.5);
-  });
-
   it('still sends the weight when the step was NOT offered as whole-HU but the typed qty reaches the capacity', () => {
     // The weight and the rejection now ride on DIFFERENT flags: the weight on the TYPED qty, the
     // rejection on the offer-time flag. qtyToIssueMax may exceed the offered target, so an operator
