@@ -22,6 +22,10 @@ const createMasterdata = async () => {
         language: "de_DE",
         request: {
             login: { mover: { language: "de_DE", workplace: "packingWorkplace" } },
+            // Declare the distribution config this spec needs instead of inheriting whatever ran before:
+            // an absent field resets to its default (MobileConfigDistributionCommand), so an empty block is
+            // the default base. Without it a spec that set e.g. requireTrolley leaves this one on a scan screen.
+            mobileConfig: { distribution: {} },
             shippers: { carrierA: {}, carrierB: {}, carrierC: {} },   // no gateway; isApiCarrierAdvise defaults false
             products: { "P1": { price: 1 }, "P2": { price: 1 } },
             bpartners: { customerA: {}, customerB: {}, customerC: {} },

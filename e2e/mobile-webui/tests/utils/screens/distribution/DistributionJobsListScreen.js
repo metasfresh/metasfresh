@@ -78,12 +78,13 @@ export const DistributionJobsListScreen = {
 
         //
         // Check it again to make sure all expected buttons are still there and there is one of each.
-        // An expectation that names the job (testId / captionContains) is looked up BY that name, so
-        // the check does not depend on the jobs rendering in the same order the array lists them;
-        // one that only says "a button" is still looked up positionally, as it always was.
+        // An expectation that names the job -- by testId, captionContains or caption -- is looked up BY
+        // that name, so the check does not depend on the jobs rendering in the same order the array
+        // lists them. An expectation that names nothing ("a button") is still looked up positionally.
         for (let i = 0; i < expectationsArray.length; i++) {
             const expectation = expectationsArray[i];
-            const identifiesTheJob = expectation.testId != null || expectation.captionContains != null;
+            const identifiesTheJob = expectation.testId != null || expectation.captionContains != null
+                || expectation.caption != null;
             await expectJobButton({
                 name: `${i + 1}/${expectationsArray.length}`,
                 button: identifiesTheJob ? locateJobButtons(expectation) : locateJobButtons({ index: i + 1 }),
@@ -173,7 +174,7 @@ export const DistributionJobsListScreen = {
 // engine generates from `autoDistributionOrder`. Prefer `testId` whenever the fixture declares the
 // job; prefer this over `caption`, whose exact-text match also pins qty/locator/priority formatting
 // that the assertion does not care about.
-const locateJobButtons = ({ index, testId, captionContains } = {}) => {
+const locateJobButtons = ({ index, testId, captionContains, caption } = {}) => {
     let selector = '.wflauncher-button';
     if (testId != null) {
         selector += `[data-testid="${testId}"]`;
@@ -183,6 +184,13 @@ const locateJobButtons = ({ index, testId, captionContains } = {}) => {
 
     if (captionContains != null) {
         locator = locator.filter({ hasText: captionContains });
+    }
+
+    // `caption` is an EXACT-match expectation (expectJobButton asserts it with toHaveText), but as a
+    // locator it can only narrow by substring -- which is enough to pick the right button out of the
+    // list, with exactness still enforced downstream. Same split the picking screen uses.
+    if (caption != null) {
+        locator = locator.filter({ hasText: caption });
     }
 
     if (index != null) {
