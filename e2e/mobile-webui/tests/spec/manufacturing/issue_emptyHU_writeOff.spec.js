@@ -92,11 +92,12 @@ test('Clear the leftover on a gas-bottle TU — the core case', async ({ page })
     await GetQuantityDialog.clickQtyNotFoundReason({ reason: EMPTIED_REASON });
     await GetQuantityDialog.clickDone();
 
-    // Expect: a confirmation prompt naming the leftover quantity (0.5 - 0.498 KGM = ~2 g) and its
-    // UOM. Regex, not a literal string: 0.5 - 0.498 is not exact in IEEE-754 double, so the app
-    // (correctly) shows the tiny binary remainder (e.g. "2.0000000000000018 g").
+    // Expect: a confirmation prompt naming the leftover quantity (0.5 - 0.498 KGM = 2 g) and its UOM.
+    // Exact text: the subtraction is not exact in IEEE-754 double, so computeEmptyingConfirmationPrompt.js
+    // rounds it to the operands' precision before formatting -- what the operator reads is "2 g", never
+    // "2.0000000000000018 g".
     await YesNoDialog.waitForDialog();
-    await YesNoDialog.expectPromptContains(/remaining 2(\.\d+)? g/);
+    await YesNoDialog.expectPromptContains('remaining 2 g');
     await YesNoDialog.clickYesButton();
 
     await RawMaterialIssueLineScreen.waitForScreen();
@@ -200,7 +201,7 @@ test('An already-nearly-empty HU behaves the same', async ({ page }) => {
     await GetQuantityDialog.clickDone();
 
     await YesNoDialog.waitForDialog();
-    await YesNoDialog.expectPromptContains(/remaining 1(\.\d+)? g/);
+    await YesNoDialog.expectPromptContains('remaining 1 g');
     await YesNoDialog.clickYesButton();
 
     await RawMaterialIssueLineScreen.waitForScreen();

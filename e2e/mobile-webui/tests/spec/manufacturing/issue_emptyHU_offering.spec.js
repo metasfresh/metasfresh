@@ -161,10 +161,9 @@ const createPalletMasterdata = async () => {
                 // only 13 KGM (below) — matching the order's own 13 KGM need exactly (all of it comes
                 // from this one pallet; the order's need cannot exceed what stock actually exists, or
                 // manufacturing rejects the job upfront with "Not enough raw materials found"), so the
-                // pallet's own capacity caps the primary step's target. That is what makes the
-                // qty-rejected-reason radio group reachable at all here: it only renders when
-                // `isIssueWholeHU` (`qtyToIssueTarget >= qtyHUCapacity`), i.e. once the whole HU is
-                // being issued (`computeStepScanPropsFromActivity.js`).
+                // pallet's own capacity caps the primary step's target, which is what lets TC5 enter a
+                // shortfall against it at all (the qty-rejected-reason radio group renders once
+                // `qtyRejected > 0` — `GetQuantityDialog.jsx`).
                 PALLET_PI: { lu: 'PALLET_LU', qtyTUsPerLU: 3, tu: 'PALLET_TU', product: 'COMP', qtyCUsPerTU: 5 },
             },
             handlingUnits: {
@@ -263,7 +262,8 @@ test('TC5b: a single TU on the pallet offers no reason either', async ({ page })
     // `offered: false` above only proves the `E` radio itself is absent — `toHaveCount(0)` on that one
     // testid would equally pass if `E` were filtered out of an otherwise-rendered N/D group. Assert the
     // group's own container is absent too, so the test documents the REAL state: no qty-rejected
-    // reason group at all on a zero-target step (not just "E" excluded from one that renders).
+    // reason group at all on a zero-target step — not because the step is refused a reason LIST (every
+    // step is offered one now), but because a zero target leaves no shortfall to ask about.
     await GetQuantityDialog.expectQtyRejectedReasonsGroupVisible({ visible: false });
 
     // Back out without submitting anything — both the TU's and the pallet's quantities must stay
