@@ -979,27 +979,72 @@ must remain true — behavior must be identical to before the change.
     });
 
     // ------------------------------------------------------------------
-    // TEST 10 (TC1): Produkt field keeps its default width when
-    // webui.quickinput.ProductFieldWidgetSize is unset.
-    //
-    // Precondition (load-bearing): packing instructions must be OFF, else
-    // the Produkt field renders as a Composed widget (not a single-field
-    // widgetType-Lookup) and widgetSize-L never applies to it. The e2e
-    // seed DB defaults packing instructions ON, so this must be disabled
-    // explicitly via the sysconfigs map.
+    // TESTS 10-11 (TC1/TC2): both flip webui.quickinput.EnablePackingInstructionsField
+    // and/or webui.quickinput.ProductFieldWidgetSize at runtime via createMasterdata's
+    // `sysconfigs` option. Unlike the AD_SysConfig defaults SysconfigCommand resets on
+    // every call (barcode-scanner keys only — see SysconfigCommand.SCANNER_SYSCONFIG_DEFAULTS),
+    // these two quick-input keys are NOT in that reset set, so a value written by one
+    // test persists globally (it's a live DB row) until something else overwrites it.
+    // Left unrestored, that leaks into every later test in this file and other specs:
+    // EnablePackingInstructionsField='N' hides the Packvorschrift field (breaking the
+    // packing-instruction tests above, which expect it visible/enabled), and
+    // ProductFieldWidgetSize='L' makes an unrelated "default width" assertion see the L
+    // width instead. Nest these two tests in their own describe with an afterEach that
+    // restores both keys to their core migration defaults
+    // (EnablePackingInstructionsField='Y' — 5482620_sys_gh745webui_..., empty for
+    // ProductFieldWidgetSize — 5821510_sys_gh31653_...) and drops the webapi node's
+    // QuickInputDescriptors cache, so nothing survives past either test regardless of
+    // pass/fail.
     // ------------------------------------------------------------------
-    test(`quick-input Produkt field keeps default width when ProductFieldWidgetSize is unset (${label})`, async ({
-      page,
-    }) => {
-      allure.epic('E0100: Sales');
-      allure.tag('F00100: Sales Order');
-      allure.tag('F00100');
-      allure.story('Quick Input: Produkt field default width');
-      allure.severity('normal');
-      allure.parameter('Language', language);
-      allure.tag(language);
+    test.describe('Produkt field width (ProductFieldWidgetSize) - sysconfig isolation', () => {
+      test.afterEach(async () => {
+        // Restore to core migration defaults — see SysconfigCommand doc above for why
+        // this can't rely on the automatic per-test reset (that only covers scanner keys).
+        await Backend.setSysconfigs({
+          'webui.quickinput.EnablePackingInstructionsField': 'Y',
+          'webui.quickinput.ProductFieldWidgetSize': '',
+        });
+        // Drop the webapi-node QuickInputDescriptors cache too, so the restored value is
+        // observed immediately rather than serving the stale (test-set) descriptor to the
+        // next test that opens batch entry. Needs an authenticated webapi session
+        // (GET /cache/reset -> userSession.assertLoggedIn()); guard it so a test that
+        // failed BEFORE login (no session yet) still gets its sysconfigs restored above
+        // instead of throwing out of afterEach and masking the real failure.
+        try {
+          await Backend.resetWebApiCaches();
+        } catch (err) {
+          console.log(
+            `[sysconfig cleanup] resetWebApiCaches skipped/failed (likely not logged in yet): ${err}`
+          );
+        }
+      });
 
-      allure.description(`
+      // ------------------------------------------------------------------
+      // TEST 10 (TC1): Produkt field keeps its default width when
+      // webui.quickinput.ProductFieldWidgetSize is unset.
+      //
+      // Precondition (load-bearing): packing instructions must be OFF, else
+      // the Produkt field renders as a Composed widget (not a single-field
+      // widgetType-Lookup) and widgetSize-L never applies to it. The e2e
+      // seed DB defaults packing instructions ON, so this must be disabled
+      // explicitly via the sysconfigs map.
+      //
+      // ProductFieldWidgetSize is explicitly set to '' (the default) rather than
+      // left unset, so this test asserts the default-width case regardless of
+      // whatever a previous test in the run may have left behind (order-independent).
+      // ------------------------------------------------------------------
+      test(`quick-input Produkt field keeps default width when ProductFieldWidgetSize is unset (${label})`, async ({
+        page,
+      }) => {
+        allure.epic('E0100: Sales');
+        allure.tag('F00100: Sales Order');
+        allure.tag('F00100');
+        allure.story('Quick Input: Produkt field default width');
+        allure.severity('normal');
+        allure.parameter('Language', language);
+        allure.tag(language);
+
+        allure.description(`
 ## F00100: Sales Order — Produkt quick-input default width
 
 ### Test Scenario
@@ -1010,57 +1055,62 @@ its default width when webui.quickinput.ProductFieldWidgetSize is unset.
 No regression to the default layout when the new sysconfig is not set.
       `);
 
-      test.setTimeout(120000);
+        test.setTimeout(120000);
 
-      const masterdata = await createMasterdata(language, {
-        sysconfigs: { 'webui.quickinput.EnablePackingInstructionsField': 'N' },
+        const masterdata = await createMasterdata(language, {
+          sysconfigs: {
+            'webui.quickinput.EnablePackingInstructionsField': 'N',
+            // Explicit (not omitted): asserts the default-width case regardless of
+            // whatever a previous test left behind — see the describe-level comment.
+            'webui.quickinput.ProductFieldWidgetSize': '',
+          },
+        });
+        allure.attachment(
+          'Test Data',
+          JSON.stringify(masterdata, null, 2),
+          'application/json'
+        );
+
+        await setupOrderWithBatchEntry(page, masterdata, language, {
+          resetWebApiCaches: true,
+        });
+
+        const productGroup = page.locator('.quick-input-container .form-group', {
+          has: page.locator('#lookup_M_Product_ID'),
+        });
+        await expect(productGroup).toBeVisible();
+        await expect(productGroup).not.toHaveClass(/widgetSize-L/);
+
+        const fontPx = await productGroup.evaluate((el) =>
+          parseFloat(getComputedStyle(el).fontSize)
+        );
+        const box = await productGroup.boundingBox();
+        // Default Lookup is capped at 20em; assert below the 30em widgetSize-L floor.
+        // Font-size-relative so it holds regardless of the app's base font size.
+        expect(box.width).toBeLessThan(25 * fontPx);
+
+        console.log(
+          `[${language}] Produkt field default width: ${box.width}px`
+        );
       });
-      allure.attachment(
-        'Test Data',
-        JSON.stringify(masterdata, null, 2),
-        'application/json'
-      );
 
-      await setupOrderWithBatchEntry(page, masterdata, language, {
-        resetWebApiCaches: true,
-      });
+      // ------------------------------------------------------------------
+      // TEST 11 (TC2): Produkt field is wider when
+      // webui.quickinput.ProductFieldWidgetSize=L. Same packing-instructions
+      // precondition as TEST 10 (see comment above).
+      // ------------------------------------------------------------------
+      test(`quick-input Produkt field is wider when ProductFieldWidgetSize=L (${label})`, async ({
+        page,
+      }) => {
+        allure.epic('E0100: Sales');
+        allure.tag('F00100: Sales Order');
+        allure.tag('F00100');
+        allure.story('Quick Input: Produkt field widened via ProductFieldWidgetSize=L');
+        allure.severity('normal');
+        allure.parameter('Language', language);
+        allure.tag(language);
 
-      const productGroup = page.locator('.quick-input-container .form-group', {
-        has: page.locator('#lookup_M_Product_ID'),
-      });
-      await expect(productGroup).toBeVisible();
-      await expect(productGroup).not.toHaveClass(/widgetSize-L/);
-
-      const fontPx = await productGroup.evaluate((el) =>
-        parseFloat(getComputedStyle(el).fontSize)
-      );
-      const box = await productGroup.boundingBox();
-      // Default Lookup is capped at 20em; assert below the 30em widgetSize-L floor.
-      // Font-size-relative so it holds regardless of the app's base font size.
-      expect(box.width).toBeLessThan(25 * fontPx);
-
-      console.log(
-        `[${language}] Produkt field default width: ${box.width}px`
-      );
-    });
-
-    // ------------------------------------------------------------------
-    // TEST 11 (TC2): Produkt field is wider when
-    // webui.quickinput.ProductFieldWidgetSize=L. Same packing-instructions
-    // precondition as TEST 10 (see comment above).
-    // ------------------------------------------------------------------
-    test(`quick-input Produkt field is wider when ProductFieldWidgetSize=L (${label})`, async ({
-      page,
-    }) => {
-      allure.epic('E0100: Sales');
-      allure.tag('F00100: Sales Order');
-      allure.tag('F00100');
-      allure.story('Quick Input: Produkt field widened via ProductFieldWidgetSize=L');
-      allure.severity('normal');
-      allure.parameter('Language', language);
-      allure.tag(language);
-
-      allure.description(`
+        allure.description(`
 ## F00100: Sales Order — Produkt quick-input widened width
 
 ### Test Scenario
@@ -1073,41 +1123,42 @@ The order-line quick-input Produkt field can be widened via SysConfig
 (gh31653), improving legibility of long product names/codes.
       `);
 
-      test.setTimeout(120000);
+        test.setTimeout(120000);
 
-      const masterdata = await createMasterdata(language, {
-        sysconfigs: {
-          'webui.quickinput.EnablePackingInstructionsField': 'N',
-          'webui.quickinput.ProductFieldWidgetSize': 'L',
-        },
+        const masterdata = await createMasterdata(language, {
+          sysconfigs: {
+            'webui.quickinput.EnablePackingInstructionsField': 'N',
+            'webui.quickinput.ProductFieldWidgetSize': 'L',
+          },
+        });
+        allure.attachment(
+          'Test Data',
+          JSON.stringify(masterdata, null, 2),
+          'application/json'
+        );
+
+        await setupOrderWithBatchEntry(page, masterdata, language, {
+          resetWebApiCaches: true,
+        });
+
+        const productGroup = page.locator('.quick-input-container .form-group', {
+          has: page.locator('#lookup_M_Product_ID'),
+        });
+        await expect(productGroup).toBeVisible();
+        await expect(productGroup).toHaveClass(/widgetSize-L/);
+
+        const fontPx = await productGroup.evaluate((el) =>
+          parseFloat(getComputedStyle(el).fontSize)
+        );
+        const box = await productGroup.boundingBox();
+        // widgetSize-L sets min-width:30em; assert >= ~30em, font-size-relative so it
+        // holds regardless of the app's base font size (and materially wider than TC1's <25em).
+        expect(box.width).toBeGreaterThanOrEqual(29 * fontPx);
+
+        console.log(
+          `[${language}] Produkt field widened width: ${box.width}px`
+        );
       });
-      allure.attachment(
-        'Test Data',
-        JSON.stringify(masterdata, null, 2),
-        'application/json'
-      );
-
-      await setupOrderWithBatchEntry(page, masterdata, language, {
-        resetWebApiCaches: true,
-      });
-
-      const productGroup = page.locator('.quick-input-container .form-group', {
-        has: page.locator('#lookup_M_Product_ID'),
-      });
-      await expect(productGroup).toBeVisible();
-      await expect(productGroup).toHaveClass(/widgetSize-L/);
-
-      const fontPx = await productGroup.evaluate((el) =>
-        parseFloat(getComputedStyle(el).fontSize)
-      );
-      const box = await productGroup.boundingBox();
-      // widgetSize-L sets min-width:30em; assert >= ~30em, font-size-relative so it
-      // holds regardless of the app's base font size (and materially wider than TC1's <25em).
-      expect(box.width).toBeGreaterThanOrEqual(29 * fontPx);
-
-      console.log(
-        `[${language}] Produkt field widened width: ${box.width}px`
-      );
     });
   });
 });

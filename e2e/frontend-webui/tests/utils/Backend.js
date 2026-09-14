@@ -81,6 +81,40 @@ export const Backend = {
     }),
 
   /**
+   * Set sysconfigs directly via /frontendTesting/setSysconfigs, independent of
+   * masterdata creation. Unlike createMasterdata's `sysconfigs` option (which only
+   * runs once, before login), this can be called at ANY point in a test — including
+   * post-login cleanup (test.afterEach) — because the frontendTesting endpoint is
+   * exempted from auth (see FrontendTestingRestController#postConstruct:
+   * doNotAuthenticatePathsContaining(ENDPOINT)).
+   *
+   * Note: SysconfigCommand (the handler behind this endpoint) also resets the
+   * barcode-scanner sysconfigs to their defaults as a side effect on every call —
+   * harmless here since tests using this for cleanup don't touch those.
+   *
+   * Does NOT reset the AD_SysConfig cache on the webapi node — call
+   * resetWebApiCaches() afterwards if a webapi-node-cached view depends on the
+   * new value (see resetWebApiCaches doc below).
+   */
+  setSysconfigs: async (sysconfigs) =>
+    await test.step('Backend: set sysconfigs', async () => {
+      const page = getPage();
+      const backendBaseUrl = await getBackendBaseUrl();
+      const response = await page.request.post(
+        `${backendBaseUrl}/frontendTesting/setSysconfigs`,
+        {
+          data: sysconfigs,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+      if (!response.ok()) {
+        throw new Error(
+          `Failed to set sysconfigs: HTTP ${response.status()} ${response.statusText()}`
+        );
+      }
+    }),
+
+  /**
    * Force the webapi node (8080) to drop ALL caches (global cacheMgt.reset()).
    *
    * Needed after a runtime sysconfig change that feeds a cache NOT registered for
