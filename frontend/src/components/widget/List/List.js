@@ -73,31 +73,15 @@ export class ListWidget extends Component {
       }
     }
 
-    // A new document in an already-mounted window neither remounts this widget nor changes
-    // the `autoFocus` prop, so the edge above never fires again and the first field of the new
-    // document stays unfocused. Moving on to another field makes it worse: blurring turns the
-    // widget's own `autoFocus` state off for good. So on a document change realign that state
-    // with the prop and run the same focus branch - unless the widget already holds the focus,
-    // where there is nothing to move.
+    // The edge above never fires again inside a mounted window: a new document neither remounts
+    // this widget nor changes `autoFocus`, and blurring has meanwhile turned the widget's own
+    // `autoFocus` state off. Realign it with the prop and focus again - but only for a document
+    // in a window, and not for a quick-input row (the header's first field is the one that must
+    // get the focus) nor a composed lookup's sub-list (its parent decides which sub-field is in
+    // turn, and React updates this child first).
     //
-    // Only for a document in a window, which is what a `dataId` change means here. The other
-    // callers that pass a changing `dataId` with `autoFocus` set are a process parameter panel,
-    // the barcode overlay and the attributes dropdown, and none of those is a document change.
-    //
-    // A quick-input row is excluded although it is the same window and the same document: its
-    // first field also carries a permanently-set `autoFocus`, so without this the header's first
-    // field and the quick-input's would both act on one document change and the winner would be
-    // whichever rendered last. The header's field is the one that must get the focus.
-    //
-    // `entity` is the discriminator rather than `isModal` because `WidgetRenderer` does not
-    // forward `isModal` to this widget at all (it does for the sibling Lookup case), so an
-    // `isModal` check here would silently never fire. Repairing that omission would also revive
-    // the widget's other, long-dead `!isModal` guard in `UNSAFE_componentWillReceiveProps` and
-    // change modal behaviour this issue does not cover.
-    //
-    // A sub-list of a composed lookup (`lookupList`) is excluded: there the parent decides
-    // which of its sub-fields is in turn, and React updates this child before the parent, so
-    // acting here would focus the sub-field the PREVIOUS document had advanced to.
+    // `entity`, not `isModal`: `WidgetRenderer` never forwards `isModal` to this widget, so an
+    // `isModal` check here would silently never fire.
     if (
       prevProps.dataId !== this.props.dataId &&
       this.props.autoFocus &&

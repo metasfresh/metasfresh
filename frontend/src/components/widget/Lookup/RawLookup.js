@@ -133,23 +133,12 @@ export class RawLookup extends Component {
       this.inputSearch.value = '';
     }
 
-    // A new document in an already-mounted window reconciles this widget instead of
-    // remounting it, so the constructor's one-shot arming was already spent on the previous
-    // document and the new document's first field would stay unfocused. Re-arm it.
-    //
-    // Only for a first field the arriving document leaves empty: `handleValueChanged()` above
-    // has already applied that document's value, so switching into a document whose first field
-    // is filled never pulls the caret into a value the user entered, and never leaves the latch
-    // armed on it.
-    //
-    // `!shouldBeFocused` keeps the re-arm idempotent - an already-armed latch needs no second
-    // `setState` and the render it would cost. It is not a guard against a failure case.
-    //
-    // Modals are excluded, as the requirements ask: a process parameter panel and the barcode
-    // overlay hand this widget a pinstance id in `dataId` with an unconditional `autoFocus`, and
-    // that is not a document change. A quick-input row is excluded too: it is the same document,
-    // but its first field also carries a permanently-set `autoFocus`, and the field that must get
-    // the focus on a new document is the header's.
+    // The constructor's one-shot arming was spent on the previous document, and a new document
+    // reconciles this widget instead of remounting it. Re-arm - but only for a first field the
+    // arriving document leaves empty (`handleValueChanged()` above has already applied its
+    // value), so the caret is never pulled into a value the user entered. Not in a modal, where
+    // `dataId` is a pinstance id rather than a document, and not in a quick-input row, where the
+    // header's first field is the one that must get the focus.
     if (
       autoFocus &&
       !this.props.isModal &&

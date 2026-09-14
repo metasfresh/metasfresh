@@ -11,15 +11,8 @@ import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
 import PropTypes from 'prop-types';
 
-/**
- * Widget types that carry their own document-change focus rule, in `Lookup`/`RawLookup` and
- * `List` respectively. `WidgetRenderer` routes exactly these three to those components.
- */
-const WIDGETS_THAT_REPEAT_THEIR_OWN_FOCUS = [
-  'Lookup',
-  'List',
-  'MultiListValue',
-];
+/** Widget types with their own document-change focus rule; `WidgetRenderer` routes these to `Lookup`/`List`. */
+const WIDGETS_WITH_OWN_FOCUS_RULE = ['Lookup', 'List', 'MultiListValue'];
 
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
@@ -89,29 +82,19 @@ export class RawWidget extends PureComponent {
       this.resetCachedValue();
     }
 
-    // A new document in an already-mounted window reconciles this widget instead of remounting
-    // it, so the mount-time focus above never runs again and the first field of the new
-    // document stays unfocused. Repeat it on a document change - never while this widget is the
-    // one being typed in, where there is nothing to move and a caret to lose, and never in a
-    // modal, where a process parameter panel, the barcode overlay and the attributes dropdown
-    // pass a pinstance or editing-instance id as `dataId` with an unconditional `autoFocus`
-    // (the attributes dropdown sets that id once before mounting, so it is excluded twice over),
-    // and never in a quick-input row, whose first
-    // field carries a permanently-set `autoFocus` of its own while the field that must get the
-    // focus on a new document is the header's.
+    // The mount-time focus above never runs again inside a mounted window, so repeat it when the
+    // document changes - not while this widget holds the caret, not in a modal (there `dataId` is
+    // a pinstance id, not a document), and not in a quick-input row (the header's first field is
+    // the one that must get the focus).
     //
-    // Lookups and dropdowns are left to themselves: each repeats its own mount-time rule under
-    // its own conditions (the lookup, for one, only for a first field the arriving document
-    // leaves empty). Going through this widget's ref would call their `focus()` directly and
-    // bypass those conditions - and for a composed lookup the ref does not even reliably point
-    // at the primary sub-field, since a List sub-field takes it unconditionally
-    // (`Lookup.js` `renderSingleLookupPart_List`) while a RawLookup sub-field takes it only when
-    // it is the primary one.
+    // Lookups and dropdowns are skipped: they repeat their own rule under their own conditions,
+    // and focusing them through this widget's ref would bypass those - for a composed lookup the
+    // ref is not even reliably the primary sub-field.
     if (
       this.props.autoFocus &&
       !this.props.isModal &&
       this.props.subentity !== 'quickInput' &&
-      !WIDGETS_THAT_REPEAT_THEIR_OWN_FOCUS.includes(this.props.widgetType) &&
+      !WIDGETS_WITH_OWN_FOCUS_RULE.includes(this.props.widgetType) &&
       prevProps.dataId !== this.props.dataId &&
       !this.state.isFocused
     ) {
