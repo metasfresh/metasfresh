@@ -133,6 +133,16 @@ export class RawLookup extends Component {
       this.inputSearch.value = '';
     }
 
+    // A new document in an already-mounted window reconciles this widget instead of
+    // remounting it, so the constructor's one-shot arming was already spent on the previous
+    // document and the new document's first field would stay unfocused. Re-arm it — the
+    // `!this.inputSearch.value` guard below stays the sole decider of whether the focus
+    // actually happens, so a document whose value is already filled keeps its current
+    // behaviour, and a user who has started typing does not lose the caret.
+    if (prevProps.dataId !== this.props.dataId && !shouldBeFocused) {
+      this.setState({ shouldBeFocused: true });
+    }
+
     if (autoFocus && !this.inputSearch.value && shouldBeFocused) {
       this.focus();
       this.setState({ shouldBeFocused: false });
