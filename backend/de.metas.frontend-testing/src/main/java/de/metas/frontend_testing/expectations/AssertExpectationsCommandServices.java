@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.expectations;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
@@ -104,7 +105,27 @@ public class AssertExpectationsCommandServices
 
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
-		return huQRCodeService.getHuIdByQRCode(qrCode);
+		return getHuIdByQRCode(huQRCodeService, qrCode);
+	}
+
+	/**
+	 * Resolves through soft-deleted QR-code assignments too: destroying an HU deactivates its
+	 * {@code M_HU_QRCode_Assignment} row, so the scan-time (active-only) lookup stops finding the HU — but a
+	 * destroyed HU must stay assertable, e.g. {@code Backend.expect({hus: {qrCode: {huStatus: 'D'}}})}.
+	 * A QR code with no assignment at all still fails with the very same "no HU found" error as before.
+	 */
+	@VisibleForTesting
+	static HuId getHuIdByQRCode(@NonNull final HUQRCodesService huQRCodeService, @NonNull final HUQRCode qrCode)
+	{
+		final HuId activeHuId = huQRCodeService.getHuIdByQRCodeIfExists(qrCode).orElse(null);
+		if (activeHuId != null)
+		{
+			return activeHuId;
+		}
+
+		return huQRCodeService.getHuIdByQRCodeIncludingInactiveIfExists(qrCode)
+				// nothing at all resolves => let the service raise its standard not-found error
+				.orElseGet(() -> huQRCodeService.getHuIdByQRCode(qrCode));
 	}
 
 	public HUType getHUUnitType(@NonNull final I_M_HU hu)
