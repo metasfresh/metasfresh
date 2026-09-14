@@ -278,6 +278,29 @@ public interface I_M_Product
 	String COLUMNNAME_Content = "Content";
 
 	/**
+	 * Set Co-Product Fixed Cost Price.
+	 * Manually maintained, overridable fixed cost price for a co-product (rework output). Blank = today's behaviour.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCoProductFixedCostPrice (@Nullable BigDecimal CoProductFixedCostPrice);
+
+	/**
+	 * Get Co-Product Fixed Cost Price.
+	 * Manually maintained, overridable fixed cost price for a co-product (rework output). Blank = today's behaviour.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCoProductFixedCostPrice();
+
+	ModelColumn<I_M_Product, Object> COLUMN_CoProductFixedCostPrice = new ModelColumn<>(I_M_Product.class, "CoProductFixedCostPrice", null);
+	String COLUMNNAME_CoProductFixedCostPrice = "CoProductFixedCostPrice";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -1810,6 +1833,29 @@ public interface I_M_Product
 	String COLUMNNAME_M_CustomsTariff_ID = "M_CustomsTariff_ID";
 
 	/**
+	 * Set Medical device type.
+	 * Medical device type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMedicalDeviceType (@Nullable java.lang.String MedicalDeviceType);
+
+	/**
+	 * Get Medical device type.
+	 * Medical device type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMedicalDeviceType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_MedicalDeviceType = new ModelColumn<>(I_M_Product.class, "MedicalDeviceType", null);
+	String COLUMNNAME_MedicalDeviceType = "MedicalDeviceType";
+
+	/**
 	 * Set Freight Category.
 	 * Category of the Freight
 	 *
@@ -2123,6 +2169,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_PostControl = new ModelColumn<>(I_M_Product.class, "PostControl", null);
 	String COLUMNNAME_PostControl = "PostControl";
+
+	/**
+	 * Set Preferential origin.
+	 * Preferential origin
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPreferentialOrigin (@Nullable java.lang.String PreferentialOrigin);
+
+	/**
+	 * Get Preferential origin.
+	 * Preferential origin
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPreferentialOrigin();
+
+	ModelColumn<I_M_Product, Object> COLUMN_PreferentialOrigin = new ModelColumn<>(I_M_Product.class, "PreferentialOrigin", null);
+	String COLUMNNAME_PreferentialOrigin = "PreferentialOrigin";
 
 	/**
 	 * Set Preparation.
