@@ -42,6 +42,14 @@ import {
 const SALES_ORDER_FIRST_FIELD = '#lookup_C_BPartner_ID input.input-field';
 
 /**
+ * The contact sub-field of the same composed lookup. Mounting onto an order whose
+ * Auftraggeber is already filled focuses THIS one — the widget's own
+ * "skip a non-empty input" rule — and that parity with a fresh page load must survive
+ * the fix.
+ */
+const SALES_ORDER_CONTACT_FIELD = '#lookup_AD_User_ID .input-dropdown-container';
+
+/**
  * Human-readable description of `document.activeElement`, used in every focus
  * assertion message so a failure says WHAT held focus instead of only "false".
  */
@@ -147,6 +155,20 @@ async function expectFirstFieldFocused(
   ).toBe(true);
 }
 
+/** Assert that `selector` does NOT hold the browser focus. */
+async function expectNotFocused(page, selector) {
+  const { activeId } = await activeFieldInfo(page);
+  const holdsFocus = await page.evaluate((sel) => {
+    const el = document.activeElement;
+    return !!el && typeof el.matches === 'function' && el.matches(sel);
+  }, selector);
+
+  expect(
+    holdsFocus,
+    `expected "${selector}" NOT to hold focus, but document.activeElement was ${activeId}`
+  ).toBe(false);
+}
+
 /** A login-only fixture — for scenarios that need no business data. */
 const createLoginFixture = async () =>
   Backend.createMasterdata({ request: { login: { user: { language: 'en_US' } } } });
@@ -250,6 +272,88 @@ a mount onward, nothing was focused.
     // The "New" under test — same mounted window, no reload, no preceding click.
     const secondOrderId = await pressNewAndExpectNewDocument(page, firstOrderId);
     console.log(`[TC1] first order ${firstOrderId} -> new order ${secondOrderId}`);
+
+    await expectFirstFieldFocused(page, SALES_ORDER_FIRST_FIELD);
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  test('TC2 - a second new order without completing the first focuses the first field', async ({
+    page,
+  }) => {
+    allure.description(`
+Pins what actually triggers the loss of focus: not completing the document, but that the
+first-field widget has already auto-focused once in this mount. Without this scenario a fix
+could be built around the completed / read-only state and leave the real trigger open.
+    `);
+
+    const masterdata = await createOrderFixture();
+    const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+
+    // First order of the mount, left in Drafted state — its empty first field means the
+    // mount-time focus fires and spends the widget's one-shot arming.
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    await expectFirstFieldFocused(page, SALES_ORDER_FIRST_FIELD, {
+      timeout: SLOW_ACTION_TIMEOUT,
+    });
+
+    // Pick the customer — deliberately NOT completing the order, but enough to make the
+    // draft a real, saved document. An untouched fresh draft is not offered the "New"
+    // standard action at all (`GlobalContextShortcuts.js` gates NEW_DOCUMENT on
+    // `standardActionsAllowed`), so Alt+N would silently do nothing and the scenario would
+    // assert against a document that never changed (construction rule 1).
+    const firstOrderId = await SalesOrderPage.selectCustomer(customer);
+
+    // The "New" under test — nothing was completed in between.
+    const secondOrderId = await pressNewAndExpectNewDocument(page, firstOrderId);
+    console.log(`[TC2] first order ${firstOrderId} -> new order ${secondOrderId}`);
+
+    await expectFirstFieldFocused(page, SALES_ORDER_FIRST_FIELD);
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  test('TC5 - opening an existing order, then New, keeps fresh-load focus parity', async ({
+    page,
+  }) => {
+    allure.description(`
+Highest-regression-risk case: it passes today and relies on the exact widget rule the fix
+changes. Mounting onto an order whose Auftraggeber is FILLED must keep focusing the first
+EMPTY sub-field of the composed lookup (the contact), never the filled one — and the "New"
+that follows must still focus the Auftraggeber.
+    `);
+
+    const masterdata = await createOrderFixture();
+    const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+
+    // Produce the "existing order with a filled Auftraggeber" this scenario needs.
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const existingOrderId = await SalesOrderPage.selectCustomer(customer);
+
+    // Re-open it as a FRESH page load: that is the parity reference this scenario pins.
+    await page.goto(
+      `${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${existingOrderId}`
+    );
+    await page.waitForURL(
+      new RegExp(`/window/${SALES_ORDER_WINDOW_ID}/${existingOrderId}`),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await waitForDocumentReady(page);
+
+    await expectFirstFieldFocused(page, SALES_ORDER_CONTACT_FIELD, {
+      timeout: SLOW_ACTION_TIMEOUT,
+    });
+    await expectNotFocused(page, SALES_ORDER_FIRST_FIELD);
+
+    // The "New" under test — from a document whose first field was never auto-focused.
+    const newOrderId = await pressNewAndExpectNewDocument(page, existingOrderId);
+    console.log(`[TC5] existing order ${existingOrderId} -> new order ${newOrderId}`);
 
     await expectFirstFieldFocused(page, SALES_ORDER_FIRST_FIELD);
   });
