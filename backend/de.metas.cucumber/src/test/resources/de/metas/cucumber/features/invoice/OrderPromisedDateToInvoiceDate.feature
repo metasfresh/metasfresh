@@ -81,3 +81,17 @@ Feature: Order promised date propagates to shipment movement date and invoice da
     And validate created invoices
       | Identifier | C_BPartner_ID | processed | DocStatus | DateInvoiced |
       | invoice_1  | customer_1    | true      | CO        | 2021-04-25   |
+
+  @from:cucumber
+  @Id:S30300_TC2
+  Scenario: Invoice date option off dates the invoice to today, not to the order promised date
+
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID.Identifier | OPT.IsDeliveryDateAsInvoiceDate |
+      | ic_1                              | N                               |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID | C_Invoice_ID |
+      | ic_1                   | invoice_1    |
+    And validate created invoices
+      | Identifier | C_BPartner_ID | processed | DocStatus | DateInvoiced |
+      | invoice_1  | customer_1    | true      | CO        | 2021-04-30   |
