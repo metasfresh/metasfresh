@@ -20,6 +20,8 @@ public class MobileUIManufacturingConfig
 	@Nullable ReceiveUnitType receiveUnitType;
 	@NonNull OptionalBoolean isBestBeforeDateEditable;
 	@NonNull OptionalBoolean isLotNumberEditable;
+	@NonNull @Builder.Default OptionalBoolean isAllowEmptyingHUs = OptionalBoolean.UNKNOWN;
+	@NonNull @Builder.Default OptionalBoolean isConfirmEmptyingHU = OptionalBoolean.UNKNOWN;
 
 	@NonNull
 	public ReceiveUnitType getReceiveUnitTypeEffective()
@@ -46,8 +48,6 @@ public class MobileUIManufacturingConfig
 		}
 		return result.build();
 	}
-	@NonNull @Builder.Default OptionalBoolean isAllowEmptyingHUs = OptionalBoolean.UNKNOWN;
-	@NonNull @Builder.Default OptionalBoolean isConfirmEmptyingHU = OptionalBoolean.UNKNOWN;
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
 	{

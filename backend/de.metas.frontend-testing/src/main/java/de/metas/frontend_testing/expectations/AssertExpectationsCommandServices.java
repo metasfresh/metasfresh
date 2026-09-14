@@ -175,6 +175,8 @@ public class AssertExpectationsCommandServices
 	public List<I_M_InOutLine> getProcessedShipmentLinesByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
 	{
 		return inOutDAO.retrieveProcessedLinesForOrderLineIds(orderLineIds);
+	}
+
 	/**
 	 * Inventory lines booked on exactly this HU. {@code retrieveAllLinesForHU} widens to included HUs,
 	 * {@code M_InventoryLine_HU} and HU assignments, so the result is narrowed back to lines whose own

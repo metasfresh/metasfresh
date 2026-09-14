@@ -69,6 +69,8 @@ class IssueRawMaterialsCommandTest
 			return MobileUIManufacturingConfig.builder()
 					.isScanResourceRequired(OptionalBoolean.FALSE)
 					.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
+					.isBestBeforeDateEditable(OptionalBoolean.TRUE)
+					.isLotNumberEditable(OptionalBoolean.TRUE)
 					.isAllowEmptyingHUs(offerEmptyingHUs ? OptionalBoolean.TRUE : OptionalBoolean.FALSE)
 					.build();
 		}
