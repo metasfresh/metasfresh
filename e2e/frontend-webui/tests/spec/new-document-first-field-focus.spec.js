@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { getFieldData } from '../utils/WebAPIValidation';
-import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import { PRODUCT_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import {
   FRONTEND_BASE_URL,
   FAST_ACTION_TIMEOUT,
@@ -56,6 +56,9 @@ const SALES_ORDER_CONTACT_FIELD = '#lookup_AD_User_ID .input-dropdown-container'
  */
 const CURRENCY_RATE_WINDOW_ID = 116;
 const CURRENCY_RATE_FIRST_FIELD = '.form-field-C_Currency_ID .input-dropdown-container';
+
+/** Product window - its first field is a plain text widget, the third of the three routes. */
+const PRODUCT_FIRST_FIELD = '.form-field-Name input.input-field';
 
 /** A plain header text field of the Sales Order window, used as the caret's resting place. */
 const SALES_ORDER_REFERENCE_FIELD = '.form-field-POReference input.input-field';
@@ -472,5 +475,35 @@ the caret where they put it.
       await referenceInput.inputValue(),
       'the characters typed before the re-render must survive'
     ).toBe(typedText);
+  });
+  // eslint-disable-next-line no-unused-vars
+  test('TC6 - the same sequence on a window whose first field is a plain text widget', async ({
+    page,
+  }) => {
+    allure.description(`
+Covers the third widget route: a plain text widget focuses only when it mounts, so it loses the
+focus on every document switch regardless of what the previous document held. Without this, a fix
+covering the lookup and the dropdown would leave every text-first window broken.
+    `);
+
+    const masterdata = await createLoginFixture();
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+
+    const existingProductId = await openFirstListRow(page, PRODUCT_WINDOW_ID);
+
+    // Precondition: the mount-time focus fired, i.e. the widget's one mount is used up.
+    await expectFocusOn(page, PRODUCT_FIRST_FIELD, { timeout: SLOW_ACTION_TIMEOUT });
+
+    // Move on to the next field, the way a clerk does after reading the first one - otherwise the
+    // still-focused DOM node would keep the focus given for the PREVIOUS document and the
+    // assertion would pass without anything having moved.
+    await page.keyboard.press('Tab');
+    await expectNotFocused(page, PRODUCT_FIRST_FIELD);
+
+    const newProductId = await pressNewAndExpectNewDocument(page, existingProductId);
+    console.log(`[TC6] existing product ${existingProductId} -> new product ${newProductId}`);
+
+    await expectFocusOn(page, PRODUCT_FIRST_FIELD);
   });
 });
