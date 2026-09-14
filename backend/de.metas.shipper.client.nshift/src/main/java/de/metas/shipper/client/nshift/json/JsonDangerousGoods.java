@@ -88,6 +88,7 @@ public class JsonDangerousGoods
 	@JsonProperty("KitAmount")
 	Integer kitAmount;
 	@JsonProperty("Labels")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<JsonLabel> labels;
 	@JsonProperty("LimitedQuantities")
 	String limitedQuantities;

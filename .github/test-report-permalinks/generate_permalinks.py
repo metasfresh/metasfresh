@@ -6,6 +6,11 @@ import json, os, re, sys, tempfile
 
 ALLURE_SUITES = ["cucumber", "frontend-webui", "mobile-webui"]
 FCODE_RE = re.compile(r"^(F\d+(?:\.\d+)?)\b")
+#: An F-code as it appears in a test's own `tags`: bare ("F00230") or with its
+#: name ("F00230: MobileUI Picking"). The subfeature separator is written "."
+#: by the Playwright specs and "_" by cucumber, so both are accepted and
+#: normalised to the dot form -- otherwise one subfeature indexes as two.
+TAG_FCODE_RE = re.compile(r"^\s*(F\d+(?:[._]\d+)?)\s*(?::|$)")
 ECODE_RE = re.compile(r"^E\d+\b")
 SPEC_SUFFIXES = (".spec.js", ".feature")
 
@@ -37,6 +42,42 @@ def extract_features(behaviors_root):
             add(tname, top.get("uid"), _count_leaves(top))
     return out
 
+def _canonical_fcode(code):
+    """`F5001_1` and `F5001.1` are the same subfeature; index them once."""
+    return code.replace("_", ".", 1) if re.match(r"^F\d+_\d", code) else code
+
+def extract_tagged_features(behaviors_root):
+    """{F-code: number of tests carrying it as a TAG}, for the whole tree.
+
+    `extract_features` above indexes by Allure grouping-node NAME, which is
+    populated only by `allure.feature(...)`. The specs overwhelmingly use
+    `allure.tag('Fxxxx: Name')` + `allure.tag('Fxxxx')` instead, and a tag
+    creates no grouping node -- so a feature can have many tests here and at
+    most a token presence in the Behaviours tree. Measured on
+    5.175-intensive-care-release.43783: F00700's Behaviours node holds 1 test
+    while 141 carry its tag; for F00230 the node holds 67 against 190 tagged.
+    Indexing the tag route is what lets the resolver page say which of the two
+    numbers a link is about to show.
+    """
+    seen = {}   # F-code -> set of leaf uids, because a test appears MORE THAN ONCE
+                # in the tree (cucumber lists every test under its .feature file AND
+                # again under Epic -> Feature). Counting occurrences inflated F00230
+                # from 190 real tests to 293 before this was de-duplicated.
+    def walk(node):
+        ch = node.get("children")
+        if ch is None:
+            uid = node.get("uid") or node.get("name")
+            for tag in node.get("tags") or []:
+                m = TAG_FCODE_RE.match(str(tag))
+                if m:
+                    seen.setdefault(_canonical_fcode(m.group(1)), set()).add(uid)
+            return
+        for c in ch:
+            walk(c)
+    for top in behaviors_root.get("children") or []:
+        walk(top)
+    return {code: len(uids) for code, uids in seen.items()}
+
 def extract_specs(suites_root):
     out = {}
     def walk(node):
@@ -54,8 +95,17 @@ def build_index(build_dir):
         bpath = os.path.join(build_dir, "allure", suite, "data", "behaviors.json")
         if os.path.isfile(bpath):
             with open(bpath, encoding="utf-8") as f:
-                for key, (uid, count) in extract_features(json.load(f)).items():
-                    features.setdefault(key, {})[suite] = {"uid": uid, "count": count}
+                behaviors = json.load(f)
+            for key, (uid, count) in extract_features(behaviors).items():
+                features.setdefault(key, {})[suite] = {"uid": uid, "count": count, "tagged": 0}
+            # A tag creates no grouping node, so a feature can be well covered in
+            # this suite and still have no entry above. Record it either way --
+            # with a null uid when there is nothing to deep-link to, so the
+            # resolver can say "no linkable node" instead of the key looking absent.
+            for code, tagged in extract_tagged_features(behaviors).items():
+                entry = features.setdefault(code, {}).setdefault(
+                    suite, {"uid": None, "count": 0, "tagged": 0})
+                entry["tagged"] = tagged
         spath = os.path.join(build_dir, "allure", suite, "data", "suites.json")
         if os.path.isfile(spath):
             with open(spath, encoding="utf-8") as f:

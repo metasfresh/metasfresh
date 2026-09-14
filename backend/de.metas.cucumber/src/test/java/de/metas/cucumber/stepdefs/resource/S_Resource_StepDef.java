@@ -88,6 +88,30 @@ public class S_Resource_StepDef
 				});
 	}
 
+	/**
+	 * Creates {@code S_Resource} record(s) from the DataTable.
+	 * <p>
+	 * Required columns: {@code Identifier} and {@code S_ResourceType_ID}; the value/name pair is derived via
+	 * {@code row.suggestValueAndName()}.
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 *     <li>{@code IsManufacturingResource}</li>
+	 *     <li>{@code ManufacturingResourceType} — e.g. {@code PT} (plant) or {@code WS} (workstation)</li>
+	 *     <li>{@code LotNumberCode} — the per-resource code a lot-number provider appends as the production-line
+	 *     segment, reached via {@code PP_Order.WorkStation_ID -> S_Resource.LotNumberCode}</li>
+	 *     <li>{@code PlanningHorizon}</li>
+	 *     <li>{@code CapacityPerProductionCycle} (+ its UOM column)</li>
+	 * </ul>
+	 * <pre>
+	 * And create S_Resource:
+	 *   | Identifier  | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | LotNumberCode | PlanningHorizon |
+	 *   | wsLineFive  | 1000000           | Y                       | WS                        | 5             | 999             |
+	 *   | wsLineSeven | 1000000           | Y                       | WS                        | 7             | 999             |
+	 * </pre>
+	 * Two workstations differing only in {@code LotNumberCode}, so a scenario can prove the lot number's
+	 * line segment follows the order's workstation.
+	 */
 	@And("create S_Resource:")
 	public void createResources(@NonNull final DataTable dataTable)
 	{
@@ -110,6 +134,7 @@ public class S_Resource_StepDef
 		row.getAsOptionalEnum(I_S_Resource.COLUMNNAME_ManufacturingResourceType, ManufacturingResourceType.class)
 				.map(ManufacturingResourceType::getCode)
 				.ifPresent(record::setManufacturingResourceType);
+		row.getAsOptionalString(I_S_Resource.COLUMNNAME_LotNumberCode).ifPresent(record::setLotNumberCode);
 		row.getAsOptionalInt(I_S_Resource.COLUMNNAME_PlanningHorizon).ifPresent(record::setPlanningHorizon);
 
 		row.getAsOptionalQuantity(

@@ -13,6 +13,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Retry...',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Please select...',
+    },
+  },
   general: {
     Yes: 'Yes',
     No: 'No',
@@ -79,6 +84,14 @@ const translations = {
       appName: 'Picking',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Workplace/workstation is currently unavailable',
+        retry: 'Retry',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
@@ -129,6 +142,7 @@ const translations = {
       unPickBtn: 'Unpack',
       target: 'To pack',
       picked: 'Packed',
+      available: 'Available',
       switchToManualInput: 'Manually',
       switchToQrCodeInput: 'Scan',
       scanSerialNo: 'Scan Serial No',
@@ -201,13 +215,16 @@ const translations = {
       target: 'To Move',
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
-      scanProduct: 'Scan Product',
+      scanHUBarcodePlaceholder: 'Scan HU barcode',
+      scanProductGtinPlaceholder: 'Scan product (GTIN)',
       scanDropToLocator: 'Scan drop to Locator',
       switchPickFromLocator: 'Locator empty',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
+      cannotPickFromSelectedHU: 'Cannot pick from the selected HU: %(reason)s. Please scan the HU to pick from.',
       qrcode: {
         differentProduct: 'The scanned QR Product does not match',
+        productCodeWhereHUExpected: 'This is an article barcode (GTIN), not an HU barcode. Please scan the HU first.',
       },
       printMaterialInTransitReport: 'In Transit Report',
     },

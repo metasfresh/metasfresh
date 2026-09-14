@@ -341,3 +341,223 @@ Feature: import order candidate to metasfresh
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |
       | olCand_3               | huItemProduct_2_2                      | bpartner1_2              | mainBPLocation1_2                 | bpartner1_2                         | storeBPLocation1_2                  | bpartner1_2                        | mainBPLocation1_2                   | product                 | 2          | F            | S               | PORefTest       | Y       | N             |
+
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+  Scenario: M_HU_PI_Item_Product is resolved for the order's DatePromised, not the newest-created row
+  _Given two M_HU_PI_Item_Product rows for the same product and UPC on one BPartner: an old one (Qty 9, ValidFrom 2019-01-01) and a newer/future one (Qty 6, ValidFrom 2023-01-01)
+  _And the barcode-lookup view has no validity filter, so it resolves the newest-created row (= the future 6-CU one) for both orders
+  _When importing an OLCand via EDIImportXML with DatePromised 2022-11-20 (BEFORE the future row's ValidFrom)
+  _Then C_OLCand.M_HU_PI_Item_Product_ID must be the OLD row (the one valid on DatePromised), not the future one
+  _When importing an OLCand via EDIImportXML with DatePromised 2023-06-01 (ON/AFTER the future row's ValidFrom, both rows valid)
+  _Then C_OLCand.M_HU_PI_Item_Product_ID must be the FUTURE row (latest ValidFrom among the valid rows - AC2 tie-break)
+
+    Given metasfresh contains C_BPartners:
+      | Identifier        | Name              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_validity | BPartner_Validity | N            | Y              | ps_1                          |
+      | orgBPartner_v     | OrgBPartner_V     | N            | Y              | ps_1                          |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name           | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier | OPT.UPC       |
+      | huItemProduct_old                  | huPiItemTU_1               | product                 | 9   | 2019-01-01 | Packing 9 (old)    | PCE                   | bpartner_validity            | 3333333333336 |
+      | huItemProduct_future               | huPiItemTU_2               | product                 | 6   | 2023-01-01 | Packing 6 (future) | PCE                   | bpartner_validity            | 3333333333336 |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier           | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLoc_validity_main  | 3234567890000 | bpartner_validity        | false        |
+      | bpLoc_validity_store | 3234567890001 | bpartner_validity        | true         |
+      | bpLoc_org_v          | 3222222222220 | orgBPartner_v            | false        |
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>3222222222220</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>3234567890000</GLN>
+        <StoreGLN>3234567890001</StoreGLN>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>3234567890000</GLN>
+          <StoreGLN>3234567890001</StoreGLN>
+        </C_BPartner_ID>
+        <GLN>3234567890000</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>3333333333336</UPC>
+        <GLN>3234567890000</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>3333333333336</UPC>
+        <GLN>3234567890000</GLN>
+        <StoreGLN>3234567890001</StoreGLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>10</QtyEntered>
+      <POReference>PORef_before</POReference>
+      <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
+      | olCand_before          | Shopware6            | product      | bpartner_validity            | 10         | PORef_before    | impProcessor                    |
+
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
+      | olCand_before          | huItemProduct_old                      | product                 | 10         | PORef_before    |
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>3222222222220</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>3234567890000</GLN>
+        <StoreGLN>3234567890001</StoreGLN>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>3234567890000</GLN>
+          <StoreGLN>3234567890001</StoreGLN>
+        </C_BPartner_ID>
+        <GLN>3234567890000</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2022-10-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>3333333333336</UPC>
+        <GLN>3234567890000</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>3333333333336</UPC>
+        <GLN>3234567890000</GLN>
+        <StoreGLN>3234567890001</StoreGLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>20</QtyEntered>
+      <POReference>PORef_after</POReference>
+      <DatePromised>2023-06-01T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
+      | olCand_after           | Shopware6            | product      | bpartner_validity            | 20         | PORef_after     | impProcessor                    |
+
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
+      | olCand_after           | huItemProduct_future                   | product                 | 20         | PORef_after     |
+
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+  Scenario: On and after the switch date the latest-valid M_HU_PI_Item_Product is used even when the barcode view resolves an older, default-flagged row
+  _Given two rows for the same product/UPC/BPartner: a NEW one (Qty 6, ValidFrom 2023-01-01) and an OLD one (Qty 9, ValidFrom 2019-01-01, IsDefaultForProduct) created after it so it has the higher M_HU_PI_Item_Product_ID
+  _And so the date-blind barcode-lookup view resolves the OLD row (highest id)
+  _When importing an OLCand with DatePromised 2024-06-01 (ON/AFTER both rows' ValidFrom, both valid)
+  _Then C_OLCand.M_HU_PI_Item_Product_ID must be the NEW row (latest ValidFrom): the default flag must not override the reference date, and a still-valid old row must not be kept
+
+    Given metasfresh contains C_BPartners:
+      | Identifier      | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_ver    | BPartner_Ver    | N            | Y              | ps_1                          |
+      | orgBPartner_ver | OrgBPartner_Ver | N            | Y              | ps_1                          |
+    # The date-blind barcode-lookup view stamps the OLCand with the highest-id row for the UPC. The old
+    # (superseded, still-valid, product-default) row here carries the HIGHER id, so the view stamps it even
+    # though the delivery date is on/after the new version's switch date. The validator must correct this to
+    # the latest valid version.
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name        | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier | OPT.UPC       | OPT.IsDefaultForProduct |
+      | huItemProduct_ver_old              | huPiItemTU_1               | product                 | 9   | 2019-01-01 | Packing 9 (old) | PCE                   | bpartner_ver                 | 5555555555558 | Y                       |
+      | huItemProduct_ver_new              | huPiItemTU_2               | product                 | 6   | 2023-01-01 | Packing 6 (new) | PCE                   | bpartner_ver                 | 5555555555558 |                         |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier      | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | bpLoc_ver_main  | 3234567893000 | bpartner_ver             | false        |
+      | bpLoc_ver_store | 3234567893001 | bpartner_ver             | true         |
+      | bpLoc_ver_org   | 4222222222220 | orgBPartner_ver          | false        |
+
+    When send message to RabbitMQ queue defined by:impProcessor
+  """
+<?xml version="1.0" encoding="UTF-8"?><EDI_Imp_C_OLCand AD_Client_Value="SYSTEM" ReplicationEvent="5" ReplicationMode="0" ReplicationType="M" TrxName="" Version="*">
+      <ExternalSystem_ID>540007</ExternalSystem_ID>
+      <AD_DataDestination_ID>
+        <InternalName>DEST.de.metas.ordercandidate</InternalName>
+      </AD_DataDestination_ID>
+      <AD_Org_ID>
+      <GLN>4222222222220</GLN>
+      </AD_Org_ID>
+      <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
+      <C_BPartner_ID>
+        <GLN>3234567893000</GLN>
+        <StoreGLN>3234567893001</StoreGLN>
+      </C_BPartner_ID>
+      <C_BPartner_Location_ID>
+        <C_BPartner_ID>
+          <GLN>3234567893000</GLN>
+          <StoreGLN>3234567893001</StoreGLN>
+        </C_BPartner_ID>
+        <GLN>3234567893000</GLN>
+      </C_BPartner_Location_ID>
+      <C_Currency_ID>
+        <ISO_Code>EUR</ISO_Code>
+      </C_Currency_ID>
+      <C_UOM_ID>
+        <X12DE355>KGM</X12DE355>
+      </C_UOM_ID>
+      <DateCandidate>2024-05-17+03:00</DateCandidate>
+      <DeliveryRule>F</DeliveryRule>
+      <DeliveryViaRule>S</DeliveryViaRule>
+      <IsManualPrice>Y</IsManualPrice>
+      <M_Product_ID>
+        <UPC>5555555555558</UPC>
+        <GLN>3234567893000</GLN>
+      </M_Product_ID>
+      <M_HU_PI_Item_Product_ID>
+        <UPC>5555555555558</UPC>
+        <GLN>3234567893000</GLN>
+        <StoreGLN>3234567893001</StoreGLN>
+      </M_HU_PI_Item_Product_ID>
+      <PriceEntered>5</PriceEntered>
+      <QtyEntered>30</QtyEntered>
+      <POReference>PORef_ver</POReference>
+      <DatePromised>2024-06-01T23:59:59+03:00</DatePromised>
+    </EDI_Imp_C_OLCand>
+"""
+
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | ExternalSystem.Value | M_Product_ID | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.POReference | OPT.IMP_Processor_ID.Identifier |
+      | olCand_ver             | Shopware6            | product      | bpartner_ver                 | 30         | PORef_ver       | impProcessor                    |
+
+    And validate C_OLCand:
+      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.POReference |
+      | olCand_ver             | huItemProduct_ver_new                  | product                 | 30         | PORef_ver       |

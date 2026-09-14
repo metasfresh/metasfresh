@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.contract.commission.hierarchy.C_HierarchyCommi
 import de.metas.cucumber.stepdefs.contract.commission.licensefee.C_LicenseFeeSettings_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.margin.C_Customer_Trade_Margin_StepDefData;
 import de.metas.cucumber.stepdefs.contract.commission.mediated.C_MediatedCommissionSettings_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.uom.C_UOM_StepDefData;
 import de.metas.order.InvoiceRule;
@@ -45,6 +46,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -69,39 +71,45 @@ import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_F
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class C_Flatrate_Conditions_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
-	private final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable;
-	private final C_Customer_Trade_Margin_StepDefData customerTradeMarginTable;
-	private final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable;
-	private final C_Flatrate_Conditions_StepDefData conditionsTable;
-	private final M_PricingSystem_StepDefData pricingSysTable;
-	private final M_Product_StepDefData productTable;
-	private final C_UOM_StepDefData uomTable;
+	private final @NonNull C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
+	private final @NonNull C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable;
+	private final @NonNull C_Customer_Trade_Margin_StepDefData customerTradeMarginTable;
+	private final @NonNull C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable;
+	private final @NonNull C_Flatrate_Conditions_StepDefData conditionsTable;
+	private final @NonNull M_PricingSystem_StepDefData pricingSysTable;
+	private final @NonNull M_Product_StepDefData productTable;
+	private final @NonNull C_UOM_StepDefData uomTable;
+	private final @NonNull TestContext testContext;
 
-	public C_Flatrate_Conditions_StepDef(
-			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
-			@NonNull final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable,
-			@NonNull final C_Customer_Trade_Margin_StepDefData customerTradeMarginTable,
-			@NonNull final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable,
-			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_UOM_StepDefData uomTable)
-	{
-		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
-		this.licenseFeeSettingsTable = licenseFeeSettingsTable;
-		this.customerTradeMarginTable = customerTradeMarginTable;
-		this.mediatedCommissionSettingsTable = mediatedCommissionSettingsTable;
-		this.conditionsTable = conditionsTable;
-		this.pricingSysTable = pricingSysTable;
-		this.productTable = productTable;
-		this.uomTable = uomTable;
-	}
-
+	/**
+	 * Creates (or upserts by {@code Name}) {@link I_C_Flatrate_Conditions} records used to set up flatrate/contract
+	 * conditions for a scenario.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code Name} (required) — the conditions' name (also the upsert key)</li>
+	 *     <li>{@code Type_Conditions} (required) — the conditions type code</li>
+	 *     <li>{@code OPT.Type_Flatrate}, {@code OPT.M_Product_Flatrate_ID.Identifier},
+	 *         {@code OPT.C_HierarchyCommissionSettings_ID.Identifier}, {@code OPT.C_LicenseFeeSettings_ID.Identifier},
+	 *         {@code OPT.C_Customer_Trade_Margin_ID.Identifier}, {@code OPT.C_MediatedCommissionSettings_ID.Identifier},
+	 *         {@code OPT.DocStatus} (default Completed), {@code OPT.InvoiceRule} (default AfterDelivery),
+	 *         {@code OPT.C_UOM_ID.Identifier}, {@code OPT.M_PricingSystem_ID.Identifier},
+	 *         {@code OPT.OnFlatrateTermExtend} (all optional)</li>
+	 *     <li>{@code REST.Context.C_Flatrate_Conditions_ID} (optional) — when present, its cell value is used as a
+	 *         REST-context variable name that is set to the created {@code C_Flatrate_Conditions_ID}, so that a later
+	 *         REST payload can reference the dynamically-allocated id via {@code @<name>@}</li>
+	 * </ul>
+	 * <pre>
+	 * And metasfresh contains C_Flatrate_Conditions:
+	 *   | Name         | Type_Conditions | REST.Context.C_Flatrate_Conditions_ID |
+	 *   | flatrateConditions | Subscription    | flatrateConditionsId                  |
+	 * </pre>
+	 */
 	@Given("metasfresh contains C_Flatrate_Conditions:")
 	public void metasfresh_contains_c_flatrate_conditions(@NonNull final DataTable dataTable)
 	{
@@ -216,6 +224,14 @@ public class C_Flatrate_Conditions_StepDef
 			final String conditionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
 
 			conditionsTable.put(conditionsIdentifier, flatrateConditions);
+
+			// Expose the freshly-allocated C_Flatrate_Conditions_ID as a REST-context variable so a later REST
+			// payload can reference it (the id is dynamic in a fresh cucumber DB and cannot be hardcoded).
+			final String restContextVariableName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "REST.Context." + I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID);
+			if (Check.isNotBlank(restContextVariableName))
+			{
+				testContext.setVariable(restContextVariableName, flatrateConditions.getC_Flatrate_Conditions_ID());
+			}
 		}
 	}
 }

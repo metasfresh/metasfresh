@@ -122,7 +122,6 @@ export class RawLookup extends Component {
     const {
       autoFocus,
       defaultValue,
-      handleInputEmptyStatus,
       filterWidget,
       lookupEmpty,
       localClearing,
@@ -145,7 +144,7 @@ export class RawLookup extends Component {
         (prevProps.defaultValue &&
           prevProps.defaultValue.caption !== defaultValue.caption))
     ) {
-      handleInputEmptyStatus && handleInputEmptyStatus(false);
+      this.notifyInputEmptyStatus(false);
     }
 
     if (
@@ -228,6 +227,20 @@ export class RawLookup extends Component {
     );
   };
 
+  /**
+   * Tell the parent composite Lookup that this sub-field's input is (not) empty.
+   * Only the PRIMARY sub-field gets a real `handleInputEmptyStatus` callback from Lookup.js;
+   * secondary sub-fields get none — so every call site must go through this guard.
+   * Optional chaining (`handleInputEmptyStatus?.(false)`) is NOT a sufficient guard: it lets
+   * the literal `false` through and throws.
+   */
+  notifyInputEmptyStatus = (isEmpty) => {
+    const { handleInputEmptyStatus } = this.props;
+    if (typeof handleInputEmptyStatus === 'function') {
+      handleInputEmptyStatus(isEmpty);
+    }
+  };
+
   handleSelect_AdvancedSearch = () => {
     const {
       dispatch,
@@ -260,7 +273,6 @@ export class RawLookup extends Component {
   handleSelect_RegularItem = (selectedItemParam, isMouseEvent = false) => {
     const {
       onChange,
-      handleInputEmptyStatus,
       mainProperty,
       setNextProperty,
       filterWidget,
@@ -301,7 +313,7 @@ export class RawLookup extends Component {
     this.inputSearch.value = computeInputTextFromSelectedItem(selectedItemNorm);
     this.setState({ inputTextOnFocus: this.inputSearch.value });
 
-    handleInputEmptyStatus && handleInputEmptyStatus(false);
+    this.notifyInputEmptyStatus(false);
 
     if (shouldKeepFocus) {
       this.focus();
@@ -411,6 +423,7 @@ export class RawLookup extends Component {
 
     const query = this.inputSearch.value;
     if (!query || !query.trim()) {
+      this.commitEmptyValueAndAdvance();
       return;
     }
 
@@ -451,11 +464,38 @@ export class RawLookup extends Component {
         }
       }
     } else {
-      // No match
+      // No match: on a non-mandatory sub-field, confirm the empty entry and advance
+      // instead of dead-ending the keyboard flow (TC8). Mandatory fields keep the beep.
+      if (this.commitEmptyValueAndAdvance()) {
+        return;
+      }
+
       if (this.props.beepOnInvalidProduct) {
         playBeep();
       }
     }
+  };
+
+  /**
+   * @method commitEmptyValueAndAdvance
+   * @summary Quick input: confirm the empty ("none") entry and advance focus — the same
+   * outcome `Tab` already produces on this field, and the same payload the mouse sends when
+   * the synthetic empty row is clicked (`handleSelect_RegularItem` normalises it to `null`).
+   *
+   * Only for NON-MANDATORY sub-fields: `!mandatory` is exactly the condition under which that
+   * synthetic empty row is offered at all (see `handleValueChanged`), so a mandatory field
+   * (the quick-input product, `MandatoryLogic.TRUE`) keeps beeping and holding focus.
+   *
+   * @return {boolean} true when the Enter was handled here, false when the caller must fall
+   *                   back to its previous no-match behaviour.
+   */
+  commitEmptyValueAndAdvance = () => {
+    if (this.props.mandatory) {
+      return false;
+    }
+
+    this.handleAutoSelectAndAdvance(null);
+    return true;
   };
 
   /**
@@ -537,8 +577,7 @@ export class RawLookup extends Component {
    * Unlike handleSelect_RegularItem, this does NOT refocus the current lookup input.
    */
   handleAutoSelectAndAdvance = (selectedItem) => {
-    const { onChange, handleInputEmptyStatus, mainProperty, filterWidget } =
-      this.props;
+    const { onChange, mainProperty, filterWidget } = this.props;
 
     const fieldName = filterWidget
       ? mainProperty.parameterName
@@ -547,7 +586,7 @@ export class RawLookup extends Component {
     this.inputSearch.value = computeInputTextFromSelectedItem(selectedItem);
     this.setState({ inputTextOnFocus: this.inputSearch.value });
 
-    handleInputEmptyStatus?.(false);
+    this.notifyInputEmptyStatus(false);
 
     this.handleDropdownBlur();
 
@@ -974,7 +1013,7 @@ RawLookup.propTypes = {
   defaultValue: PropTypes.any,
   initialFocus: PropTypes.bool,
   autoFocus: PropTypes.bool,
-  handleInputEmptyStatus: PropTypes.any,
+  handleInputEmptyStatus: PropTypes.func,
   isOpen: PropTypes.bool,
   selected: PropTypes.object,
   forcedWidth: PropTypes.number,

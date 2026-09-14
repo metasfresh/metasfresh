@@ -30,7 +30,7 @@ public interface I_M_InOut
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -39,7 +39,7 @@ public interface I_M_InOut
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -115,6 +115,31 @@ public interface I_M_InOut
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set B2B Shipment / Receipt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setB2B_InOut_ID (int B2B_InOut_ID);
+
+	/**
+	 * Get B2B Shipment / Receipt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getB2B_InOut_ID();
+
+	@Nullable org.compiere.model.I_M_InOut getB2B_InOut();
+
+	void setB2B_InOut(@Nullable org.compiere.model.I_M_InOut B2B_InOut);
+
+	ModelColumn<I_M_InOut, org.compiere.model.I_M_InOut> COLUMN_B2B_InOut_ID = new ModelColumn<>(I_M_InOut.class, "B2B_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_B2B_InOut_ID = "B2B_InOut_ID";
 
 	/**
 	 * Set Address.
@@ -913,7 +938,7 @@ public interface I_M_InOut
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
-	 * Set EPCIS Export Status.
+	 * Set Export Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -924,7 +949,7 @@ public interface I_M_InOut
 	void setEPCIS_ExportStatus (@Nullable java.lang.String EPCIS_ExportStatus);
 
 	/**
-	 * Get EPCIS Export Status.
+	 * Get Export Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1353,6 +1378,31 @@ public interface I_M_InOut
 
 	ModelColumn<I_M_InOut, Object> COLUMN_IsUseBPartnerAddress = new ModelColumn<>(I_M_InOut.class, "IsUseBPartnerAddress", null);
 	String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
+
+	/**
+	 * Set Delivery Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Delivery_Planning_ID (int M_Delivery_Planning_ID);
+
+	/**
+	 * Get Delivery Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Delivery_Planning_ID();
+
+	@Nullable org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning();
+
+	void setM_Delivery_Planning(@Nullable org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning);
+
+	ModelColumn<I_M_InOut, org.compiere.model.I_M_Delivery_Planning> COLUMN_M_Delivery_Planning_ID = new ModelColumn<>(I_M_InOut.class, "M_Delivery_Planning_ID", org.compiere.model.I_M_Delivery_Planning.class);
+	String COLUMNNAME_M_Delivery_Planning_ID = "M_Delivery_Planning_ID";
 
 	/**
 	 * Set Shipment/ Receipt.

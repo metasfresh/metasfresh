@@ -30,6 +30,22 @@
   font-size: 1.5em;
 }
 
+.picking-row-available {
+  clear: both;
+  padding-top: 5px;
+  text-align: center;
+}
+
+// The per-line Verfügbar row adds a third text line to the line button, which
+// otherwise has a fixed height (buttons.scss: .button / .full-size-btn = 2.5em).
+// Without extra height the Verfügbar row overflows the fixed box and the next
+// line button overlaps it. Grow the button when the row is present — mirrors the
+// existing .hazard-icons-btn height override in buttons.scss.
+.button:has(.picking-row-available),
+.full-size-btn:has(.picking-row-available) {
+  height: 4.5em !important;
+}
+
 .green-border-button {
   background-color: white;
   color: $base-mf-green;
@@ -49,6 +65,9 @@
   }
   .picking-row-picked {
     font-size: 1em;
+  }
+  .picking-row-available {
+    padding-top: 0;
   }
 }
 

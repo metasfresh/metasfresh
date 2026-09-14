@@ -95,19 +95,24 @@ public class NShiftShipAdvisorService
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.orderNo(deliveryAdvisorRequest.getId().replace("-", "")); //  Order Number is limited to 35 characters. fld_RefOrderNumber
 
+		// While test mode is on, the configured text IS the Attention for both roles.
+		final String testModeAttention = NShiftUtil.resolveTestModeAttention(deliveryAdvisorRequest.getShipperConfig());
+
 		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
 				deliveryAdvisorRequest.getPickupAddress(),
 				deliveryAdvisorRequest.getPickupContact(),
 				JsonAddressKind.SENDER,
 				mappingConfigs,
-				valueProvider));
+				valueProvider,
+				testModeAttention));
 
 		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
 				deliveryAdvisorRequest.getDeliveryAddress(),
 				deliveryAdvisorRequest.getDeliveryContact(),
 				JsonAddressKind.RECEIVER,
 				mappingConfigs,
-				valueProvider));
+				valueProvider,
+				testModeAttention));
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, valueProvider));
 

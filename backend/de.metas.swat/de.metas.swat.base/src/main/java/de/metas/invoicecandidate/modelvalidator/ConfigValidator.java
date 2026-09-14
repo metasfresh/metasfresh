@@ -100,6 +100,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		//
 		// Setup event bus topics on which swing client notification listener shall subscribe
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InvoiceUserNotificationsProducer.EVENTBUS_TOPIC);
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(InvoiceUserNotificationsProducer.EVENTBUS_TOPIC_Error);
 	}
 
 	@Override

@@ -23,9 +23,9 @@
 package de.metas.handlingunits.impl;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -61,5 +61,9 @@ public class CreateShipperTransportationRequest
 	 */
 	boolean assignAnonymouslyPickedHUs;
 
-	SOTrx isSOTrx;
+	/**
+	 * The direction the created {@code M_ShipperTransportation} gets. Stated by the caller, never derived here:
+	 * only the caller knows whether its document is a receipt, a shipment or a dropship.
+	 */
+	@NonNull TransportDirection transportDirection;
 }

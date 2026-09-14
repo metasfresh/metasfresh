@@ -54,8 +54,8 @@ Feature: Purchase order to transportation order
       | orderLine_PO | order_PO              | purchasedProduct        | 10         |
 
     And metasfresh contains Transport Order
-      | Identifier          | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
-      | transportationOrder | shipper_DHL  | supplier            | supplier            |
+      | Identifier          | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | transportationOrder | shipper_DHL  | supplier            | supplier            | Incoming           |
 
     And the order identified by order_PO is completed
 
@@ -91,8 +91,8 @@ Feature: Purchase order to transportation order
       | orderLine_PO2 | order_PO2             | purchasedProduct        | 5          |
 
     And metasfresh contains Transport Order
-      | Identifier           | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
-      | transportationOrder2 | shipper_DHL  | supplier            | supplier            |
+      | Identifier           | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | transportationOrder2 | shipper_DHL  | supplier            | supplier            | Incoming           |
 
     And the order identified by order_PO2 is completed
 

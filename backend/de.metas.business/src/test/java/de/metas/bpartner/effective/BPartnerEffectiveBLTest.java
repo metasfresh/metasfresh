@@ -26,7 +26,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -538,6 +541,30 @@ public class BPartnerEffectiveBLTest
 		assertThat(resolution).isNull();
 	}
 
+	@Test
+	public void getEffectiveValue_deliveryAndFreight()
+	{
+		final BPartnerId bPartnerId = setup()
+				.bpartner_DeliveryRule(DeliveryRule.MANUAL)
+				.bpartner_DeliveryViaRule(DeliveryViaRule.Shipper)
+				.bpartner_poDeliveryViaRule(DeliveryViaRule.NormalPost)
+				.bpartner_FreightCostRule(FreightCostRule.Line)
+				.build();
+
+		final BPartnerEffective bPartnerEffective = bpartnerEffectiveBL.getById(bPartnerId);
+
+		// DeliveryRule is sales-only: the getter returns null for purchase so no caller can leak the sales value
+		assertThat(bPartnerEffective.getDeliveryRule(SOTrx.SALES)).isEqualTo(DeliveryRule.MANUAL);
+		assertThat(bPartnerEffective.getDeliveryRule(SOTrx.PURCHASE)).isNull();
+
+		// DeliveryViaRule has an SO/PO split (DeliveryViaRule vs PO_DeliveryViaRule)
+		assertThat(bPartnerEffective.getDeliveryViaRule(SOTrx.SALES)).isEqualTo(DeliveryViaRule.Shipper);
+		assertThat(bPartnerEffective.getDeliveryViaRule(SOTrx.PURCHASE)).isEqualTo(DeliveryViaRule.NormalPost);
+
+		// FreightCostRule is not SOTrx-split
+		assertThat(bPartnerEffective.getFreightCostRule()).isEqualTo(FreightCostRule.Line);
+	}
+
 	@Builder(builderMethodName = "setup", builderClassName = "$SetupBuilder")
 	private BPartnerId setupTest(
 			@Nullable final PricingSystemId bpartner_PricingSystemId,
@@ -551,6 +578,10 @@ public class BPartnerEffectiveBLTest
 			@Nullable final Boolean bpartner_isAutoInvoice,
 			@Nullable final Incoterms bpartner_incoterms,
 			@Nullable final Incoterms bpartner_poIncoterms,
+			@Nullable final DeliveryRule bpartner_DeliveryRule,
+			@Nullable final DeliveryViaRule bpartner_DeliveryViaRule,
+			@Nullable final DeliveryViaRule bpartner_poDeliveryViaRule,
+			@Nullable final FreightCostRule bpartner_FreightCostRule,
 			@Nullable final PricingSystemId bpGroup_PricingSystemId,
 			@Nullable final PricingSystemId bpGroup_poPricingSystemId,
 			@Nullable final PaymentTermId bpGroup_PaymentTermId,
@@ -619,6 +650,10 @@ public class BPartnerEffectiveBLTest
 		partner.setIncotermLocation(extractIncotermsLocation(bpartner_incoterms));
 		partner.setC_Incoterms_Vendor_ID(createIncoterms(bpartner_poIncoterms));
 		partner.setPO_IncotermLocation(extractIncotermsLocation(bpartner_poIncoterms));
+		partner.setDeliveryRule(DeliveryRule.toCodeOrNull(bpartner_DeliveryRule));
+		partner.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner_DeliveryViaRule));
+		partner.setPO_DeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner_poDeliveryViaRule));
+		partner.setFreightCostRule(FreightCostRule.toCodeOrNull(bpartner_FreightCostRule));
 		saveRecord(partner);
 
 		return BPartnerId.ofRepoId(partner.getC_BPartner_ID());

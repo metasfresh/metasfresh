@@ -120,9 +120,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set B/L Date.
-	 * Date when the Bill of Lading was issued by the carrier.
-	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
-	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -132,9 +130,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get B/L Date.
-	 * Date when the Bill of Lading was issued by the carrier.
-	 * The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed.
-	 * Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
+	 * Date when the Bill of Lading was issued by the carrier. The Bill of Lading Date is automatically synchronized from the Transport Order to the Purchase Order once the transport is completed. Manual changes of the BL Date in the Purchase Order are not allowed — it is always derived from the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -144,6 +140,46 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_BLDate = new ModelColumn<>(I_M_ShipperTransportation.class, "BLDate", null);
 	String COLUMNNAME_BLDate = "BLDate";
+
+	/**
+	 * Set Delivery Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Delivery_ID (int C_BPartner_Location_Delivery_ID);
+
+	/**
+	 * Get Delivery Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Delivery_ID();
+
+	String COLUMNNAME_C_BPartner_Location_Delivery_ID = "C_BPartner_Location_Delivery_ID";
+
+	/**
+	 * Set Loading Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Loading_ID (int C_BPartner_Location_Loading_ID);
+
+	/**
+	 * Get Loading Address.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Loading_ID();
+
+	String COLUMNNAME_C_BPartner_Location_Loading_ID = "C_BPartner_Location_Loading_ID";
 
 	/**
 	 * Set Document Type.
@@ -166,6 +202,31 @@ public interface I_M_ShipperTransportation
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
 	 * Set Container No.
@@ -304,6 +365,27 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_DateToBeFetched = "DateToBeFetched";
 
 	/**
+	 * Set Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryTime (@Nullable java.lang.String DeliveryTime);
+
+	/**
+	 * Get Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDeliveryTime();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_DeliveryTime = new ModelColumn<>(I_M_ShipperTransportation.class, "DeliveryTime", null);
+	String COLUMNNAME_DeliveryTime = "DeliveryTime";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String
@@ -393,9 +475,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set ETA.
-	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
-	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
-	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -405,9 +485,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get ETA.
-	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations.
-	 * The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated.
-	 * Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
+	 * The ETA is used for shipment tracking, delivery planning, and scheduling of warehouse operations. The ETA is automatically synchronized from the Transport Order to the Purchase Order when the transport information is updated. Manual changes of the ETA in the Purchase Order are not allowed — it is always maintained in the corresponding Transport Order.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -440,6 +518,54 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_ETD = new ModelColumn<>(I_M_ShipperTransportation.class, "ETD", null);
 	String COLUMNNAME_ETD = "ETD";
+
+	/**
+	 * Set Has Shipping Packages.
+	 * Indicates whether shipping packages are already assigned to the document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setHasLines (boolean HasLines);
+
+	/**
+	 * Get Has Shipping Packages.
+	 * Indicates whether shipping packages are already assigned to the document.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isHasLines();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_HasLines = new ModelColumn<>(I_M_ShipperTransportation.class, "HasLines", null);
+	String COLUMNNAME_HasLines = "HasLines";
+
+	/**
+	 * Set Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_M_ShipperTransportation.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
 	 * Set Active.
@@ -534,29 +660,6 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_IsBookingConfirmed = "IsBookingConfirmed";
 
 	/**
-	 * Set Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsSOTrx (boolean IsSOTrx);
-
-	/**
-	 * Get Sales Transaction.
-	 * This is a Sales Transaction
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isSOTrx();
-
-	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_M_ShipperTransportation.class, "IsSOTrx", null);
-	String COLUMNNAME_IsSOTrx = "IsSOTrx";
-
-	/**
 	 * Set WE Notice.
 	 * Has the container planning been completed?
 	 *
@@ -578,6 +681,52 @@ public interface I_M_ShipperTransportation
 
 	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsWENotice = new ModelColumn<>(I_M_ShipperTransportation.class, "IsWENotice", null);
 	String COLUMNNAME_IsWENotice = "IsWENotice";
+
+	/**
+	 * Set Load Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoadingTime (@Nullable java.lang.String LoadingTime);
+
+	/**
+	 * Get Load Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLoadingTime();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_LoadingTime = new ModelColumn<>(I_M_ShipperTransportation.class, "LoadingTime", null);
+	String COLUMNNAME_LoadingTime = "LoadingTime";
+
+	/**
+	 * Set Means of Transportation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_MeansOfTransportation_ID (int M_MeansOfTransportation_ID);
+
+	/**
+	 * Get Means of Transportation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_MeansOfTransportation_ID();
+
+	@Nullable org.compiere.model.I_M_MeansOfTransportation getM_MeansOfTransportation();
+
+	void setM_MeansOfTransportation(@Nullable org.compiere.model.I_M_MeansOfTransportation M_MeansOfTransportation);
+
+	ModelColumn<I_M_ShipperTransportation, org.compiere.model.I_M_MeansOfTransportation> COLUMN_M_MeansOfTransportation_ID = new ModelColumn<>(I_M_ShipperTransportation.class, "M_MeansOfTransportation_ID", org.compiere.model.I_M_MeansOfTransportation.class);
+	String COLUMNNAME_M_MeansOfTransportation_ID = "M_MeansOfTransportation_ID";
 
 	/**
 	 * Set Shipper.
@@ -714,7 +863,8 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
 
 	/**
-	 * Set Abholung Uhrzeit bis.
+	 * Set Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -723,7 +873,8 @@ public interface I_M_ShipperTransportation
 	void setPickupTimeTo (@Nullable java.sql.Timestamp PickupTimeTo);
 
 	/**
-	 * Get Abholung Uhrzeit bis.
+	 * Get Pickup Time To.
+	 * Pickup Time To
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: false
@@ -856,7 +1007,7 @@ public interface I_M_ShipperTransportation
 	 * Set Shipper Partner.
 	 * This refers to the freight forwarder handling the transportation.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -866,7 +1017,7 @@ public interface I_M_ShipperTransportation
 	 * Get Shipper Partner.
 	 * This refers to the freight forwarder handling the transportation.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -920,6 +1071,29 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_TrackingID = "TrackingID";
 
 	/**
+	 * Set Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTransportDirection (java.lang.String TransportDirection);
+
+	/**
+	 * Get Direction.
+	 * Direction of the transport: Incoming, Outgoing or Dropship.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getTransportDirection();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_TransportDirection = new ModelColumn<>(I_M_ShipperTransportation.class, "TransportDirection", null);
+	String COLUMNNAME_TransportDirection = "TransportDirection";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
@@ -943,6 +1117,153 @@ public interface I_M_ShipperTransportation
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+
+	/**
+	 * Get UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString1();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString1", null);
+	String COLUMNNAME_UserElementString1 = "UserElementString1";
+
+	/**
+	 * Set UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+
+	/**
+	 * Get UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString2();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString2", null);
+	String COLUMNNAME_UserElementString2 = "UserElementString2";
+
+	/**
+	 * Set UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
+
+	/**
+	 * Get UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString3();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString3", null);
+	String COLUMNNAME_UserElementString3 = "UserElementString3";
+
+	/**
+	 * Set UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
+
+	/**
+	 * Get UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString4();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString4", null);
+	String COLUMNNAME_UserElementString4 = "UserElementString4";
+
+	/**
+	 * Set UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
+
+	/**
+	 * Get UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString5();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString5", null);
+	String COLUMNNAME_UserElementString5 = "UserElementString5";
+
+	/**
+	 * Set UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
+
+	/**
+	 * Get UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString6();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString6", null);
+	String COLUMNNAME_UserElementString6 = "UserElementString6";
+
+	/**
+	 * Set UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
+
+	/**
+	 * Get UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString7();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_M_ShipperTransportation.class, "UserElementString7", null);
+	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
 	 * Set Vessel Name.

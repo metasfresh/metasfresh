@@ -142,8 +142,15 @@ BEGIN
                                                'Name', p.name,
                                                'Description', p.description,
                                                'BuyerProductNo', COALESCE(dl.productno, asi_data.productno),
-                                               'GTIN_CU', COALESCE(dl.gtin_cu, asi_data.gtin, asi_data.ean_cu, asi_data.ean13_productcode, p.gtin),
-                                               'GTIN_TU', COALESCE(dl.gtin_tu, pip.gtin),
+                                               'GTIN_CU', COALESCE(NULLIF(REGEXP_REPLACE(dl.gtin_cu, '\s+$', ''), ''),
+                                                                   NULLIF(REGEXP_REPLACE(asi_data.gtin, '\s+$', ''), ''),
+                                                                   NULLIF(REGEXP_REPLACE(asi_data.ean_cu, '\s+$', ''), ''),
+                                                                   NULLIF(REGEXP_REPLACE(asi_data.ean13_productcode, '\s+$', ''), ''),
+                                                                   REGEXP_REPLACE(p.gtin, '\s+$', '')),
+                                               'GTIN_TU', COALESCE(
+                                                       NULLIF(REGEXP_REPLACE(dl.gtin_tu, '\s+$', ''), ''),
+                                                       NULLIF(REGEXP_REPLACE(pip.gtin, '\s+$', ''), ''),
+                                                       REGEXP_REPLACE(pip.ean_tu, '\s+$', '')),
                                                'NetWeight', p.weight,
                                                'GrossWeight', p.grossweight,
                                                'GrossWeightUOM', COALESCE(gw_uom.uom_json, '{}'::jsonb)
@@ -197,7 +204,7 @@ BEGIN
             ) asi_data ON TRUE
             -- Packing instruction product lookup
                  LEFT JOIN LATERAL (
-            SELECT gtin
+            SELECT gtin, ean_tu
             FROM m_hu_pi_item_product
             WHERE isactive = 'Y'
               AND m_product_id = p.m_product_id

@@ -25,13 +25,9 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.effective.BPartnerEffective;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
-import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.payment.PaymentRule;
-import de.metas.shipping.ShipperId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +38,8 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Incoterms;
+import org.compiere.model.I_C_PaymentTerm;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -50,7 +48,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BPartnerOrderParamsRepository
 {
-	@NonNull private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	@NonNull private final BPartnerEffectiveBL bPartnerEffectiveBL;
 
 	private final CCache<BPartnerOrderParamsQuery, BPartnerOrderParams> cache = CCache
@@ -58,7 +55,9 @@ public class BPartnerOrderParamsRepository
 			.cacheName(this.getClass().getSimpleName())
 			.tableName(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
+			.additionalTableNameToResetFor(I_C_PaymentTerm.Table_Name) // effective payment term default might come from here
 			.additionalTableNameToResetFor(I_AD_OrgInfo.Table_Name) // pricingSystemId might be coming from here
+			.additionalTableNameToResetFor(I_C_Incoterms.Table_Name) // effective incoterms default + its fields come from here
 			.additionalTableNameToResetFor(I_AD_SysConfig.Table_Name)
 			.build();
 
@@ -91,66 +90,21 @@ public class BPartnerOrderParamsRepository
 	@NonNull
 	private BPartnerOrderParams getBy0(@NonNull final BPartnerOrderParamsQuery query)
 	{
-		final I_C_BPartner billBPartnerRecord = bpartnersRepo.getById(query.getBillBPartnerId());
-		final I_C_BPartner shipBPartnerRecord = bpartnersRepo.getById(query.getShipBPartnerId());
-		return ofRecord(billBPartnerRecord, shipBPartnerRecord, query.getSoTrx());
-	}
-
-	private BPartnerOrderParams ofRecord(
-			@NonNull final I_C_BPartner billBPartnerRecord,
-			@NonNull final I_C_BPartner shipBPartnerRecord,
-			@NonNull final SOTrx soTrx)
-	{
-		final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getByRecord(billBPartnerRecord);
-		final BPartnerEffective shipBPartnerEffective = bPartnerEffectiveBL.getByRecord(shipBPartnerRecord);
+		final SOTrx soTrx = query.getSoTrx();
+		final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getById(query.getBillBPartnerId());
+		final BPartnerEffective shipBPartnerEffective = bPartnerEffectiveBL.getById(query.getShipBPartnerId());
 		return BPartnerOrderParams.builder()
-				.deliveryRule(getDeliveryRuleOrNull(shipBPartnerRecord, soTrx))
-				.deliveryViaRule(getDeliveryViaRuleOrNull(shipBPartnerRecord, soTrx))
-				.freightCostRule(getFreightCostRule(shipBPartnerRecord))
+				.deliveryRule(Optional.ofNullable(shipBPartnerEffective.getDeliveryRule(soTrx)))
+				.deliveryViaRule(Optional.ofNullable(shipBPartnerEffective.getDeliveryViaRule(soTrx)))
+				.freightCostRule(Optional.ofNullable(shipBPartnerEffective.getFreightCostRule()))
 				.invoiceRule(billBPartnerEffective.getInvoiceRule(soTrx))
 				.paymentRule(getPaymentRule(billBPartnerEffective, soTrx))
 				.paymentTermId(billBPartnerEffective.getPaymentTermId(soTrx))
 				.pricingSystemId(billBPartnerEffective.getPricingSystemId(soTrx))
-				.shipperId(getShipperId(shipBPartnerRecord)) //FIXME doesn't consider possibility of overwrite in c_bp_location
+				.shipperId(Optional.ofNullable(shipBPartnerEffective.getShipperId())) //FIXME doesn't consider possibility of overwrite in c_bp_location
 				.isAutoInvoice(billBPartnerEffective.isAutoInvoice(soTrx))
 				.incoterms(shipBPartnerEffective.getIncoterms(soTrx))
 				.build();
-	}
-
-	private Optional<FreightCostRule> getFreightCostRule(@NonNull final I_C_BPartner bpartnerRecord)
-	{
-		return Optional.ofNullable(FreightCostRule.ofNullableCode(bpartnerRecord.getFreightCostRule()));
-	}
-
-	private Optional<DeliveryRule> getDeliveryRuleOrNull(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
-	{
-		if (soTrx.isSales())
-		{
-			return Optional.ofNullable(DeliveryRule.ofNullableCode(bpartnerRecord.getDeliveryRule()));
-		}
-
-		return Optional.empty(); // shall not happen
-	}
-
-	private Optional<DeliveryViaRule> getDeliveryViaRuleOrNull(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
-	{
-		if (soTrx.isSales())
-		{
-			return Optional.ofNullable(DeliveryViaRule.ofNullableCode(bpartnerRecord.getDeliveryViaRule()));
-		}
-		else if (soTrx.isPurchase())
-		{
-			return Optional.ofNullable(DeliveryViaRule.ofNullableCode(bpartnerRecord.getPO_DeliveryViaRule()));
-		}
-
-		return Optional.empty(); // shall not happen
-	}
-
-	private Optional<ShipperId> getShipperId(@NonNull final I_C_BPartner bpartnerRecord)
-	{
-		final int shipperId = bpartnerRecord.getM_Shipper_ID();
-
-		return Optional.ofNullable(ShipperId.ofRepoIdOrNull(shipperId));
 	}
 
 	private PaymentRule getPaymentRule(@NonNull final BPartnerEffective bpartnerRecord, @NonNull final SOTrx soTrx)

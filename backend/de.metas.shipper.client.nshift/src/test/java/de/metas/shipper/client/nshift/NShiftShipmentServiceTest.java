@@ -40,6 +40,10 @@ import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.shipper.client.nshift.json.request.JsonShipmentRequest;
+import de.metas.shipper.client.nshift.json.JsonAddressKind;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
+import de.metas.common.delivery.v1.json.request.JsonMappingConfig;
+import de.metas.common.delivery.v1.json.request.JsonMappingConfigList;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +53,9 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -128,6 +134,7 @@ public class NShiftShipmentServiceTest
 			.customerReference("Customer reference")
 			.incotermsValue("DAP")
 			.externalSystemValue("Other")
+			.preAdviceRequired("Y")
 			.deliveryOrderParcel(JsonDeliveryOrderParcel.builder()
 					.id("1")
 					.grossWeightKg(BigDecimal.TEN)
@@ -236,19 +243,148 @@ public class NShiftShipmentServiceTest
 	}
 
 	@Test
-	void buildShipmentRequest_withShippingRules_omitsProductGoodsTypeAndServices()
+	void buildShipmentRequest_withSelectionRules_omitsProductGoodsTypeAndServices()
 	{
 		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
-				.shipperConfig(DELIVERY_REQUEST.getShipperConfig().withAdditionalProperty(NShiftConstants.USE_SHIPPING_RULES, "true"))
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig().withAdditionalProperty(NShiftConstants.SELECTION_RULES, "Y"))
 				.build();
 
 		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
 
-		assertTrue(shipmentRequest.getOptions().getUseShippingRules(), "UseShippingRules must be on");
+		assertTrue(shipmentRequest.getOptions().getUseShippingRules(), "IsSelectionRules must be on");
 		// with rules active nShift resolves product/goods type/services, so we don't pre-send a resolved product
-		assertTrue(shipmentRequest.getData().getProdConceptID() == 0, "ProdConceptID must stay 0 (no resolved product) when rules resolve it");
+		assertEquals(0, shipmentRequest.getData().getProdConceptID(), "ProdConceptID must stay 0 (no resolved product) when rules resolve it");
 		assertTrue(shipmentRequest.getData().getServices().isEmpty(), "Services must not be pre-sent when rules resolve them");
 		assertNull(shipmentRequest.getData().getLines().get(0).getGoodsTypeID(), "Line GoodsTypeID must be omitted when rules resolve it");
+	}
+
+	@Test
+	void buildShipmentRequest_setsCustNoFromCustomValueString1MappingRule()
+	{
+		final String consigneeId = "DHL-CONSIGNEE-123";
+		// SenderCustNo / ReceiverCustNo rules routing the generic CustomValueString1 config value into the address CustNo
+		final JsonMappingConfigList mappingConfigs = JsonMappingConfigList.ofList(ImmutableList.<JsonMappingConfig>builder()
+				.addAll(NShiftTestMappingConfigs.SHARED_TEST.getConfigs())
+				.add(JsonMappingConfig.builder()
+						.seqNo(400)
+						.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_CUSTNO)
+						.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1)
+						.build())
+				.add(JsonMappingConfig.builder()
+						.seqNo(410)
+						.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_CUSTNO)
+						.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1)
+						.build())
+				.build());
+
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1, consigneeId))
+				.mappingConfigs(mappingConfigs)
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertEquals(consigneeId, custNoOf(shipmentRequest, JsonAddressKind.SENDER), "Sender CustNo must come from the CustomValueString1 config value");
+		assertEquals(consigneeId, custNoOf(shipmentRequest, JsonAddressKind.RECEIVER), "Receiver CustNo must come from the CustomValueString1 config value");
+	}
+
+	@Test
+	void buildShipmentRequest_withoutShipperProduct_skipsProductScopedConfigWithoutNpe()
+	{
+		// Selection-rules booking with no pre-selected product: getValue(ShipperProductExternalId) must be "" (not null),
+		// so isConfigForShipperProduct (@NonNull) skips product-scoped configs instead of throwing an NPE.
+		final JsonMappingConfigList mappingConfigs = JsonMappingConfigList.ofList(ImmutableList.<JsonMappingConfig>builder()
+				.addAll(NShiftTestMappingConfigs.SHARED_TEST.getConfigs())
+				.add(JsonMappingConfig.builder()
+						.seqNo(500)
+						.shipperProductExternalId("10305") // product-scoped -> must be skipped when no product is set
+						.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_CUSTNO)
+						.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1)
+						.build())
+				.build());
+
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperProduct(null)
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.SELECTION_RULES, "Y")
+						.withAdditionalProperty(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOM_VALUE_STRING_1, "DHL-CONSIGNEE-123"))
+				.mappingConfigs(mappingConfigs)
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+		assertNotNull(shipmentRequest);
+		// product-scoped rule skipped (no product selected) -> receiver CustNo stays unset
+		assertNull(custNoOf(shipmentRequest, JsonAddressKind.RECEIVER), "product-scoped CustNo must be skipped when no product is selected");
+	}
+
+	@Test
+	void buildShipmentRequest_testModeOn_replacesBothAttentions()
+	{
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "Y")
+						.withAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION, "TEST SHIPMENT"))
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertEquals("TEST SHIPMENT", attentionOf(shipmentRequest, JsonAddressKind.SENDER),
+				"Sender Attention must be the configured test text, not the mapping-resolved one");
+		assertEquals("TEST SHIPMENT", attentionOf(shipmentRequest, JsonAddressKind.RECEIVER),
+				"Receiver Attention must be the configured test text, not the mapping-resolved one");
+	}
+
+	@Test
+	void buildShipmentRequest_testModeOff_keepsMappedAttentions()
+	{
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "N")
+						.withAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION, "TEST SHIPMENT"))
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertNotEquals("TEST SHIPMENT", attentionOf(shipmentRequest, JsonAddressKind.SENDER),
+				"With test mode off the sender Attention must stay the mapping-resolved value");
+		assertNotEquals("TEST SHIPMENT", attentionOf(shipmentRequest, JsonAddressKind.RECEIVER),
+				"With test mode off the receiver Attention must stay the mapping-resolved value");
+	}
+
+	@Test
+	void buildShipmentRequest_testModeOnWithoutText_sendsEmptyAttention()
+	{
+		// No TestMode_Attention property at all - the column is nullable and null values are dropped from the
+		// property map. Test mode must still take effect and send an EMPTY Attention (which nShift rejects),
+		// never fall back to the real one, or the shipment would go out unmarked.
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig()
+						.withAdditionalProperty(NShiftConstants.TEST_MODE, "Y"))
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertEquals("", attentionOf(shipmentRequest, JsonAddressKind.SENDER), "Sender Attention must be empty");
+		assertEquals("", attentionOf(shipmentRequest, JsonAddressKind.RECEIVER), "Receiver Attention must be empty");
+	}
+
+	private static String custNoOf(final JsonShipmentRequest request, final JsonAddressKind kind)
+	{
+		return request.getData().getAddresses().stream()
+				.filter(a -> a.getKind() == kind)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no " + kind + " address"))
+				.getCustNo();
+	}
+
+	private static String attentionOf(final JsonShipmentRequest request, final JsonAddressKind kind)
+	{
+		return request.getData().getAddresses().stream()
+				.filter(a -> a.getKind() == kind)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("no " + kind + " address"))
+				.getAttention();
 	}
 
 }

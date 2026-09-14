@@ -24,6 +24,7 @@ package de.metas.bpartner_product;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -62,12 +63,9 @@ public class BPartnerProductEffectiveBL
 	 */
 	public Optional<Integer> getPurchaseTransportDaysIfSet(@NonNull final BPartnerId vendorId, @NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
-		final Optional<Integer> fromBPartnerProduct = bpartnerProductDAO.getDeliveryTimePromised(vendorId, productId, orgId);
-		if (fromBPartnerProduct.isPresent())
-		{
-			return fromBPartnerProduct;
-		}
-		return bpartnerEffectiveBL.getPurchaseTransportDaysIfSet(vendorId);
+		return Optional.ofNullable(CoalesceUtil.coalesceSuppliers(
+				() -> bpartnerProductDAO.getDeliveryTimePromised(vendorId, productId, orgId).orElse(null),
+				() -> bpartnerEffectiveBL.getById(vendorId).getPurchaseTransportDaysIfSet().orElse(null)));
 	}
 
 	public int getPurchaseTransportDays(@NonNull final BPartnerId vendorId, @NonNull final ProductId productId, @NonNull final OrgId orgId)

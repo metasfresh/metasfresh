@@ -98,6 +98,52 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Finished goods: allow receiving to LU.
+	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowFinishedGoodsReceiveToLU (boolean IsAllowFinishedGoodsReceiveToLU);
+
+	/**
+	 * Get Finished goods: allow receiving to LU.
+	 * Offer load-unit (pallet/LU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowFinishedGoodsReceiveToLU();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowFinishedGoodsReceiveToLU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowFinishedGoodsReceiveToLU", null);
+	String COLUMNNAME_IsAllowFinishedGoodsReceiveToLU = "IsAllowFinishedGoodsReceiveToLU";
+
+	/**
+	 * Set Finished goods: allow receiving to TU.
+	 * Offer transport-unit (TU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowFinishedGoodsReceiveToTU (boolean IsAllowFinishedGoodsReceiveToTU);
+
+	/**
+	 * Get Finished goods: allow receiving to TU.
+	 * Offer transport-unit (TU) targets for the finished-goods production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowFinishedGoodsReceiveToTU();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowFinishedGoodsReceiveToTU = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowFinishedGoodsReceiveToTU", null);
+	String COLUMNNAME_IsAllowFinishedGoodsReceiveToTU = "IsAllowFinishedGoodsReceiveToTU";
+
+	/**
 	 * Set No Raw Material Check.
 	 * Allows scanning and issuing HUs that are not in the manufacturing issue plan
 	 *
@@ -121,50 +167,50 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
 
 	/**
-	 * Set Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
+	 * Set Allow receiving without a packing instruction.
+	 * Offer the 'No Packing Item' packing instruction as a receiving target for the production receipt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsBestBeforeDateEditable (boolean IsBestBeforeDateEditable);
+	void setIsAllowReceiveWithoutPackingItem (boolean IsAllowReceiveWithoutPackingItem);
 
 	/**
-	 * Get Best Before Date editable.
-	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
+	 * Get Allow receiving without a packing instruction.
+	 * Offer the 'No Packing Item' packing instruction as a receiving target for the production receipt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isBestBeforeDateEditable();
+	boolean isAllowReceiveWithoutPackingItem();
 
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsBestBeforeDateEditable", null);
-	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsAllowReceiveWithoutPackingItem = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsAllowReceiveWithoutPackingItem", null);
+	String COLUMNNAME_IsAllowReceiveWithoutPackingItem = "IsAllowReceiveWithoutPackingItem";
 
 	/**
-	 * Set Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 * Set Capture catch weight.
+	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsLotNumberEditable (boolean IsLotNumberEditable);
+	void setIsCaptureCatchWeightAtReceipt (boolean IsCaptureCatchWeightAtReceipt);
 
 	/**
-	 * Get Lot Number editable.
-	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 * Get Capture catch weight.
+	 * Capture the catch weight of a catch-weight product at production receipt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isLotNumberEditable();
+	boolean isCaptureCatchWeightAtReceipt();
 
-	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsLotNumberEditable = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsLotNumberEditable", null);
-	String COLUMNNAME_IsLotNumberEditable = "IsLotNumberEditable";
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsCaptureCatchWeightAtReceipt = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsCaptureCatchWeightAtReceipt", null);
+	String COLUMNNAME_IsCaptureCatchWeightAtReceipt = "IsCaptureCatchWeightAtReceipt";
 
 	/**
 	 * Set Workstation Scan Required.
@@ -188,6 +234,29 @@ public interface I_MobileUI_MFG_Config
 
 	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsScanResourceRequired = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsScanResourceRequired", null);
 	String COLUMNNAME_IsScanResourceRequired = "IsScanResourceRequired";
+
+	/**
+	 * Set Finished goods: skip receiving-target step.
+	 * Skip the new-Gebinde / scan-existing screen for the finished good and go straight to the packing instruction.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSkipFinishedGoodsReceiveTargetStep (boolean IsSkipFinishedGoodsReceiveTargetStep);
+
+	/**
+	 * Get Finished goods: skip receiving-target step.
+	 * Skip the new-Gebinde / scan-existing screen for the finished good and go straight to the packing instruction.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSkipFinishedGoodsReceiveTargetStep();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsSkipFinishedGoodsReceiveTargetStep = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsSkipFinishedGoodsReceiveTargetStep", null);
+	String COLUMNNAME_IsSkipFinishedGoodsReceiveTargetStep = "IsSkipFinishedGoodsReceiveTargetStep";
 
 	/**
 	 * Set MobileUI Manufacturing Configuration.

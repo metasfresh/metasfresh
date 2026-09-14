@@ -135,8 +135,8 @@ BEGIN
     CREATE TEMPORARY TABLE tmp_accounts AS
     SELECT ev.C_ElementValue_ID, ev.value, ev.name
     FROM C_ElementValue ev
-             JOIN C_ElementValue ev_from ON ev_from.C_ElementValue_ID = $1 AND ev_from.isActive = 'Y'
-             JOIN C_ElementValue ev_to ON ev_to.C_ElementValue_ID = $2 AND ev_to.isActive = 'Y'
+             JOIN C_ElementValue ev_from ON ev_from.C_ElementValue_ID = p_account_from_id AND ev_from.isActive = 'Y'
+             JOIN C_ElementValue ev_to ON ev_to.C_ElementValue_ID = COALESCE(p_account_to_id, p_account_from_id) AND ev_to.isActive = 'Y' -- gh29509: when no "account to" is given, fall back to "account from" so a single account can be filtered
     WHERE ev.value >= ev_from.value
       AND ev.value <= ev_to.value
       AND CHAR_LENGTH(ev.value) >= CHAR_LENGTH(ev_from.value)
@@ -280,8 +280,8 @@ BEGIN
 
           FROM tmp_accounts ev
                    LEFT OUTER JOIN Fact_Acct fa ON fa.Account_ID = ev.C_ElementValue_ID
-              AND fa.DateAcct >= v_StartDate_Effective
-              AND fa.DateAcct <= v_EndDate_Effective
+              AND (v_StartDate_Effective IS NULL OR fa.DateAcct >= v_StartDate_Effective) -- gh29509: open lower bound when neither "Periode von" nor start date is given
+              AND (v_EndDate_Effective IS NULL OR fa.DateAcct <= v_EndDate_Effective) -- gh29509: open upper bound when neither "Periode bis" nor end date is given
               AND fa.ad_org_id = p_ad_org_id
               AND (p_c_activity_id IS NULL OR fa.c_activity_id = p_c_activity_id)
               AND (CASE WHEN (p_displayvoiddocuments = 'Y') THEN TRUE ELSE fa.DocStatus NOT IN ('CL', 'VO', 'RE') END)
@@ -510,5 +510,3 @@ END;
 $BODY$
     LANGUAGE plpgsql VOLATILE
 ;
-
-

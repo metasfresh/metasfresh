@@ -17,6 +17,11 @@ const translations = {
   errorScreen: {
     retryButton: 'Erneut versuchen',
   },
+  attributes: {
+    list: {
+      pleaseSelect: 'Bitte auswählen...',
+    },
+  },
   general: {
     Yes: 'Ja',
     No: 'Nein',
@@ -83,6 +88,14 @@ const translations = {
       appName: 'Picken',
     },
   },
+  launchers: {
+    operatorContext: {
+      error: {
+        title: 'Arbeitsplatz/Arbeitsstation derzeit nicht verfügbar',
+        retry: 'Erneut versuchen',
+      },
+    },
+  },
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
@@ -133,6 +146,7 @@ const translations = {
       unPickBtn: 'Entpacken',
       target: 'Soll',
       picked: 'Ist',
+      available: 'Verfügbar',
       switchToManualInput: 'Manuell',
       switchToQrCodeInput: 'Scannen',
       scanSerialNo: 'Seriennummer scannen',
@@ -206,13 +220,17 @@ const translations = {
       target: 'Soll',
       picked: 'Ist',
       scanHU: 'Scan HU',
-      scanProduct: 'Artikel scannen',
+      scanHUBarcodePlaceholder: 'HU-Barcode scannen',
+      scanProductGtinPlaceholder: 'Artikel (GTIN) scannen',
       scanDropToLocator: 'Ziel-Lagerplatz scannen',
       switchPickFromLocator: 'Lagerort leer',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
+      cannotPickFromSelectedHU:
+        'Aus der gewählten HU kann nicht entnommen werden: %(reason)s. Bitte die HU zum Entnehmen scannen.',
       qrcode: {
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Pickauftrag überein',
+        productCodeWhereHUExpected: 'Das ist ein Artikel-Barcode (GTIN), kein HU-Barcode. Bitte zuerst die HU scannen.',
       },
       printMaterialInTransitReport: 'Materialbegleitschein',
     },

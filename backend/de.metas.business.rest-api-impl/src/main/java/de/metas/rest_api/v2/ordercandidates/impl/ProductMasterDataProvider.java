@@ -1,5 +1,6 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CCache;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -7,7 +8,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
-import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
@@ -16,8 +17,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.With;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -45,9 +51,19 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public final class ProductMasterDataProvider
 {
-	private final IProductBL productsBL = Services.get(IProductBL.class);
+	@NonNull private final IProductBL productsBL = Services.get(IProductBL.class);
 
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService;
+
+	@VisibleForTesting
+	public static ProductMasterDataProvider newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ProductMasterDataProvider.class,
+				() -> new ProductMasterDataProvider(ExternalIdentifierProductLookupService.newInstanceForUnitTesting()));
+	}
 
 	@Value
 	private static class ProductCacheKey
@@ -57,6 +73,14 @@ public final class ProductMasterDataProvider
 
 		@NonNull
 		ExternalIdentifier productExternalIdentifier;
+
+		/**
+		 * The effective delivery date (= OLCand datePromised effective) used to select the correct
+		 * M_HU_PI_Item_Product validity row. {@code null} means no date filter (callers other than
+		 * the v2 OLCand path keep passing {@code null}).
+		 */
+		@Nullable
+		ZonedDateTime date;
 	}
 
 	@Value
@@ -86,18 +110,25 @@ public final class ProductMasterDataProvider
 			@NonNull final ExternalIdentifier productExternalIdentifier,
 			@NonNull final OrgId orgId)
 	{
-		return productInfoCache.getOrLoad(
-				new ProductCacheKey(orgId, productExternalIdentifier),
-				this::getProductInfo0);
+		return getProductInfo(productExternalIdentifier, orgId, null);
+	}
 
+	public ProductInfo getProductInfo(
+			@NonNull final ExternalIdentifier productExternalIdentifier,
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date)
+	{
+		return productInfoCache.getOrLoadNonNull(
+				new ProductCacheKey(orgId, productExternalIdentifier, date),
+				this::getProductInfo0);
 	}
 
 	private ProductInfo getProductInfo0(@NonNull final ProductCacheKey key)
 	{
 		final ExternalIdentifier productIdentifier = key.getProductExternalIdentifier();
-		
+
 		final ProductAndHUPIItemProductId productAndHUPIItemProductId = productLookupService
-				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId())
+				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId(), key.getDate())
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceName("productIdentifier")
 						.resourceIdentifier(productIdentifier.getRawValue())

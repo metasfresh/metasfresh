@@ -22,8 +22,6 @@
 
 package de.metas.externalsystem.scriptedexportconversion.process;
 
-import de.metas.externalsystem.ExternalSystemInvocationContext;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.process.JavaProcess;
@@ -40,9 +38,10 @@ import java.util.List;
 
 /**
  * Re-triggers the scripted-export-conversion for a selection of M_InOut records.
- * When {@code IsOnlyNotSentSuccessfully=Y} only configs in error/invalid state are re-sent.
- * When {@code IsOnlyNotSentSuccessfully=N} configs in any terminal state (including already-Sent)
- * are re-triggered; in-flight and DontSend configs are always skipped.
+ * When {@code IsOnlyNotSentSuccessfully=Y} only not-yet-successfully-sent configs are re-sent
+ * (error/invalid, the suppressed DontSend, and an operator-parked Pending).
+ * When {@code IsOnlyNotSentSuccessfully=N} configs in any state are re-triggered, including
+ * already-Sent; DontSend and actively-in-flight configs are always skipped.
  */
 public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
 {
@@ -79,15 +78,12 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 
 			for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
 			{
-				final ExternalSystemScriptedExportConversionConfig config =
-						scriptedExportService.resolveConfigAndRecordPendingAsResend(configId, sourceRecord);
-
-				scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
-						config,
-						m_inout_id,
-						ExternalSystemInvocationContext.RESEND);
-
-				triggered++;
+				// The service gates the re-send on the config's WhereClause: nothing left to export
+				// (e.g. every SSCC already in the EPCIS ledger) → DontSend, no adapter invocation.
+				if (scriptedExportService.resendConfigIfRelevant(configId, sourceRecord, m_inout_id))
+				{
+					triggered++;
+				}
 			}
 		}
 

@@ -10,6 +10,7 @@ import de.metas.mobile.MobileAuthMethod;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.mm.attributes.AttributeCode;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -83,5 +84,13 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
 		@Nullable String receiveUnitType;
+		@Nullable Boolean isAllowFinishedGoodsReceiveToLU;
+		@Nullable Boolean isAllowFinishedGoodsReceiveToTU;
+		@Nullable Boolean isSkipFinishedGoodsReceiveTargetStep;
+		@Nullable Boolean isCaptureCatchWeightAtReceipt;
+		@Nullable Boolean isAllowReceiveWithoutPackingItem;
+
+		/** Ordered {@code M_Attribute.Value} codes - the CURRENT global editable-attribute list after this call. */
+		@Nullable List<AttributeCode> editableAttributes;
 	}
 }

@@ -3,9 +3,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { trl } from '../../../../utils/translations';
 
 import { toastError } from '../../../../utils/toast';
-import { postManufacturingReceiveEventThunk } from '../../../../actions/ManufacturingActions';
+import {
+  postManufacturingReceiveEventThunk,
+  updateManufacturingLUReceiptTarget,
+} from '../../../../actions/ManufacturingActions';
 import { updateHeaderEntry } from '../../../../actions/HeaderActions';
-import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
+import {
+  manufacturingReceiptNewHUScreen,
+  manufacturingReceiptReceiveTargetScreen,
+} from '../../../../routes/manufacturing_receipt';
 import {
   getActivityByIdFromWFProcess,
   getCustomQRCodeFormats,
@@ -20,7 +26,7 @@ import Spinner from '../../../../components/Spinner';
 import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 import { APPLICATION_ID_Picking } from '../../../../apps/picking';
-import { getReadAttributesFromActivity } from '../../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
+import { attributesMapToArray } from '../../../../reducers/wfProcesses/manufacturing_receipt';
 
 const MaterialReceiptLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -42,10 +48,11 @@ const MaterialReceiptLineScreen = () => {
       catchWeightUomSymbol,
       qtyReceived,
       qtyToReceive,
+      skipReceiveTargetStep,
+      editableAttributes,
     },
     pickTo,
     customQRCodeFormats,
-    readAttributes,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
   const [showSpinner, setShowSpinner] = useState(false);
 
@@ -89,6 +96,7 @@ const MaterialReceiptLineScreen = () => {
     bestBeforeDate,
     productionDate,
     lotNo,
+    attributeValues, // { [attributeCode]: value } map from EditableAttributesSection, via GetQuantityDialog
     barcode, // i.e. the catch weight QR code
     isDone = true,
   }) => {
@@ -111,6 +119,7 @@ const MaterialReceiptLineScreen = () => {
         bestBeforeDate,
         productionDate,
         lotNo,
+        attributes: attributesMapToArray(attributeValues),
         barcode,
       })
     )
@@ -124,7 +133,22 @@ const MaterialReceiptLineScreen = () => {
   };
 
   const handleClick = () => {
-    history.push(manufacturingReceiptReceiveTargetScreen({ applicationId, wfProcessId, activityId, lineId }));
+    // Skipping the chooser can leave nothing to choose at all: a single pallet and no TU on offer.
+    // Then the target is selected right away and the operator stays on the line, ready for the quantity.
+    // No separate "LU receiving is allowed" check is needed - switching LU receiving off empties this list.
+    const luTargets = availableReceivingTargets?.values ?? [];
+    const tuTargets = availableReceivingTUTargets?.values ?? [];
+    if (skipReceiveTargetStep && luTargets.length === 1 && tuTargets.length === 0) {
+      dispatch(updateManufacturingLUReceiptTarget({ wfProcessId, activityId, lineId, target: luTargets[0] }));
+      return;
+    }
+
+    // When the profile skips the receive-target step, go straight to the Packvorschrift (new HU) list,
+    // bypassing the new-Gebinde-vs-scan-existing chooser.
+    const targetLocation = skipReceiveTargetStep
+      ? manufacturingReceiptNewHUScreen({ applicationId, wfProcessId, activityId, lineId })
+      : manufacturingReceiptReceiveTargetScreen({ applicationId, wfProcessId, activityId, lineId });
+    history.push(targetLocation);
   };
 
   let allowReceivingQty = false;
@@ -173,7 +197,7 @@ const MaterialReceiptLineScreen = () => {
           uom={uom}
           caption={trl('activities.mfg.receipts.btnReceiveProducts')}
           customQRCodeFormats={customQRCodeFormats}
-          readAttributes={readAttributes}
+          editableAttributes={editableAttributes}
         />
         {noGebindeReason && (
           <p className="help is-danger" data-testid="receive-no-gebinde-hint">
@@ -198,7 +222,6 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     lineProps,
     pickTo: getPickTo({ wfProcess }),
     customQRCodeFormats,
-    readAttributes: getReadAttributesFromActivity({ activity }),
   };
 };
 

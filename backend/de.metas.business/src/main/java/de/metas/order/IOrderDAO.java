@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -146,6 +146,11 @@ public interface IOrderDAO extends ISingletonService
 	BigDecimal getNotInvoicedAmt(BPartnerId bpartnerId);
 
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
+
+	/**
+	 * @return the ids of every order of {@code bpartnerId} that is not yet processed — the orders whose {@code C_OrderLine.C_Tax_ID} may still legitimately be recomputed.
+	 */
+	Set<OrderId> retrieveNotProcessedOrderIds(BPartnerId bpartnerId);
 
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
 

@@ -382,6 +382,8 @@ public class PurchaseDemandWithCandidatesService
 				.profitInfoOrNull(purchaseProfitInfo)
 				//
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
+				// manually-planned candidate (Purchase Planning view); Source is mandatory
+				.source(PurchaseCandidateSource.SalesOrder)
 				//
 				.build();
 

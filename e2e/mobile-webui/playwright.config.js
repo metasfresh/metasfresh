@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig, devices, test as testOrig } from '@playwright/test';
-import { setCurrentPage } from "./tests/utils/common";
+import { setCurrentPage, resetErrorWatchers } from "./tests/utils/common";
+import { installFakeCameraIfBrowserExposesNone } from "./tests/utils/fakeCamera";
 import os from 'os';
 
 /**
@@ -68,7 +69,7 @@ export default defineConfig({
                 launchOptions: {
                     args: [
                         '--no-sandbox', // Avoids sandboxing issues inside Docker
-                        '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282', // Treats it as a secure origin
+                        '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282,http://mobile:80,http://mobile', // Treats these as secure origins so navigator.mediaDevices (secure-context-only) is defined at http://mobile — mirrors production HTTPS
                         '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
                         '--disable-site-isolation-trials', // Helps disable security sandboxing
                         '--disable-web-security', // Disables web security (CORS, mixed content, etc.)
@@ -77,7 +78,10 @@ export default defineConfig({
                         '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
                         // '--user-data-dir=/tmp/chrome-test-profile' // Ensures fresh profile each time (prevents stored HSTS rules)
                         '--use-fake-ui-for-media-stream', // Suppress getUserMedia permission dialog in CI (no physical camera)
-                        '--use-fake-device-for-media-stream', // Provide a synthetic camera so getUserMedia() succeeds in CI
+                        // Provide a synthetic camera so getUserMedia() succeeds in CI. NOTE: reachable only
+                        // via navigator.mediaDevices, which plain-HTTP non-localhost origins do not expose —
+                        // see tests/utils/fakeCamera.js, which fills that gap.
+                        '--use-fake-device-for-media-stream',
                     ],
                 },
             },
@@ -90,7 +94,9 @@ export const testContext = {};
 export const test = testOrig.extend({
     page: async ({ page }, use) => {
         setCurrentPage(page);
+        resetErrorWatchers();
         Object.keys(testContext).forEach(key => delete testContext[key]);
+        await installFakeCameraIfBrowserExposesNone(page);
 
         await use(page);
     },

@@ -13,7 +13,7 @@ import de.metas.inventory.mobileui.deps.products.ProductInfo;
 import de.metas.inventory.mobileui.deps.products.ProductsLoadingCache;
 import de.metas.inventory.mobileui.deps.warehouse.WarehouseInfo;
 import de.metas.inventory.mobileui.deps.warehouse.WarehousesLoadingCache;
-import de.metas.inventory.mobileui.rest_api.json.JsonAttribute;
+import de.metas.inventory.mobileui.rest_api.json.JsonAttributeConverter;
 import de.metas.inventory.mobileui.rest_api.json.JsonCountStatus;
 import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJob;
 import de.metas.inventory.mobileui.rest_api.json.JsonInventoryJobLine;
@@ -132,7 +132,7 @@ public class JsonInventoryJobMapper
 				.qtyBooked(lineHU.getQtyBook().toBigDecimal())
 				.qtyCount(lineHU.getQtyCount().toBigDecimal())
 				.countStatus(computeCountStatus(lineHU))
-				.attributes(loadAllDetails ? JsonAttribute.of(asis.getById(lineHU.getAsiId()), adLanguage) : null)
+				.attributes(loadAllDetails ? JsonAttributeConverter.of(asis.getById(lineHU.getAsiId()), adLanguage) : null)
 				.build();
 	}
 

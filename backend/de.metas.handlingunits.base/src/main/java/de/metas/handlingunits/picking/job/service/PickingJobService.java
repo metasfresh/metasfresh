@@ -59,14 +59,15 @@ import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBP
 import de.metas.handlingunits.picking.job.service.external.carrieradvise.PickingJobCarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
-import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.ShipmentScheduleInfo;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.slot.PickingSlotListener;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
@@ -125,7 +126,6 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
 	@NonNull private final PickingJobUnpickProductResolver unpickProductResolver;
 	@NonNull private final PickingShelfLifeCheck shelfLifeCheck;
-	@NonNull private final PickingJobSalesOrderService salesOrderService;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -755,12 +755,10 @@ public class PickingJobService implements PickingSlotListener
 		// is no single line product at header level.
 		final LUPickingTarget luTarget = pickingJob.getLuPickingTargetEffective(lineId).orElse(null);
 		final ProductId lineProductId = (lineId != null) ? pickingJob.getLineById(lineId).getProductId() : null;
-		final String poReference = resolvePOReferenceForGraiCheck(pickingJob, lineId);
 		final GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(
 				scannedGrai,
 				luTarget,
-				lineProductId,
-				poReference);
+				lineProductId);
 
 		final GRAI grai = resolved.getGrai();
 		final HuPackingInstructionsId tuPIId = resolved.getTuPIId();
@@ -771,37 +769,6 @@ public class PickingJobService implements PickingSlotListener
 		final TUPickingTarget tuTarget = TUPickingTarget.ofPackingInstructions(tuPIId, tuPI.getName(), grai);
 
 		return setTUPickingTarget(pickingJob, lineId, tuTarget);
-	}
-
-	/**
-	 * Resolves the current sales order's PO reference for the Migros GRAI-ownership check
-	 * ({@link PickingJobGraiTargetService#resolveTuTypeAndCapacity}), via the {@code external/salesorder} facade.
-	 *
-	 * @return {@code null} when no sales order can be unambiguously resolved (a header-level scan of a job whose
-	 * lines span more than one sales order), or when the resolved order has no PO reference set. A {@code null}
-	 * result means the Migros-ownership check is skipped, not failed.
-	 */
-	@Nullable
-	private String resolvePOReferenceForGraiCheck(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
-	{
-		final OrderId salesOrderId = resolveSalesOrderIdForGraiCheck(pickingJob, lineId);
-		return salesOrderId != null ? salesOrderService.getPOReferenceById(salesOrderId) : null;
-	}
-
-	@Nullable
-	private static OrderId resolveSalesOrderIdForGraiCheck(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
-	{
-		if (lineId != null)
-		{
-			return pickingJob.getLineById(lineId).getSalesOrderAndLineId().getOrderId();
-		}
-
-		// Header-level scan: only unambiguous when every line of the job belongs to the same sales order
-		// (always true for SALES_ORDER-aggregated jobs; a DELIVERY_LOCATION job can span several orders).
-		final ImmutableSet<OrderId> salesOrderIds = pickingJob.streamLines()
-				.map(line -> line.getSalesOrderAndLineId().getOrderId())
-				.collect(ImmutableSet.toImmutableSet());
-		return salesOrderIds.size() == 1 ? salesOrderIds.iterator().next() : null;
 	}
 
 	/**
@@ -1127,6 +1094,46 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
+	 * Resolves the HU which {@code scannedCode} identifies for the given picking job line, using exactly the same
+	 * resolution the pick itself performs (see {@code PickingJobHUService#resolvePickFromHUQRCode}).
+	 * <p>
+	 * Needed because a scanned code is not necessarily an {@code HUQRCode}: a custom weight label, an LMQ label or a
+	 * GS1 barcode identifies its HU only relative to the line's product / customer / warehouse. A caller that merely
+	 * wants to inspect the scanned HU (the mobile UI's over-delivery check) must therefore see the very HU the pick
+	 * would pick, instead of re-implementing a looser lookup.
+	 * <p>
+	 * One deliberate divergence from the pick: {@code PickOnTheFlyQRCode} is not special-cased here, because handling
+	 * it means creating inventory ({@code PickingJobPickCommand#createPickFromHUOnTheFly}), which an inspection-only
+	 * call must not do. Unreachable in practice - the codes that reach this method are whole-TU labels (custom weight,
+	 * LMQ, GS1), none of which can be a pick-on-the-fly code.
+	 */
+	public HUInfo resolvePickFromHU(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final PickingJobLineId lineId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = getById(pickingJobId);
+		pickingJob.assertCanBeEditedBy(callerId);
+
+		final PickingJobLine line = pickingJob.getLineById(lineId);
+		final IHUQRCode huQRCode = huService.parsePickFromScannedCode(scannedCode);
+
+		// Product / customer / warehouse are taken from the very same places PickingJobPickCommand takes them
+		// (see its computePickFromHUIdAndQRCode); resolving from a different source could yield a different HU
+		// than the pick will actually pick, which would make the qty we hand to the caller wrong.
+		final ShipmentScheduleId shipmentScheduleId = line.getScheduleId().getShipmentScheduleId();
+		final ShipmentScheduleInfo shipmentScheduleInfo = shipmentScheduleService.getById(shipmentScheduleId);
+
+		return huService.resolvePickFromHUQRCode(
+						huQRCode,
+						line.getProductId(),
+						shipmentScheduleInfo.getBpartnerId(),
+						shipmentScheduleInfo.getWarehouseId())
+				.orElseThrow();
+	}
+
+	/**
 	 * Resolves a scanned product barcode against the given picking job and computes
 	 * the total packed qty for the matched product (across all steps), for partial-unpick purposes.
 	 *
@@ -1143,5 +1150,4 @@ public class PickingJobService implements PickingSlotListener
 		pickingJob.assertCanBeEditedBy(callerId);
 		return unpickProductResolver.resolve(pickingJob, scannedCode);
 	}
-
 }

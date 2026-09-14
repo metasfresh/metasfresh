@@ -1,5 +1,8 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_Product_Category
  *  @author Adempiere (generated) 
@@ -645,6 +648,61 @@ public interface I_M_Product_Category
     public static final org.adempiere.model.ModelColumn<I_M_Product_Category, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_Product_Category, Object>(I_M_Product_Category.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	@Nullable org.compiere.model.I_S_Resource getS_Resource();
+
+	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
+
+	ModelColumn<I_M_Product_Category, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_M_Product_Category.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set Work Station.
+	 * The Workstation at which this manufacturing order is to be processed. In MobileUI Manufacturing, only orders whose Workstation matches the one scanned by the operator are shown.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWorkStation_ID (int WorkStation_ID);
+
+	/**
+	 * Get Work Station.
+	 * The Workstation at which this manufacturing order is to be processed. In MobileUI Manufacturing, only orders whose Workstation matches the one scanned by the operator are shown.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWorkStation_ID();
+
+	@Nullable
+	org.compiere.model.I_S_Resource getWorkStation();
+
+	void setWorkStation(@Nullable org.compiere.model.I_S_Resource WorkStation);
+
+	ModelColumn<I_M_Product_Category, I_S_Resource> COLUMN_WorkStation_ID = new ModelColumn<>(I_M_Product_Category.class, "WorkStation_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_WorkStation_ID = "WorkStation_ID";
 
 	/**
 	 * Set Exclude from Forecast.

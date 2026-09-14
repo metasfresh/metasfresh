@@ -50,6 +50,7 @@ public enum PPOrderCostTrxType
 	private PPOrderCostTrxType(final String code, final boolean outboundCost)
 	{
 		this.code = code;
+		this.outboundCost = outboundCost;
 	}
 
 	public static PPOrderCostTrxType ofCode(@NonNull final String code)

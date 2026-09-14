@@ -3,6 +3,9 @@ package de.metas.frontend_testing.masterdata;
 import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
 import de.metas.frontend_testing.masterdata.adprocess.SetAdProcessFlagsCommand;
+import de.metas.frontend_testing.masterdata.attribute.CreateAttributeCommand;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeRequest;
+import de.metas.frontend_testing.masterdata.attribute.JsonCreateAttributeResponse;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
@@ -25,8 +28,15 @@ import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRespon
 import de.metas.frontend_testing.masterdata.inventory.InventoryCreateCommand;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
+import de.metas.frontend_testing.masterdata.invoice.InvoiceCreateCommand;
+import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateRequest;
+import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
+import de.metas.frontend_testing.masterdata.mailbox.CreateMailboxCommand;
+import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
+import de.metas.frontend_testing.masterdata.orgseller.ConfigureOrgSellerCommand;
+import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateCommand;
@@ -34,44 +44,45 @@ import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
 import de.metas.frontend_testing.masterdata.product.ApplyUOMStdPrecisionsCommand;
+import de.metas.frontend_testing.masterdata.product.CreateProductCategoryCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.product.JsonProductCategoryRequest;
+import de.metas.frontend_testing.masterdata.product.JsonProductCategoryResponse;
+import de.metas.frontend_testing.masterdata.product.SetProductLifeCycleStatusCommand;
 import de.metas.frontend_testing.masterdata.product_planning.CreateProductPlanningCommand;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningResponse;
-import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
-import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
-import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
-import de.metas.frontend_testing.masterdata.invoice.InvoiceCreateCommand;
-import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateRequest;
-import de.metas.frontend_testing.masterdata.invoice.JsonInvoiceCreateResponse;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.purchase_order.PurchaseOrderCreateCommand;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateRequest;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateResponse;
 import de.metas.frontend_testing.masterdata.receipt.ReceiptCreateCommand;
+import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
 import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
-import de.metas.frontend_testing.masterdata.orgseller.ConfigureOrgSellerCommand;
-import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
-import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
+import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest;
+import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse;
+import de.metas.frontend_testing.masterdata.vatid.VATaxIDCheckLogCreateCommand;
+import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseReplenishmentCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
-import de.metas.frontend_testing.masterdata.mailbox.CreateMailboxCommand;
-import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
@@ -112,19 +123,30 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonMailboxResponse> mailboxes = createMailboxes();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		configureOrgSeller();
+		final ImmutableMap<String, JsonVATaxIDCheckLogResponse> vatIdChecks = createVatIdChecks();
+		// Product categories (and their attribute sets) must exist BEFORE attributes (which link into a set by
+		// name) and BEFORE products (which reference a category by identifier).
+		final ImmutableMap<String, JsonProductCategoryResponse> productCategories = createProductCategories();
+		final ImmutableMap<String, JsonCreateAttributeResponse> attributes = createAttributes();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas = createCompensationGroupSchemas();
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
 		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
 		linkProductsToCompensationGroupSchemas();
-		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
+		// Resources must be created AFTER workplaces: a workstation resource may reference a workplace
+		// by identifier (JsonCreateResourceRequest.workplace), resolved from the context populated here.
+		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
+		// Post-pass: needs every warehouse (the replenishment source is named by identifier) and the shippers
+		// (the DD_NetworkDistributionLine requires one). Keep it before the sales orders, whose picking-job
+		// schedules trigger the replenishment.
+		configureWarehouseReplenishment();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
@@ -139,6 +161,11 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
 
+		// Late pass: flip already-created products to a life-cycle status (e.g. G=Gesperrt). Runs after
+		// order creation so a product can be blocked only once its order/picking-job setup exists (a
+		// blocking status at creation would fail the product's own order/shipment life-cycle guards).
+		applyProductLifeCycleStatuses();
+
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
 				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs)
@@ -146,7 +173,10 @@ public class CreateMasterdataCommand
 				.login(login)
 				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
 				.bpartners(bpartners)
+				.vatIdChecks(vatIdChecks.isEmpty() ? null : vatIdChecks)
 				.compensationGroupSchemas(compensationGroupSchemas.isEmpty() ? null : compensationGroupSchemas)
+				.productCategories(productCategories.isEmpty() ? null : productCategories)
+				.attributes(attributes.isEmpty() ? null : attributes)
 				.products(products)
 				.resources(resources)
 				.productPlannings(productPlannings)
@@ -212,6 +242,22 @@ public class CreateMasterdataCommand
 				.execute();
 	}
 
+	private ImmutableMap<String, JsonVATaxIDCheckLogResponse> createVatIdChecks()
+	{
+		return process(request.getVatIdChecks(), this::createVatIdCheck);
+	}
+
+	private JsonVATaxIDCheckLogResponse createVatIdCheck(final String identifier, final JsonVATaxIDCheckLogRequest request)
+	{
+		return VATaxIDCheckLogCreateCommand.builder()
+				.vataxIDCheckRepository(services.vataxIDCheckRepository)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonCompensationGroupSchemaResponse> createCompensationGroupSchemas()
 	{
 		return process(request.getCompensationGroupSchemas(), this::createCompensationGroupSchema);
@@ -254,6 +300,36 @@ public class CreateMasterdataCommand
 			productRecord.setC_CompensationGroup_Schema_ID(schemaId.getRepoId());
 			org.adempiere.model.InterfaceWrapperHelper.save(productRecord);
 		});
+	}
+
+	private ImmutableMap<String, JsonProductCategoryResponse> createProductCategories()
+	{
+		return process(request.getProductCategories(), this::createProductCategory);
+	}
+
+	private JsonProductCategoryResponse createProductCategory(final String identifier, final JsonProductCategoryRequest request)
+	{
+		return CreateProductCategoryCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonCreateAttributeResponse> createAttributes()
+	{
+		return process(request.getAttributes(), this::createAttribute);
+	}
+
+	private JsonCreateAttributeResponse createAttribute(final String identifier, final JsonCreateAttributeRequest request)
+	{
+		return CreateAttributeCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
 	}
 
 	private ImmutableMap<String, JsonCreateProductResponse> createProducts()
@@ -328,6 +404,19 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private void configureWarehouseReplenishment()
+	{
+		if (request.getWarehouses() == null) {return;}
+
+		ConfigureWarehouseReplenishmentCommand.builder()
+				.distributionNetworkRepository(services.distributionNetworkRepository)
+				.warehouseRepository(services.warehouseRepository)
+				.context(context)
+				.requests(request.getWarehouses())
 				.build()
 				.execute();
 	}
@@ -575,6 +664,22 @@ public class CreateMasterdataCommand
 				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
+	}
+
+	private void applyProductLifeCycleStatuses()
+	{
+		final Map<String, String> statusByProductIdentifier = request.getProductLifeCycleStatuses();
+		if (statusByProductIdentifier == null || statusByProductIdentifier.isEmpty())
+		{
+			return;
+		}
+
+		statusByProductIdentifier.forEach((productIdentifier, statusCode) -> SetProductLifeCycleStatusCommand.builder()
+				.context(context)
+				.identifier(Identifier.ofString(productIdentifier))
+				.statusCode(statusCode)
+				.build()
+				.execute());
 	}
 
 	private void createCustomQRCodeFormats()

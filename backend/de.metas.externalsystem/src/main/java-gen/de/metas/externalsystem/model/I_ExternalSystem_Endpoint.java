@@ -4,10 +4,10 @@ import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Endpoint
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Endpoint
+public interface I_ExternalSystem_Endpoint 
 {
 
 	String Table_Name = "ExternalSystem_Endpoint";
@@ -73,50 +73,30 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Set Authentication Type.
+	 * Authentication method for outbound HTTP calls (export only).
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAuthType (java.lang.String AuthType);
+	void setAuthType (@Nullable java.lang.String AuthType);
 
 	/**
 	 * Get Authentication Type.
+	 * Authentication method for outbound HTTP calls (export only).
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getAuthType();
+	@Nullable java.lang.String getAuthType();
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_AuthType = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "AuthType", null);
 	String COLUMNNAME_AuthType = "AuthType";
 
 	/**
-	 * Set Array Fan-Out.
-	 * If true and the upstream conversion returns a JSON array, one separate request is sent to this endpoint per array element.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsArrayFanOut (boolean IsArrayFanOut);
-
-	/**
-	 * Get Array Fan-Out.
-	 * If true and the upstream conversion returns a JSON array, one separate request is sent to this endpoint per array element.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isArrayFanOut();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_IsArrayFanOut = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "IsArrayFanOut", null);
-	String COLUMNNAME_IsArrayFanOut = "IsArrayFanOut";
-
-	/**
 	 * Set Client ID.
+	 * Client ID for OAuth authentication of outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -126,6 +106,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get Client ID.
+	 * Client ID for OAuth authentication of outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -138,6 +119,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Set Client Secret.
+	 * Client secret for OAuth authentication of outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -147,6 +129,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get Client Secret.
+	 * Client secret for OAuth authentication of outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -225,7 +208,30 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set External System Endpoint.
+	 * Set Error Directory.
+	 * Local directory where failed payloads are archived (SFTP and REST import).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setErrorDirectory (@Nullable java.lang.String ErrorDirectory);
+
+	/**
+	 * Get Error Directory.
+	 * Local directory where failed payloads are archived (SFTP and REST import).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getErrorDirectory();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_ErrorDirectory = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "ErrorDirectory", null);
+	String COLUMNNAME_ErrorDirectory = "ErrorDirectory";
+
+	/**
+	 * Set External System Outbound Endpoint.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -234,7 +240,7 @@ public interface I_ExternalSystem_Endpoint
 	void setExternalSystem_Endpoint_ID (int ExternalSystem_Endpoint_ID);
 
 	/**
-	 * Get External System Endpoint.
+	 * Get External System Outbound Endpoint.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -244,6 +250,29 @@ public interface I_ExternalSystem_Endpoint
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_ExternalSystem_Endpoint_ID = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "ExternalSystem_Endpoint_ID", null);
 	String COLUMNNAME_ExternalSystem_Endpoint_ID = "ExternalSystem_Endpoint_ID";
+
+	/**
+	 * Set HTTP Endpoint.
+	 * HTTP endpoint URL. Used for both inbound (REST import) and outbound (export) transport.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHttpEndPoint (@Nullable java.lang.String HttpEndPoint);
+
+	/**
+	 * Get HTTP Endpoint.
+	 * HTTP endpoint URL. Used for both inbound (REST import) and outbound (export) transport.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHttpEndPoint();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_HttpEndPoint = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "HttpEndPoint", null);
+	String COLUMNNAME_HttpEndPoint = "HttpEndPoint";
 
 	/**
 	 * Set Active.
@@ -269,71 +298,27 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Login User Name.
+	 * Set Array-Fan-Out.
+	 * Bei aktivierter Option und JSON-Array als Antwort der vorgeschalteten Konvertierung wird je Array-Element eine separate Anfrage an diesen Endpunkt gesendet.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setLoginUsername (@Nullable java.lang.String LoginUsername);
+	void setIsArrayFanOut (boolean IsArrayFanOut);
 
 	/**
-	 * Get Login User Name.
+	 * Get Array-Fan-Out.
+	 * Bei aktivierter Option und JSON-Array als Antwort der vorgeschalteten Konvertierung wird je Array-Element eine separate Anfrage an diesen Endpunkt gesendet.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getLoginUsername();
+	boolean isArrayFanOut();
 
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_LoginUsername = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "LoginUsername", null);
-	String COLUMNNAME_LoginUsername = "LoginUsername";
-
-	/**
-	 * Set OAuth2 Token URL.
-	 * OAuth2 token endpoint URL the password-grant request is POSTed to.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOAuthTokenUrl (@Nullable java.lang.String OAuthTokenUrl);
-
-	/**
-	 * Get OAuth2 Token URL.
-	 * OAuth2 token endpoint URL the password-grant request is POSTed to.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getOAuthTokenUrl();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OAuthTokenUrl = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OAuthTokenUrl", null);
-	String COLUMNNAME_OAuthTokenUrl = "OAuthTokenUrl";
-
-	/**
-	 * Set OAuth2 Scope.
-	 * Optional OAuth2 scope sent with the token request (e.g. "docuware.platform").
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOAuthScope (@Nullable java.lang.String OAuthScope);
-
-	/**
-	 * Get OAuth2 Scope.
-	 * Optional OAuth2 scope sent with the token request (e.g. "docuware.platform").
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getOAuthScope();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OAuthScope = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OAuthScope", null);
-	String COLUMNNAME_OAuthScope = "OAuthScope";
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_IsArrayFanOut = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "IsArrayFanOut", null);
+	String COLUMNNAME_IsArrayFanOut = "IsArrayFanOut";
 
 	/**
 	 * Set File Upload.
@@ -359,31 +344,75 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_IsFileUpload = "IsFileUpload";
 
 	/**
-	 * Set Outbound HTTP Endpoint.
-	 * URL to which the data will be sent
+	 * Set Login User Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setOutboundHttpEP (@Nullable java.lang.String OutboundHttpEP);
+	void setLoginUsername (@Nullable java.lang.String LoginUsername);
 
 	/**
-	 * Get Outbound HTTP Endpoint.
-	 * URL to which the data will be sent
+	 * Get Login User Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getOutboundHttpEP();
+	@Nullable java.lang.String getLoginUsername();
 
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OutboundHttpEP = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OutboundHttpEP", null);
-	String COLUMNNAME_OutboundHttpEP = "OutboundHttpEP";
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_LoginUsername = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "LoginUsername", null);
+	String COLUMNNAME_LoginUsername = "LoginUsername";
+
+	/**
+	 * Set OAuth2 Scope.
+	 * Optional OAuth2 scope sent with the token request (e.g. docuware.platform).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOAuthScope (@Nullable java.lang.String OAuthScope);
+
+	/**
+	 * Get OAuth2 Scope.
+	 * Optional OAuth2 scope sent with the token request (e.g. docuware.platform).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOAuthScope();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OAuthScope = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OAuthScope", null);
+	String COLUMNNAME_OAuthScope = "OAuthScope";
+
+	/**
+	 * Set OAuth2 Token URL.
+	 * OAuth2 token endpoint URL the password-grant request is POSTed to.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOAuthTokenUrl (@Nullable java.lang.String OAuthTokenUrl);
+
+	/**
+	 * Get OAuth2 Token URL.
+	 * OAuth2 token endpoint URL the password-grant request is POSTed to.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOAuthTokenUrl();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_OAuthTokenUrl = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "OAuthTokenUrl", null);
+	String COLUMNNAME_OAuthTokenUrl = "OAuthTokenUrl";
 
 	/**
 	 * Set Outbound HTTP Method.
-	 * HTTP method to use when sending data (e.g. POST, PUT)
+	 * HTTP method to use when sending data (e.g. POST, PUT) (export only)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -393,7 +422,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get Outbound HTTP Method.
-	 * HTTP method to use when sending data (e.g. POST, PUT)
+	 * HTTP method to use when sending data (e.g. POST, PUT) (export only)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -428,7 +457,31 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_Password = "Password";
 
 	/**
+	 * Set Processed Directory.
+	 * Local directory where successfully processed payloads are archived (SFTP and REST import).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessedDirectory (@Nullable java.lang.String ProcessedDirectory);
+
+	/**
+	 * Get Processed Directory.
+	 * Local directory where successfully processed payloads are archived (SFTP and REST import).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProcessedDirectory();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_ProcessedDirectory = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "ProcessedDirectory", null);
+	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
+
+	/**
 	 * Set SAS-Signature.
+	 * SAS (Shared Access Signature) for outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -438,6 +491,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get SAS-Signature.
+	 * SAS (Shared Access Signature) for outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -449,24 +503,239 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_SasSignature = "SasSignature";
 
 	/**
-	 * Set Type.
-	 * Type of Validation (SQL, Java Script, Java Language)
+	 * Set SFTP-Authentifizierung.
+	 * SFTP-Authentifizierungsmethode: Passwort oder SSH-Schlüssel
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpAuthType (@Nullable java.lang.String SftpAuthType);
+
+	/**
+	 * Get SFTP-Authentifizierung.
+	 * SFTP-Authentifizierungsmethode: Passwort oder SSH-Schlüssel
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpAuthType();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpAuthType = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpAuthType", null);
+	String COLUMNNAME_SftpAuthType = "SftpAuthType";
+
+	/**
+	 * Set SFTP Filename Pattern.
+	 * Pattern for outbound file names;
+ 
+{
+...}
+ placeholders are replaced at send time. (export only)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpFilenamePattern (@Nullable java.lang.String SftpFilenamePattern);
+
+	/**
+	 * Get SFTP Filename Pattern.
+	 * Pattern for outbound file names;
+ 
+{
+...}
+ placeholders are replaced at send time. (export only)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpFilenamePattern();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpFilenamePattern = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpFilenamePattern", null);
+	String COLUMNNAME_SftpFilenamePattern = "SftpFilenamePattern";
+
+	/**
+	 * Set SFTP-Host.
+	 * Hostname oder IP-Adresse des SFTP-Servers
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpHost (@Nullable java.lang.String SftpHost);
+
+	/**
+	 * Get SFTP-Host.
+	 * Hostname oder IP-Adresse des SFTP-Servers
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpHost();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpHost = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpHost", null);
+	String COLUMNNAME_SftpHost = "SftpHost";
+
+	/**
+	 * Set SFTP Polling Interval (ms).
+	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute) (import only)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpPollingIntervalMs (int SftpPollingIntervalMs);
+
+	/**
+	 * Get SFTP Polling Interval (ms).
+	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute) (import only)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSftpPollingIntervalMs();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpPollingIntervalMs = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpPollingIntervalMs", null);
+	String COLUMNNAME_SftpPollingIntervalMs = "SftpPollingIntervalMs";
+
+	/**
+	 * Set SFTP-Port.
+	 * Portnummer für die SFTP-Verbindung (Standard: 22)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpPort (int SftpPort);
+
+	/**
+	 * Get SFTP-Port.
+	 * Portnummer für die SFTP-Verbindung (Standard: 22)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSftpPort();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpPort = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpPort", null);
+	String COLUMNNAME_SftpPort = "SftpPort";
+
+	/**
+	 * Set SFTP-Verzeichnispfad.
+	 * Verzeichnispfad auf dem SFTP-Server für den Dateiaustausch
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpRemotePath (@Nullable java.lang.String SftpRemotePath);
+
+	/**
+	 * Get SFTP-Verzeichnispfad.
+	 * Verzeichnispfad auf dem SFTP-Server für den Dateiaustausch
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpRemotePath();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpRemotePath = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpRemotePath", null);
+	String COLUMNNAME_SftpRemotePath = "SftpRemotePath";
+
+	/**
+	 * Set SFTP-Benutzername.
+	 * Benutzername für die SFTP-Authentifizierung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpUsername (@Nullable java.lang.String SftpUsername);
+
+	/**
+	 * Get SFTP-Benutzername.
+	 * Benutzername für die SFTP-Authentifizierung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpUsername();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpUsername = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpUsername", null);
+	String COLUMNNAME_SftpUsername = "SftpUsername";
+
+	/**
+	 * Set SSH-Private-Key.
+	 * SSH-Private-Key-Inhalt für schlüsselbasierte SFTP-Authentifizierung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSshPrivateKey (@Nullable java.lang.String SshPrivateKey);
+
+	/**
+	 * Get SSH-Private-Key.
+	 * SSH-Private-Key-Inhalt für schlüsselbasierte SFTP-Authentifizierung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSshPrivateKey();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SshPrivateKey = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SshPrivateKey", null);
+	String COLUMNNAME_SshPrivateKey = "SshPrivateKey";
+
+	/**
+	 * Set Transportart.
+	 * Transportprotokoll: HTTP für Web-APIs, SFTP für dateibasierten Austausch
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setType (java.lang.String Type);
+	void setTransportType (java.lang.String TransportType);
+
+	/**
+	 * Get Transportart.
+	 * Transportprotokoll: HTTP für Web-APIs, SFTP für dateibasierten Austausch
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getTransportType();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_TransportType = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "TransportType", null);
+	String COLUMNNAME_TransportType = "TransportType";
+
+	/**
+	 * Set Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setType (@Nullable java.lang.String Type);
 
 	/**
 	 * Get Type.
 	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getType();
+	@Nullable java.lang.String getType();
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_Type = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "Type", null);
 	String COLUMNNAME_Type = "Type";
@@ -518,172 +787,4 @@ public interface I_ExternalSystem_Endpoint
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_Value = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
-
-	/**
-	 * Set Transport Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setTransportType (java.lang.String TransportType);
-
-	/**
-	 * Get Transport Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getTransportType();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_TransportType = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "TransportType", null);
-	String COLUMNNAME_TransportType = "TransportType";
-
-	/**
-	 * Set SFTP Host.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpHost (@Nullable java.lang.String SftpHost);
-
-	/**
-	 * Get SFTP Host.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSftpHost();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpHost = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpHost", null);
-	String COLUMNNAME_SftpHost = "SftpHost";
-
-	/**
-	 * Set SFTP Port.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpPort (int SftpPort);
-
-	/**
-	 * Get SFTP Port.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getSftpPort();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpPort = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpPort", null);
-	String COLUMNNAME_SftpPort = "SftpPort";
-
-	/**
-	 * Set SFTP Username.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpUsername (@Nullable java.lang.String SftpUsername);
-
-	/**
-	 * Get SFTP Username.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSftpUsername();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpUsername = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpUsername", null);
-	String COLUMNNAME_SftpUsername = "SftpUsername";
-
-	/**
-	 * Set SFTP Authentication Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpAuthType (@Nullable java.lang.String SftpAuthType);
-
-	/**
-	 * Get SFTP Authentication Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSftpAuthType();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpAuthType = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpAuthType", null);
-	String COLUMNNAME_SftpAuthType = "SftpAuthType";
-
-	/**
-	 * Set SSH Private Key.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSshPrivateKey (@Nullable java.lang.String SshPrivateKey);
-
-	/**
-	 * Get SSH Private Key.
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSshPrivateKey();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SshPrivateKey = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SshPrivateKey", null);
-	String COLUMNNAME_SshPrivateKey = "SshPrivateKey";
-
-	/**
-	 * Set SFTP Remote Path.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpRemotePath (@Nullable java.lang.String SftpRemotePath);
-
-	/**
-	 * Get SFTP Remote Path.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSftpRemotePath();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpRemotePath = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpRemotePath", null);
-	String COLUMNNAME_SftpRemotePath = "SftpRemotePath";
-
-	/**
-	 * Set SFTP Filename Pattern.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpFilenamePattern (@Nullable java.lang.String SftpFilenamePattern);
-
-	/**
-	 * Get SFTP Filename Pattern.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSftpFilenamePattern();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpFilenamePattern = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpFilenamePattern", null);
-	String COLUMNNAME_SftpFilenamePattern = "SftpFilenamePattern";
 }

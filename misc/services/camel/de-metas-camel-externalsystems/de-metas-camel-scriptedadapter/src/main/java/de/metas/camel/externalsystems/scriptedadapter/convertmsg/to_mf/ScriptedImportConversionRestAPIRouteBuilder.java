@@ -61,6 +61,8 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN;
 import static de.metas.camel.externalsystems.common.RouteBuilderHelper.setupJacksonDataFormatFor;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.DEFAULT_LOCAL_ERROR_DIR;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.DEFAULT_LOCAL_PROCESSED_DIR;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PREFIX_IMPORT_AUTHORITY;
@@ -281,9 +283,14 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 		final JsonExternalSystemRequest request = context.getRequest();
 		final String endpointName = request.getParameters().get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME);
 		final String scriptIdentifier = request.getParameters().get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER);
+		// LOCAL, transport-agnostic archive folders (REST has no remote file to consume). Default to a
+		// container path when the endpoint's dir fields are unset.
+		final String processedDir = request.getParameters().getOrDefault(ExternalSystemConstants.PARAM_PROCESSED_DIR, DEFAULT_LOCAL_PROCESSED_DIR);
+		final String errorDir = request.getParameters().getOrDefault(ExternalSystemConstants.PARAM_ERROR_DIR, DEFAULT_LOCAL_ERROR_DIR);
 		final CamelContext camelContext = getCamelContext();
 
-		camelContext.addRoutes(new ScriptedImportConversionDynamicRouteBuilder(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate));
+		camelContext.addRoutes(new ScriptedImportConversionDynamicRouteBuilder(endpointName, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
+				processedDir, errorDir));
 
 		camelContext.getRouteController().startRoute(endpointName);
 

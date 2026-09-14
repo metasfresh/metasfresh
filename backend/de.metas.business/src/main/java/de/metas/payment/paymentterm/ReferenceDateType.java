@@ -46,5 +46,7 @@ public enum ReferenceDateType implements ReferenceListAwareEnum
 
 	public boolean isLetterOfCreditDate() {return this == LetterOfCreditDate;}
 
+	public boolean isOrderDate() {return this == OrderDate;}
+
 	public boolean isMaterialReceiptDate() {return this == BillOfLadingDate || this == ETADate;}
 }

@@ -1,8 +1,8 @@
 package de.metas.frontend_testing.masterdata;
 
 import de.metas.currency.CurrencyRepository;
-import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
 import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommandServices;
@@ -12,13 +12,16 @@ import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleSer
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.mobile.MobileConfigService;
 import de.metas.product.ProductRepository;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
 import de.metas.util.web.security.UserAuthTokenService;
+import de.metas.vatid.VATaxIDCheckRepository;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -38,10 +41,13 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final CurrencyRepository currencyRepository;
 
 	@NonNull public final DDOrderService ddOrderService;
+	@NonNull public final DistributionNetworkRepository distributionNetworkRepository;
 	@NonNull public final DistributionLauncherCaptionProvider distributionLauncherCaptionProvider;
 	@NonNull public final DistributionJobLoaderSupportingServices distributionJobLoaderSupportingServices;
 
 	@NonNull public final ScannableCodeFormatService scannableCodeFormatService;
 	@NonNull public final AssertExpectationsCommandServices assertExpectationsCommandServices;
 	@NonNull public final PickingJobScheduleService pickingJobScheduleService;
+	@NonNull public final WarehouseRepository warehouseRepository;
+	@NonNull public final VATaxIDCheckRepository vataxIDCheckRepository;
 }

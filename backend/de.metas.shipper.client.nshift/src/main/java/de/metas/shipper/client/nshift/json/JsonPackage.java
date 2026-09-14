@@ -60,6 +60,7 @@ public class JsonPackage
 	String barcode2;
 
 	@JsonProperty("References")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<JsonReference> references;
 
 	@Nullable

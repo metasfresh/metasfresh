@@ -218,7 +218,21 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean extendedPropsSet;
 
-	@ApiModelProperty(position = 170, // shall be last
+	@ApiModelProperty(position = 169, //
+			value = "Optional; the explicit debtor number to assign to this business partner (C_BPartner.DebtorID). Used during data migration from a legacy system.")
+	private @Nullable Integer debtorId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean debtorIdSet;
+
+	@ApiModelProperty(position = 170, //
+			value = "Optional; the explicit creditor number to assign to this business partner (C_BPartner.CreditorID). Used during data migration from a legacy system.")
+	private @Nullable Integer creditorId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean creditorIdSet;
+
+	@ApiModelProperty(position = 175, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
@@ -388,5 +402,17 @@ public class JsonRequestBPartner
 	{
 		this.extendedProps = extendedProps;
 		this.extendedPropsSet = true;
+	}
+
+	public void setDebtorId(@Nullable final Integer debtorId)
+	{
+		this.debtorId = debtorId;
+		this.debtorIdSet = true;
+	}
+
+	public void setCreditorId(@Nullable final Integer creditorId)
+	{
+		this.creditorId = creditorId;
+		this.creditorIdSet = true;
 	}
 }

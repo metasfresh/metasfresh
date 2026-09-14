@@ -182,6 +182,9 @@
 
         <module>de.metas.swat</module>
 
+        <module>de.metas.deliveryplanning.base</module>
+        <module>de.metas.deliveryplanning.webui</module>
+
         <module>de.metas.serviceprovider</module>
 
         <module>de.metas.shipper.gateway.commons</module>
@@ -196,6 +199,8 @@
 
         <module>de.metas.util</module>
         <module>de.metas.util.web</module>
+
+        <module>de.metas.vatid</module>
 
         <module>de.metas.vendor.gateway.api</module>
 

@@ -122,6 +122,29 @@ public interface I_PickingProfile_PickingJobConfig
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Block layout.
+	 * Shows the values of this entry on their own lines in the job-list entry, with no separator, instead of a single comma-separated line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsBlockLayout (boolean IsBlockLayout);
+
+	/**
+	 * Get Block layout.
+	 * Shows the values of this entry on their own lines in the job-list entry, with no separator, instead of a single comma-separated line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBlockLayout();
+
+	ModelColumn<I_PickingProfile_PickingJobConfig, Object> COLUMN_IsBlockLayout = new ModelColumn<>(I_PickingProfile_PickingJobConfig.class, "IsBlockLayout", null);
+	String COLUMNNAME_IsBlockLayout = "IsBlockLayout";
+
+	/**
 	 * Set Display in detailed view.
 	 *
 	 * <br>Type: YesNo

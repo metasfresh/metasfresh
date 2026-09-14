@@ -38,6 +38,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveRequest;
@@ -72,6 +73,13 @@ public class ArchiveBL implements IArchiveBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final String SYSCONFIG_AttachDateAndTime = "de.metas.archive.AttachDateAndTime";
+
+	/**
+	 * Transient (non-persisted) flag telling the printing module to skip printing-queue-item creation for a given
+	 * archive. Implementation detail behind {@link #setSuppressAutoPrint(I_AD_Archive, boolean)} /
+	 * {@link #isSuppressAutoPrint(I_AD_Archive)} — do not access directly from outside this class.
+	 */
+	private static final ModelDynAttributeAccessor<I_AD_Archive, Boolean> SUPPRESS_AUTO_PRINT = new ModelDynAttributeAccessor<>(Boolean.class);
 
 	@Override
 	public @NonNull ArchiveResult archive(@NonNull final ArchiveRequest request)
@@ -388,6 +396,18 @@ public class ArchiveBL implements IArchiveBL
 	public void updatePrintedRecords(final ImmutableSet<ArchiveId> ids, final UserId userId)
 	{
 		archiveDAO.updatePrintedRecords(ids, userId);
+	}
+
+	@Override
+	public void setSuppressAutoPrint(final I_AD_Archive archive, final boolean suppressAutoPrint)
+	{
+		SUPPRESS_AUTO_PRINT.setValue(archive, suppressAutoPrint);
+	}
+
+	@Override
+	public boolean isSuppressAutoPrint(final I_AD_Archive archive)
+	{
+		return SUPPRESS_AUTO_PRINT.getValue(archive, false);
 	}
 
 	private AdArchive toAdArchive(final I_AD_Archive record)

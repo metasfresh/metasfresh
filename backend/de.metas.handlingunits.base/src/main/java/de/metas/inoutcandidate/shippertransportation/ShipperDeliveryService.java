@@ -36,7 +36,6 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -47,6 +46,7 @@ import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.TransportDirection;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -98,6 +98,14 @@ public class ShipperDeliveryService
 	{
 		final I_M_InOut shipment = inOutDAO.getById(inOutId);
 
+		final boolean isOutboundSalesShipment = shipment.isSOTrx() && !inOutBL.isReturnMovementType(shipment.getMovementType());
+		if (!isOutboundSalesShipment)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"Returning! Not an outbound sales shipment (purchase receipt or return), no shipper-transportation record is created for it! m_inout_id: ", inOutId);
+			return;
+		}
+
 		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(shipment.getM_Shipper_ID());
 
 		if (shipperId == null)
@@ -107,6 +115,13 @@ public class ShipperDeliveryService
 		}
 
 		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+
+		if (createOneTransportationOrderPerDay && shipper.isCreateDeliveryPlanning())
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"Skipping daily transport order for shipper with IsCreateDeliveryPlanning=Y, m_inout_id: {}", inOutId);
+			return;
+		}
 
 		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID()));
 
@@ -119,7 +134,9 @@ public class ShipperDeliveryService
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(inOutBL.retrieveMovementDate(shipment))
 				.assignAnonymouslyPickedHUs(true)
-				.isSOTrx(SOTrx.SALES)
+				// Outgoing, stated rather than derived: the guard at the top of this method has already
+				// returned for anything that is not an outbound sales shipment.
+				.transportDirection(TransportDirection.Outgoing)
 				.build();
 
 		final ShipperTransportationId shipperTransportationId;

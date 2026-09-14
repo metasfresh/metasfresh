@@ -81,6 +81,7 @@ import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -214,6 +215,14 @@ public final class MasterdataProvider
 			@NonNull final OrgId orgId)
 	{
 		return productMasterDataProvider.getProductInfo(productIdentifier, orgId);
+	}
+
+	public ProductInfo getProductInfo(
+			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date)
+	{
+		return productMasterDataProvider.getProductInfo(productIdentifier, orgId, date);
 	}
 
 	@Nullable

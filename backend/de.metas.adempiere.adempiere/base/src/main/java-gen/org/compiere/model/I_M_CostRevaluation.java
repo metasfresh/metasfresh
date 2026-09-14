@@ -69,10 +69,6 @@ public interface I_M_CostRevaluation
 	 */
 	int getC_AcctSchema_ID();
 
-	org.compiere.model.I_C_AcctSchema getC_AcctSchema();
-
-	void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
-
 	ModelColumn<I_M_CostRevaluation, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_M_CostRevaluation.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
 	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
@@ -97,6 +93,29 @@ public interface I_M_CostRevaluation
 	int getC_DocType_ID();
 
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
+	 * Set Source Cost Element.
+	 * Cost element the cost is copied from, unchanged.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom_M_CostElement_ID (int CopyFrom_M_CostElement_ID);
+
+	/**
+	 * Get Source Cost Element.
+	 * Cost element the cost is copied from, unchanged.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCopyFrom_M_CostElement_ID();
+
+	ModelColumn<I_M_CostRevaluation, org.compiere.model.I_M_CostElement> COLUMN_CopyFrom_M_CostElement_ID = new ModelColumn<>(I_M_CostRevaluation.class, "CopyFrom_M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
+	String COLUMNNAME_CopyFrom_M_CostElement_ID = "CopyFrom_M_CostElement_ID";
 
 	/**
 	 * Get Created.
@@ -277,10 +296,6 @@ public interface I_M_CostRevaluation
 	 */
 	int getM_CostElement_ID();
 
-	org.compiere.model.I_M_CostElement getM_CostElement();
-
-	void setM_CostElement(org.compiere.model.I_M_CostElement M_CostElement);
-
 	ModelColumn<I_M_CostRevaluation, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_M_CostRevaluation.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
 	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
 
@@ -389,6 +404,29 @@ public interface I_M_CostRevaluation
 
 	ModelColumn<I_M_CostRevaluation, Object> COLUMN_Processing = new ModelColumn<>(I_M_CostRevaluation.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
+
+	/**
+	 * Set Revaluation Source.
+	 * Determines how the cost for this revaluation is derived.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRevaluationSource (java.lang.String RevaluationSource);
+
+	/**
+	 * Get Revaluation Source.
+	 * Determines how the cost for this revaluation is derived.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getRevaluationSource();
+
+	ModelColumn<I_M_CostRevaluation, Object> COLUMN_RevaluationSource = new ModelColumn<>(I_M_CostRevaluation.class, "RevaluationSource", null);
+	String COLUMNNAME_RevaluationSource = "RevaluationSource";
 
 	/**
 	 * Get Updated.

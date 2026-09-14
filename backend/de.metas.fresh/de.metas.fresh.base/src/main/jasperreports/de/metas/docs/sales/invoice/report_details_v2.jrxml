@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -207,6 +207,14 @@
 	<field name="customs_number" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="customs_number"/>
 		<property name="com.jaspersoft.studio.field.label" value="customs_number"/>
+	</field>
+	<field name="is_totalamount_hidden" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="is_totalamount_hidden"/>
+		<property name="com.jaspersoft.studio.field.label" value="is_totalamount_hidden"/>
+	</field>
+	<field name="is_weight_hidden" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="is_weight_hidden"/>
+		<property name="com.jaspersoft.studio.field.label" value="is_weight_hidden"/>
 	</field>
 	<field name="iswithoutcharge" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="iswithoutcharge"/>
@@ -537,6 +545,7 @@ $F{shiplocation}
 		</groupHeader>
 		<groupFooter>
 			<band height="15">
+				<printWhenExpression><![CDATA[$F{is_totalamount_hidden}.equals("N")]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement key="textField-52" mode="Transparent" x="37" y="-1" width="336" height="12" forecolor="#000000" uuid="6c0c9ac7-cc4d-4d4f-9ca4-454e88e70ac7">
 						<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0 && $V{InOutSum} != null)]]></printWhenExpression>
@@ -1116,6 +1125,7 @@ $F{shiplocation}
 			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
 				<reportElement x="37" y="20" width="46" height="12" uuid="d34ab8de-22b8-4e8c-967b-44c439b58aac">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<printWhenExpression><![CDATA[$F{is_weight_hidden}.equals("N")]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -1123,14 +1133,18 @@ $F{shiplocation}
 				<textFieldExpression><![CDATA[$R{Weight}+" :"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="83" y="20" width="48" height="12" uuid="d0aea6e8-87ce-46e6-8137-4cb1a4c7ff4b"/>
+				<reportElement x="83" y="20" width="48" height="12" uuid="d0aea6e8-87ce-46e6-8137-4cb1a4c7ff4b">
+					<printWhenExpression><![CDATA[$F{is_weight_hidden}.equals("N")]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="134" y="20" width="100" height="12" uuid="df390e5b-0015-4103-aafa-1c6597d21cbe"/>
+				<reportElement x="134" y="20" width="100" height="12" uuid="df390e5b-0015-4103-aafa-1c6597d21cbe">
+					<printWhenExpression><![CDATA[$F{is_weight_hidden}.equals("N")]]></printWhenExpression>
+				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
