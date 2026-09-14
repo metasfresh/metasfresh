@@ -84,6 +84,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 	final SSCC18 constantSSCC18 = new SSCC18(0, "0718908 ", "562723189", 6);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private CurrencyId chf;
 
 	private ProductId product1;
@@ -134,7 +135,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
-		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
+		final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
 		assertThat(1).isEqualTo(shippingPackages.size());
 
@@ -173,7 +174,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
-		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
+		final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
 		assertThat(shippingPackages.size()).isEqualTo(2);
 
@@ -221,7 +222,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), ImmutableSet.of(order1,order2));
 
-		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
+		final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
 		assertThat(2).isEqualTo(shippingPackages.size());
 		assertThat(shippingPackages.stream())
@@ -234,7 +235,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), ImmutableSet.of(order1,order2,order3));
 
-		final List<I_M_ShippingPackage> shippingPackages2 = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
+		final List<I_M_ShippingPackage> shippingPackages2 = shipperTransportationDAO.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
 		assertThat(3).isEqualTo(shippingPackages2.size());
 
@@ -266,7 +267,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Collections.singletonList(order));
 
 		// Verify shipping packages exist
-		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class)
+		final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO
 				.retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 		assertThat(shippingPackages).hasSize(1);
 
@@ -306,14 +307,14 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(order));
 
 		// Verify packages exist
-		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId)).hasSize(1);
+		assertThat(shipperTransportationDAO.retrieveShippingPackages(transportationId)).hasSize(1);
 
 		// Simulate what happens on PO reactivation (the new code only checks, doesn't delete)
 		final boolean hasProcessed = service.hasProcessedShipperTransportation(order);
 		assertThat(hasProcessed).isFalse();
 
 		// Shipping packages must still exist after the check
-		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId))
+		assertThat(shipperTransportationDAO.retrieveShippingPackages(transportationId))
 				.as("Shipping packages must survive PO reactivation (not be deleted)")
 				.hasSize(1);
 	}
@@ -343,7 +344,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
 
 		// Verify package exists with original ShipDate
-		final List<I_M_ShippingPackage> packagesBefore = Services.get(IShipperTransportationDAO.class)
+		final List<I_M_ShippingPackage> packagesBefore = shipperTransportationDAO
 				.retrieveShippingPackages(transportationId);
 		assertThat(packagesBefore).hasSize(1);
 
@@ -362,7 +363,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		service.syncShippingPackagesFromOrder(order);
 
 		// Verify synced
-		final List<I_M_ShippingPackage> packagesAfter = Services.get(IShipperTransportationDAO.class)
+		final List<I_M_ShippingPackage> packagesAfter = shipperTransportationDAO
 				.retrieveShippingPackages(transportationId);
 		assertThat(packagesAfter).hasSize(1);
 
@@ -411,7 +412,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		// Add order to transportation — should create 2 packages (one per line)
 		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
 
-		final List<I_M_ShippingPackage> packagesBefore = Services.get(IShipperTransportationDAO.class)
+		final List<I_M_ShippingPackage> packagesBefore = shipperTransportationDAO
 				.retrieveShippingPackages(transportationId);
 		assertThat(packagesBefore).hasSize(2);
 
@@ -423,7 +424,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		service.syncShippingPackagesFromOrder(order);
 
 		// Only 1 package should remain (for line1)
-		final List<I_M_ShippingPackage> packagesAfter = Services.get(IShipperTransportationDAO.class)
+		final List<I_M_ShippingPackage> packagesAfter = shipperTransportationDAO
 				.retrieveShippingPackages(transportationId);
 		assertThat(packagesAfter)
 				.as("Package for deleted line should be removed, surviving line's package should remain")
@@ -455,7 +456,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		// Add order to transportation
 		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
-		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId)).hasSize(1);
+		assertThat(shipperTransportationDAO.retrieveShippingPackages(transportationId)).hasSize(1);
 
 		// Delete the only line
 		delete(line1);
@@ -465,7 +466,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		service.syncShippingPackagesFromOrder(order);
 
 		// All packages should be gone
-		assertThat(Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(transportationId))
+		assertThat(shipperTransportationDAO.retrieveShippingPackages(transportationId))
 				.as("All packages should be removed when all order lines are deleted")
 				.isEmpty();
 	}
@@ -536,7 +537,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				transportationId,
 				Collections.singletonList(orderId));
 
-		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class)
+		final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO
 				.retrieveShippingPackages(transportationId);
 
 		// Exactly 1 package for product2 (line2); product1 (line1) was skipped
@@ -669,10 +670,10 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	}
 
 	/**
-	 * The auto-defaulting must NOT run for a sales (Outgoing direction) transport order.
+	 * A PURCHASE order may not be assigned to an Outgoing transport order at all, so the auto-defaulting never runs either.
 	 */
 	@Test
-	public void defaultDates_notAppliedForSalesTransportOrder()
+	public void purchaseOrder_ontoOutgoingTransportOrder_isRefused()
 	{
 		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
 		shipperTransportation.setTransportDirection(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
@@ -688,14 +689,82 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		order.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()))));
 		save(order);
 
-		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+		// PurchaseOrderToShipperTransportationService#assertTransportOrderAcceptsPurchaseDocument refuses this
+		// purchase-order-onto-Outgoing-transport-order combination outright, before any date defaulting is attempted
+		assertThatThrownBy(() -> service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId)))
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> {
+					final AdempiereException adEx = (AdempiereException)ex;
+					assertThat(adEx.getErrorCode())
+							.as("Exception must carry the expected AD_Message key as error code")
+							.isEqualTo(PurchaseOrderToShipperTransportationService.MSG_WrongTransportDirectionForPurchaseOrder.toAD_Message());
+					assertThat(adEx.isUserValidationError())
+							.as("Exception must be marked as user-validation error so the UI shows it as a user message")
+							.isTrue();
+				});
 
 		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
-		assertThat(reloaded.getETD()).as("ETD must not be defaulted on a sales transport order").isNull();
+		assertThat(reloaded.getETD()).as("ETD must not be defaulted when the assignment itself was refused").isNull();
 		assertThat(reloaded.getETA()).isNull();
 		assertThat(reloaded.getATD()).isNull();
 		assertThat(reloaded.getATA()).isNull();
 		assertThat(reloaded.getBLDate()).isNull();
+	}
+
+	/**
+	 * A SALES order on an Outgoing transport order is the normal, correct combination. The purchase-side direction guard
+	 * must not fire for it: the assignment succeeds and the shipping packages are created.
+	 */
+	@Test
+	public void salesOrder_ontoOutgoingTransportOrder_isAccepted()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		shipperTransportation.setTransportDirection(X_M_ShipperTransportation.TRANSPORTDIRECTION_Outgoing);
+		save(shipperTransportation);
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("CustomerOutgoing", "addressCustomerOutgoing");
+		final OrderId orderId = createOrder(bpartnerAndLocation, true);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveShippingPackages(transportationId);
+		assertThat(shippingPackages).as("the sales order's shipping package must have been created").hasSize(1);
+		assertThat(shippingPackages.get(0).getC_Order_ID()).isEqualTo(orderId.getRepoId());
+	}
+
+	/**
+	 * A SALES order that is the first order on a receipt-direction (Incoming) transport order must NOT seed the
+	 * purchase-side date defaults - {@code ETA} from {@code DatePromised} and {@code ETD} from
+	 * {@code PreparationDate} describe an inbound arrival, not a sales departure.
+	 */
+	@Test
+	public void defaultDates_notAppliedForSalesOrderOnPurchaseTransportOrder()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation(); // Incoming
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("CustomerIncoming", "addressCustomerIncoming");
+		final OrderId orderId = createOrder(bpartnerAndLocation, true);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		// give the order a PreparationDate so a PURCHASE order would get a non-null ETD - proving the sales guard is what suppresses it
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		order.setPreparationDate(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()))));
+		save(order);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveShippingPackages(transportationId);
+		assertThat(shippingPackages).as("the assignment itself must still succeed").hasSize(1);
+
+		final I_M_ShipperTransportation reloadedTransportation = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloadedTransportation.getETD()).as("ETD must not be seeded from a sales order").isNull();
+		assertThat(reloadedTransportation.getETA()).as("ETA must not be seeded from a sales order").isNull();
+		assertThat(reloadedTransportation.getATD()).isNull();
+		assertThat(reloadedTransportation.getATA()).isNull();
+		assertThat(reloadedTransportation.getBLDate()).isNull();
 	}
 
 	/**
@@ -1000,6 +1069,11 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 	private OrderId createOrder(final BPartnerLocationId bpartnerAndLocation)
 	{
+		return createOrder(bpartnerAndLocation, false);
+	}
+
+	private OrderId createOrder(final BPartnerLocationId bpartnerAndLocation, final boolean isSOTrx)
+	{
 
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 		save(warehouse);
@@ -1022,7 +1096,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		order.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 6), orgDAO.getTimeZone(OrgId.ofRepoId(warehouse.getAD_Org_ID()))));
 
-		order.setIsSOTrx(false);
+		order.setIsSOTrx(isSOTrx);
 
 		save(order);
 

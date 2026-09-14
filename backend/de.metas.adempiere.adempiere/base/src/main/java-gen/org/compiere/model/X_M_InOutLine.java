@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_InOutLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -533417777L;
+	private static final long serialVersionUID = -1537530179L;
 
     /** Standard Constructor */
     public X_M_InOutLine (final Properties ctx, final int M_InOutLine_ID, @Nullable final String trxName)
@@ -68,16 +68,31 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setCatch_UOM_ID (final int Catch_UOM_ID)
 	{
-		if (Catch_UOM_ID < 1)
+		if (Catch_UOM_ID < 1) 
 			set_Value (COLUMNNAME_Catch_UOM_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
 	}
 
 	@Override
-	public int getCatch_UOM_ID()
+	public int getCatch_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
+	}
+
+	@Override
+	public void setC_BPartner2_ID (final int C_BPartner2_ID)
+	{
+		if (C_BPartner2_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner2_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
+	}
+
+	@Override
+	public int getC_BPartner2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
 	}
 
 	@Override
@@ -123,13 +138,28 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setConfirmedQty (final BigDecimal ConfirmedQty)
+	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
+	{
+		if (C_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getC_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public void setConfirmedQty (final @Nullable BigDecimal ConfirmedQty)
 	{
 		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
 	}
 
 	@Override
-	public BigDecimal getConfirmedQty()
+	public BigDecimal getConfirmedQty() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ConfirmedQty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -150,14 +180,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
-		if (C_Order_ID < 1)
+		if (C_Order_ID < 1) 
 			set_Value (COLUMNNAME_C_Order_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
 	}
 
 	@Override
-	public int getC_Order_ID()
+	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
@@ -204,14 +234,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setC_OrderSO_ID (final int C_OrderSO_ID)
 	{
-		if (C_OrderSO_ID < 1)
+		if (C_OrderSO_ID < 1) 
 			set_Value (COLUMNNAME_C_OrderSO_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
 	}
 
 	@Override
-	public int getC_OrderSO_ID()
+	public int getC_OrderSO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
@@ -301,7 +331,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -310,6 +340,18 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	@Override
@@ -388,6 +430,33 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
+	public org.compiere.model.I_M_Delivery_Planning getM_Delivery_Planning()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class);
+	}
+
+	@Override
+	public void setM_Delivery_Planning(final org.compiere.model.I_M_Delivery_Planning M_Delivery_Planning)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Delivery_Planning_ID, org.compiere.model.I_M_Delivery_Planning.class, M_Delivery_Planning);
+	}
+
+	@Override
+	public void setM_Delivery_Planning_ID (final int M_Delivery_Planning_ID)
+	{
+		if (M_Delivery_Planning_ID < 1) 
+			set_Value (COLUMNNAME_M_Delivery_Planning_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Delivery_Planning_ID, M_Delivery_Planning_ID);
+	}
+
+	@Override
+	public int getM_Delivery_Planning_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Delivery_Planning_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_M_InOut getM_InOut()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
@@ -451,7 +520,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public BigDecimal getMovementQty()
+	public BigDecimal getMovementQty() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -500,7 +569,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setPickedQty (final BigDecimal PickedQty)
+	public void setPickedQty (final @Nullable BigDecimal PickedQty)
 	{
 		set_Value (COLUMNNAME_PickedQty, PickedQty);
 	}
@@ -525,7 +594,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setProductDescription (final java.lang.String ProductDescription)
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
@@ -537,7 +606,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setQtyDeliveredCatch (final BigDecimal QtyDeliveredCatch)
+	public void setQtyDeliveredCatch (final @Nullable BigDecimal QtyDeliveredCatch)
 	{
 		set_Value (COLUMNNAME_QtyDeliveredCatch, QtyDeliveredCatch);
 	}
@@ -605,7 +674,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setScrappedQty (final BigDecimal ScrappedQty)
+	public void setScrappedQty (final @Nullable BigDecimal ScrappedQty)
 	{
 		set_Value (COLUMNNAME_ScrappedQty, ScrappedQty);
 	}
@@ -618,7 +687,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setTargetQty (final BigDecimal TargetQty)
+	public void setTargetQty (final @Nullable BigDecimal TargetQty)
 	{
 		set_Value (COLUMNNAME_TargetQty, TargetQty);
 	}
@@ -685,7 +754,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString1 (final java.lang.String UserElementString1)
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
@@ -697,7 +766,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString2 (final java.lang.String UserElementString2)
+	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
 	{
 		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
 	}
@@ -709,7 +778,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString3 (final java.lang.String UserElementString3)
+	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
 	{
 		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
 	}
@@ -721,7 +790,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString4 (final java.lang.String UserElementString4)
+	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
 	{
 		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
 	}
@@ -733,7 +802,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString5 (final java.lang.String UserElementString5)
+	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
 	{
 		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
 	}
@@ -745,7 +814,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString6 (final java.lang.String UserElementString6)
+	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
 	{
 		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
 	}
@@ -757,7 +826,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString7 (final java.lang.String UserElementString7)
+	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
 	{
 		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
 	}
@@ -767,32 +836,4 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
-
-	@Override
-	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
-	{
-		if (C_Flatrate_Term_ID < 1)
-			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
-		else
-			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
-	}
-
-	@Override
-	public int getC_Flatrate_Term_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
-	}
-
-	@Override
-	public void setExternalId (final @Nullable java.lang.String ExternalId)
-	{
-		set_Value (COLUMNNAME_ExternalId, ExternalId);
-	}
-
-	@Override
-	public java.lang.String getExternalId()
-	{
-		return get_ValueAsString(COLUMNNAME_ExternalId);
-	}
-
 }

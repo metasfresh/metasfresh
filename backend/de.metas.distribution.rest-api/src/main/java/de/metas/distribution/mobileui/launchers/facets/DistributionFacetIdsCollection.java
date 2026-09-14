@@ -6,6 +6,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
+import de.metas.shipping.CarrierProductId;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
@@ -63,6 +64,8 @@ public class DistributionFacetIdsCollection implements Iterable<DistributionFace
 	public Set<Quantity> getQuantities() {return getValues(DistributionFacetGroupType.QUANTITY, DistributionFacetId::getQty);}
 
 	public Set<ResourceId> getPlantIds() {return getValues(DistributionFacetGroupType.PLANT_RESOURCE_ID, DistributionFacetId::getPlantId);}
+
+	public Set<CarrierProductId> getCarrierProductIds() {return getValues(DistributionFacetGroupType.CARRIER_PRODUCT, DistributionFacetId::getCarrierProductId);}
 
 	public <T> Set<T> getValues(DistributionFacetGroupType groupType, Function<DistributionFacetId, T> valueExtractor)
 	{

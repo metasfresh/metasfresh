@@ -37,7 +37,6 @@ import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.ColorId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -94,8 +93,6 @@ public class DeliveryPlanningCreateRequest
 
 	@Nullable
 	ReceiptScheduleId receiptScheduleId;
-
-	@Nullable ColorId deliveryStatusColorId;
 
 	@Nullable
 	Instant plannedLoadingDate;
