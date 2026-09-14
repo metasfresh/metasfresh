@@ -19,6 +19,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -45,6 +46,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 	@NonNull private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	@NonNull private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	//
 	@NonNull private final CostingMethodHandlerUtils utils;
 	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
@@ -124,7 +126,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		//
 		if (orderCosts != null)
 		{
-			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), productDAO);
 			ppOrderCostsService.save(orderCosts);
 		}
 

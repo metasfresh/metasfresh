@@ -8,6 +8,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
@@ -24,6 +25,8 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -223,17 +227,20 @@ public final class PPOrderCosts
 		}
 	}
 
-	public void updatePostCalculationAmounts(final CurrencyPrecision precision)
+	public void updatePostCalculationAmounts(
+			final CurrencyPrecision precision,
+			@NonNull final IProductDAO productDAO)
 	{
 		for (final CostElementId costElementId : getCostElementIds())
 		{
-			updatePostCalculationAmountsForCostElement(precision, costElementId);
+			updatePostCalculationAmountsForCostElement(precision, costElementId, productDAO);
 		}
 	}
 
 	public void updatePostCalculationAmountsForCostElement(
 			final CurrencyPrecision precision,
-			final CostElementId costElementId)
+			final CostElementId costElementId,
+			@NonNull final IProductDAO productDAO)
 	{
 		final List<PPOrderCost> costs = filterAndList(PPOrderCostFilter.builder()
 				.costElementId(costElementId)
@@ -260,16 +267,51 @@ public final class PPOrderCosts
 				.orElseThrow(() -> new AdempiereException("No inbound costs found in " + costs));
 
 		//
-		// Update co-product costs and calculate total co-product costs
-		coProductCosts.forEach(cost -> cost.setPostCalculationAmount(totalInboundCostAmount.multiply(cost.getCoProductCostDistributionPercent(), precision)));
+		// Update co-product costs and calculate total co-product costs.
+		// A co-product whose product carries a manual CoProductFixedCostPrice is valued at fixedPrice x received-qty
+		// (so the main product is relieved by the remainder); a blank price keeps today's qty-distribution behaviour.
+		final List<ProductId> fixedPricedCoProductIds = new ArrayList<>();
+		for (final PPOrderCost coProductCost : coProductCosts)
+		{
+			final Optional<BigDecimal> fixedCostPrice = CoProductFixedCostPrices.getFixedCostPrice(productDAO, coProductCost.getProductId());
+			final CostAmount coProductAmount;
+			if (fixedCostPrice.isPresent())
+			{
+				coProductAmount = CostAmount.of(
+								fixedCostPrice.get().multiply(coProductCost.getAccumulatedQty().toBigDecimal()),
+								totalInboundCostAmount.getCurrencyId())
+						.roundToPrecisionIfNeeded(precision);
+				fixedPricedCoProductIds.add(coProductCost.getProductId());
+			}
+			else
+			{
+				coProductAmount = totalInboundCostAmount.multiply(coProductCost.getCoProductCostDistributionPercent(), precision);
+			}
+			coProductCost.setPostCalculationAmount(coProductAmount);
+		}
 		final CostAmount totalCoProductsCostAmount = coProductCosts.stream()
 				.map(PPOrderCost::getPostCalculationAmount)
 				.reduce(CostAmount::add)
 				.orElseGet(totalInboundCostAmount::toZero);
 
 		//
+		// Guard: the co-products must not consume more than the order's input cost pool, which would drive the
+		// main product's value negative. Reject here, BEFORE persisting the negative main-product amount below.
+		final CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
+		if (mainProductAmount.signum() < 0)
+		{
+			final List<ProductId> offendingCoProductIds = !fixedPricedCoProductIds.isEmpty()
+					? fixedPricedCoProductIds
+					: coProductCosts.stream().map(PPOrderCost::getProductId).collect(Collectors.toList());
+			throw new AdempiereException("Co-product fixed cost price for " + describeProducts(productDAO, offendingCoProductIds)
+					+ " values the co-products at " + totalCoProductsCostAmount
+					+ ", which exceeds the production order's input cost pool of " + totalInboundCostAmount
+					+ " and would drive the main product negative");
+		}
+
+		//
 		// Update main product cost
-		mainProductCost.setPostCalculationAmount(totalInboundCostAmount.subtract(totalCoProductsCostAmount));
+		mainProductCost.setPostCalculationAmount(mainProductAmount);
 
 		//
 		// Clear by-product costs
@@ -345,6 +387,16 @@ public final class PPOrderCosts
 				.stream()
 				.map(CostSegmentAndElement::getCostElementId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** @return the given products' names (comma-separated), for the negative-main guard message. */
+	private static String describeProducts(
+			@NonNull final IProductDAO productDAO,
+			@NonNull final List<ProductId> productIds)
+	{
+		return productIds.stream()
+				.map(productId -> CoProductFixedCostPrices.getProductName(productDAO, productId))
+				.collect(Collectors.joining(", "));
 	}
 
 }

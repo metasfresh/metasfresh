@@ -11,9 +11,11 @@ import de.metas.costing.CostingLevel;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -71,12 +73,11 @@ public class PPOrderCostsTest
 
 	private final ProductId productId1 = ProductId.ofRepoId(1);
 	private final ProductId productId2 = ProductId.ofRepoId(2);
-	private final ProductId productId3 = ProductId.ofRepoId(3);
-	private final ProductId productId4 = ProductId.ofRepoId(4);
 	private final ProductId productId5 = ProductId.ofRepoId(5);
 
 	private I_C_UOM uom;
 	private UomId uomId;
+	private IProductDAO productDAO;
 
 	@BeforeEach
 	public void beforeEach()
@@ -84,11 +85,18 @@ public class PPOrderCostsTest
 		AdempiereTestHelper.get().init();
 		uom = BusinessTestHelper.createUomEach();
 		uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+		productDAO = Services.get(IProductDAO.class);
 	}
 
 	@Test
 	public void testPostCalculation_SimpleCase()
 	{
+		// The co-product lines must reference real M_Product rows: the fixed-price relief reads each co-product's
+		// master live via IProductDAO.getById (fail-loud), so a fabricated ProductId with no M_Product row would
+		// throw. Blank fixed price -> today's qty-distribution behaviour is exercised.
+		final ProductId coProductId3 = createProduct("coproduct_20pct", null);
+		final ProductId coProductId4 = createProduct("coproduct_10pct", null);
+
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
 				.cost(PPOrderCost.builder()
@@ -106,14 +114,14 @@ public class PPOrderCostsTest
 						.build())
 				.cost(PPOrderCost.builder()
 						.trxType(PPOrderCostTrxType.CoProduct)
-						.costSegmentAndElement(costSegmentAndElement(productId3))
+						.costSegmentAndElement(costSegmentAndElement(coProductId3))
 						.price(CostPrice.zero(currencyId, uomId))
 						.coProductCostDistributionPercent(Percent.of(20))
 						.accumulatedQty(Quantity.zero(uom))
 						.build())
 				.cost(PPOrderCost.builder()
 						.trxType(PPOrderCostTrxType.CoProduct)
-						.costSegmentAndElement(costSegmentAndElement(productId4))
+						.costSegmentAndElement(costSegmentAndElement(coProductId4))
 						.price(CostPrice.zero(currencyId, uomId))
 						.coProductCostDistributionPercent(Percent.of(10))
 						.accumulatedQty(Quantity.zero(uom))
@@ -126,13 +134,13 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
 		orderCosts.toCollection().forEach(System.out::println);
 
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("70"));
 		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("100"));
-		this.assertThatPostCalculationAmt(orderCosts, productId3).isEqualByComparingTo(new BigDecimal("20"));
-		this.assertThatPostCalculationAmt(orderCosts, productId4).isEqualByComparingTo(new BigDecimal("10"));
+		this.assertThatPostCalculationAmt(orderCosts, coProductId3).isEqualByComparingTo(new BigDecimal("20"));
+		this.assertThatPostCalculationAmt(orderCosts, coProductId4).isEqualByComparingTo(new BigDecimal("10"));
 		this.assertThatPostCalculationAmt(orderCosts, productId5).isEqualByComparingTo(new BigDecimal("0"));
 	}
 
@@ -173,7 +181,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
 
 		// co-product valued at fixedPrice(8) * co_qty(6) = 48, NOT the 20%-distribution (= 450 * 20% = 90)
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("48"));
@@ -222,7 +230,7 @@ public class PPOrderCostsTest
 				.build();
 
 		// fixedPrice(80) * co_qty(6) = 480 > totalInbound 450 -> main would go negative -> guard must reject
-		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId))
+		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, productDAO))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("Randstuecke")
 				.hasMessageContaining("480")
@@ -269,7 +277,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
 
 		// blank fixed price -> unchanged 20%-distribution: co = 450 * 20% = 90, main = 360 (AC6 no-regression)
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
@@ -316,7 +324,7 @@ public class PPOrderCostsTest
 				.cost(materialIssueCost(productId2, "34", "-10", "340"))
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
 
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("340"));
 		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("340"));
@@ -331,7 +339,7 @@ public class PPOrderCostsTest
 				.cost(materialIssueCost(productId2, "34", "-10", "340"))
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
 
 		// 340 issued - 300 received
 		assertThat(orderCosts.getResidualCost(acctSchemaId, costElementId))
