@@ -82,9 +82,12 @@ export class RawWidget extends PureComponent {
     // A new document in an already-mounted window reconciles this widget instead of remounting
     // it, so the mount-time focus above never runs again and the first field of the new
     // document stays unfocused. Repeat it on a document change - never while this widget is the
-    // one being typed in, where there is nothing to move and a caret to lose.
+    // one being typed in, where there is nothing to move and a caret to lose, and never in a
+    // modal, where a process parameter panel and the barcode overlay pass a pinstance id as
+    // `dataId` with an unconditional `autoFocus`.
     if (
       this.props.autoFocus &&
+      !this.props.isModal &&
       prevProps.dataId !== this.props.dataId &&
       !this.state.isFocused
     ) {

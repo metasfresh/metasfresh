@@ -80,12 +80,17 @@ class ListWidget extends Component {
     // with the prop and run the same focus branch - unless the widget already holds the focus,
     // where there is nothing to move.
     //
+    // Modals are excluded, as the requirements ask, and for the same reason the edge branch
+    // above excludes them: a process parameter panel hands this widget a pinstance id in
+    // `dataId`, which is not a document change.
+    //
     // A sub-list of a composed lookup (`lookupList`) is excluded: there the parent decides
     // which of its sub-fields is in turn, and React updates this child before the parent, so
     // acting here would focus the sub-field the PREVIOUS document had advanced to.
     if (
       prevProps.dataId !== this.props.dataId &&
       this.props.autoFocus &&
+      !this.props.isModal &&
       !this.props.lookupList &&
       !this.state.listFocused
     ) {
