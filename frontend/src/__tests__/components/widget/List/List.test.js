@@ -66,6 +66,19 @@ describe('ListWidget component', () => {
     expect(focusSpy).not.toHaveBeenCalled();
   });
 
+  it('does not focus on a document change in a quick-input row', () => {
+    // The quick-input row is the same window and the same document, and its first field carries a
+    // permanently-set autoFocus - but the field that must get the focus is the header's.
+    const { wrapper, focusSpy } = shallowWithSpentEdge({
+      autoFocus: true,
+      subentity: 'quickInput',
+    });
+
+    wrapper.setProps({ dataId: '1000002' });
+
+    expect(focusSpy).not.toHaveBeenCalled();
+  });
+
   it('does not focus on a document change when it is a sub-field of a composed lookup', () => {
     // There the parent decides which sub-field is in turn, and React updates this child first.
     const { wrapper, focusSpy } = shallowWithSpentEdge({

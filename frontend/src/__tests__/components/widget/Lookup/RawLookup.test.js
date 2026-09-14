@@ -126,6 +126,20 @@ describe('RawLookup component', () => {
       expect(focusSpy).not.toHaveBeenCalled();
     });
 
+    it('does not focus the first field on a document change in a quick-input row', () => {
+      // Same window, same document: the quick-input row's first field carries a permanently-set
+      // autoFocus of its own, but the header's field is the one that must get the focus.
+      const { wrapper, focusSpy } = mountWithSpentArming({
+        autoFocus: true,
+        subentity: 'quickInput',
+        dataId: '1000001',
+      });
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
     it('does not focus the first field when the arriving document already has a value', () => {
       const { wrapper, focusSpy } = mountWithSpentArming({
         autoFocus: true,

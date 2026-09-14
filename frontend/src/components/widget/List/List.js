@@ -84,6 +84,11 @@ export class ListWidget extends Component {
     // callers that pass a changing `dataId` with `autoFocus` set are a process parameter panel,
     // the barcode overlay and the attributes dropdown, and none of those is a document change.
     //
+    // A quick-input row is excluded although it is the same window and the same document: its
+    // first field also carries a permanently-set `autoFocus`, so without this the header's first
+    // field and the quick-input's would both act on one document change and the winner would be
+    // whichever rendered last. The header's field is the one that must get the focus.
+    //
     // `entity` is the discriminator rather than `isModal` because `WidgetRenderer` does not
     // forward `isModal` to this widget at all (it does for the sibling Lookup case), so an
     // `isModal` check here would silently never fire. Repairing that omission would also revive
@@ -97,6 +102,7 @@ export class ListWidget extends Component {
       prevProps.dataId !== this.props.dataId &&
       this.props.autoFocus &&
       this.props.entity === 'window' &&
+      this.props.subentity !== 'quickInput' &&
       !this.props.lookupList &&
       !this.state.listFocused
     ) {

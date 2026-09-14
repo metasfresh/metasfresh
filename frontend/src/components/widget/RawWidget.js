@@ -84,10 +84,13 @@ export class RawWidget extends PureComponent {
     // document stays unfocused. Repeat it on a document change - never while this widget is the
     // one being typed in, where there is nothing to move and a caret to lose, and never in a
     // modal, where a process parameter panel and the barcode overlay pass a pinstance id as
-    // `dataId` with an unconditional `autoFocus`.
+    // `dataId` with an unconditional `autoFocus`, and never in a quick-input row, whose first
+    // field carries a permanently-set `autoFocus` of its own while the field that must get the
+    // focus on a new document is the header's.
     if (
       this.props.autoFocus &&
       !this.props.isModal &&
+      this.props.subentity !== 'quickInput' &&
       prevProps.dataId !== this.props.dataId &&
       !this.state.isFocused
     ) {

@@ -144,10 +144,13 @@ export class RawLookup extends Component {
     //
     // Modals are excluded, as the requirements ask: a process parameter panel and the barcode
     // overlay hand this widget a pinstance id in `dataId` with an unconditional `autoFocus`, and
-    // that is not a document change.
+    // that is not a document change. A quick-input row is excluded too: it is the same document,
+    // but its first field also carries a permanently-set `autoFocus`, and the field that must get
+    // the focus on a new document is the header's.
     if (
       autoFocus &&
       !this.props.isModal &&
+      this.props.subentity !== 'quickInput' &&
       prevProps.dataId !== this.props.dataId &&
       !shouldBeFocused &&
       !this.inputSearch.value
