@@ -73,10 +73,13 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 		final CostAmount costs = docLine.getCreateCosts(acctSchema);
 
 		//
-		// Revenue
-		// -------------------
-		// Product Asset DR
-		// Revenue               CR
+		// Cost adjustment — booked symmetrically against the neutral cost-adjustment account, never
+		// Revenue/Expense (an inventory write-up to Revenue is impermissible under HGB).
+		// -------------------------------------------------------------------------------------------
+		// Increase (delta >= 0):  Product Asset      DR delta
+		//                         Cost Adjustment        CR delta
+		// Decrease (delta <  0):  Cost Adjustment    DR |delta|
+		//                         Product Asset          CR |delta|
 		if (costs.signum() >= 0)
 		{
 			fact.createLine()
@@ -88,32 +91,26 @@ public class Doc_CostRevaluation extends Doc<DocLine_CostRevaluation>
 
 			fact.createLine()
 					.setDocLine(docLine)
-					.setAccount(docLine.getAccount(ProductAcctType.P_Revenue_Acct, acctSchema))
+					.setAccount(docLine.getAccount(ProductAcctType.P_CostAdjustment_Acct, acctSchema))
 					.setAmtSource(null, costs)
 					// .locatorId(line.getM_Locator_ID()) // N/A atm
 					.buildAndAdd();
 		}
-		//
-		// Expense
-		// ------------------------------------
-		// Product Asset            CR
-		// Expense          DR
 		else // deltaAmountToBook.signum() < 0
 		{
+			fact.createLine()
+					.setDocLine(docLine)
+					.setAccount(docLine.getAccount(ProductAcctType.P_CostAdjustment_Acct, acctSchema))
+					.setAmtSource(costs.negate(), null)
+					// .locatorId(line.getM_Locator_ID()) // N/A atm
+					.buildAndAdd();
+
 			fact.createLine()
 					.setDocLine(docLine)
 					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, acctSchema))
 					.setAmtSource(null, costs.negate())
 					// .locatorId(line.getM_Locator_ID()) // N/A atm
 					.buildAndAdd();
-
-			fact.createLine()
-					.setDocLine(docLine)
-					.setAccount(docLine.getAccount(ProductAcctType.P_Asset_Acct, acctSchema))
-					.setAmtSource(costs.negate(), null)
-					// .locatorId(line.getM_Locator_ID()) // N/A atm
-					.buildAndAdd();
-
 		}
 	}
 }
