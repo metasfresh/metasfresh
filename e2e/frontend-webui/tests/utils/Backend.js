@@ -81,6 +81,29 @@ export const Backend = {
     }),
 
   /**
+   * Force the webapi node (8080) to drop ALL caches (global cacheMgt.reset()).
+   *
+   * Needed after a runtime sysconfig change that feeds a cache NOT registered for
+   * AD_SysConfig invalidation — notably the order-line quick-input descriptor
+   * (QuickInputDescriptorFactoryService "QuickInputDescriptors" CCache, built once
+   * per window/tab with no table-reset). resetByTable(AD_SysConfig) refreshes the
+   * sysconfig VALUE but leaves that cached descriptor carrying the pre-change
+   * widgetSize/field-set, so the quick-input layout ignores the new value. In
+   * production the sysconfig is set by migration before any descriptor is built, so
+   * this only matters for tests that flip such a sysconfig at runtime.
+   */
+  resetWebApiCaches: async () =>
+    await test.step('Backend: reset ALL webapi caches', async () => {
+      const page = getPage();
+      const response = await page.request.get(`${WEBAPI_BASE_URL}/cache/reset`);
+      if (!response.ok()) {
+        throw new Error(
+          `Failed to reset webapi caches: HTTP ${response.status()} ${response.statusText()}`
+        );
+      }
+    }),
+
+  /**
    * Validate expectations against created master data.
    * @param {Object} expectations - Expected state to validate
    * @returns {Promise<Object>} Response body with validation results

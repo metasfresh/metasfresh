@@ -88,7 +88,19 @@ async function createMasterdata(
     request.sysconfigs = sysconfigs;
   }
 
-  return await Backend.createMasterdata({ request });
+  const masterdata = await Backend.createMasterdata({ request });
+
+  // A runtime sysconfig change here can feed the order-line quick-input descriptor,
+  // which is cached (QuickInputDescriptors CCache) and is NOT invalidated by the
+  // AD_SysConfig reset createMasterdata already did. Force a global webapi cache
+  // reset so the next descriptor build (when the batch-entry panel opens) reads the
+  // just-committed sysconfigs, and so the cached descriptor does not leak between
+  // the widget-size cases.
+  if (sysconfigs) {
+    await Backend.resetWebApiCaches();
+  }
+
+  return masterdata;
 }
 
 /**
