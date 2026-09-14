@@ -72,6 +72,28 @@ class ListWidget extends Component {
         }
       }
     }
+
+    // A new document in an already-mounted window neither remounts this widget nor changes
+    // the `autoFocus` prop, so the edge above never fires again and the first field of the new
+    // document stays unfocused. Moving on to another field makes it worse: blurring turns the
+    // widget's own `autoFocus` state off for good. So on a document change realign that state
+    // with the prop and run the same focus branch - unless the widget already holds the focus,
+    // where there is nothing to move.
+    //
+    // A sub-list of a composed lookup (`lookupList`) is excluded: there the parent decides
+    // which of its sub-fields is in turn, and React updates this child before the parent, so
+    // acting here would focus the sub-field the PREVIOUS document had advanced to.
+    if (
+      prevProps.dataId !== this.props.dataId &&
+      this.props.autoFocus &&
+      !this.props.lookupList &&
+      !isToggled &&
+      !this.state.listFocused
+    ) {
+      this.setState({ autoFocus: true });
+      this.handleFocus();
+      !doNotOpenOnFocus && list.length > 1 && this.activate();
+    }
   }
 
   requestListDataIfNotLoaded = (autoSelectIfSingleOption = null) => {
