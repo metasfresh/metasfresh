@@ -92,13 +92,12 @@ async function createMasterdata(
 
   // A runtime sysconfig change here can feed the order-line quick-input descriptor,
   // which is cached (QuickInputDescriptors CCache) and is NOT invalidated by the
-  // AD_SysConfig reset createMasterdata already did. Force a global webapi cache
-  // reset so the next descriptor build (when the batch-entry panel opens) reads the
-  // just-committed sysconfigs, and so the cached descriptor does not leak between
-  // the widget-size cases.
-  if (sysconfigs) {
-    await Backend.resetWebApiCaches();
-  }
+  // AD_SysConfig reset createMasterdata already did. The full webapi cache reset
+  // for that descriptor is done in setupOrderWithBatchEntry (resetWebApiCaches
+  // option), AFTER login — Backend.resetWebApiCaches() hits GET /cache/reset,
+  // which requires an authenticated webapi session (userSession.assertLoggedIn());
+  // at this point in the flow the page hasn't logged in yet, so calling it here
+  // deterministically 401s. See setupOrderWithBatchEntry.
 
   return masterdata;
 }
@@ -107,10 +106,24 @@ async function createMasterdata(
  * Login → Create Sales Order → Select Customer → Go to Order Line tab → Open batch entry.
  * Returns { recordId, batchEntryButton }.
  */
-async function setupOrderWithBatchEntry(page, masterdata, language) {
+async function setupOrderWithBatchEntry(
+  page,
+  masterdata,
+  language,
+  { resetWebApiCaches = false } = {}
+) {
   await LoginPage.goto();
   await LoginPage.login(masterdata.login.user);
   await DashboardPage.expectVisible();
+
+  // Must run AFTER login (GET /cache/reset requires an authenticated webapi
+  // session) and BEFORE the batch-entry panel is opened below (so the
+  // QuickInputDescriptors CCache is rebuilt from the just-committed sysconfigs
+  // rather than serving a stale cached descriptor). See createMasterdata's
+  // comment for why this can't run at masterdata-creation time.
+  if (resetWebApiCaches) {
+    await Backend.resetWebApiCaches();
+  }
 
   await SalesOrderPage.goto();
   await SalesOrderPage.clickNew();
@@ -1008,7 +1021,9 @@ No regression to the default layout when the new sysconfig is not set.
         'application/json'
       );
 
-      await setupOrderWithBatchEntry(page, masterdata, language);
+      await setupOrderWithBatchEntry(page, masterdata, language, {
+        resetWebApiCaches: true,
+      });
 
       const productGroup = page.locator('.quick-input-container .form-group', {
         has: page.locator('#lookup_M_Product_ID'),
@@ -1072,7 +1087,9 @@ The order-line quick-input Produkt field can be widened via SysConfig
         'application/json'
       );
 
-      await setupOrderWithBatchEntry(page, masterdata, language);
+      await setupOrderWithBatchEntry(page, masterdata, language, {
+        resetWebApiCaches: true,
+      });
 
       const productGroup = page.locator('.quick-input-container .form-group', {
         has: page.locator('#lookup_M_Product_ID'),
