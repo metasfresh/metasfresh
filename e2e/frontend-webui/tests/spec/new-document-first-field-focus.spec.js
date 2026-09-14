@@ -40,6 +40,17 @@ import {
 //      exactly that at `tests/utils/pages/SalesOrderPage.js:47`) right before
 //      the "New" under test — the click itself moves `document.activeElement`
 //      to BODY, i.e. it manufactures the very state the scenario detects.
+//
+// KNOWN GAP: every scenario here reaches an existing document either by a fresh
+// page load or by creating one. Reconciling into an ALREADY-FILLED document
+// without a reload is reachable only through browser Back, and that path was
+// measured to oscillate between the two documents (the rendered document and
+// the URL disagree, and the outcome moves with timing), so no stable scenario
+// can be built on it. That situation is therefore constrained structurally
+// rather than by a test: each widget repeats exactly its own mount-time rule on
+// a document change — the lookup only for a first field the arriving document
+// leaves empty, the dropdown and the text widget unconditionally, which is what
+// each of them does when it mounts onto such a document.
 // =========================================================================
 
 /** The Sales Order window's first focusable element (verified against the running stack). */
@@ -210,12 +221,11 @@ async function expectNotFocused(page, selector) {
   ).toBe(false);
 }
 
-/** A login-only fixture — for scenarios that need no business data. */
-const createLoginFixture = async () =>
-  Backend.createMasterdata({ request: { login: { user: { language: 'en_US' } } } });
-
-/** Customer + priced product — the minimum an order needs to be completable. */
-const createOrderFixture = async () =>
+/**
+ * The one fixture of this spec: a customer and a priced product, the minimum an order needs to
+ * be completable. Scenarios that only navigate use the login it returns.
+ */
+const createFixture = async () =>
   Backend.createMasterdata({
     request: {
       login: { user: { language: 'en_US' } },
@@ -254,7 +264,7 @@ Baseline the fix must preserve: the mount path already works. Without it, a fix 
 re-arms focus on a document change could silently break the first mount.
     `);
 
-    const masterdata = await createLoginFixture();
+    const masterdata = await createFixture();
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
 
@@ -278,7 +288,7 @@ The reported flow: New -> customer -> line -> complete -> New. From the second o
 a mount onward, nothing was focused.
     `);
 
-    const masterdata = await createOrderFixture();
+    const masterdata = await createFixture();
     const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
     const product = masterdata.products.PROD.productName;
 
@@ -324,7 +334,7 @@ first-field widget has already auto-focused once in this mount. Without this sce
 could be built around the completed / read-only state and leave the real trigger open.
     `);
 
-    const masterdata = await createOrderFixture();
+    const masterdata = await createFixture();
     const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
 
     await LoginPage.goto();
@@ -362,7 +372,7 @@ EMPTY sub-field of the composed lookup (the contact), never the filled one — a
 that follows must still focus the Auftraggeber.
     `);
 
-    const masterdata = await createOrderFixture();
+    const masterdata = await createFixture();
     const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
 
     await LoginPage.goto();
@@ -402,7 +412,7 @@ The failure is not lookup-specific: a dropdown widget reaches it by a different 
 Lookup-only fix would leave every dropdown-first window broken.
     `);
 
-    const masterdata = await createLoginFixture();
+    const masterdata = await createFixture();
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
 
@@ -435,7 +445,7 @@ Guards the regression the fix itself could introduce: it must key on document ID
 the caret where they put it.
     `);
 
-    const masterdata = await createOrderFixture();
+    const masterdata = await createFixture();
     const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
 
     await LoginPage.goto();
@@ -482,7 +492,7 @@ focus on every document switch regardless of what the previous document held. Wi
 covering the lookup and the dropdown would leave every text-first window broken.
     `);
 
-    const masterdata = await createLoginFixture();
+    const masterdata = await createFixture();
     await LoginPage.goto();
     await LoginPage.login(masterdata.login.user);
 
@@ -512,7 +522,7 @@ same document id as the header, and the panel stays open across a header "New". 
 therefore see the same document change, and only the header's may take the focus.
     `);
 
-    const masterdata = await createOrderFixture();
+    const masterdata = await createFixture();
     const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
 
     await LoginPage.goto();

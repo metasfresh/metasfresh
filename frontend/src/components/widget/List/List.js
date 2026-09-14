@@ -87,7 +87,6 @@ class ListWidget extends Component {
       prevProps.dataId !== this.props.dataId &&
       this.props.autoFocus &&
       !this.props.lookupList &&
-      !isToggled &&
       !this.state.listFocused
     ) {
       this.setState({ autoFocus: true });
