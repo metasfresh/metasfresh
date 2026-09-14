@@ -1004,8 +1004,13 @@ No regression to the default layout when the new sysconfig is not set.
       await expect(productGroup).toBeVisible();
       await expect(productGroup).not.toHaveClass(/widgetSize-L/);
 
+      const fontPx = await productGroup.evaluate((el) =>
+        parseFloat(getComputedStyle(el).fontSize)
+      );
       const box = await productGroup.boundingBox();
-      expect(box.width).toBeLessThan(360); // ~20em default, below the 30em L floor
+      // Default Lookup is capped at 20em; assert below the 30em widgetSize-L floor.
+      // Font-size-relative so it holds regardless of the app's base font size.
+      expect(box.width).toBeLessThan(25 * fontPx);
 
       console.log(
         `[${language}] Produkt field default width: ${box.width}px`
@@ -1063,8 +1068,13 @@ The order-line quick-input Produkt field can be widened via SysConfig
       await expect(productGroup).toBeVisible();
       await expect(productGroup).toHaveClass(/widgetSize-L/);
 
+      const fontPx = await productGroup.evaluate((el) =>
+        parseFloat(getComputedStyle(el).fontSize)
+      );
       const box = await productGroup.boundingBox();
-      expect(box.width).toBeGreaterThanOrEqual(460); // >= ~30em widgetSize-L min-width
+      // widgetSize-L sets min-width:30em; assert >= ~30em, font-size-relative so it
+      // holds regardless of the app's base font size (and materially wider than TC1's <25em).
+      expect(box.width).toBeGreaterThanOrEqual(29 * fontPx);
 
       console.log(
         `[${language}] Produkt field widened width: ${box.width}px`
