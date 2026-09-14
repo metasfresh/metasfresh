@@ -2,6 +2,7 @@ import { test } from "../../../../playwright.config";
 import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, BARCODE_HOOK_FLUSH_MS } from "../../common";
 import { expect } from "@playwright/test";
 import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
+import { ErrorToast } from "../../dialogs/ErrorToast";
 
 const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
@@ -159,6 +160,34 @@ export const GetQuantityDialog = {
 
     expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
         await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
+    expectQtyNotFoundReasonOffered: async ({ reason, offered = true }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' offered=${offered}`, async () => {
+        const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
+        if (offered) {
+            await expect(radioButton).toBeVisible();
+        } else {
+            await expect(radioButton).toHaveCount(0);
+        }
+    }),
+
+    /**
+     * `offered: false` on a single reason (above) passes even if only that one reason were filtered
+     * out of an otherwise-rendered group. Use this alongside it when the scenario expects the WHOLE
+     * reason group to be absent (e.g. a zero-target step, where the group only renders once
+     * `qtyRejected > 0` — `GetQuantityDialog.jsx`), so the test documents "no reasons at all" rather
+     * than "at least this one is filtered".
+     */
+    expectQtyRejectedReasonsGroupVisible: async ({ visible }) => await test.step(`${NAME} - Expect qty-rejected-reasons group visible=${visible}`, async () => {
+        const group = page.locator('#qty-rejected');
+        if (visible) {
+            await expect(group).toBeVisible();
+        } else {
+            await expect(group).toHaveCount(0);
+        }
+    }),
+
+    expectQtyNotFoundReasonCaption: async ({ reason, caption }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' caption '${caption}'`, async () => {
+        const label = page.getByTestId(`qty-reason-radio-${reason}`).locator('xpath=..');
+        await expect(label).toContainText(caption);
     }),
 
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
@@ -196,6 +225,48 @@ export const GetQuantityDialog = {
     // which keeps this qty dialog open until that follow-up is resolved.
     clickDoneExpectingFollowupDialog: async () => await test.step(`${NAME} - Press OK (expecting follow-up dialog)`, async () => {
         await page.getByTestId('done-button').tap();
+    /**
+     * Presses Done for a submit the BACKEND is expected to refuse, and asserts the refusal exactly as
+     * the mobile UI actually renders it: the error toast carrying the server message, with the dialog
+     * left open underneath (nothing was booked, so the operator stays on the step).
+     *
+     * Deliberately NOT `clickDone({ expectedError })`: that helper's own flow requires the dialog to
+     * CLOSE and then dismisses the toast via `.Toastify__close-button--error`. Neither is possible for
+     * a server-side refusal on this screen — the dialog stays mounted, and a metasfresh
+     * `AdempiereException` toast renders its full "Additional parameters: ..." dump, which on the
+     * mobile viewport is taller than the screen, so the toast's close button sits outside the viewport
+     * and `tap()` never becomes actionable ("element is outside of the viewport").
+     *
+     * The toast is therefore left standing: it covers the whole screen, so no further UI interaction
+     * is possible after this call — assert the backend state and end the test.
+     *
+     * While the toast stands, any LATER call wrapped in `common.step()` (the exported `step()`, via
+     * `runAndWatchForErrors`) throws "Unexpected error toast detected" the moment it starts watching —
+     * so callers must use plain `test.step` calls after this one, exactly as `Backend.expect` does
+     * (`screens/Backend.js`), never `step()`.
+     */
+    clickDoneExpectingBackendRefusal: async ({ expectedError }) => await test.step(`${NAME} - Press OK, expecting the backend to refuse with '${expectedError}'`, async () => {
+        await page.getByTestId('done-button').tap();
+
+        await expect(ErrorToast.locator())
+            .toContainText(expectedError, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+        // Nothing was booked, so the operator is not navigated away.
+        await expect(containerElement()).toBeVisible();
+    }),
+
+    /**
+     * Presses Done and captures the POST request body it fires (matched by a URL substring) — for
+     * asserting a wire-level field with no visible UI counterpart (e.g.
+     * `issueTo.huWeightGrossBeforeIssue` on the manufacturing issue event).
+     * @returns {Promise<object>} the parsed JSON request body.
+     */
+    clickDoneAndCaptureRequestBody: async ({ urlFragment }) => await test.step(`${NAME} - Press OK (capture request '${urlFragment}')`, async () => {
+        const [request] = await Promise.all([
+            page.waitForRequest((req) => req.url().includes(urlFragment) && req.method() === 'POST'),
+            GetQuantityDialog.clickDone(),
+        ]);
+        return request.postDataJSON();
     }),
 
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {

@@ -118,6 +118,9 @@ const translations = {
         },
       },
     },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'Die verbleibende Menge %(qty)s wird abgeschrieben und die HU geleert. Fortfahren?',
+    },
     picking: {
       PickingLine: 'Packzeile',
       PickFromManufacturingOrder: 'Produzieren',

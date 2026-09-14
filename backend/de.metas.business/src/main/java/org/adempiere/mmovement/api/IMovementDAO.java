@@ -26,15 +26,22 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.mmovement.MovementLineQuery;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
 import de.metas.inventory.InventoryId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IMovementDAO extends ISingletonService
 {
 	I_M_MovementLine getLineById(MovementLineId movementLineId);
+
+	/**
+	 * @return all active movement lines matching the query, in no particular order; a query without any filter is rejected.
+	 */
+	List<I_M_MovementLine> retrieveLinesByQuery(@NonNull MovementLineQuery query);
 
 	/**
 	 * Retrieves all {@link I_M_MovementLine}s (including inactive ones), ordered by "Line" column.

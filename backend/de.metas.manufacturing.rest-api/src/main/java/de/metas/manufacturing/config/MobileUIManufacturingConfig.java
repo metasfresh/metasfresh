@@ -46,6 +46,8 @@ public class MobileUIManufacturingConfig
 		}
 		return result.build();
 	}
+	@NonNull @Builder.Default OptionalBoolean isAllowEmptyingHUs = OptionalBoolean.UNKNOWN;
+	@NonNull @Builder.Default OptionalBoolean isConfirmEmptyingHU = OptionalBoolean.UNKNOWN;
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
 	{
@@ -55,6 +57,8 @@ public class MobileUIManufacturingConfig
 				.receiveUnitType(this.receiveUnitType != null ? this.receiveUnitType : other.receiveUnitType)
 				.isBestBeforeDateEditable(this.isBestBeforeDateEditable.ifUnknown(other.isBestBeforeDateEditable))
 				.isLotNumberEditable(this.isLotNumberEditable.ifUnknown(other.isLotNumberEditable))
+				.isAllowEmptyingHUs(this.isAllowEmptyingHUs.ifUnknown(other.isAllowEmptyingHUs))
+				.isConfirmEmptyingHU(this.isConfirmEmptyingHU.ifUnknown(other.isConfirmEmptyingHU))
 				.build();
 		if (result.equals(this))
 		{

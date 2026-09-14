@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.warehouse;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -27,11 +28,28 @@ public class JsonWarehouseRequest
 	 */
 	@Nullable String pickingGroup;
 
+	/**
+	 * Packing material emptied/issued in THIS warehouse is moved to {@link Empties#getToWarehouse()}: adds a line
+	 * (this warehouse -> {@code toWarehouse}, {@link Empties#getShipper()}) to the client's single empties
+	 * distribution network ({@code DD_NetworkDistribution.IsHUDestroyed}), creating that network if the client has
+	 * none. Applied after {@code shippers} and all {@code warehouses}.
+	 */
+	@Nullable Empties empties;
+
 	//
 	//
 	//
 	//
 	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Empties
+	{
+		@NonNull Identifier toWarehouse;
+		@NonNull Identifier shipper;
+	}
 
 	@Value
 	@Builder
