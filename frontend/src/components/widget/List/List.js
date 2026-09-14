@@ -78,7 +78,8 @@ export class ListWidget extends Component {
     // `autoFocus` state off. Realign it with the prop and focus again - but only for a document
     // in a window, and not for a quick-input row (the header's first field is the one that must
     // get the focus) nor a composed lookup's sub-list (its parent decides which sub-field is in
-    // turn, and React updates this child first).
+    // turn, and React updates this child first). Nor while this list already holds the focus:
+    // focusing it again would also reopen its dropdown, under a user who is working in it.
     //
     // `entity`, not `isModal`: `WidgetRenderer` never forwards `isModal` to this widget, so an
     // `isModal` check here would silently never fire.
