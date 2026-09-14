@@ -106,6 +106,7 @@ pull_request_rules:
               - base=rogue_spacewalk_hotfix
               - base=taloned_owl_hotfix
               - base=organic_goat_hotfix
+              - base=flaming_merlin_hotfix
               - base=green_oak_hotfix
               - base=mighty_pegasus_hotfix
               - base=task_force_hotfix
@@ -143,6 +144,7 @@ pull_request_rules:
               - base=rogue_spacewalk_release
               - base=taloned_owl_release
               - base=organic_goat_release
+              - base=flaming_merlin_release
               - base=green_oak_release
               - base=mighty_pegasus_release
               - base=task_force_release
