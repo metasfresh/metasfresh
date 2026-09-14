@@ -26,6 +26,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.CoProductFixedCostPrices;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -80,16 +81,16 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
 			currentCost = utils.getCurrentCostForUpdate(request);
-			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
+			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts, false);
 		}
 		else if (costCollectorType.isCoOrByProductReceipt())
 		{
 			// CO/BY product quantities are negative, so we are negating them here to get a positive "received" qty
 			final CostDetailCreateRequest requestEffective = request.withQty(request.getQty().negate());
-			
+
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
 			currentCost = utils.getCurrentCostForUpdate(requestEffective);
-			result = createMainProductOrCoProductReceipt(requestEffective, currentCost, orderCosts);
+			result = createMainProductOrCoProductReceipt(requestEffective, currentCost, orderCosts, true);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
@@ -150,16 +151,19 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 	private CostDetailCreateResult createMainProductOrCoProductReceipt(
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCost,
-			@NonNull final PPOrderCosts orderCosts)
+			@NonNull final PPOrderCosts orderCosts,
+			final boolean coProductReceipt)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
 
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
 		{
-			// Value the receipt at the product's CURRENT M_Cost, not the frozen BOM-rollup price.
-			// Any make-vs-average delta is intentionally left in WIP (not forced to zero).
-			final CostPrice price = currentCost.getCostPrice();
+			// Value the receipt at the product's CURRENT M_Cost, not the frozen BOM-rollup price - EXCEPT a
+			// co-product whose product carries a manual CoProductFixedCostPrice, which is booked at that fixed
+			// price (shared with the post-calc relief via CoProductFixedCostPrices so both legs produce the
+			// identical co-product amount). Any make-vs-average delta is intentionally left in WIP (not forced to zero).
+			final CostPrice price = getReceiptPrice(currentCost, costSegmentAndElement, coProductReceipt);
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
@@ -188,6 +192,30 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 				utils.getQuantityUOMConverter());
 
 		return result;
+	}
+
+	/**
+	 * The price a receipt is valued at: a co-product whose product carries a manual {@code CoProductFixedCostPrice}
+	 * is valued at that fixed price - shared with the post-calc relief through {@link CoProductFixedCostPrices} so
+	 * leg A (post-calc amount) and leg B (this receipt valuation) book the identical co-product amount and cost is
+	 * conserved. A main-product receipt, or a co-product with a blank fixed price, keeps the product's live current cost.
+	 */
+	private CostPrice getReceiptPrice(
+			@NonNull final CurrentCost currentCost,
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			final boolean coProductReceipt)
+	{
+		final CostPrice currentCostPrice = currentCost.getCostPrice();
+		if (!coProductReceipt)
+		{
+			return currentCostPrice;
+		}
+
+		return CoProductFixedCostPrices.getFixedCostPrice(productDAO, costSegmentAndElement.getProductId())
+				.map(fixedCostPrice -> CostPrice.ownCostPrice(
+						CostAmount.of(fixedCostPrice, currentCostPrice.getCurrencyId()),
+						currentCostPrice.getUomId()))
+				.orElse(currentCostPrice);
 	}
 
 	private CostDetailCreateResult createComponentIssue(
