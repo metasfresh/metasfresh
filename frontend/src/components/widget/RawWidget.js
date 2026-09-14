@@ -11,6 +11,16 @@ import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
 import PropTypes from 'prop-types';
 
+/**
+ * Widget types that carry their own document-change focus rule, in `Lookup`/`RawLookup` and
+ * `List` respectively. `WidgetRenderer` routes exactly these three to those components.
+ */
+const WIDGETS_THAT_REPEAT_THEIR_OWN_FOCUS = [
+  'Lookup',
+  'List',
+  'MultiListValue',
+];
+
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
     return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
@@ -87,10 +97,19 @@ export class RawWidget extends PureComponent {
     // `dataId` with an unconditional `autoFocus`, and never in a quick-input row, whose first
     // field carries a permanently-set `autoFocus` of its own while the field that must get the
     // focus on a new document is the header's.
+    //
+    // Lookups and dropdowns are left to themselves: each repeats its own mount-time rule under
+    // its own conditions (the lookup, for one, only for a first field the arriving document
+    // leaves empty). Going through this widget's ref would call their `focus()` directly and
+    // bypass those conditions - and for a composed lookup the ref does not even reliably point
+    // at the primary sub-field, since a List sub-field takes it unconditionally
+    // (`Lookup.js` `renderSingleLookupPart_List`) while a RawLookup sub-field takes it only when
+    // it is the primary one.
     if (
       this.props.autoFocus &&
       !this.props.isModal &&
       this.props.subentity !== 'quickInput' &&
+      !WIDGETS_THAT_REPEAT_THEIR_OWN_FOCUS.includes(this.props.widgetType) &&
       prevProps.dataId !== this.props.dataId &&
       !this.state.isFocused
     ) {

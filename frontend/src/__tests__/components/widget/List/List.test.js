@@ -66,6 +66,16 @@ describe('ListWidget component', () => {
     expect(focusSpy).not.toHaveBeenCalled();
   });
 
+  it('does not take the focus back when it already holds it', () => {
+    const wrapper = shallow(<ListWidget {...createDummyProps({ autoFocus: true })} />);
+    wrapper.setState({ autoFocus: false, listFocused: true });
+    const focusSpy = jest.spyOn(wrapper.instance(), 'handleFocus');
+
+    wrapper.setProps({ dataId: '1000002' });
+
+    expect(focusSpy).not.toHaveBeenCalled();
+  });
+
   it('does not focus on a document change in a quick-input row', () => {
     // The quick-input row is the same window and the same document, and its first field carries a
     // permanently-set autoFocus - but the field that must get the focus is the header's.
