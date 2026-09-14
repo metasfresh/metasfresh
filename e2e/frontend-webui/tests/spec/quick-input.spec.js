@@ -41,7 +41,7 @@ import { waitForTabAllowsNew, getTabRows, waitForRecordSaved } from '../utils/We
  */
 async function createMasterdata(
   language,
-  { twoProducts = false, withPackingInstruction = false } = {}
+  { twoProducts = false, withPackingInstruction = false, sysconfigs = undefined } = {}
 ) {
   const products = {
     Product1: {
@@ -82,6 +82,10 @@ async function createMasterdata(
     request.packingInstructions = {
       PI: { tu: 'TU', product: 'Product1', qtyCUsPerTU: 4 },
     };
+  }
+
+  if (sysconfigs) {
+    request.sysconfigs = sysconfigs;
   }
 
   return await Backend.createMasterdata({ request });
@@ -946,6 +950,124 @@ must remain true — behavior must be identical to before the change.
 
       console.log(
         `[${language}] BPartner field value: "${bpartnerValue}"`
+      );
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 10 (TC1): Produkt field keeps its default width when
+    // webui.quickinput.ProductFieldWidgetSize is unset.
+    //
+    // Precondition (load-bearing): packing instructions must be OFF, else
+    // the Produkt field renders as a Composed widget (not a single-field
+    // widgetType-Lookup) and widgetSize-L never applies to it. The e2e
+    // seed DB defaults packing instructions ON, so this must be disabled
+    // explicitly via the sysconfigs map.
+    // ------------------------------------------------------------------
+    test(`quick-input Produkt field keeps default width when ProductFieldWidgetSize is unset (${label})`, async ({
+      page,
+    }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00100: Sales Order');
+      allure.tag('F00100');
+      allure.story('Quick Input: Produkt field default width');
+      allure.severity('normal');
+      allure.parameter('Language', language);
+      allure.tag(language);
+
+      allure.description(`
+## F00100: Sales Order — Produkt quick-input default width
+
+### Test Scenario
+Validates that the Produkt field in the quick input (batch entry) keeps
+its default width when webui.quickinput.ProductFieldWidgetSize is unset.
+
+### Business Value
+No regression to the default layout when the new sysconfig is not set.
+      `);
+
+      test.setTimeout(120000);
+
+      const masterdata = await createMasterdata(language, {
+        sysconfigs: { 'webui.quickinput.EnablePackingInstructionsField': 'N' },
+      });
+      allure.attachment(
+        'Test Data',
+        JSON.stringify(masterdata, null, 2),
+        'application/json'
+      );
+
+      await setupOrderWithBatchEntry(page, masterdata, language);
+
+      const productGroup = page.locator('.quick-input-container .form-group', {
+        has: page.locator('#lookup_M_Product_ID'),
+      });
+      await expect(productGroup).toBeVisible();
+      await expect(productGroup).not.toHaveClass(/widgetSize-L/);
+
+      const box = await productGroup.boundingBox();
+      expect(box.width).toBeLessThan(360); // ~20em default, below the 30em L floor
+
+      console.log(
+        `[${language}] Produkt field default width: ${box.width}px`
+      );
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 11 (TC2): Produkt field is wider when
+    // webui.quickinput.ProductFieldWidgetSize=L. Same packing-instructions
+    // precondition as TEST 10 (see comment above).
+    // ------------------------------------------------------------------
+    test(`quick-input Produkt field is wider when ProductFieldWidgetSize=L (${label})`, async ({
+      page,
+    }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00100: Sales Order');
+      allure.tag('F00100');
+      allure.story('Quick Input: Produkt field widened via ProductFieldWidgetSize=L');
+      allure.severity('normal');
+      allure.parameter('Language', language);
+      allure.tag(language);
+
+      allure.description(`
+## F00100: Sales Order — Produkt quick-input widened width
+
+### Test Scenario
+Validates that the Produkt field in the quick input (batch entry) is
+rendered wider when webui.quickinput.ProductFieldWidgetSize=L, carrying
+a widgetSize-L class on its form-group.
+
+### Business Value
+The order-line quick-input Produkt field can be widened via SysConfig
+(gh31653), improving legibility of long product names/codes.
+      `);
+
+      test.setTimeout(120000);
+
+      const masterdata = await createMasterdata(language, {
+        sysconfigs: {
+          'webui.quickinput.EnablePackingInstructionsField': 'N',
+          'webui.quickinput.ProductFieldWidgetSize': 'L',
+        },
+      });
+      allure.attachment(
+        'Test Data',
+        JSON.stringify(masterdata, null, 2),
+        'application/json'
+      );
+
+      await setupOrderWithBatchEntry(page, masterdata, language);
+
+      const productGroup = page.locator('.quick-input-container .form-group', {
+        has: page.locator('#lookup_M_Product_ID'),
+      });
+      await expect(productGroup).toBeVisible();
+      await expect(productGroup).toHaveClass(/widgetSize-L/);
+
+      const box = await productGroup.boundingBox();
+      expect(box.width).toBeGreaterThanOrEqual(460); // >= ~30em widgetSize-L min-width
+
+      console.log(
+        `[${language}] Produkt field widened width: ${box.width}px`
       );
     });
   });
