@@ -11,7 +11,7 @@ import {
 import { getViewAttributeDropdown } from '../../../api';
 import RawList from './RawList';
 
-class ListWidget extends Component {
+export class ListWidget extends Component {
   previousValue = '';
 
   constructor(props) {
@@ -80,9 +80,15 @@ class ListWidget extends Component {
     // with the prop and run the same focus branch - unless the widget already holds the focus,
     // where there is nothing to move.
     //
-    // Modals are excluded, as the requirements ask, and for the same reason the edge branch
-    // above excludes them: a process parameter panel hands this widget a pinstance id in
-    // `dataId`, which is not a document change.
+    // Only for a document in a window, which is what a `dataId` change means here. The other
+    // callers that pass a changing `dataId` with `autoFocus` set are a process parameter panel,
+    // the barcode overlay and the attributes dropdown, and none of those is a document change.
+    //
+    // `entity` is the discriminator rather than `isModal` because `WidgetRenderer` does not
+    // forward `isModal` to this widget at all (it does for the sibling Lookup case), so an
+    // `isModal` check here would silently never fire. Repairing that omission would also revive
+    // the widget's other, long-dead `!isModal` guard in `UNSAFE_componentWillReceiveProps` and
+    // change modal behaviour this issue does not cover.
     //
     // A sub-list of a composed lookup (`lookupList`) is excluded: there the parent decides
     // which of its sub-fields is in turn, and React updates this child before the parent, so
@@ -90,7 +96,7 @@ class ListWidget extends Component {
     if (
       prevProps.dataId !== this.props.dataId &&
       this.props.autoFocus &&
-      !this.props.isModal &&
+      this.props.entity === 'window' &&
       !this.props.lookupList &&
       !this.state.listFocused
     ) {
