@@ -193,6 +193,7 @@ public class M_InOut_StepDef
 	 * <b>C_BPartner_ID</b> — (required, identifier-ref) expected business partner<br>
 	 * <b>C_BPartner_Location_ID</b> — (required, identifier-ref) expected BP location<br>
 	 * <b>DateOrdered</b> — (required) expected date, e.g., "2022-05-17"<br>
+	 * <b>MovementDate</b> — (optional) expected movement date, e.g., "2022-05-17"<br>
 	 * <b>processed</b> — (required) true/false<br>
 	 * <b>DocStatus</b> — (required) expected doc status: DR, IP, CO, VO, RE, CL<br>
 	 * <b>POReference</b> — (optional) expected PO reference<br>
@@ -231,6 +232,9 @@ public class M_InOut_StepDef
 
 		row.getAsOptionalLocalDate(I_M_InOut.COLUMNNAME_DateOrdered)
 				.ifPresent(dateOrdered -> softly.assertThat(TimeUtil.asLocalDate(inout.getDateOrdered())).isEqualTo(dateOrdered));
+
+		row.getAsOptionalLocalDate(I_M_InOut.COLUMNNAME_MovementDate)
+				.ifPresent(movementDate -> softly.assertThat(TimeUtil.asLocalDate(inout.getMovementDate())).isEqualTo(movementDate));
 
 		row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
 				.filter(Check::isNotBlank)
