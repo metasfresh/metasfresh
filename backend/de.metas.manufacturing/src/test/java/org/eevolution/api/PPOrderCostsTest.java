@@ -16,17 +16,23 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.AbstractBigDecimalAssert;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -128,6 +134,149 @@ public class PPOrderCostsTest
 		this.assertThatPostCalculationAmt(orderCosts, productId3).isEqualByComparingTo(new BigDecimal("20"));
 		this.assertThatPostCalculationAmt(orderCosts, productId4).isEqualByComparingTo(new BigDecimal("10"));
 		this.assertThatPostCalculationAmt(orderCosts, productId5).isEqualByComparingTo(new BigDecimal("0"));
+	}
+
+	/**
+	 * A co-product whose product carries a manual {@code CoProductFixedCostPrice} must be valued at
+	 * {@code fixedPrice x co_qty} (relieving the main product by the remainder, cost conserved), replacing the
+	 * qty-derived {@code coProductCostDistributionPercent} path. Customer case: 450 CHF pool, Randstücke 6 kg
+	 * fixed at 8 CHF/kg -> co-product 48, main 402, Sigma = 450.
+	 */
+	@Test
+	public void testFixedPrice_reliefAndConservation()
+	{
+		final ProductId mainProductId = createProduct("blocks_main", null);
+		final ProductId issueProductId = createProduct("input_milk", null);
+		final ProductId coProductId = createProduct("Randstuecke", new BigDecimal("8"));
+
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(20))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.build();
+
+		orderCosts.updatePostCalculationAmounts(costingPrecision);
+
+		// co-product valued at fixedPrice(8) * co_qty(6) = 48, NOT the 20%-distribution (= 450 * 20% = 90)
+		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("48"));
+		// main relieved by the remainder 450 - 48 = 402
+		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("402"));
+		// cost conserved: Sigma(outputs) = totalInbound
+		final BigDecimal sumOutputs = getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal()
+				.add(getPostCalculationCostAmt(orderCosts, coProductId).toBigDecimal());
+		assertThat(sumOutputs).isEqualByComparingTo(new BigDecimal("450"));
+	}
+
+	/**
+	 * The guard: when {@code Sigma(CoProductFixedCostPrice x co_qty)} would exceed the total input cost pool (so the
+	 * main product would be driven negative), costing must throw an {@link AdempiereException} naming the offending
+	 * product and both amounts, and must NOT persist a negative main-product amount. Here 80 * 6 = 480 > 450.
+	 */
+	@Test
+	public void testFixedPrice_guardThrowsWhenMainNegative()
+	{
+		final ProductId mainProductId = createProduct("blocks_main", null);
+		final ProductId issueProductId = createProduct("input_milk", null);
+		final ProductId coProductId = createProduct("Randstuecke", new BigDecimal("80"));
+
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(20))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.build();
+
+		// fixedPrice(80) * co_qty(6) = 480 > totalInbound 450 -> main would go negative -> guard must reject
+		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Randstuecke")
+				.hasMessageContaining("480")
+				.hasMessageContaining("450");
+
+		// the guard must reject BEFORE persisting a negative main-product amount
+		assertThat(getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal())
+				.isGreaterThanOrEqualTo(BigDecimal.ZERO);
+	}
+
+	/**
+	 * AC6 no-regression: a BLANK {@code CoProductFixedCostPrice} leaves today's behaviour intact - the co-product
+	 * is still valued by {@code coProductCostDistributionPercent} (450 * 20% = 90), main = 360, no throw.
+	 * This test passes today and must keep passing after the fixed-price relief is implemented.
+	 */
+	@Test
+	public void testBlankFixedPrice_unchanged()
+	{
+		final ProductId mainProductId = createProduct("blocks_main", null);
+		final ProductId issueProductId = createProduct("input_milk", null);
+		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK fixed price
+
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(20))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.build();
+
+		orderCosts.updatePostCalculationAmounts(costingPrecision);
+
+		// blank fixed price -> unchanged 20%-distribution: co = 450 * 20% = 90, main = 360 (AC6 no-regression)
+		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
+		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("360"));
+		final BigDecimal sumOutputs = getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal()
+				.add(getPostCalculationCostAmt(orderCosts, coProductId).toBigDecimal());
+		assertThat(sumOutputs).isEqualByComparingTo(new BigDecimal("450"));
 	}
 
 	@Test
@@ -274,6 +423,21 @@ public class PPOrderCostsTest
 				.accumulatedQty(Quantity.of(new BigDecimal(accumulatedQty), uom))
 				.accumulatedAmount(CostAmount.of(new BigDecimal(accumulatedAmount), currencyId))
 				.build();
+	}
+
+	/**
+	 * Creates a real {@code M_Product} record (so the fixed-price relief can read it live via the product's id) and
+	 * returns its {@link ProductId}. Pass a non-null {@code coProductFixedCostPrice} to set the manual field.
+	 */
+	private ProductId createProduct(@NonNull final String name, @Nullable final BigDecimal coProductFixedCostPrice)
+	{
+		final I_M_Product product = BusinessTestHelper.createProduct(name, uom);
+		if (coProductFixedCostPrice != null)
+		{
+			product.setCoProductFixedCostPrice(coProductFixedCostPrice);
+			InterfaceWrapperHelper.save(product);
+		}
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
 	private CostSegmentAndElement costSegmentAndElement(@NonNull final ProductId productId)
