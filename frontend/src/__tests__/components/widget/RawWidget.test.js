@@ -34,6 +34,53 @@ const createDummyProps = function(props) {
 
 describe('RawWidget component', () => {
   describe('generic tests using LongText widget:', () => {
+    // A first field focuses when it mounts, but a new document in an already-mounted window
+    // reconciles the widget instead of remounting it. These pin when that focus is repeated.
+    const mountWithFocusMovedOn = (extra) => {
+      const props = createDummyProps({
+        ...fixtures.longText.layout1,
+        widgetData: [{ ...fixtures.longText.data1 }],
+        autoFocus: true,
+        dataId: '1000001',
+        ...extra,
+      });
+
+      const wrapper = mount(<RawWidget {...props} />);
+      // The clerk has moved on to another field, so this widget no longer holds the focus.
+      wrapper.setState({ isFocused: false });
+      const focusSpy = jest.spyOn(wrapper.instance(), 'focus');
+
+      return { wrapper, focusSpy };
+    };
+
+    it('focuses the first field again when the document changes', () => {
+      const { wrapper, focusSpy } = mountWithFocusMovedOn();
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).toHaveBeenCalled();
+    });
+
+    it('does not focus the first field on a document change in a quick-input row', () => {
+      // Same window and same document as the header, but the field that must get the focus on a
+      // new document is the header's, not the quick-input row's.
+      const { wrapper, focusSpy } = mountWithFocusMovedOn({ subentity: 'quickInput' });
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not focus the first field on a document change inside a modal', () => {
+      // A process parameter panel and the barcode overlay pass a pinstance id as `dataId` with an
+      // unconditional autoFocus; that is not a document change.
+      const { wrapper, focusSpy } = mountWithFocusMovedOn({ isModal: true });
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
     it('renders widget without errors', () => {
       const props = createDummyProps(
         {
