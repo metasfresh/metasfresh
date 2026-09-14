@@ -117,6 +117,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IUOMDAO uomdao = Services.get(IUOMDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 	//
 	// Params
@@ -307,7 +308,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			// make sure the M_AttributeSetInstance of the new line also contains the QualityNotice attribute
 			addQualityToASI(receiptLineWithIssues, receiptLineCandidate);
 
-			InterfaceWrapperHelper.save(receiptLineWithIssues);
+			huInOutBL.save(receiptLineWithIssues);
 			receiptLines.add(receiptLineWithIssues);
 		}
 
@@ -321,12 +322,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final I_M_InOutLine receiptLineWithIssues,
 			final HUReceiptLineCandidate receiptLineCandidate)
 	{
-		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
-
 		final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 		final IAttributeSetInstanceAware asiAware = attributeSetInstanceAwareFactoryService.createOrNull(receiptLineWithIssues);
 
-		final I_M_AttributeSetInstance asi = Services.get(IAttributeSetInstanceBL.class).getCreateASI(asiAware);
+		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.getCreateASI(asiAware);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptLineWithIssues);
 		final String trxName = InterfaceWrapperHelper.getTrxName(receiptLineWithIssues);
@@ -339,7 +338,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-		I_M_AttributeInstance ai = asiBL.getAttributeInstance(asiId, qualityNoteAttributeId);
+		I_M_AttributeInstance ai = attributeSetInstanceBL.getAttributeInstance(asiId, qualityNoteAttributeId);
 
 		if (ai == null)
 		{
@@ -347,7 +346,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			// + "\n ASI=" + asi
 			// + "\n Attribute=" + huTrxAttribute.getM_Attribute());
 
-			ai = asiBL.createNewAttributeInstance(ctx, asi, qualityNoteAttributeId, trxName);
+			ai = attributeSetInstanceBL.createNewAttributeInstance(ctx, asi, qualityNoteAttributeId, trxName);
 		}
 
 		final I_M_QualityNote qualityNote = receiptLineCandidate.get_qualityNote();
@@ -358,7 +357,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			ai.setValue(qualityNote.getValue());
 
 			// save the attribute instance
-			InterfaceWrapperHelper.save(ai);
+			attributeSetInstanceBL.save(ai);
 		}
 
 		// set the asi to the receipt line
@@ -386,7 +385,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		// Set the Snapshot_UUID to current receipt (for later recall and reporting).
 		final I_M_InOut receipt = getCurrentReceipt(I_M_InOut.class);
 		receipt.setSnapshot_UUID(huSnapshotProducer.getSnapshotId());
-		InterfaceWrapperHelper.save(receipt);
+		huInOutBL.save(receipt);
 	}
 
 	/**
@@ -432,7 +431,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 					.map(source -> ((InOutLineHUPackingMaterialCollectorSource)source).getM_InOutLine())
 					.forEach(sourceReceiptLine -> {
 						sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
-						InterfaceWrapperHelper.save(sourceReceiptLine);
+						huInOutBL.save(sourceReceiptLine);
 					});
 
 			receiptLines.add(packagingReceiptLine);
@@ -459,7 +458,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(newReceiptLine(), I_M_InOutLine.class);
 		huInOutBL.updatePackingMaterialInOutLine(receiptLine, candidate);
 		receiptLine.setC_OrderLine(null); // make sure packing material order lines does not link to an order (07969)
-		InterfaceWrapperHelper.save(receiptLine);
+		huInOutBL.save(receiptLine);
 
 		//
 		// Create Receipt schedule allocations if possible.
@@ -475,7 +474,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		// Make sure C_OrderLine_ID is not set to packing materials receipt line (07969)
 		receiptLine.setC_OrderLine(null);
 		Check.assume(receiptLine.getC_OrderLine_ID() <= 0, "Receipt line shall not have an order line set"); // NOTE: these was an old problem in the past, so better safe then sorry (07969)
-		InterfaceWrapperHelper.save(receiptLine); // make sure it's saved
+		huInOutBL.save(receiptLine); // make sure it's saved
 
 		return receiptLine;
 	}
@@ -530,7 +529,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		//
 		// Save and return
-		InterfaceWrapperHelper.save(receiptLine);
+		huInOutBL.save(receiptLine);
 		return receiptLine;
 	}
 
@@ -706,7 +705,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final BigDecimal countTUsBD = BigDecimal.valueOf(countTUs);
 			receiptLine.setQtyEnteredTU(countTUsBD);
 			receiptLine.setQtyTU_Calculated(countTUsBD);
-			InterfaceWrapperHelper.save(receiptLine);
+			huInOutBL.save(receiptLine);
 		}
 
 		//
@@ -805,7 +804,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		// De-activate this allocation because we moved the HU to receipt line
 		// TODO: provide proper implementation. See http://dewiki908/mediawiki/index.php/06103_Create_proper_HU_transactions_when_creating_Receipt_from_Schedules_%28102206835942%29
 		rsa.setIsActive(false);
-		InterfaceWrapperHelper.save(rsa);
+		huReceiptScheduleDAO.save(rsa);
 	}
 
 	private void assignHU(final I_M_InOutLine receiptLine, final I_M_HU hu)
