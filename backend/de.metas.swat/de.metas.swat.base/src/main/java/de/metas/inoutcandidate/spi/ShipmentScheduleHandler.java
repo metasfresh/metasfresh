@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import de.metas.organization.OrgId;
@@ -111,8 +112,12 @@ public abstract class ShipmentScheduleHandler
 	 * <li>The framework will create a {@link I_M_IolCandHandler_Log} record for every object returned by this method.</li>
 	 * <li>Implementors should check for <code>I_M_IolCandHandler_Log</code> to make sure that they don't repeatedly return records are then vetoed by some {@link ModelWithoutShipmentScheduleVetoer}</li>
 	 * </ul>
+	 *
+	 * @param limit budget of models still allowed to be processed in the current run; implementors MUST apply this as
+	 * a query limit so that they don't materialize the whole (potentially huge) backlog. Use {@link org.adempiere.ad.dao.QueryLimit#NO_LIMIT}
+	 * to retrieve everything in one go.
 	 */
-	public abstract Iterator<?> retrieveModelsWithMissingCandidates(Properties ctx, String trxName);
+	public abstract Iterator<?> retrieveModelsWithMissingCandidates(Properties ctx, String trxName, QueryLimit limit);
 
 	/**
 	 * Creates missing candidates for the given model.

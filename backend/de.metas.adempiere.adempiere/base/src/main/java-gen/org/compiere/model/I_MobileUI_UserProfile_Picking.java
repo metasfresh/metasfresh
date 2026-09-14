@@ -667,6 +667,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsWarnShelfLifeUndercut = "IsWarnShelfLifeUndercut";
 
 	/**
+	 * Set Show available qty per line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowQtyAvailableForLines (boolean IsShowQtyAvailableForLines);
+
+	/**
+	 * Get Show available qty per line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowQtyAvailableForLines();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowQtyAvailableForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowQtyAvailableForLines", null);
+	String COLUMNNAME_IsShowQtyAvailableForLines = "IsShowQtyAvailableForLines";
+
+	/**
 	 * Set Lot number.
 	 *
 	 * <br>Type: YesNo

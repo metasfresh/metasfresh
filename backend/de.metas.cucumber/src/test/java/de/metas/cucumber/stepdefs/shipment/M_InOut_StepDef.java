@@ -67,6 +67,7 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
@@ -169,6 +170,7 @@ public class M_InOut_StepDef
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
 	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
@@ -287,7 +289,10 @@ public class M_InOut_StepDef
 	 * <b>QuantityType</b> — (required) "D" (delivery), "O" (ordered), etc.<br>
 	 * <b>IsCompleteShipments</b> — (required) true/false — auto-complete the generated shipment<br>
 	 * <b>IsShipToday</b> — (required) true/false — use today as shipment date<br>
-	 * <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * <b>QtyToDeliver_Override_For_M_ShipmentSchedule_ID</b> — (optional) override quantity to deliver.
+	 * The column name really is that long: it is the workpackage parameter
+	 * {@link ShipmentScheduleWorkPackageParameters#PARAM_QtyToDeliver_Override}, and a cell headed with the
+	 * short name {@code QtyToDeliver_Override} is silently ignored — the full quantity ships instead.<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example <pre>
 	 * And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -344,7 +349,10 @@ public class M_InOut_StepDef
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
-	 * <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * <b>QtyToDeliver_Override_For_M_ShipmentSchedule_ID</b> — (optional) override quantity to deliver.
+	 * The column name really is that long: it is the workpackage parameter
+	 * {@link ShipmentScheduleWorkPackageParameters#PARAM_QtyToDeliver_Override}, and a cell headed with the
+	 * short name {@code QtyToDeliver_Override} is silently ignored — the full quantity ships instead.<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example <pre>
 	 * And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
@@ -1195,6 +1203,57 @@ public class M_InOut_StepDef
 				InterfaceWrapperHelper.save(returnLine);
 			}
 
+			final StepDefDataIdentifier returnIdentifier = row.getAsIdentifier("VendorReturn_ID");
+			inoutTable.putOrReplace(returnIdentifier, vendorReturn);
+		});
+	}
+
+	/**
+	 * Create a vendor return via the real HU-producer path ({@link ReturnsServiceFacade#createVendorReturnInOutForHUs}).
+	 * The producer auto-completes the return (DocStatus=CO) and stamps M_HU_PI_Item_Product_ID on each return line.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier-ref) the completed vendor receipt the return is located from<br>
+	 * <b>M_HU_ID</b> — (required, identifier-ref) the HU(s) to return, by identifier (comma-separated for several) — the same HU the receipt step created<br>
+	 * <b>VendorReturn_ID</b> — (required, identifier) alias to store the created vendor-return M_InOut<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_HU_StepDefData (populated)
+	 * @cucumber.example <pre>
+	 * And generate vendor return from receipt HUs
+	 *   | M_InOut_ID    | M_HU_ID  | VendorReturn_ID    |
+	 *   | receipt_VR_PI | hu_VR_PI | vendorReturn_VR_PI |
+	 * </pre>
+	 */
+	@And("generate vendor return from receipt HUs")
+	public void generateVendorReturnFromReceiptHUs(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final I_M_InOut receipt = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+			// Return the HU(s) the receipt step already created (by identifier), mirroring the real flow where the
+			// user selects specific HUs to return — rather than re-retrieving them from the receipt.
+			final List<I_M_HU> hus = row.getAsIdentifierList(I_M_HU.COLUMNNAME_M_HU_ID).stream()
+					.map(huIdentifier -> huIdentifier.lookupNotNullIn(huTable))
+					.collect(Collectors.toList());
+			assertThat(hus)
+					.as("At least one M_HU_ID identifier must be given to return via the HU path")
+					.isNotEmpty();
+			final List<Integer> receiptLineIds = inOutBL.getLines(receipt).stream()
+					.map(org.compiere.model.I_M_InOutLine::getM_InOutLine_ID)
+					.collect(Collectors.toList());
+			assertThat(receiptLineIds).as("Receipt %s must have lines", receipt.getM_InOut_ID()).isNotEmpty();
+			returnsServiceFacade.createVendorReturnInOutForHUs(hus, SystemTime.asTimestamp());
+			final Integer vendorReturnId = queryBL.createQueryBuilder(de.metas.inout.model.I_M_InOutLine.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_Return_Origin_InOutLine_ID, receiptLineIds)
+					.orderByDescending(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID)
+					.create()
+					.stream()
+					.map(de.metas.inout.model.I_M_InOutLine::getM_InOut_ID)
+					.distinct()
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("No vendor return found whose lines reference receipt lines: " + receiptLineIds));
+			final I_M_InOut vendorReturn = inOutDAO.getById(InOutId.ofRepoId(vendorReturnId));
+			assertThat(vendorReturn).as("Vendor return %d must exist", vendorReturnId).isNotNull();
 			final StepDefDataIdentifier returnIdentifier = row.getAsIdentifier("VendorReturn_ID");
 			inoutTable.putOrReplace(returnIdentifier, vendorReturn);
 		});

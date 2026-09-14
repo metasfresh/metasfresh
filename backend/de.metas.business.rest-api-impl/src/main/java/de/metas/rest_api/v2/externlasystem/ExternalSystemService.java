@@ -25,8 +25,6 @@ package de.metas.rest_api.v2.externlasystem;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.RestUtils;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
@@ -42,15 +40,15 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystem;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
-import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
-import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemInvocationErrorListener;
+import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.externalsystem.audit.ExternalSystemExportAudit;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
@@ -75,6 +73,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -102,7 +102,7 @@ public class ExternalSystemService
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 
-	@NonNull private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	@NonNull private final ExternalSystemConfigRepository externalSystemConfigRepository;
 	@NonNull private final ExternalSystemExportAuditRepo externalSystemExportAuditRepo;
 	@NonNull private final RuntimeParametersRepository runtimeParametersRepository;
 	@NonNull private final ExternalServices externalServices;
@@ -117,7 +117,7 @@ public class ExternalSystemService
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(ExternalSystemService.class, () -> new ExternalSystemService(
-				ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+				ExternalSystemConfigRepository.newInstanceForUnitTesting(),
 				ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
 				new RuntimeParametersRepository(),
 				ExternalServices.newInstanceForUnitTesting(),
@@ -131,7 +131,7 @@ public class ExternalSystemService
 	public ProcessExecutionResult invokeExternalSystem(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)
 	{
 		final ExternalSystemParentConfig externalSystemParentConfig =
-				externalSystemConfigRepo.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
+				externalSystemConfigRepository.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
 								invokeExternalSystemProcessRequest.getChildSystemConfigValue())
 						.orElseThrow(() -> new AdempiereException("ExternalSystemParentConfig @NotFound@")
 								.appendParametersToMessage()
@@ -324,7 +324,7 @@ public class ExternalSystemService
 	@NonNull
 	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String childConfigValue)
 	{
-		return externalSystemConfigRepo.getByTypeAndValue(type, childConfigValue);
+		return externalSystemConfigRepository.getByTypeAndValue(type, childConfigValue);
 	}
 
 	@NonNull
@@ -343,7 +343,7 @@ public class ExternalSystemService
 
 	public void storeExternalSystemStatus(@NonNull final StoreExternalSystemStatusRequest request)
 	{
-		final ExternalSystemParentConfig externalSystemParentConfig = externalSystemConfigRepo
+		final ExternalSystemParentConfig externalSystemParentConfig = externalSystemConfigRepository
 				.getByTypeAndValue(request.getSystemType(), request.getChildSystemConfigValue())
 				.orElseThrow(() -> new AdempiereException("No external system found by given type and value!")
 						.appendParametersToMessage()

@@ -2,8 +2,9 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 
-import { discardNewRequest } from '../../api';
+import { discardNewRequest, getRowsData } from '../../api';
 import { getTableId } from '../../reducers/tables';
+import { buildTabRowsDataUpdate } from '../../utils/tableHelpers';
 
 import { BlankPage } from '../BlankPage';
 import Container from '../Container';
@@ -87,28 +88,77 @@ export default class MasterWindow extends PureComponent {
     rowId,
     saveStatus,
   } = {}) => {
-    if (isNew) {
-      const { updateTabRowsData } = this.props;
-      const tableId = getTableId({
-        windowId: windowType,
-        docId: documentId,
-        tabId,
-      });
+    if (!isNew) {
+      return undefined;
+    }
 
-      return discardNewRequest({
-        windowId: windowType,
-        documentId,
-        tabId,
-        rowId,
-      }).then(() => {
-        // if modal was not saved, discard the new row
-        if (!saveStatus) {
+    const { updateTabRowsData, onRefreshTab } = this.props;
+    const tableId = getTableId({
+      windowId: windowType,
+      docId: documentId,
+      tabId,
+    });
+
+    // Any failure along the discard/re-fetch chain would leave the grid row
+    // stranded on the abandoned in-memory value. Modal.closeModal() does not await
+    // this callback, so an unhandled rejection would surface nothing to the user —
+    // fall back to a full tab refresh so the grid still reconciles with the DB.
+    const refreshTabAfter = (message) => (error) => {
+      console.error(`closeModalCallback: ${message}`, error);
+      if (onRefreshTab) {
+        onRefreshTab();
+      }
+    };
+
+    return discardNewRequest({
+      windowId: windowType,
+      documentId,
+      tabId,
+      rowId,
+    })
+      .then(() => {
+        if (saveStatus) {
+          // A saved modal owns no abandoned in-memory change — nothing to reconcile.
+          return undefined;
+        } else if (rowId === 'NEW') {
+          // A genuinely-unsaved new row (never persisted) is a phantom — discard it.
           updateTabRowsData(tableId, {
             removed: { [`${rowId}`]: true },
           });
+          return undefined;
+        } else {
+          // The row was auto-saved to the DB before the abandon (rowId is a real
+          // id), so it must stay in the grid. discardChanges reverted the document
+          // to its DB state server-side, but its response carries no body —
+          // re-fetch the row and revert the grid row to its DB value in-place (no
+          // browser reload), using the same shape the container's
+          // mergeDataIntoIncludedTab applies.
+          return getRowsData({
+            entity: 'window',
+            docType: windowType,
+            docId: documentId,
+            tabId,
+            rows: [rowId],
+          })
+            .then((response) => {
+              const rowsChanged = buildTabRowsDataUpdate(response.data);
+
+              if (rowsChanged.changed || rowsChanged.removed) {
+                updateTabRowsData(tableId, rowsChanged);
+              }
+            })
+            .catch(
+              refreshTabAfter(
+                're-fetch of the reverted row failed, falling back to a tab refresh'
+              )
+            );
         }
-      });
-    }
+      })
+      .catch(
+        refreshTabAfter(
+          'the discard request failed, falling back to a tab refresh'
+        )
+      );
   };
 
   /**

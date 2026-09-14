@@ -24,7 +24,10 @@ package de.metas.cucumber.stepdefs.workpackage;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.QueueWorkPackageId;
+import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.*;
+import de.metas.async.processor.IWorkpackageProcessorFactory;
+import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -43,12 +46,16 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -59,6 +66,8 @@ public class C_Queue_WorkPackage_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
 
 	private static final String MAIL_WP_PROCESSOR_INTERNAL_NAME = "MailWorkpackageProcessor";
 
@@ -67,19 +76,22 @@ public class C_Queue_WorkPackage_StepDef
 	@NonNull private final C_Queue_Element_StepDefData queueElementTable;
 	@NonNull private final C_OLCand_StepDefData candidateTable;
 	@NonNull private final IdentifiersResolver identifiersResolver;
+	@NonNull private final WorkPackageQueueUtil workPackageQueueUtil;
 
 	public C_Queue_WorkPackage_StepDef(
 			@NonNull final C_Queue_Processor_StepDefData processorTable,
 			@NonNull final C_Queue_WorkPackage_StepDefData workPackageTable,
 			@NonNull final C_Queue_Element_StepDefData queueElementTable,
 			@NonNull final C_OLCand_StepDefData candidateTable,
-			@NonNull final IdentifiersResolver identifiersResolver)
+			@NonNull final IdentifiersResolver identifiersResolver,
+			@NonNull final WorkPackageQueueUtil workPackageQueueUtil)
 	{
 		this.processorTable = processorTable;
 		this.workPackageTable = workPackageTable;
 		this.queueElementTable = queueElementTable;
 		this.candidateTable = candidateTable;
 		this.identifiersResolver = identifiersResolver;
+		this.workPackageQueueUtil = workPackageQueueUtil;
 	}
 
 	@And("locate last C_Queue_WorkPackage by enqueued element")
@@ -343,5 +355,81 @@ public class C_Queue_WorkPackage_StepDef
 				.as("MailWorkpackageProcessor workpackage for %s did not reach state '%s' within %ss",
 						documentRef, expectedState, timeoutSec)
 				.isTrue();
+	}
+
+	/**
+	 * Directly instantiates (via the same {@link IWorkpackageProcessorFactory} the async framework itself uses to
+	 * turn a {@code C_Queue_PackageProcessor.Classname} into a runnable instance) and invokes the workpackage
+	 * processor identified by its short name (e.g. {@code CreateMissingShipmentSchedules} for
+	 * {@code CreateMissingShipmentSchedulesWorkpackageProcessor}), processing the OLDEST pending
+	 * {@code C_Queue_WorkPackage} for that processor and marking it {@code Processed=Y} on success — the essential
+	 * effect of {@code WorkpackageProcessorTask} for a single run. (It deliberately does not replicate that task's
+	 * lock/error bookkeeping or lifecycle-event firing; this processor uses no queue-element locks, so for the
+	 * batching assertion only the created records and the {@code Processed} flag matter.)
+	 * <p>
+	 * In production, the background {@code QueueProcessorPlanner} thread polls for and runs due workpackages on
+	 * its own schedule; this step calls the processor directly, one workpackage at a time, so a scenario can
+	 * assert the outcome of exactly one run deterministically — waiting for the background poller would make the
+	 * "how many workpackages ran so far" boundary flaky and race-prone.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the next CreateMissingShipmentSchedules workpackage is processed
+	 * </pre>
+	 */
+	@And("^the next (.*) workpackage is processed$")
+	public void process_next_workpackage(@NonNull final String processorShortName)
+	{
+		final I_C_Queue_WorkPackage workPackage = retrieveOldestPendingWorkPackage(processorShortName)
+				.orElseThrow(() -> new AdempiereException("No pending C_Queue_WorkPackage found for processor")
+						.appendParametersToMessage()
+						.setParameter("processorShortName", processorShortName));
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
+		final IWorkpackageProcessor processor = workpackageProcessorFactory.getWorkpackageProcessor(ctx, workPackage.getC_Queue_PackageProcessor_ID());
+
+		final IWorkpackageProcessor.Result result = processor.processWorkPackage(workPackage, ITrx.TRXNAME_None);
+		assertThat(result)
+				.as("Result of processing C_Queue_WorkPackage_ID=%s with processor %s", workPackage.getC_Queue_WorkPackage_ID(), processorShortName)
+				.isEqualTo(IWorkpackageProcessor.Result.SUCCESS);
+
+		workPackage.setProcessed(true);
+		queueDAO.save(workPackage);
+	}
+
+	/**
+	 * Asserts how many {@code C_Queue_WorkPackage} rows are currently pending (not yet processed, not errored,
+	 * ready for processing) for the workpackage processor identified by its short name — i.e. how many runs of
+	 * that processor are still waiting to happen, whether because none has run yet or because a run re-enqueued
+	 * a follow-up workpackage for the remaining work.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then there is 1 pending "CreateMissingShipmentSchedules" workpackage
+	 * </pre>
+	 */
+	@And("^there (?:is|are) (\\d+) pending \"(.*)\" workpackages?$")
+	public void assert_pending_workpackage_count(final int expectedCount, @NonNull final String processorShortName)
+	{
+		final int actualCount = workPackageQueueUtil.countPendingWorkPackages(processorShortName);
+		assertThat(actualCount)
+				.as("Number of pending C_Queue_WorkPackage for processor %s", processorShortName)
+				.isEqualTo(expectedCount);
+	}
+
+	private Optional<I_C_Queue_WorkPackage> retrieveOldestPendingWorkPackage(@NonNull final String processorShortName)
+	{
+		final ImmutableSet<Integer> packageProcessorIds = workPackageQueueUtil.resolvePackageProcessorIds(processorShortName);
+		if (packageProcessorIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		return workPackageQueueUtil.pendingWorkPackagesQuery(packageProcessorIds)
+				.orderBy(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
+				.create()
+				.firstOptional(I_C_Queue_WorkPackage.class);
 	}
 }

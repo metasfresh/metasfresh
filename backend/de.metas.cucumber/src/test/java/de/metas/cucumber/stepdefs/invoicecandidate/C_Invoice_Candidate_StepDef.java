@@ -63,13 +63,20 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.process.PInstanceId;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -112,6 +119,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -140,7 +148,6 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_D
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Discount_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsToClear;
@@ -275,10 +282,25 @@ public class C_Invoice_Candidate_StepDef
 		return invoiceCandidateHolder.getValueNotNull();
 	}
 
+	/**
+	 * Polls (up to {@code timeoutSec}) for the invoice candidate(s) of a vendor/customer return inout and
+	 * stores each under its identifier. Each DataTable row is delegated to {@link #loadCreditMemoCandidate(DataTableRow)}.
+	 *
+	 * <p>Required columns per row:
+	 * <ul>
+	 *   <li>{@code M_InOut_ID.Identifier} – the return inout</li>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier under which to store the found IC</li>
+	 * </ul>
+	 * <p>Optional columns per row:
+	 * <ul>
+	 *   <li>{@code OPT.M_Product_ID.Identifier} – filters the lookup to this product; required when the return
+	 *       generates several ICs (e.g. HU packing-material lines alongside the product line)</li>
+	 * </ul>
+	 */
 	@And("^after not more than (.*)s, credit memo candidates are found:$")
 	public void find_credit_memo_candidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		for (final DataTableRow row : DataTableRows.of(dataTable).toList())
 		{
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadCreditMemoCandidate(row));
 		}
@@ -558,6 +580,9 @@ public class C_Invoice_Candidate_StepDef
 	 *   <li>{@code Reason} (optional)</li>
 	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
 	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
+	 *   <li>{@code InvoiceRule_Override} (optional, null-allowed) — expected invoice-rule override; pass {@code null} to assert that no override is set</li>
+	 *   <li>{@code IsFreightCost} (optional) — expected freight-cost flag, derived from the product's ProductType</li>
+	 *   <li>{@code DeliveryDate} (optional) — expected delivery date</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -694,6 +719,34 @@ public class C_Invoice_Candidate_StepDef
 						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
 								.ifPresent(invoiceRule -> softly.assertThat(finalInvoiceCandidate.getInvoiceRule()).as("InvoiceRule").isEqualTo(invoiceRule));
 
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsError)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isError()).as("IsError").isEqualTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_ErrorMsg)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getErrorMsg()).as("ErrorMsg").contains(expected));
+
+						// IsError/ErrorMsg are cleared again by the next "update invalid invoice candidates" run;
+						// IsInvoicingError/InvoicingErrorMsg survive it and record that a "Create Invoices" run failed.
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsInvoicingError)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isInvoicingError()).as("IsInvoicingError").isEqualTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoicingErrorMsg)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getInvoicingErrorMsg()).as("InvoicingErrorMsg").contains(expected));
+
+						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_PriceActual)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getPriceActual()).as("PriceActual").isEqualByComparingTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override)
+								.ifPresent(invoiceRuleOverride -> softly.assertThat(finalInvoiceCandidate.getInvoiceRule_Override())
+										.as("InvoiceRule_Override")
+										.isEqualTo(DataTableUtil.nullToken2Null(invoiceRuleOverride)));
+
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost)
+								.ifPresent(isFreightCost -> softly.assertThat(finalInvoiceCandidate.isFreightCost()).as("IsFreightCost").isEqualTo(isFreightCost));
+
+						row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+								.ifPresent(deliveryDate -> softly.assertThat(TimeUtil.asLocalDate(finalInvoiceCandidate.getDeliveryDate())).as("DeliveryDate").isEqualTo(deliveryDate));
+
 						softly.assertAll();
 					}
 					catch (final Throwable e)
@@ -701,6 +754,121 @@ public class C_Invoice_Candidate_StepDef
 						wrapInvoiceCandidateRelatedException(e, invoiceCandidateRecord, invoiceCandidateIdentifier);
 					}
 				});
+	}
+
+	private static final String INVOICING_PROCESS_ROLE_NAME = "WebUI";
+
+	/** Summary returned by the last invoicing-process run. */
+	private String lastInvoicingRunSummary;
+
+	/**
+	 * Runs the {@code C_Invoice_Candidate_EnqueueSelectionForInvoicing} AD_Process and keeps its summary.
+	 * <p>
+	 * NOT the {@code process invoice candidates} step: that goes through {@code InvoiceService}, which discards
+	 * the enqueue result, so the summary is not observable there.
+	 */
+	@When("run the invoicing process for invoice candidates:")
+	public void run_invoicing_process(@NonNull final DataTable dataTable)
+	{
+		final ProcessExecutionResult result = executeInvoicingProcess(dataTable);
+
+		assertThat(result.isError())
+				.as("the invoicing run must not fail; summary=" + result.getSummary())
+				.isFalse();
+
+		lastInvoicingRunSummary = result.getSummary();
+		logger.info("Invoicing run summary: {}", lastInvoicingRunSummary);
+	}
+
+	private ProcessExecutionResult executeInvoicingProcess(@NonNull final DataTable dataTable)
+	{
+		final List<Integer> invoiceCandidateIds = new ArrayList<>();
+		DataTableRows.of(dataTable).forEach(row -> row
+				.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
+				.toCommaSeparatedList()
+				.forEach(identifier -> invoiceCandidateIds.add(invoiceCandTable.getId(identifier).getRepoId())));
+
+		Check.assumeNotEmpty(invoiceCandidateIds, "at least one C_Invoice_Candidate_ID.Identifier is required");
+
+		final AdProcessId processId = Services.get(IADProcessDAO.class)
+				.retrieveProcessIdByValue("C_Invoice_Candidate_EnqueueSelectionForInvoicing");
+		assertThat(processId).as("AD_Process C_Invoice_Candidate_EnqueueSelectionForInvoicing must exist").isNotNull();
+
+		final StringBuilder idList = new StringBuilder();
+		for (final Integer id : invoiceCandidateIds)
+		{
+			if (idList.length() > 0)
+			{
+				idList.append(",");
+			}
+			idList.append(id);
+		}
+		final String whereClause = COLUMNNAME_C_Invoice_Candidate_ID + " IN (" + idList + ")";
+
+		final ProcessExecutionResult result;
+		try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
+		{
+			result = ProcessInfo.builder()
+					.setCtx(createInvoicingProcessCtx())
+					.setAD_Process_ID(processId)
+					.setWhereClause(whereClause)
+					.buildAndPrepareExecution()
+					.executeSync()
+					.getResult();
+		}
+
+		return result;
+	}
+
+	/** Variant for a selection in which every candidate is skipped: the process errors, but must still say why. */
+	@When("run the invoicing process and expect nothing invoiced for invoice candidates:")
+	public void run_invoicing_process_expecting_nothing_invoiced(@NonNull final DataTable dataTable)
+	{
+		final ProcessExecutionResult result = executeInvoicingProcess(dataTable);
+
+		assertThat(result.isError())
+				.as("the run must report an error when NOTHING could be invoiced; summary=" + result.getSummary())
+				.isTrue();
+
+		lastInvoicingRunSummary = result.getSummary();
+		logger.info("Invoicing run summary (nothing invoiced): {}", lastInvoicingRunSummary);
+	}
+
+	/**
+	 * The process selects with {@code addOnlyContextClient()} + {@code Access.READ}, so without a client, org, user
+	 * AND role the selection comes back empty. copyCtx (not deriveCtx): the ctx must carry the values itself.
+	 * Same construction as {@code M_ShipmentSchedule_StepDef#createProcessCtx()}.
+	 */
+	private Properties createInvoicingProcessCtx()
+	{
+		final UserId userId = StepDefUtil.getUserIdByLogin(StepDefConstants.METASFRESH_VALUE);
+		final RoleId roleId = StepDefUtil.getRoleIdByName(userId, StepDefConstants.METASFRESH_VALUE, INVOICING_PROCESS_ROLE_NAME);
+
+		final Properties processCtx = Env.copyCtx(Env.getCtx());
+		Env.setClientId(processCtx, StepDefConstants.CLIENT_ID);
+		Env.setOrgId(processCtx, StepDefConstants.ORG_ID);
+		Env.setLoggedUserId(processCtx, userId);
+		Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, roleId.getRepoId());
+
+		return processCtx;
+	}
+
+	/** Asserts the last invoicing run's summary mentions each given fragment. */
+	@Then("the invoicing run summary contains:")
+	public void invoicing_run_summary_contains(@NonNull final DataTable dataTable)
+	{
+		assertThat(lastInvoicingRunSummary)
+				.as("no invoicing run summary captured -- run the invoicing process step first")
+				.isNotNull();
+
+		final SoftAssertions softly = new SoftAssertions();
+		for (final String expectedFragment : dataTable.asList(String.class))
+		{
+			softly.assertThat(lastInvoicingRunSummary)
+					.as("invoicing run summary must mention " + expectedFragment)
+					.contains(expectedFragment);
+		}
+		softly.assertAll();
 	}
 
 	@And("process invoice candidates")
@@ -844,13 +1012,38 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
-	private boolean loadCreditMemoCandidate(@NonNull final Map<String, String> row)
+	/**
+	 * Loads the invoice candidate for the given return inout, optionally filtered by product.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_InOut_ID.Identifier} – identifier of the vendor/customer return inout</li>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier under which to store the found IC</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code OPT.M_Product_ID.Identifier} – when present, filters ICs by this product; required when
+	 *       the return generates multiple ICs (e.g. packing-material lines alongside the product line)</li>
+	 * </ul>
+	 *
+	 * @return {@code true} if exactly one matching IC was found and stored; {@code false} if none found yet
+	 */
+	private boolean loadCreditMemoCandidate(@NonNull final DataTableRow row)
 	{
-		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int customerReturnId = shipmentTable.get(customerReturnIdentifier).getM_InOut_ID();
+		final int returnInOutId = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(shipmentTable).getM_InOut_ID();
 
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, customerReturnId)
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, returnInOutId);
+
+		// Optional product filter — required when the return generates multiple ICs (packing-material lines alongside the product IC)
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+				.map(productIdentifier -> productIdentifier.lookupNotNullIn(productTable))
+				.ifPresent(product -> queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID()));
+
+		// firstOnlyOptional throws when >1 IC matches: pass OPT.M_Product_ID.Identifier to narrow the lookup
+		// whenever the return generates several ICs (e.g. HU packing-material lines alongside the product line).
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder
 				.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
@@ -859,8 +1052,7 @@ public class C_Invoice_Candidate_StepDef
 			return false;
 		}
 
-		final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-		invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate.get());
+		invoiceCandTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID), invoiceCandidate.get());
 
 		return true;
 	}

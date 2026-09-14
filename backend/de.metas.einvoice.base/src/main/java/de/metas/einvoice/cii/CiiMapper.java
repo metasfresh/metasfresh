@@ -6,6 +6,8 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.einvoice.EInvoiceFormat;
 import de.metas.einvoice.EInvoiceRecipientConfig;
 import de.metas.einvoice.cii.model.AmountType;
@@ -62,10 +64,17 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -84,15 +93,18 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Maps a metasfresh {@code C_Invoice} to the CII {@link CrossIndustryInvoiceType} structure.
@@ -100,6 +112,15 @@ import java.util.List;
  * <p>Covers: ExchangedDocument header (BT-1, BT-2, BT-3), seller/buyer trade parties (BG-4/BG-5,
  * BG-7/BG-8), document-level references (BT-13, BT-25/BT-26), BG-25 invoice lines
  * (BT-126 through BT-152), BG-23 VAT breakdown, BG-22 monetary totals, and BG-16 payment means.
+ *
+ * <p><b>Tax-included investigation notes.</b> On a tax-INCLUDED invoice ({@code C_Invoice.IsTaxIncluded=Y})
+ * the line-level amounts {@code C_InvoiceLine.LineNetAmt} / {@code PriceActual} are stored GROSS, whereas
+ * the tax breakdown {@code C_InvoiceTax.TaxBaseAmt} / {@code TaxAmt} and {@code C_Invoice.GrandTotal} are
+ * already net / tax / gross respectively. EN 16931 requires BT-131/BT-146/BT-106/BT-109 to be tax-exclusive,
+ * so on the tax-included path they must be derived to net (they are NOT taken raw from the line). BT-131 is
+ * additionally reconciled per {@code C_Tax} group to that group's {@code TaxBaseAmt} so the BT-131 sum equals
+ * BT-116 exactly, satisfying KoSIT BR-S-08 / BR-CO-10. On the tax-EXCLUDED path all these values are emitted
+ * unchanged.
  */
 public class CiiMapper
 {
@@ -147,6 +168,9 @@ public class CiiMapper
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final CiiMappingRepository repo = new CiiMappingRepository();
 
 	@NonNull
@@ -239,18 +263,141 @@ public class CiiMapper
 	{
 		final SupplyChainTradeTransactionType tx = new SupplyChainTradeTransactionType();
 
+		// BG-23 VAT breakdown rows — fetched once and shared between the BT-131 reconciliation
+		// pre-pass (below) and buildTradeSettlement/buildMonetarySummation (BT-106/BT-109/BT-110).
+		final List<I_C_InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(invoice);
+
 		// BG-25 Invoice lines
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice);
+		final Map<InvoiceLineId, BigDecimal> lineNetAmountsForBt131 = computeLineNetAmountsForBt131(invoice, lines, invoiceTaxes);
 		for (final I_C_InvoiceLine line : lines)
 		{
-			tx.getIncludedSupplyChainTradeLineItem().add(buildLineItem(line));
+			tx.getIncludedSupplyChainTradeLineItem().add(buildLineItem(invoice, line, lineNetAmountsForBt131));
 		}
 
 		tx.setApplicableHeaderTradeAgreement(buildTradeAgreement(invoice, recipientConfig));
 		tx.setApplicableHeaderTradeDelivery(buildHeaderTradeDelivery(invoice));
-		tx.setApplicableHeaderTradeSettlement(buildTradeSettlement(invoice));
+		tx.setApplicableHeaderTradeSettlement(buildTradeSettlement(invoice, invoiceTaxes));
 
 		return tx;
+	}
+
+	/**
+	 * Computes the BT-131 (line net amount) value to emit for every invoice line.
+	 *
+	 * <p><b>Tax-EXCLUDED invoices</b>: the map holds {@code LineNetAmt} as-is — the tax-exclusive
+	 * net is already the line amount.
+	 *
+	 * <p><b>Tax-INCLUDED invoices</b>: {@code C_InvoiceLine.LineNetAmt} holds the GROSS amount (see
+	 * class-level investigation notes), so the tax-exclusive net must be derived. A naive per-line
+	 * {@link Tax#calculateBaseAmt} can sum to a different total than the tax breakdown's
+	 * {@code C_InvoiceTax.TaxBaseAmt} (sum-of-rounds vs. the header's round-of-sum), which fails
+	 * KoSIT BR-S-08 (BT-131 sum must equal BT-116) / BR-CO-10. To guarantee an EXACT match, lines
+	 * are grouped by {@code C_Tax_ID}; within each group every line's natural net is computed, then
+	 * the LAST line of the group absorbs the rounding delta so the group sums exactly to that tax's
+	 * {@code TaxBaseAmt}.
+	 */
+	private Map<InvoiceLineId, BigDecimal> computeLineNetAmountsForBt131(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final List<I_C_InvoiceLine> lines,
+			@NonNull final List<I_C_InvoiceTax> invoiceTaxes)
+	{
+		final Map<InvoiceLineId, BigDecimal> result = new LinkedHashMap<>();
+
+		if (!invoice.isTaxIncluded())
+		{
+			for (final I_C_InvoiceLine line : lines)
+			{
+				result.put(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID()), line.getLineNetAmt());
+			}
+			return result;
+		}
+
+		final Map<TaxId, BigDecimal> taxBaseAmtByTaxId = new LinkedHashMap<>();
+		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
+		{
+			taxBaseAmtByTaxId.put(TaxId.ofRepoId(invoiceTax.getC_Tax_ID()), invoiceTax.getTaxBaseAmt());
+		}
+
+		final Map<TaxId, List<I_C_InvoiceLine>> linesByTaxId = new LinkedHashMap<>();
+		for (final I_C_InvoiceLine line : lines)
+		{
+			linesByTaxId.computeIfAbsent(TaxId.ofRepoId(line.getC_Tax_ID()), k -> new ArrayList<>()).add(line);
+		}
+
+		final CurrencyPrecision amountPrecision = resolveAmountPrecision(invoice);
+
+		for (final Map.Entry<TaxId, List<I_C_InvoiceLine>> groupEntry : linesByTaxId.entrySet())
+		{
+			final TaxId taxId = groupEntry.getKey();
+			final List<I_C_InvoiceLine> groupLines = groupEntry.getValue();
+			final Tax tax = taxBL.getTaxById(taxId);
+
+			final Map<InvoiceLineId, BigDecimal> naturalNetByLineId = new LinkedHashMap<>();
+			BigDecimal sumOfNaturalNets = BigDecimal.ZERO;
+			for (final I_C_InvoiceLine line : groupLines)
+			{
+				final BigDecimal naturalNet = tax.calculateBaseAmt(line.getLineNetAmt(), true, amountPrecision.toInt());
+				naturalNetByLineId.put(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID()), naturalNet);
+				sumOfNaturalNets = sumOfNaturalNets.add(naturalNet);
+			}
+
+			final BigDecimal targetTaxBaseAmt = taxBaseAmtByTaxId.get(taxId);
+			if (targetTaxBaseAmt == null)
+			{
+				// No C_InvoiceTax breakdown row for a tax used by an invoice line. On a completed
+				// tax-included invoice this is a genuine data error — without the TaxBaseAmt anchor
+				// the BT-131 reconciliation cannot satisfy BR-S-08/BR-CO-10, so fail fast rather
+				// than silently emit broken XML.
+				throw new AdempiereException("CII mapping: no C_InvoiceTax breakdown row for a tax used by an invoice line"
+						+ " [C_Tax_ID=" + taxId.getRepoId() + ", C_Invoice_ID=" + invoice.getC_Invoice_ID() + "]");
+			}
+
+			// The last line of the group absorbs the rounding delta so the group's BT-131 sum
+			// matches this tax's TaxBaseAmt (BT-116) EXACTLY — this is what satisfies BR-S-08/BR-CO-10.
+			final BigDecimal delta = targetTaxBaseAmt.subtract(sumOfNaturalNets);
+
+			// The delta is only ever the per-line rounding gap (sum-of-rounds vs. the breakdown's
+			// round-of-sum): each of the group's lines contributes at most one minor currency unit,
+			// so |delta| must stay within lineCount × oneMinorUnit. A delta beyond that means the
+			// per-line nets and TaxBaseAmt diverge by more than rounding (e.g. gross amounts fed into
+			// the reconciliation, or an inconsistent breakdown) — fail loudly rather than distort a
+			// line by an arbitrary amount.
+			final BigDecimal oneMinorUnit = BigDecimal.ONE.movePointLeft(amountPrecision.toInt());
+			final BigDecimal maxDelta = oneMinorUnit.multiply(BigDecimal.valueOf(groupLines.size()));
+			Check.assume(delta.abs().compareTo(maxDelta) <= 0,
+					"BT-131 reconciliation delta {} exceeds the max plausible per-line rounding bound {}"
+							+ " ({} line(s) × {}): C_InvoiceTax.TaxBaseAmt {} and the summed per-line nets {}"
+							+ " diverge by more than rounding [C_Tax_ID={}, C_Invoice_ID={}]",
+					delta, maxDelta, groupLines.size(), oneMinorUnit, targetTaxBaseAmt, sumOfNaturalNets,
+					taxId.getRepoId(), invoice.getC_Invoice_ID());
+
+			final I_C_InvoiceLine lastLine = groupLines.get(groupLines.size() - 1);
+			for (final I_C_InvoiceLine line : groupLines)
+			{
+				final InvoiceLineId lineId = InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID());
+				final BigDecimal naturalNet = naturalNetByLineId.get(lineId);
+				final BigDecimal net = line == lastLine ? naturalNet.add(delta) : naturalNet;
+				result.put(lineId, net);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Resolves the decimal scale used for the tax-included net-amount reconciliation (BT-131/BT-146),
+	 * sourced from the invoice currency's standard precision. Mirrors the currency-based precision
+	 * lookup pattern in {@code InvoiceCandBL.getPrecisionFromCurrency} rather than the
+	 * {@code M_PriceList_ID}-keyed {@code AbstractInvoiceBL.getAmountPrecision}, since a {@link I_C_Invoice}
+	 * reaching this mapper is not guaranteed to carry a price list reference. {@code C_Currency_ID} is
+	 * mandatory on {@code C_Invoice} (and required for BT-5 / BR-CO-15), so it is always present here.
+	 */
+	@NonNull
+	private CurrencyPrecision resolveAmountPrecision(@NonNull final I_C_Invoice invoice)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		return currencyDAO.getStdPrecision(currencyId);
 	}
 
 	// ===== BG-13 Delivery information =====
@@ -278,7 +425,10 @@ public class CiiMapper
 
 	// ===== BG-25 Invoice line item =====
 
-	private SupplyChainTradeLineItemType buildLineItem(@NonNull final I_C_InvoiceLine line)
+	private SupplyChainTradeLineItemType buildLineItem(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final I_C_InvoiceLine line,
+			@NonNull final Map<InvoiceLineId, BigDecimal> lineNetAmountsForBt131)
 	{
 		final SupplyChainTradeLineItemType item = new SupplyChainTradeLineItemType();
 
@@ -302,11 +452,33 @@ public class CiiMapper
 		}
 		item.setSpecifiedTradeProduct(product);
 
-		// BT-146 Item net price (NetPriceProductTradePrice.ChargeAmount)
+		// BT-151/BT-152/BT-146/BT-131 all key off the line's tax — load it once (model-level; the
+		// full Tax value object, needed only for the tax-included net-amount conversion below, is
+		// fetched separately and lazily so tax-excluded invoices never require C_Tax.ValidFrom).
+		final I_C_Tax tax = repo.getTax(line.getC_Tax_ID());
+
+		// BT-146 Item net price (NetPriceProductTradePrice.ChargeAmount).
+		// Tax-included invoices: PriceActual is GROSS (see class-level investigation notes) — convert
+		// to the tax-exclusive net unit price. Tax-excluded invoices: PriceActual is already net.
+		// The gate is the invoice-level IsTaxIncluded flag only — consistent with the BT-131
+		// reconciliation (computeLineNetAmountsForBt131) and BT-106/BT-109, which also key on it.
+		final boolean taxIncluded = invoice.isTaxIncluded();
+		final BigDecimal netUnitPrice;
+		if (taxIncluded)
+		{
+			final Tax taxForLine = taxBL.getTaxById(TaxId.ofRepoId(line.getC_Tax_ID()));
+			final CurrencyPrecision pricePrecision = resolveAmountPrecision(invoice);
+			netUnitPrice = taxForLine.calculateBaseAmt(line.getPriceActual(), true, pricePrecision.toInt());
+		}
+		else
+		{
+			netUnitPrice = line.getPriceActual();
+		}
+
 		final LineTradeAgreementType tradeAgreement = new LineTradeAgreementType();
 		final TradePriceType netPrice = new TradePriceType();
 		final AmountType priceAmount = new AmountType();
-		priceAmount.setValue(line.getPriceActual());
+		priceAmount.setValue(netUnitPrice);
 		netPrice.setChargeAmount(priceAmount);
 		tradeAgreement.setNetPriceProductTradePrice(netPrice);
 		item.setSpecifiedLineTradeAgreement(tradeAgreement);
@@ -329,7 +501,6 @@ public class CiiMapper
 		item.setSpecifiedLineTradeDelivery(delivery);
 
 		// BT-151 VAT category code (fail fast if null) + BT-152 VAT rate + BT-131 line net amount
-		final I_C_Tax tax = repo.getTax(line.getC_Tax_ID());
 		final String vatCategory = tax != null ? tax.getEN16931VATCategory() : null;
 		if (vatCategory == null || vatCategory.isEmpty())
 		{
@@ -357,10 +528,11 @@ public class CiiMapper
 		}
 		settlement.setApplicableTradeTax(tradeTax);
 
-		// BT-131 Line net amount
+		// BT-131 Line net amount — reconciled to this tax's TaxBaseAmt (BT-116) on tax-included
+		// invoices (see computeLineNetAmountsForBt131); unchanged (LineNetAmt) otherwise.
 		final TradeSettlementLineMonetarySummationType monetarySummation = new TradeSettlementLineMonetarySummationType();
 		final AmountType lineTotal = new AmountType();
-		lineTotal.setValue(line.getLineNetAmt());
+		lineTotal.setValue(lineNetAmountsForBt131.get(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID())));
 		monetarySummation.setLineTotalAmount(lineTotal);
 		settlement.setSpecifiedTradeSettlementLineMonetarySummation(monetarySummation);
 
@@ -508,45 +680,46 @@ public class CiiMapper
 	}
 
 	/**
-	 * Builds BG-6 Seller contact (DefinedTradeContact) from the first AD_User linked to the seller BPartner.
+	 * Builds BG-6 Seller contact (DefinedTradeContact) from the seller BPartner's AD_User contacts.
 	 *
 	 * <p>XRechnung CIUS BR-DE-2 mandates DefinedTradeContact on the seller party.
 	 * BR-DE-5 requires PersonName or DepartmentName; BR-DE-6 requires a telephone number
 	 * (CompleteNumber matching ≥3 digits); BR-DE-7 requires an email URI.
 	 * BR-DE-27 / BR-DE-28 validate the phone/email format.
 	 *
-	 * <p>Source: {@code AD_User} records linked via {@code C_BPartner_ID}. The first contact
-	 * with a non-empty phone number (BT-42) is preferred; if none has a phone, the first contact
-	 * overall is used.
+	 * <p>Source: {@code AD_User} records linked via {@code C_BPartner_ID}, restricted to active
+	 * contacts and ordered by {@code SeqNo, AD_User_ID}. Among the active contacts, the contact
+	 * is selected by this precedence:
+	 * <ol>
+	 * <li>the first contact with {@code IsSalesContact = Y}</li>
+	 * <li>else the first contact with {@code IsDefaultContact = Y}</li>
+	 * <li>else the first contact with a non-empty phone number, or if none has a phone, the first
+	 * contact overall</li>
+	 * </ol>
+	 * An explicit-flag match (tier 1 or 2) is used regardless of whether it has a phone number —
+	 * the phone preference applies only to the tier-3 fallback.
 	 *
-	 * @return a populated {@link TradeContactType}, or {@code null} when the seller has no contacts.
+	 * @return a populated {@link TradeContactType}, or {@code null} when the seller has no active contacts.
 	 */
 	@Nullable
 	private TradeContactType buildSellerContact(@NonNull final I_C_BPartner sellerBP)
 	{
-		final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(sellerBP);
-		if (contacts.isEmpty())
+		final List<I_AD_User> activeContacts = new ArrayList<>();
+		for (final I_AD_User u : bPartnerDAO.retrieveContacts(sellerBP))
 		{
-			log.warn("Seller BPartner {} has no contact — XRechnung BR-DE-2 will fail validation",
+			if (u.isActive())
+			{
+				activeContacts.add(u);
+			}
+		}
+		if (activeContacts.isEmpty())
+		{
+			log.warn("Seller BPartner {} has no active contact — XRechnung BR-DE-2 will fail validation",
 					sellerBP.getC_BPartner_ID());
 			return null;
 		}
 
-		// Prefer the first contact that has a phone number (BR-DE-6 requires a phone)
-		I_AD_User contact = null;
-		for (final I_AD_User u : contacts)
-		{
-			final String phone = u.getPhone();
-			if (phone != null && !phone.trim().isEmpty())
-			{
-				contact = u;
-				break;
-			}
-		}
-		if (contact == null)
-		{
-			contact = contacts.get(0);
-		}
+		final I_AD_User contact = selectSellerContact(activeContacts);
 
 		final TradeContactType tradeContact = new TradeContactType();
 
@@ -583,6 +756,42 @@ public class CiiMapper
 		}
 
 		return tradeContact;
+	}
+
+	/**
+	 * Selects the seller contact to use for BG-6 among the given (already active-filtered) contacts,
+	 * which are expected to be ordered by {@code SeqNo, AD_User_ID}. See {@link #buildSellerContact}
+	 * for the full precedence description.
+	 */
+	private I_AD_User selectSellerContact(@NonNull final List<I_AD_User> activeContacts)
+	{
+		for (final I_AD_User u : activeContacts)
+		{
+			if (u.isSalesContact())
+			{
+				return u;
+			}
+		}
+
+		for (final I_AD_User u : activeContacts)
+		{
+			if (u.isDefaultContact())
+			{
+				return u;
+			}
+		}
+
+		// Fallback: prefer the first contact that has a phone number (BR-DE-6 requires a phone)
+		for (final I_AD_User u : activeContacts)
+		{
+			final String phone = u.getPhone();
+			if (phone != null && !phone.trim().isEmpty())
+			{
+				return u;
+			}
+		}
+
+		return activeContacts.get(0);
 	}
 
 	// ===== Buyer trade party (BG-7/BG-8) =====
@@ -733,7 +942,9 @@ public class CiiMapper
 
 	// ===== HeaderTradeSettlement =====
 
-	private HeaderTradeSettlementType buildTradeSettlement(@NonNull final I_C_Invoice invoice)
+	private HeaderTradeSettlementType buildTradeSettlement(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final List<I_C_InvoiceTax> invoiceTaxes)
 	{
 		final HeaderTradeSettlementType settlement = new HeaderTradeSettlementType();
 
@@ -755,7 +966,6 @@ public class CiiMapper
 		buildPaymentMeans(invoice, sellerBPartnerId).forEach(pm -> settlement.getSpecifiedTradeSettlementPaymentMeans().add(pm));
 
 		// BG-23 VAT breakdown — one ApplicableTradeTax per C_InvoiceTax row
-		final List<I_C_InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(invoice);
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
 			settlement.getApplicableTradeTax().add(buildHeaderTradeTax(invoiceTax));
@@ -890,14 +1100,23 @@ public class CiiMapper
 	{
 		final TradeSettlementHeaderMonetarySummationType summation = new TradeSettlementHeaderMonetarySummationType();
 
-		// BT-106 Sum of line net amounts = C_Invoice.TotalLines
+		// BT-106 Sum of line net amounts / BT-109 Invoice total without VAT.
+		// Tax-included invoices: C_Invoice.TotalLines is the GROSS sum (see class-level investigation
+		// notes) — the tax-exclusive value is SUM(C_InvoiceTax.TaxBaseAmt), sourced directly from the
+		// already-fetched invoiceTaxes list (guaranteed consistent with BT-116 — same stored values —
+		// and with the per-line BT-131 reconciliation, since both are anchored on TaxBaseAmt).
+		// Tax-excluded invoices: TotalLines is already the net sum of line amounts.
+		final BigDecimal lineTotalNetAmt = invoice.isTaxIncluded()
+				? sumTaxBaseAmt(invoiceTaxes)
+				: invoice.getTotalLines();
+
 		final AmountType lineTotal = new AmountType();
-		lineTotal.setValue(invoice.getTotalLines());
+		lineTotal.setValue(lineTotalNetAmt);
 		summation.setLineTotalAmount(lineTotal);
 
-		// BT-109 Invoice total without VAT = TotalLines (no header charges/allowances in current scope)
+		// BT-109 Invoice total without VAT (no header charges/allowances in current scope)
 		final AmountType taxBasisTotal = new AmountType();
-		taxBasisTotal.setValue(invoice.getTotalLines());
+		taxBasisTotal.setValue(lineTotalNetAmt);
 		summation.setTaxBasisTotalAmount(taxBasisTotal);
 
 		// BT-110 Invoice total VAT amount = sum of C_InvoiceTax.TaxAmt
@@ -934,6 +1153,21 @@ public class CiiMapper
 		return summation;
 	}
 
+	/** Sums {@code C_InvoiceTax.TaxBaseAmt} over the given VAT breakdown rows (null-safe). */
+	private static BigDecimal sumTaxBaseAmt(@NonNull final List<I_C_InvoiceTax> invoiceTaxes)
+	{
+		BigDecimal sum = BigDecimal.ZERO;
+		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
+		{
+			final BigDecimal taxBaseAmt = invoiceTax.getTaxBaseAmt();
+			if (taxBaseAmt != null)
+			{
+				sum = sum.add(taxBaseAmt);
+			}
+		}
+		return sum;
+	}
+
 	// ===== BG-16 Payment means =====
 
 	private List<TradeSettlementPaymentMeansType> buildPaymentMeans(
@@ -953,11 +1187,25 @@ public class CiiMapper
 			return Collections.emptyList();
 		}
 
-		// BR-61: payment means code 30 (credit transfer) or 58 REQUIRES BT-84 (payee IBAN).
-		// Resolve the org's default bank account to obtain the IBAN.
+		final boolean isCreditTransfer = "30".equals(uncl4461Code) || "58".equals(uncl4461Code);
+
+		// Silent factoring (stille Zession): when the bill partner (invoice.C_BPartner_ID) is set up
+		// for factoring (IsFactoring=Y), payment is legally owed to the factor. BT-84 must then carry
+		// the FACTOR's IBAN instead of the seller's. The assignment itself is never disclosed on the
+		// invoice — BG-10 PayeeTradeParty is (and remains) never populated, see below.
+		final I_C_BPartner billBPartner = bPartnerDAO.getById(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+
 		String iban = null;
-		if (sellerBPartnerId != null)
+		if (billBPartner.isFactoring())
 		{
+			// Misconfiguration (no factorer, or factorer with no IBAN) vetoes invoice completion
+			// rather than silently falling back to the seller's IBAN.
+			iban = resolveFactorerIban(invoice);
+		}
+		else if (sellerBPartnerId != null)
+		{
+			// BR-61: payment means code 30 (credit transfer) or 58 REQUIRES BT-84 (payee IBAN).
+			// Resolve the org's default bank account to obtain the IBAN.
 			final BankAccount bankAccount = bpBankAccountDAO.getDefaultBankAccount(sellerBPartnerId).orElse(null);
 			if (bankAccount != null)
 			{
@@ -969,8 +1217,8 @@ public class CiiMapper
 			}
 		}
 
-		// BR-61: suppress the payment-means element entirely when code 30/58 has no IBAN
-		final boolean isCreditTransfer = "30".equals(uncl4461Code) || "58".equals(uncl4461Code);
+		// BR-61: suppress the payment-means element entirely when code 30/58 has no IBAN.
+		// (Not reachable for factoring: resolveFactorerIban either returns a non-blank IBAN or throws.)
 		if (isCreditTransfer && iban == null)
 		{
 			log.warn("CII mapping: PaymentMeans code {} (credit transfer) suppressed — no IBAN on seller BPartner [C_BPartner_ID={}]. "
@@ -985,7 +1233,9 @@ public class CiiMapper
 		meansCode.setValue(uncl4461Code);
 		paymentMeans.setTypeCode(meansCode);
 
-		// BT-84 Payee IBAN (mandatory for code 30/58 per BR-61; set when available for other codes)
+		// BT-84 Payee IBAN (mandatory for code 30/58 per BR-61; set when available for other codes).
+		// NOTE: BG-10 PayeeTradeParty is intentionally never populated — even for a factored invoice,
+		// only the creditor financial account differs; the payee identity is unchanged/undisclosed.
 		if (iban != null)
 		{
 			final CreditorFinancialAccountType creditorAccount = new CreditorFinancialAccountType();
@@ -994,6 +1244,62 @@ public class CiiMapper
 		}
 
 		return Collections.singletonList(paymentMeans);
+	}
+
+	/**
+	 * Resolves the BT-84 payee IBAN for a factored invoice ({@code IsFactoring=Y}): the org's factorer
+	 * ({@code IsFactorer=Y}, same {@code AD_Org_ID}) default bank-account IBAN. The factorer lookup
+	 * mirrors the printed-invoice report SQL {@code getFactorer_BankDetails} so PDF and XML pick the same
+	 * factorer (single/default bank account assumed for IBAN parity). Never falls back to the seller
+	 * IBAN: a misconfigured setup vetoes completion via a user-validation error.
+	 */
+	@NonNull
+	private String resolveFactorerIban(@NonNull final I_C_Invoice invoice)
+	{
+		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+		// Mirror the printed-invoice report SQL (getFactorer_BankDetails): IsFactorer='Y' AND AD_Org_ID=?,
+		// with no IsActive filter, so the PDF and the XML select the same factorer. Use list() rather than
+		// firstOnlyOrNull (which returns null on >1) so we can distinguish "no factorer" from "ambiguous
+		// multiple factorers": the DB uniqueness guard only enforces one factorer among ACTIVE rows, so a
+		// deactivated old factorer left alongside a new one yields two matches — that must be reported as
+		// ambiguity, not misdiagnosed as "no factorer configured".
+		final List<I_C_BPartner> factorers = queryBL
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsFactorer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.list(I_C_BPartner.class);
+
+		if (factorers.isEmpty())
+		{
+			throw new AdempiereException("No factorer (C_BPartner.IsFactorer=Y) is configured for AD_Org_ID=" + orgId.getRepoId()
+					+ "; cannot resolve the BT-84 payee IBAN for invoice C_Invoice_ID=" + invoice.getC_Invoice_ID()
+					+ " whose bill partner is set up for silent factoring (IsFactoring=Y).")
+					.markAsUserValidationError();
+		}
+		if (factorers.size() > 1)
+		{
+			throw new AdempiereException("Multiple factorers (C_BPartner.IsFactorer=Y) are configured for AD_Org_ID=" + orgId.getRepoId()
+					+ " — the factorer is ambiguous; cannot resolve the BT-84 payee IBAN for invoice C_Invoice_ID=" + invoice.getC_Invoice_ID()
+					+ ". Ensure exactly one active factorer per organisation.")
+					.markAsUserValidationError();
+		}
+		final I_C_BPartner factorer = factorers.get(0);
+
+		final BPartnerId factorerBPartnerId = BPartnerId.ofRepoId(factorer.getC_BPartner_ID());
+		final BankAccount factorerBankAccount = bpBankAccountDAO.getDefaultBankAccount(factorerBPartnerId).orElse(null);
+		final String factorerIban = factorerBankAccount != null ? factorerBankAccount.getIBAN() : null;
+
+		if (factorerIban == null || factorerIban.trim().isEmpty())
+		{
+			throw new AdempiereException("Factorer C_BPartner_ID=" + factorer.getC_BPartner_ID()
+					+ " (AD_Org_ID=" + orgId.getRepoId() + ") has no default bank account with an IBAN; "
+					+ "cannot resolve the BT-84 payee IBAN for invoice C_Invoice_ID=" + invoice.getC_Invoice_ID() + ".")
+					.markAsUserValidationError();
+		}
+
+		return factorerIban;
 	}
 
 	/**
@@ -1136,15 +1442,13 @@ public class CiiMapper
 	}
 
 	/**
-	 * Formats a timestamp as yyyyMMdd.
-	 *
-	 * <p>Metasfresh date columns (DateInvoiced, DateAcct, …) are stored as midnight UTC in the DB.
-	 * Reading them via {@code Timestamp.toInstant().atOffset(ZoneOffset.UTC)} is therefore correct
-	 * and avoids any JVM-timezone-dependent shift.
+	 * Formats a timestamp as yyyyMMdd, using the JVM-local calendar date via
+	 * {@link TimeUtil#asLocalDate(Timestamp)} — matching how JDBC reads a
+	 * {@code timestamp without time zone} column (see {@code docs/coding-rules/java-time.md}).
 	 */
 	private String formatDate(@NonNull final Timestamp timestamp)
 	{
-		final LocalDate date = timestamp.toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
+		final LocalDate date = TimeUtil.asLocalDate(timestamp);
 		return date.format(DateTimeFormatter.BASIC_ISO_DATE);
 	}
 

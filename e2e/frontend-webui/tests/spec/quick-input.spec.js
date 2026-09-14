@@ -5,15 +5,16 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT, collectPageErrors } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { waitForTabAllowsNew } from '../utils/WebAPIValidation';
+import { waitForTabAllowsNew, getTabRows, waitForRecordSaved } from '../utils/WebAPIValidation';
 
 /**
  * Quick Input (Batch Entry) E2E test suite.
  *
  * Features tested:
  * - F00100: Sales Order
+ * - F00101.10: Sales Order Quick Entry packing instruction
  *
  * Tests:
  * 1. Enter-key focus advance: Product → Enter → focus advances to Qty
@@ -21,6 +22,13 @@ import { waitForTabAllowsNew } from '../utils/WebAPIValidation';
  * 3. Multiple lines in sequence: Add two lines via Enter-key workflow
  * 4. Invalid product: no beep when sysconfig disabled (default behavior)
  * 5. Regular form lookup regression: Customer selection in header (non-quick-input)
+ * 6. Enter-key selects packing instruction on secondary sub-field (the reported bug)
+ * 7. Mouse-click selects packing instruction on secondary sub-field (regression)
+ * 8. Regular-form composite partner lookup: server auto-fill of the location and
+ *    contact secondary sub-fields (RawList-rendered sub-fields, not RawLookup)
+ * 9. Keyboard-only line entry when the product has NO packing instruction: Enter
+ *    confirms the empty entry and advances, Tab-identical (TC8)
+ * (TESTs 6–9 are placed after TEST 3 in the file)
  */
 
 // ============================================================================
@@ -31,7 +39,10 @@ import { waitForTabAllowsNew } from '../utils/WebAPIValidation';
  * Create standard masterdata for quick input tests.
  * Creates a user, customer, and one or two products.
  */
-async function createMasterdata(language, { twoProducts = false } = {}) {
+async function createMasterdata(
+  language,
+  { twoProducts = false, withPackingInstruction = false } = {}
+) {
   const products = {
     Product1: {
       name: 'QIPROD',
@@ -48,26 +59,32 @@ async function createMasterdata(language, { twoProducts = false } = {}) {
     };
   }
 
-  return await Backend.createMasterdata({
-    request: {
-      login: {
-        user: {
-          language,
-          firstname: 'QI',
-          lastname: 'Test',
-        },
+  const request = {
+    login: {
+      user: {
+        language,
+        firstname: 'QI',
+        lastname: 'Test',
       },
-      bpartners: {
-        CUSTOMER1: {
-          isVendor: false,
-          isCustomer: true,
-          isSoPriceList: true,
-          name: 'Customer',
-        },
-      },
-      products,
     },
-  });
+    bpartners: {
+      CUSTOMER1: {
+        isVendor: false,
+        isCustomer: true,
+        isSoPriceList: true,
+        name: 'Customer',
+      },
+    },
+    products,
+  };
+
+  if (withPackingInstruction) {
+    request.packingInstructions = {
+      PI: { tu: 'TU', product: 'Product1', qtyCUsPerTU: 4 },
+    };
+  }
+
+  return await Backend.createMasterdata({ request });
 }
 
 /**
@@ -144,6 +161,36 @@ async function typeProductAndWaitForDropdown(page, productCode) {
   await page.waitForTimeout(300);
 
   return productInput;
+}
+
+/**
+ * Type into the Packvorschrift (M_HU_PI_Item_Product_ID) sub-field of the quick input
+ * (index 2 of the composite product lookup) and wait for its dropdown.
+ */
+async function typePackingInstructionAndWaitForDropdown(page, text) {
+  const piInput = page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field');
+  await piInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await expect(piInput).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT }); // enabled once the product is set
+  await piInput.click();
+  await piInput.fill(text);
+  await page.waitForTimeout(500);
+  await page
+    .locator('#lookup_M_HU_PI_Item_Product_ID .rotating, #lookup_M_HU_PI_Item_Product_ID .spinner')
+    .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+    .catch(() => {});
+  await page.locator('.input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  return piInput;
+}
+
+/** Assert the single order line carries the given M_HU_PI_Item_Product_ID. */
+async function expectSingleLineWithPackingInstruction(recordId, expectedPiItemProductId) {
+  const rows = await getTabRows(SALES_ORDER_WINDOW_ID, recordId, 'AD_Tab-187');
+  expect(rows).toHaveLength(1);
+  const piField = rows[0].fieldsByName.M_HU_PI_Item_Product_ID;
+  // masterdata.packingInstructions.PI.tuPIItemProductTestId is a data-testid style string
+  // ("tuPIItemProduct-<M_HU_PI_Item_Product_ID>"), not the bare id — strip the prefix.
+  const expectedId = String(expectedPiItemProductId).replace(/^\D+/, '');
+  expect(piField && piField.value && String(piField.value.key)).toBe(expectedId);
 }
 
 /**
@@ -450,6 +497,266 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
       console.log(
         `[${language}] Multiple lines test passed — 2 lines created`
       );
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 6 (TC2): Enter on the SECONDARY sub-field (Packvorschrift) of the
+    // composite product lookup — the reported bug. Index 2, not index 0.
+    // ------------------------------------------------------------------
+    test(`Enter-key selects packing instruction on secondary sub-field (${label})`, async ({ page }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00101.10: Sales Order Quick Entry packing instruction');
+      allure.tag('F00101.10');
+      allure.story('Quick Input: packing instruction via Enter');
+      allure.severity('critical');
+      allure.parameter('Language', language);
+      allure.tag(language);
+      test.setTimeout(150000);
+
+      const errors = collectPageErrors(page);
+      const masterdata = await createMasterdata(language, { withPackingInstruction: true });
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+      const pi = masterdata.packingInstructions.PI;
+
+      const { recordId } = await setupOrderWithBatchEntry(page, masterdata, language);
+
+      errors.length = 0; // contract: zero browser errors during the quick-input steps only (TC2/TC6 steps 3–5)
+      await typeProductAndWaitForDropdown(page, masterdata.products.Product1.productCode);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1000);
+
+      const piInput = await typePackingInstructionAndWaitForDropdown(page, pi.tuName);
+      await page.keyboard.press('Enter');          // ← the defective path (RawLookup.handleAutoSelectAndAdvance, index 2)
+      await page.waitForTimeout(1000);
+      expect(await piInput.inputValue()).toContain(pi.tuName);
+
+      const quantityInput = page.getByRole('spinbutton');
+      await quantityInput.click();
+      await quantityInput.fill('3');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(2000);
+
+      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
+      await expectSingleLineWithPackingInstruction(recordId, pi.tuPIItemProductTestId);
+      await expect(page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field')).toHaveValue('');
+      await expect(page.locator('#lookup_M_Product_ID input.input-field')).toHaveValue('');
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 7 (TC6): same sub-field, MOUSE selection (handleSelect_RegularItem, index 2).
+    // Works today; must keep working after the shared-helper refactor.
+    // ------------------------------------------------------------------
+    test(`Mouse-click selects packing instruction on secondary sub-field (${label})`, async ({ page }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00101.10: Sales Order Quick Entry packing instruction');
+      allure.tag('F00101.10');
+      allure.story('Quick Input: packing instruction via mouse');
+      allure.severity('normal');
+      allure.parameter('Language', language);
+      allure.tag(language);
+      test.setTimeout(150000);
+
+      const errors = collectPageErrors(page);
+      const masterdata = await createMasterdata(language, { withPackingInstruction: true });
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+      const pi = masterdata.packingInstructions.PI;
+
+      const { recordId } = await setupOrderWithBatchEntry(page, masterdata, language);
+
+      errors.length = 0; // contract: zero browser errors during the quick-input steps only (TC2/TC6 steps 3–5)
+      await typeProductAndWaitForDropdown(page, masterdata.products.Product1.productCode);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(1000);
+
+      await typePackingInstructionAndWaitForDropdown(page, pi.tuName);
+      // getByText on a masterdata-generated TU name (language-invariant), not a localized caption
+      await page.locator('.input-dropdown-list-option').getByText(pi.tuName).first().click();
+      await page.waitForTimeout(1000);
+
+      const quantityInput = page.getByRole('spinbutton');
+      await quantityInput.click();
+      await quantityInput.fill('3');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(2000);
+
+      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
+      await expectSingleLineWithPackingInstruction(recordId, pi.tuPIItemProductTestId);
+      await expect(page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field')).toHaveValue('');
+      await expect(page.locator('#lookup_M_Product_ID input.input-field')).toHaveValue('');
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 8 (TC7 part a): regular-form composite BPartner lookup — the
+    // secondary sub-fields (Location, Contact) auto-fill from the server
+    // after selecting the customer. In THIS window these sub-fields are
+    // RawList-rendered (not RawLookup), so this guards the server auto-fill
+    // reaching the secondary sub-fields — not the RawLookup call sites
+    // themselves (those are covered by TESTs 6/7).
+    // ------------------------------------------------------------------
+    test(`Composite partner lookup: location and contact auto-fill in the regular form (${label})`, async ({ page }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00100: Sales Order');
+      allure.tag('F00100');
+      allure.story('Composite lookup: secondary sub-fields auto-filled in a regular form');
+      allure.severity('normal');
+      allure.parameter('Language', language);
+      allure.tag(language);
+      test.setTimeout(150000);
+
+      // Contract: zero browser errors for the whole scenario — not reset mid-test.
+      const errors = collectPageErrors(page);
+      const masterdata = await createMasterdata(language);
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await DashboardPage.expectVisible();
+      await SalesOrderPage.goto();
+      await SalesOrderPage.clickNew();
+      const recordId = await SalesOrderPage.selectCustomer(
+        masterdata.bpartners.CUSTOMER1.bpartnerCode
+      );
+
+      // Server auto-fill reached the secondary sub-fields — asserted, not logged.
+      await expect(page.locator('#lookup_C_BPartner_Location_ID input.input-field')).not.toHaveValue(
+        '',
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+      // The server defaults AD_User_ID only from a contact flagged IsSalesContact_Default (CalloutOrder),
+      // which the frontend-testing masterdata API cannot set — so only the sub-field's presence is asserted here; Location is the auto-filled value under test.
+      await expect(page.locator('#lookup_AD_User_ID input.input-field')).toBeVisible();
+
+      await waitForRecordSaved(SALES_ORDER_WINDOW_ID, recordId, { maxRetries: 20, retryDelayMs: 1000 });
+
+      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 9 (TC8): keyboard-only line entry when the packing-instruction lookup
+    // resolves to NO match. The product deliberately has no M_HU_PI_Item_Product,
+    // so the dropdown offers only the synthetic empty row.
+    //
+    // Four lines in one order, same masterdata: the Tab path is the CONTROL, and the
+    // three Enter shapes must reach the same outcome. The packing instruction is
+    // asserted EQUAL TO THE TAB LINE's, never against a hard-coded id.
+    // ------------------------------------------------------------------
+    test(`Keyboard-only line entry when the product has no packing instruction (${label})`, async ({ page }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00101.10: Sales Order Quick Entry packing instruction');
+      allure.tag('F00101.10');
+      allure.story('Quick Input: Enter confirms the empty packing instruction');
+      allure.severity('critical');
+      allure.parameter('Language', language);
+      allure.tag(language);
+      test.setTimeout(240000);
+
+      const errors = collectPageErrors(page);
+      // No packingInstructions → the product has none at all (the reported data state).
+      const masterdata = await createMasterdata(language);
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+      const productCode = masterdata.products.Product1.productCode;
+
+      const { recordId } = await setupOrderWithBatchEntry(page, masterdata, language);
+
+      const piInput = page.locator('#lookup_M_HU_PI_Item_Product_ID input.input-field');
+      const quantityInput = page.getByRole('spinbutton');
+
+      errors.length = 0; // contract: zero browser errors during the keyboard steps
+
+      /**
+       * Enter one line keyboard-only. `escapeKeys` is what the operator presses on the
+       * packing-instruction sub-field. Quantity is typed WITHOUT clicking, so the assertion
+       * that it lands in Menge is the proof that focus advanced (TC8 step 5).
+       */
+      const enterOneLine = async (escapeKeys, qty, stepLabel) => {
+        await test.step(`Line ${qty}: ${stepLabel}`, async () => {
+          await test.step('Type the product code, press Enter', async () => {
+            await typeProductAndWaitForDropdown(page, productCode);
+            await page.keyboard.press('Enter');
+            await page.waitForTimeout(1500);
+            await expect(piInput).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+          });
+
+          await test.step(
+            `Packvorschrift has no value - press ${stepLabel}`,
+            async () => {
+              for (const key of escapeKeys) {
+                if (key.startsWith('type:')) {
+                  await page.keyboard.type(key.slice('type:'.length));
+                } else {
+                  await page.keyboard.press(key);
+                }
+                await page.waitForTimeout(500);
+              }
+              await page.waitForTimeout(1000);
+            }
+          );
+
+          // Focus must now be on Menge: type the quantity blind and assert it landed there.
+          await test.step(
+            `Type quantity ${qty} blind - it must land in Menge, not in Packvorschrift`,
+            async () => {
+              await page.keyboard.type(String(qty));
+              await page.waitForTimeout(400);
+              await expect(quantityInput).toHaveValue(String(qty), {
+                timeout: SLOW_ACTION_TIMEOUT,
+              });
+              await expect(piInput).toHaveValue('');
+            }
+          );
+
+          await test.step('Press Enter - the order line is created', async () => {
+            await page.keyboard.press('Enter');
+            await page.waitForTimeout(2500);
+          });
+        });
+      };
+
+      // CONTROL: Tab — the pre-existing escape that already worked.
+      await enterOneLine(['Tab'], 3, 'Tab (control: already worked before the fix)');
+      // Bare Enter on the empty field (dropdown closed).
+      await enterOneLine(['Enter'], 4, 'Enter on the empty field');
+      // ArrowDown twice (first opens the list, second highlights the empty row), then Enter.
+      await enterOneLine(
+        ['ArrowDown', 'ArrowDown', 'Enter'],
+        5,
+        'ArrowDown x2 then Enter (the reported case)'
+      );
+      // Typed text matching nothing, then Enter — Tab-identical by decision 2026-09-09.
+      await enterOneLine(
+        ['type:xyzzy', 'Enter'],
+        6,
+        'type text matching nothing, then Enter'
+      );
+
+      expect(errors, `browser errors: ${errors.join('\n')}`).toEqual([]);
+
+      const rows = await getTabRows(SALES_ORDER_WINDOW_ID, recordId, 'AD_Tab-187');
+      expect(rows).toHaveLength(4);
+
+      // NOTE: fieldsByName.<X> is the field WRAPPER; the lookup id lives at .value.key
+      // (same accessor as expectSingleLineWithPackingInstruction above).
+      const byQty = {};
+      for (const row of rows) {
+        const piField = row.fieldsByName.M_HU_PI_Item_Product_ID;
+        byQty[String(row.fieldsByName.QtyEntered.value)] = piField && piField.value;
+      }
+      expect(Object.keys(byQty).sort()).toEqual(['3', '4', '5', '6']);
+
+      // The Tab line defines the expected packing instruction; the three Enter lines must match it.
+      const tabLinePi = byQty['3'];
+      // Pin the control itself: without this, a regression that dropped the packing instruction
+      // from EVERY line would let the loop below pass by mutual absence (undefined === undefined).
+      expect(
+        tabLinePi && tabLinePi.key,
+        'the Tab control line must itself carry a packing instruction'
+      ).toBeTruthy();
+      for (const qty of ['4', '5', '6']) {
+        expect(
+          byQty[qty] && byQty[qty].key,
+          `line qty=${qty} must carry the same packing instruction as the Tab line`
+        ).toBe(tabLinePi && tabLinePi.key);
+      }
     });
 
     // ------------------------------------------------------------------

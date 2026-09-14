@@ -177,6 +177,7 @@ public class DocumentReportService
 		return report.toBuilder()
 				.poReference(reportInfo.getPoReference())
 				.bpartnerId(reportInfo.getBpartnerId())
+				.suppressAutoPrint(reportInfo.isSuppressAutoPrint())
 				.build();
 	}
 

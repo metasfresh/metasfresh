@@ -172,6 +172,13 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
+	@NonNull
+	public List<I_C_OrderLine> getByIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return orderDAO.retrieveOrderLinesByIds(orderLineIds);
+	}
+
+	@Override
 	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
 	{
 		return orderDAO.getOrderLineById(orderLineId);

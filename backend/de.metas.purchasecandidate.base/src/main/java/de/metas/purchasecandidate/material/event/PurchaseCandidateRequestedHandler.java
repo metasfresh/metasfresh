@@ -49,6 +49,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.product.ProductRepository;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
@@ -123,6 +124,12 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 		if (productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId) && !productBL.isPurchased(product.getId()))
 		{
 			logger.debug("Skipping purchase candidate creation - product {} is not flagged IsPurchased", product.getId());
+			return;
+		}
+
+		if (!productBL.isAllowed(product.getId(), ProductLifeCycleAction.PURCHASE))
+		{
+			logger.debug("Skipping purchase candidate creation - product {} is blocked for PURCHASE by its life-cycle status", product.getId());
 			return;
 		}
 

@@ -667,6 +667,31 @@ public class OrderGroupRepository implements GroupRepository
 		delete(orderCompensationGroup);
 	}
 
+	/**
+	 * Deletes the {@code C_Order_CompensationGroup} <b>header</b> row for the given {@link GroupId}, if it still exists.
+	 * <p>
+	 * Intended for rolling back a compensation group whose {@code C_OrderLine}s have <b>already</b> been deleted, so the
+	 * header is the last row left and (being a {@code DEFERRABLE INITIALLY DEFERRED} FK to {@code C_Order}) would abort
+	 * the whole transaction at COMMIT if left orphaned. Unlike {@link #destroyGroup(Group)}, this does NOT need a
+	 * rebuildable {@link Group} and does NOT reject compensation-line groups — the lines are gone, only the header
+	 * remains. Idempotent: a no-op if the header is already gone.
+	 */
+	public void deleteGroupById(@NonNull final GroupId groupId)
+	{
+		assertOrderGroupId(groupId);
+
+		final I_C_Order_CompensationGroup groupRecord = queryBL
+				.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
+				.create()
+				.firstOnlyOrNull(I_C_Order_CompensationGroup.class);
+
+		if (groupRecord != null)
+		{
+			delete(groupRecord);
+		}
+	}
+
 	private I_C_Order_CompensationGroup retrieveGroupRecord(final GroupId groupId)
 	{
 		assertOrderGroupId(groupId);

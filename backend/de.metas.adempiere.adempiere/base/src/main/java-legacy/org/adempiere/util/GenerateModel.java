@@ -282,7 +282,9 @@ public class GenerateModel
 
 		if(packageName.equals("org.compiere.model"))
 		{
-			sql.append("\n AND (IsView='N' OR TableName IN ('RV_WarehousePrice','RV_BPartner')");
+			// The outer parenthesis must be closed here: without it every invocation with this package name
+			// produced malformed SQL ("syntax error at or near ORDER") and the tool could not run at all.
+			sql.append("\n AND (IsView='N' OR TableName IN ('RV_WarehousePrice','RV_BPartner'))");
 		}
 
 		//

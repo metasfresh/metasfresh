@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT, holdForCaptureIfEnabled } from "../../common";
 import { DistributionJobScreen } from "./DistributionJobScreen";
 import { DistributionJobsListFiltersScreen } from "./DistributionJobsListFiltersScreen";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
@@ -7,10 +7,15 @@ import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
 import { DistributionJobsDropAllScreen } from './DistributionJobsDropAllScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { JOB_START_ARRIVAL_TIMEOUT, JOB_START_TAP_ATTEMPTS, recoverToLauncherList } from '../jobStartRecovery';
 
 const NAME = 'DistributionJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFLaunchersScreen');
+// The job (workflow-process) screen reached after starting a launcher. This id mirrors the private
+// containerElement in DistributionJobScreen.js — keep the two in sync if that screen id changes.
+/** @returns {import('@playwright/test').Locator} */
+const jobScreenElement = () => page.locator('#WFProcessScreen');
 
 export const DistributionJobsListScreen = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -42,7 +47,18 @@ export const DistributionJobsListScreen = {
 
     startJob: async ({ launcherTestId }) => {
         return await test.step(`${NAME} Start job for testId "${launcherTestId}"`, async () => {
-            await page.getByTestId(launcherTestId).tap();
+            for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
+                await page.getByTestId(launcherTestId).tap();
+                const hasArrived = await jobScreenElement()
+                    .waitFor({ state: 'attached', timeout: JOB_START_ARRIVAL_TIMEOUT })
+                    .then(() => true, () => false);
+                if (hasArrived || attempt === JOB_START_TAP_ATTEMPTS) {
+                    break;
+                }
+                if ((await recoverToLauncherList({ applicationId: 'distribution' })) === 'unknown') {
+                    break;
+                }
+            }
             await DistributionJobScreen.waitForScreen();
         });
     },
@@ -65,6 +81,11 @@ export const DistributionJobsListScreen = {
         // Make sure we have the expected number of buttons
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
+
+        // Nothing happens here unless a capture run asked for it (UAT_CAPTURE): the offered jobs are
+        // the result this screen exists to show, and the checks above can settle faster than the video
+        // recorder samples a frame, leaving them off the recording.
+        await holdForCaptureIfEnabled();
     }),
 
     // Order-INDEPENDENT variant of expectJobButtons: use for *filtering* assertions (which

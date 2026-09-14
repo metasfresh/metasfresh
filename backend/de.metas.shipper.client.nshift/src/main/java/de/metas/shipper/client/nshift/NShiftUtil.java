@@ -24,14 +24,18 @@ package de.metas.shipper.client.nshift;
 
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonContact;
+import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonDetail;
 import de.metas.shipper.client.nshift.json.JsonDetailGroup;
 import de.metas.shipper.client.nshift.json.JsonDetailRow;
 import de.metas.shipper.client.nshift.json.JsonLine;
+import de.metas.shipper.client.nshift.json.response.JsonShipmentResponse;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -40,15 +44,36 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @UtilityClass
 public class NShiftUtil
 {
+	/**
+	 * Extracts the resolved carrier services from an nShift shipment / order-advice response. nShift returns them
+	 * as bare numeric ids under {@code Services}; the id is used as the name as well. Shared by the shipment
+	 * (booking) and order-advise paths so both map the response services identically.
+	 */
+	public static Set<JsonCarrierService> extractResolvedServices(@NonNull final JsonShipmentResponse response)
+	{
+		if (response.getServices() == null)
+		{
+			return Collections.emptySet();
+		}
+		return response.getServices().stream()
+				.map(svcId -> {
+					final String id = String.valueOf(svcId);
+					return JsonCarrierService.builder().id(id).name(id).build();
+				})
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+	}
+
 	/**
 	 * Display name for a carrier product resolved from an nShift response:
 	 * {@code "<CarrierFullName> - <ProdName>"} (e.g. "UPS Rest API - UPS Standard®").
@@ -102,19 +127,77 @@ public class NShiftUtil
 		return addressBuilder;
 	}
 
+	/**
+	 * The Attention to send instead of the mapping-resolved one.
+	 * <p>
+	 * {@code null} means test mode is OFF — the caller keeps the mapping-resolved Attention. Any non-null
+	 * result, <b>the empty string included</b>, means test mode is ON and that value IS the Attention.
+	 * <p>
+	 * Test mode on with no configured text therefore sends an EMPTY Attention, which nShift rejects
+	 * (Attention is mandatory there). That is deliberate: the alternative — falling back to the real
+	 * Attention — would silently book an unmarked shipment, the exact outcome test mode exists to prevent.
+	 * <p>
+	 * The null-vs-empty distinction is load-bearing: the Attention text column is nullable and the shipper-config
+	 * property map drops null column values, so a configured-but-empty text arrives as an absent property and
+	 * must NOT be read as "test mode off".
+	 */
+	@Nullable
+	public static String resolveTestModeAttention(@NonNull final JsonShipperConfig config)
+	{
+		if (!StringUtils.toBoolean(config.getAdditionalProperty(NShiftConstants.TEST_MODE), false))
+		{
+			return null; // test mode off
+		}
+		final String testModeAttention = config.getAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION);
+		return testModeAttention != null ? testModeAttention : "";
+	}
+
 	public static JsonAddress buildAddressWithAttentionFromMappings(
 			@NonNull final de.metas.common.delivery.v1.json.JsonAddress commonAddress,
 			@Nullable final JsonContact contact,
 			@NonNull final JsonAddressKind kind,
 			@NonNull final NShiftMappingConfigs mappingConfigs,
-			@NonNull final Function<String, String> valueProvider)
+			@NonNull final Function<String, String> valueProvider,
+			@Nullable final String testModeAttention)
 	{
-		final String attentionAttributeType = kind == JsonAddressKind.SENDER
-				? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION
-				: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION;
-		return buildNShiftAddressBuilder(commonAddress, contact, kind)
-				.attention(mappingConfigs.getSingleValue(attentionAttributeType, valueProvider))
-				.build();
+		final String role = kind.isSender() ? "Sender" : "Receiver";
+
+		// null == test mode off. Any non-null value — the empty string included — IS the Attention: the configured
+		// text replaces the mapping's, so the mapping is not consulted for the Attention at all. An empty text is
+		// sent empty and rejected by nShift, which is the point — never book an unmarked shipment.
+		final String attention;
+		if (testModeAttention != null)
+		{
+			attention = testModeAttention;
+		}
+		else
+		{
+			final String attentionAttributeType = kind.isSender()
+					? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION
+					: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION;
+			attention = mappingConfigs.getSingleValue(attentionAttributeType, valueProvider);
+			Check.assumeNotEmpty(attention, IllegalStateException.class,
+					role + " Attention is mandatory but was not resolved from mapping configs.");
+		}
+		Check.assumeNotEmpty(contact != null ? contact.getPhone() : null, IllegalStateException.class,
+				role + " Phone is mandatory but is missing or blank.");
+		Check.assumeNotEmpty(contact != null ? contact.getEmailAddress() : null, IllegalStateException.class,
+				role + " Email is mandatory but is missing or blank.");
+
+		// Optional CustNo, resolved from mapping rules (e.g. a CustomValueString1 shipper-config value routed via a
+		// SenderCustNo / ReceiverCustNo rule). Unset -> getSingleValue returns "" -> omitted (JsonAddress is NON_NULL).
+		final String custNoAttributeType = kind.isSender()
+				? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_CUSTNO
+				: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_CUSTNO;
+		final String custNo = mappingConfigs.getSingleValue(custNoAttributeType, valueProvider);
+
+		final JsonAddress.JsonAddressBuilder addressBuilder = buildNShiftAddressBuilder(commonAddress, contact, kind)
+				.attention(attention);
+		if (Check.isNotBlank(custNo))
+		{
+			addressBuilder.custNo(custNo);
+		}
+		return addressBuilder.build();
 	}
 
 	/**
@@ -139,22 +222,24 @@ public class NShiftUtil
 			@NonNull final JsonDeliveryAdvisorRequest request,
 			@NonNull final NShiftMappingConfigs mappingConfigs)
 	{
+		if (request.getPackageDimensions() == null)
+		{
+			throw new IllegalStateException("Package dimensions are mandatory but were not specified (dimensions is null).");
+		}
+
 		final int weightGrams = request.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
 		final Function<String, String> lineValueProvider = request::getValue;
-		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
+		final int lengthMM = request.getPackageDimensions().getLengthInCM() * 10;
+		final int widthMM = request.getPackageDimensions().getWidthInCM() * 10;
+		final int heightMM = request.getPackageDimensions().getHeightInCM() * 10;
+		return JsonLine.builder()
 				.lineWeight(weightGrams)
-				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider));
-		if (request.getPackageDimensions() != null)
-		{
-			final int lengthMM = request.getPackageDimensions().getLengthInCM() * 10;
-			final int widthMM = request.getPackageDimensions().getWidthInCM() * 10;
-			final int heightMM = request.getPackageDimensions().getHeightInCM() * 10;
-			lineBuilder.number(1); // always 1: the advise carries a single physical HU / parcel
-			lineBuilder.length(lengthMM);
-			lineBuilder.width(widthMM);
-			lineBuilder.height(heightMM);
-		}
-		return lineBuilder.build();
+				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider))
+				.number(1) // always 1: the advise carries a single physical HU / parcel
+				.length(lengthMM)
+				.width(widthMM)
+				.height(heightMM)
+				.build();
 	}
 
 	/**

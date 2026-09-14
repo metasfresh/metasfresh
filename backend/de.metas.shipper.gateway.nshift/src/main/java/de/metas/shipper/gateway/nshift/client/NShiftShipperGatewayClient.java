@@ -32,6 +32,7 @@ import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
+import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
@@ -99,11 +100,11 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final List<ShipmentSchedule> schedules = loadSchedules(deliveryOrder);
-		final boolean shippingRulesActive = areShippingRulesActive(schedules);
+		final boolean isManual = isManual(schedules);
 		final JsonDeliveryRequest deliveryRequestJson = applyShippingRuleOptions(
 				jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs),
 				schedules,
-				shippingRulesActive);
+				isManual);
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		JsonDeliveryResponse response;
 		try
@@ -135,7 +136,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		// carrier with the resolved value (product + services always; goods type only when unambiguous).
 		// TODO: the carrier overwrite is applied at delivery-order level — move it to line level in a later iteration.
 		DeliveryOrder resolvedDeliveryOrder = deliveryOrder;
-		if (shippingRulesActive)
+		if (!isManual)
 		{
 			final CarrierProductAllocationService.ResolvedCarrier resolvedCarrier = carrierProductAllocationService.persistResolvedAllocations(
 					deliveryOrder.getShipperId(),
@@ -165,62 +166,53 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	/**
-	 * Patches the shipper config of the given request with UseShippingRules and ServiceLevel
-	 * when shipping rules are active (see {@link #areShippingRulesActive}).
+	 * Patches the shipper config of the given request with isManual, isSelectionRules and ServiceLevel
+	 * when shipping rules are active (see {@link #isManual}).
 	 */
 	private JsonDeliveryRequest applyShippingRuleOptions(
 			@NonNull final JsonDeliveryRequest request,
 			@NonNull final List<ShipmentSchedule> schedules,
-			final boolean shippingRulesActive)
+			final boolean isManual)
 	{
-		if (!shippingRulesActive)
+		JsonShipperConfig patchedConfig;
+		if (isManual)
 		{
-			return request;
+			//needs to be changed to false for the manual case
+			patchedConfig = request.getShipperConfig()
+					.withAdditionalProperty(NShiftConstants.SELECTION_RULES, StringUtils.ofBoolean(false))
+					.withAdditionalProperty(NShiftConstants.MANUAL, StringUtils.ofBoolean(true));
 		}
-
-		final ExternalSystemId externalSystemId = schedules.stream()
-				.map(ShipmentSchedule::getExternalSystemId)
-				.filter(Objects::nonNull)
-				.findFirst()
-				.orElse(null);
-
-		final String serviceLevel = serviceLevelConfigs.getEffectiveServiceLevel(
-				ShipperConfigRequest.builder().externalSystemId(externalSystemId).build()).orElse(null);
-
-		JsonShipperConfig patchedConfig = request.getShipperConfig()
-				.withAdditionalProperty(NShiftConstants.USE_SHIPPING_RULES, Boolean.TRUE.toString());
-		if (serviceLevel != null)
+		else
 		{
-			patchedConfig = patchedConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, serviceLevel);
+			patchedConfig = request.getShipperConfig()
+					.withAdditionalProperty(NShiftConstants.MANUAL, StringUtils.ofBoolean(false));
+
+			final ExternalSystemId externalSystemId = schedules.stream()
+					.map(ShipmentSchedule::getExternalSystemId)
+					.filter(Objects::nonNull)
+					.findFirst()
+					.orElse(null);
+
+			final String serviceLevel = serviceLevelConfigs.getEffectiveServiceLevel(
+					ShipperConfigRequest.builder().externalSystemId(externalSystemId).build()).orElse(null);
+
+			if (serviceLevel != null)
+			{
+				patchedConfig = patchedConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, serviceLevel);
+			}
 		}
 
 		return request.toBuilder().shipperConfig(patchedConfig).build();
 	}
 
-	/**
-	 * Whether nShift re-resolves the carrier at ship time via its own selection rules. Config-first:
-	 * <ol>
-	 * <li>{@code Carrier_Config.IsSelectionRules} must be ON — if OFF, nShift never resolves, the explicit
-	 *     carrier is always authoritative;</li>
-	 * <li>with selection rules ON, resolution is allowed only when <b>no</b> manual advise is involved — any
-	 *     manual carrier must be respected (sent explicitly, rules OFF), never overwritten by nShift's rules.</li>
-	 * </ol>
-	 */
-	private boolean areShippingRulesActive(@NonNull final List<ShipmentSchedule> schedules)
+	private boolean isManual(@NonNull final List<ShipmentSchedule> schedules)
 	{
 		if (schedules.isEmpty())
 		{
 			return false;
 		}
-		// config first: selection rules OFF ⇒ nShift never resolves; the explicit carrier is authoritative.
-		if (!shipperConfig.isSelectionRules())
-		{
-			return false;
-		}
-		// selection rules ON ⇒ resolve only when NO manual is involved; any manual carrier is respected.
-		final boolean anyManual = schedules.stream()
+		return schedules.stream()
 				.anyMatch(sched -> sched.getCarrierAdvisingStatus().isManual());
-		return !anyManual;
 	}
 
 	/**

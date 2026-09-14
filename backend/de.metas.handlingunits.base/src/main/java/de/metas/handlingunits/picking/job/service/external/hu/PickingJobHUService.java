@@ -611,7 +611,7 @@ public class PickingJobHUService
 	@Nullable
 	public ProductAvailableStocks newAvailableStocksProvider(@NonNull final Workplace workplace)
 	{
-		final Set<LocatorId> pickFromLocatorIds = warehouseService.getPickFromLocatorIds(workplace);
+		final Set<LocatorId> pickFromLocatorIds = warehouseService.getLocatorIdsOfTheSamePickingGroup(workplace.getWarehouseId());
 		if (pickFromLocatorIds.isEmpty())
 		{
 			return null;

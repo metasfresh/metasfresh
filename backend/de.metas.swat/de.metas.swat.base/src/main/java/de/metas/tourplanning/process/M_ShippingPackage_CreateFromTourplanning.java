@@ -30,6 +30,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -40,6 +41,7 @@ import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.TourId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
@@ -59,6 +61,7 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
 	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
+	@NonNull private final ShipperTransportationDocSubTypeGuard docSubTypeGuard = SpringContextHolder.instance.getBean(ShipperTransportationDocSubTypeGuard.class);
 
 	@Param(parameterName = I_M_Tour.COLUMNNAME_M_Tour_ID)
 	private TourId p_M_Tour_ID;
@@ -70,7 +73,13 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 	{
 		// task 06058: if the document is processed, we not allowed to run this process
 		final I_M_ShipperTransportation shipperTransportation = context.getSelectedModel(I_M_ShipperTransportation.class);
-		return ProcessPreconditionsResolution.acceptIf(!shipperTransportation.isProcessed());
+		if (shipperTransportation == null)
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> ProcessPreconditionsResolution.acceptIf(!shipperTransportation.isProcessed()),
+				() -> docSubTypeGuard.rejectIfDeliveryInstruction(shipperTransportation));
 	}
 
 	@Override

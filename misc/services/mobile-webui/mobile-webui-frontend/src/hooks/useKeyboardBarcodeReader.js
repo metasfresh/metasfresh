@@ -22,10 +22,16 @@ export const useKeyboardBarcodeReader = ({
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
 
-  // useLayoutEffect (not useEffect): the outgoing scanner's listener detach and the incoming scanner's
-  // attach must happen in the same commit (before paint). A deferred useEffect cleanup leaves both
-  // listeners live in the gap after the DOM the operator sees is committed, so a scan fired then is
-  // caught by the WRONG (outgoing) scanner.
+  // useLayoutEffect (not useEffect): the keydown listener must attach/detach synchronously in the
+  // commit phase, BEFORE the browser paints — not in a post-paint passive effect. This closes two
+  // sub-frame gaps that would otherwise silently drop a scan:
+  //  - mount: a scanner screen renders its offscreen input during commit, but a passive useEffect
+  //    runs a task later, so a scan fired between "input painted" and "listener attached" is lost
+  //    (repro: e2e scanWorkstation/scanWorkplace timed out ~15% of runs without the removed retry guard);
+  //  - switch: moving between screens, the outgoing scanner's detach and the incoming scanner's attach
+  //    happen in the same commit, so a scan fired in the gap isn't caught by the WRONG (outgoing) scanner.
+  // The reader owns document-level keydown, so attaching one frame earlier has no layout/paint cost
+  // and no behavioural change for any consumer.
   useLayoutEffect(() => {
     // A recognised-but-incomplete streamed QR code (e.g. a long HU QR arriving in chunks over
     // several seconds) is kept buffered across inter-keystroke gaps instead of being flushed as a

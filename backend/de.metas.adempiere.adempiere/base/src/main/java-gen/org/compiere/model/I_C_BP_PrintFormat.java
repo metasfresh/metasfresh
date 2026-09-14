@@ -100,7 +100,7 @@ public interface I_C_BP_PrintFormat
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Zebra Config.
+	 * Set Zebra Configuration.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -109,7 +109,7 @@ public interface I_C_BP_PrintFormat
 	void setAD_Zebra_Config_ID (int AD_Zebra_Config_ID);
 
 	/**
-	 * Get Zebra Config.
+	 * Get Zebra Configuration.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -234,20 +234,20 @@ public interface I_C_BP_PrintFormat
 
 	/**
 	 * Set Copies.
-	 * Overwrites the number of copies set in the document type for given addresses.
+	 * Overwrites the number of copies set in the document type. (Value 0 is ignored)
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setDocumentCopies_Override (int DocumentCopies_Override);
 
 	/**
 	 * Get Copies.
-	 * Overwrites the number of copies set in the document type for given addresses.
+	 * Overwrites the number of copies set in the document type. (Value 0 is ignored)
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getDocumentCopies_Override();
@@ -277,6 +277,52 @@ public interface I_C_BP_PrintFormat
 
 	ModelColumn<I_C_BP_PrintFormat, Object> COLUMN_IsActive = new ModelColumn<>(I_C_BP_PrintFormat.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Print immediately.
+	 * Print immediately when the HU becomes Active
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoPrint (@Nullable java.lang.String IsAutoPrint);
+
+	/**
+	 * Get Print immediately.
+	 * Print immediately when the HU becomes Active
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAutoPrint();
+
+	ModelColumn<I_C_BP_PrintFormat, Object> COLUMN_IsAutoPrint = new ModelColumn<>(I_C_BP_PrintFormat.class, "IsAutoPrint", null);
+	String COLUMNNAME_IsAutoPrint = "IsAutoPrint";
+
+	/**
+	 * Set Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsDropShip (@Nullable java.lang.String IsDropShip);
+
+	/**
+	 * Get Different shipping address.
+	 * Drop Shipments are sent from the Vendor directly to the Customer
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsDropShip();
+
+	ModelColumn<I_C_BP_PrintFormat, Object> COLUMN_IsDropShip = new ModelColumn<>(I_C_BP_PrintFormat.class, "IsDropShip", null);
+	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
 	 * Set SeqNo.

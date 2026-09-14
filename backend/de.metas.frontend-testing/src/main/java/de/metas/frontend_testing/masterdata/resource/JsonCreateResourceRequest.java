@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.resource;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.resource.ResourceTypeId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,4 +16,5 @@ public class JsonCreateResourceRequest
 {
 	@NonNull String type;
 	@Nullable ResourceTypeId resourceTypeId;
+	@Nullable Identifier workplace;
 }

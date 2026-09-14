@@ -1,4 +1,4 @@
-import { test } from "../../../../playwright.config";
+import { test, testContext } from "../../../../playwright.config";
 import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, BARCODE_HOOK_FLUSH_MS } from "../../common";
 import { expect } from "@playwright/test";
 import { BarcodeScannerComponent } from "../../components/BarcodeScannerComponent";
@@ -34,6 +34,20 @@ export const GetQuantityDialog = {
         await page.locator('#qty-input').fill(`${qty}`);
     }),
 
+    expectQtyEnteredVisible: async () => await test.step(`${NAME} - Expect QtyEntered field visible`, async () => {
+        await expect(page.locator('#qty-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectCatchWeightVisible: async () => await test.step(`${NAME} - Expect CatchWeight field visible`, async () => {
+        await expect(page.locator('#catch-weight')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // The catch-weight row exists only while the line carries a catch-weight UOM, so what the
+    // operator sees when the weight is not captured is the row being ABSENT, not merely hidden.
+    expectCatchWeightNotVisible: async () => await test.step(`${NAME} - Expect CatchWeight field not present`, async () => {
+        await expect(page.locator('#catch-weight')).toHaveCount(0);
+    }),
+
     expectLotNoVisible: async () => await test.step(`${NAME} - Expect LotNo visible`, async () => {
         await expect(page.getByTestId('lotNo')).toBeVisible();
     }),
@@ -48,6 +62,69 @@ export const GetQuantityDialog = {
 
     expectBestBeforeDateNotVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate not visible`, async () => {
         await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
+    }),
+
+    // ---------------------------------------------------------------------------------------------
+    // Generic editable-attributes section (EditableAttributesSection). Used by the mfg receive dialog,
+    // where Lot / Best-before / any configured attribute render as attr-<code>-field inside
+    // editable-attributes-section - NOT via the picking-only dedicated lotNo/bestBeforeDate rows above.
+    //
+    // Every method below accepts EITHER a raw M_Attribute code (e.g. a well-known system attribute like
+    // 'Lot-Nummer' / 'HU_BestBeforeDate') OR a masterdata identifier (a createMasterdata `attributes`
+    // map-key, e.g. 'sizeAttr'). A known identifier resolves to its response-reported per-run code
+    // (masterdata.attributes.<id>.attributeValue); anything else falls back to the raw code. This is the
+    // single resolution point, so specs reference attributes by identifier and never hardcode a per-run
+    // Value string. See resolveAttributeCode() at the bottom of this file.
+    // ---------------------------------------------------------------------------------------------
+    expectEditableAttributeVisible: async (codeOrIdentifier) => await test.step(`${NAME} - Expect editable attribute '${codeOrIdentifier}' visible`, async () => {
+        const code = resolveAttributeCode(codeOrIdentifier);
+        await expect(page.getByTestId(`attr-${code}-field`)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectEditableAttributeNotVisible: async (codeOrIdentifier) => await test.step(`${NAME} - Expect editable attribute '${codeOrIdentifier}' not visible`, async () => {
+        const code = resolveAttributeCode(codeOrIdentifier);
+        await expect(page.getByTestId(`attr-${code}-field`)).not.toBeVisible();
+    }),
+
+    typeEditableAttribute: async (codeOrIdentifier, value) => await test.step(`${NAME} - Type editable attribute '${codeOrIdentifier}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
+        await clickAndType(field, value);
+    }),
+
+    // Date-type editable attribute (renders the DateInput component). Same DD.MM.YYYY display-format
+    // contract as the dedicated best-before field; fill() sets the whole value in one event.
+    typeEditableAttributeDate: async (codeOrIdentifier, value) => await test.step(`${NAME} - Type editable date attribute '${codeOrIdentifier}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
+        await field.tap();
+        await field.fill(value);
+    }),
+
+    // LIST-type editable attribute (renders a native <select>). `value` is the M_AttributeValue.Value code.
+    selectEditableAttribute: async (codeOrIdentifier, value) => await test.step(`${NAME} - Select editable attribute '${codeOrIdentifier}' = '${value}'`, async () => {
+        const field = page.getByTestId(`attr-${resolveAttributeCode(codeOrIdentifier)}-field`);
+        // The frontend holds the operator's selection across a background reload, so a single select
+        // and verify is enough - the option the operator picked must be the one the control holds.
+        await field.selectOption(value);
+        await expect(field).toHaveValue(value);
+    }),
+
+    expectEditableAttributesSectionVisible: async () => await test.step(`${NAME} - Expect editable-attributes section visible`, async () => {
+        await expect(page.getByTestId('editable-attributes-section')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectEditableAttributesSectionNotVisible: async () => await test.step(`${NAME} - Expect editable-attributes section not visible`, async () => {
+        await expect(page.getByTestId('editable-attributes-section')).toHaveCount(0);
+    }),
+
+    // Asserts the rendered order of the editable-attributes section's rows (attr-<code>-row) equals the
+    // given order — proves SeqNo (config order), not e.g. alphabetical, drives field order. Each entry may
+    // be a raw code or a masterdata identifier (resolved to its per-run code, same as the methods above).
+    expectEditableAttributesOrder: async (codesOrIdentifiersInOrder) => await test.step(`${NAME} - Expect editable attributes in order '${codesOrIdentifiersInOrder.join(', ')}'`, async () => {
+        const expectedCodes = codesOrIdentifiersInOrder.map(resolveAttributeCode);
+        const rows = page.locator('[data-testid="editable-attributes-section"] [data-testid$="-row"]');
+        const actualTestIds = await rows.evaluateAll((elements) => elements.map((el) => el.getAttribute('data-testid')));
+        const actualCodes = actualTestIds.map((testId) => testId.replace(/^attr-/, '').replace(/-row$/, ''));
+        expect(actualCodes).toEqual(expectedCodes);
     }),
 
     expectSerialNoScanButtonVisible: async () => await test.step(`${NAME} - Expect SerialNo scan button visible`, async () => {
@@ -206,7 +283,9 @@ export const GetQuantityDialog = {
 
     clickManual: async () => await test.step(`${NAME} - Press Manual`, async () => {
         await page.getByTestId('switchToManualInput-button').tap();
-        await page.locator('#qty-input').waitFor({ timeout: SLOW_ACTION_TIMEOUT }); // atm that's the only indicator that we switched to manual input
+        // The quantity field appearing is what tells the operator - and us - that the switch happened;
+        // atm it is also the only indicator.
+        await expect(page.locator('#qty-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
@@ -218,12 +297,23 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError, closeTarget = false }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyInputVisible, expectCatchWeightVisible, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError, closeTarget = false }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
         if (switchToManualInput) {
             await GetQuantityDialog.clickManual();
+        }
+
+        if (expectQtyInputVisible) {
+            await GetQuantityDialog.expectQtyEnteredVisible();
+        }
+        if (expectCatchWeightVisible != null) {
+            if (expectCatchWeightVisible) {
+                await GetQuantityDialog.expectCatchWeightVisible();
+            } else {
+                await GetQuantityDialog.expectCatchWeightNotVisible();
+            }
         }
 
         if (expectQtyEntered != null) {
@@ -273,6 +363,13 @@ export const GetQuantityDialog = {
 //
 //
 //
+
+// Resolves a code-or-identifier to the actual M_Attribute code used in the attr-<code>-field testId.
+// A masterdata identifier (a createMasterdata `attributes` map-key registered in the last response)
+// resolves to its per-run Value (masterdata.attributes.<id>.attributeValue); anything else - notably a
+// well-known system code such as 'Lot-Nummer' or 'HU_BestBeforeDate' - is returned unchanged.
+const resolveAttributeCode = (codeOrIdentifier) =>
+    testContext.lastMasterdata?.attributes?.[codeOrIdentifier]?.attributeValue ?? codeOrIdentifier;
 
 const expectMissingOrDisabled = async (locator) => {
     // Element should either not exist (dialog already closed) or be disabled (dialog closing).

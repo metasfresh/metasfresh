@@ -23,12 +23,14 @@
 package de.metas.rest_api.v2.product;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.gs1.GTIN;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.ProductAndHUPIItemProductId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -36,28 +38,47 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_M_Product;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class ExternalIdentifierProductLookupService
 {
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+
+	@VisibleForTesting
+	public static ExternalIdentifierProductLookupService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ExternalIdentifierProductLookupService.class,
+				() -> new ExternalIdentifierProductLookupService(ExternalReferenceRestControllerService.newInstanceForUnitTesting()));
+	}
 
 	@NonNull
 	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifier(
 			@NonNull final ExternalIdentifier productIdentifier,
 			@NonNull final OrgId orgId)
+	{
+		return resolveProductExternalIdentifier(productIdentifier, orgId, null);
+	}
+
+	@NonNull
+	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifier(
+			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date)
 	{
 		switch (productIdentifier.getType())
 		{
@@ -81,7 +102,7 @@ public class ExternalIdentifierProductLookupService
 				return ProductAndHUPIItemProductId.opt(productId);
 
 			case GTIN:
-				return lookupProductByGTIN(productIdentifier);
+				return lookupProductByGTIN(productIdentifier, date);
 			default:
 				throw new InvalidIdentifierException(productIdentifier.getRawValue());
 		}
@@ -90,69 +111,24 @@ public class ExternalIdentifierProductLookupService
 	@VisibleForTesting
 	@NonNull
 	Optional<ProductAndHUPIItemProductId> lookupProductByGTIN(
-			@NonNull final ExternalIdentifier productIdentifier)
+			@NonNull final ExternalIdentifier productIdentifier,
+			@Nullable final ZonedDateTime date)
 	{
-		final String gtin = productIdentifier.asGTIN();
+		final GTIN gtin = GTIN.ofString(productIdentifier.asGTIN());
 
-		// Only consider HUPI / BPartner_Product rows that point to an active M_Product.
-		// The consolidation process (F5001.1) can leave an M_Product inactive while keeping
-		// its HUPI/BPartner_Product rows active — those rows must NOT be matched by incoming OLCands.
-		final IQuery<I_M_Product> activeProducts = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.create();
-
-		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
-
-		final I_M_HU_PI_Item_Product hupi = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(hupiFilter)
-				.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
-				.orderBy(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
-				.create().first();
-		if (hupi != null)
+		// Branch 1: M_HU_PI_Item_Product — validity-filtered (ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)).
+		// If no valid row exists for the given date, falls through to branch 2.
+		final Optional<ProductAndHUPIItemProductId> hupiOpt = huPIItemProductDAO.findFirstByGtin(gtin, date);
+		if (hupiOpt.isPresent())
 		{
-			return ProductAndHUPIItemProductId.opt(
-					ProductId.ofRepoId(hupi.getM_Product_ID()),
-					HUPIItemProductId.ofRepoId(hupi.getM_HU_PI_Item_Product_ID()));
+			return hupiOpt;
 		}
 
-		// TODO refactor this logic and use some BPartnerProductDAO methods
-		final ICompositeQueryFilter<I_C_BPartner_Product> bppFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN_CU, gtin)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_UPC, gtin);
+		// Branch 2: C_BPartner_Product — GTIN / EAN_CU / UPC match.
+		final Optional<ProductId> bppProductIdOpt = bPartnerProductDAO.findFirstProductIdByGtin(gtin);
 
-		final I_C_BPartner_Product bpp = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(bppFilter)
-				.addInSubQueryFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, activeProducts)
-				.orderBy(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID)
-				.create().first();
-		if (bpp != null)
-		{
-			return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(bpp.getM_Product_ID()));
-		}
-
-		final ICompositeQueryFilter<I_M_Product> pFilter = queryBL.createCompositeQueryFilter(I_M_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, gtin)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, gtin);
-		final I_M_Product p = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(pFilter)
-				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
-				.create().first();
-		if (p != null)
-		{
-			return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(p.getM_Product_ID()));
-		}
-		return Optional.empty();
+		// Branch 3: M_Product — GTIN / EAN13_ProductCode / UPC match.
+		return bppProductIdOpt.map(ProductAndHUPIItemProductId::opt).orElseGet(() -> productDAO.findFirstProductIdByGtin(gtin)
+				.flatMap(ProductAndHUPIItemProductId::opt));
 	}
-
 }

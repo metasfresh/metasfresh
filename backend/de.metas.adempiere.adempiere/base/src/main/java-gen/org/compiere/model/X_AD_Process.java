@@ -483,6 +483,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
+	public void setIsUseAutoFilters (final boolean IsUseAutoFilters)
+	{
+		set_Value (COLUMNNAME_IsUseAutoFilters, IsUseAutoFilters);
+	}
+
+	@Override
+	public boolean isUseAutoFilters() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUseAutoFilters);
+	}
+
+	@Override
 	public void setIsUseBPartnerLanguage (final boolean IsUseBPartnerLanguage)
 	{
 		set_Value (COLUMNNAME_IsUseBPartnerLanguage, IsUseBPartnerLanguage);

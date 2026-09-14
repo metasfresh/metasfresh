@@ -4,6 +4,9 @@ const NAME = 'ConfirmActivityErrorPanel';
 const containerElement = () => page.getByTestId('confirm-activity-error-panel');
 
 export const ConfirmActivityErrorPanel = {
+    /** @returns {import('@playwright/test').Locator} the panel container, for composing waits (e.g. `.or(...)`). */
+    locator: () => containerElement(),
+
     waitForPanel: async () => await step(`${NAME} - Wait for panel`, async () => {
         await containerElement().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     }),

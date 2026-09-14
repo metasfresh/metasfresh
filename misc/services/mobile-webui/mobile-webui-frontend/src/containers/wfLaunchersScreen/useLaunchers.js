@@ -3,7 +3,11 @@ import { useEffect, useState } from 'react';
 import { useApplicationLaunchers } from '../../reducers/launchers';
 import { useFilterByQRCode } from './useFilterByQRCode';
 import { toQRCodeString } from '../../utils/qrCode/hu';
-import { clearLaunchers, populateLaunchersComplete } from '../../actions/LauncherActions';
+import {
+  clearLaunchers,
+  populateLaunchersComplete,
+  populateLaunchersPushedByServer,
+} from '../../actions/LauncherActions';
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
 import { getTokenFromState } from '../../reducers/appHandler';
 import { useApplicationInfo } from '../../reducers/applications';
@@ -22,15 +26,19 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
 
   //
   // Load application launchers
-  const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
-    dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
+  const onNewLaunchers = ({ applicationId, applicationLaunchers, requestTimestamp }) => {
+    dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers, requestTimestamp }));
   };
   useEffect(() => {
     if (isEnabled) {
       setLoading(true);
+      // Capture WHEN the request is issued (not when it resolves): a launchers response is only
+      // authoritative about processes that existed when the request went out. Threading this into
+      // populateLaunchersComplete lets the wfProcesses reducer keep a process started after this.
+      const launchersFetchStartedAt = Date.now();
       getLaunchers({ applicationId, filterByQRCodeString, filters, facets })
         .then((applicationLaunchers) => {
-          onNewLaunchers({ applicationId, applicationLaunchers });
+          onNewLaunchers({ applicationId, applicationLaunchers, requestTimestamp: launchersFetchStartedAt });
         })
         .finally(() => setLoading(false));
     } else {
@@ -50,7 +58,9 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
     filters,
     facets,
     onWebsocketMessage: ({ applicationId, applicationLaunchers }) => {
-      onNewLaunchers({ applicationId, applicationLaunchers });
+      // Refreshes the visible list only. Must not go through populateLaunchersComplete, whose action type
+      // carries the power to prune workflow processes.
+      dispatch(populateLaunchersPushedByServer({ applicationId, applicationLaunchers }));
     },
   });
 

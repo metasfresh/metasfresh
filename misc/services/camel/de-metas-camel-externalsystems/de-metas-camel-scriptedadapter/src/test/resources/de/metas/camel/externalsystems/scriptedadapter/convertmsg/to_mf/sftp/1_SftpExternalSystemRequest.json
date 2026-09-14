@@ -8,6 +8,7 @@
   "traceId": "123",
   "parameters": {
     "endpointName": "sftpEndpoint",
+    "scriptedImportRouteKey": "ScriptedImportConversion-1",
     "scriptIdentifier": "scriptIdentifier",
     "sftpHost": "localhost",
     "sftpPort": "22",
@@ -16,7 +17,7 @@
     "sftpAuthType": "PASSWORD",
     "sftpRemotePath": "/inbound",
     "sftpPollingIntervalMs": "30000",
-    "sftpProcessedDirectory": ".done",
-    "sftpErrorDirectory": ".error"
+    "processedDirectory": ".done",
+    "errorDirectory": ".error"
   }
 }

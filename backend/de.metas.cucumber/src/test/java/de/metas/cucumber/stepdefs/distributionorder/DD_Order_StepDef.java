@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.distributionorder;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -53,6 +54,9 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.movement.schedule.commands.pick_from.DDOrderPickFromRequest;
+import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineContributorRepository;
+import de.metas.handlingunits.model.I_DD_OrderLine_PickingJobSchedule;
+import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -78,6 +82,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -118,8 +123,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <ul>
  *   <li>Creating DD_Orders via {@code metasfresh contains DD_Orders}</li>
  *   <li>Completing, voiding, and asserting DocStatus</li>
- *   <li>Waiting for the DD_Order linked to a {@code M_Picking_Job_Schedule} to appear (reconcile)</li>
- *   <li>Asserting that a DD_Order linked to a {@code M_ShipmentSchedule} is voided</li>
+ *   <li>Waiting for the DD_Order serving a {@code M_Picking_Job_Schedule} to appear (reconcile)</li>
+ *   <li>Asserting that no live DD_Order serves a {@code M_ShipmentSchedule}</li>
  *   <li>Driving the reconcile event handler directly (bypass async) for unit-like Cucumber assertions</li>
  * </ul>
  */
@@ -134,6 +139,7 @@ public class DD_Order_StepDef
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO = SpringContextHolder.instance.getBean(DDOrderLowLevelDAO.class);
+	@NonNull private final DDOrderLineContributorRepository contributorRepository = SpringContextHolder.instance.getBean(DDOrderLineContributorRepository.class);
 	@NonNull private final DDOrderMoveScheduleService moveScheduleService = SpringContextHolder.instance.getBean(DDOrderMoveScheduleService.class);
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -357,72 +363,99 @@ public class DD_Order_StepDef
 	}
 
 	/**
-	 * @cucumber.stepdef Polls for the single live (DocStatus != Voided) DD_Order linked to a shipment schedule via
-	 * {@code DD_Order.M_ShipmentSchedule_ID}, asserts exactly one is found, and validates header + line.
-	 * <p>
-	 * This is the assertion used by the DD_Order picking-reconcile flow, where exactly one Completed DD_Order
-	 * is created per packing-warehouse shipment-schedule line. Both {@code DD_Order.M_ShipmentSchedule_ID} and
-	 * {@code DD_OrderLine.M_ShipmentSchedule_ID} are asserted to reference the given schedule.
-	 * <p>
-	 * Required columns:
-	 * <ul>
-	 *   <li>{@code M_ShipmentSchedule_ID} — identifier of the shipment schedule the DD_Order must be linked to</li>
-	 * </ul>
-	 * Optional columns:
-	 * <ul>
-	 *   <li>{@code Identifier} — stores the found DD_Order for later reference</li>
-	 *   <li>{@code DocStatus} — expected header doc status (e.g. {@code Completed})</li>
-	 *   <li>{@code M_Warehouse_From_ID} — expected source warehouse identifier (header + line)</li>
-	 *   <li>{@code M_Warehouse_To_ID} — expected target warehouse identifier (header + line)</li>
-	 *   <li>{@code QtyEntered} — expected line quantity</li>
-	 * </ul>
+	 * @cucumber.stepdef Asserts the DD_Order's {@code C_BPartner_ID} is none of the given business partners.
+	 * @cucumber.columns
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) a business partner the DD_Order must NOT name<br>
+	 * @cucumber.depends StepDefData: DD_Order_StepDefData, C_BPartner_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * Then after not more than 120s, the DD_Order linked to shipment schedule is found:
-	 *   | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-	 *   | shipmentSchedule       | Completed | sourceWH            | packingWH         | 5          |
+	 * Then the DD_Order identified by groupDDOrder names none of these business partners:
+	 *   | C_BPartner_ID |
+	 *   | customerA     |
+	 *   | customerB     |
 	 * </pre>
 	 */
-	@And("^after not more than (.*)s, the DD_Order linked to shipment schedule is found:$")
-	public void validateDDOrderLinkedToSchedule(final int timeoutSec, @NonNull final DataTable dataTable)
+	@Then("^the DD_Order identified by (.*) names none of these business partners:$")
+	public void assertDDOrderNamesNoneOfTheseBPartners(@NonNull final String ddOrderIdentifier, @NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable)
-				.setAdditionalRowIdentifierColumnName(I_DD_Order.COLUMNNAME_DD_Order_ID)
-				.forEach(row -> validateDDOrderLinkedToSchedule(timeoutSec, row));
+		final I_DD_Order ddOrder = ddOrderTable.get(ddOrderIdentifier);
+		final BPartnerId actualBPartnerId = BPartnerId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID());
+
+		final SoftAssertions softly = new SoftAssertions();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final StepDefDataIdentifier identifier = row.getAsIdentifier(I_DD_Order.COLUMNNAME_C_BPartner_ID);
+			softly.assertThat(actualBPartnerId)
+					.as("DD_Order %s (DD_Order_ID=%s) C_BPartner_ID must not be C_BPartner %s",
+							ddOrderIdentifier, ddOrder.getDD_Order_ID(), identifier)
+					.isNotEqualTo(identifier.lookupNotNullIdIn(bPartnerTable));
+		});
+		softly.assertAll();
 	}
 
-	private void validateDDOrderLinkedToSchedule(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	/** The live (DocStatus != Voided) DD_Orders serving the given assignment, resolved through its {@code DD_OrderLine_PickingJobSchedule} rows. */
+	private IQuery<I_DD_Order> liveDDOrderForPickingJobScheduleQuery(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
-		final ShipmentScheduleId scheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
-
-		// Validate header AND line inside the retry: during an async RECREATE (qty change) the old DD_Order is
-		// transiently still live with the same header (schedule/warehouses/DocStatus) but the old qty. Binding on
-		// header-only would grab that stale record (and collide with its already-assigned identifier). Folding the
-		// single-line (qty) check into the supplier makes the poll wait for the fully-matching DD_Order before binding.
-		final I_DD_Order ddOrder = StepDefUtil.tryAndWaitForItem(liveDDOrderForScheduleQuery(scheduleId))
-				.validateUsingConsumer(record -> {
-					validateDDOrderHeader(record, row);
-					validateSingleLine(record, scheduleId, row);
-				})
-				.maxWaitSeconds(timeoutSec)
-				.execute();
-
-		row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderTable.putOrReplace(identifier, ddOrder));
+		return liveDDOrdersServingQuery(contributorRowsOfPickingJobScheduleQuery(jobScheduleId));
 	}
 
+	/** The live (DocStatus != Voided) DD_Orders serving any assignment of the given delivery, resolved through the alloc table. */
 	private IQuery<I_DD_Order> liveDDOrderForScheduleQuery(@NonNull final ShipmentScheduleId scheduleId)
 	{
+		return liveDDOrdersServingQuery(contributorRowsOfShipmentScheduleQuery(scheduleId));
+	}
+
+	private IQuery<I_DD_Order> liveDDOrdersServingQuery(@NonNull final IQuery<I_DD_OrderLine_PickingJobSchedule> contributorRowsQuery)
+	{
+		return liveDDOrdersServingBuilder(contributorRowsQuery).create();
+	}
+
+	private IQueryBuilder<I_DD_Order> liveDDOrdersServingBuilder(@NonNull final IQuery<I_DD_OrderLine_PickingJobSchedule> contributorRowsQuery)
+	{
 		return queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
 				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+				.addInSubQueryFilter(
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						linesOf(contributorRowsQuery));
+	}
+
+	private IQuery<I_DD_OrderLine> linesOf(@NonNull final IQuery<I_DD_OrderLine_PickingJobSchedule> contributorRowsQuery)
+	{
+		return queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID,
+						contributorRowsQuery)
+				.create();
+	}
+
+	private IQuery<I_DD_OrderLine_PickingJobSchedule> contributorRowsOfPickingJobScheduleQuery(@NonNull final PickingJobScheduleId jobScheduleId)
+	{
+		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
+				.create();
+	}
+
+	private IQuery<I_DD_OrderLine_PickingJobSchedule> contributorRowsOfShipmentScheduleQuery(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		final IQuery<I_M_Picking_Job_Schedule> assignmentsQuery = queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.create();
+
+		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
+						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
+						assignmentsQuery)
 				.create();
 	}
 
 	private void validateDDOrderHeader(@NonNull final I_DD_Order actual, @NonNull final DataTableRow expected)
 	{
 		final SoftAssertions softly = new SoftAssertions();
-
-		softly.assertThat(actual.getM_ShipmentSchedule_ID()).as("DD_Order.M_ShipmentSchedule_ID is set").isGreaterThan(0);
 
 		expected.getAsOptionalEnum("DocStatus", DocStatus.class)
 				.ifPresent(expectedDocStatus -> {
@@ -443,91 +476,22 @@ public class DD_Order_StepDef
 		softly.assertAll();
 	}
 
-	private void validateSingleLine(
-			@NonNull final I_DD_Order ddOrder,
-			@NonNull final ShipmentScheduleId scheduleId,
-			@NonNull final DataTableRow expected)
-	{
-		final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
-				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrder.getDD_Order_ID())
-				.create()
-				.list(I_DD_OrderLine.class);
-
-		assertThat(lines).as("DD_Order %s has exactly one line", ddOrder.getDD_Order_ID()).hasSize(1);
-
-		final I_DD_OrderLine line = lines.get(0);
-		final SoftAssertions softly = new SoftAssertions();
-
-		softly.assertThat(line.getM_ShipmentSchedule_ID())
-				.as("DD_OrderLine.M_ShipmentSchedule_ID")
-				.isEqualTo(scheduleId.getRepoId());
-
-		expected.getAsOptionalBigDecimal(I_DD_OrderLine.COLUMNNAME_QtyEntered)
-				.ifPresent(qtyEntered -> softly.assertThat(line.getQtyEntered().stripTrailingZeros())
-						.as("DD_OrderLine.QtyEntered")
-						.isEqualByComparingTo(qtyEntered.stripTrailingZeros()));
-
-		expected.getAsOptionalIdentifier(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID)
-				.ifPresent(identifier -> softly.assertThat(WarehouseId.ofRepoIdOrNull(line.getM_Warehouse_ID()))
-						.as("DD_OrderLine.M_Warehouse_ID (from)")
-						.isEqualTo(identifier.lookupNotNullIdIn(warehouseTable)));
-
-		expected.getAsOptionalIdentifier(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID)
-				.ifPresent(identifier -> softly.assertThat(WarehouseId.ofRepoIdOrNull(line.getM_WarehouseTo_ID()))
-						.as("DD_OrderLine.M_WarehouseTo_ID")
-						.isEqualTo(identifier.lookupNotNullIdIn(warehouseTable)));
-
-		softly.assertAll();
-	}
-
 	/**
-	 * @cucumber.stepdef Voids the live DD_Order linked to the given shipment schedule by applying the Void action directly on the document.
+	 * @cucumber.stepdef Voids the live DD_Order serving the given shipment schedule by applying the Void action directly on the document.
 	 */
 	@When("^the DD_Order linked to M_ShipmentSchedule (.*) is voided directly$")
 	public void void_DD_Order_directly(@NonNull final String shipmentScheduleIdentifier)
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 
-		final I_DD_Order liveDDOrder = queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, schedule.getM_ShipmentSchedule_ID())
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-				.create()
-				.firstOnlyNotNull(I_DD_Order.class);
+		final I_DD_Order liveDDOrder = liveDDOrderForScheduleQuery(scheduleId).firstOnlyNotNull(I_DD_Order.class);
 
 		documentBL.processEx(liveDDOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 
 	/**
-	 * @cucumber.stepdef Polls until exactly one Voided DD_Order exists for the given shipment schedule and no live (non-voided) one remains.
-	 */
-	@Then("^after not more than (.*)s, the DD_Order linked to M_ShipmentSchedule (.*) is Voided$")
-	public void assert_DD_Order_voided(final int timeoutSec, @NonNull final String shipmentScheduleIdentifier) throws InterruptedException
-	{
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-
-		final Supplier<Boolean> isVoided = () -> {
-			final boolean liveExists = queryBL.createQueryBuilder(I_DD_Order.class)
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-					.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-					.create()
-					.anyMatch();
-
-			final boolean voidedExists = queryBL.createQueryBuilder(I_DD_Order.class)
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-					.create()
-					.anyMatch();
-
-			// A voided DD_Order exists and there is no live one remaining for the schedule.
-			return voidedExists && !liveExists;
-		};
-
-		StepDefUtil.tryAndWait(timeoutSec, 1000, isVoided, () -> logCurrentDDOrders(scheduleId));
-	}
-
-	/**
-	 * @cucumber.stepdef Asserts immediately that no live (non-voided) DD_Order exists for the given shipment schedule.
+	 * @cucumber.stepdef Asserts immediately that no live (non-voided) DD_Order serves the given shipment schedule.
 	 */
 	@Then("^there is no live DD_Order for M_ShipmentSchedule (.*)$")
 	public void assert_no_live_DD_Order(@NonNull final String shipmentScheduleIdentifier)
@@ -535,15 +499,9 @@ public class DD_Order_StepDef
 		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 
-		final boolean liveExists = queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-				.create()
-				.anyMatch();
-
-		assertThat(liveExists)
-				.as("No live DD_Order must exist for M_ShipmentSchedule %s", shipmentScheduleIdentifier)
-				.isFalse();
+		assertThat(liveDDOrderForScheduleQuery(scheduleId).listIds())
+				.as("live DD_Orders serving M_ShipmentSchedule %s", shipmentScheduleIdentifier)
+				.isEmpty();
 	}
 
 	/**
@@ -554,31 +512,44 @@ public class DD_Order_StepDef
 	{
 		final org.compiere.model.I_C_Order order = orderTable.get(orderIdentifier);
 
-		// All schedules of the order; assert none has a reconcile DD_Order (M_ShipmentSchedule_ID linkage).
-		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+		final IQuery<I_M_ShipmentSchedule> schedulesOfOrder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create();
+
+		final IQuery<I_M_Picking_Job_Schedule> assignmentsQuery = queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+				.addInSubQueryFilter(
+						I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID,
+						I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID,
+						schedulesOfOrder)
+				.create();
+
+		final IQuery<I_DD_OrderLine_PickingJobSchedule> contributorRowsQuery = queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addInSubQueryFilter(
+						I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
+						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
+						assignmentsQuery)
+				.create();
+
+		// Any DocStatus, including Voided: a reconcile DD_Order must never have been produced at all.
+		assertThat(queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInSubQueryFilter(
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						linesOf(contributorRowsQuery))
 				.create()
-				.listIds()
-				.forEach(scheduleId -> {
-					final boolean ddOrderExists = queryBL.createQueryBuilder(I_DD_Order.class)
-							.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-							.create()
-							.anyMatch();
-					assertThat(ddOrderExists)
-							.as("No reconcile DD_Order must exist for schedule %s of order %s (non-packing warehouse)", scheduleId, orderIdentifier)
-							.isFalse();
-				});
+				.listIds())
+				.as("reconcile DD_Orders for any shipment schedule of C_Order %s (non-packing warehouse)", orderIdentifier)
+				.isEmpty();
 	}
 
 	/**
-	 * @cucumber.stepdef Polls for the single live (DocStatus != Voided) DD_Order linked to a workstation
-	 * assignment via {@code DD_Order.M_Picking_Job_Schedule_ID}, asserts exactly one is found, and validates
+	 * @cucumber.stepdef Polls for the single live (DocStatus != Voided) DD_Order serving a workstation assignment
+	 * through its {@code DD_OrderLine_PickingJobSchedule} rows, asserts exactly one is found, and validates
 	 * header + line.
 	 * <p>
 	 * This is the assertion used by the workstation-assignment-driven DD_Order picking-reconcile flow, where
-	 * exactly one Completed DD_Order is created per {@code M_Picking_Job_Schedule} assignment. Both
-	 * {@code DD_Order.M_Picking_Job_Schedule_ID} and {@code DD_OrderLine.M_Picking_Job_Schedule_ID} are asserted
-	 * to reference the given assignment.
+	 * exactly one Completed DD_Order is created per {@code M_Picking_Job_Schedule} assignment. The found line's
+	 * contributor set is asserted to be exactly that one assignment.
 	 * <p>
 	 * Required columns:
 	 * <ul>
@@ -587,6 +558,7 @@ public class DD_Order_StepDef
 	 * Optional columns:
 	 * <ul>
 	 *   <li>{@code Identifier} — stores the found DD_Order for later reference</li>
+	 *   <li>{@code DD_OrderLine_ID} — stores the found DD_Order's single line for later reference</li>
 	 *   <li>{@code DocStatus} — expected header doc status (e.g. {@code CO})</li>
 	 *   <li>{@code M_Warehouse_From_ID} — expected source warehouse identifier (header + line)</li>
 	 *   <li>{@code M_Warehouse_To_ID} — expected target warehouse identifier (header)</li>
@@ -610,7 +582,7 @@ public class DD_Order_StepDef
 
 	private void validateDDOrderLinkedToPickingJobSchedule(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
-		final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+		final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
 
 		// Validate header AND line inside the retry so an in-flight RECREATE (transient stale header) cannot be
 		// grabbed before the fully-matching DD_Order exists.
@@ -623,14 +595,18 @@ public class DD_Order_StepDef
 				.execute();
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderTable.putOrReplace(identifier, ddOrder));
+		row.getAsOptionalIdentifier(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.ifPresent(identifier -> ddOrderLineTable.putOrReplace(identifier, singleLineOf(ddOrder)));
 	}
 
-	private IQuery<I_DD_Order> liveDDOrderForPickingJobScheduleQuery(@NonNull final PickingJobScheduleId jobScheduleId)
+	private I_DD_OrderLine singleLineOf(@NonNull final I_DD_Order ddOrder)
 	{
-		return queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-				.create();
+		final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrder.getDD_Order_ID())
+				.create()
+				.list(I_DD_OrderLine.class);
+		assertThat(lines).as("DD_Order %s has exactly one line", ddOrder.getDD_Order_ID()).hasSize(1);
+		return lines.get(0);
 	}
 
 	/**
@@ -654,7 +630,7 @@ public class DD_Order_StepDef
 	public void assignResponsibleToDDOrder(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+			final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
 			final I_DD_Order ddOrder = liveDDOrderForPickingJobScheduleQuery(jobScheduleId).firstOnlyNotNull(I_DD_Order.class);
 			// UpdatedBy is always a valid AD_User_ID (> 0) — use it as the "worker who picked up the job".
 			ddOrderService.assignToResponsible(ddOrder, UserId.ofRepoId(ddOrder.getUpdatedBy()));
@@ -691,14 +667,10 @@ public class DD_Order_StepDef
 
 	private void pickFromDDOrderLinkedToPickingJobSchedule(@NonNull final DataTableRow row)
 	{
-		final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+		final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
 		final HuId pickFromHuId = row.getAsIdentifier("PickFrom_HU_ID").lookupNotNullIdIn(huTable);
 
-		final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
-				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_DD_OrderLine.class);
+		final List<I_DD_OrderLine> lines = linesOf(contributorRowsOfPickingJobScheduleQuery(jobScheduleId)).list(I_DD_OrderLine.class);
 
 		assertThat(lines)
 				.as("DD_OrderLines for picking job schedule %s (must exist before picking from the DD_Order)", jobScheduleId.getRepoId())
@@ -742,13 +714,9 @@ public class DD_Order_StepDef
 		final I_DD_OrderLine line = lines.get(0);
 		final SoftAssertions softly = new SoftAssertions();
 
-		softly.assertThat(ddOrder.getM_Picking_Job_Schedule_ID())
-				.as("DD_Order.M_Picking_Job_Schedule_ID")
-				.isEqualTo(jobScheduleId.getRepoId());
-
-		softly.assertThat(line.getM_Picking_Job_Schedule_ID())
-				.as("DD_OrderLine.M_Picking_Job_Schedule_ID")
-				.isEqualTo(jobScheduleId.getRepoId());
+		softly.assertThat(contributorRepository.getPickingJobScheduleIds(ImmutableSet.of(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()))))
+				.as("DD_OrderLine_PickingJobSchedule contributor set of DD_OrderLine_ID=%s", line.getDD_OrderLine_ID())
+				.containsExactly(jobScheduleId);
 
 		expected.getAsOptionalIdentifier(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID)
 				.ifPresent(identifier -> softly.assertThat(LocatorId.ofRepoIdOrNull(WarehouseId.ofRepoIdOrNull(line.getM_WarehouseTo_ID()), line.getM_LocatorTo_ID()))
@@ -764,52 +732,9 @@ public class DD_Order_StepDef
 	}
 
 	/**
-	 * @cucumber.stepdef Polls until exactly one Voided DD_Order exists for the given workstation assignment
-	 * ({@code M_Picking_Job_Schedule_ID}) and no live (non-voided) one remains.
-	 * <p>
-	 * Required columns:
-	 * <ul>
-	 *   <li>{@code M_Picking_Job_Schedule_ID} — identifier of the assignment</li>
-	 * </ul>
-	 */
-	@Then("^after not more than (.*)s, the DD_Order linked to picking job schedule is voided:$")
-	public void assert_DD_Order_voided_for_picking_job_schedule(final int timeoutSec, @NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
-
-			final Supplier<Boolean> isVoided = () -> {
-				final boolean liveExists = queryBL.createQueryBuilder(I_DD_Order.class)
-						.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
-						.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-						.create()
-						.anyMatch();
-
-				final boolean voidedExists = queryBL.createQueryBuilder(I_DD_Order.class)
-						.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
-						.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-						.create()
-						.anyMatch();
-
-				return voidedExists && !liveExists;
-			};
-
-			try
-			{
-				StepDefUtil.tryAndWait(timeoutSec, 1000, isVoided);
-			}
-			catch (final InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				throw new RuntimeException(e);
-			}
-		});
-	}
-
-	/**
-	 * @cucumber.stepdef Polls for the live (DocStatus != Voided) per-locator DD_Orders linked to a workstation
-	 * assignment via {@code DD_Order.M_Picking_Job_Schedule_ID}, matching each expected row to the DD_Order whose
-	 * single line's source locator ({@code DD_OrderLine.M_Locator_ID}) equals the row's {@code M_Locator_ID}.
+	 * @cucumber.stepdef Polls for the live (DocStatus != Voided) per-locator DD_Orders serving a workstation
+	 * assignment through its {@code DD_OrderLine_PickingJobSchedule} rows, matching each expected row to the DD_Order
+	 * whose single line's source locator ({@code DD_OrderLine.M_Locator_ID}) equals the row's {@code M_Locator_ID}.
 	 * <p>
 	 * This is the assertion for the stock-aware multi-locator split flow: the demand is split greedily across the
 	 * contributing source locators, one Completed DD_Order (one line) per locator. The step asserts, per expected
@@ -848,7 +773,7 @@ public class DD_Order_StepDef
 
 		// All rows of a single invocation describe the SAME assignment's complete set of per-locator DD_Orders.
 		final PickingJobScheduleId jobScheduleId = rows.get(0)
-				.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
+				.getAsIdentifier(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
 
 		// Expected per-locator picture: the full source-locator SET, plus the expected QtyEntered for each row that
 		// specifies one (QtyEntered is an optional column).
@@ -891,16 +816,13 @@ public class DD_Order_StepDef
 
 	/**
 	 * Live per-locator picture: source {@code LocatorId} → the line's {@code QtyEntered}, for every live (non-voided)
-	 * DD_Order linked to the assignment. Each reconcile DD_Order has exactly one line, so the key set is the set of
+	 * DD_Order serving the assignment. Each reconcile DD_Order has exactly one line, so the key set is the set of
 	 * contributing source locators and each value is that locator's current planned quantity.
 	 */
 	private Map<LocatorId, BigDecimal> liveLineQtyBySourceLocatorForPickingJobSchedule(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
 		// Collect the live DD_Order ids, then fetch all their lines in a single batched query (no per-DD_Order query).
-		final List<DDOrderId> liveDDOrderIds = queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
-				.create()
+		final List<DDOrderId> liveDDOrderIds = liveDDOrderForPickingJobScheduleQuery(jobScheduleId)
 				.stream(I_DD_Order.class)
 				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
 				.collect(java.util.stream.Collectors.toList());
@@ -953,9 +875,7 @@ public class DD_Order_StepDef
 			@NonNull final PickingJobScheduleId jobScheduleId,
 			@NonNull final LocatorId sourceLocatorId)
 	{
-		return queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
-				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Voided)
+		return liveDDOrdersServingBuilder(contributorRowsOfPickingJobScheduleQuery(jobScheduleId))
 				.andCollectChildren(I_DD_OrderLine.COLUMN_DD_Order_ID)
 				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Locator_ID, sourceLocatorId.getRepoId())
 				.create()
@@ -966,9 +886,12 @@ public class DD_Order_StepDef
 
 	private void logCurrentDDOrdersForPickingJobSchedule(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
-		final StringBuilder sb = new StringBuilder("DD_Orders linked to M_Picking_Job_Schedule_ID=").append(jobScheduleId).append(":\n");
+		final StringBuilder sb = new StringBuilder("DD_Orders serving M_Picking_Job_Schedule_ID=").append(jobScheduleId).append(":\n");
 		queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
+				.addInSubQueryFilter(
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						linesOf(contributorRowsOfPickingJobScheduleQuery(jobScheduleId)))
 				.create()
 				.stream(I_DD_Order.class)
 				.forEach(ddOrder -> {
@@ -985,15 +908,47 @@ public class DD_Order_StepDef
 		logger.error("*** Waiting for per-locator DD_Orders, current context:\n{}", sb);
 	}
 
-	private void logCurrentDDOrders(@NonNull final ShipmentScheduleId scheduleId)
+	/**
+	 * @cucumber.stepdef Asserts the DD_Order's header business partner and location ARE the ones of the DD_Order's own
+	 * organization — i.e. exactly what {@code IBPartnerOrgBL#retrieveOrgBPLocationId} resolves from
+	 * {@code AD_OrgInfo.OrgBP_Location_ID} for the order's {@code AD_Org_ID}.
+	 * <p>
+	 * A replenishment order moves goods between the organization's own warehouses, so the organization owns it: never
+	 * one of the customers whose deliveries it serves, and never nobody. The header partner and location drive the
+	 * order's {@code DeliveryRule}, print format and print language, so both are pinned.
+	 * <p>
+	 * The step first asserts the organization HAS a business-partner link, so it can never pass by comparing "unset"
+	 * against "unset".
+	 * @cucumber.depends StepDefData: DD_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the DD_Order identified by groupDDOrder names the business partner of its own organization
+	 * </pre>
+	 */
+	@Then("^the DD_Order identified by (.*) names the business partner of its own organization$")
+	public void assertDDOrderNamesOwnOrgBPartner(@NonNull final String ddOrderIdentifier)
 	{
-		final StringBuilder sb = new StringBuilder("DD_Orders linked to M_ShipmentSchedule_ID=").append(scheduleId).append(":\n");
-		queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-				.create()
-				.stream(I_DD_Order.class)
-				.forEach(ddOrder -> sb.append(" DD_Order_ID=").append(ddOrder.getDD_Order_ID())
-						.append(" DocStatus=").append(ddOrder.getDocStatus()).append("\n"));
-		logger.error("*** Waiting for DD_Order to be Voided, current context:\n{}", sb);
+		final I_DD_Order ddOrder = ddOrderTable.get(ddOrderIdentifier);
+		final OrgId orgId = OrgId.ofRepoId(ddOrder.getAD_Org_ID());
+
+		final BPartnerLocationId orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
+		assertThat(orgBPLocationId)
+				.as("AD_OrgInfo.OrgBP_Location_ID of AD_Org_ID=%s — the organization's own business partner must be"
+						+ " linked, otherwise the assertions below would compare unset against unset", orgId.getRepoId())
+				.isNotNull();
+
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(BPartnerId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID()))
+				.as("DD_Order %s (DD_Order_ID=%s) C_BPartner_ID must be the organization's own business partner",
+						ddOrderIdentifier, ddOrder.getDD_Order_ID())
+				.isEqualTo(orgBPLocationId.getBpartnerId());
+
+		softly.assertThat(BPartnerLocationId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID(), ddOrder.getC_BPartner_Location_ID()))
+				.as("DD_Order %s (DD_Order_ID=%s) C_BPartner_Location_ID must be the organization's own business partner location",
+						ddOrderIdentifier, ddOrder.getDD_Order_ID())
+				.isEqualTo(orgBPLocationId);
+
+		softly.assertAll();
 	}
 }
