@@ -145,6 +145,7 @@ pull_request_rules:
               - base=taloned_owl_release
               - base=organic_goat_release
               - base=flaming_merlin_release
+              - base=gray_knight_release
               - base=green_oak_release
               - base=mighty_pegasus_release
               - base=task_force_release
