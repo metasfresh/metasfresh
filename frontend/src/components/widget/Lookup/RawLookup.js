@@ -139,7 +139,12 @@ export class RawLookup extends Component {
     // `!this.inputSearch.value` guard below stays the sole decider of whether the focus
     // actually happens, so a document whose value is already filled keeps its current
     // behaviour, and a user who has started typing does not lose the caret.
-    if (prevProps.dataId !== this.props.dataId && !shouldBeFocused) {
+    if (
+      autoFocus &&
+      prevProps.dataId !== this.props.dataId &&
+      !shouldBeFocused &&
+      !this.inputSearch.value
+    ) {
       this.setState({ shouldBeFocused: true });
     }
 

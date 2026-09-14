@@ -5,7 +5,11 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { getFieldData } from '../utils/WebAPIValidation';
-import { PRODUCT_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import {
+  CURRENCY_RATE_WINDOW_ID,
+  PRODUCT_WINDOW_ID,
+  SALES_ORDER_WINDOW_ID,
+} from '../utils/WindowIds';
 import {
   FRONTEND_BASE_URL,
   FAST_ACTION_TIMEOUT,
@@ -54,7 +58,6 @@ const SALES_ORDER_CONTACT_FIELD = '#lookup_AD_User_ID .input-dropdown-container'
  * different focus trigger than the Sales Order lookup. Its focusable node is the
  * `tabIndex`-bearing container div, not an `<input>`.
  */
-const CURRENCY_RATE_WINDOW_ID = 116;
 const CURRENCY_RATE_FIRST_FIELD = '.form-field-C_Currency_ID .input-dropdown-container';
 
 /** Product window - its first field is a plain text widget, the third of the three routes. */
@@ -243,8 +246,7 @@ test.describe('First-field focus when a new document is created in a mounted win
     allure.severity('normal');
   });
 
-  // eslint-disable-next-line no-unused-vars
-  test('TC0 - fresh page load onto a new sales order focuses the first field', async ({
+  test('a fresh page load onto a new sales order focuses the first field', async ({
     page,
   }) => {
     allure.description(`
@@ -268,8 +270,7 @@ re-arms focus on a document change could silently break the first mount.
     });
   });
 
-  // eslint-disable-next-line no-unused-vars
-  test('TC1 - complete an order, then New in the same window, focuses the first field', async ({
+  test('completing an order and creating the next one focuses the first field', async ({
     page,
   }) => {
     allure.description(`
@@ -309,13 +310,12 @@ a mount onward, nothing was focused.
 
     // The "New" under test — same mounted window, no reload, no preceding click.
     const secondOrderId = await pressNewAndExpectNewDocument(page, firstOrderId);
-    console.log(`[TC1] first order ${firstOrderId} -> new order ${secondOrderId}`);
+    console.log(`[focus-spec] completed order ${firstOrderId} -> new order ${secondOrderId}`);
 
     await expectFocusOn(page, SALES_ORDER_FIRST_FIELD);
   });
 
-  // eslint-disable-next-line no-unused-vars
-  test('TC2 - a second new order without completing the first focuses the first field', async ({
+  test('a second new order without completing the first focuses the first field', async ({
     page,
   }) => {
     allure.description(`
@@ -347,13 +347,12 @@ could be built around the completed / read-only state and leave the real trigger
 
     // The "New" under test — nothing was completed in between.
     const secondOrderId = await pressNewAndExpectNewDocument(page, firstOrderId);
-    console.log(`[TC2] first order ${firstOrderId} -> new order ${secondOrderId}`);
+    console.log(`[focus-spec] drafted order ${firstOrderId} -> new order ${secondOrderId}`);
 
     await expectFocusOn(page, SALES_ORDER_FIRST_FIELD);
   });
 
-  // eslint-disable-next-line no-unused-vars
-  test('TC5 - opening an existing order, then New, keeps fresh-load focus parity', async ({
+  test('opening an existing order and then creating a new one keeps fresh-load focus parity', async ({
     page,
   }) => {
     allure.description(`
@@ -391,12 +390,11 @@ that follows must still focus the Auftraggeber.
 
     // The "New" under test — from a document whose first field was never auto-focused.
     const newOrderId = await pressNewAndExpectNewDocument(page, existingOrderId);
-    console.log(`[TC5] existing order ${existingOrderId} -> new order ${newOrderId}`);
+    console.log(`[focus-spec] existing order ${existingOrderId} -> new order ${newOrderId}`);
 
     await expectFocusOn(page, SALES_ORDER_FIRST_FIELD);
   });
-  // eslint-disable-next-line no-unused-vars
-  test('TC3 - the same sequence on a window whose first field is a dropdown', async ({
+  test('creating a new record in a dropdown-first window focuses the dropdown', async ({
     page,
   }) => {
     allure.description(`
@@ -423,13 +421,12 @@ Lookup-only fix would leave every dropdown-first window broken.
     await expectNotFocused(page, CURRENCY_RATE_FIRST_FIELD);
 
     const newRateId = await pressNewAndExpectNewDocument(page, existingRateId);
-    console.log(`[TC3] existing rate ${existingRateId} -> new rate ${newRateId}`);
+    console.log(`[focus-spec] existing rate ${existingRateId} -> new rate ${newRateId}`);
 
     await expectFocusOn(page, CURRENCY_RATE_FIRST_FIELD);
   });
 
-  // eslint-disable-next-line no-unused-vars
-  test('TC4 - a re-render that is not a document change leaves the caret alone', async ({
+  test('a re-render that is not a document change leaves the caret alone', async ({
     page,
   }) => {
     allure.description(`
@@ -476,8 +473,7 @@ the caret where they put it.
       'the characters typed before the re-render must survive'
     ).toBe(typedText);
   });
-  // eslint-disable-next-line no-unused-vars
-  test('TC6 - the same sequence on a window whose first field is a plain text widget', async ({
+  test('creating a new record in a text-first window focuses the text field', async ({
     page,
   }) => {
     allure.description(`
@@ -502,8 +498,49 @@ covering the lookup and the dropdown would leave every text-first window broken.
     await expectNotFocused(page, PRODUCT_FIRST_FIELD);
 
     const newProductId = await pressNewAndExpectNewDocument(page, existingProductId);
-    console.log(`[TC6] existing product ${existingProductId} -> new product ${newProductId}`);
+    console.log(`[focus-spec] existing product ${existingProductId} -> new product ${newProductId}`);
 
     await expectFocusOn(page, PRODUCT_FIRST_FIELD);
   });
+
+  test('creating a new order while the line quick-entry panel is open focuses the header first field', async ({
+    page,
+  }) => {
+    allure.description(`
+The quick-entry panel of a detail tab hands its own first widget a permanently-set autoFocus and the
+same document id as the header, and the panel stays open across a header "New". Both first fields
+therefore see the same document change, and only the header's may take the focus.
+    `);
+
+    const masterdata = await createOrderFixture();
+    const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const orderId = await SalesOrderPage.selectCustomer(customer);
+
+    // Open the order-line quick-entry panel and leave the caret in its product lookup - the state
+    // a clerk is in when they decide the order is finished and press Alt+N.
+    await SalesOrderPage.goToOrderLineTab();
+    const batchEntryButton = page.getByTestId('batch-entry-toggle');
+    await batchEntryButton.scrollIntoViewIfNeeded();
+    await batchEntryButton.click();
+    await page
+      .locator('.quick-input-container')
+      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    const quickInputProduct = page
+      .locator('.quick-input-container #lookup_M_Product_ID input.input-field')
+      .first();
+    await quickInputProduct.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await quickInputProduct.click();
+
+    const newOrderId = await pressNewAndExpectNewDocument(page, orderId);
+    console.log(`[focus-spec] order ${orderId} with quick entry open -> new order ${newOrderId}`);
+
+    await expectFocusOn(page, SALES_ORDER_FIRST_FIELD);
+  });
+
 });
