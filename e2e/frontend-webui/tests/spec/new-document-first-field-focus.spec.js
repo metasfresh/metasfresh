@@ -50,6 +50,17 @@ const SALES_ORDER_FIRST_FIELD = '#lookup_C_BPartner_ID input.input-field';
 const SALES_ORDER_CONTACT_FIELD = '#lookup_AD_User_ID .input-dropdown-container';
 
 /**
+ * Currency Rate window — its first field is a `List` dropdown, a different widget with a
+ * different focus trigger than the Sales Order lookup. Its focusable node is the
+ * `tabIndex`-bearing container div, not an `<input>`.
+ */
+const CURRENCY_RATE_WINDOW_ID = 116;
+const CURRENCY_RATE_FIRST_FIELD = '.form-field-C_Currency_ID .input-dropdown-container';
+
+/** A plain header text field of the Sales Order window, used as the caret's resting place. */
+const SALES_ORDER_REFERENCE_FIELD = '.form-field-POReference input.input-field';
+
+/**
  * Human-readable description of `document.activeElement`, used in every focus
  * assertion message so a failure says WHAT held focus instead of only "false".
  */
@@ -97,6 +108,30 @@ async function waitForDocumentReady(page) {
 }
 
 /**
+ * Open the first row of a window's list view, so the window is mounted on an EXISTING
+ * document before the "New" under test.
+ *
+ * @returns {Promise<string>} the opened document id
+ */
+async function openFirstListRow(page, windowId) {
+  await page.goto(`${FRONTEND_BASE_URL}/window/${windowId}`);
+  await page
+    .locator('.document-list-wrapper')
+    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+  const firstRow = page.locator('.table-flex-wrapper tbody tr').first();
+  await firstRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await firstRow.dblclick();
+
+  await page.waitForURL(new RegExp(`/window/${windowId}/\\d+`), {
+    timeout: SLOW_ACTION_TIMEOUT,
+  });
+  await waitForDocumentReady(page);
+
+  return currentDocId(page);
+}
+
+/**
  * Press Alt+N in the already-mounted window and prove a genuinely new document was
  * created (construction rule 1). No click of any kind precedes the key press
  * (construction rule 2).
@@ -129,7 +164,7 @@ async function pressNewAndExpectNewDocument(page, previousDocId) {
  * Assert that `selector` holds the browser focus. Polls, because focus lands
  * asynchronously after the document data arrives.
  */
-async function expectFirstFieldFocused(
+async function expectFocusOn(
   page,
   selector,
   { timeout = FAST_ACTION_TIMEOUT } = {}
@@ -225,7 +260,7 @@ re-arms focus on a document change could silently break the first mount.
     });
     await waitForDocumentReady(page);
 
-    await expectFirstFieldFocused(page, SALES_ORDER_FIRST_FIELD, {
+    await expectFocusOn(page, SALES_ORDER_FIRST_FIELD, {
       timeout: SLOW_ACTION_TIMEOUT,
     });
   });
@@ -273,7 +308,7 @@ a mount onward, nothing was focused.
     const secondOrderId = await pressNewAndExpectNewDocument(page, firstOrderId);
     console.log(`[TC1] first order ${firstOrderId} -> new order ${secondOrderId}`);
 
-    await expectFirstFieldFocused(page, SALES_ORDER_FIRST_FIELD);
+    await expectFocusOn(page, SALES_ORDER_FIRST_FIELD);
   });
 
   // eslint-disable-next-line no-unused-vars
@@ -296,7 +331,7 @@ could be built around the completed / read-only state and leave the real trigger
     // mount-time focus fires and spends the widget's one-shot arming.
     await SalesOrderPage.goto();
     await SalesOrderPage.clickNew();
-    await expectFirstFieldFocused(page, SALES_ORDER_FIRST_FIELD, {
+    await expectFocusOn(page, SALES_ORDER_FIRST_FIELD, {
       timeout: SLOW_ACTION_TIMEOUT,
     });
 
@@ -311,7 +346,7 @@ could be built around the completed / read-only state and leave the real trigger
     const secondOrderId = await pressNewAndExpectNewDocument(page, firstOrderId);
     console.log(`[TC2] first order ${firstOrderId} -> new order ${secondOrderId}`);
 
-    await expectFirstFieldFocused(page, SALES_ORDER_FIRST_FIELD);
+    await expectFocusOn(page, SALES_ORDER_FIRST_FIELD);
   });
 
   // eslint-disable-next-line no-unused-vars
@@ -346,7 +381,7 @@ that follows must still focus the Auftraggeber.
     );
     await waitForDocumentReady(page);
 
-    await expectFirstFieldFocused(page, SALES_ORDER_CONTACT_FIELD, {
+    await expectFocusOn(page, SALES_ORDER_CONTACT_FIELD, {
       timeout: SLOW_ACTION_TIMEOUT,
     });
     await expectNotFocused(page, SALES_ORDER_FIRST_FIELD);
@@ -355,6 +390,87 @@ that follows must still focus the Auftraggeber.
     const newOrderId = await pressNewAndExpectNewDocument(page, existingOrderId);
     console.log(`[TC5] existing order ${existingOrderId} -> new order ${newOrderId}`);
 
-    await expectFirstFieldFocused(page, SALES_ORDER_FIRST_FIELD);
+    await expectFocusOn(page, SALES_ORDER_FIRST_FIELD);
+  });
+  // eslint-disable-next-line no-unused-vars
+  test('TC3 - the same sequence on a window whose first field is a dropdown', async ({
+    page,
+  }) => {
+    allure.description(`
+The failure is not lookup-specific: a dropdown widget reaches it by a different route, so a
+Lookup-only fix would leave every dropdown-first window broken.
+    `);
+
+    const masterdata = await createLoginFixture();
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+
+    const existingRateId = await openFirstListRow(page, CURRENCY_RATE_WINDOW_ID);
+
+    // Precondition: the mount-time focus fired, i.e. the widget's arming is now spent.
+    await expectFocusOn(page, CURRENCY_RATE_FIRST_FIELD, {
+      timeout: SLOW_ACTION_TIMEOUT,
+    });
+
+    // Move on to the next field, the way a clerk does after reading/filling the first one.
+    // Without this the scenario cannot see the defect at all: the widget is not remounted on a
+    // document switch, so its still-focused DOM node would keep the focus it was given for the
+    // PREVIOUS document and the assertion would pass without anything having moved.
+    await page.keyboard.press('Tab');
+    await expectNotFocused(page, CURRENCY_RATE_FIRST_FIELD);
+
+    const newRateId = await pressNewAndExpectNewDocument(page, existingRateId);
+    console.log(`[TC3] existing rate ${existingRateId} -> new rate ${newRateId}`);
+
+    await expectFocusOn(page, CURRENCY_RATE_FIRST_FIELD);
+  });
+
+  // eslint-disable-next-line no-unused-vars
+  test('TC4 - a re-render that is not a document change leaves the caret alone', async ({
+    page,
+  }) => {
+    allure.description(`
+Guards the regression the fix itself could introduce: it must key on document IDENTITY, not on
+"any update". A PATCH response re-rendering the window while the clerk works in a field must leave
+the caret where they put it.
+    `);
+
+    const masterdata = await createOrderFixture();
+    const customer = masterdata.bpartners.CUSTOMER.bpartnerCode;
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+    const orderId = await SalesOrderPage.selectCustomer(customer);
+
+    // Put the caret in another editable header field and commit from inside it with Enter:
+    // the field keeps the focus while the PATCH round-trip re-renders the window — exactly the
+    // "re-render that is not a document change" this scenario guards.
+    const referenceInput = page.locator(SALES_ORDER_REFERENCE_FIELD).first();
+    await referenceInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await referenceInput.click();
+
+    const typedText = 'CARET-STAYS-PUT';
+    await page.keyboard.type(typedText);
+
+    const patchResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'PATCH' &&
+        response.url().includes(`/window/${SALES_ORDER_WINDOW_ID}/${orderId}`),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    await page.keyboard.press('Enter');
+
+    // Non-vacuity: without a real re-render the assertions below would prove nothing.
+    await patchResponse;
+    await waitForDocumentReady(page);
+
+    await expectFocusOn(page, SALES_ORDER_REFERENCE_FIELD);
+    expect(
+      await referenceInput.inputValue(),
+      'the characters typed before the re-render must survive'
+    ).toBe(typedText);
   });
 });
