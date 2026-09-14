@@ -160,6 +160,8 @@ export const GetQuantityDialog = {
 
     expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
         await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
+    }),
+
     expectQtyNotFoundReasonOffered: async ({ reason, offered = true }) => await test.step(`${NAME} - Expect qty not found reason '${reason}' offered=${offered}`, async () => {
         const radioButton = page.getByTestId(`qty-reason-radio-${reason}`);
         if (offered) {
@@ -225,6 +227,8 @@ export const GetQuantityDialog = {
     // which keeps this qty dialog open until that follow-up is resolved.
     clickDoneExpectingFollowupDialog: async () => await test.step(`${NAME} - Press OK (expecting follow-up dialog)`, async () => {
         await page.getByTestId('done-button').tap();
+    }),
+
     /**
      * Presses Done for a submit the BACKEND is expected to refuse, and asserts the refusal exactly as
      * the mobile UI actually renders it: the error toast carrying the server message, with the dialog

@@ -14,6 +14,7 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -27,6 +28,7 @@ import de.metas.logging.LogManager;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -61,6 +63,8 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
 	@NonNull private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
 	@NonNull private final Identifier identifier;
@@ -362,7 +366,7 @@ public class CreatePackingInstructionsCommand
 	private void createPIItem_PackingMaterial(final PIResult tu, @NonNull final Identifier packingMaterialProductIdentifier)
 	{
 		final ProductId productId = context.getId(packingMaterialProductIdentifier, ProductId.class);
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		final I_M_Product product = productDAO.getById(productId);
 
 		I_M_HU_PackingMaterial packingMaterialRecord = packingMaterialDAO.retrivePackingMaterialOfProduct(product);
 		if (packingMaterialRecord == null)
@@ -370,7 +374,7 @@ public class CreatePackingInstructionsCommand
 			packingMaterialRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PackingMaterial.class);
 			packingMaterialRecord.setName(packingMaterialProductIdentifier.toUniqueString());
 			packingMaterialRecord.setM_Product_ID(productId.getRepoId());
-			saveRecord(packingMaterialRecord);
+			packingMaterialDAO.save(packingMaterialRecord);
 		}
 
 		final I_M_HU_PI_Item packingMaterialPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
@@ -378,7 +382,7 @@ public class CreatePackingInstructionsCommand
 		packingMaterialPIItemRecord.setItemType(HUItemType.PackingMaterial.getCode());
 		packingMaterialPIItemRecord.setM_HU_PackingMaterial_ID(packingMaterialRecord.getM_HU_PackingMaterial_ID());
 		packingMaterialPIItemRecord.setQty(BigDecimal.ONE);
-		saveRecord(packingMaterialPIItemRecord);
+		handlingUnitsDAO.save(packingMaterialPIItemRecord);
 	}
 
 	private JsonTestId createPIItemProduct(@NonNull final HuPackingInstructionsItemId tuPIItemId)
