@@ -57,8 +57,16 @@ public class EventProgress
 
 	public boolean areAllEventsProcessed()
 	{
-		return eventId2Status.values()
-				.stream()
-				.allMatch(PROCESSED::equals);
+		// allMatch(..) is vacuously true on an empty map, so without the isEmpty() check a progress with nothing
+		// enqueued would report "all processed". That is reachable because the completion check does not run inline:
+		// it runs from a deferred AFTER_COMMIT handler that re-looks-up the EventProgress by traceId at fire time
+		// (MaterialEventObserver.notifyIfAllEventsProcessed) instead of closing over the instance it was registered
+		// for. If the entry under that traceId is removed (awaitProcessing's finally, e.g. on timeout) and a new one
+		// observed before the handler fires, the lookup finds a FRESH, still-empty progress -- and announcing
+		// completion for it would release an awaiter whose work has not even been enqueued yet.
+		return !eventId2Status.isEmpty()
+				&& eventId2Status.values()
+						.stream()
+						.allMatch(PROCESSED::equals);
 	}
 }
