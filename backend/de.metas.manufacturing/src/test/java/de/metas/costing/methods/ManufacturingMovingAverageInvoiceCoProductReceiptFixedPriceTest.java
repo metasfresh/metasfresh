@@ -82,23 +82,22 @@ import java.time.Instant;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Leg B of the co-product fixed-price valuation: when a co-product's OWN receipt is booked, it must be valued at
- * the co-product product's manual {@code M_Product.CoProductFixedCostPrice} (× received qty, rounded) instead of
- * the product's live {@code CurrentCostPrice}. Because leg B reuses the same {@code CoProductFixedCostPrices}
- * predicate as leg A (the post-calculation relief in {@code PPOrderCosts}), the two legs produce the IDENTICAL
- * co-product amount so cost is conserved.
+ * Leg B of the co-product fixed-price valuation for the {@link CostingMethod#MovingAverageInvoice} method: when a
+ * co-product's OWN receipt is booked, it must be valued at the co-product product's manual
+ * {@code M_Product.CoProductFixedCostPrice} (× received qty, rounded) instead of the product's live
+ * {@code CurrentCostPrice}. Because leg B reuses the same {@code CoProductFixedCostPrices} predicate as leg A (the
+ * post-calculation relief in {@code PPOrderCosts}), the two legs produce the IDENTICAL co-product amount so cost is
+ * conserved.
  * <p>
  * The handler is driven through its real entry point {@code createOrUpdateCost}, with the co-product receipt qty
- * supplied POSITIVE exactly as {@code DocLine_CostCollector} hands it over (it already negates the collector's
- * negative co-product movement qty — {@code OrderBOMLineQuantities.adjustCoProductQty} stores it negated).
+ * supplied POSITIVE exactly as {@code DocLine_CostCollector} hands it over ({@code DocLine_CostCollector} already
+ * sign-normalises the collector's negative co-product movement qty to a positive "received" qty via
+ * {@code .negateIf(isCoOrByProductReceipt())}). The MAI handler must NOT negate that qty a second time.
  * <p>
- * {@link CostingMethod#AveragePO} is covered here; the other in-scope method
- * ({@link CostingMethod#MovingAverageInvoice}) carries the same fixed-price edit and its handler-entry sign is
- * pinned identically by the sibling {@link ManufacturingMovingAverageInvoiceCoProductReceiptFixedPriceTest}.
- * {@link CostingMethod#LastPOPrice} keeps current-cost valuation and is deliberately not covered.
+ * Sibling coverage for {@link CostingMethod#AveragePO} lives in {@link ManufacturingCoProductReceiptFixedPriceTest}.
  */
 @ExtendWith(AdempiereTestWatcher.class)
-class ManufacturingCoProductReceiptFixedPriceTest
+class ManufacturingMovingAverageInvoiceCoProductReceiptFixedPriceTest
 {
 	private static final Instant DATE = Instant.parse("2026-09-14T00:00:00Z");
 
@@ -113,7 +112,7 @@ class ManufacturingCoProductReceiptFixedPriceTest
 	private static final String CO_PRODUCT_CURRENT_PRICE = "20";
 	private static final String CO_PRODUCT_CURRENT_QTY = "1000";
 	private static final BigDecimal CO_PRODUCT_RECEIVED_QTY = new BigDecimal("6");
-	/** {@link #CO_PRODUCT_FIXED_PRICE} × {@link #CO_PRODUCT_RECEIVED_QTY} = 48, NOT current 20 × 6 = 120 */
+	/** {@link #CO_PRODUCT_FIXED_PRICE} × {@link #CO_PRODUCT_RECEIVED_QTY} = 48, NOT current 20 × 6 = 120, NOT -48 */
 	private static final String CO_PRODUCT_FIXED_AMOUNT = "48";
 	/** {@link #INPUT_COST_POOL} − {@link #CO_PRODUCT_FIXED_AMOUNT} = 402 (cost conservation) */
 	private static final String MAIN_PRODUCT_REMAINDER = "402";
@@ -132,7 +131,7 @@ class ManufacturingCoProductReceiptFixedPriceTest
 	private CostingMethodHandlerUtils utils;
 	private PPOrderCostDifferenceDistributor distributor;
 
-	// per-test, set up by setupAveragePOOrder()
+	// per-test, set up by setupMovingAverageInvoiceOrder()
 	private AcctSchemaId acctSchemaId;
 	private CostElement costElement;
 	private CostingMethodHandler handler;
@@ -152,7 +151,7 @@ class ManufacturingCoProductReceiptFixedPriceTest
 		coProductId = createCoProductWithFixedPrice();
 
 		// the costing level is what the cost segment is built from; the costing method is only asked for products
-		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
+		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.MovingAverageInvoice));
 
 		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		utils = new CostingMethodHandlerUtils(
@@ -165,13 +164,14 @@ class ManufacturingCoProductReceiptFixedPriceTest
 	@Test
 	void coProductReceipt_withFixedPrice_bookedAtFixedPriceAndConserved()
 	{
-		setupAveragePOOrder();
+		setupMovingAverageInvoiceOrder();
 
 		// issue the input first (builds the 450 inbound pool), then receive the co-product
 		handler.createOrUpdateCost(issueRequest());
 		handler.createOrUpdateCost(coProductReceiptRequest());
 
-		// leg B: the co-product's own receipt is booked at the FIXED price (48), never its current cost (120)
+		// leg B: the co-product's own receipt is booked at the FIXED price (+48), never its current cost (120),
+		// and never as an outbound (-48) - the co-product receipt qty is already positive at handler entry.
 		final CurrentCost coProductCurrentCost = utils.getCurrentCostForUpdate(coProductReceiptRequest());
 		assertThat(coProductCurrentCost.getCumulatedAmt().toBigDecimal())
 				.isEqualByComparingTo(CO_PRODUCT_FIXED_AMOUNT);
@@ -208,18 +208,18 @@ class ManufacturingCoProductReceiptFixedPriceTest
 		return ProductId.ofRepoId(coProduct.getM_Product_ID());
 	}
 
-	private void setupAveragePOOrder()
+	private void setupMovingAverageInvoiceOrder()
 	{
 		acctSchemaId = AcctSchemaTestHelper.newAcctSchema()
 				.costingLevel(CostingLevel.Client)
-				.costingMethod(CostingMethod.AveragePO)
+				.costingMethod(CostingMethod.MovingAverageInvoice)
 				.currencyId(currencyId)
 				.build();
-		costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
-		handler = new ManufacturingAveragePOCostingMethodHandler(
+		costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.MovingAverageInvoice);
+		handler = new ManufacturingMovingAverageInvoiceCostingMethodHandler(
 				utils,
 				distributor,
-				new AveragePOCostingMethodHandler(
+				new MovingAverageInvoiceCostingMethodHandler(
 						utils,
 						MatchInvoiceService.newInstanceForUnitTesting(),
 						OrderCostService.newInstanceForUnitTesting()));
