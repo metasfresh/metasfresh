@@ -142,6 +142,9 @@ export class RawLookup extends Component {
     // is filled never pulls the caret into a value the user entered, and never leaves the latch
     // armed on it.
     //
+    // `!shouldBeFocused` keeps the re-arm idempotent - an already-armed latch needs no second
+    // `setState` and the render it would cost. It is not a guard against a failure case.
+    //
     // Modals are excluded, as the requirements ask: a process parameter panel and the barcode
     // overlay hand this widget a pinstance id in `dataId` with an unconditional `autoFocus`, and
     // that is not a document change. A quick-input row is excluded too: it is the same document,

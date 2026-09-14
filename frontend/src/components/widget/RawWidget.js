@@ -93,8 +93,10 @@ export class RawWidget extends PureComponent {
     // it, so the mount-time focus above never runs again and the first field of the new
     // document stays unfocused. Repeat it on a document change - never while this widget is the
     // one being typed in, where there is nothing to move and a caret to lose, and never in a
-    // modal, where a process parameter panel and the barcode overlay pass a pinstance id as
-    // `dataId` with an unconditional `autoFocus`, and never in a quick-input row, whose first
+    // modal, where a process parameter panel, the barcode overlay and the attributes dropdown
+    // pass a pinstance or editing-instance id as `dataId` with an unconditional `autoFocus`
+    // (the attributes dropdown sets that id once before mounting, so it is excluded twice over),
+    // and never in a quick-input row, whose first
     // field carries a permanently-set `autoFocus` of its own while the field that must get the
     // focus on a new document is the header's.
     //
