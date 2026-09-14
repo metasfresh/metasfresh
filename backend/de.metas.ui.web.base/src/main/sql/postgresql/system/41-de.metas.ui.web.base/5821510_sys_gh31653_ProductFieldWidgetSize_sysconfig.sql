@@ -1,5 +1,5 @@
 -- gh#31653: order-line quick-input Produkt field width sysconfig (default: empty = unchanged).
--- Guarded by "WHEN NOT EXISTS": the fm206 (customer) migration 5824210 also creates this exact
+-- Guarded by "WHERE NOT EXISTS": the fm206 (customer) migration 5824210 also creates this exact
 -- row (same AD_SysConfig_ID=541854) as a fallback, because fm206's CI builds against RELEASED
 -- core and may not yet contain this migration. Whichever of the two migrations runs first wins;
 -- the other is then a no-op, so exactly one row ever exists regardless of run order.

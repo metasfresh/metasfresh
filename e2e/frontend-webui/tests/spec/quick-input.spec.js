@@ -1013,9 +1013,18 @@ must remain true — behavior must be identical to before the change.
         try {
           await Backend.resetWebApiCaches();
         } catch (err) {
-          console.log(
-            `[sysconfig cleanup] resetWebApiCaches skipped/failed (likely not logged in yet): ${err}`
-          );
+          // Only the expected "test failed before login" case (GET /cache/reset -> HTTP 401,
+          // userSession.assertLoggedIn()) is safe to swallow — the sysconfig VALUES were
+          // already restored above. Any OTHER failure (500, network, a real cache-reset
+          // regression) must fail loudly here, not be reduced to a log line that leaves a
+          // stale QuickInputDescriptors cache leaking into the next describe block.
+          if (String(err && err.message).includes('HTTP 401')) {
+            console.log(
+              `[sysconfig cleanup] resetWebApiCaches skipped: not logged in yet (${err.message})`
+            );
+          } else {
+            throw err;
+          }
         }
       });
 
