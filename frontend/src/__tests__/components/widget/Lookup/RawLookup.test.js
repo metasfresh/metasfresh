@@ -152,6 +152,9 @@ describe('RawLookup component', () => {
       });
 
       expect(focusSpy).not.toHaveBeenCalled();
+      // Not focusing right now is not enough: the arming must not be left standing either, or a
+      // later event that empties the input would fire a focus nobody asked for.
+      expect(wrapper.state('shouldBeFocused')).toEqual(false);
     });
 
     it('calls focus/blur handlers properly', () => {
