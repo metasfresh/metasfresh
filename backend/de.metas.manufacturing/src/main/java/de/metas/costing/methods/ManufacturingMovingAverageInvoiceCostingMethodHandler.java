@@ -30,6 +30,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -78,16 +79,13 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
 			currentCost = utils.getCurrentCostForUpdate(request);
-			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
+			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts, false);
 		}
 		else if (costCollectorType.isCoOrByProductReceipt())
 		{
-			// CO/BY product quantities are negative, so we are negating them here to get a positive "received" qty
-			final CostDetailCreateRequest requestEffective = request.withQty(request.getQty().negate());
-			
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCostForUpdate(requestEffective);
-			result = createMainProductOrCoProductReceipt(requestEffective, currentCost, orderCosts);
+			currentCost = utils.getCurrentCostForUpdate(request);
+			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts, true);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
@@ -124,7 +122,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		//
 		if (orderCosts != null)
 		{
-			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), getAcctSchemaCostingMethod(request), ppOrderCostsService);
 			ppOrderCostsService.save(orderCosts);
 		}
 
@@ -145,21 +143,59 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 				.getCostingPrecision();
 	}
 
+	/**
+	 * The costing method the order is actually costed under — the acct schema's method, NOT this handler's
+	 * ({@link #getCostingMethod()}). See the twin method in {@code ManufacturingAveragePOCostingMethodHandler}
+	 * for why they differ (parallel per-cost-element tracking) and why the fixed-price gate must key off the
+	 * order's real (acct-schema) method.
+	 */
+	private CostingMethod getAcctSchemaCostingMethod(final CostDetailCreateRequest request)
+	{
+		return acctSchemasRepo.getById(request.getAcctSchemaId())
+				.getCosting()
+				.getCostingMethod();
+	}
+
 	private CostDetailCreateResult createMainProductOrCoProductReceipt(
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCost,
-			@NonNull final PPOrderCosts orderCosts)
+			@NonNull final PPOrderCosts orderCosts,
+			final boolean isCoOrByProductReceipt)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
+
+		// The fixed-price valuation applies to co-product (CP) lines ONLY (symmetric with leg A's post-calc relief):
+		// a MixVariance receipt is either a co-product or a by-product receipt, so distinguish them by the order-cost
+		// row's trx type. A by-product receipt keeps its live current cost even when its product carries a fixed price
+		// (that unsupported combination is rejected by the post-calc guard in PPOrderCosts).
+		final boolean isCoProductReceipt = isCoOrByProductReceipt
+				&& orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
+						.map(PPOrderCost::isCoProduct)
+						.orElse(false);
 
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
 		{
-			// Value the receipt at the product's CURRENT M_Cost, not the frozen BOM-rollup price.
-			// Any make-vs-average delta is intentionally left in WIP (not forced to zero).
-			final CostPrice price = currentCost.getCostPrice();
+			// Value the receipt at the product's CURRENT M_Cost, not the frozen BOM-rollup price - EXCEPT a
+			// co-product whose product carries a manual CoProductFixedCostPrice, which is booked at that fixed
+			// price (shared with the post-calc relief via the FixedCostPriceProvider so both legs produce the
+			// identical co-product amount). Any make-vs-average delta is intentionally left in WIP (not forced to zero).
+			final CostPrice price = getReceiptPrice(currentCost, costSegmentAndElement, isCoProductReceipt);
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
-			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
+			final CostAmount amt;
+			if (isCoProductReceipt && !ppOrderCostsService.getFixedCostPrice(costSegmentAndElement.getProductId()).isPresent())
+			{
+				// A blank-fixed-price co-product capitalizes its qty-distribution share of the order's inbound cost
+				// pool - the identical amount leg A relieves in PPOrderCosts.updatePostCalculationAmountsForCostElement
+				// - so both legs book the same value and the order's WIP clears. A blank co-product has no per-unit
+				// price to share (unlike the fixed-price one), so the share amount is taken directly, not derived
+				// from a price; the receipt still carries its qty, so the value reaches P_Asset with the received qty.
+				amt = orderCosts.getBlankCoProductReceiptAmount(costSegmentAndElement, getCostingPrecision(request));
+			}
+			else
+			{
+				amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
+			}
 			requestEffective = request.withAmountAndQty(amt, qty);
 			// Persisted only on this non-reversal path. A reversal leaves the persisted price unchanged,
 			// which is harmless: nothing reads PP_Order_Cost.price between a reversal and the next receipt
@@ -186,6 +222,30 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 				utils.getQuantityUOMConverter());
 
 		return result;
+	}
+
+	/**
+	 * The price a receipt is valued at: a co-product whose product carries a manual {@code CoProductFixedCostPrice}
+	 * is valued at that fixed price - shared with the post-calc relief through the {@code FixedCostPriceProvider} so
+	 * leg A (post-calc amount) and leg B (this receipt valuation) book the identical co-product amount and cost is
+	 * conserved. A main-product receipt, or a co-product with a blank fixed price, keeps the product's live current cost.
+	 */
+	private CostPrice getReceiptPrice(
+			@NonNull final CurrentCost currentCost,
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			final boolean isCoProductReceipt)
+	{
+		final CostPrice currentCostPrice = currentCost.getCostPrice();
+		if (!isCoProductReceipt)
+		{
+			return currentCostPrice;
+		}
+
+		return ppOrderCostsService.getFixedCostPrice(costSegmentAndElement.getProductId())
+				.map(fixedCostPrice -> CostPrice.ownCostPrice(
+						CostAmount.of(fixedCostPrice, currentCostPrice.getCurrencyId()),
+						currentCostPrice.getUomId()))
+				.orElse(currentCostPrice);
 	}
 
 	private CostDetailCreateResult createComponentIssue(

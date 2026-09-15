@@ -44,6 +44,7 @@ public class PP_Order_Cost_StepDef
 	 *   <b>PP_Order_Cost_TrxType</b> — (required) one of MI/MR/CO/BY/RU (see {@code X_PP_Order_Cost.PP_ORDER_COST_TRXTYPE_*})<br>
 	 *   <b>CurrentCostPrice</b> — (optional) expected own cost price, e.g. "12 EUR"<br>
 	 *   <b>CurrentCostPriceLL</b> — (optional) expected low-level (components) cost price, e.g. "12 EUR"<br>
+	 *   <b>PostCalculationAmt</b> — (optional) expected post-calculation amount (bare number), i.e. the cost this row is relieved/valued by after the production post-calc (co-product = fixedPrice x qty, main = the remainder)<br>
 	 * @cucumber.depends StepDefData: PP_Order_StepDefData, M_Product_StepDefData, M_CostElement_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -93,5 +94,10 @@ public class PP_Order_Cost_StepDef
 					final Money currentCostPriceLLActual = Money.of(record.getCurrentCostPriceLL(), currentCostPriceLLExpected.getCurrencyId());
 					assertThat(currentCostPriceLLActual).as("CurrentCostPriceLL").isEqualTo(currentCostPriceLLExpected);
 				});
+
+		row.getAsOptionalBigDecimal(I_PP_Order_Cost.COLUMNNAME_PostCalculationAmt)
+				.ifPresent(postCalcExpected -> assertThat(record.getPostCalculationAmt())
+						.as("PostCalculationAmt")
+						.isEqualByComparingTo(postCalcExpected));
 	}
 }

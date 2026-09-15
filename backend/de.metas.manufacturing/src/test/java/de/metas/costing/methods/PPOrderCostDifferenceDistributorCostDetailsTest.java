@@ -104,6 +104,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	private CurrentCostsRepository currentCostsRepo;
 	private CostElementRepository costElementRepo;
 	private CostingMethodHandlerUtils utils;
+	private IPPOrderCostBL ppOrderCostBL;
 
 	@BeforeEach
 	void setUp()
@@ -130,6 +131,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 				currentCostsRepo,
 				new CostDetailService(new CostDetailRepository(), costElementRepo));
 		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
+		ppOrderCostBL = Services.get(IPPOrderCostBL.class);
 	}
 
 	private void givenTheOrderHasAPlant()
@@ -228,14 +230,14 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 				.build();
 
 		// what every costing-method handler does after an issue or a receipt
-		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2));
+		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2), CostingMethod.AveragePO, ppOrderCostBL);
 
-		Services.get(IPPOrderCostBL.class).save(orderCosts);
+		ppOrderCostBL.save(orderCosts);
 	}
 
 	private CostAmount residualOf(final AcctSchemaId acctSchemaId, final CostElementId costElementId)
 	{
-		return Services.get(IPPOrderCostBL.class).getByOrderId(orderId).getResidualCost(acctSchemaId, costElementId);
+		return ppOrderCostBL.getByOrderId(orderId).getResidualCost(acctSchemaId, costElementId);
 	}
 
 	private void saveCurrentCost(

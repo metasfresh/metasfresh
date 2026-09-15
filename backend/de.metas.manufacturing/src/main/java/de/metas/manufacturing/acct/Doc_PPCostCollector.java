@@ -157,7 +157,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 		else if (CostCollectorType.MixVariance.equals(costCollectorType))
 		{
-			facts.addAll(createFacts_Variance(as, ProductAcctType.P_MixVariance_Acct));
+			// MixVariance is used EXCLUSIVELY for co/by-product receipts (CostCollectorType.isCoOrByProductReceipt()
+			// returns true only for MixVariance; PPCostCollectorBL.extractCostCollectorTypeToUseForComponentIssue
+			// assigns it only for a co/by-product BOM line). It is NOT a genuine mix variance, so the received
+			// co/by-product must capitalize to inventory like the main product, not book to P_MixVariance (P&L).
+			facts.addAll(createFacts_CoProductReceipt(as));
 		}
 		else if (CostCollectorType.ActivityControl.equals(costCollectorType))
 		{
@@ -281,6 +285,60 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				{
 					facts.add(fact);
 				}
+			}
+		}
+
+		return facts;
+	}
+
+	/**
+	 * Co/by-product receipt (CostCollectorType.MixVariance). Mirrors {@link #createFacts_MaterialReceipt}:
+	 * <pre>
+	 * (for each cost element)
+	 * WIP                       CR
+	 * Product Asset      DR
+	 * </pre>
+	 * The received co/by-product must capitalize to inventory with the received qty on P_Asset — the Lagerwert
+	 * report ({@code report_InventoryValue}) sums {@code Fact_Acct.qty} on P_Asset — so its value clears the
+	 * order's WIP exactly like the main-product receipt. This replaces the former routing through
+	 * {@link #createFacts_Variance} to {@code P_MixVariance_Acct} (a P&amp;L variance account) with the amount and
+	 * qty negated, which never capitalized the value to inventory and left the order's per-order WIP un-cleared.
+	 */
+	private List<Fact> createFacts_CoProductReceipt(final AcctSchema as)
+	{
+		final DocLine_CostCollector docLine = getLine();
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		if (costResult == null)
+		{
+			// No cost details created (e.g. no accountable cost elements) — nothing to post.
+			return ImmutableList.of();
+		}
+
+		// The raw PP_Cost_Collector.MovementQty of a co/by-product OUTPUT is stored negative; the received qty
+		// that capitalizes to inventory is its positive counterpart (mirrors DocLine_CostCollector's negateIf,
+		// which already turns it positive for getCreateCosts, so the cost amount here is already positive too).
+		final Quantity qtyReceived = getMovementQty().negate();
+
+		final Account debit = docLine.getAccount(ProductAcctType.P_Asset_Acct, as);
+		final Account credit = docLine.getAccount(ProductAcctType.P_WIP_Acct, as);
+
+		final ArrayList<Fact> facts = new ArrayList<>();
+		for (final CostElement element : costResult.getCostElements())
+		{
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+
+			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
+			// createFactLines puts +qty on the P_Asset debit leg and -qty on the P_WIP credit leg, so the
+			// positive received qty is what reaches P_Asset. Do NOT negate the cost: it is already positive
+			// (a by-product with a blank fixed price yields a zero-cost line — its qty still capitalizes).
+			// alsoAddZeroLine=true: post even a zero-value receipt so the received qty always reaches P_Asset.
+			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyReceived, true);
+			if (fact != null)
+			{
+				facts.add(fact);
 			}
 		}
 

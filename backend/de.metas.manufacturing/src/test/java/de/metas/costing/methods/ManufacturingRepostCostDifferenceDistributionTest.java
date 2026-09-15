@@ -134,6 +134,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 	private ICurrentCostsRepository currentCostsRepo;
 	private CostingMethodHandlerUtils utils;
 	private PPOrderCostDifferenceDistributor distributor;
+	private IPPOrderCostBL ppOrderCostBL;
 
 	// per-test, set up by setupOrderFor(..)
 	private AcctSchemaId acctSchemaId;
@@ -210,6 +211,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 		costDetailService = new CostDetailService(new CostDetailRepository(), costElementRepo);
 		utils = new CostingMethodHandlerUtils(new CurrencyRepository(), currentCostsRepo, costDetailService);
 		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
+		ppOrderCostBL = Services.get(IPPOrderCostBL.class);
 	}
 
 	@ParameterizedTest
@@ -327,7 +329,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 		orderId = createCompletedPPOrder();
 		distributionCollectorId = createCostDifferenceDistributionCollector();
 
-		seedOrderCostsWithResidual();
+		seedOrderCostsWithResidual(handlerUnderTest.costingMethod);
 		saveMainProductCurrentCost();
 	}
 
@@ -353,7 +355,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 	}
 
 	/** The {@code PP_Order_Cost} rows a completed order carries: an issue and a main-product receipt, leaving a residual. */
-	private void seedOrderCostsWithResidual()
+	private void seedOrderCostsWithResidual(@NonNull final CostingMethod costingMethod)
 	{
 		final BigDecimal issuedQty = new BigDecimal(ISSUED_QTY);
 		final BigDecimal receivedQty = new BigDecimal(RECEIVED_QTY);
@@ -381,10 +383,12 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.costs(ImmutableList.of(materialIssue, mainProduct))
 				.build();
 
-		// what every costing-method handler does after an issue or a receipt
-		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2));
+		// what every costing-method handler does after an issue or a receipt; the seed carries no co-products, so the
+		// costing method only decides the (unreached) co-product fixed-price gate - thread the method under test through
+		// rather than pinning a soon-to-be-deprecated literal, keeping the seed consistent across every @EnumSource leg.
+		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2), costingMethod, ppOrderCostBL);
 
-		Services.get(IPPOrderCostBL.class).save(orderCosts);
+		ppOrderCostBL.save(orderCosts);
 	}
 
 	private void saveMainProductCurrentCost()

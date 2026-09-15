@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -43,6 +44,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.impl.PPOrderDocumentLUTUConfigurationHandlerTestHelper;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUGenerator;
@@ -61,9 +63,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -88,15 +94,25 @@ public class M_HU_LUTU_Configuration_StepDef
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final M_HU_List_StepDefData huListTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
+	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 
 	/**
-	 * Receives the main product of a {@code PP_Order} into planning HUs, packed per the LU/TU
-	 * configuration built from the DataTable row.
+	 * Receives a {@code PP_Order} output into planning HUs, packed per the LU/TU configuration built from
+	 * the DataTable row. Without a BOM-line reference it receives the order's <b>main</b> (finished-good)
+	 * product; with one it receives that BOM line's <b>co-product / by-product</b> output.
 	 * <p>
 	 * Required columns: {@code PP_Order_ID} (identifier), {@code M_HU_ID.Identifier},
 	 * {@code IsInfiniteQtyLU}, {@code QtyLU}, {@code IsInfiniteQtyTU}, {@code QtyTU},
 	 * {@code IsInfiniteQtyCU}, {@code QtyCUsPerTU} and {@code M_HU_PI_Item_Product_ID.Identifier}.
+	 * <p>
+	 * Optional column {@code PP_Order_BOMLine_ID.Identifier}: when present, the receipt is the referenced
+	 * BOM line's co/by-product output (driving the real production BL {@code receivingByOrCoProduct}) instead
+	 * of the main product ({@code receivingMainProduct}). Which of the two is 100% unambiguous — it is decided
+	 * from the referenced line's {@code ComponentType}: a co-product ({@code CP}) or by-product ({@code BY})
+	 * line is a receivable output ({@link BOMComponentType#isByOrCoProduct()}), any other type is an ISSUE
+	 * line and can never be received, so a reference to one <b>fails the step loudly</b> rather than guessing.
+	 * Omitting the column keeps today's behaviour exactly (main-product receipt) — backward compatible.
 	 * <p>
 	 * {@code M_HU_ID.Identifier} accepts <b>one or several</b> comma-separated identifiers. The
 	 * received HUs are bound to them positionally, and the number of identifiers must match the
@@ -106,6 +122,12 @@ public class M_HU_LUTU_Configuration_StepDef
 	 * And receive HUs for PP_Order with M_HU_LUTU_Configuration:
 	 *   | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
 	 *   | ppOrder_1   | hu_a,hu_b          | N               | 0     | N               | 2     | N               | 10          | huPiItemProduct_1                  |
+	 * </pre>
+	 * And a co-product receipt of that same order by adding the BOM-line reference:
+	 * <pre>
+	 * And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+	 *   | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+	 *   | ppOrder_1   | coProductBomLine    | huCo               | N               | 0     | N               | 1     | N               | 6           | coProductPiItemProduct             |
 	 * </pre>
 	 * With {@code QtyLU=0} there is no aggregate LU, so one physical HU is created per TU. The
 	 * positional binding is stable: {@code getCreatedHUs()} is backed by a {@code TreeSet} ordered by
@@ -125,7 +147,12 @@ public class M_HU_LUTU_Configuration_StepDef
 
 					final I_M_HU_LUTU_Configuration lutuConfig = computeLUTUConfiguration(lutuConfiguration, tableRow);
 
-					final List<I_M_HU> hus = huPPOrderBL.receivingMainProduct(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
+					final StepDefDataIdentifier bomLineIdentifier = tableRow
+							.getAsOptionalIdentifier(I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID)
+							.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+							.orElse(null);
+
+					final List<I_M_HU> hus = createReceiptProducer(ppOrder, bomLineIdentifier)
 							.packUsingLUTUConfiguration(lutuConfig)
 							.createDraftReceiptCandidatesAndPlanningHUs();
 
@@ -143,6 +170,42 @@ public class M_HU_LUTU_Configuration_StepDef
 						huTable.putOrReplace(huIdentifiers.get(i), hus.get(i));
 					}
 				});
+	}
+
+	/**
+	 * Selects the real production receipt BL for this row: the co/by-product receipt
+	 * ({@link IHUPPOrderBL#receivingByOrCoProduct(PPOrderBOMLineId)}) when a BOM-line reference is given,
+	 * else the main-product receipt ({@link IHUPPOrderBL#receivingMainProduct(PPOrderId)}).
+	 * <p>
+	 * The co/by-vs-main decision is resolved unambiguously from the referenced line's {@code ComponentType}:
+	 * only a co-product ({@code CP}) or by-product ({@code BY}) line is a receivable output, so a reference to
+	 * any other (issue) line fails loud instead of being received against the wrong BL.
+	 */
+	@NonNull
+	private IPPOrderReceiptHUProducer createReceiptProducer(
+			@NonNull final I_PP_Order ppOrder,
+			@Nullable final StepDefDataIdentifier bomLineIdentifier)
+	{
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+
+		// No BOM-line reference -> main (finished-good) product receipt. Backward-compatible default.
+		if (bomLineIdentifier == null)
+		{
+			return huPPOrderBL.receivingMainProduct(ppOrderId);
+		}
+
+		final I_PP_Order_BOMLine bomLine = ppOrderBOMLineTable.get(bomLineIdentifier);
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		if (!componentType.isByOrCoProduct())
+		{
+			throw new AdempiereException("Cannot receive PP_Order_BOMLine " + bomLineIdentifier
+					+ " (M_Product_ID=" + bomLine.getM_Product_ID() + ") as a co/by-product receipt:"
+					+ " its ComponentType is " + componentType + " (" + bomLine.getComponentType() + "),"
+					+ " which is an issue line, not a receivable output."
+					+ " Only a co-product (CP) or by-product (BY) BOM line can be received via receivingByOrCoProduct.");
+		}
+
+		return huPPOrderBL.receivingByOrCoProduct(PPOrderBOMLineId.ofRepoId(bomLine.getPP_Order_BOMLine_ID()));
 	}
 
 	@And("create M_HU_LUTU_Configuration for M_ReceiptSchedule:")

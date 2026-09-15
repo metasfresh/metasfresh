@@ -7,12 +7,14 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostingMethod;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,6 +26,8 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -58,6 +63,15 @@ import java.util.function.UnaryOperator;
 @EqualsAndHashCode
 public final class PPOrderCosts
 {
+	/**
+	 * The costing methods under which the manual co-product {@code CoProductFixedCostPrice} valuation is supported.
+	 * Both legs of the feature (the post-calc relief here and the co-product receipt valuation in the costing-method
+	 * handlers) exist ONLY for these two methods; a fixed price set under any other method drives the two legs out of
+	 * sync (leg A relieves, leg B does not), so it is rejected at posting rather than silently applied.
+	 */
+	private static final ImmutableSet<CostingMethod> COSTING_METHODS_SUPPORTING_FIXED_CO_PRODUCT_PRICE =
+			ImmutableSet.of(CostingMethod.AveragePO, CostingMethod.MovingAverageInvoice);
+
 	@Getter
 	private final PPOrderId orderId;
 	private final HashMap<CostSegmentAndElement, PPOrderCost> costs;
@@ -223,17 +237,22 @@ public final class PPOrderCosts
 		}
 	}
 
-	public void updatePostCalculationAmounts(final CurrencyPrecision precision)
+	public void updatePostCalculationAmounts(
+			final CurrencyPrecision precision,
+			@NonNull final CostingMethod costingMethod,
+			@NonNull final FixedCostPriceProvider fixedCostPriceProvider)
 	{
 		for (final CostElementId costElementId : getCostElementIds())
 		{
-			updatePostCalculationAmountsForCostElement(precision, costElementId);
+			updatePostCalculationAmountsForCostElement(precision, costElementId, costingMethod, fixedCostPriceProvider);
 		}
 	}
 
 	public void updatePostCalculationAmountsForCostElement(
 			final CurrencyPrecision precision,
-			final CostElementId costElementId)
+			final CostElementId costElementId,
+			@NonNull final CostingMethod costingMethod,
+			@NonNull final FixedCostPriceProvider fixedCostPriceProvider)
 	{
 		final List<PPOrderCost> costs = filterAndList(PPOrderCostFilter.builder()
 				.costElementId(costElementId)
@@ -260,22 +279,133 @@ public final class PPOrderCosts
 				.orElseThrow(() -> new AdempiereException("No inbound costs found in " + costs));
 
 		//
-		// Update co-product costs and calculate total co-product costs
-		coProductCosts.forEach(cost -> cost.setPostCalculationAmount(totalInboundCostAmount.multiply(cost.getCoProductCostDistributionPercent(), precision)));
+		// Update co-product costs and calculate total co-product costs.
+		// A co-product whose product carries a manual CoProductFixedCostPrice is valued at fixedPrice x received-qty
+		// (so the main product is relieved by the remainder); a blank price keeps today's qty-distribution behaviour.
+		final List<ProductId> fixedPricedCoProductIds = new ArrayList<>();
+		for (final PPOrderCost coProductCost : coProductCosts)
+		{
+			final BigDecimal fixedCostPrice = fixedCostPriceProvider.getFixedCostPrice(coProductCost.getProductId()).orElse(null);
+			final CostAmount coProductAmount;
+			if (fixedCostPrice != null)
+			{
+				// C3 method-gate: the ORDER's costing method (the acct schema's — passed in as costingMethod, NOT
+				// the invoking handler's; see the handlers' getAcctSchemaCostingMethod) must be Average PO or Moving
+				// Average Invoice. Under any other method leg B never books the co-product receipt at the fixed price,
+				// so applying the relief would silently unbalance the order — reject at posting instead. Gated on the
+				// co-product having actually been received (accumulatedQty != 0 — the point the fixed price is applied),
+				// mirroring the qty-driven negative-main and by-product guards so the reject binds at the co-product
+				// receipt rather than at an earlier component issue.
+				if (!coProductCost.getAccumulatedQty().isZero()
+						&& !COSTING_METHODS_SUPPORTING_FIXED_CO_PRODUCT_PRICE.contains(costingMethod))
+				{
+					throw new AdempiereException("Co-product fixed cost price for " + describeProducts(fixedCostPriceProvider, ImmutableList.of(coProductCost.getProductId()))
+							+ " is set, but the fixed-price co-product valuation is supported only under the Average PO and Moving Average Invoice costing methods, not " + costingMethod);
+				}
+				coProductAmount = CostAmount.of(
+								fixedCostPrice.multiply(coProductCost.getAccumulatedQty().toBigDecimal()),
+								totalInboundCostAmount.getCurrencyId())
+						.roundToPrecisionIfNeeded(precision);
+				fixedPricedCoProductIds.add(coProductCost.getProductId());
+			}
+			else
+			{
+				coProductAmount = computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision);
+			}
+			coProductCost.setPostCalculationAmount(coProductAmount);
+		}
 		final CostAmount totalCoProductsCostAmount = coProductCosts.stream()
 				.map(PPOrderCost::getPostCalculationAmount)
 				.reduce(CostAmount::add)
 				.orElseGet(totalInboundCostAmount::toZero);
 
 		//
-		// Update main product cost
-		mainProductCost.setPostCalculationAmount(totalInboundCostAmount.subtract(totalCoProductsCostAmount));
+		// Guard: the co-products must not consume more than the order's input cost pool, which would drive the
+		// main product's value negative. Reject here, BEFORE persisting the negative main-product amount below.
+		final CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
+		if (mainProductAmount.signum() < 0)
+		{
+			final List<ProductId> offendingCoProductIds = !fixedPricedCoProductIds.isEmpty()
+					? fixedPricedCoProductIds
+					: coProductCosts.stream().map(PPOrderCost::getProductId).collect(Collectors.toList());
+			throw new AdempiereException("Co-product fixed cost price for " + describeProducts(fixedCostPriceProvider, offendingCoProductIds)
+					+ " values the co-products at " + totalCoProductsCostAmount
+					+ ", which exceeds the production order's input cost pool of " + totalInboundCostAmount
+					+ " and would drive the main product negative");
+		}
 
 		//
-		// Clear by-product costs
+		// Clear by-product costs.
+		// C2 by-product guard: the fixed-price valuation applies to co-product (CP) lines ONLY, symmetric with
+		// leg B. Once a by-product line whose product carries a fixed price is actually RECEIVED (accumulatedQty
+		// != 0), its receipt would capitalize at the fixed price (leg B) while this post-calc zeroes it (leg A) —
+		// a silent divergence — so reject at posting instead. Mirrors the qty-driven negative-main guard above:
+		// the reject binds at the point the fixed price would actually be applied, not at an earlier component
+		// issue when the by-product has not been produced yet. Runs BEFORE the main-product mutation below so a
+		// reject throws before any post-calculation amount is changed, like the two guards above.
 		costs.stream()
 				.filter(PPOrderCost::isByProduct)
-				.forEach(PPOrderCost::setPostCalculationAmountAsZero);
+				.forEach(byProductCost -> {
+					if (!byProductCost.getAccumulatedQty().isZero()
+							&& fixedCostPriceProvider.getFixedCostPrice(byProductCost.getProductId()).isPresent())
+					{
+						throw new AdempiereException("Co-product fixed cost price for " + describeProducts(fixedCostPriceProvider, ImmutableList.of(byProductCost.getProductId()))
+								+ " is set on a by-product (BY) line, but the fixed-price valuation is supported for co-product (CP) lines only, not by-products");
+					}
+					byProductCost.setPostCalculationAmountAsZero();
+				});
+
+		//
+		// Update main product cost
+		mainProductCost.setPostCalculationAmount(mainProductAmount);
+	}
+
+	/**
+	 * The amount a blank-fixed-price co-product receipt must capitalize to inventory: the co-product's share of
+	 * the order's inbound cost pool (qty-distribution) for its cost element - the IDENTICAL amount
+	 * {@link #updatePostCalculationAmountsForCostElement} books as the co-product's post-calculation relief
+	 * (leg A). A costing-method handler values the co-product receipt (leg B) at this amount so both legs book
+	 * the same value, cost is conserved and the order's WIP clears.
+	 */
+	public CostAmount getBlankCoProductReceiptAmount(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final PPOrderCost coProductCost = getByCostSegmentAndElement(costSegmentAndElement)
+				.orElseThrow(() -> new AdempiereException("No co-product cost row found for " + costSegmentAndElement));
+		final CostAmount totalInboundCostAmount = getTotalInboundCostAmount(coProductCost.getCostElementId());
+		return computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision);
+	}
+
+	private CostAmount getTotalInboundCostAmount(@NonNull final CostElementId costElementId)
+	{
+		final List<PPOrderCost> costsForElement = filterAndList(PPOrderCostFilter.builder()
+				.costElementId(costElementId)
+				.build());
+		return costsForElement.stream()
+				.filter(PPOrderCost::isInboundCost)
+				.map(PPOrderCost::getAccumulatedAmount)
+				.reduce(CostAmount::add)
+				.orElseThrow(() -> new AdempiereException("No inbound costs found in " + costsForElement));
+	}
+
+	/**
+	 * The blank-fixed-price co-product's qty-distribution share of the order's inbound cost pool:
+	 * {@code totalInbound × coProductCostDistributionPercent}. The distribution percent is nullable (the DAO
+	 * leaves it unset, especially under Moving Average Invoice), so a null / non-positive percent yields a zero
+	 * share - nothing to capitalise - rather than an NPE.
+	 */
+	private static CostAmount computeBlankCoProductAmount(
+			@NonNull final CostAmount totalInboundCostAmount,
+			@NonNull final PPOrderCost coProductCost,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final Percent distributionPercent = coProductCost.getCoProductCostDistributionPercent();
+		if (distributionPercent == null || distributionPercent.signum() <= 0)
+		{
+			return totalInboundCostAmount.toZero();
+		}
+		return totalInboundCostAmount.multiply(distributionPercent, precision);
 	}
 
 	/**
@@ -345,6 +475,16 @@ public final class PPOrderCosts
 				.stream()
 				.map(CostSegmentAndElement::getCostElementId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/** @return the given products' names (comma-separated), for the negative-main guard message. */
+	private static String describeProducts(
+			@NonNull final FixedCostPriceProvider fixedCostPriceProvider,
+			@NonNull final List<ProductId> productIds)
+	{
+		return productIds.stream()
+				.map(fixedCostPriceProvider::getProductName)
+				.collect(Collectors.joining(", "));
 	}
 
 }

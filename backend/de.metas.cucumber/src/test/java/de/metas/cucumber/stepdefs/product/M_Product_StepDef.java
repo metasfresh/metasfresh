@@ -304,7 +304,8 @@ public class M_Product_StepDef
 	 *   <b>M_Product_ID.Identifier</b> — identifier of a product created/loaded earlier in the scenario<br>
 	 * Optional columns (only the ones present are written):<br>
 	 *   <b>Value</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>,
-	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}
+	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N},
+	 *   <b>CoProductFixedCostPrice</b> — the manual fixed co-product cost price read live at production costing
 	 *
 	 * <pre>{@code
 	 * When update M_Product:
@@ -513,6 +514,9 @@ public class M_Product_StepDef
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
 				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
+		// Manual fixed co-product cost price (opt-in per co-product product; blank = keeps today's distribution).
+		row.getAsOptionalBigDecimal(I_M_Product.COLUMNNAME_CoProductFixedCostPrice)
+				.ifPresent(productRecord::setCoProductFixedCostPrice);
 
 		saveRecord(productRecord);
 		productTable.putOrReplace(row.getAsIdentifier(), productRecord);
