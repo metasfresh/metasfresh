@@ -46,11 +46,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
 /**
- * Covers task 5's Done-when: a view built for an order with two article lines and one text line between them
- * returns three rows in merged order, with the article rows non-editable (DESIGN.md § D-E, § D-C). Also pins
- * the merged-ordering edge cases named in the task brief: a tie between an article line and a text line at the
- * exact same position, a text line before the first article line, and a document with text lines and no
- * article lines at all.
+ * A view built for an order with two article lines and one text line between them returns three rows in
+ * merged order, with the article rows non-editable. Also pins the merged-ordering edge cases: a tie between
+ * an article line and a text line at the exact same position, a text line before the first article line, and
+ * a document with text lines and no article lines at all.
  */
 class DocTextLinesViewTest
 {

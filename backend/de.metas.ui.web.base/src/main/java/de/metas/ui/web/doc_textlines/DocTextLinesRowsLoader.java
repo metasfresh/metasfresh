@@ -23,14 +23,14 @@ import java.util.stream.Stream;
  * read via {@link IOrderDAO}, which the persistence-layer boundary lets this view-layer class query directly)
  * and its text lines ({@code C_Doc_TextLine}, via {@link DocTextLineRepository}, which does NOT query article
  * lines itself -- see {@code InsertAboveRequest}'s javadoc). This is the one place that holds the full merged
- * ordering (DESIGN.md § D-C): article-line position and text-line position share one numeric space, so a plain
- * "line ascending, text-before-article on a tie" sort is the whole algorithm.
+ * ordering: article-line position and text-line position share one numeric space, so a plain "line ascending,
+ * text-before-article on a tie" sort is the whole algorithm.
  */
 final class DocTextLinesRowsLoader
 {
 	/**
-	 * DESIGN.md § D-C: {@code ORDER BY line, sort_rank} with text ranked before article on a tie -- an article
-	 * line created at the same position as an existing text line sorts into the run the text introduces.
+	 * {@code ORDER BY line, sort_rank} with text ranked before article on a tie -- an article line created at
+	 * the same position as an existing text line sorts into the run the text introduces.
 	 */
 	private static final Comparator<DocTextLinesRow> MERGED_ORDER =
 			Comparator.comparing(DocTextLinesRow::getLine)

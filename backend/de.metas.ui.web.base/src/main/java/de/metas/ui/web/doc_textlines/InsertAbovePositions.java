@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 
 /**
  * The three values {@code InsertAboveRequest} (package {@code de.metas.doctextline}) needs to place a new text
- * line in the merged article-line/text-line sequence relative to a selected reference row (DESIGN.md § D-C):
- * the reference row's own position, the position of the row immediately before it in the merged order (or
- * absent if it is the first row), and whether any article row precedes the reference row's position.
+ * line in the merged article-line/text-line sequence relative to a selected reference row: the reference
+ * row's own position, the position of the row immediately before it in the merged order (or absent if it is
+ * the first row), and whether any article row precedes the reference row's position.
  * <p>
  * Computed by {@link DocTextLinesView#getInsertAbovePositions(de.metas.ui.web.window.datatypes.DocumentId)} --
  * the public surface a future insert-above quick-action process (tasks 8/9, living in a sibling
@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 @Builder
 public class InsertAbovePositions
 {
-	/** The case DESIGN.md/AC25 calls out: no rows at all, so nothing to reference. */
+	/** No rows at all, so nothing to reference. */
 	public static final InsertAbovePositions EMPTY_DOCUMENT = InsertAbovePositions.builder()
 			.referencePosition(null)
 			.previousPosition(null)

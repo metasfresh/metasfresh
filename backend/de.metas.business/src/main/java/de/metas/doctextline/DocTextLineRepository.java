@@ -21,16 +21,16 @@ import java.util.stream.Collectors;
  * Repository Tables: C_Doc_TextLine
  * Repository Cluster: DocTextLineRepository
  * <p>
- * Owns the position arithmetic of DESIGN.md § D-C (midpoint insert-above) and the scope default of § D-D.
- * Both operate on plain values supplied by the caller — this repository never queries article-line tables
- * (C_OrderLine / M_InOutLine), which it does not own (see {@link InsertAboveRequest}).
+ * Owns the position arithmetic of a midpoint insert-above and the scope default derived from it. Both operate
+ * on plain values supplied by the caller — this repository never queries article-line tables (C_OrderLine /
+ * M_InOutLine), which it does not own (see {@link InsertAboveRequest}).
  */
 @Repository
 public class DocTextLineRepository
 {
 	private static final int LINE_SCALE = 4;
 
-	/** Position given to the first text line ever inserted into an otherwise empty document (AC25). */
+	/** Position given to the first text line ever inserted into an otherwise empty document. */
 	private static final BigDecimal FIRST_POSITION_IN_EMPTY_DOCUMENT = BigDecimal.ONE.setScale(LINE_SCALE);
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);

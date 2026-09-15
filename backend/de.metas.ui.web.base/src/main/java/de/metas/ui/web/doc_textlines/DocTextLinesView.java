@@ -49,7 +49,7 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 	 * ordering is held.
 	 *
 	 * @param referenceRowId the row the user selected before invoking insert-above; {@code null} only when the
-	 *                        document has no rows at all (AC25).
+	 *                        document has no rows at all.
 	 */
 	public InsertAbovePositions getInsertAbovePositions(@Nullable final DocumentId referenceRowId)
 	{
