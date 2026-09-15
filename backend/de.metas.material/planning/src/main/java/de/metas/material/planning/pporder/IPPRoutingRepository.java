@@ -41,6 +41,8 @@ public interface IPPRoutingRepository extends ISingletonService
 
 	boolean nodesAlreadyExistInWorkflow(@NonNull PPRoutingActivityId excludeActivityId);
 
+	boolean isFirstNodeOfWorkflow(@NonNull PPRoutingActivityId activityId);
+
 	Optional<PPRoutingId> getDefaultRoutingIdByType(@NonNull PPRoutingType type);
 
 	void setFirstNodeToWorkflow(@NonNull PPRoutingActivityId ppRoutingActivityId);

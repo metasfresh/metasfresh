@@ -46,10 +46,28 @@ import org.jetbrains.annotations.Contract;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.function.Function;
 
+/**
+ * Factory methods for creating {@link Quantity} instances.
+ * <p>
+ * Use this class as the single entry point for constructing {@link Quantity} objects:
+ * <ul>
+ *     <li>{@link #of(BigDecimal, I_C_UOM)} — when you already have the UOM record</li>
+ *     <li>{@link #of(BigDecimal, UomId)} — when you only have the UOM ID (resolves the record internally)</li>
+ *     <li>{@link #of(BigDecimal, ProductId)} — when the qty is in stock UOM</li>
+ *     <li>{@link #of(BigDecimal, X12DE355)} — when you have the ISO code</li>
+ *     <li>{@link #of(Object, Function, Function)} — when extracting qty and UOM ID from a record object (e.g. {@code Quantitys.of(record, I_M_InOutLine::getMovementQty, I_M_InOutLine::getC_UOM_ID)})</li>
+ * </ul>
+ */
 @UtilityClass
 public class Quantitys
 {
+	public Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
+	{
+		return Quantity.of(qty, uom);
+	}
+
 	public Quantity of(@NonNull final BigDecimal qty, @NonNull final X12DE355 x12DE355)
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
@@ -67,6 +85,14 @@ public class Quantitys
 		final I_C_UOM uomRecord = uomDao.getById(uomId);
 
 		return Quantity.of(qty, uomRecord);
+	}
+
+	public <T> Quantity of(
+			@NonNull T obj,
+			@NonNull Function<T, BigDecimal> qtyExtractor,
+			@NonNull Function<T, Integer> uomIdExtractor)
+	{
+		return of(qtyExtractor.apply(obj), UomId.ofRepoId(uomIdExtractor.apply(obj)));
 	}
 
 	public Quantity of(

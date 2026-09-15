@@ -64,7 +64,7 @@ const RawMaterialIssueActivity = (props) => {
                 caption={lineItem.productName}
                 hazardSymbols={showHazardsAndAllergens ? lineItem.hazardSymbols : null}
                 allergens={showHazardsAndAllergens ? lineItem.allergens : null}
-                completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
+                completeStatus={!lineItem.readOnly ? lineItem.completeStatus || CompleteStatus.NOT_STARTED : undefined}
                 disabled={getDisabledStatus({ currentLine: sortedLines[lineIndex], previousLine: previousLine })}
                 onClick={() => onButtonClick(lineId)}
               >

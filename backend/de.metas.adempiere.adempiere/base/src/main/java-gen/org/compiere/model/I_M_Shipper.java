@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Shipper
  *  @author metasfresh (generated) 
@@ -162,6 +161,27 @@ public interface I_M_Shipper
 
 	ModelColumn<I_M_Shipper, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Shipper.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set API Carrier Advise.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsApiCarrierAdvise (boolean IsApiCarrierAdvise);
+
+	/**
+	 * Get API Carrier Advise.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	boolean isApiCarrierAdvise();
+
+	ModelColumn<I_M_Shipper, Object> COLUMN_IsApiCarrierAdvise = new ModelColumn<>(I_M_Shipper.class, "IsApiCarrierAdvise", null);
+	String COLUMNNAME_IsApiCarrierAdvise = "IsApiCarrierAdvise";
 
 	/**
 	 * Set Default.

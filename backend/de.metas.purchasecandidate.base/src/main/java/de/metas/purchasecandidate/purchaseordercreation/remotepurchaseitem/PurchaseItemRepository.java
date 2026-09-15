@@ -131,8 +131,12 @@ public class PurchaseItemRepository
 			record.setAD_Issue_ID(issueId.getRepoId());
 		}
 
-		record.setAD_Table_ID(purchaseErrorItem.getTransactionReference().getAD_Table_ID());
-		record.setRecord_ID(purchaseErrorItem.getTransactionReference().getRecord_ID());
+		final ITableRecordReference transactionReference = purchaseErrorItem.getTransactionReference();
+		if (transactionReference != null)
+		{
+			record.setAD_Table_ID(transactionReference.getAD_Table_ID());
+			record.setRecord_ID(transactionReference.getRecord_ID());
+		}
 		saveRecord(record);
 	}
 
@@ -175,7 +179,7 @@ public class PurchaseItemRepository
 			@NonNull final PurchaseCandidate purchaseCandidate,
 			@NonNull final I_C_PurchaseCandidate_Alloc record)
 	{
-		final ITableRecordReference transactionReference = TableRecordReference.ofReferencedOrNull(record);
+		final ITableRecordReference transactionReference = TableRecordReference.ofOrNull(record.getAD_Table_ID(), record.getRecord_ID());
 
 		if (record.getAD_Issue_ID() <= 0)
 		{

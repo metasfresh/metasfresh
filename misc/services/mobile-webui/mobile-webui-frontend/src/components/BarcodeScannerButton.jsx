@@ -7,9 +7,7 @@ export const BarcodeScannerButton = ({ captionKey, enableScanning, disabled, onB
   return (
     <>
       <ButtonWithIndicator id="scanQRCode-button" captionKey={captionKey} disabled={disabled} onClick={onClick} />
-      {enableScanning && !disabled && (
-        <BarcodeScannerComponent isShowInputText={false} isShowVideo={false} onResolvedResult={onBarcodeScanned} />
-      )}
+      {enableScanning && !disabled && <BarcodeScannerComponent invisible onResolvedResult={onBarcodeScanned} />}
     </>
   );
 };

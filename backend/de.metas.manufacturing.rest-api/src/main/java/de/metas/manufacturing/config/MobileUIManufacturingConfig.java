@@ -1,5 +1,7 @@
 package de.metas.manufacturing.config;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
@@ -7,6 +9,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 @Value
 @Builder(toBuilder = true)
@@ -14,12 +17,44 @@ public class MobileUIManufacturingConfig
 {
 	@NonNull OptionalBoolean isScanResourceRequired;
 	@NonNull OptionalBoolean isAllowIssuingAnyHU;
+	@Nullable ReceiveUnitType receiveUnitType;
+	@NonNull OptionalBoolean isBestBeforeDateEditable;
+	@NonNull OptionalBoolean isLotNumberEditable;
+
+	@NonNull
+	public ReceiveUnitType getReceiveUnitTypeEffective()
+	{
+		return receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
+	}
+
+	/**
+	 * @return the set of attributes that shall be editable on the manufacturing finished-goods receipt.
+	 * An attribute is editable when its config flag resolves to {@code TRUE}.
+	 * Reuses picking's {@link PickAttribute} so the mobile JSON contract is identical to picking's {@code readAttributes}.
+	 */
+	@NonNull
+	public Set<PickAttribute> getEditableAttributes()
+	{
+		final ImmutableSet.Builder<PickAttribute> result = ImmutableSet.builder();
+		if (isBestBeforeDateEditable.isTrue())
+		{
+			result.add(PickAttribute.BestBeforeDate);
+		}
+		if (isLotNumberEditable.isTrue())
+		{
+			result.add(PickAttribute.LotNo);
+		}
+		return result.build();
+	}
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
 	{
 		final MobileUIManufacturingConfig result = MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(this.isScanResourceRequired.ifUnknown(other.isScanResourceRequired))
 				.isAllowIssuingAnyHU(this.isAllowIssuingAnyHU.ifUnknown(other.isAllowIssuingAnyHU))
+				.receiveUnitType(this.receiveUnitType != null ? this.receiveUnitType : other.receiveUnitType)
+				.isBestBeforeDateEditable(this.isBestBeforeDateEditable.ifUnknown(other.isBestBeforeDateEditable))
+				.isLotNumberEditable(this.isLotNumberEditable.ifUnknown(other.isLotNumberEditable))
 				.build();
 		if (result.equals(this))
 		{

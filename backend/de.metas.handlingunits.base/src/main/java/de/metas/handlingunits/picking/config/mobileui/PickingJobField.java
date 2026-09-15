@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.picking.config.mobileui;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,6 +34,13 @@ import javax.annotation.Nullable;
 @Builder
 public class PickingJobField
 {
+	public static final ImmutableList<PickingJobField> DEFAULTS = ImmutableList.of(
+			builder().seqNo(10).field(PickingJobFieldType.DOCUMENT_NO).isShowInDetailed(true).isShowInSummary(true).build(),
+			builder().seqNo(20).field(PickingJobFieldType.CUSTOMER).isShowInDetailed(true).isShowInSummary(true).build(),
+			builder().seqNo(30).field(PickingJobFieldType.PRODUCT_NAME).isShowInDetailed(true).isShowInSummary(true).build(),
+			builder().seqNo(40).field(PickingJobFieldType.QTY_TO_DELIVER).isShowInDetailed(true).isShowInSummary(true).build()
+	);
+	
 	@NonNull PickingJobFieldType field;
 	int seqNo;
 	boolean isShowInSummary;

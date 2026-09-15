@@ -71,6 +71,7 @@ public class JsonResponseContact
 	public static final String PHONE2 = "phone2";
 	public static final String TITLE = "title";
 	public static final String POSITION = "position";
+	public static final String DEPARTMENT = "department";
 
 	@ApiModelProperty(dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
@@ -120,6 +121,9 @@ public class JsonResponseContact
 
 	@JsonInclude(Include.NON_EMPTY)
 	String title;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String department;
 
 	@JsonInclude(Include.NON_EMPTY)
 	JsonResponseContactPosition position;
@@ -189,6 +193,7 @@ public class JsonResponseContact
 			@JsonProperty(EMAIL3) final String email3,
 			@JsonProperty(PHONE2) final String phone2,
 			@JsonProperty(TITLE) final String title,
+			@JsonProperty(DEPARTMENT) final String department,
 			@JsonProperty(POSITION) @Nullable final JsonResponseContactPosition position,
 
 			@JsonProperty(MOBILE_PHONE) final String mobilePhone,
@@ -248,5 +253,6 @@ public class JsonResponseContact
 		this.phone2 = phone2;
 		this.title = title;
 		this.position = position;
+		this.department = department;
 	}
 }

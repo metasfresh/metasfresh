@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.costing.CostingLevel;
@@ -16,18 +17,21 @@ import de.metas.gs1.GS1ProductCodesCollection.GS1ProductCodesCollectionBuilder;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.gs1.ean13.EAN13ProductCode;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.product.BBSStatus;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -53,11 +57,13 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
@@ -81,6 +87,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public final class ProductBL implements IProductBL
 {
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
+	private static final AdMessageKey MSG_M_PRODUCT_NOT_PURCHASED = AdMessageKey.of("MSG_M_Product_NotPurchased");
+	private static final AdMessageKey MSG_M_PRODUCT_NOT_SOLD = AdMessageKey.of("MSG_M_Product_NotSold");
+	private static final AdMessageKey MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED = AdMessageKey.of("M_Product_BBSStatus_ActionBlocked");
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
@@ -91,6 +100,7 @@ public final class ProductBL implements IProductBL
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -415,6 +425,78 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public boolean isPurchased(@NonNull final ProductId productId)
+	{
+		return getById(productId).isPurchased();
+	}
+
+	@Override
+	public boolean isSold(@NonNull final ProductId productId)
+	{
+		return getById(productId).isSold();
+	}
+
+	@Override
+	public void assertPurchasable(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (!product.isPurchased())
+		{
+			throw new AdempiereException(MSG_M_PRODUCT_NOT_PURCHASED, product.getValue(), product.getName());
+		}
+	}
+
+	@Override
+	public void assertSellable(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (!product.isSold())
+		{
+			throw new AdempiereException(MSG_M_PRODUCT_NOT_SOLD, product.getValue(), product.getName());
+		}
+	}
+
+	@Override
+	public boolean isPurchaseSalesEnforcementEnabled(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS, false, clientId.getRepoId(), orgId.getRepoId());
+	}
+
+	@Override
+	public boolean isAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
+	{
+		return isStatusAllowed(getById(productId).getProductLifeCycleStatus(), action);
+	}
+
+	@Override
+	public void assertAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
+	{
+		final I_M_Product product = getById(productId);
+		final String code = product.getProductLifeCycleStatus();
+		if (!isStatusAllowed(code, action))
+		{
+			// Show the human-readable, locale-resolved status name (e.g. "Gesperrt" / "Blocked"), not the raw
+			// code. retrieveListNameTranslatableString wraps the lookup lazily (forwardingTo), so it resolves
+			// per the reader's language only when the message is actually rendered.
+			// IMPORTANT: resolve ADReferenceService inline here (request time) — do NOT lift it to a class
+			// field. ServerBoot.main constructs ProductBL before the Spring context is configured, so a
+			// field-initializer ADReferenceService.get() throws "SpringApplicationContext not configured yet"
+			// and crashes app/webapi boot.
+			final ITranslatableString statusName = ADReferenceService.get()
+					.retrieveListNameTranslatableString(X_M_Product.PRODUCTLIFECYCLESTATUS_AD_Reference_ID, code);
+			throw new AdempiereException(MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED, product.getValue(), statusName)
+					.setParameter("product", product.getValue())
+					.setParameter("status", code);
+		}
+	}
+
+	private static boolean isStatusAllowed(@Nullable final String code, @NonNull final ProductLifeCycleAction action)
+	{
+		final BBSStatus status = BBSStatus.ofNullableCode(code);
+		return status == null || status.isAllowed(action);
+	}
+
+	@Override
 	public boolean isASIMandatory(
 			@NonNull final I_M_Product product,
 			final boolean isSOTrx)
@@ -473,6 +555,16 @@ public final class ProductBL implements IProductBL
 
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 		return Objects.equals(productCategoryId, expectedProductCategoryId);
+	}
+
+	@Override
+	@Nullable
+	public I_M_Product_Category getProductCategoryByProductId(@NonNull final ProductId productId)
+	{
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		return productCategoryId != null
+				? productsRepo.getProductCategoryById(productCategoryId)
+				: null;
 	}
 
 	@Override

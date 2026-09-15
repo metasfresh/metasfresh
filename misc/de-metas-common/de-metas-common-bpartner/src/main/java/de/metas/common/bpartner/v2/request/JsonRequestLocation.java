@@ -190,12 +190,27 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean visitorsAddressSet;
 
+	@ApiModelProperty(position = 240, //
+			value = "Translates to C_BPartner_Location.VisitorsAddressDefault")
+	private Boolean visitorsAddressDefault;
+
+	@ApiModelProperty(hidden = true)
+	private boolean visitorsAddressDefaultSet;
+
 	@ApiModelProperty(position = 270, //
 			value = "Translates to C_BPartner_Location.VATaxId")
 	private String vatId;
 
 	@ApiModelProperty(hidden = true)
 	private boolean vatIdSet;
+
+	@ApiModelProperty(position = 280, //
+			value = "Attention, door code or additional mandatory information for the shipping label (max. 30 characters)")
+	@Nullable
+	private String attention;
+
+	@ApiModelProperty(hidden = true)
+	private boolean attentionSet;
 
 	public void setActive(final Boolean active)
 	{
@@ -329,9 +344,27 @@ public class JsonRequestLocation
 		this.visitorsAddressSet = true;
 	}
 
+	public void setVisitorsAddressDefault(final Boolean visitorsAddressDefault)
+	{
+		this.visitorsAddressDefault = visitorsAddressDefault;
+		this.visitorsAddressDefaultSet = true;
+	}
+
+
 	public void setVatId(final String vatId)
 	{
 		this.vatId = vatId;
 		this.vatIdSet = true;
+	}
+
+	public void setAttention(@Nullable final String attention)
+	{
+		this.attention = attention;
+		this.attentionSet = true;
+	}
+
+	public boolean isAttentionSet()
+	{
+		return attentionSet;
 	}
 }

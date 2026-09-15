@@ -154,4 +154,12 @@ public class ShipmentScheduleLocksMap
 	{
 		return locks.keySet();
 	}
+
+	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIdsLockedByOtherUser(@NonNull final UserId userId)
+	{
+		return locks.values().stream()
+				.filter(lock -> lock.isNotLockedBy(userId))
+				.map(ShipmentScheduleLock::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

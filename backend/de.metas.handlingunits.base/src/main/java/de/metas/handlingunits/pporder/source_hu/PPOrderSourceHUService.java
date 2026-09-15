@@ -16,7 +16,9 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
@@ -28,24 +30,29 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PPOrderSourceHUService
 {
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final PPOrderSourceHURepository ppOrderSourceHURepository;
-	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final PPOrderSourceHURepository ppOrderSourceHURepository;
+	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 
 	private static final AdMessageKey MSG_HUProductsNotMatchingIssuingProducts = AdMessageKey.of("de.metas.handlingunits.HUProductsNotMatchingIssuingProducts");
 	private static final AdMessageKey MSG_HUIsEmpty = AdMessageKey.of("de.metas.handlingunits.HUIsEmpty");
 	private static final AdMessageKey MSG_ManufacturingOrderNotCompleted = AdMessageKey.of("de.metas.handlingunits.MSG_ManufacturingOrderNotCompleted");
 	private static final AdMessageKey MSG_ManufacturingJobAlreadyStarted = AdMessageKey.of("de.metas.handlingunits.MSG_ManufacturingJobAlreadyStarted");
 
-	public PPOrderSourceHUService(
-			@NonNull final PPOrderSourceHURepository ppOrderSourceHURepository,
-			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService)
+	public static PPOrderSourceHUService newInstanceForUnitTesting()
 	{
-		this.ppOrderSourceHURepository = ppOrderSourceHURepository;
-		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
+		SpringContextHolder.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(
+				PPOrderSourceHUService.class,
+				() -> new PPOrderSourceHUService(
+						new PPOrderSourceHURepository(),
+						PPOrderIssueScheduleService.newInstanceForUnitTesting()
+				)
+		);
 	}
 
 	public void addSourceHU(@NonNull final PPOrderId ppOrderId, @NonNull final HuId huId)

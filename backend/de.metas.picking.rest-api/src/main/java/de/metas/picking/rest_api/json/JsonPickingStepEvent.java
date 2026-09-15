@@ -32,6 +32,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Value
 @Builder
@@ -69,8 +70,26 @@ public class JsonPickingStepEvent
 	@Nullable @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate bestBeforeDate;
 	boolean setLotNo;
 	@Nullable String lotNo;
+	boolean setSerialNos;
+	@Nullable List<String> serialNos;
 	boolean isCloseTarget;
+	boolean setGrais;
+	@Nullable List<String> graiCodes;
 
 	// Event Type: UNPICK
 	@Nullable String unpickToTargetQRCode;
+
+	/**
+	 * Optional — partial unpick by product+qty.
+	 * When both {@code unpickProductId} and {@code unpickQty} are set, only the HUs matching that
+	 * product (LIFO, whole-HU boundaries) up to the given qty are reversed.
+	 * When absent the existing whole-step/whole-job unpick behaviour is unchanged.
+	 */
+	@Nullable String unpickProductId;
+	@Nullable BigDecimal unpickQty;
+
+	//
+	// Shelf-life acknowledgement (PICK only)
+	/** When {@code true} the picker has acknowledged the shelf-life warning and the guard is skipped. */
+	boolean isShelfLifeConfirmed;
 }

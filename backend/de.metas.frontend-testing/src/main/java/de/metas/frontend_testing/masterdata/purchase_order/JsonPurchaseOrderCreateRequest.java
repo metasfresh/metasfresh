@@ -1,0 +1,39 @@
+package de.metas.frontend_testing.masterdata.purchase_order;
+
+import de.metas.frontend_testing.masterdata.Identifier;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+@Value
+@Builder
+@Jacksonized
+public class JsonPurchaseOrderCreateRequest
+{
+	@Nullable Identifier bpartner;
+	@Nullable Identifier location;
+	@NonNull Identifier warehouse;
+	@NonNull ZonedDateTime datePromised;
+	@NonNull List<Line> lines;
+
+	//
+	//
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Line
+	{
+		@NonNull Identifier product;
+		@NonNull BigDecimal qty;
+	}
+}

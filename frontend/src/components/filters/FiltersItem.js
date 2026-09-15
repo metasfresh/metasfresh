@@ -670,6 +670,7 @@ class FiltersItem extends PureComponent {
                     <button
                       ref={ref}
                       className="applyBtn btn btn-sm btn-success"
+                      data-testid="filter-apply-button"
                       onClick={this.handleApply}
                       onMouseEnter={this.showTooltip}
                       onMouseLeave={this.hideTooltip}

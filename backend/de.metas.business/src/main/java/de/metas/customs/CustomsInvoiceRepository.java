@@ -178,7 +178,7 @@ public class CustomsInvoiceRepository
 				.docTypeId(DocTypeId.ofRepoId(customsInvoicePO.getC_DocType_ID()))
 				.invoiceDate(TimeUtil.asLocalDate(customsInvoicePO.getDateInvoiced()))
 				.docAction(customsInvoicePO.getDocAction())
-				.docStatus(DocStatus.ofNullableCode(customsInvoicePO.getDocStatus()))
+				.docStatus(DocStatus.ofCode(customsInvoicePO.getDocStatus()))
 				.lines(lines)
 				.build();
 	}
@@ -266,14 +266,14 @@ public class CustomsInvoiceRepository
 		saveLineAllocations(line);
 	}
 
-	public CustomsInvoice updateDocActionAndStatus(@NonNull final CustomsInvoice customsInvoice)
+	public void updateDocActionAndStatus(@NonNull final CustomsInvoice customsInvoice)
 	{
 		final I_C_Customs_Invoice customsInvoiceRecord = load(customsInvoice.getId(), I_C_Customs_Invoice.class);
 
 		final String docAction = customsInvoiceRecord.getDocAction();
 		final DocStatus docStatus = DocStatus.ofCode(customsInvoiceRecord.getDocStatus());
 
-		return customsInvoice.toBuilder()
+		customsInvoice.toBuilder()
 				.docAction(docAction)
 				.docStatus(docStatus)
 				.build();
@@ -300,7 +300,7 @@ public class CustomsInvoiceRepository
 	{
 		final HashMap<InOutAndLineId, I_M_InOutLine_To_C_Customs_Invoice_Line> existingRecords = retrieveAllocationRecords(line.getId())
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(allocRecord -> extractInOutAndLineId(allocRecord)));
+				.collect(GuavaCollectors.toHashMapByKey(CustomsInvoiceRepository::extractInOutAndLineId));
 
 		for (final CustomsInvoiceLineAlloc alloc : line.getAllocations())
 		{
@@ -362,8 +362,8 @@ public class CustomsInvoiceRepository
 				.create()
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						record -> extractCustomsInvoiceLineId(record),
-						record -> toCustomsInvoiceLineAlloc(record)));
+						CustomsInvoiceRepository::extractCustomsInvoiceLineId,
+						this::toCustomsInvoiceLineAlloc));
 	}
 
 	private CustomsInvoiceLineAlloc toCustomsInvoiceLineAlloc(final I_M_InOutLine_To_C_Customs_Invoice_Line record)

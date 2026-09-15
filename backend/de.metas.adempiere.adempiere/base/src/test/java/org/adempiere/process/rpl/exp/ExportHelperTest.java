@@ -27,8 +27,11 @@ import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_EXP_FormatLine;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.time.ZoneId;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -40,7 +43,9 @@ class ExportHelperTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		AdempiereTestHelper.createOrgWithTimeZone();
+		// dev-note: ExportHelper.encodeDate formats in the time zone of the *context* org, so the org has to be put into the context.
+		// Without this the org below is never consulted and the assertion below silently measures the JVM's default time zone instead.
+		Env.setOrgId(Env.getCtx(), AdempiereTestHelper.createOrgWithTimeZone("org", ZoneId.of("Europe/Berlin")));
 
 		SystemTime.setTimeSource(() -> 1597126895000L/*Tue, 11 Aug 2020 06:21:35 GMT*/);
 	}
@@ -51,7 +56,7 @@ class ExportHelperTest
 		// when
 		final String result = ExportHelper.encodeDate(de.metas.common.util.time.SystemTime.asTimestamp(), DisplayType.DateTime);
 
-		// then
+		// then: Europe/Berlin is UTC+02:00 in August
 		assertThat(result).isEqualTo("2020-08-11T08:21:35+02:00");
 	}
 

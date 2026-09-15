@@ -208,6 +208,13 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <!-- Override to 3.2.5 because 3.5.x requires JUnit 5.10+ but Spring Boot 2.4.1 uses JUnit 5.7.0 -->
+                <version>3.2.5</version>
+            </plugin>
+
         </plugins>
     </build>
 

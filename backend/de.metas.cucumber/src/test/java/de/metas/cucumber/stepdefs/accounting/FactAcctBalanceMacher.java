@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -31,6 +32,7 @@ public class FactAcctBalanceMacher
 	@Nullable private final Optional<TaxId> taxId;
 	@Nullable private final Optional<BPartnerId> bpartnerId;
 	@Nullable private final Optional<ProductId> productId;
+	@Nullable private final Optional<InvoiceId> invoiceId;
 
 	//
 	// Aggregated amounts
@@ -125,8 +127,16 @@ public class FactAcctBalanceMacher
 		{
 			final ProductId actualProductId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
 			final ProductId expectedProductId = productId.orElse(null);
-			//noinspection RedundantIfStatement
 			if (!ProductId.equals(actualProductId, expectedProductId))
+			{
+				return false;
+			}
+		}
+		if (invoiceId != null)
+		{
+			final InvoiceId actualInvoiceId = FactAcctInvoiceResolver.resolveInvoiceIdOrNull(record);
+			final InvoiceId expectedInvoiceId = invoiceId.orElse(null);
+			if (!InvoiceId.equals(actualInvoiceId, expectedInvoiceId))
 			{
 				return false;
 			}

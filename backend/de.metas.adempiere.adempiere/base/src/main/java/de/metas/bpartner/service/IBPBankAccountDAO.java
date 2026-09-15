@@ -62,4 +62,6 @@ public interface IBPBankAccountDAO extends ISingletonService
 	ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getAllByBPartnerIds(@NonNull Collection<BPartnerId> bpartnerIds);
 
 	List<BPartnerBankAccount> getBpartnerBankAccount(BankAccountQuery query);
+
+	void save(@NonNull I_C_BP_BankAccount bankAccount);
 }

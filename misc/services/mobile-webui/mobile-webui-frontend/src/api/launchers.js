@@ -14,7 +14,9 @@ export const getLaunchers = ({
   filters,
   facetIds: facetIdsParam,
   facets: facetsParam,
+  excludeAlreadyStarted,
   countOnly = false,
+  limit,
 }) => {
   let facetIds = null;
   if (facetIdsParam) {
@@ -29,7 +31,9 @@ export const getLaunchers = ({
       applicationId,
       filterByQRCode: filterByQRCodeString,
       facetIds,
+      excludeAlreadyStarted,
       countOnly,
+      limit,
     })
     .then((response) => unboxAxiosResponse(response));
 };
@@ -96,6 +100,10 @@ export const useLaunchersWebsocket = ({
 
   useEffect(() => {
     let client;
+    // ws.disconnectClient is async, so a frame can still be delivered after this effect's cleanup ran and
+    // the screen unmounted -- in the captured failure the STOMP DISCONNECT was logged BEFORE the deleting
+    // MESSAGE. An unmounted subscription must not write to the store at all.
+    let subscriptionActive = true;
     if (enabled) {
       const topic = `/v2/userWorkflows/launchers/?${toQueryString({
         userToken,
@@ -106,11 +114,12 @@ export const useLaunchersWebsocket = ({
         facetIds,
       })}`;
 
-      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCodeString, filters, facetIds });
+      // console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCodeString, filters, facetIds });
       client = ws.connectAndSubscribe({
         topic,
         debug: !!window?.debug_ws,
         onWebsocketMessage: (message) => {
+          if (!subscriptionActive) return;
           const applicationLaunchers = JSON.parse(message.body);
           onWebsocketMessage({ applicationId, applicationLaunchers });
         },
@@ -118,11 +127,12 @@ export const useLaunchersWebsocket = ({
     }
 
     return () => {
+      subscriptionActive = false;
       if (client) {
         ws.disconnectClient(client);
         client = null;
-        console.debug('WS disconnected', { applicationId, filterByQRCode, filters });
+        // console.debug('WS disconnected', { applicationId, filterByQRCode, filters });
       }
     };
-  }, [enabled, userToken, applicationId, filterByQRCodeString, filters, facetIds]);
+  }, [enabled, userToken, applicationId, filterByQRCodeString, JSON.stringify(filters), facetIds]);
 };

@@ -33,6 +33,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
+import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.api.Warehouse;
@@ -120,6 +121,9 @@ public class WarehouseDAO implements IWarehouseDAO
 	private final CCache<Integer, WarehousePickingGroupsIndex> allWarehousePickingGroups = CCache.<Integer, WarehousePickingGroupsIndex>builder()
 			.tableName(I_M_Warehouse_Group.Table_Name)
 			.additionalTableNameToResetFor(I_M_Warehouse.Table_Name)
+			// Also reset when a M_Warehouse_PickingGroup is created/changed (e.g. createWarehousePickingGroup),
+			// so the index does not return a stale picking-group set to the next caller.
+			.additionalTableNameToResetFor(I_M_Warehouse_PickingGroup.Table_Name)
 			.build();
 	private final CCache<Integer, WarehouseGroupsIndex> allWarehouseGroups = CCache.<Integer, WarehouseGroupsIndex>builder()
 			.tableName(I_M_Warehouse_Group.Table_Name)
@@ -398,7 +402,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_Locator.class)
-				.addEqualsFilter(I_M_Locator.COLUMN_M_Warehouse_ID, warehouseId)
+				.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId)
 				.orderBy(I_M_Locator.COLUMN_X)
 				.orderBy(I_M_Locator.COLUMN_Y)
 				.orderBy(I_M_Locator.COLUMN_Z)
@@ -419,7 +423,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 		final ImmutableMap<WarehouseId, Collection<LocatorId>> locatorIdsByWarehouseId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Locator.class)
-				.addInArrayFilter(I_M_Locator.COLUMN_M_Warehouse_ID, warehouseIds)
+				.addInArrayFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseIds)
 				.orderBy(I_M_Locator.COLUMNNAME_M_Warehouse_ID)
 				.orderBy(I_M_Locator.COLUMNNAME_X)
 				.orderBy(I_M_Locator.COLUMNNAME_Y)
@@ -670,6 +674,14 @@ public class WarehouseDAO implements IWarehouseDAO
 		locator.setY(request.getY());
 		locator.setZ(request.getZ());
 		locator.setX1(request.getX1());
+		if (request.getPriorityNo() != null)
+		{
+			locator.setPriorityNo(request.getPriorityNo());
+		}
+		if (request.getIsGroundLocator() != null)
+		{
+			locator.setIsGroundLocator(request.getIsGroundLocator());
+		}
 		locator.setDateLastInventory(TimeUtil.asTimestamp(request.getDateLastInventory()));
 		InterfaceWrapperHelper.saveRecord(locator);
 
@@ -911,6 +923,30 @@ public class WarehouseDAO implements IWarehouseDAO
 		createDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
 
 		return ofRecord(warehouseRecord);
+	}
+
+	@Override
+	@NonNull
+	public WarehousePickingGroupId createWarehousePickingGroup(@NonNull final CreateWarehousePickingGroupRequest request)
+	{
+		final I_M_Warehouse_PickingGroup record = newInstance(I_M_Warehouse_PickingGroup.class);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setName(request.getName());
+		saveRecord(record);
+
+		final WarehousePickingGroupId pickingGroupId = WarehousePickingGroupId.ofRepoId(record.getM_Warehouse_PickingGroup_ID());
+
+		// Assign each requested warehouse to the freshly-created picking group.
+		// The saves auto-invalidate the allWarehousePickingGroups CCache (it declares
+		// additionalTableNameToResetFor(M_Warehouse_PickingGroup) and M_Warehouse), so no manual reset is needed.
+		for (final WarehouseId warehouseId : request.getWarehouseIds())
+		{
+			final I_M_Warehouse warehouseRecord = load(warehouseId, I_M_Warehouse.class);
+			warehouseRecord.setM_Warehouse_PickingGroup_ID(pickingGroupId.getRepoId());
+			saveRecord(warehouseRecord);
+		}
+
+		return pickingGroupId;
 	}
 
 	@NonNull

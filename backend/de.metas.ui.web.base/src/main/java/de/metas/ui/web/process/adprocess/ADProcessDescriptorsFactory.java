@@ -282,14 +282,8 @@ import java.util.stream.Stream;
 		{
 			return !hasProcessParameters;
 		}
-		else if (X_AD_Process.SHOWHELP_RunSilently_TakeDefaults.equals(showHelp))
-		{
-			return true;
-		}
 		else
-		{
-			return false;
-		}
+			return X_AD_Process.SHOWHELP_RunSilently_TakeDefaults.equals(showHelp);
 	}
 
 	private DocumentFieldDescriptor.Builder createProcessParaDescriptor(
@@ -320,6 +314,7 @@ import java.util.stream.Stream;
 		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 		final boolean allowShowPassword = widgetType == DocumentFieldWidgetType.Password; // process parameters shall always allow displaying the password
 		final BarcodeScannerType barcodeScannerType = extractBarcodeScannerTypeOrNull(adProcessParam, webuiProcesClassInfo);
+		final boolean showInactiveValues = adProcessParam.isShowInactiveValues();
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
 		final ILogicExpression displayLogic = expressionFactory.compileOrDefault(adProcessParam.getDisplayLogic(), ConstantLogicExpression.TRUE, ILogicExpression.class);
@@ -353,6 +348,7 @@ import java.util.stream.Stream;
 				.addCharacteristic(Characteristic.PublicField)
 				//
 				.deviceDescriptorsProvider(webuiProcesClassInfo.getDeviceDescriptorsProvider(parameterName))
+				.setShowInactiveValues(showInactiveValues)
 				//
 				;
 

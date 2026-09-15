@@ -14,6 +14,7 @@ import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
@@ -91,7 +92,7 @@ public class ScheduledPackageable
 
 	public @NonNull ProductId getProductId() {return packageable.getProductId();}
 
-	public @NonNull String getProductName() {return packageable.getProductName();}
+	public @NonNull ProductValueAndName getProductValueAndName() {return packageable.getProductValueAndName();}
 
 	public @NonNull I_C_UOM getUOM() {return getQtyToDeliver().getUOM();}
 

@@ -22,12 +22,14 @@
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Export_Tax_Consultants (IN p_Date_From   timestamp without time zone,
                                                                                                 IN p_Date_To     timestamp without time zone,
-                                                                                                IN p_ad_language Character Varying(6))
+                                                                                                IN p_ad_language Character Varying(6),
+                                                                                                IN p_negate_creditmemo_amts char(1))
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Export_Tax_Consultants(IN p_Date_From   timestamp without time zone,
-                                                                                       IN p_Date_To     timestamp without time zone,
-                                                                                       IN p_ad_language Character Varying(6))
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Export_Tax_Consultants(IN p_Date_From              timestamp without time zone,
+                                                                                       IN p_Date_To                timestamp without time zone,
+                                                                                       IN p_ad_language            Character Varying(6),
+                                                                                       IN p_negate_creditmemo_amts char(1)='Y')
     RETURNS TABLE
             (
                 doctype                 character varying,
@@ -46,29 +48,29 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Export_Tax_Consu
                 Tax_Amount              numeric,
                 Tax_Rate                numeric,
                 Currency                character varying,
-                TotalPrice              numeric
+                LineNetAmt              numeric
             )
     STABLE
     LANGUAGE sql
 AS
 $$
-SELECT DISTINCT COALESCE(dtt.name, dt.name)                            AS doctype,
-                i.documentno                                           AS DocumentNo_Ref,
-                COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) AS Article,
-                i.dateinvoiced                                         AS DateDoc,
-                bp.name                                                AS Partner,
-                il.PriceActual                                         AS PriceActual,
-                COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS Unit,
-                il.QtyInvoicedInPriceUOM                               AS Qty,
-                bp.debtorid                                            AS Partner_DebitID,
-                COALESCE(pct.name, pc.name)                            AS Product_Category_Name,
-                i.poreference                                          AS Foreign_Document_Number,
-                bp.creditorid                                          AS Partner_CreditorID,
-                bp.VATaxID                                             AS UID_Number,
-                il.taxamt                                              AS Tax_Amount,
-                t.rate                                                 AS Tax_Rate,
-                c.cursymbol                                            AS Currency,
-                i.grandtotal                                           AS TotalPrice
+SELECT DISTINCT COALESCE(dtt.name, dt.name)                                                                                                  AS doctype,
+                i.documentno                                                                                                                 AS DocumentNo_Ref,
+                COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                                                                       AS Article,
+                i.dateinvoiced                                                                                                               AS DateDoc,
+                bp.name                                                                                                                      AS Partner,
+                il.PriceActual                                                                                                               AS PriceActual,
+                COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                                                                                      AS Unit,
+                il.QtyInvoicedInPriceUOM                                                                                                     AS Qty,
+                bp.debtorid                                                                                                                  AS Partner_DebitID,
+                COALESCE(pct.name, pc.name)                                                                                                  AS Product_Category_Name,
+                i.poreference                                                                                                                AS Foreign_Document_Number,
+                bp.creditorid                                                                                                                AS Partner_CreditorID,
+                bp.VATaxID                                                                                                                   AS UID_Number,
+                CASE WHEN p_negate_creditmemo_amts = 'Y' AND dt.docbasetype IN ('ARC', 'APC') THEN il.taxamt * -1 ELSE il.taxamt END         AS Tax_Amount,
+                t.rate                                                                                                                       AS Tax_Rate,
+                c.cursymbol                                                                                                                  AS Currency,
+                CASE WHEN p_negate_creditmemo_amts = 'Y' AND dt.docbasetype IN ('ARC', 'APC') THEN il.linenetamt * -1 ELSE il.linenetamt END AS LineNetAmt
 
 FROM C_Invoice i
          INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID
@@ -81,11 +83,11 @@ FROM C_Invoice i
     -- Get Product and its translation
          LEFT OUTER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID
          LEFT OUTER JOIN M_Product_Trl pt ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language
-         LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+         LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND bpp.m_product_id = p.m_product_id
 
     -- Get Product category and its translation
          LEFT OUTER JOIN m_product_category pc ON pc.m_product_category_id = p.m_product_category_id
-         LEFT OUTER JOIN m_product_category_trl pct ON pct.m_product_category_id = p.m_product_category_id
+         LEFT OUTER JOIN m_product_category_trl pct ON pct.m_product_category_id = p.m_product_category_id AND pct.AD_Language = p_ad_language
 
     -- Get Unit of measurement and its translation
          LEFT OUTER JOIN C_UOM uom ON il.C_UOM_ID = uom.C_UOM_ID
@@ -97,6 +99,7 @@ FROM C_Invoice i
     -- Tax Currency
          LEFT OUTER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID
 WHERE i.dateinvoiced BETWEEN p_Date_From AND p_Date_To
+  AND i.docstatus IN ('CO', 'CL') -- Completed / Closed only
 ORDER BY i.documentno
     ;
 $$

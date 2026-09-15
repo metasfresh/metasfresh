@@ -32,6 +32,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -75,7 +76,7 @@ public class DocumentPrintOptionDescriptorsRepository
 				.internalName(parameterName)
 				.name(trls.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Name, processPara.getName()))
 				.description(trls.getColumnTrl(I_AD_Process_Para.COLUMNNAME_Description, processPara.getDescription()))
-				.defaultValue(StringUtils.toBoolean(processPara.getDefaultValue()))
+				.defaultValue(StringUtils.toBoolean(DB.resolveSqlDefaultValue(processPara.getDefaultValue())))
 				.build();
 	}
 

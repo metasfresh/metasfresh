@@ -276,7 +276,8 @@ class ManufacturingOrderReportProcessCommand
 							.productId(productId)
 							.qtyCU(fixedQtyToIssue)
 							.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-							.build());
+							.build())
+					.getNewCUs();
 		}
 		else
 		{

@@ -18,7 +18,6 @@
 Not sure if this shall be a dedicated service..it depends on how well we will be able to cope with having more and more of them.</description>
 
 	<properties>
-		<migration-sql-basedir>75-material-planning</migration-sql-basedir>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 

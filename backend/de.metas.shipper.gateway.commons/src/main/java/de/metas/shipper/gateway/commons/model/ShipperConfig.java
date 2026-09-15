@@ -23,10 +23,12 @@
 package de.metas.shipper.gateway.commons.model;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.util.StringUtils;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_Carrier_Config;
 
 import javax.annotation.Nullable;
 
@@ -44,4 +46,13 @@ public class ShipperConfig
 	@Nullable String trackingUrlTemplate;
 	@Builder.Default
 	ImmutableMap<String, String> additionalProperties = ImmutableMap.of();
+
+	/**
+	 * {@code Carrier_Config.IsSelectionRules} for this shipper — does nShift resolve the carrier via its own
+	 * selection rules? Absent property → default {@code false} (OFF).
+	 */
+	public boolean isSelectionRules()
+	{
+		return StringUtils.toBoolean(additionalProperties.get(I_Carrier_Config.COLUMNNAME_IsSelectionRules));
+	}
 }

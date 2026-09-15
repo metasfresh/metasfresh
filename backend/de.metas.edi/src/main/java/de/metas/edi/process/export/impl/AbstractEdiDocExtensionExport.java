@@ -36,18 +36,13 @@ import de.metas.edi.model.I_EDI_Document_Extension;
 public abstract class AbstractEdiDocExtensionExport<T extends I_EDI_Document_Extension>
 		extends AbstractExport<I_EDI_Document_Extension>
 {
-	public AbstractEdiDocExtensionExport(I_EDI_Document_Extension document, String tableIdentifier, ClientId expClientId)
+	public AbstractEdiDocExtensionExport(final I_EDI_Document_Extension document, final String tableIdentifier, final ClientId expClientId)
 	{
 		super(document, tableIdentifier, expClientId);
 	}
 
 	protected void assertEligible(final T document)
 	{
-		if (!document.isEdiEnabled())
-		{
-			throw new AdempiereException("@" + I_EDI_Document_Extension.COLUMNNAME_IsEdiEnabled + "@=@N@");
-		}
-
 		// Assume document is completed/closed
 		final String docStatus = document.getDocStatus();
 		if (!I_EDI_Document_Extension.DOCSTATUS_Completed.equals(docStatus) && !I_EDI_Document_Extension.DOCSTATUS_Closed.equals(docStatus))

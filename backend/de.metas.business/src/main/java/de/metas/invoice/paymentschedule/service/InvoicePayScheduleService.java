@@ -30,7 +30,6 @@ import de.metas.invoice.paymentschedule.InvoicePaySchedule;
 import de.metas.invoice.paymentschedule.repository.InvoicePayScheduleRepository;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,7 +49,6 @@ public class InvoicePayScheduleService
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final InvoicePayScheduleRepository invoicePayScheduleRepository;
-	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 	@NonNull private final PaymentTermService paymentTermService;
 
 	public Optional<InvoicePaySchedule> getByInvoiceId(@NonNull final InvoiceId invoiceId)
@@ -62,7 +60,6 @@ public class InvoicePayScheduleService
 	{
 		InvoicePayScheduleCreateCommand.builder()
 				.invoicePayScheduleRepository(invoicePayScheduleRepository)
-				.orderPayScheduleService(orderPayScheduleService)
 				.paymentTermService(paymentTermService)
 				.invoiceRecord(invoice)
 				.build()

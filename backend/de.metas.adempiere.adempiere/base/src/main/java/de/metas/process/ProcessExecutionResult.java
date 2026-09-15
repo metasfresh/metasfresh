@@ -389,6 +389,17 @@ public class ProcessExecutionResult
 		}
 	}
 
+	public void setRecordToOpen(@NonNull final String tableName, @NonNull final RepoIdAware recordId)
+	{
+		setRecordToOpen(RecordsToOpen.builder()
+				.record(TableRecordReference.of(tableName, recordId))
+				.adWindowId(null)
+				.target(OpenTarget.SingleDocument)
+				.targetTab(RecordsToOpen.TargetTab.NEW_TAB)
+				.automaticallySetReferencingDocumentPaths(true)
+				.build());
+	}
+
 	public void setRecordsToOpen(@NonNull final String tableName, final Collection<Integer> recordIds, final String adWindowId)
 	{
 		if (recordIds == null || recordIds.isEmpty())
@@ -829,6 +840,7 @@ public class ProcessExecutionResult
 	public void syncLogsToDB()
 	{
 		logsDebouncer.processAndClearBufferSync();
+		logsDebouncer.shutdown();
 	}
 
 	private void syncCollectedLogsToDB(@NonNull final List<ProcessInfoLog> collectedProcessInfoLogs)

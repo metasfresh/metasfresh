@@ -165,7 +165,7 @@ public class MovementBLTest
 		InterfaceWrapperHelper.save(warehouseDest);
 
 		final I_M_Locator locatorTo = InterfaceWrapperHelper.newInstance(I_M_Locator.class, context);
-		locatorTo.setM_Warehouse(warehouseDest);
+		locatorTo.setM_Warehouse_ID(warehouseDest.getM_Warehouse_ID());
 		InterfaceWrapperHelper.save(locatorTo);
 		return locatorTo;
 	}

@@ -1,14 +1,11 @@
 package de.metas.ui.web.order.sales.hu.reservation.process;
 
-import java.util.Set;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -17,14 +14,22 @@ import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.material.cockpit.v2.MaterialCockpitV2Service;
 import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
 import de.metas.ui.web.order.sales.hu.reservation.HUsReservationViewFactory;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -52,21 +57,22 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		extends JavaProcess
 		implements IProcessPrecondition
 {
-	public static final String VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID = "WEBUI_C_OrderLineSO_ID";
-
-	private final transient HUReservationService //
-	huReservationService = Adempiere.getBean(HUReservationService.class);
-
-	private final transient HUReservationDocumentFilterService //
-	huReservationDocumentFilterService = Adempiere.getBean(HUReservationDocumentFilterService.class);
-
-	private final transient IViewsRepository //
-	viewsRepo = Adempiere.getBean(IViewsRepository.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final HUReservationService huReservationService = SpringContextHolder.instance.getBean(HUReservationService.class);
+	@NonNull private final HUReservationDocumentFilterService huReservationDocumentFilterService = SpringContextHolder.instance.getBean(HUReservationDocumentFilterService.class);
+	@NonNull private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
+	@NonNull private final MaterialCockpitV2Service materialCockpitV2Service = SpringContextHolder.instance.getBean(MaterialCockpitV2Service.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
+		if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
+		}
+
+		final OrderId salesOrderId = context.getSingleSelectedRecordId(OrderId.class);
+		final I_C_Order salesOrder = orderBL.getById(salesOrderId);
 		if (salesOrder == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No C_Order selected");
@@ -87,7 +93,7 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		if (salesOrderLines.size() != 1)
+		else if (salesOrderLines.size() != 1)
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
@@ -98,7 +104,7 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 	@Override
 	protected String doIt()
 	{
-		final ViewId viewId = createHUEditorView();
+		final ViewId viewId = createView();
 
 		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
 				.viewId(viewId.getViewId())
@@ -108,20 +114,56 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		return MSG_OK;
 	}
 
+	@NonNull
+	private OrderId getOrderId()
+	{
+		return getRecordIdAssumingTableName(I_C_Order.Table_Name, OrderId::ofRepoId);
+	}
+
+	private OrderLineId getSingleOrderLineId()
+	{
+		return CollectionUtils.singleElement(getSelectedIncludedRecordIds(I_C_OrderLine.class, OrderLineId::ofRepoId));
+	}
+
+	private ViewId createView()
+	{
+		final ViewId viewId = materialCockpitV2Service.createMaterialCockpitView(createMaterialCockpitViewContext());
+		if (viewId != null)
+		{
+			return viewId;
+		}
+
+		// fallback
+		return createHUEditorView();
+	}
+
+	/**
+	 * Original behavior: open the HU Reservation Editor view.
+	 */
 	private ViewId createHUEditorView()
 	{
-		final Integer singleElement = CollectionUtils.singleElement(getSelectedIncludedRecordIds(I_C_OrderLine.class));
-
-		final OrderLineId orderLineId = OrderLineId.ofRepoId(singleElement);
-
+		final OrderLineId orderLineId = getSingleOrderLineId();
 		final DocumentFilter stickyFilters = huReservationDocumentFilterService.createOrderLineDocumentFilter(orderLineId);
 
 		final IView view = viewsRepo
 				.createView(CreateViewRequest
 						.builder(HUsReservationViewFactory.WINDOW_ID)
 						.addStickyFilters(stickyFilters)
-						.setParameter(VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID, orderLineId)
+						.setParameter(MaterialCockpitViewContext.VIEW_PARAMETER_NAME, createMaterialCockpitViewContext())
 						.build());
 		return view.getViewId();
+	}
+
+	private MaterialCockpitViewContext createMaterialCockpitViewContext()
+	{
+		return MaterialCockpitViewContext.builder()
+				.sourceSelectionId(getPinstanceId())
+				.salesOrderAndLineId(getSalesOrderAndLineId())
+				.build();
+	}
+
+	private @NotNull OrderAndLineId getSalesOrderAndLineId()
+	{
+		return OrderAndLineId.of(getOrderId(), getSingleOrderLineId());
 	}
 }

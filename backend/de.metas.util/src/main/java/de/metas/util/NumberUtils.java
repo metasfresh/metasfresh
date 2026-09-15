@@ -24,6 +24,7 @@ package de.metas.util;
 
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -54,7 +55,8 @@ public final class NumberUtils
 	 * @return <code>bd</code> without trailing zeros after separator; if argument is NULL then NULL will be returned
 	 */
 	@Nullable
-	public static BigDecimal stripTrailingDecimalZeros(final BigDecimal bd)
+	@Contract("!null -> !null")
+	public static BigDecimal stripTrailingDecimalZeros(@Nullable final BigDecimal bd)
 	{
 		if (bd == null)
 		{

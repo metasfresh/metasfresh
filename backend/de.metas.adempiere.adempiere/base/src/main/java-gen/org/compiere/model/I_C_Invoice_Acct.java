@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice_Acct
  *  @author metasfresh (generated) 
@@ -18,18 +17,20 @@ public interface I_C_Invoice_Acct
 
 
 	/**
-	 * Set Account Name.
+	 * Set Account Concept.
+	 * The accounting concept (account type) that this override entry replaces.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setAccountName (@Nullable java.lang.String AccountName);
 
 	/**
-	 * Get Account Name.
+	 * Get Account Concept.
+	 * The accounting concept (account type) that this override entry replaces.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -92,10 +93,6 @@ public interface I_C_Invoice_Acct
 	 */
 	int getC_AcctSchema_ID();
 
-	org.compiere.model.I_C_AcctSchema getC_AcctSchema();
-
-	void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
-
 	ModelColumn<I_C_Invoice_Acct, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_C_Invoice_Acct.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
 	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
@@ -118,10 +115,6 @@ public interface I_C_Invoice_Acct
 	 * <br>Virtual Column: false
 	 */
 	int getC_ElementValue_ID();
-
-	org.compiere.model.I_C_ElementValue getC_ElementValue();
-
-	void setC_ElementValue(org.compiere.model.I_C_ElementValue C_ElementValue);
 
 	ModelColumn<I_C_Invoice_Acct, org.compiere.model.I_C_ElementValue> COLUMN_C_ElementValue_ID = new ModelColumn<>(I_C_Invoice_Acct.class, "C_ElementValue_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
@@ -167,10 +160,6 @@ public interface I_C_Invoice_Acct
 	 */
 	int getC_Invoice_ID();
 
-	org.compiere.model.I_C_Invoice getC_Invoice();
-
-	void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
-
 	ModelColumn<I_C_Invoice_Acct, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_C_Invoice_Acct.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
@@ -193,10 +182,6 @@ public interface I_C_Invoice_Acct
 	 * <br>Virtual Column: false
 	 */
 	int getC_InvoiceLine_ID();
-
-	@Nullable org.compiere.model.I_C_InvoiceLine getC_InvoiceLine();
-
-	void setC_InvoiceLine(@Nullable org.compiere.model.I_C_InvoiceLine C_InvoiceLine);
 
 	ModelColumn<I_C_Invoice_Acct, org.compiere.model.I_C_InvoiceLine> COLUMN_C_InvoiceLine_ID = new ModelColumn<>(I_C_Invoice_Acct.class, "C_InvoiceLine_ID", org.compiere.model.I_C_InvoiceLine.class);
 	String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
@@ -225,6 +210,31 @@ public interface I_C_Invoice_Acct
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Invoice Posting Status.
+	 * Posting status of the linked invoice (posted/not-posted + document status)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInvoicePostingStatus (@Nullable java.lang.String InvoicePostingStatus);
+
+	/**
+	 * Get Invoice Posting Status.
+	 * Posting status of the linked invoice (posted/not-posted + document status)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getInvoicePostingStatus();
+
+	ModelColumn<I_C_Invoice_Acct, Object> COLUMN_InvoicePostingStatus = new ModelColumn<>(I_C_Invoice_Acct.class, "InvoicePostingStatus", null);
+	String COLUMNNAME_InvoicePostingStatus = "InvoicePostingStatus";
 
 	/**
 	 * Set Active.

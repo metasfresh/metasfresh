@@ -24,6 +24,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -114,6 +115,17 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		final boolean flaggedForRrecompute = result == 1;
 		return flaggedForRrecompute;
+	}
+
+	@Override
+	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addInArrayFilter(
+						I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID,
+						shipmentScheduleIds)
+				.create()
+				.noneMatch();
 	}
 
 	@Override
@@ -403,7 +415,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Locators
 		// NOTE: same as for bPartners if no particular locator is specified, it means "all of them"
-		if (!segment.isAnyLocator())
+		// NOTE: guard with !isNoLocators() because a warehouse-derived segment now has an EMPTY locatorIds set
+		// (isAnyLocator() returns false for an empty set); without this guard the branch would fire with an empty
+		// list and DB.buildSqlList would produce a never-true predicate -> the segment would match NO schedule.
+		if (!segment.isNoLocators() && !segment.isAnyLocator())
 		{
 			final Set<Integer> locatorIds = segment.getLocatorIds();
 
@@ -414,6 +429,20 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 					+ "\n\t\t loc." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=" + warehouseColumnName
 					+ " AND " + DB.buildSqlList("loc." + I_M_Locator.COLUMNNAME_M_Locator_ID, locatorIds, sqlParams)
 					+ ")");
+		}
+
+		//
+		// Warehouses
+		// A warehouse-derived segment carries the warehouse identity directly (instead of enumerating all its
+		// locators). Matching by the schedule's effective warehouse column is equivalent to the old
+		// EXISTS(M_Locator WHERE M_Warehouse_ID = <sched wh> AND M_Locator_ID IN (all locators of wh)).
+		if (!segment.isAnyWarehouse())
+		{
+			final Set<Integer> warehouseIds = segment.getWarehouseIds();
+
+			final String warehouseColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")";
+			whereClause.append("\n\t AND ");
+			whereClause.append("(").append(DB.buildSqlList(warehouseColumnName, warehouseIds, sqlParams)).append(")");
 		}
 
 		//
@@ -550,26 +579,50 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		return whereClause.toString();
 	}
 
+	// ::int: the DB function RETURNS bigint; getSQLValueEx reads via ResultSet.getInt. The explicit narrowing
+	// documents that dedup counts stay within int range (bounded by the recompute-table size).
+	private static final String SQL_DEDUP_RECOMPUTE = "SELECT m_shipmentschedule_recompute_dedup()::int";
+	private static final String SQL_TAG_TO_RECOMPUTE = "SELECT M_ShipmentSchedule_TagToRecompute(p_selection_id => ?, p_batchsize => ?)";
+
 	@Override
-	public void markAllToRecomputeOutOfTrx(@NonNull final PInstanceId pinstanceId)
+	public void markAllToRecomputeOutOfTrx(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
+		// Dedup the untagged (unclaimed) recompute markers first: multiple untagged rows for the same
+		// M_ShipmentSchedule_ID would skew the distinct-schedule batch counting in the whole-product batching
+		// performed by M_ShipmentSchedule_TagToRecompute below. m_shipmentschedule_recompute_dedup keeps one
+		// unclaimed marker per schedule; it is idempotent and a no-op when there are no duplicates. Runs out-of-trx
+		// (TRXNAME_None), matching the tag call.
+		//
+		// Dedup is a best-effort optimization only: the DB function sets a 5s lock_timeout and is designed to
+		// fail fast rather than block behind a concurrent recompute batch's bulk UPDATE. Such a failure (e.g. a
+		// lock timeout under load) must NOT abort the mandatory tagging below -- duplicates merely skew the batch
+		// counting, they never break correctness -- so on any error we warn and fall through to the tag call.
+		try
+		{
+			final int countDeduped = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL_DEDUP_RECOMPUTE);
+			logger.debug("Deduped {} duplicate untagged recompute marker(s) before tagging for {}", countDeduped, pinstanceId);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed to dedup untagged recompute markers before tagging for {}; proceeding with tagging anyway", pinstanceId, ex);
+		}
+
 		// task 08727: Tag the recompute records out-of-trx.
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
-		final String sqlUpdate = " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
-				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
-				" FROM (" +
-				"	SELECT s.M_ShipmentSchedule_ID " +
-				"	FROM M_ShipmentSchedule s " +
-				// task 08959: also retrieve locked records. The async processor is expected to wait until they are updated.
-				// " LEFT JOIN T_Lock l ON l.Record_ID=s.M_ShipmentSchedule_ID AND l.AD_Table_ID=get_table_id('M_ShipmentSchedule') " +
-				// " WHERE l.Record_ID Is NULL " +
-				") data " +
-				" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
-				+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
-				;
-		final int countTagged = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdate, ITrx.TRXNAME_None);
+		//
+		// The tagging itself (incl. the whole-product batching logic, see M_ShipmentSchedule_TagToRecompute's
+		// comment) lives in the DB function so it can also be invoked directly from support/ops SQL.
+		final int batchSize = maxToProcess.isLimited() ? maxToProcess.toInt() : 0;
+		final int countTagged = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL_TAG_TO_RECOMPUTE, pinstanceId, batchSize);
 		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
+	}
+
+	@Override
+	public boolean existsUntaggedRecomputeMarkers()
+	{
+		final String sql = "SELECT 1 FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_PInstance_ID IS NULL LIMIT 1";
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, sql) == 1;
 	}
 
 	@Override

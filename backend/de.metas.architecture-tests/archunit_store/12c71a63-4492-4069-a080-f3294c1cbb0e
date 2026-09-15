@@ -1,0 +1,6 @@
+Field <de.metas.i18n.TranslationImpExp$TranslationHandler.m_time> has raw type java.sql.Timestamp in (TranslationImpExp.java:0)
+Field <org.compiere.apps.form.Allocation.allocDate> has raw type java.sql.Timestamp in (Allocation.java:0)
+Field <org.compiere.apps.search.dao.impl.OrderLineHistoryVO.datePromised> has raw type java.sql.Timestamp in (OrderLineHistoryVO.java:0)
+Field <org.compiere.apps.search.history.impl.InvoiceHistoryContext$InvoiceHistoryContextBuilder.DatePromised> has raw type java.sql.Timestamp in (InvoiceHistoryContext.java:0)
+Field <org.compiere.apps.search.history.impl.InvoiceHistoryContext.DatePromised> has raw type java.sql.Timestamp in (InvoiceHistoryContext.java:0)
+Field <org.compiere.grid.ed.Calendar$Builder.date> has raw type java.sql.Timestamp in (Calendar.java:0)

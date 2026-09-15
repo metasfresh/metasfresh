@@ -1,41 +1,5 @@
 package de.metas.dunning.invoice.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-/*
- * #%L
- * de.metas.dunning
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
@@ -44,13 +8,37 @@ import de.metas.dunning.invoice.api.IInvoiceSourceBL;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 @Validator(I_C_Invoice.class)
 public class C_Invoice
 {
 	private static final Logger logger = LogManager.getLogger(C_Invoice.class);
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_PREPARE })
+	/**
+	 * Runs at AFTER_COMPLETE (not AFTER_PREPARE) on purpose: the DueDate this computation
+	 * depends on is filled by de.metas.business's C_Invoice interceptor at AFTER_PREPARE,
+	 * and the execution order of two AFTER_PREPARE interceptors from different modules is
+	 * not deterministic (Spring registration order; ModelValidationEngine has no priority
+	 * mechanism). If grace ran first, DueDate was still null, the computation was silently
+	 * skipped, and the eligibility check in DefaultDunningCandidateProducer.isEligible()
+	 * was bypassed - invoices could be dunned during their grace period. Nothing reads
+	 * DunningGrace during the completion window, so AFTER_COMPLETE is safe and guarantees
+	 * DueDate is present. The null-DueDate guard in InvoiceSourceBL remains for legacy
+	 * invoices whose DueDate was never back-filled.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void setDunningGraceIfAutomatic(final I_C_Invoice invoice)
 	{
 		Services.get(IInvoiceSourceBL.class).setDunningGraceIfManaged(invoice);
@@ -60,9 +48,7 @@ public class C_Invoice
 	/**
 	 * This method is triggered when DunningGrace field is changed.
 	 *
-	 * NOTE: to developer: please keep this method with only ifColumnsChanged=DunningGrace because we want to avoid update cycles between invoice and dunning candidate
-	 *
-	 * @param invoice
+	 * @implNote please keep this method with only ifColumnsChanged=DunningGrace because we want to avoid update cycles between invoice and dunning candidate
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE
 			, ifColumnsChanged = I_C_Invoice.COLUMNNAME_DunningGrace)

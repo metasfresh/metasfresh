@@ -1,0 +1,22 @@
+# act configuration for running CI/CD locally
+# See: https://nektosact.com/usage/index.html
+#
+# Note: On Windows, run-cicd.ps1 overrides artifact-server-path to %TEMP%\act-artifacts
+#       This file is primarily used by Linux/macOS users running act directly
+
+# Use act-latest image for proper Docker socket permissions
+# Note: full-latest has Docker socket permission issues
+# See: https://github.com/nektos/act/issues/2616
+-P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest
+
+# Local artifact storage
+--artifact-server-path=/tmp/act-artifacts
+
+# Set default run number (GitHub Actions increments this automatically)
+--env GITHUB_RUN_NUMBER=1
+
+# Enable verbose container logs
+--container-options --log-driver=json-file
+
+# Reuse containers for faster subsequent runs
+--reuse

@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_ProjectType
  *  @author metasfresh (generated) 
@@ -51,8 +52,8 @@ public interface I_C_ProjectType
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Projekt-Nummerfolge.
-	 * Nummernfolge für Projekt-Suchschlüssel
+	 * Set Project sequence.
+	 * Sequence for projekt values
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -61,8 +62,8 @@ public interface I_C_ProjectType
 	void setAD_Sequence_ProjectValue_ID (int AD_Sequence_ProjectValue_ID);
 
 	/**
-	 * Get Projekt-Nummerfolge.
-	 * Nummernfolge für Projekt-Suchschlüssel
+	 * Get Project sequence.
+	 * Sequence for projekt values
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

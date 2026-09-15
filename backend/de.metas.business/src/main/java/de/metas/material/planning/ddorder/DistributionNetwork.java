@@ -10,6 +10,7 @@ import org.adempiere.warehouse.WarehouseId;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Value
 public class DistributionNetwork
@@ -41,6 +42,20 @@ public class DistributionNetwork
 		return lines.stream()
 				.filter(line -> WarehouseId.equals(line.getTargetWarehouseId(), targetWarehouseId))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Returns the source warehouse of the highest-priority line (lowest {@code priorityNo}) whose target is the given warehouse,
+	 * or empty if no such line exists.
+	 *
+	 * <p>Lines are pre-sorted ascending by {@code priorityNo} inside this class, so {@code findFirst} always returns the
+	 * highest-priority line — behaviour-preserving equivalent of {@code getLinesByTargetWarehouse(...).get(0).getSourceWarehouseId()}.</p>
+	 */
+	public Optional<WarehouseId> getFirstSourceWarehouseIdByTargetWarehouse(@NonNull final WarehouseId targetWarehouseId)
+	{
+		return getLinesByTargetWarehouse(targetWarehouseId).stream()
+				.findFirst()
+				.map(DistributionNetworkLine::getSourceWarehouseId);
 	}
 
 	public List<DistributionNetworkLine> getLinesBySourceWarehouse(@NonNull final WarehouseId sourceWarehouseId)

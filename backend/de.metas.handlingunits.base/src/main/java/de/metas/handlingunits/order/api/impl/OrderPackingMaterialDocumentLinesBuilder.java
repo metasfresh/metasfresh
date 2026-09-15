@@ -32,6 +32,7 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -143,7 +144,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	}
 
 	@Override
-	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(@NonNull final ProductId productId)
+	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(@NonNull final ProductId productId, final ProjectId projectId)
 	{
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(order, I_C_OrderLine.class);
 		final UomId uomId = productBL.getStockUOMId(ProductId.toRepoId(productId));
@@ -151,6 +152,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		orderLine.setM_Product_ID(ProductId.toRepoId(productId));
 		orderLine.setC_UOM_ID(uomId.getRepoId()); // prevent the system from picking its default-UOM; there might be no UOM-conversion to/from the product's UOM
 		orderLine.setIsPackagingMaterial(true);
+		orderLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 
 		return new OrderLinePackingMaterialDocumentLine(orderLine);
 	}

@@ -23,6 +23,9 @@ package org.adempiere.ad.dao.impl;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.util.StringUtils;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
@@ -30,76 +33,98 @@ import org.adempiere.util.comparator.ComparableComparatorNullsEqual;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.comparator.NullComparator;
 
-import javax.annotation.concurrent.Immutable;
+import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
-@Immutable
+@EqualsAndHashCode(of = "items")
 class QueryOrderBy implements IQueryOrderBy
 {
-	private final List<QueryOrderByItem> items;
+	public static final QueryOrderBy NONE = new QueryOrderBy(ImmutableList.of());
+
+	@NonNull private final ImmutableList<QueryOrderByItem> items;
 
 	private boolean sqlOrderByCompiled = false;
-	private String sqlOrderBy = null;
+	private String sqlOrderBy = null; // lazy
 
-	private Comparator<Object> comparator = null;
+	private Comparator<Object> comparator = null; // lazy
 
-	public QueryOrderBy(final List<QueryOrderByItem> items)
+	private QueryOrderBy(@NonNull final List<QueryOrderByItem> items)
 	{
-		super();
-		if (items == null || items.isEmpty())
-		{
-			this.items = ImmutableList.of();
-		}
-		else
-		{
-			this.items = ImmutableList.copyOf(items);
-		}
+		this.items = ImmutableList.copyOf(items);
 	}
 
+	public static QueryOrderBy of(@Nullable final List<QueryOrderByItem> items)
+	{
+		return items != null && !items.isEmpty() ? new QueryOrderBy(items) : NONE;
+	}
+
+	/** @deprecated kept only for legacy human-readable logging; use {@link #getSql()} to obtain the SQL ORDER BY clause. */
 	@Override
+	@Deprecated
 	public String toString()
 	{
-		return "QueryOrderBy[" + items + "]";
+		final String sql = getSql();
+		return sql != null ? sql : "";
 	}
 
 	@Override
 	public String getSql()
 	{
-		if (sqlOrderByCompiled)
+		String sqlOrderBy = this.sqlOrderBy;
+		if (!sqlOrderByCompiled)
 		{
-			return sqlOrderBy;
+			sqlOrderBy = this.sqlOrderBy = getSql(UnaryOperator.identity());
+			this.sqlOrderByCompiled = true;
 		}
-
-		if (items != null && !items.isEmpty())
-		{
-			final StringBuilder sqlBuf = new StringBuilder();
-			for (final QueryOrderByItem item : items)
-			{
-				appendSql(sqlBuf, item);
-			}
-			sqlOrderBy = sqlBuf.toString();
-		}
-		else
-		{
-			sqlOrderBy = null;
-		}
-		sqlOrderByCompiled = true;
-
 		return sqlOrderBy;
 	}
 
-	// NOTE: not static just because we want to build nice exceptions
-	private void appendSql(final StringBuilder sql, final QueryOrderByItem item)
+	public String getSql(@NonNull final UnaryOperator<String> columnNameMapper)
 	{
+		if (items.isEmpty())
+		{
+			return null;
+		}
+
+		final StringBuilder sqlBuf = new StringBuilder();
+		for (final QueryOrderByItem item : items)
+		{
+			appendSql(sqlBuf, item, columnNameMapper);
+		}
+
+		// null (not "") when every item was skipped by the mapper — consistent with the empty-items case above and the @Nullable contract.
+		return StringUtils.trimBlankToNull(sqlBuf.toString());
+	}
+
+	private static void appendSql(
+			@NonNull final StringBuilder sql,
+			@NonNull final QueryOrderByItem item,
+			@NonNull final UnaryOperator<String> columnNameMapper)
+	{
+		final String columnName = item.getColumnName();
+		final String columnSql = StringUtils.trimBlankToNull(columnNameMapper.apply(columnName));
+		if (columnSql == null)
+		{
+			return;
+		}
+
 		if (sql.length() > 0)
 		{
 			sql.append(", ");
 		}
 
 		//
-		// ColumnName
-		sql.append(item.getColumnName());
+		// ColumnName/ColumnSql
+		if (columnName.equals(columnSql))
+		{
+			sql.append(columnName);
+		}
+		else
+		{
+			sql.append("(").append(columnSql).append(")");
+		}
 
 		//
 		// Direction ASC/DESC
@@ -111,10 +136,6 @@ class QueryOrderBy implements IQueryOrderBy
 		else if (direction == Direction.Descending)
 		{
 			sql.append(" DESC");
-		}
-		else
-		{
-			throw new IllegalStateException("Unknown direction '" + direction + "' for " + this);
 		}
 
 		//
@@ -128,49 +149,43 @@ class QueryOrderBy implements IQueryOrderBy
 		{
 			sql.append(" NULLS LAST");
 		}
-		else
-		{
-			throw new IllegalStateException("Unknown NULLS option '" + nulls + "' for " + this);
-		}
 	}
 
 	@Override
+	@NonNull
 	public Comparator<Object> getComparator()
 	{
-		if (comparator != null)
+		Comparator<Object> comparator = this.comparator;
+		if (comparator == null)
 		{
-			return comparator;
+			comparator = this.comparator = computeComparator();
 		}
-
-		if (items != null && !items.isEmpty())
-		{
-			final ComparatorChain<Object> cmpChain = new ComparatorChain<>();
-			for (final QueryOrderByItem item : items)
-			{
-				@SuppressWarnings("rawtypes")
-				final ModelAccessor<Comparable> accessor = new ModelAccessor<>(item.getColumnName());
-
-
-				final boolean reverse = item.getDirection() == Direction.Descending;
-				final Comparator<Object> cmpDirection = new AccessorComparator<>(
-						ComparableComparatorNullsEqual.getInstance(),
-						accessor);
-				cmpChain.addComparator(cmpDirection, reverse);
-
-				final boolean nullsFirst = item.getNulls() == Nulls.First;
-				final Comparator<Object> cmpNulls = new AccessorComparator<>(
-						ComparableComparator.getInstance(nullsFirst),
-						accessor);
-
-				cmpChain.addComparator(cmpNulls);
-			}
-			comparator = cmpChain;
-		}
-		else
-		{
-			comparator = NullComparator.getInstance();
-		}
-
 		return comparator;
+	}
+
+	private Comparator<Object> computeComparator()
+	{
+		if (items.isEmpty()) {return NullComparator.getInstance();}
+
+		final ComparatorChain<Object> cmpChain = new ComparatorChain<>();
+		for (final QueryOrderByItem item : items)
+		{
+			@SuppressWarnings("rawtypes") final ModelAccessor<Comparable> accessor = new ModelAccessor<>(item.getColumnName());
+
+			final boolean reverse = item.getDirection() == Direction.Descending;
+			final Comparator<Object> cmpDirection = new AccessorComparator<>(
+					ComparableComparatorNullsEqual.getInstance(),
+					accessor);
+			cmpChain.addComparator(cmpDirection, reverse);
+
+			final boolean nullsFirst = item.getNulls() == Nulls.First;
+			final Comparator<Object> cmpNulls = new AccessorComparator<>(
+					ComparableComparator.getInstance(nullsFirst),
+					accessor);
+
+			cmpChain.addComparator(cmpNulls);
+		}
+
+		return cmpChain;
 	}
 }

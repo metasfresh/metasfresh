@@ -42,6 +42,9 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.util.StringUtils.trimBlankToNull;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -448,10 +451,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		private Builder(@Nullable final String lookupTableName)
 		{
 			this.lookupTableName = lookupTableName;
-
-			//
-			// Defaults
-			putShowInactive(false);
 		}
 
 		public LookupDataSourceContext build()
@@ -718,6 +717,14 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			if (variableName.getDefaultValue() != CtxNames.VALUE_NULL)
 			{
 				return variableName.getDefaultValue();
+			}
+
+			if (variableName.getName().equals(SqlForFetchingLookups.SQL_PARAM_ShowInactive.getName()))
+			{
+				return coalesceNotNull(
+						trimBlankToNull(SqlForFetchingLookups.SQL_PARAM_ShowInactive.getDefaultValue()),
+						SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_No
+				);
 			}
 
 			// Value not found

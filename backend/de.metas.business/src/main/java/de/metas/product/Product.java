@@ -1,6 +1,7 @@
 package de.metas.product;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.customstariff.CustomsTariffId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
@@ -43,11 +44,11 @@ public class Product
 	@NonNull ProductId id;
 	@NonNull UomId uomId;
 	@Nullable UomId packingUomId;
-	@NonNull String productNo;
-	@Nullable ProductCategoryId productCategoryId;
+	@NonNull String value;
+	@NonNull ProductCategoryId productCategoryId;
 	@Nullable String productCategoryName;
 	@NonNull ITranslatableString name;
-	@Nullable String value;
+	@Nullable CustomsTariffId customsTariffId;
 	@NonNull @Builder.Default ITranslatableString description = TranslatableStrings.empty();
 	@NonNull @Builder.Default ITranslatableString documentNote = TranslatableStrings.empty();
 	@NonNull String productType;

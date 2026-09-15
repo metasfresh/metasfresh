@@ -22,6 +22,7 @@
 
 package de.metas.edi.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.edi.api.DesadvInOutLine;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_InOutLine;
@@ -36,6 +37,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -44,6 +47,14 @@ import java.util.Optional;
 public class EDIDesadvInOutLineDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@VisibleForTesting
+	public static EDIDesadvInOutLineDAO newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(EDIDesadvInOutLineDAO.class, EDIDesadvInOutLineDAO::new);
+	}
 
 	@NonNull
 	public Optional<DesadvInOutLine> getByInOutLineId(@NonNull final InOutLineId shipmentLineId)

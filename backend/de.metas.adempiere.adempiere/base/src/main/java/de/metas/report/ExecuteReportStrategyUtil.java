@@ -8,6 +8,7 @@ import com.itextpdf.text.pdf.PdfReader;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportConstants;
 import lombok.NonNull;
@@ -22,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -53,10 +55,16 @@ public class ExecuteReportStrategyUtil
 			@NonNull final ProcessInfo processInfo,
 			@NonNull final OutputType outputType)
 	{
+		final List<ProcessInfoParameter> filteredParams = processInfo.getParameter().stream()
+				.filter(para -> !para.getParameterName().equals(ReportConstants.REPORT_PARAM_BARCODE_URL)
+						&& !para.getParameterName().equals(IMassPrintingService.PARAM_PrintCopies))
+				.collect(Collectors.toList());
+
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(jasperProcessId)
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
+				.addParameters(filteredParams)
 				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(processInfo.getClientId(), processInfo.getOrgId()))
 				.addParameter(IMassPrintingService.PARAM_PrintCopies, PrintCopies.ONE.toInt())
 				.setArchiveReportData(false) // don't archive it! just give us the PDF data

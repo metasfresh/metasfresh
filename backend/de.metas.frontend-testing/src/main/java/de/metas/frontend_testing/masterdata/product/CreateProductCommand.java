@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -39,9 +40,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
@@ -51,8 +54,10 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
+import org.eevolution.model.X_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -113,15 +118,64 @@ public class CreateProductCommand
 
 		productRecord.setAD_Org_ID(orgId.getRepoId());
 		productRecord.setValue(value);
-		productRecord.setName(value);
+
+		// Allow custom name separate from value (max 600 chars - very generous)
+		final String customName = org.apache.commons.lang3.StringUtils.trimToNull(request.getName());
+		if (customName != null && customName.length() > 600)
+		{
+			throw new AdempiereException("product name must not exceed 600 characters (got: " + customName.length() + ")");
+		}
+		final String name = customName != null ? customName : value;
+		productRecord.setName(name);
 		productRecord.setGTIN(request.getGtin() != null ? request.getGtin().getAsString() : null);
 		productRecord.setEAN13_ProductCode(request.getEan13ProductCode() != null ? request.getEan13ProductCode().getAsString() : null);
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
-		productRecord.setProductType(ProductType.Item.getCode());
-		productRecord.setIsStocked(true);
+		final ProductType productType = resolveProductType(request.getType());
+		productRecord.setProductType(productType.getCode());
+		// Explicit request override wins; otherwise Items are stocked, non-items are not.
+		final Boolean explicitIsStocked = request.getIsStocked();
+		productRecord.setIsStocked(explicitIsStocked != null ? explicitIsStocked : productType.isItem());
+		final Boolean isSelfPacked = request.getIsSelfPacked();
+		if (isSelfPacked != null)
+		{
+			productRecord.setIsSelfPacked(isSelfPacked);
+		}
+		final Boolean isSerialNoPicked = request.getIsSerialNoPicked();
+		if (isSerialNoPicked != null)
+		{
+			productRecord.setIsSerialNoPicked(isSerialNoPicked);
+		}
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
-		productRecord.setIsSold(true);
-		productRecord.setIsPurchased(true);
+		productRecord.setIsSold(CoalesceUtil.coalesceNotNull(request.getIsSold(), true));
+		productRecord.setIsPurchased(CoalesceUtil.coalesceNotNull(request.getIsPurchased(), true));
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
+
+		// Set M_AttributeSet_ID if attributeSetName is provided
+		final String attributeSetName = StringUtils.trimBlankToNull(request.getAttributeSetName());
+		if (attributeSetName != null)
+		{
+			final I_M_AttributeSet attributeSet = queryBL.createQueryBuilder(I_M_AttributeSet.class)
+					.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, attributeSetName)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstOnly(I_M_AttributeSet.class);
+
+			if (attributeSet == null)
+			{
+				throw new AdempiereException("M_AttributeSet with name `" + attributeSetName + "` not found");
+			}
+
+			productRecord.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
+			logger.info("Set M_AttributeSet_ID={} (name={}) for product {}", attributeSet.getM_AttributeSet_ID(), attributeSetName, productRecord.getValue());
+		}
+
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
@@ -132,6 +186,18 @@ public class CreateProductCommand
 
 	private String generateValue()
 	{
+		// Use custom value if provided (no timestamp, max 255 chars)
+		final String customValue = org.apache.commons.lang3.StringUtils.trimToNull(request.getValue());
+		if (customValue != null)
+		{
+			if (customValue.length() > 255)
+			{
+				throw new AdempiereException("product value must not exceed 255 characters (got: " + customValue.length() + ")");
+			}
+			return customValue;
+		}
+
+		// or Use valuePrefix with timestamp
 		final String valuePrefix = StringUtils.trimBlankToNull(request.getValuePrefix());
 		final JsonCreateProductRequest.RandomValueSpec randomValueSpec = request.getRandomValue();
 		if (valuePrefix != null && randomValueSpec != null)
@@ -149,6 +215,7 @@ public class CreateProductCommand
 		}
 		else
 		{
+			// or use Default timestamp-based
 			return identifier.toUniqueString();
 		}
 	}
@@ -278,6 +345,7 @@ public class CreateProductCommand
 				.bPartnerId(bpartnerId)
 				.usedForCustomer(true)
 				.cuEAN(ean13 != null ? ean13.getAsString() : null)
+				.shelfLifeMinDays(bpartner.getShelfLifeMinDays())
 				.build());
 	}
 
@@ -363,6 +431,13 @@ public class CreateProductCommand
 		lineRecord.setComponentType(componentType.getCode());
 		lineRecord.setValidFrom(bomRecord.getValidFrom());
 
+		// Optionally set Issue Method if provided by test data (e.g., IssueOnlyForReceived)
+		final BOMComponentIssueMethod issueMethod = line.getIssueMethod();
+		if (issueMethod != null)
+		{
+			lineRecord.setIssueMethod(issueMethod.getCode());
+		}
+
 		if (line.isPercentage())
 		{
 			lineRecord.setIsQtyPercentage(true);
@@ -374,7 +449,44 @@ public class CreateProductCommand
 			lineRecord.setQtyBOM(line.getQty());
 		}
 
+		if (line.getPickingInstruction() != null)
+		{
+			lineRecord.setPickingInstruction(line.getPickingInstruction());
+		}
+
+		if (line.getIssuingTolerancePerc() != null)
+		{
+			lineRecord.setIsEnforceIssuingTolerance(true);
+			lineRecord.setIssuingTolerance_ValueType(X_PP_Product_BOMLine.ISSUINGTOLERANCE_VALUETYPE_Percentage);
+			lineRecord.setIssuingTolerance_Perc(line.getIssuingTolerancePerc());
+		}
+
 		saveRecord(lineRecord);
+	}
+
+	/**
+	 * Map the request's {@code type} field to a {@link ProductType}.
+	 * Accepts both the enum name ({@code "Item"}, {@code "Service"}, …) and the AD ref-list code
+	 * ({@code "I"}, {@code "S"}, …). Falls back to {@link ProductType#Item} when {@code null}/blank.
+	 */
+	private static ProductType resolveProductType(@Nullable final String requestType)
+	{
+		final String trimmed = StringUtils.trimBlankToNull(requestType);
+		if (trimmed == null)
+		{
+			return ProductType.Item;
+		}
+		// Try enum-name matching first (case-insensitive) — "Item", "Service", "Resource", …
+		for (final ProductType candidate : ProductType.values())
+		{
+			if (candidate.name().equalsIgnoreCase(trimmed))
+			{
+				return candidate;
+			}
+		}
+		// Fall back to the AD ref-list code ("I", "S", "R", …). ofCode throws when not found,
+		// which is the right behaviour for an invalid type — surface it to the caller.
+		return ProductType.ofCode(trimmed);
 	}
 
 	private void renamePreviousEAN13ProductCodes()

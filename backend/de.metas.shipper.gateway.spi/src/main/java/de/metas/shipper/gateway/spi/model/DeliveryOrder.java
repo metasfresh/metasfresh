@@ -1,9 +1,12 @@
 package de.metas.shipper.gateway.spi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierService;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
@@ -58,6 +61,7 @@ public class DeliveryOrder
 	@Nullable CustomDeliveryData customDeliveryData;
 	@Nullable OrderStatus orderStatus;
 	@NonNull Address pickupAddress;
+	@Nullable ContactPerson pickupContact;
 	@NonNull PickupDate pickupDate;
 	/**
 	 * Not received from anywhere (in DraftDeliveryOrderCreator)
@@ -75,6 +79,10 @@ public class DeliveryOrder
 	 * Not received from anywhere (in DraftDeliveryOrderCreator)
 	 */
 	@Nullable String customerReference;
+
+	@Nullable String incotermsValue;
+	@Nullable String externalSystemValue;
+	@Nullable String preAdviceRequired;
 
 	/**
 	 * @deprecated This class has a bad data structure and should not be used in the future. Please use instead {@link #deliveryOrderParcels}.
@@ -140,6 +148,32 @@ public class DeliveryOrder
 				.clearDeliveryOrderParcels()
 				.deliveryOrderParcels(deliveryOrderParcels)
 				.build();
+	}
+
+	/**
+	 * Overwrites the carrier with what was actually resolved at ship time. The carrier product and services are
+	 * always taken; the goods type is overwritten only when the resolved set collapses to a single unambiguous
+	 * value (otherwise the current goods type is kept).
+	 */
+	public DeliveryOrder withResolvedCarrier(
+			@NonNull final ShipperProduct shipperProduct,
+			@NonNull final Set<CarrierGoodsType> goodsTypes,
+			@NonNull final Set<CarrierService> services)
+	{
+		return this.toBuilder()
+				.shipperProduct(shipperProduct)
+				.goodsType(CollectionUtils.singleElementOrEmpty(goodsTypes).orElse(this.goodsType))
+				.clearServices()
+				.services(services)
+				.build();
+	}
+
+	/** The carrier product of this order, i.e. the id of the {@link #shipperProduct} (null if no shipper product is set). */
+	@Nullable
+	@JsonIgnore
+	public CarrierProductId getCarrierProductId()
+	{
+		return shipperProduct != null ? shipperProduct.getId() : null;
 	}
 }
 

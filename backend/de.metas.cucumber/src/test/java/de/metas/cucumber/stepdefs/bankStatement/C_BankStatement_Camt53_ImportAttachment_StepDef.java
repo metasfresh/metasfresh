@@ -30,6 +30,7 @@ import de.metas.banking.camt53.BankStatementCamt53Service;
 import de.metas.banking.camt53.ImportBankStatementRequest;
 import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.util.Services;
 import io.cucumber.java.en.And;
@@ -40,7 +41,7 @@ import org.compiere.SpringContextHolder;
 
 import java.util.Iterator;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_BankStatement_Camt53_ImportAttachment_StepDef
 {
@@ -60,7 +61,7 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 		final I_C_BankStatement_Import_File importFileRecord = InterfaceWrapperHelper.newInstance(I_C_BankStatement_Import_File.class);
 		InterfaceWrapperHelper.saveRecord(importFileRecord);
 
-		final ImmutableList<String> bankStatementIdentifiers = StepDefUtil.extractIdentifiers(identifier);
+		final ImmutableList<StepDefDataIdentifier> bankStatementIdentifiers = StepDefUtil.extractIdentifiers(identifier);
 
 		final ImportBankStatementRequest importBankStatementRequest = ImportBankStatementRequest
 				.builder()

@@ -101,10 +101,7 @@ BEGIN
            fa.postingtype,
            fa.c_invoice_id,
            i.poreference                             AS poreference,
-           paymentTermDueDate(
-                   i.c_paymentterm_id,
-                   i.dateinvoiced::TIMESTAMP WITH TIME ZONE
-           )                                         AS duedate,
+           i.duedate::TIMESTAMP WITH TIME ZONE       AS duedate,
            fa.ad_client_id,
            fa.ad_org_id,
            fa.c_activity_id,

@@ -124,6 +124,7 @@ final class TestMasterdata
 
 		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
 		groupRecord.setName(bpValue + "-name");
+		groupRecord.setValue(bpValue + "-value");
 		if (orgId != null)
 		{
 			groupRecord.setAD_Org_ID(orgId.getRepoId());
@@ -176,6 +177,7 @@ final class TestMasterdata
 		{
 			groupRecord = newInstance(I_C_BP_Group.class);
 			groupRecord.setName(bpValue + "-name");
+			groupRecord.setValue(bpValue + "-value");
 			if (orgId != null)
 			{
 				groupRecord.setAD_Org_ID(orgId.getRepoId());

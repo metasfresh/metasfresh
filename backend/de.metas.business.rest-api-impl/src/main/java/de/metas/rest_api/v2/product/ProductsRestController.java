@@ -64,13 +64,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.product.v2.response.ProductsQueryParams.AD_PINSTANCE_ID;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CONFIG_TYPE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.SINCE;
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
 
 @RequiredArgsConstructor
 @RequestMapping(value = {

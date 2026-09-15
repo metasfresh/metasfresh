@@ -1,0 +1,4 @@
+Method <de.metas.material.cockpit.availableforsales.AvailableForSalesRepository.getPredefinedStorageAttributeKeys()> calls method <org.compiere.util.Env.getAD_Client_ID(java.util.Properties)> in (AvailableForSalesRepository.java:239)
+Method <de.metas.material.cockpit.availableforsales.AvailableForSalesRepository.getPredefinedStorageAttributeKeys()> calls method <org.compiere.util.Env.getAD_Org_ID(java.util.Properties)> in (AvailableForSalesRepository.java:240)
+Method <de.metas.material.cockpit.availableforsales.AvailableForSalesService.buildAvailableForSalesQueries(de.metas.product.Product)> calls method <org.compiere.util.Env.getAD_Client_ID()> in (AvailableForSalesService.java:122)
+Method <de.metas.material.cockpit.availableforsales.AvailableForSalesService.createAvailableForSalesQuery(de.metas.product.Product, de.metas.organization.OrgId)> calls method <org.compiere.util.Env.getClientId()> in (AvailableForSalesService.java:203)

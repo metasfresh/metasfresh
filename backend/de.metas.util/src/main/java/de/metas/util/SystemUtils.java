@@ -43,4 +43,23 @@ public class SystemUtils
 		}
 	}
 
+	public static long getSystemProperty(final String property, final long defaultValue)
+	{
+		final String valueStr = System.getProperty(property);
+		if (valueStr == null)
+		{
+			return defaultValue;
+		}
+
+		try
+		{
+			return Long.parseLong(valueStr.trim());
+		}
+		catch (final NumberFormatException e)
+		{
+			System.err.println("Failed converting property value of '" + property + "': " + valueStr);
+			return defaultValue;
+		}
+	}
+
 }

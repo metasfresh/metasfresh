@@ -1,7 +1,9 @@
 package de.metas.material.planning.impl;
 
 import java.time.temporal.TemporalUnit;
+import java.util.Optional;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -57,12 +59,13 @@ public class ResourceProductService implements IResourceProductService
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
-		final ProductId productId = productsRepo.getProductIdByResourceId(resourceId);
+		final ProductId productId = productsRepo.getProductIdByResourceId(resourceId)
+				.orElseThrow(() -> new AdempiereException("No product found for " + resourceId));
 		return productsRepo.getById(productId);
 	}
 
 	@Override
-	public ProductId getProductIdByResourceId(final ResourceId resourceId)
+	public Optional<ProductId> getProductIdByResourceId(final ResourceId resourceId)
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		return productsRepo.getProductIdByResourceId(resourceId);
@@ -71,7 +74,8 @@ public class ResourceProductService implements IResourceProductService
 	@Override
 	public TemporalUnit getResourceTemporalUnit(final ResourceId resourceId)
 	{
-		final ProductId resourceProductId = getProductIdByResourceId(resourceId);
+		final ProductId resourceProductId = getProductIdByResourceId(resourceId)
+				.orElseThrow(() -> new AdempiereException("No product found for " + resourceId));
 		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(resourceProductId);
 		return UOMUtil.toTemporalUnit(uom);
 	}

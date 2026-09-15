@@ -10,26 +10,17 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.util.Check;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /*
  * #%L
@@ -98,87 +89,6 @@ public class HU
 	@NonNull
 	@Singular("childHU")
 	ImmutableList<HU> childHUs;
-
-	@Nullable
-	public <T> T extractSingleAttributeValue(
-			@NonNull final Function<IAttributeSet, T> attrValueFunction,
-			@NonNull final BinaryOperator<T> mergeFunction)
-	{
-		final Mutable<T> result = new Mutable<>();
-		for (final HU hu : allHUAsList())
-		{
-			final T attrValue = attrValueFunction.apply(hu.getAttributes());
-			result.setValue(mergeFunction.apply(result.getValue(), attrValue));
-		}
-		return result.getValue();
-	}
-
-	/**
-	 * If this HU and all children have the same LotNo - empties are ignored! - that String is returned.
-	 */
-	@Nullable
-	public String extractLotNumber()
-	{
-		return extractLotNumber(null);
-	}
-
-	/**
-	 * @param externalLotNumberSupplier set to not-null when calling this method from unit-tests.
-	 */
-	@VisibleForTesting
-	@Nullable
-	String extractLotNumber(@Nullable final Supplier<String> externalLotNumberSupplier)
-	{
-		final String ownLotNo;
-		if (externalLotNumberSupplier != null)
-		{
-			ownLotNo = externalLotNumberSupplier.get();
-		}
-		else
-		{
-			ownLotNo = getAttributes().getValueAsStringOrNull(AttributeConstants.ATTR_LotNumber);
-		}
-
-		if (Check.isNotBlank(ownLotNo))
-		{
-			return ownLotNo;
-		}
-
-		final HashSet<String> childLotNumbers = new HashSet<>();
-		for (final HU hu : childHUs)
-		{
-			final String childLotNo = hu.extractLotNumber(externalLotNumberSupplier);
-			if (Check.isNotBlank(childLotNo))
-			{
-				childLotNumbers.add(childLotNo);
-			}
-		}
-		return CollectionUtils.singleElementOrNull(childLotNumbers);
-	}
-
-	public List<HU> allHUAsList()
-	{
-		return recurseNext(this);
-	}
-
-	private List<HU> recurseNext(@NonNull final HU hu)
-	{
-		if (hu.getChildHUs().isEmpty())
-		{
-			return ImmutableList.of(hu);
-		}
-
-		final ImmutableList.Builder<HU> results = ImmutableList.builder();
-
-		results.add(hu);
-
-		for (final HU child : hu.getChildHUs())
-		{
-			final List<HU> recurseNext = recurseNext(child);
-			results.addAll(recurseNext);
-		}
-		return results.build();
-	}
 
 	/**
 	 * Creates a "sparse" HU that only contains child-HUs, quantities and weights (if any!) for the given {@code reference}.

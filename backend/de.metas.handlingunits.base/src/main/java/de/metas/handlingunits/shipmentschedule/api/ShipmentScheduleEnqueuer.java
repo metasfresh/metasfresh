@@ -329,7 +329,7 @@ public class ShipmentScheduleEnqueuer
 				// NOTE: when we will add the scheds to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
 				.setAutoCleanup(true)
 				.setFailIfAlreadyLocked(true)
-				.retryOnFailure(3)
+				.retryOnFailure(10)
 				.setRecordsByFilter(I_M_ShipmentSchedule.class, queryFilters);
 
 		final Set<PickingJobScheduleId> jobScheduleIds = workPackageParameters.getPickingJobScheduleIds();

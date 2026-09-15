@@ -8,6 +8,10 @@ import {
   handleCopy,
   isShowCommentsMarker,
 } from '../../utils/tableHelpers';
+import {
+  loadColumnWidths,
+  saveColumnWidths,
+} from '../../utils/columnWidthStorage';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
 import Spinner from '../app/SpinnerOverlay';
@@ -24,6 +28,7 @@ class Table extends PureComponent {
     this.state = {
       listenOnKeys: true,
       tableRefreshToggle: false,
+      columnWidths: {},
     };
     this.multiSelectionStartIdx = null;
   }
@@ -31,16 +36,30 @@ class Table extends PureComponent {
   componentDidMount() {
     this._isMounted = true;
     this.initialPaddingBottom = 100;
+
+    // Load persisted column widths
+    const { windowId, viewId } = this.props;
+    const columnWidths = loadColumnWidths(windowId, viewId);
+    if (Object.keys(columnWidths).length > 0) {
+      this.setState({ columnWidths });
+    }
+
     if (this.props.autofocus && this.table) {
       this.table.focus();
     }
   }
 
   componentDidUpdate(prevProps) {
-    const { mainTable, open, rows } = this.props;
+    const { mainTable, open, rows, windowId, viewId } = this.props;
 
     if (!this._isMounted) {
       return;
+    }
+
+    // Reload column widths if window/view changed
+    if (windowId !== prevProps.windowId || viewId !== prevProps.viewId) {
+      const columnWidths = loadColumnWidths(windowId, viewId);
+      this.setState({ columnWidths });
     }
 
     if (
@@ -76,6 +95,35 @@ class Table extends PureComponent {
 
   setTfootRef = (ref) => {
     this.tfoot = ref;
+  };
+
+  handleColumnResize = (fieldName, width) => {
+    this.setState((prevState) => ({
+      columnWidths: {
+        ...prevState.columnWidths,
+        [fieldName]: Math.round(width),
+      },
+    }));
+  };
+
+  handleColumnResizeEnd = () => {
+    const { windowId, viewId } = this.props;
+    const { columnWidths } = this.state;
+    saveColumnWidths(windowId, viewId, columnWidths);
+  };
+
+  handleColumnResetWidth = (fieldName) => {
+    this.setState(
+      (prevState) => {
+        const newWidths = { ...prevState.columnWidths };
+        delete newWidths[fieldName];
+        return { columnWidths: newWidths };
+      },
+      () => {
+        const { windowId, viewId } = this.props;
+        saveColumnWidths(windowId, viewId, this.state.columnWidths);
+      }
+    );
   };
 
   getCurrentRowIndex = (arrowOrientation) => {
@@ -368,7 +416,7 @@ class Table extends PureComponent {
       onFastInlineEdit,
       isShowComments,
     } = this.props;
-    const { listenOnKeys } = this.state;
+    const { listenOnKeys, columnWidths } = this.state;
 
     if (!rows.length || !columns.length) {
       return null;
@@ -411,6 +459,7 @@ class Table extends PureComponent {
           tableId,
           listenOnKeys,
           isShowComments,
+          columnWidths,
         }}
         cols={columns}
         key={`row-${i}${viewId ? `-${viewId}` : ''}`}
@@ -508,6 +557,7 @@ class Table extends PureComponent {
       setActiveSort,
       pending,
     } = this.props;
+    const { columnWidths } = this.state;
 
     return (
       <div
@@ -553,10 +603,14 @@ class Table extends PureComponent {
                 docId,
                 viewId,
                 setActiveSort,
+                columnWidths,
               }}
               cols={columns}
               windowType={windowId}
               deselect={onDeselectAll}
+              onColumnResize={this.handleColumnResize}
+              onColumnResizeEnd={this.handleColumnResizeEnd}
+              onColumnResetWidth={this.handleColumnResetWidth}
             />
           </thead>
           <tbody>{this.renderTableBody()}</tbody>

@@ -98,6 +98,29 @@ public interface I_M_ShipmentSchedule_AttributeConfig
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set ME-Merkmal überschreibt Merkmalsatz.
+	 * Wenn Ja, überschreibt der ME-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHUAttributeOverridesASI (boolean IsHUAttributeOverridesASI);
+
+	/**
+	 * Get ME-Merkmal überschreibt Merkmalsatz.
+	 * Wenn Ja, überschreibt der ME-Merkmalwert den Wert der Auftragsposition auf der Lieferzeile.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHUAttributeOverridesASI();
+
+	ModelColumn<I_M_ShipmentSchedule_AttributeConfig, Object> COLUMN_IsHUAttributeOverridesASI = new ModelColumn<>(I_M_ShipmentSchedule_AttributeConfig.class, "IsHUAttributeOverridesASI", null);
+	String COLUMNNAME_IsHUAttributeOverridesASI = "IsHUAttributeOverridesASI";
+
+	/**
 	 * Set Merkmal.
 	 * Produkt-Merkmal
 	 *

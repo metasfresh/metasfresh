@@ -22,7 +22,7 @@
 
 package de.metas.externalsystem.grssignum.interceptor;
 
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.ExternalServices;
@@ -41,14 +41,14 @@ import java.util.UUID;
 @Component
 public class ExternalSystem_Config_GRSSignum
 {
-	public final ExternalSystemConfigRepo externalSystemConfigRepo;
+	public final ExternalSystemConfigRepository externalSystemConfigRepository;
 	public final ExternalServices externalServices;
 
 	public ExternalSystem_Config_GRSSignum(
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigRepository,
 			@NonNull final ExternalServices externalServices)
 	{
-		this.externalSystemConfigRepo = externalSystemConfigRepo;
+		this.externalSystemConfigRepository = externalSystemConfigRepository;
 		this.externalServices = externalServices;
 	}
 
@@ -57,7 +57,7 @@ public class ExternalSystem_Config_GRSSignum
 	public void checkType(final I_ExternalSystem_Config_GRSSignum grsConfig)
 	{
 		final String parentType =
-				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(grsConfig.getExternalSystem_Config_ID()));
+				externalSystemConfigRepository.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(grsConfig.getExternalSystem_Config_ID()));
 
 		if (!ExternalSystemType.GRSSignum.getValue().equals(parentType))
 		{

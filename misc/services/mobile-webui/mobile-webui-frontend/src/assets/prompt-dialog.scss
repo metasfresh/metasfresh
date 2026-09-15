@@ -37,3 +37,11 @@
     }
   }
 }
+
+// A Yes/No confirmation requires the operator to act, so it must sit above everything —
+// including the processing spinner (z-index 99999) the quantity dialog shows while a pick
+// is in flight. Without this, a confirmation raised mid-pick (e.g. the shelf-life warning)
+// renders behind the spinner and its buttons cannot be tapped.
+.prompt-dialog.yes-no-dialog {
+  z-index: 100000;
+}

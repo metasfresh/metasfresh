@@ -85,6 +85,31 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setIsManual (final boolean IsManual)
+	{
+		set_Value (COLUMNNAME_IsManual, IsManual);
+	}
+
+	@Override
+	public boolean isManual()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManual);
+	}
+
+	@Override
+	public void setDeliveryStopReason (@Nullable final String DeliveryStopReason)
+	{
+		set_Value (COLUMNNAME_DeliveryStopReason, DeliveryStopReason);
+	}
+
+	@Override
+	@Nullable
+	public String getDeliveryStopReason()
+	{
+		return get_ValueAsString(COLUMNNAME_DeliveryStopReason);
+	}
+
+	@Override
 	public void setIsPaid (final boolean IsPaid)
 	{
 		throw new IllegalArgumentException ("IsPaid is virtual column");	}

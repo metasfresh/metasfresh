@@ -52,11 +52,9 @@ class MissingContextVariables
 			.put("C_Order/143.C_Charge_ID.DisplayLogic", "HasCharges")
 			.put("C_Order/143.C_OrderLine/187.M_Warehouse_ID.DisplayLogic", "DirectShip")
 			.put("C_Order/143.ChargeAmt.DisplayLogic", "HasCharges")
-			.put("C_Order/143.IsEdiEnabled.ReadonlyLogic", "IsEdiDesadvRecipient")
 			.put("C_Order/181.C_Charge_ID.DisplayLogic", "HasCharges")
 			.put("C_Order/181.C_OrderLine/293.M_Warehouse_ID.DisplayLogic", "DirectShip")
 			.put("C_Order/181.ChargeAmt.DisplayLogic", "HasCharges")
-			.put("C_Order/181.IsEdiEnabled.ReadonlyLogic", "IsEdiDesadvRecipient")
 			.put("C_Order/540072.C_Charge_ID.DisplayLogic", "HasCharges")
 			.put("C_Order/540072.C_OrderLine/540212.AD_OrgTrx_ID.DisplayLogic", "IsComment")
 			.put("C_Order/540072.C_OrderLine/540212.C_Activity_ID.DisplayLogic", "IsComment")
@@ -172,10 +170,6 @@ class MissingContextVariables
 			.put("C_Flatrate_Term/540359.C_SubscriptionProgress/540880.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
 			.put("C_Flatrate_Term/540359.C_SubscriptionProgress/540886.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
 			.put("C_Flatrate_Term/540359.DropShip_User_ID.LookupDescriptor", "DropShip_BPartner_Override_ID")
-			.put("C_Invoice_Candidate/540092.M_PricingSystem_ID.LookupDescriptor", "C_BPartner_Location_ID")
-			.put("C_Invoice_Candidate/540093.M_PricingSystem_ID.LookupDescriptor", "C_BPartner_Location_ID")
-			.put("C_Invoice_Candidate/540126.M_PricingSystem_ID.LookupDescriptor", "C_BPartner_Location_ID")
-			.put("C_Invoice_Candidate/540983.M_PricingSystem_ID.LookupDescriptor", "C_BPartner_Location_ID")
 			.put("C_OLCand/540095.Bill_BPartner_ID.LookupDescriptor", "IsSOTrx")
 			.put("C_OLCand/540127.Bill_BPartner_ID.LookupDescriptor", "IsSOTrx")
 			.put("C_OLCand/541952.Bill_BPartner_ID.LookupDescriptor", "IsSOTrx")
@@ -221,6 +215,9 @@ class MissingContextVariables
 			.put("M_InventoryLine/540458.C_Charge_ID.LookupDescriptor", "C_DocType_ID")
 			.put("M_InventoryLine/540458.M_HU_PI_Item_Product_ID.LookupDescriptor", "C_BPartner_ID,MovementDate")
 			.put("M_InventoryLine/540458.M_Locator_ID.LookupDescriptor", "M_Warehouse_ID")
+			.put("M_InventoryLine/541685.C_Charge_ID.LookupDescriptor", "C_DocType_ID")
+			.put("M_InventoryLine/541685.M_HU_PI_Item_Product_ID.LookupDescriptor", "C_BPartner_ID,MovementDate")
+			.put("M_InventoryLine/541685.M_Locator_ID.LookupDescriptor", "M_Warehouse_ID")
 			.put("M_Material_Tracking/540226.SalesRep_ID.LookupDescriptor", "IsSOTrx")
 			.put("M_Movement/170.SalesRep_ID.LookupDescriptor", "IsSOTrx")
 			.put("M_Product/140.SalesRep_ID.LookupDescriptor", "IsSOTrx")
@@ -259,7 +256,7 @@ class MissingContextVariables
 		this.reportedMissingButNotUsed = TreeMultimap.create(this.all);
 	}
 
-	private static void addAll(final HashMultimap<ContextPath, String> target, @Nullable Map<String, String> source)
+	private static void addAll(final HashMultimap<ContextPath, String> target, @Nullable final Map<String, String> source)
 	{
 		if (source == null || source.isEmpty()) {return;}
 
@@ -270,7 +267,7 @@ class MissingContextVariables
 		});
 	}
 
-	public void recordContextVariableUsed(final ContextPath path, final String contextVariable, boolean wasFound)
+	public void recordContextVariableUsed(final ContextPath path, final String contextVariable, final boolean wasFound)
 	{
 		reportedMissingButNotUsed.remove(path, contextVariable);
 
@@ -291,7 +288,7 @@ class MissingContextVariables
 		}
 	}
 
-	public boolean isKnownAsMissing(final ContextPath path, String contextVariable)
+	public boolean isKnownAsMissing(final ContextPath path, final String contextVariable)
 	{
 		return all.containsEntry(path, contextVariable);
 	}

@@ -71,7 +71,7 @@ import java.util.Optional;
 @Service
 public class OrderService
 {
-	private final static transient Logger logger = LogManager.getLogger(OrderService.class);
+	private final static Logger logger = LogManager.getLogger(OrderService.class);
 
 	private static final AdMessageKey MSG_ERR_ORDER_HAS_DELIVERED_ITEMS = AdMessageKey.of("MSG_ERR_ORDER_HAS_DELIVERED_ITEMS");
 
@@ -202,7 +202,7 @@ public class OrderService
 				.map(OrderId::ofRepoId);
 	}
 
-	private Optional<OrderId> resolveOrderId(@NonNull final IdentifierString orderIdentifier, @NonNull final OrgId orgId)
+	public Optional<OrderId> resolveOrderId(@NonNull final IdentifierString orderIdentifier, @NonNull final OrgId orgId)
 	{
 		final OrderQuery.OrderQueryBuilder queryBuilder = OrderQuery.builder().orgId(orgId);
 

@@ -2,6 +2,7 @@ package de.metas.payment.paymentterm.repository.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -9,6 +10,7 @@ import lombok.ToString;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @ToString
 class PaymentTermMap
@@ -30,5 +32,13 @@ class PaymentTermMap
 	public Optional<PaymentTerm> getById(final PaymentTermId id)
 	{
 		return Optional.ofNullable(byId.get(id));
+	}
+
+	public Set<PaymentTermId> getPaymentTermIdsByIsAllowOverrideDueDate(final boolean isAllowOverrideDueDate)
+	{
+		return byId.values().stream()
+				.filter(pt -> pt.isAllowOverrideDueDate() == isAllowOverrideDueDate)
+				.map(PaymentTerm::getId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

@@ -130,6 +130,29 @@ public class PPOrderCostsTest
 		this.assertThatPostCalculationAmt(orderCosts, productId5).isEqualByComparingTo(new BigDecimal("0"));
 	}
 
+	@Test
+	public void updatePriceForCostSegmentAndElement_setsPrice()
+	{
+		final CostSegmentAndElement costSegmentAndElement = costSegmentAndElement(productId1);
+
+		final CostPrice initialPrice = CostPrice.ownCostPrice(CostAmount.of(10, currencyId), uomId);
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement)
+						.price(initialPrice)
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.build();
+
+		final CostPrice newPrice = CostPrice.ownCostPrice(CostAmount.of(25, currencyId), uomId);
+		orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, newPrice);
+
+		assertThat(orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement))
+				.contains(newPrice);
+	}
+
 	private CostSegmentAndElement costSegmentAndElement(@NonNull final ProductId productId)
 	{
 		return CostSegmentAndElement.builder()

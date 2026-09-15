@@ -86,6 +86,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -135,6 +136,8 @@ public class OrderLineBL implements IOrderLineBL
 {
 	@NonNull private static final AdMessageKey MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = AdMessageKey.of("de.metas.order.CounterDocMissingMappedProduct");
 	@NonNull private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
+	@VisibleForTesting
+	@NonNull static final String SYSCONFIG_PO_PRICE_DATE_USE_DATE_PROMISED = "de.metas.order.PurchaseOrder.UseDatePromisedForPricing";
 
 	@NonNull private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
@@ -153,8 +156,8 @@ public class OrderLineBL implements IOrderLineBL
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	@NonNull private final ITaxDAO taxDAO =Services.get(ITaxDAO.class);
-	@NonNull private final IWarehouseAdvisor warehouseAdvisor =	Services.get(IWarehouseAdvisor.class);
+	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	@NonNull private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	private IOrderBL orderBL()
@@ -170,6 +173,12 @@ public class OrderLineBL implements IOrderLineBL
 
 	@Override
 	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getOrderLineById(orderLineId);
+	}
+
+	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderAndLineId orderLineId)
 	{
 		return orderDAO.getOrderLineById(orderLineId);
 	}
@@ -219,6 +228,16 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
 		return getQtyToDeliver(orderLine);
+	}
+
+	@Override
+	public Quantity getQtyDelivered(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
+		final BigDecimal qtyDelivered = orderLine.getQtyDelivered();
+		final I_C_UOM uom = getStockingUOM(orderLine);
+
+		return Quantity.of(qtyDelivered, uom);
 	}
 
 	private Quantity getQtyToDeliver(@NonNull final I_C_OrderLine orderLine)
@@ -550,12 +569,23 @@ public class OrderLineBL implements IOrderLineBL
 			final org.compiere.model.I_C_OrderLine orderLine,
 			final I_C_Order order)
 	{
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class); // as long as this is a static method, we can't use the orgDAO field. 
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class); // static method — cannot use instance fields; use Services.get() directly
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
-		return order.isSOTrx()
+		if (order.isSOTrx())
+		{
+			return getPriceDateFromDatePromised(orderLine, order, timeZone);
+		}
+
+		return isUseDatePromised(order)
 				? getPriceDateFromDatePromised(orderLine, order, timeZone)
 				: asZonedDateTimeNonNull(orderLine.getDateOrdered(), timeZone);
+	}
+
+	private static boolean isUseDatePromised(final I_C_Order order)
+	{
+		return Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYSCONFIG_PO_PRICE_DATE_USE_DATE_PROMISED, false, order.getAD_Client_ID(), order.getAD_Org_ID());
 	}
 
 	@NonNull
@@ -810,7 +840,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final MTax tax = MTax.get(Env.getCtx(), taxId);
-		if (tax.isZeroTax())
+		if (tax.isZeroTax() || tax.isReverseCharge())
 		{
 			return ProductPrice.builder()
 					.productId(productId)
@@ -1045,7 +1075,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void setTax(@NonNull final org.compiere.model.I_C_OrderLine  orderLine)
+	public void setTax(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final I_C_Order orderRecord = orderBL().getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
@@ -1067,7 +1097,7 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
 			// Only set if TRUE - otherwise leave null (don't filter)
-			isTaxExempt = billBPartnerRecord.isTaxExempt() ?  Boolean.TRUE : null;
+			isTaxExempt = billBPartnerRecord.isTaxExempt() ? Boolean.TRUE : null;
 		}
 		else
 		{
@@ -1100,5 +1130,38 @@ public class OrderLineBL implements IOrderLineBL
 
 		orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
 		orderLine.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
+	}
+
+	@Override
+	public void setGrossWeightInKg(@NonNull final I_C_OrderLine orderLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final UomId stockUomId = productBL.getStockUOMId(productId);
+		final Quantity qtyOrdered = Quantitys.of(orderLine.getQtyOrdered(), stockUomId);
+
+		final Quantity grossWeight = productBL.computeGrossWeight(productId, qtyOrdered).orElse(null);
+
+		if (grossWeight == null)
+		{
+			orderLine.setGrossWeightKg(BigDecimal.ZERO);
+		}
+		else
+		{
+			final Quantity grossWeightInKg = uomConversionBL.convertToKilogram(grossWeight, productId);
+			orderLine.setGrossWeightKg(grossWeightInKg.toBigDecimal());
+		}
+	}
+
+	@Override
+	public Money getLineGrossAmt(@NonNull final I_C_OrderLine orderLine)
+	{
+		// LineNetAmt is the gross-inclusive total when the owning price list has IsTaxIncluded=Y;
+		// adding TaxAmtInfo would double-count. When IsTaxIncluded=N, LineNetAmt is the net (excl-tax)
+		// and TaxAmtInfo adds the tax to reach gross.
+		final BigDecimal lineGrossAmt = isTaxIncluded(orderLine)
+				? orderLine.getLineNetAmt()
+				: orderLine.getLineNetAmt().add(orderLine.getTaxAmtInfo());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		return Money.of(lineGrossAmt, currencyId);
 	}
 }

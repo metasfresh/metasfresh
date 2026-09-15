@@ -128,6 +128,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 */
 	BPartnerContactId getBillContactEffectiveId(I_C_OLCand olCand);
 
+	BPartnerLocationId getDropShipLocationEffectiveId(I_C_OLCand olCand);
+
 	/**
 	 * Returns, falling back to the next if not set:
 	 * <ul>

@@ -503,6 +503,18 @@ public class PPOrderCandidateService
 		ppOrderCandidateDAO.deleteLines(ppOrderCandidateId);
 	}
 
+	public void setWorkStationFromProductPlanning(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		final ProductPlanningId ppProductPlanningId = ProductPlanningId.ofRepoIdOrNull(ppOrderCandidateRecord.getPP_Product_Planning_ID());
+		if (ppProductPlanningId == null)
+		{
+			ppOrderCandidateRecord.setWorkStation_ID(ResourceId.toRepoId(null));
+			return;
+		}
+		final ProductPlanning productPlanning = productPlanningDAO.getById(ppProductPlanningId);
+		ppOrderCandidateRecord.setWorkStation_ID(ResourceId.toRepoId(productPlanning.getWorkstationId()));
+	}
+
 	public void setWorkstationId(@NonNull final ImmutableSet<PPOrderCandidateId> ppOrderCandidateIds, @Nullable final ResourceId workstationId)
 	{
 		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);

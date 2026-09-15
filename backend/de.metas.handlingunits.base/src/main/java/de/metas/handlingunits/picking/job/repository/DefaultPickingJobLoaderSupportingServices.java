@@ -20,7 +20,6 @@ import de.metas.handlingunits.picking.job.service.external.product.ProductInfo;
 import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -30,6 +29,7 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -68,6 +68,10 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final HashMap<PickingSlotId, PickingSlotIdAndCaption> pickingSlotIdAndCaptionsCache = new HashMap<>();
 	private final HashMap<ProductId, ProductInfo> productInfoCache = new HashMap<>();
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
+	// Per-load lifetime: this class is built fresh per PickingJobLoaderAndSaver.forLoading(...) call (it is @Builder,
+	// caller-constructed, never a shared @Component), so these caches — qrCodesCache included — cannot serve stale data
+	// across separate load operations. Same lifetime as the sibling caches above.
+	private final HashMap<HuId, HUQRCode> qrCodesCache = new HashMap<>();
 
 	@Override
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return profileService.getPickingJobOptions(customerId);}
@@ -142,9 +146,9 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public ITranslatableString getProductName(@NonNull final ProductId productId)
+	public ProductValueAndName getProductValueAndName(@NonNull final ProductId productId)
 	{
-		return getProductInfo(productId).getName();
+		return getProductInfo(productId).getProductValueAndName();
 	}
 
 	private ProductInfo getProductInfo(@NonNull final ProductId productId)
@@ -171,9 +175,17 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public void warmUpQRCodesCache(@NonNull final Collection<HuId> huIds)
+	{
+		CollectionUtils.getAllOrLoad(qrCodesCache, huIds, huService::getSingleQRCodeByHuIds);
+	}
+
+	@Override
 	public HUQRCode getQRCodeByHUId(final HuId huId)
 	{
-		return huService.getQRCodeByHuId(huId);
+		// Served from the batch-warmed cache (see warmUpQRCodesCache); on a miss (HU with no or with multiple
+		// assigned QR codes) fall back to the single-HU lookup, preserving the exact generate-if-missing semantics.
+		return qrCodesCache.computeIfAbsent(huId, huService::getQRCodeByHuId);
 	}
 
 	@Override

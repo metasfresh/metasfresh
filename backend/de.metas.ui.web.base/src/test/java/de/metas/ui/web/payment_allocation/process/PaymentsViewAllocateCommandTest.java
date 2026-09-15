@@ -177,7 +177,7 @@ public class PaymentsViewAllocateCommandTest
 		assertThat(actualAllocatedAmt.toBigDecimal()).isEqualByComparingTo(expectedAllocatedAmt);
 	}
 
-	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
+	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, final InvoicePaymentStatus expectedPaymentStatus, final String expectedOpenAmt)
 	{
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		invoiceBL.testAllocation(invoice, true);
@@ -202,11 +202,13 @@ public class PaymentsViewAllocateCommandTest
 
 		final BPartnerId bpartnerIdEffective = bpartnerId != null ? bpartnerId : this.bpartnerId;
 
+		final LocalDate dateTrxEffective = paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx;
 		return PaymentRow.builder()
 				.paymentId(paymentId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
 				.documentNo("paymentNo_" + paymentId.getRepoId())
-				.dateTrx(paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx)
+				.dateTrx(dateTrxEffective)
+				.dateAcct(dateTrxEffective)
 				.bpartner(IntegerLookupValue.of(bpartnerIdEffective.getRepoId(), "BPartner"))
 				.paymentDirection(direction)
 				.paymentAmtMultiplier(PaymentAmtMultiplier.builder().paymentDirection(direction).isOutboundAdjusted(false).build())
@@ -245,16 +247,19 @@ public class PaymentsViewAllocateCommandTest
 			invoiceRecord.setIsSOTrx(docType.isSOTrx());
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 			invoiceRecord.setGrandTotal(invoiceGrandTotal.toBigDecimal());
+			invoiceRecord.setIsFinancial(docBaseType.isFinancial());
 			saveRecord(invoiceRecord);
 			invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 		}
 
+		final LocalDate dateInvoicedEffective = dateInvoiced != null ? LocalDate.parse(dateInvoiced) : this.dateInvoiced;
 		return InvoiceRow.builder()
 				.invoiceId(invoiceId)
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, orgId))
 				.docTypeName(TranslatableStrings.anyLanguage("invoice doc type"))
 				.documentNo("invoiceNo_" + invoiceId.getRepoId())
-				.dateInvoiced(dateInvoiced != null ? LocalDate.parse(dateInvoiced) : this.dateInvoiced)
+				.dateInvoiced(dateInvoicedEffective)
+				.dateAcct(dateInvoicedEffective)
 				.bpartner(IntegerLookupValue.of(bpartnerId.getRepoId(), "BPartner"))
 				.docBaseType(docBaseType)
 				.invoiceAmtMultiplier(invoiceAmtMultiplier)
@@ -441,6 +446,7 @@ public class PaymentsViewAllocateCommandTest
 										.build())
 								.clientAndOrgId(invoiceRow.getClientAndOrgId())
 								.date(invoiceRow.getDateInvoiced())
+								.dateAcct(invoiceRow.getDateAcct())
 								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
 								.build());
 			}
@@ -490,6 +496,7 @@ public class PaymentsViewAllocateCommandTest
 										.build())
 								.clientAndOrgId(invoiceRow.getClientAndOrgId())
 								.date(invoiceRow.getDateInvoiced())
+								.dateAcct(invoiceRow.getDateAcct())
 								.currencyConversionTypeId(invoiceRow.getCurrencyConversionTypeId())
 								.build());
 			}

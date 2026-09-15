@@ -72,10 +72,12 @@ const InventoryScanScreen = () => {
   };
 
   const onHUScanned = ({ scannedBarcode }) => {
-    resolveHU({ scannedCode: scannedBarcode, wfProcessId, lineId, locatorQRCode }).then((response) => {
-      setResolvedHU(response);
-      setStatus(STATUS_FillData);
-    });
+    resolveHU({ scannedCode: scannedBarcode, wfProcessId, lineId, locatorQRCode })
+      .then((response) => {
+        setResolvedHU(response);
+        setStatus(STATUS_FillData);
+      })
+      .catch((error) => toastErrorFromObj(error));
   };
 
   const onInventoryCountSubmit = ({ qtyCount, attributes, lineCountingDone }) => {
@@ -104,7 +106,6 @@ const InventoryScanScreen = () => {
           key="scanLocator"
           inputPlaceholderText={trl('inventory.scanLocatorPlaceholder')}
           onResolvedResult={onLocatorScanned}
-          continuousRunning={true}
         />
       )}
       {status === STATUS_ScanHU && (
@@ -112,7 +113,6 @@ const InventoryScanScreen = () => {
           key="scanHU"
           inputPlaceholderText={trl('inventory.scanHUPlaceholder')}
           onResolvedResult={onHUScanned}
-          continuousRunning={true}
         />
       )}
       {status === STATUS_FillData && (

@@ -10,14 +10,17 @@ import {
 } from '../../../reducers/wfProcesses';
 import { toastError } from '../../../utils/toast';
 import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
-import { postStepPicked } from '../../../api/picking';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
+import Spinner from '../../../components/Spinner';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
-import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toNumberOrZero } from '../../../utils/numbers';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { pickingLineScreenLocation, pickingStepScreenLocation } from '../../../routes/picking';
+import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
+import { useAvailablePickingTargets } from '../../../api/picking';
+import { PickingTargetType } from '../../../constants/PickingTargetType';
+import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 
 const PickStepScanScreen = () => {
   const { history, wfProcessId, activityId, lineId, stepId, altStepId } = useScreenDefinition({
@@ -31,6 +34,33 @@ const PickStepScanScreen = () => {
       shallowEqual
     );
 
+  // GRAI Flow-Through: when GRAI scanning is required for this job's customer, ScanHUAndGetQtyComponent
+  // auto-invokes the inline GRAI capture after qty entry (non-skippable) and reports the captured codes
+  // (setGrais/graiCodes) on the same onResult — so the whole pick goes out as ONE atomic event. When it
+  // is not required the flow is unchanged.
+  const { graiScanEnabled, existingLuGrais, isTargetsLoading } = useAvailablePickingTargets({
+    wfProcessId,
+    lineId,
+    stepId,
+    altStepId,
+    type: PickingTargetType.TU,
+  });
+
+  // The current TU pick target (line-scoped for PRODUCT aggregation, header-scoped otherwise — hence
+  // fallbackToHeader). When a TU pick target is set, the operator established it via the pick-target
+  // GRAI scan (SelectPickTargetScreen's GraiScanPanel), which already captured the GRAI — so the
+  // inline capture must NOT fire (it would swallow the pick). We gate on presence (not `.grai`) because
+  // once the TU materializes on first pick it becomes an existing-TU target with grai nulled in the
+  // JSON, yet still present. The Flow-Through path picks into an LU target with no TU target, so the
+  // inline capture still fires there.
+  const { tuPickingTarget } = useCurrentPickingTargetInfo({
+    wfProcessId,
+    activityId,
+    lineId,
+    fallbackToHeader: true,
+  });
+  const isInlineGraiCaptureEnabled = graiScanEnabled && tuPickingTarget == null;
+
   const getConfirmationPromptForQty = useCallback(
     (qtyInput) => {
       if (qtyRemainingToPick !== undefined && toNumberOrZero(qtyInput) > qtyRemainingToPick) {
@@ -43,25 +73,34 @@ const PickStepScanScreen = () => {
 
   const dispatch = useDispatch();
 
-  const onResult = ({ qty = 0, reason = null, scannedBarcode = null }) => {
+  const onResult = ({ qty = 0, reason = null, scannedBarcode = null, setGrais, graiCodes }) => {
     const qtyRejected = qtyToPick - qty;
 
-    postStepPicked({
-      wfProcessId,
-      activityId,
-      lineId,
-      stepId,
-      huQRCode: scannedBarcode,
-      qtyPicked: qty,
-      qtyRejectedReasonCode: reason,
-      qtyRejected,
-    })
-      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .then(() => {
-        history.goTo(pickingLineScreenLocation); // go to picking line screen
+    return dispatch(
+      postStepPickedThunk({
+        history,
+        wfProcessId,
+        activityId,
+        lineId,
+        stepId,
+        huQRCode: scannedBarcode,
+        qtyPicked: qty,
+        qtyRejectedReasonCode: reason,
+        qtyRejected,
+        setGrais,
+        graiCodes,
       })
+    )
+      .then(({ isPickingJobCompleted }) => isPickingJobCompleted && history.goTo(pickingLineScreenLocation)) // go to picking line screen
       .catch((axiosError) => toastError({ axiosError }));
   };
+
+  // Block qty entry until we know whether GRAI capture is required: if the operator confirmed the qty
+  // while graiScanEnabled was still defaulting to false (the targets GET in flight), a GRAI-required
+  // pick would be sent without GRAIs.
+  if (isTargetsLoading) {
+    return <Spinner />;
+  }
 
   return (
     <ScanHUAndGetQtyComponent
@@ -71,6 +110,8 @@ const PickStepScanScreen = () => {
       qtyTarget={qtyToPick}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
+      graiScanEnabled={isInlineGraiCaptureEnabled}
+      existingLuGrais={existingLuGrais}
       //
       getConfirmationPromptForQty={isShowPromptWhenOverPicking ? getConfirmationPromptForQty : undefined}
       onResult={onResult}

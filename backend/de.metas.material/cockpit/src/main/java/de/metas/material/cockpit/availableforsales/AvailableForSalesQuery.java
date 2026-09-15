@@ -1,11 +1,14 @@
 package de.metas.material.cockpit.availableforsales;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -37,44 +40,37 @@ import java.time.Instant;
 @Value
 public class AvailableForSalesQuery
 {
-	@NonNull
-	ProductId productId;
-
-	@Nullable
-	WarehouseId warehouseId;
-
-	@NonNull
-	AttributesKeyPattern storageAttributesKeyPattern;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	Instant dateOfInterest;
-
+	@NonNull ProductId productId;
+	@Nullable WarehouseId warehouseId;
+	@NonNull AttributesKeyPattern storageAttributesKeyPattern;
+	@NonNull ClientAndOrgId clientAndOrgId;
+	@NonNull Instant dateOfInterest;
 	int shipmentDateLookAheadHours;
-
 	int salesOrderLookBehindHours;
 
 	@Builder
-	public AvailableForSalesQuery(
+	@Jacksonized
+	private AvailableForSalesQuery(
 			@NonNull final ProductId productId,
 			@Nullable final WarehouseId warehouseId,
 			@NonNull final AttributesKeyPattern storageAttributesKeyPattern,
-			@NonNull final OrgId orgId,
+			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final Instant dateOfInterest,
 			final int shipmentDateLookAheadHours,
 			final int salesOrderLookBehindHours)
 	{
-		Check.errorUnless(orgId.isRegular(), "AD_Org_Id={} must be regular! M_Product_ID={}, M_Warehouse_ID={}, AttributesKey={}, dateOfInterest={}",
-				OrgId.toRepoId(orgId), ProductId.toRepoId(productId), WarehouseId.toRepoId(warehouseId), storageAttributesKeyPattern, dateOfInterest);
+		Check.errorUnless(clientAndOrgId.getOrgId().isRegular(), "AD_Org_Id={} must be regular! M_Product_ID={}, M_Warehouse_ID={}, AttributesKey={}, dateOfInterest={}",
+				clientAndOrgId.getOrgId(), productId, warehouseId, storageAttributesKeyPattern, dateOfInterest);
 
 		this.productId = productId;
 		this.warehouseId = warehouseId;
 		this.storageAttributesKeyPattern = storageAttributesKeyPattern;
-		this.orgId = orgId;
+		this.clientAndOrgId = clientAndOrgId;
 		this.dateOfInterest = dateOfInterest;
 		this.shipmentDateLookAheadHours = shipmentDateLookAheadHours;
 		this.salesOrderLookBehindHours = salesOrderLookBehindHours;
 	}
+
+	@JsonIgnore
+	public OrgId getOrgId() {return clientAndOrgId.getOrgId();}
 }

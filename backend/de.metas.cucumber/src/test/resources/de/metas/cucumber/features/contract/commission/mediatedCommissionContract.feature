@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
 @topic:commissionContracts
 @ghActions:run_on_executor3
 Feature: Mediated commission
+## F09000: Commission Contract
 
   Background:
     Given infrastructure and metasfresh are running
@@ -11,6 +14,8 @@ Feature: Mediated commission
 
   @ignore # https://github.com/metasfresh/metasfresh/issues/19699
   @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
   @topic:commissionContracts
   Scenario: Happy flow for mediated commission contract
     Given taxCategory 'Normal' is updated to work with all productTypes
@@ -61,6 +66,7 @@ Feature: Mediated commission
          },
          "warehouseIdentifier":"540008",
          "externalPurchaseOrderUrl": "www.ExternalReferenceURL.com",
+         "externalSystemCode": "Other",
          "externalHeaderId":"99898",
          "externalLineId":"898978",
          "poReference":"poRef1",
@@ -79,6 +85,7 @@ Feature: Mediated commission
 {
   "purchaseCandidates": [
     {
+      "externalSystemCode": "Other",
       "externalHeaderId": "99898",
       "externalLineIds": [
         "898978"

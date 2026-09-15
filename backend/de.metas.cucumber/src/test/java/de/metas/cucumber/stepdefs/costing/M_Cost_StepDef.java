@@ -108,6 +108,24 @@ public class M_Cost_StepDef
 		});
 	}
 
+	/**
+	 * Seeds / updates a product's current cost ({@code M_Cost}) for the primary accounting schema.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product whose current cost is seeded<br>
+	 *   <b>M_CostElement_ID</b> — (optional) target cost element as a costing-method name (e.g. AveragePO). When present,
+	 *     seeds that specific element (e.g. a prior costing method); when absent, uses the primary acct-schema's own
+	 *     costing-method element (behaviour-preserving default)<br>
+	 *   <b>CurrentCostPrice</b> — (optional) the own cost price to set, e.g. "12.50" (currency defaults to the acct-schema currency)<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_CostElement_StepDefData, C_AcctSchema_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update current costs
+	 *   | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
+	 *   | product      | AveragePO        | 12.50            |
+	 * </pre>
+	 */
 	@And("^update current costs$")
 	public void updateCurrentCosts(DataTable table)
 	{
@@ -120,7 +138,11 @@ public class M_Cost_StepDef
 		final AcctSchema acctSchema = this.acctSchemaDAO.getById(acctSchemaId);
 		final ProductId productId = row.getAsIdentifier(I_M_Cost.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchema);
-		final CostElement costElement = costElementRepository.getOrCreateMaterialCostElement(StepDefConstants.CLIENT_ID, acctSchema.getCosting().getCostingMethod());
+		// When M_CostElement_ID is given, seed that specific element's cost (e.g. a prior costing method
+		// AveragePO); otherwise default to the acct-schema's own costing-method element (behaviour-preserving).
+		final CostElementId costElementId = row.getAsOptionalString(I_M_Cost.COLUMNNAME_M_CostElement_ID)
+				.map(costElementTable::getSingleId)
+				.orElseGet(() -> costElementRepository.getOrCreateMaterialCostElement(StepDefConstants.CLIENT_ID, acctSchema.getCosting().getCostingMethod()).getId());
 		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
 				.costingLevel(costingLevel)
 				.acctSchemaId(acctSchema.getId())
@@ -129,11 +151,11 @@ public class M_Cost_StepDef
 				.orgId(Env.getOrgId())
 				.productId(Objects.requireNonNull(productId))
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-				.costElementId(costElement.getId())
+				.costElementId(costElementId)
 				.build();
 		SharedTestContext.put("costSegmentAndElement", costSegmentAndElement);
 
-		final CurrentCost currentCost = currentCostsRepository.getOrCreate(costSegmentAndElement);
+		final CurrentCost currentCost = currentCostsRepository.getOrCreateForUpdate(costSegmentAndElement);
 
 		row.getAsOptionalMoney(
 						I_M_Cost.COLUMNNAME_CurrentCostPrice,

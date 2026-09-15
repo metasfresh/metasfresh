@@ -22,25 +22,31 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 
 @RequiredArgsConstructor
 public class EDI_M_InOut_StepDef
 {
-	private final @NonNull M_InOut_StepDefData inoutTable;
+	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	@NonNull private final M_InOut_StepDefData inoutTable;
 
 	@Then("^after not more than (.*)s, M_InOut records have the following export status$")
-	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach(row -> validateExportStatus(timeoutSec, row));
 	}
@@ -62,4 +68,22 @@ public class EDI_M_InOut_StepDef
 		});
 	}
 
+	@Then("M_InOut is enqueued for EDI export")
+	public void enqueue_edi_export_shipment(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(this::enqueue_edi_export_shipment);
+	}
+
+	private void enqueue_edi_export_shipment(@NonNull final DataTableRow row)
+	{
+		final org.compiere.model.I_M_InOut shipment = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(Env.getCtx(), EDIWorkpackageProcessor.class);
+
+		queue.newWorkPackage()
+				.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
+				.addElement(shipment)
+				.bindToThreadInheritedTrx()
+				.buildAndEnqueue();
+	}
 }

@@ -201,7 +201,7 @@ export class RawList0 extends PureComponent {
       onSelect(selected);
     } else {
       this.setState(changedValues, () => {
-        if (selected.key === null) {
+        if (selected?.key == null) {
           onSelect(null);
         } else {
           onSelect(selected);

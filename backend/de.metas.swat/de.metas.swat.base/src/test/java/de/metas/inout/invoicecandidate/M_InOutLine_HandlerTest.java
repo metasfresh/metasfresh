@@ -22,6 +22,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -920,6 +921,38 @@ public class M_InOutLine_HandlerTest
 
 		// then: candidate inherits the group's InvoiceRule
 		assertThat(ic.getInvoiceRule()).isEqualTo(InvoiceRule.OrderCompletelyDelivered.getCode());
+	}
+
+	/**
+	 * Order-less delivery: IsAutoInvoice must be resolved from the bill-partner's effective configuration
+	 * (partner → BP group → parent group → default). Here the partner has no IsAutoInvoice but its BP group
+	 * has IsAutoInvoice='Y', so the created C_Invoice_Candidate must inherit isAutoInvoice=true.
+	 * Mirrors how C_OrderLine_Handler reads IsAutoInvoice from the order (which itself inherits from the
+	 * effective bill-partner via OrderBL.setBPartner / MOrder.setBPartner).
+	 */
+	@Test
+	public void createCandidatesForInOutLine_orderlessDelivery_inheritsIsAutoInvoiceFromBPGroup()
+	{
+		// given: bill-partner has no IsAutoInvoice, but its BP group has IsAutoInvoice=Y
+		final I_C_BPartner billBPartner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
+		billBPartner.setIsAutoInvoice(null);
+		save(billBPartner);
+
+		bpGroup.setIsAutoInvoice(StringUtils.ofBoolean(true));
+		save(bpGroup);
+
+		// inout is SOTrx=true (set in init()) → isAutoInvoice applies to sales side
+
+		// when: the packaging invoice candidate is created (no order on the inout)
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+
+		// then: IsAutoInvoice is inherited from the BP group, not stuck at false
+		assertThat(ic.isAutoInvoice())
+				.as("order-less delivery IC must inherit IsAutoInvoice from BP group")
+				.isTrue();
 	}
 
 }

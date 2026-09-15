@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuite name="Cucumber" time="832.067" tests="282" skipped="0" failures="1" errors="0" timestamp="2026-05-27T22:41:32.527Z">
+<testcase classname="EDI_cctop_invoic_v export format" name="As a user I want to export EDI_Exp_Desadv" time="2.618">
+<failure type="java.lang.AssertionError" message="[EDI_Exp_Desadv_Pack] &#xa;Expecting actual not to be null">
+<![CDATA[java.lang.AssertionError: [EDI_Exp_Desadv_Pack] 
+Expecting actual not to be null
+	at de.metas.cucumber.stepdefs.edi.EDI_Desadv_StepDef.validateEDIExpDesadvPack(EDI_Desadv_StepDef.java:249)
+	at de.metas.cucumber.stepdefs.edi.EDI_Desadv_StepDef.validate_EDI_Exp_Desadv_Pack(EDI_Desadv_StepDef.java:162)
+	at ✽.EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv is validated(classpath:de/metas/cucumber/features/edi/ediExport.feature:243)
+]]>
+</failure>
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION.passed
+And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]...passed
+And metasfresh is configured for One-DESADV-Per-ORDERS......................passed
+And load M_Product:.........................................................passed
+And update M_Product:.......................................................passed
+Given the following c_bpartner is changed...................................passed
+And update C_BPartner_Location:.............................................passed
+And load EXP_Processor_Type.................................................passed
+And metasfresh contains Exp_Processor.......................................passed
+And metasfresh contains AD_Replication_Strategy.............................passed
+And update AD_Client........................................................passed
+And update EXP_ProcessorParameter for the following EXP_Processor...........passed
+And metasfresh contains C_Orders:...........................................passed
+And metasfresh contains C_OrderLines:.......................................passed
+When the order identified by o_1 is completed...............................passed
+And after not more than 60s, M_ShipmentSchedules are found:.................passed
+And 'generate shipments' process is invoked individually for each M_ShipmentSchedule.passed
+And after not more than 60s, M_InOut is found:..............................passed
+And EDI_Desadv is found:....................................................passed
+And EDI_Desadv is enqueued for export.......................................passed
+And after not more than 60s, EDI_Desadv records have the following export status.passed
+And RabbitMQ receives a EDI_Exp_Desadv......................................passed
+And EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv is validated........failed
+And the following c_bpartner is changed.....................................skipped
+]]></system-out>
+</testcase>
+<testcase classname="BPartner v2 REST — extendedProps round-trip" name="BPartner upsert + read-back via extendedProps round-trips two custom columns" time="35.639">
+<system-out><![CDATA[
+Given infrastructure and metasfresh are running.............................passed
+And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'.passed
+And metasfresh has current date and time....................................passed
+And update AD_Column:.......................................................passed
+And the metasfresh cache is reset...........................................passed
+And we wait for 2000 ms.....................................................passed
+When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code.passed
+When the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-xprops001' receives a 'GET' request with the headers from context, expecting status='200'.passed
+Then the metasfresh REST-API responds with..................................passed
+]]></system-out>
+</testcase>
+</testsuite>

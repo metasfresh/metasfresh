@@ -12,7 +12,7 @@ SELECT COALESCE(wh.AD_Client_ID, hu_agg.AD_Client_ID) AS AD_Client_ID,
 
        -- QtyOnHandChange is the quantity - in stocking-UOM - to add to the *current* MD_Stock.QtyOnHand to get the *correct* qtyOnHand
        COALESCE(hu_agg.QtyOnHand, 0) - COALESCE(s.QtyOnHand, 0) AS QtyOnHandChange
-FROM MD_Stock s
+FROM (SELECT * FROM MD_Stock WHERE IsActive = 'Y') s /* active only: a deactivated (e.g. de-duplicated) MD_Stock row must not be counted as current stock, else it becomes a phantom divergence the active-only reset can never clear -> the reconciliation loops forever */
          LEFT JOIN M_Product p ON p.M_Product_ID = s.M_Product_ID /*needed for its C_UOM_ID in case there are no M_HU_Storages */
          LEFT JOIN M_Warehouse wh ON wh.M_Warehouse_ID = s.M_Warehouse_ID /* needed for its AD_Org_ID to make sure that we don't get stuck with a wrong AD_Org_ID */
          FULL OUTER JOIN -- the full outer join and the COALESCEs in the SELECT part are needed for the case that there is no MD_Stock yet

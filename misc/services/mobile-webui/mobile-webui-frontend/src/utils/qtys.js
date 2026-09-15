@@ -36,6 +36,15 @@ export const formatQtyToHumanReadableStr = ({ qty, uom, precision = null, tolera
   return result;
 };
 
+export const countDecimalPlaces = (num) => {
+  if (num == null || !isFinite(num)) return 0;
+  const str = String(num);
+  const dotIndex = str.indexOf('.');
+  if (dotIndex < 0) return 0;
+  const decimals = str.substring(dotIndex + 1).replace(/0+$/, '');
+  return decimals.length;
+};
+
 const getDefaultDisplayPrecision = (uom, defaultPrecision = 4) => {
   if (uom === 'kg') {
     return 3;
@@ -49,16 +58,22 @@ const getDefaultDisplayPrecision = (uom, defaultPrecision = 4) => {
 };
 
 export const formatQtyToHumanReadable = ({ qty, uom, precision = null }) => {
-  let qtyEffective = qty ?? 0;
+  let qtyEffective = Number(qty ?? 0);
+  if (!isFinite(qtyEffective)) {
+    qtyEffective = 0;
+  }
   let uomEffective = uom;
+  let decimalShift = 0;
 
   while (qtyEffective !== 0 && Math.abs(qtyEffective) < 1) {
     if (uomEffective === 'kg') {
       qtyEffective *= 1000;
       uomEffective = 'g';
+      decimalShift += 3;
     } else if (uomEffective === 'g') {
       qtyEffective *= 1000;
       uomEffective = 'mg';
+      decimalShift += 3;
     } else {
       break;
     }
@@ -68,10 +83,15 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null }) => {
     useGrouping: false,
   };
 
-  const maximumFractionDigits = Math.min(
-    precision != null ? precision : getDefaultDisplayPrecision(uomEffective),
-    MAX_maximumFractionDigits
-  );
+  let effectivePrecision;
+  if (precision != null) {
+    effectivePrecision = precision;
+  } else {
+    const qtyDecimalPlaces = countDecimalPlaces(qty);
+    effectivePrecision = Math.max(qtyDecimalPlaces - decimalShift, getDefaultDisplayPrecision(uomEffective));
+  }
+
+  const maximumFractionDigits = Math.min(effectivePrecision, MAX_maximumFractionDigits);
 
   qtyEffective = parseFloat(Number(qtyEffective).toFixed(maximumFractionDigits));
 

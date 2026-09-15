@@ -14,4 +14,8 @@ public class JsonLoginUserRequest
 {
 	String language;
 	@Nullable Identifier workplace;
+
+	@Nullable String login;
+	@Nullable String firstname;
+	@Nullable String lastname;
 }

@@ -8,10 +8,15 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -29,7 +34,26 @@ public final class MixedQuantity
 
 	public static Collector<Quantity, ?, MixedQuantity> collectAndSum()
 	{
-		return GuavaCollectors.collectUsingListAccumulator(de.metas.quantity.MixedQuantity::sumOf);
+		return GuavaCollectors.collectUsingListAccumulator(MixedQuantity::sumOf);
+	}
+
+	public static <T> Collector<T, ?, MixedQuantity> collectAndSum(@NonNull final Function<T, Quantity> qtyExtractor)
+	{
+		final Supplier<Map<UomId, Quantity>> supplier = HashMap::new;
+		final BiConsumer<Map<UomId, Quantity>, T> accumulator = (acc, item) -> {
+			final Quantity qty = qtyExtractor.apply(item);
+			if (qty != null)
+			{
+				acc.compute(qty.getUomId(), (uomId, currentQty) -> currentQty == null ? qty : currentQty.add(qty));
+			}
+		};
+		final BinaryOperator<Map<UomId, Quantity>> combiner = (acc1, acc2) -> {
+			acc2.forEach((uomId, qty) -> acc1.merge(uomId, qty, Quantity::add));
+			return acc1;
+		};
+		final Function<Map<UomId, Quantity>, MixedQuantity> finisher = acc -> acc.isEmpty() ? EMPTY : new MixedQuantity(acc);
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
 	public static MixedQuantity sumOf(@NonNull final Collection<Quantity> collection)
@@ -78,6 +102,17 @@ public final class MixedQuantity
 		}
 	}
 
+	/**
+	 * Tolerant variant of {@link #toNoneOrSingleValue()}: returns {@code null} when there is no value
+	 * <b>or</b> when the values span multiple UOMs (instead of throwing). Use where a single-UOM quantity
+	 * is wanted for display but a genuine multi-UOM aggregate must simply resolve to "no single value".
+	 */
+	@Nullable
+	public Quantity toSingleValueOrNull()
+	{
+		return map.size() == 1 ? map.values().iterator().next() : null;
+	}
+
 	public MixedQuantity add(@NonNull final Quantity qtyToAdd)
 	{
 		if (qtyToAdd.isZero())
@@ -88,6 +123,16 @@ public final class MixedQuantity
 		return new MixedQuantity(
 				CollectionUtils.merge(map, qtyToAdd.getUomId(), qtyToAdd, Quantity::add)
 		);
+	}
+
+	public MixedQuantity subtract(@NonNull final Quantity qtyToAdd)
+	{
+		return add(qtyToAdd.negate());
+	}
+
+	public boolean hasUOM(@NonNull final UomId uomId)
+	{
+		return map.containsKey(uomId);
 	}
 
 	public Quantity getByUOM(@NonNull final UomId uomId)

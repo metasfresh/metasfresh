@@ -2,7 +2,11 @@ package de.metas.inout;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.inout.InOutId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -59,6 +63,9 @@ public interface IInOutBL extends ISingletonService
 {
 	I_M_InOut getById(@NonNull InOutId inoutId);
 
+	@Nullable
+	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
+
 	void save(I_M_InOut inout);
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
@@ -86,9 +93,21 @@ public interface IInOutBL extends ISingletonService
 
 	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
 
+	<T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
+
 	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
 
+	List<I_M_InOutLine> retrieveLines(I_M_InOut inOut);
+
+	<T extends I_M_InOutLine> List<T> retrieveLines(I_M_InOut inOut, Class<T> inoutLineClass);
+
+	<T extends I_M_InOutLine> List<T> retrieveLinesWithoutOrderLine(I_M_InOut inOut, Class<T> clazz);
+
+	ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(Set<InOutId> inoutIds);
+
 	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
+
+	List<I_M_InOutLine> getLinesByOrderLineIds(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
@@ -112,6 +131,16 @@ public interface IInOutBL extends ISingletonService
 	IPricingContext createPricingCtx(org.compiere.model.I_M_InOutLine inOutLine);
 
 	IPricingResult getProductPrice(org.compiere.model.I_M_InOutLine inOutLine);
+
+	/**
+	 * Same as {@link #getProductPrice(org.compiere.model.I_M_InOutLine)} but overrides the Packvorschrift
+	 * (M_HU_PI_Item_Product) used during HU pricing. When {@code explicitPackingInstruction} is non-null the
+	 * explicit value takes precedence over whatever is stored on the inout line itself.
+	 * <p>
+	 * Used on the return-from-receipt path where the origin receipt line carries no PI
+	 * (it lives on the purchase order line) and must be resolved before pricing is attempted.
+	 */
+	IPricingResult getProductPrice(org.compiere.model.I_M_InOutLine inOutLine, @Nullable HUPIItemProductId explicitPackingInstruction);
 
 	/**
 	 * @return the pricing system fir for the inout,
@@ -218,4 +247,27 @@ public interface IInOutBL extends ISingletonService
 	ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull OrderId orderId);
 
 	void setShipperId(@NonNull I_M_InOut inout);
+
+	boolean isCustomerReturn(@NonNull I_M_InOutLine inOutLine);
+
+	boolean isCustomerReturn(@NonNull I_M_InOut inOut);
+
+	boolean isVendorReturn(@NonNull I_M_InOut inOut);
+
+	boolean isEmptiesReturn(I_M_InOut inOut);
+
+	/**
+	 * Resolves the Packvorschrift (M_HU_PI_Item_Product) to feed the pricing context when re-pricing a vendor
+	 * return from its origin receipt line: the line's own PI (base/override) if set, otherwise the linked
+	 * purchase-order line's PI; {@code null} if neither carries one. Specific to vendor-return pricing — not a
+	 * general effective-PI resolver.
+	 */
+	@Nullable
+	HUPIItemProductId resolvePIForVendorReturnPricingCtx(@NonNull I_M_InOutLine returnOriginLine);
+
+	@NonNull
+	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_M_InOut inout);
+
+	@NonNull
+	BPartnerLocationId getEffectiveDropshipLocationId(@NonNull I_M_InOut inout);
 }

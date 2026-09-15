@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Disposal is correctly considered in Material Dispo. Stock shortage solved via production
+## F5100: Material Disposition
 
   Background:
     Given infrastructure and metasfresh are running
@@ -24,6 +27,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
 
   @Id:S0264_100
   @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
   @Id:S0129.1_110
   Scenario: Partial stock available at demand time, supplied via production
     Given metasfresh contains M_Products:
@@ -108,6 +113,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
 
   @Id:S0264_200
   @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
   @Id:S0124_140
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
   No stock available at demand time, supplied via production
@@ -187,6 +194,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
 
   @Id:S0264_300
   @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
   @Id:S0124_140
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
   Partial stock available at demand time, supplied via production
@@ -271,6 +280,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
 
   @Id:S0264_400
   @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
   @Id:S0124_140
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
   Stock available at demand time, no supply needed
@@ -335,6 +346,8 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
   @Id:S0264_500
   @Id:S0196_300
   @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
   Scenario: Production candidate is created in the past
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
@@ -388,7 +401,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-11T07:00:00Z | 10   | 0                      |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-11T07:00:00Z | -100 | -100                   |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
@@ -416,7 +429,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
 
     And the manufacturing order identified by ppo_1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And after not more than 120s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |

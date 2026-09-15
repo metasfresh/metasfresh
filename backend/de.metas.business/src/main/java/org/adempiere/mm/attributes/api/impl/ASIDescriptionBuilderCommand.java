@@ -126,29 +126,26 @@ final class ASIDescriptionBuilderCommand
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
 		final Attribute attribute = attributesRepo.getAttributeById(attributeId);
-
 		final IStringExpression descriptionPattern = attribute.getDescriptionPattern();
-		if (descriptionPattern == null)
+		if (descriptionPattern != null)
 		{
-			return getInstanceAttributeValueAsString(ai);
-		}
-		else
-		{
-			final Object value = getInstanceAttributeValue(ai);
-			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID());
-
 			final AttributeDescriptionPatternEvalCtx ctx = AttributeDescriptionPatternEvalCtx.builder()
 					.attributesRepo(attributesRepo)
 					.uomsRepo(uomsRepo)
 					.attribute(attribute)
-					.attributeValue(value)
-					.attributeValueId(attributeValueId)
+					.attributeValue(getInstanceAttributeValue(ai))
+					.attributeValueId(AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID()))
 					.adLanguage(adLanguage)
 					.verboseDescription(verboseDescription)
 					.build();
-			final String description = descriptionPattern.evaluate(ctx, OnVariableNotFound.Preserve);
-			return TranslatableStrings.anyLanguage(description);
+			final String description = descriptionPattern.evaluate(ctx, OnVariableNotFound.ReturnNoResult);
+			if(!descriptionPattern.isNoResult(description))
+			{
+				return TranslatableStrings.anyLanguage(description);
+			}
 		}
+		
+		return getInstanceAttributeValueAsString(ai);
 	}
 
 	private Object getInstanceAttributeValue(@NonNull final I_M_AttributeInstance ai)

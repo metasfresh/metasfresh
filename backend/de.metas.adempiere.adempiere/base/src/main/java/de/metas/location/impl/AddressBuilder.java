@@ -582,10 +582,11 @@ public class AddressBuilder
 				// task https://github.com/metasfresh/metasfresh/issues/5804
 				// prefer BPartner name from location if is set
 				final String bpartnerNameFromBPLocation = bplocation.getBPartnerName();
+				final String bpartnerNameFromBPLocation2 = bplocation.getBPartnerName2();
 				if (Check.isNotBlank(bpartnerNameFromBPLocation))
 				{
 					bpName = bpartnerNameFromBPLocation;
-					bpName2 = null;
+					bpName2 =  StringUtils.trimBlankToNull(bpartnerNameFromBPLocation2);
 				}
 				else
 				{

@@ -1,0 +1,17 @@
+# Docker Compose overlay for running Playwright tests from host
+#
+# This file overrides container configs to use localhost URLs instead of
+# Docker internal hostnames, allowing tests to run from the host machine.
+#
+# Usage:
+#   docker compose -f compose.yml -f compose-local.yml --profile mobile up -d
+#   cd e2e/mobile-webui && npx playwright test
+#
+# For CI testing (inside Docker network), use compose.yml without this overlay.
+
+services:
+  mobile:
+    volumes:
+      # Override mobile config to use localhost for host-based testing
+      - ./configs/mobile/mobile-config-local.js:/usr/share/nginx/html/config.js:ro
+      - ./configs/mobile/default.conf:/etc/nginx/conf.d/default.conf

@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
 @ghActions:run_on_executor5
 Feature: external system invocation using metasfresh api
+## F00802: External System
   As a REST-API invoker
   I want want to be able to invoke external systems
 
@@ -13,21 +16,29 @@ Feature: external system invocation using metasfresh api
       | alberta_config                      | A    | testAlberta         |
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
   Scenario: The request is good and the external service Shopware6 is invoked via the correct process
     When the metasfresh REST-API endpoint path 'api/externalsystem/S6/testS6/test' receives a 'POST' request
     Then a new metasfresh AD_PInstance_Log is stored for the external system 'S6' invocation
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
   Scenario: The request is good and the external service Alberta is invoked via the correct process
     When the metasfresh REST-API endpoint path 'api/externalsystem/A/testAlberta/test' receives a 'POST' request
     Then a new metasfresh AD_PInstance_Log is stored for the external system 'A' invocation
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
   Scenario: Invoke external system for Shopware without reqBody
     When the metasfresh REST-API endpoint path 'api/v2/externalsystem/invoke/S6/testS6/test' receives a 'POST' request
     Then a new metasfresh AD_PInstance_Log is stored for the external system 'S6' invocation
     
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00802
   Scenario: Invoke external system for Shopware with reqBody
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/externalsystem/invoke/S6/testS6/test' and fulfills with '200' status code
   """

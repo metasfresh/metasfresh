@@ -61,6 +61,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.compiere.model.I_AD_Issue;
@@ -118,15 +119,33 @@ public class RESTUtil
 
 		Env.setLoggedUserId(Env.getCtx(), userId);
 		Env.setOrgId(Env.getCtx(), OrgId.ofRepoId(1000000));
+		// Establish the role + client on the test thread so DIRECT (non-HTTP) service calls in step defs run
+		// under this role's UserRolePermissions. The token alone only authorises HTTP requests (via the
+		// UserAuthTokenFilter); an in-process call would otherwise have no role permissions, so an
+		// Access.READ-guarded lookup (e.g. OrgDAO.retrieveOrgIdBy) could not see orgs outside the context org.
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Role_ID, role.getId().getRepoId());
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, role.getClientId().getRepoId());
 
 		return userAuthTokenRecord.getAuthToken();
 	}
+
+	private static final int HTTP_CONNECT_TIMEOUT_MS = 30_000; // 30s
+	private static final int HTTP_SOCKET_TIMEOUT_MS = 120_000; // 120s
+	private static final int HTTP_CONNECTION_REQUEST_TIMEOUT_MS = 10_000; // 10s
 
 	public APIResponse performHTTPRequest(@NonNull final APIRequest apiRequest) throws IOException
 	{
 		final HttpRequestBase httpRequest = createHttpRequest(apiRequest);
 
-		try (final CloseableHttpClient httpClient = HttpClients.createDefault())
+		final RequestConfig requestConfig = RequestConfig.custom()
+				.setConnectTimeout(HTTP_CONNECT_TIMEOUT_MS)
+				.setSocketTimeout(HTTP_SOCKET_TIMEOUT_MS)
+				.setConnectionRequestTimeout(HTTP_CONNECTION_REQUEST_TIMEOUT_MS)
+				.build();
+
+		try (final CloseableHttpClient httpClient = HttpClients.custom()
+				.setDefaultRequestConfig(requestConfig)
+				.build())
 		{
 			final HttpResponse httpResponse = httpClient.execute(httpRequest);
 			final APIResponse apiResponse = extractAPIResponse(httpResponse, apiRequest);
@@ -254,8 +273,9 @@ public class RESTUtil
 		}
 
 		final String expectErrorContaining = apiRequest.getExpectedErrorMessageContaining();
+		final String expectErrorCode = apiRequest.getExpectedErrorCode();
 		final Boolean expectErrorUserFriendly = apiRequest.getExpectErrorUserFriendly();
-		final boolean isExpectError = expectErrorContaining != null || expectErrorUserFriendly != null;
+		final boolean isExpectError = expectErrorContaining != null || expectErrorCode != null || expectErrorUserFriendly != null;
 		if (isExpectError)
 		{
 			final JsonError jsonError = apiResponse.getContentAs(JsonError.class);
@@ -266,6 +286,12 @@ public class RESTUtil
 				assertThat(jsonErrorItem.getMessage())
 						.as(() -> "Error Message of " + jsonError)
 						.contains(expectErrorContaining);
+			}
+			if (expectErrorCode != null)
+			{
+				assertThat(jsonErrorItem.getErrorCode())
+						.as(() -> "ErrorCode of " + jsonError)
+						.isEqualTo(expectErrorCode);
 			}
 			if (expectErrorUserFriendly != null)
 			{

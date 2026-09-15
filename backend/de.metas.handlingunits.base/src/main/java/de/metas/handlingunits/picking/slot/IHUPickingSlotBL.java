@@ -10,6 +10,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -20,6 +21,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -188,5 +190,12 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 */
 		@Default
 		boolean excludeAllReserved = false;
+
+		/**
+		 * When non-null, overrides the shipment schedule's ASI-based attribute filter with the given key.
+		 * Used for per-reservation HU picking passes to honor each reservation's specific attributes.
+		 */
+		@Nullable
+		AttributesKey attributesKeyOverride;
 	}
 }

@@ -183,6 +183,7 @@ public class PaymentAllocationService
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(TimeUtil.asLocalDate(payment.getDateTrx(), timeZone))
+				.dateAcct(TimeUtil.asLocalDate(payment.getDateAcct(), timeZone))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(payment.getAD_Client_ID(), payment.getAD_Org_ID()))
 				.paymentCurrencyContext(PaymentCurrencyContext.ofPaymentRecord(payment))
 				.build();
@@ -264,6 +265,7 @@ public class PaymentAllocationService
 						.convertToRealAmounts(amtMultiplier))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
+				.dateAcct(paymentAllocationPayableItem.getDateAcct())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
 				.creditMemo(invoiceIsCreditMemo)
 				.allowAllocateAgainstDifferentSignumPayment(allowAllocateAgainstDifferentSignumPayment)

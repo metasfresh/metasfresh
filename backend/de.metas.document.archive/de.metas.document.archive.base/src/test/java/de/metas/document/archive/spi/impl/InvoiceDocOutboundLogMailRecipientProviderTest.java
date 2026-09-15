@@ -21,8 +21,8 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
+import lombok.NonNull;
 import org.compiere.model.I_C_Order;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,6 +33,7 @@ import static de.metas.i18n.Language.AD_Language_en_AU;
 import static de.metas.i18n.Language.AD_Language_en_GB;
 import static de.metas.i18n.Language.AD_Language_en_US;
 import static de.metas.i18n.Language.asLanguage;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -67,6 +68,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 
 	private I_C_BPartner shipToBPartnerRecord;
 	private I_C_BPartner billBPartnerRecord;
+	private I_C_BPartner_Location billBPLocationRecord;
 	private I_C_Order orderRecord;
 	private I_C_Invoice invoiceRecord;
 
@@ -95,7 +97,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		final I_C_BPartner_Location shipToBPLocationRecord = createBPLocation(shipToBPartnerRecord);
 
 		billBPartnerRecord = createBPartner();
-		final I_C_BPartner_Location billBPLocationRecord = createBPLocation(billBPartnerRecord);
+		billBPLocationRecord = createBPLocation(billBPartnerRecord);
 
 		orderRecord = newInstance(I_C_Order.class);
 		orderRecord.setC_BPartner_ID(shipToBPartnerRecord.getC_BPartner_ID());
@@ -119,7 +121,7 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		return bpartnerRecord;
 	}
 
-	private @NotNull I_C_BPartner_Location createBPLocation(I_C_BPartner bPartnerRecord)
+	private @NonNull I_C_BPartner_Location createBPLocation(I_C_BPartner bPartnerRecord)
 	{
 		final I_C_BPartner_Location billBPLocationRecord = newInstance(I_C_BPartner_Location.class);
 		billBPLocationRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
@@ -315,6 +317,74 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		assertThat(result.get().getTo().getEmailAddress()).isEqualTo("test@test.test");
 		assertThat(result.get().getTo().getUserLanguage()).isEqualTo(asLanguage(AD_Language_en_GB));
 		assertThat(result.get().getTo().getBPartnerLanguage()).isEqualTo(asLanguage(AD_Language_en_US));
+	}
+
+	@Nested
+	class locationEmailFallback_noUsableContact
+	{
+		private Optional<DocOutBoundRecipients> provide()
+		{
+			return invoiceDocOutboundLogMailRecipientProvider.provideMailRecipient(
+					DocOutboundLogMailRecipientRequest.builder()
+							.recordRef(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceRecord.getC_Invoice_ID()))
+							.clientId(ClientId.ofRepoId(invoiceRecord.getAD_Client_ID()))
+							.orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()))
+							.build());
+		}
+
+		private void setPartnerInvoiceEmailEnabled(final String value)
+		{
+			final de.metas.document.archive.model.I_C_BPartner billPartner =
+					create(billBPartnerRecord, de.metas.document.archive.model.I_C_BPartner.class);
+			billPartner.setIsInvoiceEmailEnabled(value);
+			saveRecord(billPartner);
+		}
+
+		private void setLocationEmail(final String email)
+		{
+			billBPLocationRecord.setEMail(email);
+			saveRecord(billBPLocationRecord);
+		}
+
+		// TC1
+		@Test
+		void partnerY_locationEmail_noContact_emailsLocation()
+		{
+			setPartnerInvoiceEmailEnabled("Y");
+			setLocationEmail("bill.location@example.com");
+
+			final Optional<DocOutBoundRecipients> result = provide();
+			assertThat(result).isPresent();
+			assertThat(result.get().getTo()).isNotNull();
+			assertThat(result.get().getTo().getId()).isNull();
+			assertThat(result.get().getTo().getEmailAddress()).isEqualTo("bill.location@example.com");
+			assertThat(result.get().getTo().isInvoiceAsEmail()).isTrue();
+		}
+
+		// TC2
+		@Test
+		void partnerBlank_locationEmail_noContact_noRecipient()
+		{
+			setLocationEmail("bill.location@example.com");
+			assertThat(provide()).isEmpty();
+		}
+
+		// TC3
+		@Test
+		void partnerN_locationEmail_noContact_noRecipient()
+		{
+			setPartnerInvoiceEmailEnabled("N");
+			setLocationEmail("bill.location@example.com");
+			assertThat(provide()).isEmpty();
+		}
+
+		// TC4
+		@Test
+		void partnerY_noLocationEmail_noContact_noRecipient()
+		{
+			setPartnerInvoiceEmailEnabled("Y");
+			assertThat(provide()).isEmpty();
+		}
 	}
 
 	private void createSysConfigOrderEmailPropagation(final String value)

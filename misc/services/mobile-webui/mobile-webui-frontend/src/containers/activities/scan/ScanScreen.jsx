@@ -98,7 +98,7 @@ const ScanScreen = () => {
   } else {
     return (
       <>
-        <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} continuousRunning={true} />
+        <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />
         {isDisplaySuggestions && (
           <ScannedBarcodeSuggestions
             isLoading={isScannedBarcodeSuggestionsLoading}

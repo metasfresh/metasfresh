@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Facet } from './Facet';
 
-export const FacetGroup = ({ caption, facets, onClick }) => {
+export const FacetGroup = ({ groupId, caption, facets, onClick }) => {
   return (
-    <div className="group">
+    <div className="group" data-testid={groupId}>
       <div className="caption">{caption}</div>
       {facets &&
         facets.map((facet) => (
@@ -23,6 +23,7 @@ export const FacetGroup = ({ caption, facets, onClick }) => {
 };
 
 FacetGroup.propTypes = {
+  groupId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   facets: PropTypes.array.isRequired,
   onClick: PropTypes.func.isRequired,

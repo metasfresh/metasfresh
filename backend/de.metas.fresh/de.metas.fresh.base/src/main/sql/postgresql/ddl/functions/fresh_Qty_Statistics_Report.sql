@@ -75,9 +75,17 @@ CREATE OR REPLACE FUNCTION report.fresh_qty_statistics_report
 	) 
 	RETURNS SETOF report.fresh_qty_statistics_report AS
 $BODY$
-	SELECT 
-		*, 1 AS UnionOrder
-	FROM 	
+	SELECT
+		bp_name, bp_value, pc_name, p_name, p_value, uomsymbol,
+		Col1, Col2, Col3, Col4, Col5, Col6, Col7, Col8, Col9, Col10, Col11, Col12,
+		Period1Sum, Period2Sum, Period3Sum, Period4Sum, Period5Sum, Period6Sum,
+		Period7Sum, Period8Sum, Period9Sum, Period10Sum, Period11Sum, Period12Sum,
+		TotalSum, TotalAmt,
+		StartDate, EndDate,
+		param_bp, param_activity, param_product, param_product_category, param_attributes,
+		ad_org_id, iso_code,
+		1 AS UnionOrder
+	FROM
 		report.fresh_statistics ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 UNION ALL
 	SELECT 

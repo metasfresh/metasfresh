@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="bfb9bf62-a074-41e3-b1a1-13b35c8343f0">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -16,6 +16,12 @@
 	</parameter>
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintPrices" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintTotals" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details($P{c_order_id}, $P{ad_language});]]>
@@ -124,6 +130,14 @@
 		<property name="com.jaspersoft.studio.field.name" value="amountpattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="amountpattern"/>
 	</field>
+	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="qtypattern"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
+	</field>
+	<field name="priceqtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="priceqtypattern"/>
+		<property name="com.jaspersoft.studio.field.label" value="priceqtypattern"/>
+	</field>
 	<field name="week_year" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="week_year"/>
 		<property name="com.jaspersoft.studio.field.label" value="week_year"/>
@@ -203,6 +217,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="500" y="7" width="45" height="12" forecolor="#000000" uuid="6effa006-4875-4c7c-aaa4-74c13901df07">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[$F{linenetamt}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -221,6 +236,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="434" y="7" width="33" height="12" forecolor="#000000" uuid="9e97043a-4337-4c0a-9295-494eaba856bc">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -230,7 +246,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="545" y="7" width="32" height="12" forecolor="#000000" uuid="d156fd13-49c2-46ab-ab32-21cacbb79398">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" )&& $F{rate}!=null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -251,7 +267,7 @@
 	</pageHeader>
 	<columnHeader>
 		<band height="12" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1)]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1) && $P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-50" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="26dd4e79-e25f-4c7c-9894-e692e7e3a32f">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
@@ -357,7 +373,9 @@
 				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="435" y="0" width="32" height="12" forecolor="#000000" uuid="e8a840e8-7930-4e94-9bcf-5e116bb8dcb1"/>
+				<reportElement key="textField-20" x="435" y="0" width="32" height="12" forecolor="#000000" uuid="e8a840e8-7930-4e94-9bcf-5e116bb8dcb1">
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -385,10 +403,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{rate}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b69d6c75-1f7f-4f00-adf0-74fd282482ce">
-					<printWhenExpression><![CDATA[new Boolean ($F{stdprecision}.intValue() == 0)]]></printWhenExpression>
-				</reportElement>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="227ac580-a4b4-4962-bf8f-863051cab7de"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -399,36 +415,7 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="ec0dba4a-a220-4a76-a524-4135f948a85d">
-					<printWhenExpression><![CDATA[new Boolean ($F{stdprecision}.intValue() == 2)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="351" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="227ac580-a4b4-4962-bf8f-863051cab7de">
-					<printWhenExpression><![CDATA[new Boolean ($F{stdprecision}.intValue() == 3)]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{priceqtypattern}]]></patternExpression>
 			</textField>
 			<staticText>
 				<reportElement x="568" y="0" width="9" height="12" uuid="9b84f317-f343-4f19-959a-998625d89b20">
@@ -468,7 +455,7 @@
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[$F{lu_name} != null && !$F{lu_name}.isEmpty() ]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{lu_name} != null && !$F{lu_name}.isEmpty()]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-31" mode="Transparent" x="271" y="0" width="82" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c6feee82-10c5-48f8-b4cb-8e2dfc9ae7a6">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -552,6 +539,7 @@
 	</pageFooter>
 	<lastPageFooter>
 		<band height="12" splitType="Stretch">
+			<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="150" height="12" forecolor="#000000" uuid="8f912d9b-3bbf-48b2-ac1f-6f4dea4f6bb0">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>

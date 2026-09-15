@@ -1,9 +1,8 @@
 package org.eevolution.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for T_BOMLine
  *  @author metasfresh (generated) 
@@ -107,7 +106,7 @@ public interface I_T_BOMLine
 	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
-	 * Set Kosten.
+	 * Set Cost.
 	 * Cost information
 	 *
 	 * <br>Type: CostPrice
@@ -117,7 +116,7 @@ public interface I_T_BOMLine
 	void setCost (@Nullable BigDecimal Cost);
 
 	/**
-	 * Get Kosten.
+	 * Get Cost.
 	 * Cost information
 	 *
 	 * <br>Type: CostPrice
@@ -130,7 +129,7 @@ public interface I_T_BOMLine
 	String COLUMNNAME_Cost = "Cost";
 
 	/**
-	 * Set Kostenrechnungsmethode.
+	 * Set Costing Method.
 	 * Indicates how Costs will be calculated
 	 *
 	 * <br>Type: List
@@ -140,7 +139,7 @@ public interface I_T_BOMLine
 	void setCostingMethod (@Nullable java.lang.String CostingMethod);
 
 	/**
-	 * Get Kostenrechnungsmethode.
+	 * Get Costing Method.
 	 * Indicates how Costs will be calculated
 	 *
 	 * <br>Type: List
@@ -153,7 +152,7 @@ public interface I_T_BOMLine
 	String COLUMNNAME_CostingMethod = "CostingMethod";
 
 	/**
-	 * Set Standardkosten.
+	 * Set Standard Cost.
 	 * Standard Costs
 	 *
 	 * <br>Type: CostPrice
@@ -163,7 +162,7 @@ public interface I_T_BOMLine
 	void setCostStandard (@Nullable BigDecimal CostStandard);
 
 	/**
-	 * Get Standardkosten.
+	 * Get Standard Cost.
 	 * Standard Costs
 	 *
 	 * <br>Type: CostPrice
@@ -201,8 +200,8 @@ public interface I_T_BOMLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Gegenwärtiger Kostenpreis.
-	 * Der gegenwärtig verwendete Kostenpreis
+	 * Set Current Cost Price.
+	 * The currently used cost price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -211,8 +210,8 @@ public interface I_T_BOMLine
 	void setCurrentCostPrice (@Nullable BigDecimal CurrentCostPrice);
 
 	/**
-	 * Get Gegenwärtiger Kostenpreis.
-	 * Der gegenwärtig verwendete Kostenpreis
+	 * Get Current Cost Price.
+	 * The currently used cost price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -224,7 +223,7 @@ public interface I_T_BOMLine
 	String COLUMNNAME_CurrentCostPrice = "CurrentCostPrice";
 
 	/**
-	 * Set Current Cost Price Lower Level.
+	 * Set Current Cost Price LL.
 	 * Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
 	 *
 	 * <br>Type: CostPrice
@@ -234,7 +233,7 @@ public interface I_T_BOMLine
 	void setCurrentCostPriceLL (@Nullable BigDecimal CurrentCostPriceLL);
 
 	/**
-	 * Get Current Cost Price Lower Level.
+	 * Get Current Cost Price LL.
 	 * Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
 	 *
 	 * <br>Type: CostPrice
@@ -247,7 +246,7 @@ public interface I_T_BOMLine
 	String COLUMNNAME_CurrentCostPriceLL = "CurrentCostPriceLL";
 
 	/**
-	 * Set Zukünftiger Kostenpreis.
+	 * Set Future Cost Price.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -256,7 +255,7 @@ public interface I_T_BOMLine
 	void setFutureCostPrice (@Nullable BigDecimal FutureCostPrice);
 
 	/**
-	 * Get Zukünftiger Kostenpreis.
+	 * Get Future Cost Price.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -268,7 +267,7 @@ public interface I_T_BOMLine
 	String COLUMNNAME_FutureCostPrice = "FutureCostPrice";
 
 	/**
-	 * Set Future Cost Price Lower Level.
+	 * Set Future Cost Price LL.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -277,7 +276,7 @@ public interface I_T_BOMLine
 	void setFutureCostPriceLL (@Nullable BigDecimal FutureCostPriceLL);
 
 	/**
-	 * Get Future Cost Price Lower Level.
+	 * Get Future Cost Price LL.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -336,6 +335,7 @@ public interface I_T_BOMLine
 
 	/**
 	 * Set Cost Frozen.
+	 * Indicated that the Standard Cost is frozen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -345,6 +345,7 @@ public interface I_T_BOMLine
 
 	/**
 	 * Get Cost Frozen.
+	 * Indicated that the Standard Cost is frozen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -398,7 +399,7 @@ public interface I_T_BOMLine
 	String COLUMNNAME_Levels = "Levels";
 
 	/**
-	 * Set Kostenart.
+	 * Set Cost Element.
 	 * Product Cost Element
 	 *
 	 * <br>Type: TableDir
@@ -408,7 +409,7 @@ public interface I_T_BOMLine
 	void setM_CostElement_ID (int M_CostElement_ID);
 
 	/**
-	 * Get Kostenart.
+	 * Get Cost Element.
 	 * Product Cost Element
 	 *
 	 * <br>Type: TableDir
@@ -425,7 +426,7 @@ public interface I_T_BOMLine
 	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
 
 	/**
-	 * Set Kostenkategorie.
+	 * Set Cost Type.
 	 * Type of Cost (e.g. Current, Plan, Future)
 	 *
 	 * <br>Type: TableDir
@@ -435,7 +436,7 @@ public interface I_T_BOMLine
 	void setM_CostType_ID (int M_CostType_ID);
 
 	/**
-	 * Get Kostenkategorie.
+	 * Get Cost Type.
 	 * Type of Cost (e.g. Current, Plan, Future)
 	 *
 	 * <br>Type: TableDir
@@ -528,7 +529,7 @@ public interface I_T_BOMLine
 	String COLUMNNAME_PP_Product_BOMLine_ID = "PP_Product_BOMLine_ID";
 
 	/**
-	 * Set Quantity.
+	 * Set Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity
@@ -538,7 +539,7 @@ public interface I_T_BOMLine
 	void setQtyBOM (@Nullable BigDecimal QtyBOM);
 
 	/**
-	 * Get Quantity.
+	 * Get Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity

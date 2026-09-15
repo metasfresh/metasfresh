@@ -22,6 +22,7 @@
 
 package de.metas.workplace.qrcode;
 
+import de.metas.util.lang.SeqNo;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -42,6 +43,7 @@ class WorkplaceQRCodeTest
 	void ofGlobalQRCodeJsonString_toGlobalQRCodeJsonString()
 	{
 		final Workplace workplace = Workplace.builder()
+				.seqNo(SeqNo.ofInt(0))
 				.id(WorkplaceId.ofRepoId(1000001))
 				.name("workplace1")
 				.warehouseId(WarehouseId.MAIN)

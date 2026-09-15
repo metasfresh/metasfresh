@@ -43,6 +43,8 @@ public class JsonLaunchersQuery
 	@Nullable String filterByDocumentNo;
 	boolean filterByQtyAvailableAtPickFromLocator;
 	@Nullable Set<WorkflowLaunchersFacetId> facetIds;
+	boolean excludeAlreadyStarted;
+	@Nullable Integer limit;
 
 	boolean countOnly;
 }

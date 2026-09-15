@@ -177,7 +177,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean onTheFlyPickToPackingInstructions = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
 		final boolean isCloseShipmentSchedules = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
-		final boolean isFailIfNoPickedHUs = !isCloseShipmentSchedules;
+		final boolean failOnSingleScheduleWithNoPickedHUs = !isCloseShipmentSchedules;
 
 		return shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
 				PrepareForShipmentSchedulesRequest.builder()
@@ -186,7 +186,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 						.quantityTypeToUse(quantityTypeToUse)
 						.onTheFlyPickToPackingInstructions(onTheFlyPickToPackingInstructions)
 						.qtyToDeliverOverrides(scheduleId2QtyToDeliverOverride)
-						.isFailIfNoPickedHUs(isFailIfNoPickedHUs)
+						.failOnSingleScheduleWithNoPickedHUs(failOnSingleScheduleWithNoPickedHUs)
 						.build()
 		);
 	}
@@ -244,11 +244,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		pickingJobScheduleService.markAsProcessed(schedules.getJobScheduleIds());
 
-		final HashSet<ShipmentScheduleId> shipmentScheduleIdsToClose = new HashSet<>();
-		shipmentScheduleIdsToClose.addAll(schedules.getShipmentScheduleIdsWithoutJobSchedules());
-		shipmentScheduleIdsToClose.addAll(pickingJobScheduleService.getShipmentScheduleIdsWithAllJobSchedulesProcessedOrMissing(schedules.getShipmentScheduleIdsWithJobSchedules()));
-
-		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIdsToClose);
+		// we exclude the ones with pickingJobSchedules, as they might be split onto multiple workplaces,
+		// and it shouldn't be closed after the first one is done
+		shipmentScheduleBL.closeShipmentSchedules(schedules.getShipmentScheduleIdsWithoutJobSchedules());
 	}
 
 }

@@ -58,9 +58,7 @@ const ApplicationsListScreen = () => {
       <LogoHeader />
       <div className="section">
         {isLoading && <Spinner />}
-        {!isLoading && (
-          <BarcodeScannerComponent isShowInputText={false} isShowVideo={false} onResolvedResult={onBarcodeScanned} />
-        )}
+        {!isLoading && <BarcodeScannerComponent invisible onResolvedResult={onBarcodeScanned} />}
         {applicationsDisplayed.map((app) => (
           <ApplicationButton
             key={app.id}

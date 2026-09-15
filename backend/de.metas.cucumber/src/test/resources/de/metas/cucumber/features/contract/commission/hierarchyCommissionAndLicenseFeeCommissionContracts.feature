@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
 @topic:commissionContracts
 @ghActions:run_on_executor3
 Feature: Hierarchy commission and license fee commission combined
+## F09000: Commission Contract
 
   Background:
     Given infrastructure and metasfresh are running
@@ -37,6 +40,8 @@ Feature: Hierarchy commission and license fee commission combined
       | licenseFeeSettingsLine_1               | licenseFeeSettings_1               | 10    | 5                   |
 
   @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
   @topic:commissionContracts
   @Id:S0150_170
   Scenario: Hierarchy commission and license fee commission combined having two sales rep in hierarchy
@@ -222,6 +227,8 @@ Feature: Hierarchy commission and license fee commission combined
       |                                                  | 0.50             | FORECASTED            |
 
   @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
   @topic:commissionContracts
   @Id:S0150_180
   Scenario: Hierarchy commission and license fee commission combined having the salesRep as direct customer

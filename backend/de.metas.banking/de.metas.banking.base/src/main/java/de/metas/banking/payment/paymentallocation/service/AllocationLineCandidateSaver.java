@@ -6,6 +6,7 @@ import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.allocation.api.WriteOffType;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
@@ -141,6 +142,7 @@ final class AllocationLineCandidateSaver
 				.discountAmt(discountAmt.toBigDecimal())
 				.writeOffAmt(writeOffAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				.writeOffType(candidate.getWriteOffType())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()))
 				.paymentId(extractPaymentId(candidate.getPaymentDocumentRef()));
@@ -175,6 +177,7 @@ final class AllocationLineCandidateSaver
 				.discountAmt(discountAmt.toBigDecimal())
 				.writeOffAmt(writeOffAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				.writeOffType(candidate.getWriteOffType())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
 
@@ -225,6 +228,7 @@ final class AllocationLineCandidateSaver
 				.discountAmt(discountAmt.negate().toBigDecimal())
 				.writeOffAmt(writeOffAmt.negate().toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				.writeOffType(candidate.getWriteOffType())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
 
@@ -267,6 +271,7 @@ final class AllocationLineCandidateSaver
 				.discountAmt(discountAmt.toBigDecimal())
 				.writeOffAmt(writeOffAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				.writeOffType(candidate.getWriteOffType())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
 

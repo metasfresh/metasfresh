@@ -102,7 +102,7 @@ FROM (SELECT i.AD_Org_ID,
                       AND psl.isActive = 'Y')                                                                                  AS IsInPaySelection,
              COALESCE(p.NetDays, DaysBetween(ips.DueDate::timestamp WITH TIME ZONE, i.DateInvoiced::timestamp WITH TIME ZONE)) AS NetDays,
              p.DiscountDays,
-             COALESCE(PaymentTermDueDate(p.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE), ips.DueDate)           AS DueDate,
+             COALESCE(i.DueDate, ips.DueDate)                                                                                 AS DueDate,
              COALESCE(
                      PaymentTermDueDays(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE, p_Reference_Date),
                      DaysBetween(p_Reference_Date, ips.DueDate::timestamp WITH TIME ZONE)

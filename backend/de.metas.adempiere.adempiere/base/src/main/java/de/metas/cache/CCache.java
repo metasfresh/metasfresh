@@ -615,6 +615,12 @@ public class CCache<K, V> implements CacheInterface
 		}
 	}
 
+	@NonNull
+	public V getOrLoadNonNull(@NonNull final K key, @NonNull final Callable<V> valueLoader)
+	{
+		return Check.assumeNotNull(getOrLoad(key, valueLoader), "Value loader shouldn't return a null value");
+	}
+
 	/**
 	 * Same as {@link #get(Object, Callable)}. Introduced here to be able to use it with lambdas, without having ambiguous method calls.
 	 *
@@ -622,7 +628,7 @@ public class CCache<K, V> implements CacheInterface
 	 * @see #get(Object, Supplier)
 	 */
 	@Nullable
-	public V getOrLoad(final K key, final Callable<V> valueLoader)
+	public V getOrLoad(@NonNull final K key, @NonNull final Callable<V> valueLoader)
 	{
 		try (final IAutoCloseable ignored = CacheMDC.putCache(this))
 		{

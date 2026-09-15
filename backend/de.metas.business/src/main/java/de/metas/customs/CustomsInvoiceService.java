@@ -295,11 +295,11 @@ public class CustomsInvoiceService
 			lineQty = Quantitys.of(inoutLineRecord.getMovementQty(), productBL.getStockUOMId(productId));
 		}
 
-		return convertToKillogram(lineQty, productId)
+		return convertToKilogram(lineQty, productId)
 				.orElse(lineQty);
 	}
 
-	private Optional<Quantity> convertToKillogram(final Quantity qty, final ProductId productId)
+	private Optional<Quantity> convertToKilogram(@NonNull final Quantity qty, @NonNull final ProductId productId)
 	{
 		try
 		{

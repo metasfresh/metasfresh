@@ -23,17 +23,50 @@
 package de.metas.project.service;
 
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectValue;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+
 @Repository
 public class ProjectRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public static ProjectRepository newInstanceForUnitTesting()
+	{
+		return new ProjectRepository();
+	}
+
 	public I_C_Project getById(@NonNull final ProjectId id)
 	{
 		return InterfaceWrapperHelper.load(id, I_C_Project.class);
+	}
+
+	@Nullable
+	public ProjectId getIdByValueOrNull(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_Value, value)
+				.create()
+				.firstId(ProjectId::ofRepoIdOrNull);
+	}
+
+	@Nullable
+	public ProjectId getIdByValueOrNull(@NonNull final ProjectValue value)
+	{
+		return queryBL.createQueryBuilder(I_C_Project.class)
+				.addEqualsFilter(I_C_Project.COLUMNNAME_Value, value.getAsString())
+				.orderByDescending(I_C_Project.COLUMNNAME_IsActive)
+				.orderByDescending(I_C_Project.COLUMNNAME_C_Project_ID)
+				.create()
+				.firstId(ProjectId::ofRepoIdOrNull);
 	}
 
 	public void save(@NonNull final I_C_Project project)

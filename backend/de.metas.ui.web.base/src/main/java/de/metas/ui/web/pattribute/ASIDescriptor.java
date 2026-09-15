@@ -1,14 +1,18 @@
 package de.metas.ui.web.pattribute;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetId;
-
+import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -33,25 +37,66 @@ import lombok.Value;
  */
 
 @Value
-public final class ASIDescriptor
+public class ASIDescriptor
 {
-	private final AttributeSetId attributeSetId;
-	private final DocumentEntityDescriptor entityDescriptor;
-	private final ASILayout layout;
+	@NonNull AttributeSetId attributeSetId;
+	@NonNull DocumentEntityDescriptor entityDescriptor;
+	@NonNull ASILayout layout;
 
-	private final DocumentPath contextDocumentPath;
+	@Nullable DocumentPath contextDocumentPath;
+	@Nullable String contextTableName;
+	@Nullable String contextColumnName;
 
 	@Builder
 	private ASIDescriptor(
 			@NonNull final AttributeSetId attributeSetId,
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
 			@NonNull final ASILayout layout,
-			@Nullable final DocumentPath contextDocumentPath)
+			@Nullable final DocumentPath contextDocumentPath,
+			@Nullable final String contextTableName,
+			@Nullable final String contextColumnName)
 	{
 		this.attributeSetId = attributeSetId;
 		this.entityDescriptor = entityDescriptor;
 		this.layout = layout;
 
 		this.contextDocumentPath = contextDocumentPath;
+		this.contextTableName = contextTableName;
+		this.contextColumnName = contextColumnName;
+	}
+
+	public int getContextRecordId()
+	{
+		return contextDocumentPath != null ? contextDocumentPath.getSingleRecordId() : -1;
+	}
+
+	public boolean isAttributeField(String fieldName)
+	{
+		final DocumentFieldDescriptor field = entityDescriptor.getFieldOrNull(fieldName);
+		if (field == null)
+		{
+			return false;
+		}
+
+		final DocumentFieldDataBindingDescriptor fieldBinding = field.getDataBinding().orElse(null);
+		return fieldBinding instanceof ASIAttributeFieldBinding;
+	}
+
+	@NonNull
+	public AttributeId getAttributeId(String fieldName)
+	{
+		return getFieldDataBinding(fieldName).getAttributeId();
+	}
+
+	@NonNull
+	public AttributeCode getAttributeCode(String fieldName)
+	{
+		return getFieldDataBinding(fieldName).getAttributeCode();
+	}
+
+	@NonNull
+	private ASIAttributeFieldBinding getFieldDataBinding(final String fieldName)
+	{
+		return entityDescriptor.getField(fieldName).getDataBindingNotNull(ASIAttributeFieldBinding.class);
 	}
 }

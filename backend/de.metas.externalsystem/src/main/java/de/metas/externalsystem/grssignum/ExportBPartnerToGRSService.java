@@ -32,7 +32,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExportDirectorySettings;
 import de.metas.common.util.Check;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
@@ -58,13 +58,13 @@ public class ExportBPartnerToGRSService extends ExportBPartnerToExternalSystem
 	private static final String EXTERNAL_SYSTEM_COMMAND_EXPORT_BPARTNER = "exportBPartner";
 
 	protected ExportBPartnerToGRSService(
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigRepository,
 			@NonNull final DataExportAuditRepository dataExportAuditRepository,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final ExternalSystemConfigService externalSystemConfigService)
 	{
-		super(externalSystemConfigRepo, externalSystemMessageSender, dataExportAuditLogRepository, dataExportAuditRepository, externalSystemConfigService);
+		super(externalSystemConfigRepository, externalSystemMessageSender, dataExportAuditLogRepository, dataExportAuditRepository, externalSystemConfigService);
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public class ExportBPartnerToGRSService extends ExportBPartnerToExternalSystem
 			return Optional.empty();
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> grsParentConfigs = externalSystemConfigRepo.getActiveByType(ExternalSystemType.GRSSignum);
+		final ImmutableList<ExternalSystemParentConfig> grsParentConfigs = externalSystemConfigRepository.getActiveByType(ExternalSystemType.GRSSignum);
 
 		return Optional.of(grsParentConfigs.stream()
 							.filter(ExternalSystemParentConfig::isActive)

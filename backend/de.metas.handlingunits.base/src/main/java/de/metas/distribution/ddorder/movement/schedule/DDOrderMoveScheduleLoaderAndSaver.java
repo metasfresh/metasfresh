@@ -18,6 +18,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mmovement.MovementId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -126,11 +127,29 @@ class DDOrderMoveScheduleLoaderAndSaver
 
 	public ImmutableList<DDOrderMoveSchedule> loadByDDOrderId(@NonNull final DDOrderId ddOrderId)
 	{
-		final ImmutableMap<DDOrderMoveScheduleId, I_DD_Order_MoveSchedule> records = queryBL.createQueryBuilder(I_DD_Order_MoveSchedule.class)
-				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_ID, ddOrderId)
-				.orderBy(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID)
-				.orderBy(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_MoveSchedule_ID)
-				.stream()
+		return loadByQuery(
+				queryBL.createQueryBuilder(I_DD_Order_MoveSchedule.class)
+						.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_ID, ddOrderId)
+						.orderBy(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID)
+						.orderBy(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_MoveSchedule_ID)
+		);
+	}
+
+	public ImmutableList<DDOrderMoveSchedule> loadByDDOrderLineIds(@NonNull final Set<DDOrderLineId> ddOrderLineIds)
+	{
+		if (ddOrderLineIds.isEmpty()) {return ImmutableList.of();}
+
+		return loadByQuery(
+				queryBL.createQueryBuilder(I_DD_Order_MoveSchedule.class)
+						.addInArrayFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID, ddOrderLineIds)
+						.orderBy(I_DD_Order_MoveSchedule.COLUMNNAME_DD_OrderLine_ID)
+						.orderBy(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_MoveSchedule_ID)
+		);
+	}
+
+	private ImmutableList<DDOrderMoveSchedule> loadByQuery(@NonNull final IQueryBuilder<I_DD_Order_MoveSchedule> queryBuilder)
+	{
+		final ImmutableMap<DDOrderMoveScheduleId, I_DD_Order_MoveSchedule> records = queryBuilder.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						record -> DDOrderMoveScheduleId.ofRepoId(record.getDD_Order_MoveSchedule_ID()),
 						record -> record
@@ -333,7 +352,7 @@ class DDOrderMoveScheduleLoaderAndSaver
 		return schedule;
 	}
 
-	public List<DDOrderMoveSchedule> updateByIds(final Set<DDOrderMoveScheduleId> ids, Consumer<DDOrderMoveSchedule> updater)
+	public ImmutableList<DDOrderMoveSchedule> updateByIds(final Set<DDOrderMoveScheduleId> ids, Consumer<DDOrderMoveSchedule> updater)
 	{
 		warmUpByIds(ids);
 

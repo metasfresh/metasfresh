@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
 @ghActions:run_on_executor6
 Feature: Physical inventory tests
+## F5010: Inventory
 
   Background:
     Given infrastructure and metasfresh are running
@@ -35,6 +38,8 @@ Feature: Physical inventory tests
       | CUx200                  | 101             | product      | 200 PCE |
 
   @from:cucumber
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
   Scenario: Inventory+ to CU
     Given metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_ID |
@@ -50,6 +55,8 @@ Feature: Physical inventory tests
       | product                 | 1000      |
 
   @from:cucumber
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
   Scenario: Inventory+ to 2 x LU/CU
     Given metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | M_HU_ID | M_HU_ID2 |
@@ -69,6 +76,8 @@ Feature: Physical inventory tests
       | product                 | 400       |
 
   @from:cucumber
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
   Scenario: Inventory+ to 2 x LU/TU/CU
     Given metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | M_HU_ID | M_HU_ID2 |
@@ -85,6 +94,8 @@ Feature: Physical inventory tests
       | product                 | 800       |
 
   @from:cucumber
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5010
   Scenario: Inventory+ to 2 x TUs
     Given metasfresh contains single line completed inventories
       | M_Inventory_ID | M_Warehouse_ID | MovementDate | M_Product_ID | QtyBook | QtyCount | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID | M_HU_ID | M_HU_ID2 |

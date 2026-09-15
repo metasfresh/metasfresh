@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1961719567L;
+	private static final long serialVersionUID = -2092576617L;
 
     /** Standard Constructor */
     public X_DD_Order_Candidate (final Properties ctx, final int DD_Order_Candidate_ID, @Nullable final String trxName)
@@ -36,6 +36,21 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	}
 
 	@Override
+	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1) 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
+
+	@Override
+	public int getAD_InputDataSource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
+	}
+
+	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -51,18 +66,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLineSO()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setC_OrderLineSO(final org.compiere.model.I_C_OrderLine C_OrderLineSO)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLineSO);
-	}
-
-	@Override
 	public void setC_OrderLineSO_ID (final int C_OrderLineSO_ID)
 	{
 		if (C_OrderLineSO_ID < 1) 
@@ -75,18 +78,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public int getC_OrderLineSO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLineSO_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Order getC_OrderSO()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
 	}
 
 	@Override
@@ -132,18 +123,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	}
 
 	@Override
-	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution()
-	{
-		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class);
-	}
-
-	@Override
-	public void setDD_NetworkDistribution(final org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution)
-	{
-		set_ValueFromPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class, DD_NetworkDistribution);
-	}
-
-	@Override
 	public void setDD_NetworkDistribution_ID (final int DD_NetworkDistribution_ID)
 	{
 		if (DD_NetworkDistribution_ID < 1) 
@@ -156,18 +135,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public int getDD_NetworkDistribution_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DD_NetworkDistribution_ID);
-	}
-
-	@Override
-	public org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistributionLine_ID, org.eevolution.model.I_DD_NetworkDistributionLine.class);
-	}
-
-	@Override
-	public void setDD_NetworkDistributionLine(final org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine)
-	{
-		set_ValueFromPO(COLUMNNAME_DD_NetworkDistributionLine_ID, org.eevolution.model.I_DD_NetworkDistributionLine.class, DD_NetworkDistributionLine);
 	}
 
 	@Override
@@ -213,18 +180,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order_BOMLine getForward_PP_Order_BOMLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_Forward_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class);
-	}
-
-	@Override
-	public void setForward_PP_Order_BOMLine(final org.eevolution.model.I_PP_Order_BOMLine Forward_PP_Order_BOMLine)
-	{
-		set_ValueFromPO(COLUMNNAME_Forward_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class, Forward_PP_Order_BOMLine);
-	}
-
-	@Override
 	public void setForward_PP_Order_BOMLine_ID (final int Forward_PP_Order_BOMLine_ID)
 	{
 		if (Forward_PP_Order_BOMLine_ID < 1) 
@@ -237,18 +192,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public int getForward_PP_Order_BOMLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Forward_PP_Order_BOMLine_ID);
-	}
-
-	@Override
-	public org.eevolution.model.I_PP_Order_Candidate getForward_PP_Order_Candidate()
-	{
-		return get_ValueAsPO(COLUMNNAME_Forward_PP_Order_Candidate_ID, org.eevolution.model.I_PP_Order_Candidate.class);
-	}
-
-	@Override
-	public void setForward_PP_Order_Candidate(final org.eevolution.model.I_PP_Order_Candidate Forward_PP_Order_Candidate)
-	{
-		set_ValueFromPO(COLUMNNAME_Forward_PP_Order_Candidate_ID, org.eevolution.model.I_PP_Order_Candidate.class, Forward_PP_Order_Candidate);
 	}
 
 	@Override
@@ -267,18 +210,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order getForward_PP_Order()
-	{
-		return get_ValueAsPO(COLUMNNAME_Forward_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
-	}
-
-	@Override
-	public void setForward_PP_Order(final org.eevolution.model.I_PP_Order Forward_PP_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_Forward_PP_Order_ID, org.eevolution.model.I_PP_Order.class, Forward_PP_Order);
-	}
-
-	@Override
 	public void setForward_PP_Order_ID (final int Forward_PP_Order_ID)
 	{
 		if (Forward_PP_Order_ID < 1) 
@@ -291,18 +222,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public int getForward_PP_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Forward_PP_Order_ID);
-	}
-
-	@Override
-	public org.eevolution.model.I_PP_OrderLine_Candidate getForward_PP_OrderLine_Candidate()
-	{
-		return get_ValueAsPO(COLUMNNAME_Forward_PP_OrderLine_Candidate_ID, org.eevolution.model.I_PP_OrderLine_Candidate.class);
-	}
-
-	@Override
-	public void setForward_PP_OrderLine_Candidate(final org.eevolution.model.I_PP_OrderLine_Candidate Forward_PP_OrderLine_Candidate)
-	{
-		set_ValueFromPO(COLUMNNAME_Forward_PP_OrderLine_Candidate_ID, org.eevolution.model.I_PP_OrderLine_Candidate.class, Forward_PP_OrderLine_Candidate);
 	}
 
 	@Override
@@ -330,18 +249,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public boolean isSimulated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSimulated);
-	}
-
-	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
-	}
-
-	@Override
-	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
 	@Override
@@ -420,18 +327,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	}
 
 	@Override
-	public org.compiere.model.I_M_Shipper getM_Shipper()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
-	}
-
-	@Override
-	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
-	}
-
-	@Override
 	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
 		if (M_Shipper_ID < 1) 
@@ -477,18 +372,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getPP_Plant_From()
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Plant_From_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setPP_Plant_From(final org.compiere.model.I_S_Resource PP_Plant_From)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Plant_From_ID, org.compiere.model.I_S_Resource.class, PP_Plant_From);
-	}
-
-	@Override
 	public void setPP_Plant_From_ID (final int PP_Plant_From_ID)
 	{
 		if (PP_Plant_From_ID < 1) 
@@ -501,18 +384,6 @@ public class X_DD_Order_Candidate extends org.compiere.model.PO implements I_DD_
 	public int getPP_Plant_From_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Plant_From_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource getPP_Plant_To()
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Plant_To_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setPP_Plant_To(final org.compiere.model.I_S_Resource PP_Plant_To)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Plant_To_ID, org.compiere.model.I_S_Resource.class, PP_Plant_To);
 	}
 
 	@Override

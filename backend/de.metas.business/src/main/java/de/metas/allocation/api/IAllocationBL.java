@@ -54,6 +54,8 @@ public interface IAllocationBL extends ISingletonService
 
 	Optional<PaymentId> getPaymentId(PaymentAllocationLineId lineId);
 
+	boolean hasActiveAllocationBetween(@NonNull InvoiceId invoiceId, @NonNull PaymentId paymentId);
+
 	@Value
 	@Builder
 	class InvoiceDiscountAndWriteOffRequest

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1832848789L;
+	private static final long serialVersionUID = 558044016L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -576,6 +576,21 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1) 
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		throw new IllegalArgumentException ("C_UOM_ID is virtual column");	}
@@ -920,6 +935,21 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
+	}
+
+	@Override
 	public void setHeaderAggregationKey (final @Nullable java.lang.String HeaderAggregationKey)
 	{
 		set_Value (COLUMNNAME_HeaderAggregationKey, HeaderAggregationKey);
@@ -929,6 +959,17 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.lang.String getHeaderAggregationKey() 
 	{
 		return get_ValueAsString(COLUMNNAME_HeaderAggregationKey);
+	}
+
+	@Override
+	public void setInsufficientQtyAvailableForSalesColor_ID (final int InsufficientQtyAvailableForSalesColor_ID)
+	{
+		throw new IllegalArgumentException ("InsufficientQtyAvailableForSalesColor_ID is virtual column");	}
+
+	@Override
+	public int getInsufficientQtyAvailableForSalesColor_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_InsufficientQtyAvailableForSalesColor_ID);
 	}
 
 	@Override
@@ -1497,6 +1538,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setQtyAvailableForSales (final @Nullable BigDecimal QtyAvailableForSales)
+	{
+		throw new IllegalArgumentException ("QtyAvailableForSales is virtual column");	}
+
+	@Override
+	public BigDecimal getQtyAvailableForSales() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyAvailableForSales);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyDelivered (final @Nullable BigDecimal QtyDelivered)
 	{
 		set_Value (COLUMNNAME_QtyDelivered, QtyDelivered);
@@ -1639,6 +1692,19 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setQtyScheduledForPickingOfProcessed (final @Nullable BigDecimal QtyScheduledForPickingOfProcessed)
+	{
+		set_Value (COLUMNNAME_QtyScheduledForPickingOfProcessed, QtyScheduledForPickingOfProcessed);
+	}
+
+	@Override
+	public BigDecimal getQtyScheduledForPickingOfProcessed() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyScheduledForPickingOfProcessed);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyToDeliver (final @Nullable BigDecimal QtyToDeliver)
 	{
 		set_Value (COLUMNNAME_QtyToDeliver, QtyToDeliver);
@@ -1774,20 +1840,5 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.lang.String getStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_Status);
-	}
-
-	@Override
-	public void setExternalSystem_ID (final int ExternalSystem_ID)
-	{
-		if (ExternalSystem_ID < 1)
-			set_Value (COLUMNNAME_ExternalSystem_ID, null);
-		else
-			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
-	}
-
-	@Override
-	public int getExternalSystem_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 }

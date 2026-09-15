@@ -345,7 +345,7 @@ public class MainRowWithSubRows
 
 	private int getPlantId(final WarehouseId warehouseId)
 	{
-		return ResourceId.toRepoId(cache.getWarehouseById(warehouseId).getResourceId());
+		return ResourceId.toRepoId(cache.getWarehouseById(warehouseId).getPlantId());
 	}
 
 	/**

@@ -4,8 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.camt054_001_02.EntryTransaction2;
-import de.metas.payment.camt054_001_06.DocumentType3Code;
 import de.metas.payment.camt054_001_06.EntryTransaction8;
+import de.metas.payment.camt054_001_08.EntryTransaction10;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.util.Services;
@@ -75,7 +75,7 @@ public class ReferenceStringHelper
 		{
 			return false;
 		}
-		return DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
+		return de.metas.payment.camt054_001_02.DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
 	}
 
 	private static boolean isSupportedESRType(final de.metas.payment.camt054_001_06.CreditorReferenceInformation2 cdtrRefInf)
@@ -97,7 +97,29 @@ public class ReferenceStringHelper
 		{
 			return false;
 		}
-		return DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
+		return de.metas.payment.camt054_001_06.DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
+	}
+
+	private static boolean isSupportedESRType(final de.metas.payment.camt054_001_08.CreditorReferenceInformation2 cdtrRefInf)
+	{
+		if (cdtrRefInf == null || cdtrRefInf.getTp() == null || cdtrRefInf.getTp().getCdOrPrtry() == null)
+		{
+			return false;
+		}
+
+		final de.metas.payment.camt054_001_08.CreditorReferenceType1Choice cdOrPrtry = cdtrRefInf.getTp().getCdOrPrtry();
+
+		// Check both getCd() (enum) and getPrtry() (string)
+		return isSupportedDocumentType(cdOrPrtry.getCd()) || isESRorQRRType(cdOrPrtry.getPrtry());
+	}
+
+	private static boolean isSupportedDocumentType(final de.metas.payment.camt054_001_08.DocumentType3Code cd)
+	{
+		if (cd == null)
+		{
+			return false;
+		}
+		return de.metas.payment.camt054_001_08.DocumentType3Code.SCOR.equals(cd); // Only SCOR is valid from DocumentType3Code
 	}
 
 	private static boolean isESRorQRRType(final String value)
@@ -114,6 +136,35 @@ public class ReferenceStringHelper
 	 */
 	public void extractAndSetEsrReference(
 			@NonNull final EntryTransaction8 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final Optional<String> esrReferenceNumberString = extractEsrReference(txDtls);
+		if (esrReferenceNumberString.isPresent())
+		{
+			trxBuilder.esrReferenceNumber(esrReferenceNumberString.get());
+		}
+		else
+		{
+			final Optional<String> fallback = extractReferenceFallback(txDtls);
+			if (fallback.isPresent())
+			{
+				trxBuilder.esrReferenceNumber(fallback.get());
+				trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_AMBIGOUS_REFERENCE));
+			}
+			else
+			{
+				trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_MISSING_ESR_REFERENCE));
+			}
+		}
+	}
+
+	/**
+	 * extractAndSetEsrReference for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	public void extractAndSetEsrReference(
+			@NonNull final EntryTransaction10 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -171,6 +222,22 @@ public class ReferenceStringHelper
 	}
 
 	public void extractAndSetType(
+			@NonNull final EntryTransaction10 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		final Optional<ESRType> type = extractType(txDtls);
+		if (type.isPresent())
+		{
+			trxBuilder.type(type.get());
+		}
+		else
+		{
+			// fallback to esr type
+			trxBuilder.type(ESRType.TYPE_ESR);
+		}
+	}
+
+	public void extractAndSetType(
 			@NonNull final EntryTransaction8 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
@@ -223,6 +290,77 @@ public class ReferenceStringHelper
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
 		return esrReferenceNumberString;
+	}
+
+	/**
+	 * Gets <code>TxDtls/RmtInf/Strd/CdtrRefInf/Ref</code><br>
+	 * from a <code>CdtrRefInf</code> element<br>
+	 * that has <code>CdtrRefInf/Tp/CdOrPrtry == "ISR Reference"</code>.
+	 * extractEsrReference for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	private Optional<String> extractEsrReference(@NonNull final EntryTransaction10 txDtls)
+	{
+		// get the esr reference string out of the XML tree
+		return txDtls.getRmtInf().getStrd().stream()
+				.map(strd -> strd.getCdtrRefInf())
+
+				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
+				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
+				.map(cdtrRefInf -> cdtrRefInf.getRef())
+				.findFirst();
+	}
+
+	/**
+	 * extractReferenceFallback for version 8 <code>BankToCustomerDebitCreditNotificationV08</code>
+	 */
+	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction10 txDtls)
+	{
+		// get the esr reference string out of the XML tree
+		return txDtls.getRmtInf().getStrd().stream()
+				.map(strd -> strd.getCdtrRefInf())
+				.filter(cdtrRefInf -> cdtrRefInf != null)
+				.map(cdtrRefInf -> cdtrRefInf.getRef())
+				.findFirst();
+	}
+
+	private Optional<ESRType> extractType(@NonNull final EntryTransaction10 txDtls)
+	{
+		return txDtls.getRmtInf()
+				.getStrd()
+				.stream()
+				.map(strd -> Optional.ofNullable(strd.getCdtrRefInf())) // Safely map to CreditorReferenceInformation2
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.filter(ReferenceStringHelper::isSupportedESRType) // Validate the ESR type
+				.map(this::extractESRType)       // Extract ESRType
+				.filter(Objects::nonNull)
+				.findFirst();
+	}
+
+	private ESRType extractESRType(final de.metas.payment.camt054_001_08.CreditorReferenceInformation2 cdtrRefInf)
+	{
+		final String code = Optional.ofNullable(cdtrRefInf.getTp())
+				.map(tp -> tp.getCdOrPrtry())
+				.map(cdOrPrtry -> {
+					if (cdOrPrtry.getCd() != null)
+					{
+						return cdOrPrtry.getCd().value(); // Check the enum (DocumentType3Code)
+					}
+					else
+					{
+						return cdOrPrtry.getPrtry(); // Check the string (Prtry)
+					}
+				})
+				.orElse(null);
+
+		if (code == null)
+		{
+			return null;
+		}
+
+		final ESRType esrType = ESRType.ofNullableCode(code);
+		validateESRType(esrType, code); // Validate the extracted ESRType
+		return esrType;
 	}
 
 	/**
