@@ -84,8 +84,11 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * not there. Every reader that walks {@link #rowIds} and looks up a row it did NOT receive directly from its
 	 * own caller -- a neighbour, a "beyond" bound, a row scanned in a sublist -- must go through this method
 	 * rather than {@code rowsById.get(...)} directly, so a vanished row is a value every such caller is forced
-	 * to handle, in whatever way is right for it (skip it, reject cleanly, or treat it as absent), rather than
-	 * an uncontrolled {@code NullPointerException} that happens to be avoided only by luck of call order. (A
+	 * to handle rather than an uncontrolled {@code NullPointerException} that happens to be avoided only by
+	 * luck of call order. What the right handling is depends on the question being asked, and there are only
+	 * two answers: skip the row where it provably cannot affect the outcome, or refuse the operation. Reading
+	 * it as "there is no row there" is never one of them -- an absent row and an unreadable one mean opposite
+	 * things to the position arithmetic, which is what {@link #boundPositionAt} exists to keep apart. (A
 	 * row a caller received directly -- e.g. {@link #patchRow}'s own target, or {@link #moveRow}'s/
 	 * {@link #deleteRow}'s own selected row -- is a different case: its own not-found path already throws
 	 * {@link EntityNotFoundException} deliberately, via {@link #getRowOrThrow}/{@link #getTextRowOrThrow}, and
@@ -105,6 +108,56 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		return Optional.ofNullable(rowsById.get(rowId));
 	}
 
+	/**
+	 * The position of the row at {@code index} in the merged order, for use as a bound of the position
+	 * arithmetic. Two very different situations can stop an index yielding one, and conflating them is what
+	 * turns a momentary inconsistency into a permanently wrong stored position:
+	 * <ul>
+	 * <li><b>There is no row at that index at all</b> -- {@code index} is past the start or the end of
+	 * {@link #rowIds}. Then there genuinely is no bound on that side, {@code null} says exactly that, and the
+	 * arithmetic is free to place the row past everything in that direction.</li>
+	 * <li><b>A row is listed at that index but is already gone from {@link #rowsById}</b> -- the moment
+	 * {@link #resolveRow} describes. The bound exists; only its value is unreadable from here. Reporting it as
+	 * "no bound" would silently compute against the WRONG row -- past the unreadable one, towards whatever
+	 * lies further out -- and the collision guard in
+	 * {@link DocTextLineRepository#computeInsertAbovePosition} compares its result only against the two bounds
+	 * it was handed, so it cannot see the row that result would actually duplicate. The outcome is a duplicate
+	 * position, or short of exact equality an inverted order, with nothing anywhere reporting it. So the
+	 * operation is refused instead. That state resolves itself within the same request that caused it, so a
+	 * refusal the user can simply repeat costs a retry; a guessed position costs a corrupted document.</li>
+	 * </ul>
+	 * Walking further out to the next readable row is deliberately NOT done. It would be sound only while the
+	 * unreadable row's own database row is already gone, which is true of one specific ordering inside
+	 * {@link #deleteRow} and of nothing else -- an invariant of another method, silently load-bearing here,
+	 * whose failure mode is precisely the duplicate position this class already guards against everywhere
+	 * else. Refusing is correct whatever made the row unreadable.
+	 */
+	@Nullable
+	private BigDecimal boundPositionAt(final int index)
+	{
+		if (index < 0 || index >= rowIds.size())
+		{
+			return null;
+		}
+
+		final DocumentId boundRowId = rowIds.get(index);
+		return resolveRow(boundRowId)
+				.map(DocTextLinesRow::getLine)
+				.orElseThrow(() -> rowIsBeingRemoved(boundRowId));
+	}
+
+	/**
+	 * Refusal for an operation that would have to compute a position against a row which is in the middle of
+	 * being removed. Phrased for the user who clicked the quick action: the situation is transient and a
+	 * repeat of the same action succeeds.
+	 */
+	private static AdempiereException rowIsBeingRemoved(@NonNull final DocumentId rowId)
+	{
+		return new AdempiereException("A neighbouring row is being removed right now, so this row cannot be placed safely. Please try again.")
+				.appendParametersToMessage()
+				.setParameter("rowId", rowId);
+	}
+
 	@Override
 	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
@@ -121,6 +174,9 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * Given the row a caller selected to insert above, derives the three values {@code InsertAboveRequest}
 	 * needs -- this is the merged ordering's own data ({@link #rowIds}), so the derivation lives here rather
 	 * than being hand-rolled by each caller.
+	 * <p>
+	 * Refuses rather than answers when the row it would have to read as the lower bound is in the middle of
+	 * being removed -- see {@link #boundPositionAt} for why a guessed bound is the worse of the two outcomes.
 	 *
 	 * @param referenceRowId the selected row; {@code null} only when the document has no rows at all.
 	 */
@@ -147,14 +203,15 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 						.appendParametersToMessage()
 						.setParameter("referenceRowId", referenceRowId));
 
-		// the previous row is only a bound for the midpoint arithmetic -- a vanished one (the delete-caused
-		// gap resolveRow's javadoc names) is treated as no bound at all, same as there genuinely being none
-		final BigDecimal previousPosition = referenceIndex > 0
-				? resolveRow(rowIds.get(referenceIndex - 1)).map(DocTextLinesRow::getLine).orElse(null)
-				: null;
+		// index -1 means the reference row is the first of the merged order, so there genuinely is no previous
+		// row and the midpoint arithmetic is unbounded below; a row listed there but unreadable is refused
+		// instead of being reported as absent -- see boundPositionAt
+		final BigDecimal previousPosition = boundPositionAt(referenceIndex - 1);
 
-		// a vanished row in the preceding sublist contributes nothing to "does an article precede this
-		// position" either way -- skip it, same as if it had already been trimmed from rowIds
+		// this scan asks whether an ARTICLE row precedes the insert position. An unreadable row here is
+		// skipped rather than refused, and that is safe for a reason specific to this question rather than a
+		// general tolerance: only text rows are ever removed (deleteRow rejects an article row outright), and
+		// a text row answers this question neither way, so a skipped one cannot change the outcome
 		final boolean articleLineExistsBeforeReferencePosition = rowIds.subList(0, referenceIndex).stream()
 				.map(this::resolveRow)
 				.filter(Optional::isPresent)
@@ -268,7 +325,9 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * does. Every position read this method uses (the neighbour's, and the row beyond it) is read fresh from
 	 * {@link #rowsById}/{@link #rowIds} at the moment the lock is held, never cached across calls -- so a move
 	 * queued behind another structural change always computes against the ordering that change left behind, not
-	 * a stale snapshot.
+	 * a stale snapshot. If one of those rows is in the middle of being removed, so that its position cannot be
+	 * read at all, the move is refused rather than computed against a substitute -- see
+	 * {@link #boundPositionAt}.
 	 * <p>
 	 * Deliberately NOT additionally synchronized on either row's own monitor from {@link #rowLocksById} (unlike
 	 * {@link #deleteRow}): a concurrent {@link #patchRow} of a row this method touches only ever writes {@code
@@ -298,14 +357,12 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			}
 
 			final DocumentId neighborId = rowIds.get(neighborIndex);
-			// the neighbour is the row this method is about to exchange with -- if it vanished (the
-			// delete-caused gap resolveRow's javadoc names), there is nothing sensible left to exchange with;
-			// reject cleanly rather than crash, same rationale as the reference-row lookup in
-			// computeInsertAbovePositions
+			// a neighbour that is listed but unreadable is a row in the middle of being removed, which is a
+			// different situation from the "nothing on that side" rejected just above: there IS an exchange
+			// partner, it is simply not one this move can act on right now, so the refusal says so and invites
+			// a retry rather than claiming the row is already at the edge of the list
 			final DocTextLinesRow neighbor = resolveRow(neighborId)
-					.orElseThrow(() -> new AdempiereException("No row to move " + (towardStart ? "up" : "down") + " into")
-							.appendParametersToMessage()
-							.setParameter("rowId", rowId));
+					.orElseThrow(() -> rowIsBeingRemoved(neighborId));
 
 			final DocTextLinesRow newRow;
 			if (neighbor.isTextLine())
@@ -322,12 +379,9 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			}
 			else
 			{
-				final int beyondIndex = towardStart ? neighborIndex - 1 : neighborIndex + 1;
-				// the row beyond the neighbour is only a bound for the position arithmetic -- a vanished one
-				// is treated as no bound at all, same as there genuinely being none (out of range)
-				final BigDecimal beyondPosition = beyondIndex >= 0 && beyondIndex < rowIds.size()
-						? resolveRow(rowIds.get(beyondIndex)).map(DocTextLinesRow::getLine).orElse(null)
-						: null;
+				// out of range means the neighbour is itself the first/last row, so there is nothing on the far
+				// side to stay clear of; a row listed there but unreadable is refused -- see boundPositionAt
+				final BigDecimal beyondPosition = boundPositionAt(towardStart ? neighborIndex - 1 : neighborIndex + 1);
 				final BigDecimal newPosition = towardStart
 						? DocTextLineRepository.computePositionBetween(beyondPosition, neighbor.getLine())
 						: DocTextLineRepository.computePositionBetween(neighbor.getLine(), beyondPosition);
@@ -346,33 +400,41 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	/**
-	 * Removes a text row in two sequential (never nested) critical sections, ordered so that nothing is
-	 * un-published before the delete has actually succeeded -- the same persist-then-mutate shape
-	 * {@link #insertRowAbove} follows for its own success path, just run in reverse (there, a successful
-	 * persist is followed by widening; here, a successful persist is followed by shrinking):
-	 * <ol>
-	 * <li>Under the row's own monitor from {@link #rowLocksById} -- the SAME monitor {@link #patchRow}
-	 * synchronizes on -- the database delete happens FIRST; only once it has returned without throwing are
-	 * {@link #rowsById}/{@link #rowLocksById} cleared, still inside this same section. If {@code deleteById}
-	 * throws, this section is exited by the exception before either map is touched, and section 2 below is
-	 * never reached -- the row stays fully intact (in {@link #rowIds}, {@link #rowsById}, the database) rather
-	 * than becoming a ghost that is gone from the merged view but still undeleted underneath. Clearing
-	 * {@link #rowsById} here, in the same section as the persist and before this method's own monitor is
-	 * released, is also what keeps the resurrection guard deterministic: a {@link #patchRow} blocked on this
-	 * exact monitor is only ever admitted AFTER {@link #rowsById} no longer has the entry, so its
-	 * {@code getRowOrThrow} is guaranteed to throw {@link EntityNotFoundException} rather than racing this
-	 * method's second section.</li>
-	 * <li>Under {@link #structuralLock} -- the same guard {@link #insertRowAbove}/{@link #moveRow} use for
-	 * their own ordering mutation -- {@code rowId} is removed from {@link #rowIds} only now, i.e. only after
-	 * the delete is confirmed persisted. Between the two sections, a reader can briefly observe {@code rowId}
-	 * still in {@link #rowIds} with no matching {@link #rowsById} entry; {@link #getDocumentId2TopLevelRows()}
-	 * tolerates exactly that combination by skipping it, for this reason.</li>
-	 * </ol>
+	 * Removes a text row by running {@link #deleteRowPersistAndUnpublish} and then
+	 * {@link #deleteRowRemoveFromMergedOrder} -- two sequential, never nested critical sections, ordered so
+	 * that nothing is un-published before the delete has actually succeeded. That is the same
+	 * persist-then-mutate shape {@link #insertRowAbove} follows for its own success path, just run in reverse
+	 * (there, a successful persist is followed by widening; here, a successful persist is followed by
+	 * shrinking).
+	 * <p>
 	 * The two sections are sequential, not nested -- the row's own monitor is released before
-	 * {@link #structuralLock} is acquired, so this method never holds both at once, and deadlock is not
-	 * possible.
+	 * {@link #structuralLock} is acquired, so a delete never holds both at once, and deadlock is not possible.
+	 * They are kept as two separately-callable methods so that the boundary between them -- the one moment at
+	 * which a row is already gone from {@link #rowsById} but still listed in {@link #rowIds} -- is an
+	 * addressable point rather than an instant buried inside one method body.
 	 */
 	void deleteRow(@NonNull final DocumentId rowId)
+	{
+		deleteRowPersistAndUnpublish(rowId);
+		deleteRowRemoveFromMergedOrder(rowId);
+	}
+
+	/**
+	 * First of {@link #deleteRow}'s two sections. Under the row's own monitor from {@link #rowLocksById} --
+	 * the SAME monitor {@link #patchRow} synchronizes on -- the database delete happens FIRST; only once it
+	 * has returned without throwing are {@link #rowsById}/{@link #rowLocksById} cleared, still inside this
+	 * same section. If {@code deleteById} throws, this section is exited by the exception before either map is
+	 * touched, and {@link #deleteRowRemoveFromMergedOrder} is never reached -- the row stays fully intact (in
+	 * {@link #rowIds}, {@link #rowsById}, the database) rather than becoming a row that is gone from the
+	 * merged view but still undeleted underneath.
+	 * <p>
+	 * Clearing {@link #rowsById} here, in the same section as the persist and before this method's own monitor
+	 * is released, is also what keeps the resurrection guard deterministic: a {@link #patchRow} blocked on
+	 * this exact monitor is only ever admitted AFTER {@link #rowsById} no longer has the entry, so its
+	 * {@code getRowOrThrow} is guaranteed to throw {@link EntityNotFoundException} rather than racing the
+	 * second section.
+	 */
+	void deleteRowPersistAndUnpublish(@NonNull final DocumentId rowId)
 	{
 		synchronized (getRowLockOrThrow(rowId))
 		{
@@ -383,7 +445,18 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			rowsById.remove(rowId);
 			rowLocksById.remove(rowId);
 		}
+	}
 
+	/**
+	 * Second of {@link #deleteRow}'s two sections, reached only once {@link #deleteRowPersistAndUnpublish} has
+	 * returned normally. Under {@link #structuralLock} -- the same guard {@link #insertRowAbove}/
+	 * {@link #moveRow} use for their own ordering mutation -- {@code rowId} is removed from {@link #rowIds}
+	 * only now, i.e. only after the delete is confirmed persisted. Until it runs, a reader can observe
+	 * {@code rowId} still in {@link #rowIds} with no matching {@link #rowsById} entry; every reader that can
+	 * see that combination handles it deliberately -- see {@link #resolveRow} and {@link #boundPositionAt}.
+	 */
+	void deleteRowRemoveFromMergedOrder(@NonNull final DocumentId rowId)
+	{
 		synchronized (structuralLock)
 		{
 			rowIds.remove(rowId);
