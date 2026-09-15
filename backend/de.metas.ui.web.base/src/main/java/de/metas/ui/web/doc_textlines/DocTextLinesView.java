@@ -2,6 +2,7 @@ package de.metas.ui.web.doc_textlines;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -11,11 +12,13 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 
 /**
- * The merged, read-only view of one sales order's article lines and text lines (DESIGN.md § D-E). Article rows
- * are for orientation/positioning only, never editable; the actual editing of text rows (quick actions, inline
- * patching) is wired on top of this by later tasks -- see {@link DocTextLinesRows}.
+ * The merged view of one sales order's article lines and text lines (DESIGN.md § D-E). Article rows are
+ * read-only, for orientation/positioning only; text rows are inline-editable (task 6, {@link IEditableView}) --
+ * {@code ViewRowEditRestController} requires the view itself to implement {@link IEditableView} (it casts via
+ * {@link IEditableView#asEditableView}), even though {@code patchViewRow} is already implemented concretely on
+ * {@link AbstractCustomView}. Quick actions (insert-above/delete/move) are wired on top of this by later tasks.
  */
-public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow>
+public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> implements IEditableView
 {
 	@Builder
 	private DocTextLinesView(

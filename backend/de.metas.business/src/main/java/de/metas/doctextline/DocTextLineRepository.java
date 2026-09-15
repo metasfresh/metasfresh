@@ -82,6 +82,21 @@ public class DocTextLineRepository
 		return newPosition;
 	}
 
+	/**
+	 * Persists an inline edit of a text row's text and/or scope (webui {@code doc_textlines} task 6, DESIGN.md
+	 * § D-E). {@code textLine} may be empty (AC24: an empty text line is legal and prints as a blank line).
+	 */
+	public void updateTextAndScope(
+			@NonNull final DocTextLineId id,
+			@Nullable final String textLine,
+			@NonNull final TextLineScope scope)
+	{
+		final I_C_Doc_TextLine record = InterfaceWrapperHelper.load(id.getRepoId(), I_C_Doc_TextLine.class);
+		record.setTextLine(textLine);
+		record.setTextLineScope(scope.getCode());
+		InterfaceWrapperHelper.save(record);
+	}
+
 	public void swapPositions(@NonNull final DocTextLineId id1, @NonNull final DocTextLineId id2)
 	{
 		final I_C_Doc_TextLine record1 = InterfaceWrapperHelper.load(id1.getRepoId(), I_C_Doc_TextLine.class);

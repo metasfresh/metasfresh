@@ -67,6 +67,7 @@ final class DocTextLinesRowsLoader
 
 		return DocTextLinesRows.builder()
 				.rows(rows)
+				.docTextLineRepository(docTextLineRepository)
 				.build();
 	}
 

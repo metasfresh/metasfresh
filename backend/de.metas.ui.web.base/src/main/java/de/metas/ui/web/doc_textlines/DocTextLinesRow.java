@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Doc_TextLine;
 
 import javax.annotation.Nullable;
@@ -96,7 +97,7 @@ public final class DocTextLinesRow implements IViewRow
 	private final ViewRowFieldNameAndJsonValuesHolder<DocTextLinesRow> values;
 	private final ImmutableMap<String, ViewEditorRenderMode> editorRenderModeByFieldName;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private DocTextLinesRow(
 			@NonNull final RowType rowType,
 			@NonNull final BigDecimal line,
@@ -150,6 +151,37 @@ public final class DocTextLinesRow implements IViewRow
 	public boolean isTextLine()
 	{
 		return rowType == RowType.TEXT;
+	}
+
+	/**
+	 * Applies a user's inline edit (DESIGN.md § D-E / D-F). Article rows are never editable -- the row itself
+	 * refuses the change rather than silently ignoring it (task-6 brief: "patching an article row must be
+	 * rejected, not silently ignored").
+	 * <p>
+	 * A {@code null} field on {@code userChanges} means "not touched by this patch", matching the
+	 * {@code shipment_candidates_editor} precedent's {@code ShipmentCandidateRowUserChangeRequest} shape --
+	 * so an edit to an empty text (AC24) is represented as {@code textLine=""}, which is non-null and is
+	 * therefore applied.
+	 */
+	public DocTextLinesRow withChanges(@NonNull final DocTextLineRowUserChangeRequest userChanges)
+	{
+		if (!isTextLine())
+		{
+			throw new AdempiereException("Article line rows are not editable")
+					.appendParametersToMessage()
+					.setParameter("rowId", getId());
+		}
+
+		final DocTextLinesRowBuilder rowBuilder = toBuilder();
+		if (userChanges.getTextLine() != null)
+		{
+			rowBuilder.textLine(userChanges.getTextLine());
+		}
+		if (userChanges.getTextLineScope() != null)
+		{
+			rowBuilder.textLineScope(userChanges.getTextLineScope());
+		}
+		return rowBuilder.build();
 	}
 
 	@Override

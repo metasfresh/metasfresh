@@ -1,5 +1,6 @@
 package de.metas.ui.web.doc_textlines;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -10,12 +11,17 @@ import de.metas.doctextline.TextLineScope;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.shipment_candidates_editor.MockedLookupDataSource;
+import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Doc_TextLine;
 import org.compiere.model.I_C_Order;
@@ -30,9 +36,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 /**
  * Covers task 5's Done-when: a view built for an order with two article lines and one text line between them
@@ -326,6 +335,87 @@ class DocTextLinesViewTest
 			final InsertAbovePositions positions = view.getInsertAbovePositions(null);
 
 			assertThat(positions).isEqualTo(InsertAbovePositions.EMPTY_DOCUMENT);
+		}
+	}
+
+	/**
+	 * Task 6's Done-when (task-6-brief.md): patching the text and the scope of a text row persists both,
+	 * and patching an article row is rejected (DESIGN.md § D-E / D-F). Patching goes through the real
+	 * production entry point -- {@code AbstractCustomView#patchViewRow}, the same method
+	 * {@code ViewRowEditRestController} calls -- so a wrong implementation of the row-patch path (e.g. one
+	 * that silently no-ops, or one that lets article rows through) is caught the same way it would be in
+	 * production.
+	 */
+	@Nested
+	class patchRow
+	{
+		private void patch(final DocTextLinesView view, final DocumentId rowId, final JSONDocumentChangedEvent... events)
+		{
+			final RowEditingContext ctx = RowEditingContext.builder()
+					.viewId(view.getViewId())
+					.rowId(rowId)
+					.documentsCollection(mock(DocumentCollection.class))
+					.userRolePermissions(mock(IUserRolePermissions.class))
+					.build();
+			view.patchViewRow(ctx, ImmutableList.copyOf(events));
+		}
+
+		@Test
+		void testPatchRow()
+		{
+			createArticleLine(10);
+			final I_C_Doc_TextLine textLine = createTextLine("5", TextLineScope.Following, "original text");
+
+			final DocTextLinesView view = loadView();
+			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
+
+			patch(view, rowId,
+					JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLine, "updated text"),
+					JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLineScope, TextLineScope.Document.getCode()));
+
+			// reload from DB via a fresh view -- proves the patch was persisted, not just held in memory
+			final DocTextLinesRow persistedRow = rowsOf(loadView()).stream()
+					.filter(DocTextLinesRow::isTextLine)
+					.findFirst()
+					.orElseThrow(IllegalStateException::new);
+
+			assertThat(persistedRow.getTextLine()).isEqualTo("updated text");
+			assertThat(persistedRow.getTextLineScope()).isEqualTo(TextLineScope.Document);
+		}
+
+		@Test
+		void emptyText_remainsValid()
+		{
+			final I_C_Doc_TextLine textLine = createTextLine("5", TextLineScope.Document, "some text");
+
+			final DocTextLinesView view = loadView();
+			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
+
+			patch(view, rowId, JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLine, ""));
+
+			final DocTextLinesRow persistedRow = rowsOf(loadView()).get(0);
+			assertThat(persistedRow.getTextLine()).isEqualTo("");
+			assertThat(persistedRow.getTextLineScope()).isEqualTo(TextLineScope.Document); // untouched field survives the patch
+		}
+
+		@Test
+		void articleRow_isRejected()
+		{
+			final I_C_OrderLine article = createArticleLine(10);
+
+			final DocTextLinesView view = loadView();
+			final DocumentId rowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article.getC_OrderLine_ID()));
+
+			// message must name the article-row rejection specifically -- not just any "view is not editable"
+			// wording, which is also what AbstractCustomView throws pre-implementation (a weaker assertion here
+			// would pass vacuously against the unimplemented feature)
+			assertThatThrownBy(() -> patch(view, rowId, JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLine, "hack")))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("Article");
+
+			// the article line's own DB row is untouched
+			final I_C_OrderLine reloaded = load(article.getC_OrderLine_ID(), I_C_OrderLine.class);
+			assertThat(reloaded.getLine()).isEqualTo(10);
 		}
 	}
 }
