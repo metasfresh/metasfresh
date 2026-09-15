@@ -11,6 +11,9 @@ import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
 import PropTypes from 'prop-types';
 
+/** Widget types with their own document-change focus rule; `WidgetRenderer` routes these to `Lookup`/`List`. */
+const WIDGETS_WITH_OWN_FOCUS_RULE = ['Lookup', 'List', 'MultiListValue'];
+
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
   if (fieldsCount > 1) {
     return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
@@ -77,6 +80,25 @@ export class RawWidget extends PureComponent {
         JSON.stringify(prevProps.widgetData[0].value)
     ) {
       this.resetCachedValue();
+    }
+
+    // The mount-time focus above never runs again inside a mounted window, so repeat it when the
+    // document changes - not while this widget holds the caret, not in a modal (there `dataId` is
+    // a pinstance id, not a document), and not in a quick-input row (the header's first field is
+    // the one that must get the focus).
+    //
+    // Lookups and dropdowns are skipped: they repeat their own rule under their own conditions,
+    // and focusing them through this widget's ref would bypass those - for a composed lookup the
+    // ref is not even reliably the primary sub-field.
+    if (
+      this.props.autoFocus &&
+      !this.props.isModal &&
+      this.props.subentity !== 'quickInput' &&
+      !WIDGETS_WITH_OWN_FOCUS_RULE.includes(this.props.widgetType) &&
+      prevProps.dataId !== this.props.dataId &&
+      !this.state.isFocused
+    ) {
+      this.focus();
     }
   }
 

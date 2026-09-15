@@ -34,6 +34,80 @@ const createDummyProps = function(props) {
 
 describe('RawWidget component', () => {
   describe('generic tests using LongText widget:', () => {
+    // A first field focuses when it mounts, but a new document in an already-mounted window
+    // reconciles the widget instead of remounting it. These pin when that focus is repeated.
+    const mountWithFocusMovedOn = (extra) => {
+      const props = createDummyProps({
+        ...fixtures.longText.layout1,
+        widgetData: [{ ...fixtures.longText.data1 }],
+        autoFocus: true,
+        dataId: '1000001',
+        ...extra,
+      });
+
+      const wrapper = mount(<RawWidget {...props} />);
+      // The clerk has moved on to another field, so this widget no longer holds the focus.
+      wrapper.setState({ isFocused: false });
+      const focusSpy = jest.spyOn(wrapper.instance(), 'focus');
+
+      return { wrapper, focusSpy };
+    };
+
+    it('focuses the first field again when the document changes', () => {
+      const { wrapper, focusSpy } = mountWithFocusMovedOn();
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).toHaveBeenCalled();
+    });
+
+    it('does not focus the first field on a document change in a quick-input row', () => {
+      // Same window and same document as the header, but the field that must get the focus on a
+      // new document is the header's, not the quick-input row's.
+      const { wrapper, focusSpy } = mountWithFocusMovedOn({ subentity: 'quickInput' });
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not take the caret from the field the user is typing in', () => {
+      const props = createDummyProps({
+        ...fixtures.longText.layout1,
+        widgetData: [{ ...fixtures.longText.data1 }],
+        autoFocus: true,
+        dataId: '1000001',
+      });
+      const wrapper = mount(<RawWidget {...props} />);
+      // Left as the mount-time focus leaves it: this widget holds the caret.
+      wrapper.setState({ isFocused: true });
+      const focusSpy = jest.spyOn(wrapper.instance(), 'focus');
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
+    it('leaves a lookup or a dropdown to repeat its own focus rule', () => {
+      // Those two carry their own document-change rule with their own conditions; reaching them
+      // through this widget's ref would bypass those conditions.
+      const { wrapper, focusSpy } = mountWithFocusMovedOn({ widgetType: 'Lookup' });
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not focus the first field on a document change inside a modal', () => {
+      // A process parameter panel and the barcode overlay pass a pinstance id as `dataId` with an
+      // unconditional autoFocus; that is not a document change.
+      const { wrapper, focusSpy } = mountWithFocusMovedOn({ isModal: true });
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
     it('renders widget without errors', () => {
       const props = createDummyProps(
         {

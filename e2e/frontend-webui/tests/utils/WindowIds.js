@@ -72,6 +72,15 @@ export const BUSINESS_PARTNER_WINDOW_ID = 123;
 export const PRODUCT_WINDOW_ID = 140;
 
 /**
+ * Currency Rate window (Waehrungskurs)
+ * Table: C_Conversion_Rate (ad_window_id)
+ * Window ID: 116 (main tab AD_Tab_ID=198 "Wechselkurs")
+ * Description: Exchange rates. Its first field C_Currency_ID is a List dropdown, which makes it
+ * the reference window for first-field behaviour of the dropdown widget.
+ */
+export const CURRENCY_RATE_WINDOW_ID = 116;
+
+/**
  * Resource window (Ressource)
  * Table: S_Resource
  * Window ID: 236 (main tab AD_Tab_ID=414 "Ressource")
