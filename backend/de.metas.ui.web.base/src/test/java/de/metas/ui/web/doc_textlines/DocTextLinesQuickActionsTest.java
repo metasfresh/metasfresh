@@ -1051,6 +1051,253 @@ class DocTextLinesQuickActionsTest
 		}
 
 		/**
+		 * The gap named in the design: {@code deleteRow}'s structural section (trimming {@code rowIds}) can run
+		 * strictly after another thread's {@code moveRow} has already committed to {@code structuralLock},
+		 * leaving that other thread's neighbour lookup to observe the deleted row still in {@code rowIds} but
+		 * already gone from {@code rowsById}. A gatekeeper move (between two throwaway rows, paused inside its
+		 * own repository call) holds {@code structuralLock} hostage so the ordering below is real, not assumed:
+		 * (1) the racing move queues for the lock first, (2) delete's persist-and-clear then runs to completion
+		 * (it needs no {@code structuralLock} for that part), and only then (3) is the gatekeeper released,
+		 * letting the two queued operations proceed. Whichever of them the lock is granted to first, the racing
+		 * move's own selected row and its direct neighbour (an article) are never the deleted row -- only the
+		 * row BEYOND that neighbour is -- so the racing move succeeds either way: reading the deleted row via
+		 * {@code resolveRow} while it is still ghosted in {@code rowIds} yields "no bound" (past the fix, this
+		 * used to NPE); reading it after delete's own structural section has already trimmed {@code rowIds}
+		 * yields "out of range", the same "no bound" outcome via a different path.
+		 */
+		@Test
+		void moveRacingDeleteOfADifferentRow_completesCorrectly() throws InterruptedException
+		{
+			// gatekeeper pair: exists only to hold structuralLock hostage via a paused repository call
+			final I_C_Doc_TextLine gate1 = createTextLine(100, TextLineScope.Document);
+			createTextLine(101, TextLineScope.Document);
+
+			// the row being deleted concurrently -- never the mover's own selection or its direct neighbour,
+			// only the row BEYOND that neighbour (a "treat as absent" bound, not a "reject cleanly" one)
+			final I_C_Doc_TextLine rowA = createTextLine(7, TextLineScope.Document);
+			createArticleLine(10);
+			final I_C_Doc_TextLine rowB = createTextLine(15, TextLineScope.Document);
+
+			final DocumentId rowAId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(rowA.getC_Doc_TextLine_ID()));
+			final DocumentId rowBId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(rowB.getC_Doc_TextLine_ID()));
+			final DocumentId gate1Id = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(gate1.getC_Doc_TextLine_ID()));
+
+			final CountDownLatch gateReached = new CountDownLatch(1);
+			final CountDownLatch releaseGate = new CountDownLatch(1);
+			final CountDownLatch deleteReachedPersist = new CountDownLatch(1);
+			final CountDownLatch releaseDelete = new CountDownLatch(1);
+
+			final DocTextLineRepository sharedRepository = Mockito.spy(docTextLineRepository);
+			Mockito.doAnswer(invocation -> {
+						gateReached.countDown();
+						if (!releaseGate.await(5, TimeUnit.SECONDS))
+						{
+							throw new IllegalStateException("test bug: releaseGate was never signalled");
+						}
+						return invocation.callRealMethod();
+					})
+					.when(sharedRepository)
+					.swapPositions(any(), any());
+			Mockito.doAnswer(invocation -> {
+						deleteReachedPersist.countDown();
+						if (!releaseDelete.await(5, TimeUnit.SECONDS))
+						{
+							throw new IllegalStateException("test bug: releaseDelete was never signalled");
+						}
+						return invocation.callRealMethod();
+					})
+					.when(sharedRepository)
+					.deleteById(any());
+
+			final DocTextLinesRows rows = DocTextLinesRowsLoader.builder()
+					.orderDAO(orderDAO)
+					.docTextLineRepository(sharedRepository)
+					.productsLookup(MockedLookupDataSource.withNamePrefix("product"))
+					.orderId(orderId)
+					.build()
+					.load();
+			final DocTextLinesView view = DocTextLinesView.builder()
+					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
+					.rows(rows)
+					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+					.build();
+
+			// 1. gatekeeper acquires structuralLock and holds it hostage, paused inside its own repository call
+			final Thread gateThread = new Thread(() -> new WEBUI_DocTextLines_MoveDown().moveDown(view, gate1Id));
+			gateThread.start();
+			assertThat(gateReached.await(5, TimeUnit.SECONDS)).as("gatekeeper must reach its repository call").isTrue();
+
+			// 2. delete's row-lock section needs no structuralLock, so it runs to completion (persist, then
+			// clear rowsById/rowLocksById) even while the gatekeeper holds structuralLock; its own structural
+			// section then queues for structuralLock too, behind the gatekeeper
+			final AtomicReference<Throwable> deleteFailure = new AtomicReference<>();
+			final Thread deleteThread = new Thread(() -> {
+				try
+				{
+					new WEBUI_DocTextLines_Delete().delete(view, rowAId);
+				}
+				catch (final Throwable t)
+				{
+					deleteFailure.set(t);
+				}
+			});
+			deleteThread.start();
+			assertThat(deleteReachedPersist.await(5, TimeUnit.SECONDS)).as("delete must reach its repository call").isTrue();
+			releaseDelete.countDown();
+			waitUntilBlockedOrTerminated(deleteThread, 500);
+
+			// 3. the racing move queues for structuralLock next, arriving after delete's persist-and-clear has
+			// already completed -- so its own neighbour lookup, whenever it is finally granted the lock, reads
+			// state that is at least as recent as delete's completed row-lock section
+			final AtomicReference<Throwable> moveFailure = new AtomicReference<>();
+			final Thread moveThread = new Thread(() -> {
+				try
+				{
+					new WEBUI_DocTextLines_MoveUp().moveUp(view, rowBId);
+				}
+				catch (final Throwable t)
+				{
+					moveFailure.set(t);
+				}
+			});
+			moveThread.start();
+			waitUntilBlockedOrTerminated(moveThread, 500);
+
+			// 4. release the gatekeeper -- the move and delete's own structural section now contend for
+			// structuralLock; the row-beyond-the-neighbour lookup handles either outcome (see the method
+			// javadoc above)
+			releaseGate.countDown();
+
+			gateThread.join(5_000);
+			moveThread.join(5_000);
+			deleteThread.join(5_000);
+			assertThat(gateThread.isAlive()).isFalse();
+			assertThat(moveThread.isAlive()).isFalse();
+			assertThat(deleteThread.isAlive()).isFalse();
+			assertThat(deleteFailure.get()).isNull();
+			assertThat(moveFailure.get())
+					.as("the racing move must complete rather than throw -- a ghosted 'beyond' row is treated as no bound")
+					.isNull();
+
+			assertThat(docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId)))
+					.extracting(DocTextLine::getId)
+					.doesNotContain(DocTextLineId.ofRepoId(rowA.getC_Doc_TextLine_ID()));
+		}
+
+		/** Same gap, same technique, exercised on {@code insertRowAbove}'s own neighbour lookups instead of {@code moveRow}'s. */
+		@Test
+		void insertAboveRacingDeleteOfADifferentRow_completesCorrectly() throws InterruptedException
+		{
+			// gatekeeper pair
+			final I_C_Doc_TextLine gate1 = createTextLine(100, TextLineScope.Document);
+			createTextLine(101, TextLineScope.Document);
+
+			// the row being deleted concurrently -- immediately precedes the insert-above reference row, so it
+			// is read as computeInsertAbovePositions' "previous row" bound (a "treat as absent" lookup) and as
+			// one entry in its preceding-sublist article scan (a "skip it" lookup) -- never the reference row
+			// itself, which has its own, different, intentional reject-cleanly path
+			final I_C_Doc_TextLine rowA = createTextLine(15, TextLineScope.Document);
+			final I_C_OrderLine referenceArticle = createArticleLine(20);
+
+			final DocumentId rowAId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(rowA.getC_Doc_TextLine_ID()));
+			final DocumentId referenceRowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(referenceArticle.getC_OrderLine_ID()));
+			final DocumentId gate1Id = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(gate1.getC_Doc_TextLine_ID()));
+
+			final CountDownLatch gateReached = new CountDownLatch(1);
+			final CountDownLatch releaseGate = new CountDownLatch(1);
+			final CountDownLatch deleteReachedPersist = new CountDownLatch(1);
+			final CountDownLatch releaseDelete = new CountDownLatch(1);
+
+			final DocTextLineRepository sharedRepository = Mockito.spy(docTextLineRepository);
+			Mockito.doAnswer(invocation -> {
+						gateReached.countDown();
+						if (!releaseGate.await(5, TimeUnit.SECONDS))
+						{
+							throw new IllegalStateException("test bug: releaseGate was never signalled");
+						}
+						return invocation.callRealMethod();
+					})
+					.when(sharedRepository)
+					.swapPositions(any(), any());
+			Mockito.doAnswer(invocation -> {
+						deleteReachedPersist.countDown();
+						if (!releaseDelete.await(5, TimeUnit.SECONDS))
+						{
+							throw new IllegalStateException("test bug: releaseDelete was never signalled");
+						}
+						return invocation.callRealMethod();
+					})
+					.when(sharedRepository)
+					.deleteById(any());
+
+			final DocTextLinesRows rows = DocTextLinesRowsLoader.builder()
+					.orderDAO(orderDAO)
+					.docTextLineRepository(sharedRepository)
+					.productsLookup(MockedLookupDataSource.withNamePrefix("product"))
+					.orderId(orderId)
+					.build()
+					.load();
+			final DocTextLinesView view = DocTextLinesView.builder()
+					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
+					.rows(rows)
+					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+					.build();
+
+			final Thread gateThread = new Thread(() -> new WEBUI_DocTextLines_MoveDown().moveDown(view, gate1Id));
+			gateThread.start();
+			assertThat(gateReached.await(5, TimeUnit.SECONDS)).as("gatekeeper must reach its repository call").isTrue();
+
+			final AtomicReference<Throwable> deleteFailure = new AtomicReference<>();
+			final Thread deleteThread = new Thread(() -> {
+				try
+				{
+					new WEBUI_DocTextLines_Delete().delete(view, rowAId);
+				}
+				catch (final Throwable t)
+				{
+					deleteFailure.set(t);
+				}
+			});
+			deleteThread.start();
+			assertThat(deleteReachedPersist.await(5, TimeUnit.SECONDS)).as("delete must reach its repository call").isTrue();
+			releaseDelete.countDown();
+			waitUntilBlockedOrTerminated(deleteThread, 500);
+
+			// the racing insert-above queues for structuralLock next, arriving after delete's persist-and-clear
+			// has already completed
+			final AtomicReference<Throwable> insertFailure = new AtomicReference<>();
+			final Thread insertThread = new Thread(() -> {
+				try
+				{
+					new WEBUI_DocTextLines_InsertAbove().insertAbove(view, referenceRowId);
+				}
+				catch (final Throwable t)
+				{
+					insertFailure.set(t);
+				}
+			});
+			insertThread.start();
+			waitUntilBlockedOrTerminated(insertThread, 500);
+
+			releaseGate.countDown();
+
+			gateThread.join(5_000);
+			insertThread.join(5_000);
+			deleteThread.join(5_000);
+			assertThat(gateThread.isAlive()).isFalse();
+			assertThat(insertThread.isAlive()).isFalse();
+			assertThat(deleteThread.isAlive()).isFalse();
+			assertThat(deleteFailure.get()).isNull();
+			assertThat(insertFailure.get())
+					.as("the racing insert-above must complete rather than throw -- a ghosted 'previous row' bound is treated as absent, and a ghosted row in the article-scan sublist is skipped")
+					.isNull();
+
+			assertThat(docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId)))
+					.extracting(DocTextLine::getId)
+					.doesNotContain(DocTextLineId.ofRepoId(rowA.getC_Doc_TextLine_ID()));
+		}
+
+		/**
 		 * Polls (bounded) until {@code thread} is either blocked/waiting on a monitor or has already
 		 * terminated -- used to give a genuinely concurrent thread B a real chance to contend for the same lock
 		 * thread A holds, without a fixed sleep racing the JVM's own scheduling.

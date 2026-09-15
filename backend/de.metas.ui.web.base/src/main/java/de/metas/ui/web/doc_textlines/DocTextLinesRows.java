@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -70,25 +71,38 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		this.docTextLineRepository = docTextLineRepository;
 	}
 
-	/**
-	 * Skips (rather than fails on) an id present in {@link #rowIds} with no matching {@link #rowsById} entry.
-	 * That combination is not a corrupted state to reject -- it is the brief, deliberate window inside
-	 * {@link #deleteRow} between its two sequential critical sections, where the row has already been deleted
-	 * (persisted AND removed from {@link #rowsById}) but {@link #rowIds} has not been trimmed yet. A concurrent
-	 * read landing in that window should see the document as if the row were already gone, not throw.
-	 */
 	@Override
 	public Map<DocumentId, DocTextLinesRow> getDocumentId2TopLevelRows()
 	{
 		final ImmutableMap.Builder<DocumentId, DocTextLinesRow> result = ImmutableMap.builder();
-		rowIds.forEach(rowId -> {
-			final DocTextLinesRow row = rowsById.get(rowId);
-			if (row != null)
-			{
-				result.put(rowId, row);
-			}
-		});
+		rowIds.forEach(rowId -> resolveRow(rowId).ifPresent(row -> result.put(rowId, row)));
 		return result.build();
+	}
+
+	/**
+	 * Resolves {@code rowId} through {@link #rowsById}, returning empty rather than {@code null} when the id is
+	 * not there. Every reader that walks {@link #rowIds} and looks up a row it did NOT receive directly from its
+	 * own caller -- a neighbour, a "beyond" bound, a row scanned in a sublist -- must go through this method
+	 * rather than {@code rowsById.get(...)} directly, so a vanished row is a value every such caller is forced
+	 * to handle, in whatever way is right for it (skip it, reject cleanly, or treat it as absent), rather than
+	 * an uncontrolled {@code NullPointerException} that happens to be avoided only by luck of call order. (A
+	 * row a caller received directly -- e.g. {@link #patchRow}'s own target, or {@link #moveRow}'s/
+	 * {@link #deleteRow}'s own selected row -- is a different case: its own not-found path already throws
+	 * {@link EntityNotFoundException} deliberately, via {@link #getRowOrThrow}/{@link #getTextRowOrThrow}, and
+	 * that is unrelated to this method.)
+	 * <p>
+	 * <b>The one sanctioned cause of a miss is {@link #deleteRow}'s own two-section shape.</b> Its row-lock
+	 * section clears {@link #rowsById} only after a successful persist, and its separate {@link #structuralLock}
+	 * section trims {@link #rowIds} afterwards; between the two, {@link #structuralLock} is briefly free, so
+	 * another thread's {@link #moveRow}, {@link #insertRowAbove} (via {@link #computeInsertAbovePositions}), or
+	 * {@link #getDocumentId2TopLevelRows} can observe an id still in {@link #rowIds} with no matching
+	 * {@link #rowsById} entry. That combination is the ONLY legitimate reason this method ever returns empty.
+	 * It is not a general licence to treat a missing row as unremarkable -- any other cause would be a genuine
+	 * bug in this class, and a caller silently swallowing it here would only hide that bug rather than fix it.
+	 */
+	private Optional<DocTextLinesRow> resolveRow(@NonNull final DocumentId rowId)
+	{
+		return Optional.ofNullable(rowsById.get(rowId));
 	}
 
 	@Override
@@ -125,14 +139,26 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 
 		final int referenceIndex = indexOfOrThrow(referenceRowId);
 
-		final BigDecimal referencePosition = rowsById.get(referenceRowId).getLine();
+		// the reference row was explicitly selected by the caller -- if it vanished between selection and this
+		// computation, there is nothing sensible to insert above; reject cleanly rather than crash
+		final BigDecimal referencePosition = resolveRow(referenceRowId)
+				.map(DocTextLinesRow::getLine)
+				.orElseThrow(() -> new AdempiereException("Cannot insert above a row that no longer exists")
+						.appendParametersToMessage()
+						.setParameter("referenceRowId", referenceRowId));
 
+		// the previous row is only a bound for the midpoint arithmetic -- a vanished one (the delete-caused
+		// gap resolveRow's javadoc names) is treated as no bound at all, same as there genuinely being none
 		final BigDecimal previousPosition = referenceIndex > 0
-				? rowsById.get(rowIds.get(referenceIndex - 1)).getLine()
+				? resolveRow(rowIds.get(referenceIndex - 1)).map(DocTextLinesRow::getLine).orElse(null)
 				: null;
 
+		// a vanished row in the preceding sublist contributes nothing to "does an article precede this
+		// position" either way -- skip it, same as if it had already been trimmed from rowIds
 		final boolean articleLineExistsBeforeReferencePosition = rowIds.subList(0, referenceIndex).stream()
-				.map(rowsById::get)
+				.map(this::resolveRow)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.anyMatch(DocTextLinesRow::isArticleLine);
 
 		return InsertAbovePositions.builder()
@@ -272,7 +298,14 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			}
 
 			final DocumentId neighborId = rowIds.get(neighborIndex);
-			final DocTextLinesRow neighbor = rowsById.get(neighborId);
+			// the neighbour is the row this method is about to exchange with -- if it vanished (the
+			// delete-caused gap resolveRow's javadoc names), there is nothing sensible left to exchange with;
+			// reject cleanly rather than crash, same rationale as the reference-row lookup in
+			// computeInsertAbovePositions
+			final DocTextLinesRow neighbor = resolveRow(neighborId)
+					.orElseThrow(() -> new AdempiereException("No row to move " + (towardStart ? "up" : "down") + " into")
+							.appendParametersToMessage()
+							.setParameter("rowId", rowId));
 
 			final DocTextLinesRow newRow;
 			if (neighbor.isTextLine())
@@ -290,8 +323,10 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			else
 			{
 				final int beyondIndex = towardStart ? neighborIndex - 1 : neighborIndex + 1;
+				// the row beyond the neighbour is only a bound for the position arithmetic -- a vanished one
+				// is treated as no bound at all, same as there genuinely being none (out of range)
 				final BigDecimal beyondPosition = beyondIndex >= 0 && beyondIndex < rowIds.size()
-						? rowsById.get(rowIds.get(beyondIndex)).getLine()
+						? resolveRow(rowIds.get(beyondIndex)).map(DocTextLinesRow::getLine).orElse(null)
 						: null;
 				final BigDecimal newPosition = towardStart
 						? DocTextLineRepository.computePositionBetween(beyondPosition, neighbor.getLine())
