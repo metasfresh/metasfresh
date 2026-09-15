@@ -87,12 +87,6 @@ final class DocTextLinesRowsLoader
 
 	private static DocTextLinesRow toTextRow(@NonNull final DocTextLine textLine)
 	{
-		return DocTextLinesRow.builder()
-				.rowType(DocTextLinesRow.RowType.TEXT)
-				.line(textLine.getLine())
-				.textLineId(textLine.getId())
-				.textLine(textLine.getTextLine())
-				.textLineScope(textLine.getScope())
-				.build();
+		return DocTextLinesRow.ofTextLine(textLine);
 	}
 }

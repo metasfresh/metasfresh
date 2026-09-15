@@ -1,15 +1,21 @@
 package de.metas.ui.web.doc_textlines;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.doctextline.DocTextLine;
+import de.metas.doctextline.DocTextLineDocumentRef;
 import de.metas.i18n.ITranslatableString;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * The merged view of one sales order's article lines and text lines. Article rows are read-only, for
@@ -20,13 +26,34 @@ import javax.annotation.Nullable;
  */
 public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> implements IEditableView
 {
+	public static DocTextLinesView cast(final Object viewObj)
+	{
+		return (DocTextLinesView)viewObj;
+	}
+
+	@Getter
+	@NonNull
+	private final DocTextLineDocumentRef documentRef;
+
+	private final ImmutableList<RelatedProcessDescriptor> processes;
+
 	@Builder
 	private DocTextLinesView(
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
-			@NonNull final DocTextLinesRows rows)
+			@NonNull final DocTextLinesRows rows,
+			@NonNull final DocTextLineDocumentRef documentRef,
+			@Nullable final List<RelatedProcessDescriptor> processes)
 	{
 		super(viewId, description, rows, NullDocumentFilterDescriptorsProvider.instance);
+		this.documentRef = documentRef;
+		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
+	}
+
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return processes;
 	}
 
 	@Override
@@ -54,5 +81,17 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 	public InsertAbovePositions getInsertAbovePositions(@Nullable final DocumentId referenceRowId)
 	{
 		return getRowsData().computeInsertAbovePositions(referenceRowId);
+	}
+
+	/**
+	 * Adds {@code newTextLine} to this view as a row, immediately above {@code referenceRowId} -- see
+	 * {@link DocTextLinesRows#insertRowAbove(DocumentId, DocTextLinesRow)} for the placement rule -- and
+	 * notifies the frontend to reload, the same way {@code ProductsProposalView#addOrUpdateRows} does after
+	 * widening its own rows data.
+	 */
+	public void insertRowAbove(@Nullable final DocumentId referenceRowId, @NonNull final DocTextLine newTextLine)
+	{
+		getRowsData().insertRowAbove(referenceRowId, DocTextLinesRow.ofTextLine(newTextLine));
+		invalidateAll();
 	}
 }

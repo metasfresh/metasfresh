@@ -5,6 +5,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.doctextline.DocTextLineDocumentRef;
 import de.metas.doctextline.DocTextLineId;
 import de.metas.doctextline.DocTextLineRepository;
 import de.metas.doctextline.TextLineScope;
@@ -119,6 +120,7 @@ class DocTextLinesViewTest
 		return DocTextLinesView.builder()
 				.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 				.rows(rows)
+				.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
 				.build();
 	}
 
@@ -456,6 +458,7 @@ class DocTextLinesViewTest
 			final DocTextLinesView view = DocTextLinesView.builder()
 					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 					.rows(rows)
+					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
 					.build();
 
 			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
@@ -528,6 +531,7 @@ class DocTextLinesViewTest
 			final DocTextLinesView view = DocTextLinesView.builder()
 					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 					.rows(rows)
+					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
 					.build();
 
 			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));

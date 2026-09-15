@@ -1,6 +1,7 @@
 package de.metas.ui.web.doc_textlines;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.doctextline.DocTextLine;
 import de.metas.doctextline.DocTextLineId;
 import de.metas.doctextline.TextLineScope;
 import de.metas.order.OrderLineId;
@@ -130,6 +131,17 @@ public final class DocTextLinesRow implements IViewRow
 		return ImmutableMap.of(
 				FIELD_TextLine, textFieldsMode,
 				FIELD_TextLineScope, textFieldsMode);
+	}
+
+	public static DocTextLinesRow ofTextLine(@NonNull final DocTextLine textLine)
+	{
+		return DocTextLinesRow.builder()
+				.rowType(RowType.TEXT)
+				.line(textLine.getLine())
+				.textLineId(textLine.getId())
+				.textLine(textLine.getTextLine())
+				.textLineScope(textLine.getScope())
+				.build();
 	}
 
 	public static DocumentId articleRowId(@NonNull final OrderLineId orderLineId)

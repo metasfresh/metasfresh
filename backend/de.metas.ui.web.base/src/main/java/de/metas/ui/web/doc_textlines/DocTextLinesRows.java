@@ -23,11 +23,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Holder of the merged article-line/text-line rows of one {@link DocTextLinesView}. Row order is fixed at
- * construction time -- it is the merged order {@link DocTextLinesRowsLoader} computed -- and preserved here
- * via {@link #rowIds}' insertion order.
+ * Holder of the merged article-line/text-line rows of one {@link DocTextLinesView}. Row order starts as the
+ * merged order {@link DocTextLinesRowsLoader} computed, preserved via {@link #rowIds}' insertion order, and is
+ * widened in place by {@link #insertRowAbove} as rows are added.
  * <p>
  * Editable ({@link IEditableRowsData}): patching a text row's text/scope persists immediately, in keeping
  * with this WebUI's field-level auto-save behaviour, rather than deferring to a view-close batch the way
@@ -42,10 +43,13 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		return (DocTextLinesRows)rowsData;
 	}
 
-	private final ImmutableList<DocumentId> rowIds; // preserves the merged order
+	private final List<DocumentId> rowIds; // preserves the merged order; mutated only under #structuralLock
 	private final ConcurrentHashMap<DocumentId, DocTextLinesRow> rowsById;
-	private final ImmutableMap<DocumentId, Object> rowLocksById; // one dedicated monitor per row, see #patchRow
+	private final ConcurrentHashMap<DocumentId, Object> rowLocksById; // one dedicated monitor per row, see #patchRow
 	private final DocTextLineRepository docTextLineRepository;
+
+	/** Guards {@link #insertRowAbove} against two concurrent inserts corrupting {@link #rowIds}' index arithmetic. */
+	private final Object structuralLock = new Object();
 
 	@Builder
 	private DocTextLinesRows(
@@ -54,12 +58,12 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	{
 		// empty is legal here (unlike the shipment-candidates-editor precedent): an order with no lines at
 		// all still opens the modal, just with zero rows.
-		rowIds = rows.stream()
+		rowIds = new CopyOnWriteArrayList<>(rows.stream()
 				.map(DocTextLinesRow::getId)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableList.toImmutableList()));
 
 		rowsById = new ConcurrentHashMap<>(Maps.uniqueIndex(rows, DocTextLinesRow::getId));
-		rowLocksById = rowIds.stream().collect(ImmutableMap.toImmutableMap(id -> id, id -> new Object()));
+		rowLocksById = new ConcurrentHashMap<>(rowIds.stream().collect(ImmutableMap.toImmutableMap(id -> id, id -> new Object())));
 		this.docTextLineRepository = docTextLineRepository;
 	}
 
@@ -124,6 +128,40 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 				.previousPosition(previousPosition)
 				.articleLineExistsBeforeReferencePosition(articleLineExistsBeforeReferencePosition)
 				.build();
+	}
+
+	/**
+	 * Adds a newly-persisted text row into the merged order, immediately above {@code referenceRowId} -- or as
+	 * the document's only row when {@code referenceRowId} is {@code null} (the document had no rows at all).
+	 * Widens {@link #rowsById} AND {@link #rowLocksById} together with {@link #rowIds}, so the row is
+	 * immediately patchable via {@link #patchRow} the moment this method returns -- a row present in
+	 * {@link #rowsById} without a matching {@link #rowLocksById} entry would make {@link #getRowLockOrThrow}
+	 * throw {@link EntityNotFoundException} on the row's very first edit.
+	 */
+	void insertRowAbove(@Nullable final DocumentId referenceRowId, @NonNull final DocTextLinesRow newRow)
+	{
+		final DocumentId newRowId = newRow.getId();
+
+		synchronized (structuralLock)
+		{
+			final int insertIndex;
+			if (referenceRowId == null)
+			{
+				insertIndex = 0;
+			}
+			else
+			{
+				insertIndex = rowIds.indexOf(referenceRowId);
+				if (insertIndex < 0)
+				{
+					throw new EntityNotFoundException(referenceRowId.toJson());
+				}
+			}
+
+			rowLocksById.put(newRowId, new Object());
+			rowsById.put(newRowId, newRow);
+			rowIds.add(insertIndex, newRowId);
+		}
 	}
 
 	/**
