@@ -284,9 +284,9 @@ public final class PPOrderCosts
 		final List<ProductId> fixedPricedCoProductIds = new ArrayList<>();
 		for (final PPOrderCost coProductCost : coProductCosts)
 		{
-			final Optional<BigDecimal> fixedCostPrice = fixedCostPriceProvider.getFixedCostPrice(coProductCost.getProductId());
+			final BigDecimal fixedCostPrice = fixedCostPriceProvider.getFixedCostPrice(coProductCost.getProductId()).orElse(null);
 			final CostAmount coProductAmount;
-			if (fixedCostPrice.isPresent())
+			if (fixedCostPrice != null)
 			{
 				// C3 method-gate: the ORDER's costing method (the acct schema's — passed in as costingMethod, NOT
 				// the invoking handler's; see the handlers' getAcctSchemaCostingMethod) must be Average PO or Moving
@@ -302,7 +302,7 @@ public final class PPOrderCosts
 							+ " is set, but the fixed-price co-product valuation is supported only under the Average PO and Moving Average Invoice costing methods, not " + costingMethod);
 				}
 				coProductAmount = CostAmount.of(
-								fixedCostPrice.get().multiply(coProductCost.getAccumulatedQty().toBigDecimal()),
+								fixedCostPrice.multiply(coProductCost.getAccumulatedQty().toBigDecimal()),
 								totalInboundCostAmount.getCurrencyId())
 						.roundToPrecisionIfNeeded(precision);
 				fixedPricedCoProductIds.add(coProductCost.getProductId());
