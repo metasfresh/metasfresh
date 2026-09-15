@@ -44,6 +44,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 
 	private final ImmutableList<DocumentId> rowIds; // preserves the merged order
 	private final ConcurrentHashMap<DocumentId, DocTextLinesRow> rowsById;
+	private final ImmutableMap<DocumentId, Object> rowLocksById; // one dedicated monitor per row, see #patchRow
 	private final DocTextLineRepository docTextLineRepository;
 
 	@Builder
@@ -58,6 +59,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 				.collect(ImmutableList.toImmutableList());
 
 		rowsById = new ConcurrentHashMap<>(Maps.uniqueIndex(rows, DocTextLinesRow::getId));
+		rowLocksById = rowIds.stream().collect(ImmutableMap.toImmutableMap(id -> id, id -> new Object()));
 		this.docTextLineRepository = docTextLineRepository;
 	}
 
@@ -130,9 +132,25 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * view has no logic-expression re-evaluation or permission-gated field -- only
 	 * {@link RowEditingContext#getRowId()} is used.
 	 * <p>
-	 * Persists before mutating the in-memory row, deliberately not the other way round: if the DB write
-	 * fails, a reader of this view (including the same failed request's own error response) must still see
-	 * the old, actually-persisted value -- not a new value that only ever existed in memory.
+	 * Two invariants both hold, in this order:
+	 * <ol>
+	 * <li><b>Per-row atomicity.</b> The whole read-persist-publish sequence for one row runs under that row's
+	 * own monitor ({@link #rowLocksById}), so two concurrent patches of the same row cannot interleave --
+	 * this module's field-level auto-save means "user edits the text, then the scope, moments apart" is the
+	 * ordinary case, not an edge case, and an unserialised read-modify-write here would silently drop
+	 * whichever edit lost the race.</li>
+	 * <li><b>No publish before a successful persist.</b> The DB write happens before {@code rowsById} is
+	 * updated; if it throws, the {@code synchronized} block is exited by the exception before the row is
+	 * touched, so a reader of this view (including the same failed request's own error response) still sees
+	 * the old, actually-persisted value.</li>
+	 * </ol>
+	 * A per-row {@code Object} monitor was chosen over folding the repository call into
+	 * {@code ConcurrentHashMap#compute} (which would also serialise and would also leave the mapping
+	 * untouched on failure): {@code compute}'s own contract discourages exactly this -- a blocking, "not
+	 * short and simple" computation held under the map's internal per-bin lock can stall unrelated keys that
+	 * happen to hash into the same bin, a cost with no visible trace in this class. A monitor scoped to one
+	 * {@link DocumentId}, built once for the fixed row set at construction time, keeps the blocking window
+	 * provably limited to that one row.
 	 */
 	@Override
 	public void patchRow(
@@ -141,15 +159,19 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	{
 		final DocTextLineRowUserChangeRequest userChanges = toUserChangeRequest(fieldChangeRequests);
 		final DocumentId rowId = ctx.getRowId();
-		final DocTextLinesRow patchedRow = getRowOrThrow(rowId).withChanges(userChanges);
 
-		docTextLineRepository.updateTextAndScope(
-				patchedRow.getTextLineId(),
-				patchedRow.getTextLine(),
-				patchedRow.getTextLineScope());
+		synchronized (getRowLockOrThrow(rowId))
+		{
+			final DocTextLinesRow patchedRow = getRowOrThrow(rowId).withChanges(userChanges);
 
-		// only reached once the DB write above succeeded -- see the persist-before-mutate note above
-		rowsById.put(rowId, patchedRow);
+			docTextLineRepository.updateTextAndScope(
+					patchedRow.getTextLineId(),
+					patchedRow.getTextLine(),
+					patchedRow.getTextLineScope());
+
+			// only reached once the DB write above succeeded -- see invariant 2 above
+			rowsById.put(rowId, patchedRow);
+		}
 	}
 
 	private static DocTextLineRowUserChangeRequest toUserChangeRequest(@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
@@ -181,5 +203,15 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			throw new EntityNotFoundException(rowId.toJson());
 		}
 		return row;
+	}
+
+	private Object getRowLockOrThrow(@NonNull final DocumentId rowId)
+	{
+		final Object lock = rowLocksById.get(rowId);
+		if (lock == null)
+		{
+			throw new EntityNotFoundException(rowId.toJson());
+		}
+		return lock;
 	}
 }

@@ -35,6 +35,10 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -464,6 +468,137 @@ class DocTextLinesViewTest
 			// have gotten ahead of it, including the copy the same failed request's own error response reads
 			final DocTextLinesRow inMemoryRow = view.getById(rowId);
 			assertThat(inMemoryRow.getTextLine()).isEqualTo("original text");
+		}
+
+		/**
+		 * Two field-level auto-save PATCHes of the SAME row, arriving close together (a real sequence: the user
+		 * types the text, then changes the scope on the same row), must not interleave such that one edit is
+		 * lost. Forces the interleaving deterministically with two independently-controlled latch pairs around
+		 * a repository spy -- one per thread's repository call, identified by arrival order (the second call can
+		 * only ever be thread B's, since thread A's call is still blocked when thread B is started) -- rather
+		 * than exercising the two patches sequentially, which would not touch the race at all.
+		 * <p>
+		 * The orchestration tolerates both a correctly-serialising implementation (thread B cannot reach its
+		 * repository call until thread A releases the row -- the 500ms poll below finds nothing, and the test
+		 * then waits again, longer, after releasing A) and a non-serialising one (thread B reaches its
+		 * repository call immediately, using the still-stale row) -- either way, the row must end up correct.
+		 */
+		@Test
+		void concurrentPatchesOfTheSameRow_neitherEditIsLost() throws InterruptedException
+		{
+			final I_C_Doc_TextLine textLine = createTextLine("5", TextLineScope.Following, "original text");
+
+			final AtomicInteger callIndex = new AtomicInteger(0);
+			final CountDownLatch aReachedRepository = new CountDownLatch(1);
+			final CountDownLatch releaseA = new CountDownLatch(1);
+			final CountDownLatch bReachedRepository = new CountDownLatch(1);
+			final CountDownLatch releaseB = new CountDownLatch(1);
+
+			final DocTextLineRepository racingRepository = Mockito.spy(docTextLineRepository);
+			Mockito.doAnswer(invocation -> {
+						final int index = callIndex.getAndIncrement();
+						if (index == 0)
+						{
+							aReachedRepository.countDown();
+							if (!releaseA.await(5, TimeUnit.SECONDS))
+							{
+								throw new IllegalStateException("test bug: releaseA was never signalled");
+							}
+						}
+						else if (index == 1)
+						{
+							bReachedRepository.countDown();
+							if (!releaseB.await(5, TimeUnit.SECONDS))
+							{
+								throw new IllegalStateException("test bug: releaseB was never signalled");
+							}
+						}
+						return invocation.callRealMethod();
+					})
+					.when(racingRepository)
+					.updateTextAndScope(any(), any(), any());
+
+			final DocTextLinesRows rows = DocTextLinesRowsLoader.builder()
+					.orderDAO(orderDAO)
+					.docTextLineRepository(racingRepository)
+					.productsLookup(MockedLookupDataSource.withNamePrefix("product"))
+					.orderId(orderId)
+					.build()
+					.load();
+			final DocTextLinesView view = DocTextLinesView.builder()
+					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
+					.rows(rows)
+					.build();
+
+			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
+
+			final AtomicReference<Throwable> threadAFailure = new AtomicReference<>();
+			final AtomicReference<Throwable> threadBFailure = new AtomicReference<>();
+
+			// thread A: patches the text
+			final Thread threadA = new Thread(() -> {
+				try
+				{
+					patch(view, rowId, JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLine, "text from A"));
+				}
+				catch (final Throwable t)
+				{
+					threadAFailure.set(t);
+				}
+			});
+			threadA.start();
+
+			assertThat(aReachedRepository.await(5, TimeUnit.SECONDS))
+					.as("thread A must reach its repository call")
+					.isTrue();
+
+			// thread B: patches the scope of the SAME row while A is still mid-flight, blocked on its own
+			// repository call
+			final Thread threadB = new Thread(() -> {
+				try
+				{
+					patch(view, rowId, JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLineScope, TextLineScope.Document.getCode()));
+				}
+				catch (final Throwable t)
+				{
+					threadBFailure.set(t);
+				}
+			});
+			threadB.start();
+
+			// give thread B a real, bounded chance to race ahead of thread A -- true only for an implementation
+			// with no per-row mutual exclusion; false is equally a valid (and expected, for the fix) outcome
+			final boolean bRacedAheadOfA = bReachedRepository.await(500, TimeUnit.MILLISECONDS);
+
+			releaseA.countDown();
+			threadA.join(5_000);
+			assertThat(threadA.isAlive()).as("thread A finished").isFalse();
+			assertThat(threadAFailure.get()).isNull();
+
+			if (!bRacedAheadOfA)
+			{
+				// thread B was genuinely blocked -- now that thread A released the row, thread B must be able
+				// to proceed
+				assertThat(bReachedRepository.await(5, TimeUnit.SECONDS))
+						.as("thread B must reach its repository call once thread A released the row")
+						.isTrue();
+			}
+
+			releaseB.countDown();
+			threadB.join(5_000);
+			assertThat(threadB.isAlive()).as("thread B finished").isFalse();
+			assertThat(threadBFailure.get()).isNull();
+
+			// both edits must be present -- if the two patches interleaved without per-row atomicity, whichever
+			// one read the row first overwrites the other's change with a stale copy of the field it never
+			// touched itself
+			final DocTextLinesRow inMemoryRow = view.getById(rowId);
+			assertThat(inMemoryRow.getTextLine()).isEqualTo("text from A");
+			assertThat(inMemoryRow.getTextLineScope()).isEqualTo(TextLineScope.Document);
+
+			final DocTextLinesRow persistedRow = rowsOf(loadView()).get(0);
+			assertThat(persistedRow.getTextLine()).isEqualTo("text from A");
+			assertThat(persistedRow.getTextLineScope()).isEqualTo(TextLineScope.Document);
 		}
 	}
 }
