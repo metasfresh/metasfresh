@@ -61,9 +61,8 @@ public class IssueServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// after init(): ModelCacheInvalidationService.newInstanceForUnitTesting() asserts unit-test mode,
-		// which a field initializer would hit before @BeforeEach ran (fails whenever this class is the
-		// first one executed in the surefire fork).
+		// after init(): newInstanceForUnitTesting() asserts unit-test mode, which a field initializer would
+		// hit before @BeforeEach ran (fails whenever this class is the first one executed in the surefire fork).
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
 		timeBookingRepository = new TimeBookingRepository(queryBL);
