@@ -1,6 +1,7 @@
 package de.metas.doctextline;
 
 import de.metas.order.OrderId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DocTextLineRepositoryTest
 {
@@ -46,7 +48,7 @@ class DocTextLineRepositoryTest
 			final DocTextLine result = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(BigDecimal.valueOf(10))
 					.referencePosition(BigDecimal.valueOf(11))
-					.articleLineExistsBeforeNewPosition(true)
+					.articleLineExistsBeforeReferencePosition(true)
 					.build());
 
 			assertThat(result.getLine()).isEqualByComparingTo("10.5");
@@ -59,7 +61,7 @@ class DocTextLineRepositoryTest
 			final DocTextLine result = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(null)
 					.referencePosition(BigDecimal.valueOf(10))
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 
 			assertThat(result.getLine()).isEqualByComparingTo("5");
@@ -72,7 +74,7 @@ class DocTextLineRepositoryTest
 			final DocTextLine result = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(null)
 					.referencePosition(null)
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 
 			assertThat(result.getLine()).isEqualByComparingTo("1");
@@ -85,12 +87,41 @@ class DocTextLineRepositoryTest
 			final DocTextLine result = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(null)
 					.referencePosition(null)
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 
 			assertThat(docTextLineRepository.getByDocument(documentRef))
 					.extracting(DocTextLine::getId)
 					.containsExactly(result.getId());
+		}
+
+		@Test
+		void throwsWhenThePositionGapIsExhausted()
+		{
+			// the minimum representable gap at scale 4: (10.0000 + 10.0001) / 2 = 10.00005 -> HALF_UP -> 10.0001,
+			// exactly equal to referencePosition -- nothing left to round to
+			assertThatThrownBy(() -> docTextLineRepository.insertAbove(requestBuilder()
+					.previousPosition(new BigDecimal("10.0000"))
+					.referencePosition(new BigDecimal("10.0001"))
+					.articleLineExistsBeforeReferencePosition(true)
+					.build()))
+					.isInstanceOf(AdempiereException.class);
+		}
+
+		@Test
+		void roundsHalfUpOnATie()
+		{
+			// (10.0002 + 10.0007) / 2 = 10.00045 -- a genuine tie at the 5th decimal, only reachable this way
+			// because the divisor is always exactly 2: dividing a scale-4 sum by 2 either terminates within
+			// scale 4 (no rounding needed) or leaves exactly one further digit "5" (an exact tie). HALF_DOWN/DOWN
+			// would round down to 10.0004; HALF_UP rounds away from zero to 10.0005.
+			final DocTextLine result = docTextLineRepository.insertAbove(requestBuilder()
+					.previousPosition(new BigDecimal("10.0002"))
+					.referencePosition(new BigDecimal("10.0007"))
+					.articleLineExistsBeforeReferencePosition(true)
+					.build());
+
+			assertThat(result.getLine()).isEqualByComparingTo("10.0005");
 		}
 	}
 
@@ -103,12 +134,12 @@ class DocTextLineRepositoryTest
 			final DocTextLine first = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(null)
 					.referencePosition(BigDecimal.valueOf(30))
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 			final DocTextLine second = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(first.getLine())
 					.referencePosition(BigDecimal.valueOf(30))
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 
 			docTextLineRepository.swapPositions(first.getId(), second.getId());
@@ -134,7 +165,7 @@ class DocTextLineRepositoryTest
 			final DocTextLine line = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(null)
 					.referencePosition(null)
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 
 			docTextLineRepository.deleteById(line.getId());
@@ -148,12 +179,12 @@ class DocTextLineRepositoryTest
 			final DocTextLine toDelete = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(null)
 					.referencePosition(BigDecimal.valueOf(10))
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 			final DocTextLine toKeep = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(toDelete.getLine())
 					.referencePosition(BigDecimal.valueOf(10))
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 
 			docTextLineRepository.deleteById(toDelete.getId());
@@ -173,17 +204,40 @@ class DocTextLineRepositoryTest
 			final DocTextLine last = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(null)
 					.referencePosition(BigDecimal.valueOf(30))
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 			final DocTextLine first = docTextLineRepository.insertAbove(requestBuilder()
 					.previousPosition(null)
 					.referencePosition(last.getLine())
-					.articleLineExistsBeforeNewPosition(false)
+					.articleLineExistsBeforeReferencePosition(false)
 					.build());
 
 			assertThat(docTextLineRepository.getByDocument(documentRef))
 					.extracting(DocTextLine::getId)
 					.containsExactly(first.getId(), last.getId());
+		}
+
+		@Test
+		void breaksTiesById()
+		{
+			// insertAbove's own collision guard only ever sees ONE pair of neighbours per call, so it cannot
+			// catch two independent empty-document inserts landing on the same FIRST_POSITION_IN_EMPTY_DOCUMENT --
+			// this is the resulting tie getByDocument must still order deterministically.
+			final DocTextLine older = docTextLineRepository.insertAbove(requestBuilder()
+					.previousPosition(null)
+					.referencePosition(null)
+					.articleLineExistsBeforeReferencePosition(false)
+					.build());
+			final DocTextLine newer = docTextLineRepository.insertAbove(requestBuilder()
+					.previousPosition(null)
+					.referencePosition(null)
+					.articleLineExistsBeforeReferencePosition(false)
+					.build());
+			assertThat(older.getLine()).isEqualByComparingTo(newer.getLine());
+
+			assertThat(docTextLineRepository.getByDocument(documentRef))
+					.extracting(DocTextLine::getId)
+					.containsExactly(older.getId(), newer.getId());
 		}
 	}
 }

@@ -6,6 +6,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Doc_TextLine;
 import org.springframework.stereotype.Repository;
@@ -17,7 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Repository Tables: C_Doc_TextLine.
+ * Repository Tables: C_Doc_TextLine
+ * Repository Cluster: DocTextLineRepository
  * <p>
  * Owns the position arithmetic of DESIGN.md § D-C (midpoint insert-above) and the scope default of § D-D.
  * Both operate on plain values supplied by the caller — this repository never queries article-line tables
@@ -31,12 +33,12 @@ public class DocTextLineRepository
 	/** Position given to the first text line ever inserted into an otherwise empty document (AC25). */
 	private static final BigDecimal FIRST_POSITION_IN_EMPTY_DOCUMENT = BigDecimal.ONE.setScale(LINE_SCALE);
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public DocTextLine insertAbove(@NonNull final InsertAboveRequest request)
 	{
 		final BigDecimal newPosition = computeInsertAbovePosition(request.getReferencePosition(), request.getPreviousPosition());
-		final TextLineScope scope = request.isArticleLineExistsBeforeNewPosition() ? TextLineScope.Following : TextLineScope.Document;
+		final TextLineScope scope = request.isArticleLineExistsBeforeReferencePosition() ? TextLineScope.Following : TextLineScope.Document;
 
 		final I_C_Doc_TextLine record = InterfaceWrapperHelper.newInstance(I_C_Doc_TextLine.class);
 		setDocumentRef(record, request.getDocumentRef());
@@ -52,6 +54,10 @@ public class DocTextLineRepository
 	 * Midpoint between {@code referencePosition} (the row inserted above) and {@code previousPosition} (the
 	 * row before it in the merged sequence); halves {@code referencePosition} when there is no previous row;
 	 * returns {@link #FIRST_POSITION_IN_EMPTY_DOCUMENT} when there is no reference row either.
+	 *
+	 * @throws AdempiereException when the gap between the two positions is exhausted at scale {@value #LINE_SCALE}
+	 *         — the rounded midpoint would collide with {@code referencePosition} or {@code previousPosition},
+	 *         producing a duplicate {@code Line} that nothing in the schema rejects.
 	 */
 	static BigDecimal computeInsertAbovePosition(@Nullable final BigDecimal referencePosition, @Nullable final BigDecimal previousPosition)
 	{
@@ -59,11 +65,21 @@ public class DocTextLineRepository
 		{
 			return FIRST_POSITION_IN_EMPTY_DOCUMENT;
 		}
-		if (previousPosition == null)
+
+		final BigDecimal newPosition = previousPosition == null
+				? referencePosition.divide(BigDecimal.valueOf(2), LINE_SCALE, RoundingMode.HALF_UP)
+				: previousPosition.add(referencePosition).divide(BigDecimal.valueOf(2), LINE_SCALE, RoundingMode.HALF_UP);
+
+		final boolean collidesWithReference = newPosition.compareTo(referencePosition) == 0;
+		final boolean collidesWithPrevious = previousPosition != null && newPosition.compareTo(previousPosition) == 0;
+		if (collidesWithReference || collidesWithPrevious)
 		{
-			return referencePosition.divide(BigDecimal.valueOf(2), LINE_SCALE, RoundingMode.HALF_UP);
+			throw new AdempiereException("Cannot insert a text line between " + previousPosition + " and " + referencePosition
+					+ ": the position gap is exhausted at scale " + LINE_SCALE + " (the midpoint " + newPosition
+					+ " would duplicate an existing position). Move a neighbouring row first to free up space.");
 		}
-		return previousPosition.add(referencePosition).divide(BigDecimal.valueOf(2), LINE_SCALE, RoundingMode.HALF_UP);
+
+		return newPosition;
 	}
 
 	public void swapPositions(@NonNull final DocTextLineId id1, @NonNull final DocTextLineId id2)
@@ -94,6 +110,7 @@ public class DocTextLineRepository
 		return queryBuilder
 				.orderBy()
 				.addColumn(I_C_Doc_TextLine.COLUMNNAME_Line)
+				.addColumn(I_C_Doc_TextLine.COLUMNNAME_C_Doc_TextLine_ID)
 				.endOrderBy()
 				.create()
 				.list()

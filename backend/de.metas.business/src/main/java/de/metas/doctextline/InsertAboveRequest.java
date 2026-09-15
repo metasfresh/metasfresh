@@ -27,6 +27,10 @@ public class InsertAboveRequest
 	/** Position of the row immediately preceding {@link #referencePosition} in the merged sequence; {@code null} when the reference row is the first row. */
 	@Nullable BigDecimal previousPosition;
 
-	/** Whether any article line of the document has a smaller position than the row being inserted above (DESIGN.md § D-D). */
-	boolean articleLineExistsBeforeNewPosition;
+	/**
+	 * Whether any article line of the document has a smaller position than {@link #referencePosition} — the
+	 * new line's own position is always between {@link #previousPosition} and {@link #referencePosition}, so
+	 * this is equivalently "does an article line precede the new line" (DESIGN.md § D-D).
+	 */
+	boolean articleLineExistsBeforeReferencePosition;
 }
