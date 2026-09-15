@@ -114,6 +114,9 @@ const translations = {
         },
       },
     },
+    manufacturing: {
+      confirmEmptyHUPrompt: 'This will write off the remaining %(qty)s and empty the HU. Continue?',
+    },
     picking: {
       PickingLine: 'Packing line',
       PickFromManufacturingOrder: 'Manufacture',

@@ -506,7 +506,9 @@ public class ManufacturingJobService
 		return IssueRawMaterialsCommand.builder()
 				.trxManager(trxManager)
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
-				.loadingAndSavingSupportServices(loadingAndSavingSupportServices);
+				.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
+				.ppOrderBL(ppOrderBL)
+				.mobileUIManufacturingConfigRepository(mobileUIManufacturingConfigRepository);
 	}
 
 	public ManufacturingJob receiveGoods(

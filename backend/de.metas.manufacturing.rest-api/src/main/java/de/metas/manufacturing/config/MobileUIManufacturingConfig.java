@@ -20,6 +20,8 @@ public class MobileUIManufacturingConfig
 	@Nullable ReceiveUnitType receiveUnitType;
 	@NonNull OptionalBoolean isBestBeforeDateEditable;
 	@NonNull OptionalBoolean isLotNumberEditable;
+	@NonNull @Builder.Default OptionalBoolean isAllowEmptyingHUs = OptionalBoolean.UNKNOWN;
+	@NonNull @Builder.Default OptionalBoolean isConfirmEmptyingHU = OptionalBoolean.UNKNOWN;
 
 	@NonNull
 	public ReceiveUnitType getReceiveUnitTypeEffective()
@@ -55,6 +57,8 @@ public class MobileUIManufacturingConfig
 				.receiveUnitType(this.receiveUnitType != null ? this.receiveUnitType : other.receiveUnitType)
 				.isBestBeforeDateEditable(this.isBestBeforeDateEditable.ifUnknown(other.isBestBeforeDateEditable))
 				.isLotNumberEditable(this.isLotNumberEditable.ifUnknown(other.isLotNumberEditable))
+				.isAllowEmptyingHUs(this.isAllowEmptyingHUs.ifUnknown(other.isAllowEmptyingHUs))
+				.isConfirmEmptyingHU(this.isConfirmEmptyingHU.ifUnknown(other.isConfirmEmptyingHU))
 				.build();
 		if (result.equals(this))
 		{
