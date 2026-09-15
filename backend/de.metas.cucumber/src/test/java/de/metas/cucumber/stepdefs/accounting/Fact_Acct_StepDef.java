@@ -38,6 +38,7 @@ public class Fact_Acct_StepDef
 	@NonNull private final FactAcctToTabularStringConverter factAcctTabularStringConverter;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 
 	public Fact_Acct_StepDef(
 			@NonNull final IdentifiersResolver identifiersResolver,
@@ -185,7 +186,6 @@ public class Fact_Acct_StepDef
 
 	private void assertWholeOrderDebitsEqualCredits(@NonNull final ImmutableSet<TableRecordReference> recordRefs)
 	{
-		final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 		final List<FactAcctQuery> queries = recordRefs.stream()
 				.map(recordRef -> FactAcctQuery.builder().recordRef(recordRef).build())
 				.collect(ImmutableList.toImmutableList());
