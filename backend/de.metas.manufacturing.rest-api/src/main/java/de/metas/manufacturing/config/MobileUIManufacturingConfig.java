@@ -30,6 +30,8 @@ public class MobileUIManufacturingConfig
 	@NonNull OptionalBoolean isSkipFinishedGoodsReceiveTargetStep;
 	@NonNull OptionalBoolean isCaptureCatchWeightAtReceipt;
 	@NonNull OptionalBoolean isAllowReceiveWithoutPackingItem;
+	@NonNull @Builder.Default OptionalBoolean isAllowEmptyingHUs = OptionalBoolean.UNKNOWN;
+	@NonNull @Builder.Default OptionalBoolean isConfirmEmptyingHU = OptionalBoolean.UNKNOWN;
 
 	@NonNull
 	public ReceiveUnitType getReceiveUnitTypeEffective()
@@ -105,6 +107,8 @@ public class MobileUIManufacturingConfig
 				.isSkipFinishedGoodsReceiveTargetStep(this.isSkipFinishedGoodsReceiveTargetStep.ifUnknown(other.isSkipFinishedGoodsReceiveTargetStep))
 				.isCaptureCatchWeightAtReceipt(this.isCaptureCatchWeightAtReceipt.ifUnknown(other.isCaptureCatchWeightAtReceipt))
 				.isAllowReceiveWithoutPackingItem(this.isAllowReceiveWithoutPackingItem.ifUnknown(other.isAllowReceiveWithoutPackingItem))
+				.isAllowEmptyingHUs(this.isAllowEmptyingHUs.ifUnknown(other.isAllowEmptyingHUs))
+				.isConfirmEmptyingHU(this.isConfirmEmptyingHU.ifUnknown(other.isConfirmEmptyingHU))
 				.build();
 		if (result.equals(this))
 		{

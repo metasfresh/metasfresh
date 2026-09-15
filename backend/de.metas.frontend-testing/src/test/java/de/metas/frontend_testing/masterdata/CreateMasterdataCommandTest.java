@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -18,6 +19,7 @@ import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceRequest;
@@ -33,6 +35,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -326,6 +329,7 @@ public class CreateMasterdataCommandTest
 				.productPlannings(ImmutableMap.of())
 				.packingInstructions(ImmutableMap.of())
 				.handlingUnits(ImmutableMap.of())
+				.packages(ImmutableMap.of())
 				.generatedHUQRCodes(ImmutableMap.of())
 				.salesOrders(ImmutableMap.of())
 				.distributionOrders(ImmutableMap.of())
@@ -368,12 +372,14 @@ public class CreateMasterdataCommandTest
 				.bpartners(ImmutableMap.of())
 				.products(ImmutableMap.of())
 				.resources(ImmutableMap.of())
+				.shippers(ImmutableMap.of())
 				.warehouses(ImmutableMap.of())
 				.pickingSlots(ImmutableMap.of())
 				.workplaces(ImmutableMap.of())
 				.productPlannings(ImmutableMap.of())
 				.packingInstructions(ImmutableMap.of())
 				.handlingUnits(ImmutableMap.of())
+				.packages(ImmutableMap.of())
 				.generatedHUQRCodes(ImmutableMap.of())
 				.salesOrders(ImmutableMap.of())
 				.purchaseOrders(ImmutableMap.of())
@@ -419,5 +425,31 @@ public class CreateMasterdataCommandTest
 		final ResourceId resourceId = context.getId(resourceIdentifier, ResourceId.class);
 		final I_S_Resource resource = InterfaceWrapperHelper.load(resourceId, I_S_Resource.class);
 		assertThat(resource.getC_Workplace_ID()).isEqualTo(workplaceId.getRepoId());
+	}
+
+	@Test
+	public void request_json_withShippersAndWarehouseEmpties_shouldDeserialize() throws Exception
+	{
+		// given: the JSON shape the Playwright fixtures use
+		final String json = "{"
+				+ "\"shippers\": {\"SHIPPER\": {\"name\": \"Shipper\"}},"
+				+ "\"warehouses\": {\"WH\": {\"empties\": {\"toWarehouse\": \"EMPTIES\", \"shipper\": \"SHIPPER\"}}, \"EMPTIES\": {}},"
+				+ "\"packages\": {\"PKG1\": {\"hu\": \"HU\", \"shipper\": \"SHIPPER\"}}"
+				+ "}";
+
+		// when
+		final JsonCreateMasterdataRequest request = new ObjectMapper().readValue(json, JsonCreateMasterdataRequest.class);
+
+		// then
+		final JsonCreateShipperRequest shipper = Objects.requireNonNull(request.getShippers()).get("SHIPPER");
+		assertThat(shipper.getName()).isEqualTo("Shipper");
+
+		final Map<String, JsonWarehouseRequest> warehouses = Objects.requireNonNull(request.getWarehouses());
+		final JsonWarehouseRequest.Empties empties = Objects.requireNonNull(warehouses.get("WH").getEmpties());
+		assertThat(empties.getToWarehouse()).isEqualTo(Identifier.ofString("EMPTIES"));
+		assertThat(empties.getShipper()).isEqualTo(Identifier.ofString("SHIPPER"));
+		assertThat(warehouses.get("EMPTIES").getEmpties()).isNull();
+
+		assertThat(Objects.requireNonNull(request.getPackages()).get("PKG1").getShipper()).isEqualTo(Identifier.ofString("SHIPPER"));
 	}
 }

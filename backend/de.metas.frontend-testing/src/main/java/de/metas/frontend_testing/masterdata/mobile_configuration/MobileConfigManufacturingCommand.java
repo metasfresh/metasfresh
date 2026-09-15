@@ -76,18 +76,50 @@ class MobileConfigManufacturingCommand
 			mobileManufacturingConfigRepository.saveGlobalEditableAttributeCodesInOrder(ClientId.METASFRESH, resolveEditableAttributeCodes(request.getEditableAttributes()));
 		}
 
+		// IsAllowEmptyingHUs / IsConfirmEmptyingHU are client-level only (MobileUI_MFG_Config has no
+		// per-user column for them, cf. RawMaterialsIssueActivityHandler#resolveEmptyingHUsConfig) —
+		// route them to the global config, never to the per-user profile above.
+		if (request.getIsAllowEmptyingHUs() != null || request.getIsConfirmEmptyingHU() != null)
+		{
+			updateGlobalEmptyingHUsConfig();
+		}
+
+		// Re-read after all writes: the two emptying flags live on the global config, not on newConfig.
+		final MobileUIManufacturingConfig effectiveConfig = mobileManufacturingConfigRepository.getConfig(loginUserId, ClientId.METASFRESH);
 		return JsonMobileConfigResponse.Manufacturing.builder()
-				.isScanResourceRequired(newConfig.getIsScanResourceRequired().toBooleanOrNull())
-				.isAllowIssuingAnyHU(newConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
-				.receiveUnitType(newConfig.getReceiveUnitType() != null ? newConfig.getReceiveUnitType().getCode() : null)
-				.isAllowFinishedGoodsReceiveToLU(newConfig.getIsAllowFinishedGoodsReceiveToLU().toBooleanOrNull())
-				.isAllowFinishedGoodsReceiveToTU(newConfig.getIsAllowFinishedGoodsReceiveToTU().toBooleanOrNull())
-				.isSkipFinishedGoodsReceiveTargetStep(newConfig.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanOrNull())
-				.isCaptureCatchWeightAtReceipt(newConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
-				.isAllowReceiveWithoutPackingItem(newConfig.getIsAllowReceiveWithoutPackingItem().toBooleanOrNull())
+				.isScanResourceRequired(effectiveConfig.getIsScanResourceRequired().toBooleanOrNull())
+				.isAllowIssuingAnyHU(effectiveConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
+				.receiveUnitType(effectiveConfig.getReceiveUnitType() != null ? effectiveConfig.getReceiveUnitType().getCode() : null)
+				.isAllowFinishedGoodsReceiveToLU(effectiveConfig.getIsAllowFinishedGoodsReceiveToLU().toBooleanOrNull())
+				.isAllowFinishedGoodsReceiveToTU(effectiveConfig.getIsAllowFinishedGoodsReceiveToTU().toBooleanOrNull())
+				.isSkipFinishedGoodsReceiveTargetStep(effectiveConfig.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanOrNull())
+				.isCaptureCatchWeightAtReceipt(effectiveConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
+				.isAllowReceiveWithoutPackingItem(effectiveConfig.getIsAllowReceiveWithoutPackingItem().toBooleanOrNull())
 				.editableAttributes(getGlobalEditableAttributes())
+				.isAllowEmptyingHUs(effectiveConfig.getIsAllowEmptyingHUs().toBooleanOrNull())
+				.isConfirmEmptyingHU(effectiveConfig.getIsConfirmEmptyingHU().toBooleanOrNull())
 				.build();
 	}
+
+	private void updateGlobalEmptyingHUsConfig()
+	{
+		// getGlobalConfigOrDefault, not a local copy of the defaults: the harness must create the global record
+		// with exactly the values production falls back to.
+		final MobileUIManufacturingConfig.MobileUIManufacturingConfigBuilder globalConfigBuilder =
+				mobileManufacturingConfigRepository.getGlobalConfigOrDefault(ClientId.METASFRESH).toBuilder();
+
+		if (request.getIsAllowEmptyingHUs() != null)
+		{
+			globalConfigBuilder.isAllowEmptyingHUs(OptionalBoolean.ofBoolean(request.getIsAllowEmptyingHUs()));
+		}
+		if (request.getIsConfirmEmptyingHU() != null)
+		{
+			globalConfigBuilder.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(request.getIsConfirmEmptyingHU()));
+		}
+
+		mobileManufacturingConfigRepository.saveGlobalConfig(globalConfigBuilder.build(), ClientId.METASFRESH);
+	}
+
 
 	/**
 	 * Resolves each requested editable-attribute entry to a persisted {@code M_Attribute.Value}
