@@ -14,6 +14,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -309,7 +310,7 @@ public final class PPOrderCosts
 			}
 			else
 			{
-				coProductAmount = totalInboundCostAmount.multiply(coProductCost.getCoProductCostDistributionPercent(), precision);
+				coProductAmount = computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision);
 			}
 			coProductCost.setPostCalculationAmount(coProductAmount);
 		}
@@ -357,6 +358,54 @@ public final class PPOrderCosts
 		//
 		// Update main product cost
 		mainProductCost.setPostCalculationAmount(mainProductAmount);
+	}
+
+	/**
+	 * The amount a blank-fixed-price co-product receipt must capitalize to inventory: the co-product's share of
+	 * the order's inbound cost pool (qty-distribution) for its cost element - the IDENTICAL amount
+	 * {@link #updatePostCalculationAmountsForCostElement} books as the co-product's post-calculation relief
+	 * (leg A). A costing-method handler values the co-product receipt (leg B) at this amount so both legs book
+	 * the same value, cost is conserved and the order's WIP clears.
+	 */
+	public CostAmount getBlankCoProductReceiptAmount(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final PPOrderCost coProductCost = getByCostSegmentAndElement(costSegmentAndElement)
+				.orElseThrow(() -> new AdempiereException("No co-product cost row found for " + costSegmentAndElement));
+		final CostAmount totalInboundCostAmount = getTotalInboundCostAmount(coProductCost.getCostElementId());
+		return computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision);
+	}
+
+	private CostAmount getTotalInboundCostAmount(@NonNull final CostElementId costElementId)
+	{
+		final List<PPOrderCost> costsForElement = filterAndList(PPOrderCostFilter.builder()
+				.costElementId(costElementId)
+				.build());
+		return costsForElement.stream()
+				.filter(PPOrderCost::isInboundCost)
+				.map(PPOrderCost::getAccumulatedAmount)
+				.reduce(CostAmount::add)
+				.orElseThrow(() -> new AdempiereException("No inbound costs found in " + costsForElement));
+	}
+
+	/**
+	 * The blank-fixed-price co-product's qty-distribution share of the order's inbound cost pool:
+	 * {@code totalInbound × coProductCostDistributionPercent}. The distribution percent is nullable (the DAO
+	 * leaves it unset, especially under Moving Average Invoice), so a null / non-positive percent yields a zero
+	 * share - nothing to capitalise - rather than an NPE.
+	 */
+	private static CostAmount computeBlankCoProductAmount(
+			@NonNull final CostAmount totalInboundCostAmount,
+			@NonNull final PPOrderCost coProductCost,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final Percent distributionPercent = coProductCost.getCoProductCostDistributionPercent();
+		if (distributionPercent == null || distributionPercent.signum() <= 0)
+		{
+			return totalInboundCostAmount.toZero();
+		}
+		return totalInboundCostAmount.multiply(distributionPercent, precision);
 	}
 
 	/**

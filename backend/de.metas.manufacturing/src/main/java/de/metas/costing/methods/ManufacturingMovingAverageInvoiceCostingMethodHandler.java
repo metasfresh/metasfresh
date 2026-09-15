@@ -182,7 +182,20 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 			// identical co-product amount). Any make-vs-average delta is intentionally left in WIP (not forced to zero).
 			final CostPrice price = getReceiptPrice(currentCost, costSegmentAndElement, isCoProductReceipt);
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
-			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
+			final CostAmount amt;
+			if (isCoProductReceipt && !ppOrderCostsService.getFixedCostPrice(costSegmentAndElement.getProductId()).isPresent())
+			{
+				// A blank-fixed-price co-product capitalizes its qty-distribution share of the order's inbound cost
+				// pool - the identical amount leg A relieves in PPOrderCosts.updatePostCalculationAmountsForCostElement
+				// - so both legs book the same value and the order's WIP clears. A blank co-product has no per-unit
+				// price to share (unlike the fixed-price one), so the share amount is taken directly, not derived
+				// from a price; the receipt still carries its qty, so the value reaches P_Asset with the received qty.
+				amt = orderCosts.getBlankCoProductReceiptAmount(costSegmentAndElement, getCostingPrecision(request));
+			}
+			else
+			{
+				amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
+			}
 			requestEffective = request.withAmountAndQty(amt, qty);
 			// Persisted only on this non-reversal path. A reversal leaves the persisted price unchanged,
 			// which is harmless: nothing reads PP_Order_Cost.price between a reversal and the next receipt

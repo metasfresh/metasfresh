@@ -466,6 +466,99 @@ public class PPOrderCostsTest
 		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("402"));
 	}
 
+	/**
+	 * A blank-fixed-price co-product whose {@code coProductCostDistributionPercent} is NULL (the DAO leaves it
+	 * nullable, especially under Moving Average Invoice) must NOT NPE in the post-calculation: a null / non-positive
+	 * percent yields a ZERO co-product share, so the main product keeps the full input pool. Pre-fix this threw an
+	 * NPE at {@code totalInbound.multiply(null, precision)}.
+	 */
+	@Test
+	public void testBlankCoProduct_nullDistributionPercent_noNpe_zeroShare()
+	{
+		final ProductId mainProductId = createProduct("blocks_main", null);
+		final ProductId issueProductId = createProduct("input_milk", null);
+		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK fixed price
+
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						// coProductCostDistributionPercent intentionally NOT set -> null
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.build();
+
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+
+		// null distribution percent -> zero co-product share (no NPE); main keeps the full pool
+		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(BigDecimal.ZERO);
+		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("450"));
+	}
+
+	/**
+	 * The blank-fixed-price invariant that makes the order's WIP clear: leg B (the co-product receipt valuation in
+	 * the costing-method handlers, via {@link PPOrderCosts#getBlankCoProductReceiptAmount}) must book the IDENTICAL
+	 * amount as leg A (the co-product's post-calculation relief). Here 450 pool x 1/6 = 75.0002 at precision 4.
+	 */
+	@Test
+	public void getBlankCoProductReceiptAmount_matchesLegAPostCalculation()
+	{
+		final ProductId mainProductId = createProduct("blocks_main", null);
+		final ProductId issueProductId = createProduct("input_milk", null);
+		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK fixed price
+
+		final CostSegmentAndElement coProductSegment = costSegmentAndElement(coProductId);
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(coProductSegment)
+						.price(CostPrice.zero(currencyId, uomId))
+						// the real 1/qty distribution the BOM assigns (Percent.of(1, coQty=6, precision 4))
+						.coProductCostDistributionPercent(Percent.of(BigDecimal.ONE, new BigDecimal("6"), 4))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.build();
+
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+
+		final CostAmount legA_postCalculationAmount = getPostCalculationCostAmt(orderCosts, coProductId);
+		final CostAmount legB_receiptAmount = orderCosts.getBlankCoProductReceiptAmount(coProductSegment, costingPrecision);
+
+		// leg B books exactly what leg A relieved -> co-product residual is 0 -> the order's WIP clears
+		assertThat(legB_receiptAmount).isEqualTo(legA_postCalculationAmount);
+		// and it is the 1/qty share of the 450 pool (450 x 1/6 = 75.0002 at precision 4)
+		assertThat(legB_receiptAmount.toBigDecimal()).isEqualByComparingTo(new BigDecimal("75.0002"));
+	}
+
 	@Test
 	public void updatePriceForCostSegmentAndElement_setsPrice()
 	{

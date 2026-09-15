@@ -285,6 +285,42 @@ Feature: Co-product valuation at a manual fixed cost price
       | ppOrder                | coProd                  | AveragePO        | CO                    | 75.0002            |
       | ppOrder                | mainProd                | AveragePO        | MR                    | 374.9998           |
 
+    # Even with a blank fixed price the co-product's qty-distribution share (75.0002 / received 6 = 12.5 CHF)
+    # capitalizes to its own inventory - so it clears WIP exactly like the fixed-price and main-product receipts.
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
+      | acctSchema      | coProd       | AveragePO        | 12.5 CHF         | 6 PCE      |
+
+    # The blank co-product receipt capitalizes its 75.0002 pool-share to inventory (Dr P_Asset / Cr P_WIP,
+    # received qty on P_Asset) - the SAME amount leg A relieved - so WIP clears. AmtAcct is at CHF standard
+    # precision (2), so 75.0002 books as 75.00. Before the fix leg B booked the co-product at its live current
+    # cost (0), so P_Asset got 0 while leg A relieved 75.0002 -> the share stranded in WIP over the order.
+    And Fact_Acct records are matching
+      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 75.00     | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 75.00     | -6 PCE |
+
+    # The co-product's value/qty now IS in inventory - the Lagerwert / inventory-value report reads the P_Asset
+    # Fact_Acct qty (6 PCE at 12.5 CHF = 75.00). Before the fix the blank co-product capitalized nothing.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | InventoryValueAcctAmt |
+      | 2024-03-27 | coProd       | warehouseStd   | 6   | 12.5000        | 75.00                 |
+
+    # Distribute the order so the main product's residual (374.9998, all in stock) capitalizes out of WIP.
+    And the manufacturing order identified by ppOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # The whole manufacturing order balances for a blank co-product too: WIP nets to 0 (input pool fully relieved
+    # into the outputs' inventory) and P_Asset nets to 0 over the order. Before the fix WIP stranded at +75.00 and
+    # P_Asset at -75.00 because the co-product's share never left WIP into inventory.
+    And Fact_Acct records balances over the whole PP_Order ppOrder are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | 0           |
+      | P_Asset_Acct          | 0           |
+
   @from:cucumber
   @Id:S29488_TC4
   Scenario: Guard - a fixed price that exceeds the input cost pool is rejected at posting
