@@ -112,7 +112,7 @@ public class User
 
 		Check.assume(
 				userLanguage == null || userLanguage.equals(language),
-				"If a userLanguage parameter is specified, it needs to be equal to the language paramter; this={}",
+				"If a userLanguage parameter is specified, it needs to be equal to the language parameter; this={}",
 				language);
 	}
 

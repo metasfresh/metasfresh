@@ -98,7 +98,7 @@ public interface IMigrationExecutor
 	String getStatusDescription();
 
 	/**
-	 * Get the exceptions that occured during the execution of the current migration.
+	 * Get the exceptions that occurred during the execution of the current migration.
 	 * 
 	 * @return {@link List}&lt;{@link Exception}&gt; exceptions
 	 */

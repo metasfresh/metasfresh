@@ -55,7 +55,7 @@ public class PartitionerConfigLine
 
 	private PartitionerConfigLine(final PartitionConfig parent, final String tableName)
 	{
-		Check.assumeNotNull(parent, "Paramter 'parent is not null");
+		Check.assumeNotNull(parent, "Parameter 'parent is not null");
 		Check.assumeNotEmpty(tableName, "Parameter 'tableName' is not empty");
 
 		this.parent = parent;
