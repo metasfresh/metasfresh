@@ -33,9 +33,9 @@ import lombok.NonNull;
 
 /**
  * The {@link de.metas.ui.web.doc_textlines.DocTextLinesView} quick action that moves the selected text row
- * later in the merged order, swapping positions with its nearest text-row neighbour and jumping over any
- * article rows in between (article positions are never touched). Thin glue: all persistence and locking live
- * behind {@link DocTextLinesView#moveRow(DocumentId, boolean)}.
+ * later in the merged order, exchanging it with the row immediately below it -- an article row's own position
+ * is never touched, so exchanging with one is a reposition of the text row alone. Thin glue: all persistence
+ * and locking live behind {@link DocTextLinesView#moveRow(DocumentId, boolean)}.
  */
 public class WEBUI_DocTextLines_MoveDown extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
@@ -52,8 +52,8 @@ public class WEBUI_DocTextLines_MoveDown extends ViewBasedProcessTemplate implem
 	}
 
 	/**
-	 * Exactly one row must be selected, it must be a text row, and a text row must follow it -- otherwise it is
-	 * already the last text row and there is nothing to swap with.
+	 * Exactly one row must be selected, it must be a text row, and a row of any kind must follow it in the
+	 * merged order -- otherwise it is already the last row and there is nothing to exchange it with.
 	 * <p>
 	 * Public so it is directly unit-testable without the {@code JavaProcess} parameter/view-loading machinery,
 	 * same rationale as {@link de.metas.ui.web.doc_textlines.process.WEBUI_DocTextLines_InsertAbove}.
@@ -79,9 +79,9 @@ public class WEBUI_DocTextLines_MoveDown extends ViewBasedProcessTemplate implem
 			return ProcessPreconditionsResolution.rejectWithInternalReason("article lines are read-only and cannot be moved");
 		}
 
-		if (!view.hasTextNeighbor(rowId, false))
+		if (!view.hasNeighbor(rowId, false))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("already the last text line");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("already the last row");
 		}
 
 		return ProcessPreconditionsResolution.accept();

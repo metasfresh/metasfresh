@@ -316,98 +316,122 @@ class DocTextLinesQuickActionsTest
 	class testMove
 	{
 		/**
-		 * article10, T1(15, scope Document), article20, T2(25, scope Following), article30 -- moving T1 down
-		 * must jump over article20 (whose {@code Line} is never touched) and swap positions with T2, the
-		 * nearest text-row neighbour. The two text rows' scopes travel WITH their row identity, unchanged --
-		 * only their {@code Line} swaps.
+		 * Two article lines at ADJACENT integer positions (10 and 11) -- the tightest case, since there is no
+		 * integer gap between them to fall back on -- with a text line inserted between them. Moving the text
+		 * line up must place it strictly before article 10, and moving it back down must return it to exactly
+		 * where it was, while both articles keep exactly 10 and 11 throughout.
 		 */
 		@Test
-		void moveDown_jumpsOverAnArticleRowToSwapWithTheNextTextRow()
+		void moveUp_thenMoveDown_pastAnArticleRow_roundTripsWithoutTouchingEitherArticle()
 		{
 			final I_C_OrderLine article10 = createArticleLine(10);
-			final I_C_Doc_TextLine t1 = createTextLine(15, TextLineScope.Document);
+			final I_C_OrderLine article11 = createArticleLine(11);
+			final DocumentId article11RowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article11.getC_OrderLine_ID()));
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(loadView(), article11RowId);
+
+			final DocTextLinesView view = loadView();
+			final List<DocTextLinesRow> initial = rowsOf(view);
+			assertThat(initial).hasSize(3);
+			final DocTextLinesRow textRow = initial.get(1);
+			assertThat(textRow.isTextLine()).isTrue();
+			assertThat(textRow.getLine()).isEqualByComparingTo("10.5");
+			final DocumentId textRowId = textRow.getId();
+			final DocumentId article10RowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article10.getC_OrderLine_ID()));
+
+			new WEBUI_DocTextLines_MoveUp().moveUp(view, textRowId);
+
+			final List<DocTextLinesRow> afterUp = rowsOf(view);
+			assertThat(afterUp).extracting(DocTextLinesRow::getId).containsExactly(textRowId, article10RowId, article11RowId);
+			assertThat(view.getById(textRowId).getLine()).isLessThan(BigDecimal.TEN);
+			assertThat(view.getById(article10RowId).getLine()).as("article 10's own position is never touched by the move").isEqualByComparingTo("10");
+			assertThat(view.getById(article11RowId).getLine()).as("article 11's own position is never touched by the move").isEqualByComparingTo("11");
+
+			new WEBUI_DocTextLines_MoveDown().moveDown(view, textRowId);
+
+			final List<DocTextLinesRow> afterDown = rowsOf(view);
+			assertThat(afterDown).extracting(DocTextLinesRow::getId).containsExactly(article10RowId, textRowId, article11RowId);
+			assertThat(view.getById(textRowId).getLine()).isEqualByComparingTo("10.5");
+			assertThat(view.getById(article10RowId).getLine()).isEqualByComparingTo("10");
+			assertThat(view.getById(article11RowId).getLine()).isEqualByComparingTo("11");
+		}
+
+		/**
+		 * Moving a text line past a neighbouring article must never recompute the text line's stored scope --
+		 * the scope stays exactly what the user set, even though the naive default derived from the row's NEW
+		 * position would differ (an article precedes the new position too, which the derivation rule would read
+		 * as {@code Following}).
+		 */
+		@Test
+		void moveUp_pastAnArticleRow_doesNotChangeStoredScope()
+		{
+			createArticleLine(10);
+			final I_C_Doc_TextLine text = createTextLine(15, TextLineScope.Document);
+			createArticleLine(20);
+
+			final DocTextLinesView view = loadView();
+			final DocumentId textRowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(text.getC_Doc_TextLine_ID()));
+
+			new WEBUI_DocTextLines_MoveUp().moveUp(view, textRowId);
+
+			assertThat(view.getById(textRowId).getTextLineScope())
+					.as("moving must not recompute the stored scope from the new position")
+					.isEqualTo(TextLineScope.Document);
+			// persisted -- a fresh view reload sees the same scope, not just the in-memory one
+			assertThat(loadView().getById(textRowId).getTextLineScope()).isEqualTo(TextLineScope.Document);
+		}
+
+		/**
+		 * When the row immediately adjacent is itself a text row (no article between them), the exchange is a
+		 * genuine two-way swap of both rows' stored positions -- the pre-existing, already-tested
+		 * {@link de.metas.doctextline.DocTextLineRepository#swapPositions} path.
+		 */
+		@Test
+		void move_whereTheNeighborIsAnotherTextRow_exchangesBothStoredPositions()
+		{
+			final I_C_Doc_TextLine t1 = createTextLine(14, TextLineScope.Document);
+			final I_C_Doc_TextLine t2 = createTextLine(15, TextLineScope.Following);
 			final I_C_OrderLine article20 = createArticleLine(20);
-			final I_C_Doc_TextLine t2 = createTextLine(25, TextLineScope.Following);
-			final I_C_OrderLine article30 = createArticleLine(30);
 
 			final DocTextLinesView view = loadView();
 			final DocumentId t1RowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t1.getC_Doc_TextLine_ID()));
 			final DocumentId t2RowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t2.getC_Doc_TextLine_ID()));
+			final DocumentId article20RowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article20.getC_OrderLine_ID()));
 
 			new WEBUI_DocTextLines_MoveDown().moveDown(view, t1RowId);
 
-			// merged order: article10, T2(now first, line 15), article20, T1(now second, line 25), article30
-			final List<DocTextLinesRow> rows = rowsOf(view);
-			assertThat(rows).extracting(DocTextLinesRow::getId)
-					.containsExactly(
-							DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article10.getC_OrderLine_ID())),
-							t2RowId,
-							DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article20.getC_OrderLine_ID())),
-							t1RowId,
-							DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article30.getC_OrderLine_ID())));
-
-			assertThat(view.getById(t1RowId).getLine()).isEqualByComparingTo("25");
-			assertThat(view.getById(t1RowId).getTextLineScope()).as("moving must not change the moved row's stored scope").isEqualTo(TextLineScope.Document);
-			assertThat(view.getById(t2RowId).getLine()).isEqualByComparingTo("15");
-			assertThat(view.getById(t2RowId).getTextLineScope()).as("the swapped-with row's scope is untouched too").isEqualTo(TextLineScope.Following);
-
-			// persisted -- a fresh view reload sees the same order and scopes, not just the in-memory one
-			final List<DocTextLinesRow> reloaded = rowsOf(loadView());
-			assertThat(reloaded).extracting(DocTextLinesRow::getId).containsExactly(
-					DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article10.getC_OrderLine_ID())),
-					t2RowId,
-					DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article20.getC_OrderLine_ID())),
-					t1RowId,
-					DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article30.getC_OrderLine_ID())));
-		}
-
-		/** The mirror action, invoked from the other end: moving T2 up reaches the identical end state. */
-		@Test
-		void moveUp_jumpsOverAnArticleRowToSwapWithThePreviousTextRow()
-		{
-			createArticleLine(10);
-			final I_C_Doc_TextLine t1 = createTextLine(15, TextLineScope.Document);
-			createArticleLine(20);
-			final I_C_Doc_TextLine t2 = createTextLine(25, TextLineScope.Following);
-			createArticleLine(30);
-
-			final DocTextLinesView view = loadView();
-			final DocumentId t1RowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t1.getC_Doc_TextLine_ID()));
-			final DocumentId t2RowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t2.getC_Doc_TextLine_ID()));
-
-			new WEBUI_DocTextLines_MoveUp().moveUp(view, t2RowId);
-
-			assertThat(view.getById(t1RowId).getLine()).isEqualByComparingTo("25");
+			assertThat(rowsOf(view)).extracting(DocTextLinesRow::getId).containsExactly(t2RowId, t1RowId, article20RowId);
+			assertThat(view.getById(t1RowId).getLine()).isEqualByComparingTo("15");
 			assertThat(view.getById(t1RowId).getTextLineScope()).isEqualTo(TextLineScope.Document);
-			assertThat(view.getById(t2RowId).getLine()).isEqualByComparingTo("15");
+			assertThat(view.getById(t2RowId).getLine()).isEqualByComparingTo("14");
 			assertThat(view.getById(t2RowId).getTextLineScope()).isEqualTo(TextLineScope.Following);
+			assertThat(view.getById(article20RowId).getLine()).isEqualByComparingTo("20");
 		}
 
+		/** The selected row must be literally the first row of the WHOLE merged order -- an article preceding it is still a valid neighbour to exchange with, see the round-trip test above. */
 		@Test
-		void moveUp_onTheFirstTextRow_throws()
+		void moveUp_onTheVeryFirstRowOfTheMergedOrder_throws()
 		{
+			final I_C_Doc_TextLine text = createTextLine(5, TextLineScope.Document);
 			createArticleLine(10);
-			final I_C_Doc_TextLine t1 = createTextLine(15, TextLineScope.Document);
-			createArticleLine(20);
 
 			final DocTextLinesView view = loadView();
-			final DocumentId t1RowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t1.getC_Doc_TextLine_ID()));
+			final DocumentId textRowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(text.getC_Doc_TextLine_ID()));
 
-			assertThatThrownBy(() -> new WEBUI_DocTextLines_MoveUp().moveUp(view, t1RowId))
+			assertThatThrownBy(() -> new WEBUI_DocTextLines_MoveUp().moveUp(view, textRowId))
 					.isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
 		}
 
+		/** The selected row must be literally the last row of the WHOLE merged order. */
 		@Test
-		void moveDown_onTheLastTextRow_throws()
+		void moveDown_onTheVeryLastRowOfTheMergedOrder_throws()
 		{
 			createArticleLine(10);
-			final I_C_Doc_TextLine t1 = createTextLine(15, TextLineScope.Document);
-			createArticleLine(20);
+			final I_C_Doc_TextLine text = createTextLine(15, TextLineScope.Document);
 
 			final DocTextLinesView view = loadView();
-			final DocumentId t1RowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t1.getC_Doc_TextLine_ID()));
+			final DocumentId textRowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(text.getC_Doc_TextLine_ID()));
 
-			assertThatThrownBy(() -> new WEBUI_DocTextLines_MoveDown().moveDown(view, t1RowId))
+			assertThatThrownBy(() -> new WEBUI_DocTextLines_MoveDown().moveDown(view, textRowId))
 					.isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
 		}
 	}
@@ -568,11 +592,10 @@ class DocTextLinesQuickActionsTest
 		}
 
 		@Test
-		void moveUp_rejectsTheFirstTextRow()
+		void moveUp_rejectsWhenSelectedRowIsFirstInTheMergedOrder()
 		{
+			final I_C_Doc_TextLine t1 = createTextLine(5, TextLineScope.Document);
 			createArticleLine(10);
-			final I_C_Doc_TextLine t1 = createTextLine(15, TextLineScope.Document);
-			createArticleLine(20);
 			final DocTextLinesView view = loadView();
 			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t1.getC_Doc_TextLine_ID()));
 
@@ -583,11 +606,10 @@ class DocTextLinesQuickActionsTest
 		}
 
 		@Test
-		void moveDown_rejectsTheLastTextRow()
+		void moveDown_rejectsWhenSelectedRowIsLastInTheMergedOrder()
 		{
 			createArticleLine(10);
 			final I_C_Doc_TextLine t1 = createTextLine(15, TextLineScope.Document);
-			createArticleLine(20);
 			final DocTextLinesView view = loadView();
 			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t1.getC_Doc_TextLine_ID()));
 
@@ -597,14 +619,13 @@ class DocTextLinesQuickActionsTest
 			assertThat(resolution.isAccepted()).isFalse();
 		}
 
+		/** An article row immediately following the selection is still a valid neighbour to exchange with. */
 		@Test
-		void moveDown_acceptsATextRowWithAFollowingTextRow()
+		void moveDown_acceptsWhenAnArticleRowFollowsImmediately()
 		{
 			createArticleLine(10);
 			final I_C_Doc_TextLine t1 = createTextLine(15, TextLineScope.Document);
 			createArticleLine(20);
-			createTextLine(25, TextLineScope.Following);
-			createArticleLine(30);
 			final DocTextLinesView view = loadView();
 			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t1.getC_Doc_TextLine_ID()));
 
@@ -822,23 +843,21 @@ class DocTextLinesQuickActionsTest
 
 		/**
 		 * The other trap named in the design: two concurrent moves must not corrupt the merged ordering. Two
-		 * independent, disjoint swaps (T1<->T2 and T3<->T4) fired at the same time must both land correctly --
-		 * {@link DocTextLinesRows#moveRow} runs its whole read-neighbour/persist/mutate sequence under the same
-		 * {@link DocTextLinesRows#structuralLock} {@link DocTextLinesRows#insertRowAbove} uses, so the two calls
-		 * are fully serialized regardless of scheduling.
+		 * independent, disjoint two-way swaps (T1<->T2 and T3<->T4, each pair with no article between them)
+		 * fired at the same time must both land correctly -- {@link DocTextLinesRows#moveRow} runs its whole
+		 * read-neighbour/persist/mutate sequence under the same {@link DocTextLinesRows#structuralLock}
+		 * {@link DocTextLinesRows#insertRowAbove} uses, so the two calls are fully serialized regardless of
+		 * scheduling.
 		 */
 		@Test
-		void concurrentMovesOnDisjointPairs_doNotCorruptTheOrdering() throws InterruptedException
+		void concurrentMovesOnDisjointTextRowPairs_doNotCorruptTheOrdering() throws InterruptedException
 		{
-			createArticleLine(10);
-			final I_C_Doc_TextLine t1 = createTextLine(15, TextLineScope.Document);
+			final I_C_Doc_TextLine t1 = createTextLine(14, TextLineScope.Document);
+			final I_C_Doc_TextLine t2 = createTextLine(15, TextLineScope.Following);
 			createArticleLine(20);
-			final I_C_Doc_TextLine t2 = createTextLine(25, TextLineScope.Following);
-			createArticleLine(30);
-			final I_C_Doc_TextLine t3 = createTextLine(35, TextLineScope.Document);
-			createArticleLine(40);
-			final I_C_Doc_TextLine t4 = createTextLine(45, TextLineScope.Following);
-			createArticleLine(50);
+			final I_C_Doc_TextLine t3 = createTextLine(54, TextLineScope.Document);
+			final I_C_Doc_TextLine t4 = createTextLine(55, TextLineScope.Following);
+			createArticleLine(60);
 
 			final DocTextLinesView view = loadView();
 			final DocumentId t1RowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t1.getC_Doc_TextLine_ID()));
@@ -887,8 +906,75 @@ class DocTextLinesQuickActionsTest
 			final List<BigDecimal> positions = textRows.stream().map(DocTextLinesRow::getLine).collect(Collectors.toList());
 			assertThat(positions).doesNotHaveDuplicates();
 
-			assertThat(view.getById(t1RowId).getLine()).isEqualByComparingTo("25");
-			assertThat(view.getById(t3RowId).getLine()).isEqualByComparingTo("45");
+			// each pair swapped -- deterministic regardless of scheduling, the two pairs share no row
+			assertThat(view.getById(t1RowId).getLine()).isEqualByComparingTo("15");
+			assertThat(view.getById(t3RowId).getLine()).isEqualByComparingTo("55");
+		}
+
+		/**
+		 * Same guarantee, exercised on the OTHER persistence shape {@link DocTextLinesRows#moveRow} can take: a
+		 * reposition past a neighbouring article row, computed via
+		 * {@link de.metas.doctextline.DocTextLineRepository#computePositionBetween}. Two independent, disjoint
+		 * repositions (each with no bound on the far side, so each result is deterministic on its own) fired at
+		 * the same time must both land correctly and produce no duplicate position.
+		 */
+		@Test
+		void concurrentMovesRepositioningPastDisjointArticleRows_doNotCorruptTheOrdering() throws InterruptedException
+		{
+			createArticleLine(5);
+			final I_C_Doc_TextLine t1 = createTextLine(7, TextLineScope.Document);
+			createArticleLine(10);
+			createArticleLine(50);
+			final I_C_Doc_TextLine t2 = createTextLine(57, TextLineScope.Following);
+			createArticleLine(60);
+
+			final DocTextLinesView view = loadView();
+			final DocumentId t1RowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t1.getC_Doc_TextLine_ID()));
+			final DocumentId t2RowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(t2.getC_Doc_TextLine_ID()));
+
+			final AtomicReference<Throwable> failureA = new AtomicReference<>();
+			final AtomicReference<Throwable> failureB = new AtomicReference<>();
+			final Thread threadA = new Thread(() -> {
+				try
+				{
+					new WEBUI_DocTextLines_MoveUp().moveUp(view, t1RowId);
+				}
+				catch (final Throwable t)
+				{
+					failureA.set(t);
+				}
+			});
+			final Thread threadB = new Thread(() -> {
+				try
+				{
+					new WEBUI_DocTextLines_MoveUp().moveUp(view, t2RowId);
+				}
+				catch (final Throwable t)
+				{
+					failureB.set(t);
+				}
+			});
+
+			threadA.start();
+			threadB.start();
+			threadA.join(5_000);
+			threadB.join(5_000);
+
+			assertThat(threadA.isAlive()).isFalse();
+			assertThat(threadB.isAlive()).isFalse();
+			assertThat(failureA.get()).isNull();
+			assertThat(failureB.get()).isNull();
+
+			// each repositioned strictly below its own article's original position -- no bound on the far side,
+			// so deterministic regardless of scheduling; the two groups share no row
+			assertThat(view.getById(t1RowId).getLine()).isLessThan(BigDecimal.valueOf(5));
+			assertThat(view.getById(t2RowId).getLine()).isLessThan(BigDecimal.valueOf(50));
+
+			final List<BigDecimal> positions = rowsOf(view).stream()
+					.filter(DocTextLinesRow::isTextLine)
+					.map(DocTextLinesRow::getLine)
+					.collect(Collectors.toList());
+			assertThat(positions).doesNotHaveDuplicates();
 		}
 
 		/**

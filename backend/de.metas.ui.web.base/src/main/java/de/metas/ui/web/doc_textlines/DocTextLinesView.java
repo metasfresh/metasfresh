@@ -95,16 +95,16 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 		invalidateAll();
 	}
 
-	/** {@code true} when {@code rowId} has a text-row neighbour to swap positions with in the given direction -- the delete/move-precondition seam, mirroring {@link #getInsertAbovePositions}. */
-	public boolean hasTextNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
+	/** {@code true} when {@code rowId} has a neighbouring row (of either kind) to exchange with in the given direction -- the move-precondition seam, mirroring {@link #getInsertAbovePositions}. */
+	public boolean hasNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
 	{
-		return getRowsData().hasTextNeighbor(rowId, towardStart);
+		return getRowsData().hasNeighbor(rowId, towardStart);
 	}
 
 	/**
-	 * Swaps {@code rowId}'s position with its nearest text-row neighbour -- see
-	 * {@link DocTextLinesRows#moveRow(DocumentId, boolean)} for the jump-over-article-rows rule and the
-	 * concurrency guard -- and notifies the frontend to reload.
+	 * Exchanges {@code rowId} with the row immediately before/after it in the merged order -- see
+	 * {@link DocTextLinesRows#moveRow(DocumentId, boolean)} for the two persistence shapes (article neighbour
+	 * vs. text neighbour) and the concurrency guard -- and notifies the frontend to reload.
 	 *
 	 * @param towardStart {@code true} to move the row earlier in the merged order ("up"), {@code false} to move it later ("down")
 	 */

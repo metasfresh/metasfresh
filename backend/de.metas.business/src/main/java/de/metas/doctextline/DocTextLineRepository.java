@@ -83,6 +83,43 @@ public class DocTextLineRepository
 	}
 
 	/**
+	 * Position for a text row moving past a neighbouring row whose own position must not change -- the case
+	 * where a plain two-way swap is not available because the neighbour's position is not this repository's to
+	 * write (an article line's position belongs to the order/shipment line table, never touched here).
+	 * <p>
+	 * {@code lowerPosition} and {@code upperPosition} are the positions the result must land strictly between;
+	 * either may be absent when the moved row is landing at the very start or very end of the sequence.
+	 *
+	 * @throws AdempiereException when both bounds are given and the gap between them is exhausted at scale
+	 *         {@value #LINE_SCALE} -- same guard as {@link #computeInsertAbovePosition}, reused here because
+	 *         the bounded case is the identical computation with the arguments' roles swapped.
+	 */
+	public static BigDecimal computePositionBetween(@Nullable final BigDecimal lowerPosition, @Nullable final BigDecimal upperPosition)
+	{
+		if (upperPosition != null)
+		{
+			return computeInsertAbovePosition(upperPosition, lowerPosition);
+		}
+		if (lowerPosition == null)
+		{
+			return FIRST_POSITION_IN_EMPTY_DOCUMENT;
+		}
+		return lowerPosition.add(BigDecimal.ONE.setScale(LINE_SCALE));
+	}
+
+	/**
+	 * Repositions a text line to an already-computed position -- used when a move needs to place the row on the
+	 * other side of a neighbour whose own position must stay untouched. Leaves {@code TextLineScope} alone:
+	 * moving a text line must never change its stored scope.
+	 */
+	public void updatePosition(@NonNull final DocTextLineId id, @NonNull final BigDecimal newPosition)
+	{
+		final I_C_Doc_TextLine record = InterfaceWrapperHelper.load(id.getRepoId(), I_C_Doc_TextLine.class);
+		record.setLine(newPosition);
+		InterfaceWrapperHelper.save(record);
+	}
+
+	/**
 	 * Persists an inline edit of a text row's text and/or scope. {@code textLine} may be empty -- an empty
 	 * text line is legal and prints as a blank line.
 	 */

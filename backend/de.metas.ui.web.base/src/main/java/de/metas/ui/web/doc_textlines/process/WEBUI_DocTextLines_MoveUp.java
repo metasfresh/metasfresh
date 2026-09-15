@@ -33,9 +33,9 @@ import lombok.NonNull;
 
 /**
  * The {@link de.metas.ui.web.doc_textlines.DocTextLinesView} quick action that moves the selected text row
- * earlier in the merged order, swapping positions with its nearest text-row neighbour and jumping over any
- * article rows in between (article positions are never touched). Thin glue: all persistence and locking live
- * behind {@link DocTextLinesView#moveRow(DocumentId, boolean)}.
+ * earlier in the merged order, exchanging it with the row immediately above it -- an article row's own
+ * position is never touched, so exchanging with one is a reposition of the text row alone. Thin glue: all
+ * persistence and locking live behind {@link DocTextLinesView#moveRow(DocumentId, boolean)}.
  */
 public class WEBUI_DocTextLines_MoveUp extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
@@ -52,8 +52,8 @@ public class WEBUI_DocTextLines_MoveUp extends ViewBasedProcessTemplate implemen
 	}
 
 	/**
-	 * Exactly one row must be selected, it must be a text row, and a text row must precede it -- otherwise it
-	 * is already the first text row and there is nothing to swap with.
+	 * Exactly one row must be selected, it must be a text row, and a row of any kind must precede it in the
+	 * merged order -- otherwise it is already the first row and there is nothing to exchange it with.
 	 * <p>
 	 * Public so it is directly unit-testable without the {@code JavaProcess} parameter/view-loading machinery,
 	 * same rationale as {@link de.metas.ui.web.doc_textlines.process.WEBUI_DocTextLines_InsertAbove}.
@@ -79,9 +79,9 @@ public class WEBUI_DocTextLines_MoveUp extends ViewBasedProcessTemplate implemen
 			return ProcessPreconditionsResolution.rejectWithInternalReason("article lines are read-only and cannot be moved");
 		}
 
-		if (!view.hasTextNeighbor(rowId, true))
+		if (!view.hasNeighbor(rowId, true))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("already the first text line");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("already the first row");
 		}
 
 		return ProcessPreconditionsResolution.accept();

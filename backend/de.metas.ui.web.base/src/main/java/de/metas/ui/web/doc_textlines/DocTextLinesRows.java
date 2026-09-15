@@ -188,85 +188,101 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	/**
-	 * Finds the nearest text row in the given direction from {@code rowId}, skipping over any article rows in
-	 * between. A text row can only ever reorder relative to another text row: swapping its position with an
-	 * article row's would mean writing the article row's {@code Line} -- and article positions are never
-	 * touched, they are user-visible and printed. So moving a text row "past" an adjacent article row does not
-	 * swap with that article row; it jumps over it and swaps with the next text row instead.
-	 *
-	 * @return {@code null} when there is no text row in that direction -- {@code rowId} is the first (or last)
-	 *         text row in the merged order.
+	 * {@code true} when there is a row -- of either kind -- immediately before/after {@code rowId} in the merged
+	 * order. The move precondition: a move is only impossible when the selected row already sits at the very
+	 * start or very end of the WHOLE merged list, not merely relative to other text rows.
 	 */
-	@Nullable
-	private DocumentId findTextNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
+	boolean hasNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
 	{
 		final int index = indexOfOrThrow(rowId);
-		final int step = towardStart ? -1 : 1;
-		for (int i = index + step; i >= 0 && i < rowIds.size(); i += step)
-		{
-			final DocumentId candidateId = rowIds.get(i);
-			if (rowsById.get(candidateId).isTextLine())
-			{
-				return candidateId;
-			}
-		}
-		return null;
-	}
-
-	/** {@code true} when {@link #findTextNeighbor} would find a row to swap with -- the precondition check for {@link #moveRow}. */
-	boolean hasTextNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
-	{
-		return findTextNeighbor(rowId, towardStart) != null;
+		return towardStart ? index > 0 : index < rowIds.size() - 1;
 	}
 
 	/**
-	 * Swaps {@code rowId}'s position with its nearest text-row neighbour in the given direction (see
-	 * {@link #findTextNeighbor}), persisted via {@link DocTextLineRepository#swapPositions} -- which swaps only
-	 * the {@code Line} column, so the moved row's {@code TextLineScope} is untouched, matching the requirement
-	 * that moving a text line never changes its stored scope.
-	 * <p>
-	 * Runs entirely under {@link #structuralLock}, the same guard {@link #insertRowAbove} uses for its own
-	 * read-neighbours/persist/mutate sequence: two concurrent moves (or a move racing an insert) reading the
-	 * same merged order and both acting on it is exactly the duplicate-position failure class already fixed
-	 * once for insert-above, and a swap touches the ordering just as much as an insert does.
+	 * Exchanges {@code rowId} (always a text row) with the row immediately before/after it in the merged order,
+	 * whatever kind that row is. Two distinct persistence shapes, chosen by the neighbour's kind:
+	 * <ul>
+	 * <li><b>Neighbour is a text row</b>: a genuine two-way exchange of stored positions via
+	 * {@link DocTextLineRepository#swapPositions} -- both rows' {@code Line} values trade places, neither's
+	 * {@code TextLineScope} is touched (the repository call only ever writes {@code Line}).</li>
+	 * <li><b>Neighbour is an article row</b>: the article's {@code Line} is never written -- it belongs to the
+	 * order/shipment line table, not this one, and article positions are user-visible/printed and must stay
+	 * exactly as they are. Only {@code rowId}'s own position is recomputed, via
+	 * {@link DocTextLineRepository#computePositionBetween}, to land strictly on the other side of the article:
+	 * between the article's position and whatever comes after it (moving down) or before it (moving up), or
+	 * simply past it when there is nothing on that far side. The two rows still visibly trade places in the
+	 * merged order -- only one of their two stored positions actually changes.</li>
+	 * </ul>
+	 * Both shapes run entirely under {@link #structuralLock}, the same guard {@link #insertRowAbove} uses for
+	 * its own read-neighbours/persist/mutate sequence: two concurrent moves (or a move racing an insert or a
+	 * delete) reading the same merged order and both acting on it is exactly the duplicate-position failure
+	 * class already fixed once for insert-above, and a move touches the ordering just as much as an insert
+	 * does. Every position read this method uses (the neighbour's, and the row beyond it) is read fresh from
+	 * {@link #rowsById}/{@link #rowIds} at the moment the lock is held, never cached across calls -- so a move
+	 * queued behind another structural change always computes against the ordering that change left behind, not
+	 * a stale snapshot.
 	 * <p>
 	 * Deliberately NOT additionally synchronized on either row's own monitor from {@link #rowLocksById} (unlike
-	 * {@link #deleteRow}): a concurrent {@link #patchRow} of one of the two rows only ever writes {@code
-	 * TextLine}/{@code TextLineScope}, disjoint database columns from the {@code Line} column this method
-	 * persists -- metasfresh's PO layer issues an {@code UPDATE} only for the columns actually set on that PO
-	 * instance, so the two saves cannot clobber each other at the database level regardless of interleaving.
-	 * The remaining exposure -- {@link #rowsById}'s in-memory copy of the swapped row briefly reverting a
-	 * concurrent patch's field until the next reload -- is the same severity class already accepted between
-	 * {@link #insertRowAbove} and {@link #patchRow} today (neither takes the other's lock either), not the
-	 * corrupted-ordering failure {@link #structuralLock} exists to prevent. Taking a row's monitor here in
-	 * addition to {@link #structuralLock} would mean holding both at once -- exactly the nesting the class is
-	 * built to avoid -- for a benign race that a disjoint-column analysis already rules out as data-corrupting.
+	 * {@link #deleteRow}): a concurrent {@link #patchRow} of a row this method touches only ever writes {@code
+	 * TextLine}/{@code TextLineScope} -- disjoint database columns from the {@code Line} column both persistence
+	 * shapes above write -- metasfresh's PO layer issues an {@code UPDATE} only for the columns actually set on
+	 * that PO instance (verified against {@code PO.saveUpdate()}), so the two saves cannot clobber each other at
+	 * the database level regardless of interleaving. The remaining exposure -- {@link #rowsById}'s in-memory
+	 * copy of the moved row briefly reverting a concurrent patch's field until the next reload -- is the same
+	 * severity class already accepted between {@link #insertRowAbove} and {@link #patchRow} today (neither
+	 * takes the other's lock either), not the corrupted-ordering failure {@link #structuralLock} exists to
+	 * prevent. Taking a row's monitor here in addition to {@link #structuralLock} would mean holding both at
+	 * once -- exactly the nesting the class is built to avoid -- for a benign race a disjoint-column analysis
+	 * already rules out as data-corrupting.
 	 */
 	DocTextLinesRow moveRow(@NonNull final DocumentId rowId, final boolean towardStart)
 	{
 		synchronized (structuralLock)
 		{
 			final DocTextLinesRow row = getTextRowOrThrow(rowId);
-			final DocumentId neighborId = findTextNeighbor(rowId, towardStart);
-			if (neighborId == null)
+			final int index = indexOfOrThrow(rowId);
+			final int neighborIndex = towardStart ? index - 1 : index + 1;
+			if (neighborIndex < 0 || neighborIndex >= rowIds.size())
 			{
-				throw new AdempiereException("No text line to move " + (towardStart ? "up" : "down") + " into")
+				throw new AdempiereException("No row to move " + (towardStart ? "up" : "down") + " into")
 						.appendParametersToMessage()
 						.setParameter("rowId", rowId);
 			}
+
+			final DocumentId neighborId = rowIds.get(neighborIndex);
 			final DocTextLinesRow neighbor = rowsById.get(neighborId);
 
-			docTextLineRepository.swapPositions(row.getTextLineId(), neighbor.getTextLineId());
+			final DocTextLinesRow newRow;
+			if (neighbor.isTextLine())
+			{
+				docTextLineRepository.swapPositions(row.getTextLineId(), neighbor.getTextLineId());
 
-			final DocTextLinesRow newRow = row.toBuilder().line(neighbor.getLine()).build();
-			final DocTextLinesRow newNeighbor = neighbor.toBuilder().line(row.getLine()).build();
-			rowsById.put(rowId, newRow);
-			rowsById.put(neighborId, newNeighbor);
+				newRow = row.toBuilder().line(neighbor.getLine()).build();
+				final DocTextLinesRow newNeighbor = neighbor.toBuilder().line(row.getLine()).build();
+				rowsById.put(rowId, newRow);
+				rowsById.put(neighborId, newNeighbor);
 
-			final int index = indexOfOrThrow(rowId);
-			final int neighborIndex = indexOfOrThrow(neighborId);
-			rowIds.set(index, neighborId);
-			rowIds.set(neighborIndex, rowId);
+				rowIds.set(index, neighborId);
+				rowIds.set(neighborIndex, rowId);
+			}
+			else
+			{
+				final int beyondIndex = towardStart ? neighborIndex - 1 : neighborIndex + 1;
+				final BigDecimal beyondPosition = beyondIndex >= 0 && beyondIndex < rowIds.size()
+						? rowsById.get(rowIds.get(beyondIndex)).getLine()
+						: null;
+				final BigDecimal newPosition = towardStart
+						? DocTextLineRepository.computePositionBetween(beyondPosition, neighbor.getLine())
+						: DocTextLineRepository.computePositionBetween(neighbor.getLine(), beyondPosition);
+
+				docTextLineRepository.updatePosition(row.getTextLineId(), newPosition);
+
+				newRow = row.toBuilder().line(newPosition).build();
+				rowsById.put(rowId, newRow);
+
+				rowIds.remove(index);
+				rowIds.add(neighborIndex, rowId);
+			}
 
 			return newRow;
 		}
