@@ -184,7 +184,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCost,
 			@NonNull final PPOrderCosts orderCosts,
-			final boolean coProductReceipt)
+			final boolean isCoProductReceipt)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
 
@@ -195,7 +195,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			// co-product whose product carries a manual CoProductFixedCostPrice, which is booked at that fixed
 			// price (shared with the post-calc relief via the FixedCostPriceProvider so both legs produce the
 			// identical co-product amount). Any make-vs-average delta is intentionally left in WIP (not forced to zero).
-			final CostPrice price = getReceiptPrice(currentCost, costSegmentAndElement, coProductReceipt);
+			final CostPrice price = getReceiptPrice(currentCost, costSegmentAndElement, isCoProductReceipt);
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
@@ -235,10 +235,10 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	private CostPrice getReceiptPrice(
 			@NonNull final CurrentCost currentCost,
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
-			final boolean coProductReceipt)
+			final boolean isCoProductReceipt)
 	{
 		final CostPrice currentCostPrice = currentCost.getCostPrice();
-		if (!coProductReceipt)
+		if (!isCoProductReceipt)
 		{
 			return currentCostPrice;
 		}
