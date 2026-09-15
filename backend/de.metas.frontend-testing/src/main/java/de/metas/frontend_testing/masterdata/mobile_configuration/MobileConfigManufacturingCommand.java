@@ -64,6 +64,14 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofBoolean(request.getIsAllowReceiveWithoutPackingItem()));
 		}
+		if (request.getIsAllowEmptyingHUs() != null)
+		{
+			newConfigBuilder.isAllowEmptyingHUs(OptionalBoolean.ofBoolean(request.getIsAllowEmptyingHUs()));
+		}
+		if (request.getIsConfirmEmptyingHU() != null)
+		{
+			newConfigBuilder.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(request.getIsConfirmEmptyingHU()));
+		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
 		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
@@ -76,6 +84,14 @@ class MobileConfigManufacturingCommand
 			mobileManufacturingConfigRepository.saveGlobalEditableAttributeCodesInOrder(ClientId.METASFRESH, resolveEditableAttributeCodes(request.getEditableAttributes()));
 		}
 
+		// IsAllowEmptyingHUs / IsConfirmEmptyingHU are client-level only (MobileUI_MFG_Config has no
+		// per-user column for them, cf. RawMaterialsIssueActivityHandler#resolveEmptyingHUsConfig), so like
+		// the editable-attribute list they are written through the global-config path, not the per-user profile.
+		if (request.getIsAllowEmptyingHUs() != null || request.getIsConfirmEmptyingHU() != null)
+		{
+			updateGlobalEmptyingHUsConfig();
+		}
+
 		return JsonMobileConfigResponse.Manufacturing.builder()
 				.isScanResourceRequired(newConfig.getIsScanResourceRequired().toBooleanOrNull())
 				.isAllowIssuingAnyHU(newConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
@@ -86,8 +102,30 @@ class MobileConfigManufacturingCommand
 				.isCaptureCatchWeightAtReceipt(newConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
 				.isAllowReceiveWithoutPackingItem(newConfig.getIsAllowReceiveWithoutPackingItem().toBooleanOrNull())
 				.editableAttributes(getGlobalEditableAttributes())
+				.isAllowEmptyingHUs(newConfig.getIsAllowEmptyingHUs().toBooleanOrNull())
+				.isConfirmEmptyingHU(newConfig.getIsConfirmEmptyingHU().toBooleanOrNull())
 				.build();
 	}
+
+	private void updateGlobalEmptyingHUsConfig()
+	{
+		// getGlobalConfigOrDefault, not a local copy of the defaults: the harness must create the global record
+		// with exactly the values production falls back to.
+		final MobileUIManufacturingConfig.MobileUIManufacturingConfigBuilder globalConfigBuilder =
+				mobileManufacturingConfigRepository.getGlobalConfigOrDefault(ClientId.METASFRESH).toBuilder();
+
+		if (request.getIsAllowEmptyingHUs() != null)
+		{
+			globalConfigBuilder.isAllowEmptyingHUs(OptionalBoolean.ofBoolean(request.getIsAllowEmptyingHUs()));
+		}
+		if (request.getIsConfirmEmptyingHU() != null)
+		{
+			globalConfigBuilder.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(request.getIsConfirmEmptyingHU()));
+		}
+
+		mobileManufacturingConfigRepository.saveGlobalConfig(globalConfigBuilder.build(), ClientId.METASFRESH);
+	}
+
 
 	/**
 	 * Resolves each requested editable-attribute entry to a persisted {@code M_Attribute.Value}

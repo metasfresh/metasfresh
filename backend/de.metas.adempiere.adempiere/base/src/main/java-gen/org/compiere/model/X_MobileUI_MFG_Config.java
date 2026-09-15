@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 847845912L;
+	private static final long serialVersionUID = 1213926478L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -32,6 +32,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setIsAllowEmptyingHUs (final boolean IsAllowEmptyingHUs)
+	{
+		set_Value (COLUMNNAME_IsAllowEmptyingHUs, IsAllowEmptyingHUs);
+	}
+
+	@Override
+	public boolean isAllowEmptyingHUs() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowEmptyingHUs);
 	}
 
 	@Override
@@ -92,6 +104,18 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public boolean isCaptureCatchWeightAtReceipt() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCaptureCatchWeightAtReceipt);
+	}
+
+	@Override
+	public void setIsConfirmEmptyingHU (final boolean IsConfirmEmptyingHU)
+	{
+		set_Value (COLUMNNAME_IsConfirmEmptyingHU, IsConfirmEmptyingHU);
+	}
+
+	@Override
+	public boolean isConfirmEmptyingHU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsConfirmEmptyingHU);
 	}
 
 	@Override
