@@ -64,6 +64,14 @@ class MobileConfigManufacturingCommand
 		{
 			newConfigBuilder.isAllowReceiveWithoutPackingItem(OptionalBoolean.ofBoolean(request.getIsAllowReceiveWithoutPackingItem()));
 		}
+		if (request.getIsAllowEmptyingHUs() != null)
+		{
+			newConfigBuilder.isAllowEmptyingHUs(OptionalBoolean.ofBoolean(request.getIsAllowEmptyingHUs()));
+		}
+		if (request.getIsConfirmEmptyingHU() != null)
+		{
+			newConfigBuilder.isConfirmEmptyingHU(OptionalBoolean.ofBoolean(request.getIsConfirmEmptyingHU()));
+		}
 
 		final MobileUIManufacturingConfig newConfig = newConfigBuilder.build();
 		mobileManufacturingConfigRepository.saveUserConfig(newConfig, loginUserId);
@@ -77,27 +85,25 @@ class MobileConfigManufacturingCommand
 		}
 
 		// IsAllowEmptyingHUs / IsConfirmEmptyingHU are client-level only (MobileUI_MFG_Config has no
-		// per-user column for them, cf. RawMaterialsIssueActivityHandler#resolveEmptyingHUsConfig) —
-		// route them to the global config, never to the per-user profile above.
+		// per-user column for them, cf. RawMaterialsIssueActivityHandler#resolveEmptyingHUsConfig), so like
+		// the editable-attribute list they are written through the global-config path, not the per-user profile.
 		if (request.getIsAllowEmptyingHUs() != null || request.getIsConfirmEmptyingHU() != null)
 		{
 			updateGlobalEmptyingHUsConfig();
 		}
 
-		// Re-read after all writes: the two emptying flags live on the global config, not on newConfig.
-		final MobileUIManufacturingConfig effectiveConfig = mobileManufacturingConfigRepository.getConfig(loginUserId, ClientId.METASFRESH);
 		return JsonMobileConfigResponse.Manufacturing.builder()
-				.isScanResourceRequired(effectiveConfig.getIsScanResourceRequired().toBooleanOrNull())
-				.isAllowIssuingAnyHU(effectiveConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
-				.receiveUnitType(effectiveConfig.getReceiveUnitType() != null ? effectiveConfig.getReceiveUnitType().getCode() : null)
-				.isAllowFinishedGoodsReceiveToLU(effectiveConfig.getIsAllowFinishedGoodsReceiveToLU().toBooleanOrNull())
-				.isAllowFinishedGoodsReceiveToTU(effectiveConfig.getIsAllowFinishedGoodsReceiveToTU().toBooleanOrNull())
-				.isSkipFinishedGoodsReceiveTargetStep(effectiveConfig.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanOrNull())
-				.isCaptureCatchWeightAtReceipt(effectiveConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
-				.isAllowReceiveWithoutPackingItem(effectiveConfig.getIsAllowReceiveWithoutPackingItem().toBooleanOrNull())
+				.isScanResourceRequired(newConfig.getIsScanResourceRequired().toBooleanOrNull())
+				.isAllowIssuingAnyHU(newConfig.getIsAllowIssuingAnyHU().toBooleanOrNull())
+				.receiveUnitType(newConfig.getReceiveUnitType() != null ? newConfig.getReceiveUnitType().getCode() : null)
+				.isAllowFinishedGoodsReceiveToLU(newConfig.getIsAllowFinishedGoodsReceiveToLU().toBooleanOrNull())
+				.isAllowFinishedGoodsReceiveToTU(newConfig.getIsAllowFinishedGoodsReceiveToTU().toBooleanOrNull())
+				.isSkipFinishedGoodsReceiveTargetStep(newConfig.getIsSkipFinishedGoodsReceiveTargetStep().toBooleanOrNull())
+				.isCaptureCatchWeightAtReceipt(newConfig.getIsCaptureCatchWeightAtReceipt().toBooleanOrNull())
+				.isAllowReceiveWithoutPackingItem(newConfig.getIsAllowReceiveWithoutPackingItem().toBooleanOrNull())
 				.editableAttributes(getGlobalEditableAttributes())
-				.isAllowEmptyingHUs(effectiveConfig.getIsAllowEmptyingHUs().toBooleanOrNull())
-				.isConfirmEmptyingHU(effectiveConfig.getIsConfirmEmptyingHU().toBooleanOrNull())
+				.isAllowEmptyingHUs(newConfig.getIsAllowEmptyingHUs().toBooleanOrNull())
+				.isConfirmEmptyingHU(newConfig.getIsConfirmEmptyingHU().toBooleanOrNull())
 				.build();
 	}
 
