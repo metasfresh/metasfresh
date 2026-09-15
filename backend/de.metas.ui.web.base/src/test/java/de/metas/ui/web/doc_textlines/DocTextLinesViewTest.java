@@ -4,6 +4,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.doctextline.DocTextLineId;
 import de.metas.doctextline.DocTextLineRepository;
 import de.metas.doctextline.TextLineScope;
 import de.metas.order.IOrderDAO;
@@ -234,7 +235,7 @@ class DocTextLinesViewTest
 		void articleAndTextRowIds_areDistinctAndStable()
 		{
 			final I_C_OrderLine article10 = createArticleLine(10);
-			createTextLine("5", TextLineScope.Document, "text");
+			final I_C_Doc_TextLine text5 = createTextLine("5", TextLineScope.Document, "text");
 
 			final List<DocTextLinesRow> rows = rowsOf(loadView());
 			final List<DocumentId> ids = rows.stream().map(DocTextLinesRow::getId).collect(Collectors.toList());
@@ -248,6 +249,83 @@ class DocTextLinesViewTest
 			final OrderLineId article10Id = OrderLineId.ofRepoId(article10.getC_OrderLine_ID());
 			assertThat(articleRow.getId()).isEqualTo(DocTextLinesRow.articleRowId(article10Id));
 			assertThat(articleRow.getOrderLineId()).isEqualTo(article10Id);
+
+			final DocTextLinesRow textRow = rows.stream()
+					.filter(DocTextLinesRow::isTextLine)
+					.findFirst()
+					.orElseThrow(IllegalStateException::new);
+			final DocTextLineId text5Id = DocTextLineId.ofRepoId(text5.getC_Doc_TextLine_ID());
+			assertThat(textRow.getId()).isEqualTo(DocTextLinesRow.textRowId(text5Id));
+			assertThat(textRow.getTextLineId()).isEqualTo(text5Id);
+		}
+	}
+
+	/**
+	 * Task-5 fix round 1, I-1: the seam a future insert-above quick-action (tasks 8/9) needs to derive
+	 * {@code InsertAboveRequest}'s {@code referencePosition}/{@code previousPosition}/
+	 * {@code articleLineExistsBeforeReferencePosition} from a selected row, without hand-rolling an index scan
+	 * in the process class itself.
+	 */
+	@Nested
+	class insertAbovePositions
+	{
+		@Test
+		void middleTextRow_hasAnArticleLineBeforeIt()
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final I_C_Doc_TextLine text15 = createTextLine("15", TextLineScope.Following, "text");
+			createArticleLine(20);
+
+			final DocTextLinesView view = loadView();
+			final DocumentId referenceRowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(text15.getC_Doc_TextLine_ID()));
+
+			final InsertAbovePositions positions = view.getInsertAbovePositions(referenceRowId);
+
+			assertThat(positions.getReferencePosition()).isEqualByComparingTo("15");
+			assertThat(positions.getPreviousPosition()).isEqualByComparingTo(BigDecimal.valueOf(article10.getLine()));
+			assertThat(positions.isArticleLineExistsBeforeReferencePosition()).isTrue();
+		}
+
+		@Test
+		void firstRow_hasNoPreviousPositionAndNoArticleLineBeforeIt()
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			createArticleLine(20);
+
+			final DocTextLinesView view = loadView();
+			final DocumentId referenceRowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article10.getC_OrderLine_ID()));
+
+			final InsertAbovePositions positions = view.getInsertAbovePositions(referenceRowId);
+
+			assertThat(positions.getReferencePosition()).isEqualByComparingTo("10");
+			assertThat(positions.getPreviousPosition()).isNull();
+			assertThat(positions.isArticleLineExistsBeforeReferencePosition()).isFalse();
+		}
+
+		@Test
+		void textLinesOnly_referencingTheSecondOne_hasNoArticleLineBeforeIt()
+		{
+			createTextLine("5", TextLineScope.Document, "first");
+			final I_C_Doc_TextLine text10 = createTextLine("10", TextLineScope.Document, "second");
+
+			final DocTextLinesView view = loadView();
+			final DocumentId referenceRowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(text10.getC_Doc_TextLine_ID()));
+
+			final InsertAbovePositions positions = view.getInsertAbovePositions(referenceRowId);
+
+			assertThat(positions.getReferencePosition()).isEqualByComparingTo("10");
+			assertThat(positions.getPreviousPosition()).isEqualByComparingTo("5");
+			assertThat(positions.isArticleLineExistsBeforeReferencePosition()).isFalse();
+		}
+
+		@Test
+		void emptyDocument_hasNoReferenceRowToSelect()
+		{
+			final DocTextLinesView view = loadView();
+
+			final InsertAbovePositions positions = view.getInsertAbovePositions(null);
+
+			assertThat(positions).isEqualTo(InsertAbovePositions.EMPTY_DOCUMENT);
 		}
 	}
 }

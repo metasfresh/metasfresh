@@ -2,13 +2,17 @@ package de.metas.ui.web.doc_textlines;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -61,5 +65,48 @@ final class DocTextLinesRows implements IRowsData<DocTextLinesRow>
 	public void invalidateAll()
 	{
 		// nothing: rows are loaded once, fresh, whenever the view is (re-)created
+	}
+
+	/**
+	 * DESIGN.md § D-C / the task-5 fix-round-1 seam: given the row a future insert-above quick-action's caller
+	 * selected, derive the three values {@code InsertAboveRequest} needs -- this is the merged ordering's own
+	 * data ({@link #rowIds}), so the derivation lives here rather than being hand-rolled by each caller.
+	 *
+	 * @param referenceRowId the selected row; {@code null} only when the document has no rows at all (AC25).
+	 */
+	InsertAbovePositions computeInsertAbovePositions(@Nullable final DocumentId referenceRowId)
+	{
+		if (referenceRowId == null)
+		{
+			if (!rowIds.isEmpty())
+			{
+				throw new AdempiereException("referenceRowId is required unless the document has no rows at all")
+						.appendParametersToMessage()
+						.setParameter("rowIds", rowIds);
+			}
+			return InsertAbovePositions.EMPTY_DOCUMENT;
+		}
+
+		final int referenceIndex = rowIds.indexOf(referenceRowId);
+		if (referenceIndex < 0)
+		{
+			throw new EntityNotFoundException(referenceRowId.toJson());
+		}
+
+		final BigDecimal referencePosition = rowsById.get(referenceRowId).getLine();
+
+		final BigDecimal previousPosition = referenceIndex > 0
+				? rowsById.get(rowIds.get(referenceIndex - 1)).getLine()
+				: null;
+
+		final boolean articleLineExistsBeforeReferencePosition = rowIds.subList(0, referenceIndex).stream()
+				.map(rowsById::get)
+				.anyMatch(DocTextLinesRow::isArticleLine);
+
+		return InsertAbovePositions.builder()
+				.referencePosition(referencePosition)
+				.previousPosition(previousPosition)
+				.articleLineExistsBeforeReferencePosition(articleLineExistsBeforeReferencePosition)
+				.build();
 	}
 }

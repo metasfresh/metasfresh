@@ -37,4 +37,19 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow>
 	{
 		return DocTextLinesRows.cast(super.getRowsData());
 	}
+
+	/**
+	 * The public seam a future insert-above quick-action process (tasks 8/9, in a sibling {@code process}
+	 * subpackage) uses to compute {@code InsertAboveRequest}'s three position values -- reached via
+	 * {@code getView()} the way {@code ProductsProposalViewBasedProcess} calls public methods on
+	 * {@code ProductsProposalView}. The actual derivation lives in {@link DocTextLinesRows}, where the merged
+	 * ordering is held.
+	 *
+	 * @param referenceRowId the row the user selected before invoking insert-above; {@code null} only when the
+	 *                        document has no rows at all (AC25).
+	 */
+	public InsertAbovePositions getInsertAbovePositions(@Nullable final DocumentId referenceRowId)
+	{
+		return getRowsData().computeInsertAbovePositions(referenceRowId);
+	}
 }
