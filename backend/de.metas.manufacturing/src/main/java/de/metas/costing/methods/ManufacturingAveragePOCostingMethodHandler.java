@@ -29,6 +29,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -159,7 +160,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		//
 		if (orderCosts != null)
 		{
-			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), ppOrderCostsService);
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), getAcctSchemaCostingMethod(request), ppOrderCostsService);
 			ppOrderCostsService.save(orderCosts);
 		}
 
@@ -180,13 +181,37 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 				.getCostingPrecision();
 	}
 
+	/**
+	 * The costing method the order is actually costed under — the acct schema's method, NOT this handler's
+	 * ({@link #getCostingMethod()}). The two differ because metasfresh tracks every active material cost element
+	 * in parallel, so this AveragePO handler is invoked for the AveragePO cost element even on an order whose
+	 * acct schema is costed under, say, Standard. The co-product fixed-price gate in
+	 * {@link PPOrderCosts#updatePostCalculationAmountsForCostElement} keys off the order's real (acct-schema)
+	 * method so a parallel AveragePO cost element neither triggers a false reject nor masks a genuine one.
+	 */
+	private CostingMethod getAcctSchemaCostingMethod(final CostDetailCreateRequest request)
+	{
+		return acctSchemasRepo.getById(request.getAcctSchemaId())
+				.getCosting()
+				.getCostingMethod();
+	}
+
 	private CostDetailCreateResult createMainProductOrCoProductReceipt(
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCost,
 			@NonNull final PPOrderCosts orderCosts,
-			final boolean isCoProductReceipt)
+			final boolean isCoOrByProductReceipt)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
+
+		// The fixed-price valuation applies to co-product (CP) lines ONLY (symmetric with leg A's post-calc relief):
+		// a MixVariance receipt is either a co-product or a by-product receipt, so distinguish them by the order-cost
+		// row's trx type. A by-product receipt keeps its live current cost even when its product carries a fixed price
+		// (that unsupported combination is rejected by the post-calc guard in PPOrderCosts).
+		final boolean isCoProductReceipt = isCoOrByProductReceipt
+				&& orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
+						.map(PPOrderCost::isCoProduct)
+						.orElse(false);
 
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())

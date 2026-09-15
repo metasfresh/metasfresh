@@ -149,7 +149,7 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		//
 		if (orderCosts != null)
 		{
-			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), ppOrderCostsService);
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), getAcctSchemaCostingMethod(request), ppOrderCostsService);
 			ppOrderCostsService.save(orderCosts);
 		}
 
@@ -168,6 +168,20 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		return acctSchemasRepo.getById(acctSchemaId)
 				.getCosting()
 				.getCostingPrecision();
+	}
+
+	/**
+	 * The costing method the order is actually costed under — the acct schema's method, NOT this handler's
+	 * ({@link #getCostingMethod()} = LastPO). When the acct schema is AveragePO/MAI (LastPO merely tracked as a
+	 * parallel cost element), the fixed-price co-product relief is legitimately applied; when the acct schema
+	 * itself is LastPO the post-calc gate rejects it. See the twin method in
+	 * {@code ManufacturingAveragePOCostingMethodHandler}.
+	 */
+	private CostingMethod getAcctSchemaCostingMethod(final CostDetailCreateRequest request)
+	{
+		return acctSchemasRepo.getById(request.getAcctSchemaId())
+				.getCosting()
+				.getCostingMethod();
 	}
 
 	private CostDetailCreateResult createMainProductOrCoProductReceipt(
