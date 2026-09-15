@@ -51,6 +51,9 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
 
+/**
+ * Step definitions for setting up and asserting {@code M_AttributeSetInstance} / {@code M_AttributeInstance} state.
+ */
 @RequiredArgsConstructor
 public class M_AttributeSetInstance_StepDef
 {

@@ -21,26 +21,26 @@ Feature: ProjectValue must not be injected onto project-less records
       | sizeAttr       | Artikelgroesse | S                  | Y                 |
     And add M_AttributeSet:
       | Identifier |
-      | attrSet_10 |
+      | attrSet    |
     And add M_AttributeUse:
       | M_AttributeSet_ID | M_Attribute_ID | SeqNo |
-      | attrSet_10        | sizeAttr       | 10    |
+      | attrSet           | sizeAttr       | 10    |
     And metasfresh contains M_Products:
       | Identifier | OPT.M_AttributeSet_ID.Identifier |
-      | product_10 | attrSet_10                       |
+      | product    | attrSet                          |
     And metasfresh contains M_PricingSystems
       | Identifier |
-      | ps_10      |
+      | ps         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx |
-      | pl_10      | ps_10              | EUR                 | true  |
+      | pl         | ps                 | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
-      | plv_10     | pl_10          |
+      | plv        | pl             |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
-      | plv_10                 | product_10   | 10.00    | PCE               |
-    And metasfresh contains M_AttributeSetInstance with identifier "asi_10":
+      | plv                    | product      | 10.00    | PCE               |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi":
       """
       {
         "attributeInstances":[
@@ -53,14 +53,14 @@ Feature: ProjectValue must not be injected onto project-less records
       """
     And metasfresh contains C_BPartners:
       | Identifier | IsCustomer | M_PricingSystem_ID |
-      | bp_10      | true       | ps_10              |
+      | bp         | true       | ps                 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
-      | order_10   | true    | bp_10         | 2026-03-01  |
+      | order      | true    | bp            | 2026-03-01  |
     And metasfresh contains C_OrderLines:
-      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
-      | orderLine_10 | order_10   | product_10   | 1          | asi_10                                   |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_AttributeSetInstance_ID |
+      | orderLine  | order      | product      | 1          | asi                           |
 
     Then validate M_AttributeInstance is absent:
       | C_OrderLine_ID | AttributeCode |
-      | orderLine_10   | ProjectValue  |
+      | orderLine      | ProjectValue  |
