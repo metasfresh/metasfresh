@@ -3,6 +3,7 @@ package de.metas.distribution.ddorder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.bpartner.BPartnerLocationId;
@@ -18,6 +19,7 @@ import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlan;
 import de.metas.distribution.ddorder.movement.schedule.plan.DDOrderMovePlanCreateRequest;
 import de.metas.distribution.ddorder.producer.HUToDistribute;
 import de.metas.distribution.ddorder.producer.HUs2DDOrderProducer;
+import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineDemandSqlHelper;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -27,9 +29,11 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -42,6 +46,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.IQuery;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -97,6 +102,18 @@ public class DDOrderService
 	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)
 	{
 		return ddOrderLowLevelDAO.streamDDOrders(query);
+	}
+
+	/**
+	 * The flavour of {@link #streamDDOrders(DDOrderQuery)} that also restricts on the order's lines via opaque,
+	 * caller-built queries. Each entry in {@code lineIdRestrictions} MUST be a query over {@code I_DD_OrderLine};
+	 * entries are AND-ed. {@code DDOrderQuery} is deliberately not extended for this — the restriction is a
+	 * parameter, not a field — so this module gains no new dependency on whatever built the restriction (e.g. a
+	 * carrier or sales-order facet).
+	 */
+	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query, @NonNull final ImmutableList<IQuery<?>> lineIdRestrictions)
+	{
+		return ddOrderLowLevelDAO.streamDDOrders(query, lineIdRestrictions);
 	}
 
 	public void save(final I_DD_Order ddOrder)
@@ -374,6 +391,27 @@ public class DDOrderService
 	public Stream<I_DD_OrderLine> streamLinesByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
 	{
 		return ddOrderLowLevelDAO.streamLinesByDDOrderIds(ddOrderIds);
+	}
+
+	/**
+	 * The batched pair lookup behind the carrier facet's chip counts. Delegates to {@link DDOrderLineDemandSqlHelper}
+	 * rather than {@link #ddOrderLowLevelDAO} — see that method's javadoc for why: the join needs
+	 * {@code M_ShipmentSchedule} / {@code M_Picking_Job_Schedule} (module {@code de.metas.swat.base}) and
+	 * {@code DD_OrderLine_PickingJobSchedule} (this module), neither reachable from
+	 * {@code de.metas.manufacturing}, which must gain no new dependency.
+	 */
+	public ImmutableSetMultimap<DDOrderId, CarrierProductId> getCarrierProductIdsByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
+	{
+		return DDOrderLineDemandSqlHelper.getCarrierProductIdsByDDOrderIds(ddOrderIds);
+	}
+
+	/**
+	 * The batched pair lookup behind the sales-order facet's chip counts. Delegates to {@link DDOrderLineDemandSqlHelper}
+	 * for the same reason as {@link #getCarrierProductIdsByDDOrderIds(Collection)}.
+	 */
+	public ImmutableSetMultimap<DDOrderId, OrderId> getSalesOrderIdsByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
+	{
+		return DDOrderLineDemandSqlHelper.getSalesOrderIdsByDDOrderIds(ddOrderIds);
 	}
 
 }

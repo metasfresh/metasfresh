@@ -27,6 +27,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutLineId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
@@ -64,4 +65,8 @@ public interface IHUInOutDAO extends ISingletonService
 	Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(Set<InOutLineId> shipmentLineIds);
 
 	List<I_M_HU> retrieveHUsForReceiptLineId(int receiptLineId);
+
+	void save(@NonNull I_M_InOutLine inOutLineRecord);
+
+	void save(@NonNull I_M_InOut inOutRecord);
 }

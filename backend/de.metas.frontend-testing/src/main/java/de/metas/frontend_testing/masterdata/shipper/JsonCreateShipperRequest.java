@@ -14,8 +14,9 @@ public class JsonCreateShipperRequest
 	@Nullable String name;
 	@Nullable String gateway;
 
-	// When true, M_Shipper.IsApiCarrierAdvise='Y'. Combined with no gateway, the carrier advise is
-	// resolved locally from the shipper name (no external nShift API call needed).
+	// When true, M_Shipper.IsApiCarrierAdvise='Y'. Governs the picking-side advise button and
+	// consistency checks; the local carrier-advise resolution (synthesis from shipper name) is
+	// driven by the absence of a gateway, not by this flag.
 	// Primitive boolean: an omitted JSON value defaults to false.
 	boolean isApiCarrierAdvise;
 
