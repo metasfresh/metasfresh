@@ -137,7 +137,6 @@ public class PPOrderCostsTest
 				.build();
 
 		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
-		orderCosts.toCollection().forEach(System.out::println);
 
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("70"));
 		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("100"));
