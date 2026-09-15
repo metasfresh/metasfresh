@@ -3,10 +3,7 @@ package de.metas.ui.web.quickinput;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import org.junit.jupiter.api.Test;
 
-import java.util.NoSuchElementException;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class QuickInputConstantsTest
 {
@@ -31,9 +28,14 @@ class QuickInputConstantsTest
 	}
 
 	@Test
-	void parse_rejects_unknown_value()
+	void parse_unknown_value_falls_back_to_default()
 	{
-		assertThatThrownBy(() -> QuickInputConstants.parseProductFieldWidgetSize("HUGE"))
-				.isInstanceOf(NoSuchElementException.class);
+		// A cosmetic, default-off setting must never break batch entry on a typo: an unknown or
+		// wrong-case value degrades to Default width (null), it does NOT throw. See
+		// QuickInputConstants.parseProductFieldWidgetSize for the blast-radius rationale.
+		assertThat(QuickInputConstants.parseProductFieldWidgetSize("HUGE")).isNull();
+		assertThat(QuickInputConstants.parseProductFieldWidgetSize("l")).isNull();     // case-sensitive: lowercase is not a code
+		assertThat(QuickInputConstants.parseProductFieldWidgetSize("Large")).isNull();
+		assertThat(QuickInputConstants.parseProductFieldWidgetSize("30em")).isNull();
 	}
 }
