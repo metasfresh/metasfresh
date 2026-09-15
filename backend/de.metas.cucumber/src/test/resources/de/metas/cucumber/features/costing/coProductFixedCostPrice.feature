@@ -228,6 +228,12 @@ Feature: Co-product valuation at a manual fixed cost price
       | coReceiptCostCollector | P_Asset_Acct          | coProd       | 48        | 0         | 6 PCE  |
       | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 48        | -6 PCE |
 
+    # The co-product's value/qty now IS in inventory on the go-forward method too - the Lagerwert /
+    # inventory-value report reads the P_Asset Fact_Acct qty (6 PCE at the fixed 8 CHF = 48).
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | InventoryValueAcctAmt |
+      | 2024-03-27 | coProd       | warehouseStd   | 6   | 8.0000         | 48.00                 |
+
     # Distribute the order so the main product's residual capitalizes out of WIP (same as Average PO).
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
@@ -416,6 +422,15 @@ Feature: Co-product valuation at a manual fixed cost price
       | reworkAReceiptCostCollector | P_WIP_Acct            | reworkA      | 0         | 48        | -6 PCE |
       | reworkBReceiptCostCollector | P_Asset_Acct          | reworkB      | 20        | 0         | 4 PCE  |
       | reworkBReceiptCostCollector | P_WIP_Acct            | reworkB      | 0         | 20        | -4 PCE |
+
+    # Each fixed-priced co-product's value/qty now IS in inventory - the Lagerwert / inventory-value
+    # report reads the P_Asset Fact_Acct qty at the fixed cost price (reworkA 6 PCE x 8 = 48,
+    # reworkB 4 PCE x 5 = 20). Before the fix these values went to P_MixVariance (P&L) and never
+    # reached inventory.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | InventoryValueAcctAmt |
+      | 2024-03-27 | reworkA      | warehouseStd   | 6   | 8.0000         | 48.00                 |
+      | 2024-03-27 | reworkB      | warehouseStd   | 4   | 5.0000         | 20.00                 |
 
     # Distribute the order so the main product's residual capitalizes out of WIP (same as TC1/TC2).
     And the manufacturing order identified by cheeseBlockOrder is distributed
