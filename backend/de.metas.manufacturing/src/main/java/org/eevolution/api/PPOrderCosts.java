@@ -8,7 +8,6 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
@@ -229,18 +228,18 @@ public final class PPOrderCosts
 
 	public void updatePostCalculationAmounts(
 			final CurrencyPrecision precision,
-			@NonNull final IProductDAO productDAO)
+			@NonNull final FixedCostPriceProvider fixedCostPriceProvider)
 	{
 		for (final CostElementId costElementId : getCostElementIds())
 		{
-			updatePostCalculationAmountsForCostElement(precision, costElementId, productDAO);
+			updatePostCalculationAmountsForCostElement(precision, costElementId, fixedCostPriceProvider);
 		}
 	}
 
 	public void updatePostCalculationAmountsForCostElement(
 			final CurrencyPrecision precision,
 			final CostElementId costElementId,
-			@NonNull final IProductDAO productDAO)
+			@NonNull final FixedCostPriceProvider fixedCostPriceProvider)
 	{
 		final List<PPOrderCost> costs = filterAndList(PPOrderCostFilter.builder()
 				.costElementId(costElementId)
@@ -273,7 +272,7 @@ public final class PPOrderCosts
 		final List<ProductId> fixedPricedCoProductIds = new ArrayList<>();
 		for (final PPOrderCost coProductCost : coProductCosts)
 		{
-			final Optional<BigDecimal> fixedCostPrice = CoProductFixedCostPrices.getFixedCostPrice(productDAO, coProductCost.getProductId());
+			final Optional<BigDecimal> fixedCostPrice = fixedCostPriceProvider.getFixedCostPrice(coProductCost.getProductId());
 			final CostAmount coProductAmount;
 			if (fixedCostPrice.isPresent())
 			{
@@ -303,7 +302,7 @@ public final class PPOrderCosts
 			final List<ProductId> offendingCoProductIds = !fixedPricedCoProductIds.isEmpty()
 					? fixedPricedCoProductIds
 					: coProductCosts.stream().map(PPOrderCost::getProductId).collect(Collectors.toList());
-			throw new AdempiereException("Co-product fixed cost price for " + describeProducts(productDAO, offendingCoProductIds)
+			throw new AdempiereException("Co-product fixed cost price for " + describeProducts(fixedCostPriceProvider, offendingCoProductIds)
 					+ " values the co-products at " + totalCoProductsCostAmount
 					+ ", which exceeds the production order's input cost pool of " + totalInboundCostAmount
 					+ " and would drive the main product negative");
@@ -391,11 +390,11 @@ public final class PPOrderCosts
 
 	/** @return the given products' names (comma-separated), for the negative-main guard message. */
 	private static String describeProducts(
-			@NonNull final IProductDAO productDAO,
+			@NonNull final FixedCostPriceProvider fixedCostPriceProvider,
 			@NonNull final List<ProductId> productIds)
 	{
 		return productIds.stream()
-				.map(productId -> CoProductFixedCostPrices.getProductName(productDAO, productId))
+				.map(fixedCostPriceProvider::getProductName)
 				.collect(Collectors.joining(", "));
 	}
 

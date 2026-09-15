@@ -19,14 +19,12 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.CoProductFixedCostPrices;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -47,7 +45,6 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 	@NonNull private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	@NonNull private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	//
 	@NonNull private final CostingMethodHandlerUtils utils;
 	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
@@ -124,7 +121,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		//
 		if (orderCosts != null)
 		{
-			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), productDAO);
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), ppOrderCostsService);
 			ppOrderCostsService.save(orderCosts);
 		}
 
@@ -158,7 +155,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		{
 			// Value the receipt at the product's CURRENT M_Cost, not the frozen BOM-rollup price - EXCEPT a
 			// co-product whose product carries a manual CoProductFixedCostPrice, which is booked at that fixed
-			// price (shared with the post-calc relief via CoProductFixedCostPrices so both legs produce the
+			// price (shared with the post-calc relief via the FixedCostPriceProvider so both legs produce the
 			// identical co-product amount). Any make-vs-average delta is intentionally left in WIP (not forced to zero).
 			final CostPrice price = getReceiptPrice(currentCost, costSegmentAndElement, coProductReceipt);
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
@@ -193,7 +190,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 
 	/**
 	 * The price a receipt is valued at: a co-product whose product carries a manual {@code CoProductFixedCostPrice}
-	 * is valued at that fixed price - shared with the post-calc relief through {@link CoProductFixedCostPrices} so
+	 * is valued at that fixed price - shared with the post-calc relief through the {@code FixedCostPriceProvider} so
 	 * leg A (post-calc amount) and leg B (this receipt valuation) book the identical co-product amount and cost is
 	 * conserved. A main-product receipt, or a co-product with a blank fixed price, keeps the product's live current cost.
 	 */
@@ -208,7 +205,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 			return currentCostPrice;
 		}
 
-		return CoProductFixedCostPrices.getFixedCostPrice(productDAO, costSegmentAndElement.getProductId())
+		return ppOrderCostsService.getFixedCostPrice(costSegmentAndElement.getProductId())
 				.map(fixedCostPrice -> CostPrice.ownCostPrice(
 						CostAmount.of(fixedCostPrice, currentCostPrice.getCurrencyId()),
 						currentCostPrice.getUomId()))

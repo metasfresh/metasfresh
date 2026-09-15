@@ -50,7 +50,6 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -229,7 +228,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 				.build();
 
 		// what every costing-method handler does after an issue or a receipt
-		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2), Services.get(IProductDAO.class));
+		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2), Services.get(IPPOrderCostBL.class));
 
 		Services.get(IPPOrderCostBL.class).save(orderCosts);
 	}

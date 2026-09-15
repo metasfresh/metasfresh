@@ -11,7 +11,6 @@ import de.metas.costing.CostingLevel;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -32,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -77,7 +77,7 @@ public class PPOrderCostsTest
 
 	private I_C_UOM uom;
 	private UomId uomId;
-	private IProductDAO productDAO;
+	private FixedCostPriceProvider fixedCostPriceProvider;
 
 	@BeforeEach
 	public void beforeEach()
@@ -85,7 +85,7 @@ public class PPOrderCostsTest
 		AdempiereTestHelper.get().init();
 		uom = BusinessTestHelper.createUomEach();
 		uomId = UomId.ofRepoId(uom.getC_UOM_ID());
-		productDAO = Services.get(IProductDAO.class);
+		fixedCostPriceProvider = Services.get(IPPOrderCostBL.class);
 	}
 
 	@Test
@@ -134,7 +134,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, fixedCostPriceProvider);
 		orderCosts.toCollection().forEach(System.out::println);
 
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("70"));
@@ -181,7 +181,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, fixedCostPriceProvider);
 
 		// co-product valued at fixedPrice(8) * co_qty(6) = 48, NOT the 20%-distribution (= 450 * 20% = 90)
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("48"));
@@ -230,7 +230,7 @@ public class PPOrderCostsTest
 				.build();
 
 		// fixedPrice(80) * co_qty(6) = 480 > totalInbound 450 -> main would go negative -> guard must reject
-		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, productDAO))
+		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, fixedCostPriceProvider))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("Randstuecke")
 				.hasMessageContaining("480")
@@ -277,7 +277,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, fixedCostPriceProvider);
 
 		// blank fixed price -> unchanged 20%-distribution: co = 450 * 20% = 90, main = 360 (AC6 no-regression)
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
@@ -285,6 +285,54 @@ public class PPOrderCostsTest
 		final BigDecimal sumOutputs = getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal()
 				.add(getPostCalculationCostAmt(orderCosts, coProductId).toBigDecimal());
 		assertThat(sumOutputs).isEqualByComparingTo(new BigDecimal("450"));
+	}
+
+	/**
+	 * The seam: {@code updatePostCalculationAmounts} must resolve the co-product fixed price through the injected
+	 * {@link FixedCostPriceProvider}, NOT by reading the product master itself. Proven by giving the co-product a
+	 * BLANK master fixed price but injecting a fake provider that returns 8: the fixed-price path (8 * 6 = 48) must
+	 * win over the qty-distribution path the blank master would otherwise take (450 * 20% = 90).
+	 */
+	@Test
+	public void testFixedPrice_resolvedThroughInjectedProvider_notProductMaster()
+	{
+		final ProductId mainProductId = createProduct("blocks_main", null);
+		final ProductId issueProductId = createProduct("input_milk", null);
+		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK in the master
+
+		final FixedCostPriceProvider fakeProvider = productId -> productId.equals(coProductId)
+				? Optional.of(new BigDecimal("8"))
+				: Optional.empty();
+
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(20))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.build();
+
+		orderCosts.updatePostCalculationAmounts(costingPrecision, fakeProvider);
+
+		// the INJECTED provider (8) was consulted, not the blank master (which would give the 90 distribution)
+		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("48"));
+		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("402"));
 	}
 
 	@Test
@@ -324,7 +372,7 @@ public class PPOrderCostsTest
 				.cost(materialIssueCost(productId2, "34", "-10", "340"))
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, fixedCostPriceProvider);
 
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("340"));
 		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("340"));
@@ -339,7 +387,7 @@ public class PPOrderCostsTest
 				.cost(materialIssueCost(productId2, "34", "-10", "340"))
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, productDAO);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, fixedCostPriceProvider);
 
 		// 340 issued - 300 received
 		assertThat(orderCosts.getResidualCost(acctSchemaId, costElementId))

@@ -19,7 +19,6 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -71,7 +70,6 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IPPOrderCostBL ppOrderCostsService = Services.get(IPPOrderCostBL.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	//
 	@NonNull private final CostingMethodHandlerUtils utils;
 	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
@@ -151,7 +149,7 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		//
 		if (orderCosts != null)
 		{
-			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), productDAO);
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), ppOrderCostsService);
 			ppOrderCostsService.save(orderCosts);
 		}
 
