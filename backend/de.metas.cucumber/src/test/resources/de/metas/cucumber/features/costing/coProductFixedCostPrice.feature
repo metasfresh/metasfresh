@@ -407,3 +407,124 @@ Feature: Co-product valuation at a manual fixed cost price
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | reworkA      | AveragePO        | 8 CHF            | 6 PCE      |
       | acctSchema      | reworkB      | AveragePO        | 5 CHF            | 4 PCE      |
+
+    # Each co-product's receipt capitalizes its own fixed valuation to inventory (Dr P_Asset / Cr P_WIP);
+    # the by-product (whey) capitalizes its zero valuation. All legs balance per collector.
+    And Fact_Acct records are matching
+      | Record_ID                   | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | reworkAReceiptCostCollector | P_Asset_Acct          | reworkA      | 48        | 0         | 6 PCE  |
+      | reworkAReceiptCostCollector | P_WIP_Acct            | reworkA      | 0         | 48        | -6 PCE |
+      | reworkBReceiptCostCollector | P_Asset_Acct          | reworkB      | 20        | 0         | 4 PCE  |
+      | reworkBReceiptCostCollector | P_WIP_Acct            | reworkB      | 0         | 20        | -4 PCE |
+
+    # Distribute the order so the main product's residual capitalizes out of WIP (same as TC1/TC2).
+    And the manufacturing order identified by cheeseBlockOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | cheeseBlockOrder       | cheeseBlock             | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # The whole multi-output manufacturing order balances: WIP nets to 0 over the whole PP_Order (input pool
+    # fully relieved into the two co-products' + main product's inventory) and P_Asset nets to 0 too.
+    And Fact_Acct records balances over the whole PP_Order cheeseBlockOrder are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | 0           |
+      | P_Asset_Acct          | 0           |
+
+  @from:cucumber
+  @Id:S29488_TC6
+  Scenario: Guard - a by-product line whose product carries a fixed price is rejected at posting
+    # A by-product (BY) line must NOT carry a fixed cost price: the fixed-price valuation is for co-product (CP)
+    # lines only. Here the secondary output "wheyFixed" is a BY line but its product carries a fixed price of 8,
+    # so its receipt would capitalize at 8 (leg B) while the post-calculation zeroes it (leg A) - a silent
+    # divergence. Posting the by-product receipt is rejected instead.
+    And metasfresh contains M_Products:
+      | Identifier | X12DE355 |
+      | byMainProd | PCE      |
+      | wheyFixed  | PCE      |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
+      | byMainProdItem                     | packTUItem                 | byMainProd              | 100 | 2022-01-01 |
+      | wheyFixedItem                      | packTUItem                 | wheyFixed               | 100 | 2022-01-01 |
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
+      | byBom      | byMainProd              | 2021-01-02 | byBomVersion                         |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier  | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch | ComponentType |
+      | byInputLine | byBom                        | inputProd               | 2021-01-02 | 5        | CO            |
+      | byWheyLine  | byBom                        | wheyFixed               | 2021-01-02 | -1       | BY            |
+    And the PP_Product_BOM identified by byBom is completed
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | byPlan     | mobileWorkflow                | byMainProd              | byBomVersion                             | false        |
+    # The BY product is (mis)configured with a fixed cost price - the condition under test.
+    And update M_Product:
+      | M_Product_ID.Identifier | CoProductFixedCostPrice |
+      | wheyFixed               | 8                       |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | byOrder                | MOP         | byMainProd              | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | byPlan                                |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | byInputBomLine                 | byOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | byWheyBomLine                  | byOrder                | wheyFixed               | -6           | false           | PCE               | BY            |
+
+    And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine byInputBomLine
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | byOrder     | byMainHU           | N               | 0     | N               | 1     | N               | 6           | byMainProdItem                     |
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | byOrder     | byWheyBomLine       | byWheyHU           | N               | 0     | N               | 1     | N               | 6           | wheyFixedItem                      |
+
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | byOrder                |
+
+    # The by-product receipt cost collector is created (physical receipt happened) but its GL posting is rejected:
+    # a fixed price on a by-product line is not supported (co-product lines only).
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | byReceiptCostCollector          | byOrder                | wheyFixed               | -6          | CO        | MixVariance       |
+    And the PP_Cost_Collector identified by byReceiptCostCollector was rejected at posting with error containing supported for co-product (CP) lines only
+
+  @from:cucumber
+  @Id:S29488_TC7
+  Scenario: Guard - a fixed-priced co-product under an unsupported costing method (Standard) is rejected
+    # The fixed-price co-product valuation is supported ONLY when the order's costing method (the acct schema's)
+    # is Average PO or Moving Average Invoice. Here the acct schema is switched to Standard, so applying the fixed
+    # price would silently unbalance the order. The co-product receipt posting is rejected at the post-calculation
+    # guard (which keys off the acct schema's costing method), instead of applying the fixed price.
+    And update C_AcctSchema:
+      | C_AcctSchema_ID | CostingMethod |
+      | acctSchema      | S             |
+    And update M_Product:
+      | M_Product_ID.Identifier | CoProductFixedCostPrice |
+      | coProd                  | 8                       |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
+
+    And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 6           | mainProdItem                       |
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | coProdBomLine       | coHU               | N               | 0     | N               | 1     | N               | 6           | coProdItem                         |
+
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    # The co-product receipt cost collector is created but its GL posting is rejected under Standard costing.
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
+    And the PP_Cost_Collector identified by coReceiptCostCollector was rejected at posting with error containing supported only under the Average PO and Moving Average Invoice costing methods
