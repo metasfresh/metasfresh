@@ -414,8 +414,9 @@ Feature: Co-product valuation at a manual fixed cost price
       | acctSchema      | reworkA      | AveragePO        | 8 CHF            | 6 PCE      |
       | acctSchema      | reworkB      | AveragePO        | 5 CHF            | 4 PCE      |
 
-    # Each co-product's receipt capitalizes its own fixed valuation to inventory (Dr P_Asset / Cr P_WIP);
-    # the by-product (whey) capitalizes its zero valuation. All legs balance per collector.
+    # Each priced co-product's receipt capitalizes its own fixed valuation to inventory (Dr P_Asset /
+    # Cr P_WIP); the two legs shown balance per collector. The by-product (whey) absorbs no cost - its
+    # PP_Order_Cost BY row is 0 (asserted above) and its zero-valued receipt is not itemised in this table.
     And Fact_Acct records are matching
       | Record_ID                   | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
       | reworkAReceiptCostCollector | P_Asset_Acct          | reworkA      | 48        | 0         | 6 PCE  |
