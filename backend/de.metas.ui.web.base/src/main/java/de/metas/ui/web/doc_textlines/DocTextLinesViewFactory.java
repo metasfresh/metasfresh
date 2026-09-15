@@ -1,9 +1,11 @@
 package de.metas.ui.web.doc_textlines;
 
 import de.metas.doctextline.DocTextLineRepository;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.process.IADProcessDAO;
+import de.metas.ui.web.doc_textlines.process.WEBUI_Order_DocTextLines_Launcher;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewCloseAction;
@@ -23,8 +25,9 @@ import org.compiere.model.I_M_Product;
 
 /**
  * Builds {@link DocTextLinesView} -- the merged list of one sales order's article lines (read-only) and text
- * lines (inline-editable). The launcher process that opens this view as a modal, and the quick actions that
- * insert/delete/move text rows, are wired on top of this separately; this factory only creates the view.
+ * lines (inline-editable). {@link WEBUI_Order_DocTextLines_Launcher} opens this view as a modal from the sales
+ * order line tab; the quick actions that insert/delete/move text rows are wired on top of this separately; this
+ * factory only creates the view (and its layout/caption).
  * <p>
  * Shape copied from {@code shipment_candidates_editor}'s {@code ShipmentCandidatesViewFactory} (a plain
  * {@link IViewFactory}, no window-catalog registration needed for the window id itself) -- see that class for
@@ -50,7 +53,7 @@ public class DocTextLinesViewFactory implements IViewFactory
 		this.productsLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
 	}
 
-	/** Built by the (future) launcher process from the order's {@link TableRecordReference}. */
+	/** Called by {@link WEBUI_Order_DocTextLines_Launcher} to build its {@link CreateViewRequest} from the order's {@link TableRecordReference}. */
 	public CreateViewRequest createViewRequest(@NonNull final TableRecordReference recordRef)
 	{
 		return CreateViewRequest.builder(WINDOW_ID)
@@ -61,9 +64,13 @@ public class DocTextLinesViewFactory implements IViewFactory
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
+		final ITranslatableString caption = Services.get(IADProcessDAO.class)
+				.retrieveProcessNameByClassIfUnique(WEBUI_Order_DocTextLines_Launcher.class)
+				.orElse(null);
+
 		return ViewLayout.builder()
 				.setWindowId(WINDOW_ID)
-				.setCaption(Services.get(IMsgBL.class).translatable("TextLine"))
+				.setCaption(caption)
 				.setAllowOpeningRowDetails(false)
 				.allowViewCloseAction(ViewCloseAction.CANCEL)
 				.allowViewCloseAction(ViewCloseAction.DONE)
