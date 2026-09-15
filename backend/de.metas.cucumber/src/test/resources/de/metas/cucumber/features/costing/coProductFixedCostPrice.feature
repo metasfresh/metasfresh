@@ -139,11 +139,38 @@ Feature: Co-product valuation at a manual fixed cost price
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | coProd       | AveragePO        | 8 CHF            | 6 PCE      |
 
-    # The co-product receipt cost collector books its 48 CHF valuation; the two legs balance.
+    # The co-product receipt capitalizes its 48 CHF valuation to inventory (Dr P_Asset / Cr P_WIP,
+    # positive, received qty on P_Asset), mirroring the main-product receipt - so the value reaches
+    # report_InventoryValue, which sums Fact_Acct.qty on P_Asset. The two legs balance.
     And Fact_Acct records are matching
       | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector | P_MixVariance_Acct    | coProd       | -48       | 0         | 6 PCE  |
-      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | -48       | -6 PCE |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 48        | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 48        | -6 PCE |
+
+    # The co-product's value/qty now IS in inventory - the Lagerwert / inventory-value report reads the
+    # P_Asset Fact_Acct qty (6 PCE at the fixed 8 CHF = 48). Before the fix its value went to
+    # P_MixVariance (P&L) and never reached inventory.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | InventoryValueAcctAmt |
+      | 2024-03-27 | coProd       | warehouseStd   | 6   | 8.0000         | 48.00                 |
+
+    # Distribute the order: the main product's receipt booked at its current cost (0), so the input pool
+    # remains in WIP until the post-calculation capitalizes the residual (402, all in stock) to the main
+    # product's P_Asset. This is the step that clears WIP - and it only nets to 0 because the co-product's
+    # 48 already left WIP into inventory (with the pre-fix P_MixVariance routing, P_Asset would end at +48).
+    And the manufacturing order identified by ppOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # The whole manufacturing order now balances: Sum(AmtAcctDr) = Sum(AmtAcctCr) across all cost
+    # collectors, WIP nets to 0 (input pool fully relieved into the outputs' inventory), and the input
+    # value transferred entirely to the outputs' P_Asset (net 0 over the order).
+    And Fact_Acct records balances over the whole PP_Order ppOrder are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | 0           |
+      | P_Asset_Acct          | 0           |
 
   @from:cucumber
   @Id:S29488_TC2
@@ -193,6 +220,26 @@ Feature: Co-product valuation at a manual fixed cost price
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | coProd       | MovingAverageInvoice | 8 CHF            | 6 PCE      |
+
+    # Same corrected posting as Average PO: the co-product receipt capitalizes to inventory
+    # (Dr P_Asset / Cr P_WIP, positive, received qty on P_Asset), not to the P_MixVariance P&L account.
+    And Fact_Acct records are matching
+      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 48        | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 48        | -6 PCE |
+
+    # Distribute the order so the main product's residual capitalizes out of WIP (same as Average PO).
+    And the manufacturing order identified by ppOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # The whole manufacturing order balances and WIP nets to 0 on the go-forward method too.
+    And Fact_Acct records balances over the whole PP_Order ppOrder are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | 0           |
+      | P_Asset_Acct          | 0           |
 
   @from:cucumber
   @Id:S29488_TC3
