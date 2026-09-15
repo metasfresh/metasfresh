@@ -270,20 +270,67 @@ class DocTextLinesQuickActionsTest
 			assertThat(rowsOf(loadView())).hasSize(1);
 		}
 
+		/** The requirement is: deleting changes no article line and no other text line -- both halves asserted, not just the row count. */
 		@Test
-		void doesNotAffectOtherRows()
+		void doesNotAffectSurvivingArticleLinesOrOtherTextRows()
 		{
-			final I_C_Doc_TextLine toDelete = createTextLine(5, TextLineScope.Document);
-			final I_C_Doc_TextLine toKeep = createTextLine(15, TextLineScope.Document);
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final I_C_Doc_TextLine toDelete = createTextLine(15, TextLineScope.Document);
+			final I_C_Doc_TextLine toKeep = createTextLine(25, TextLineScope.Following);
 
 			final DocTextLinesView view = loadView();
 			final DocumentId rowIdToDelete = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(toDelete.getC_Doc_TextLine_ID()));
+			final DocumentId article10RowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article10.getC_OrderLine_ID()));
+			final DocumentId toKeepRowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(toKeep.getC_Doc_TextLine_ID()));
 
 			new WEBUI_DocTextLines_Delete().delete(view, rowIdToDelete);
 
 			final List<DocTextLinesRow> rows = rowsOf(loadView());
-			assertThat(rows).hasSize(1);
-			assertThat(rows.get(0).getTextLineId()).isEqualTo(DocTextLineId.ofRepoId(toKeep.getC_Doc_TextLine_ID()));
+			assertThat(rows).extracting(DocTextLinesRow::getId).containsExactly(article10RowId, toKeepRowId);
+			assertThat(view.getById(article10RowId).getLine()).as("a surviving article line's own position is never touched by a delete").isEqualByComparingTo("10");
+			assertThat(view.getById(toKeepRowId).getLine()).isEqualByComparingTo("25");
+			assertThat(view.getById(toKeepRowId).getTextLineScope()).isEqualTo(TextLineScope.Following);
+		}
+
+		/**
+		 * {@link DocTextLinesRows#deleteRow} must not un-publish the row before the database delete has actually
+		 * succeeded: when the persist fails, the row must stay fully intact -- still in the merged view, still
+		 * retrievable, still in the database.
+		 */
+		@Test
+		void whenThePersistFails_theRowStaysFullyIntact()
+		{
+			final I_C_Doc_TextLine textLine = createTextLine(5, TextLineScope.Document);
+			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
+
+			final DocTextLineRepository failingRepository = Mockito.spy(docTextLineRepository);
+			Mockito.doThrow(new org.adempiere.exceptions.AdempiereException("simulated persist failure"))
+					.when(failingRepository)
+					.deleteById(any());
+
+			final DocTextLinesRows rows = DocTextLinesRowsLoader.builder()
+					.orderDAO(orderDAO)
+					.docTextLineRepository(failingRepository)
+					.productsLookup(MockedLookupDataSource.withNamePrefix("product"))
+					.orderId(orderId)
+					.build()
+					.load();
+			final DocTextLinesView view = DocTextLinesView.builder()
+					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
+					.rows(rows)
+					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+					.build();
+
+			assertThatThrownBy(() -> new WEBUI_DocTextLines_Delete().delete(view, rowId))
+					.isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
+
+			// still visible in the merged list -- the failed persist must not have un-published it
+			assertThat(rowsOf(view)).extracting(DocTextLinesRow::getId).containsExactly(rowId);
+			assertThat(view.getById(rowId).getLine()).isEqualByComparingTo("5");
+			// still in the database too -- the delete never actually persisted
+			assertThat(docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId)))
+					.extracting(DocTextLine::getId)
+					.containsExactly(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
 		}
 
 		/**
@@ -634,6 +681,23 @@ class DocTextLinesQuickActionsTest
 
 			assertThat(resolution.isAccepted()).isTrue();
 		}
+
+		/**
+		 * A precondition check must resolve to a rejection, never throw -- unlike {@code moveRow}'s own use of
+		 * the throwing index lookup, a row that is simply no longer in the merged order (selected, then removed
+		 * by a concurrent delete before the check runs) must make {@code hasNeighbor} return {@code false}, not
+		 * propagate a server error.
+		 */
+		@Test
+		void hasNeighbor_returnsFalse_forARowNotInTheMergedOrder()
+		{
+			createArticleLine(10);
+			final DocTextLinesView view = loadView();
+			final DocumentId vanishedRowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(999999));
+
+			assertThat(view.hasNeighbor(vanishedRowId, true)).isFalse();
+			assertThat(view.hasNeighbor(vanishedRowId, false)).isFalse();
+		}
 	}
 
 	/**
@@ -751,8 +815,9 @@ class DocTextLinesQuickActionsTest
 		 * The trap named in the design: {@link DocTextLinesRows#deleteRow} clears {@link DocTextLinesRows#rowLocksById}
 		 * for the deleted row. A {@link DocTextLinesRows#patchRow} of that SAME row, in flight concurrently, must
 		 * never be able to finish its edit and resurrect the row into {@code rowsById} after {@code deleteRow} has
-		 * already removed it -- which is exactly why {@code deleteRow}'s second critical section shares
-		 * {@code patchRow}'s own per-row monitor.
+		 * already removed it -- which is exactly why {@code deleteRow}'s first critical section (persist, then
+		 * clear {@code rowsById}/{@code rowLocksById}, all before releasing the lock) shares {@code patchRow}'s
+		 * own per-row monitor.
 		 */
 		@Test
 		void deleteRacingPatchRow_doesNotResurrectTheDeletedRow() throws InterruptedException
@@ -835,6 +900,14 @@ class DocTextLinesQuickActionsTest
 
 			patchThread.join(5_000);
 			assertThat(patchThread.isAlive()).as("patch thread finished").isFalse();
+
+			// deleteRow clears rowsById/rowLocksById in the SAME critical section as the persist, before
+			// releasing the row's monitor -- so a patch that was blocked on that monitor is only ever admitted
+			// once the row is already gone, and its own lookup deterministically throws (either from
+			// getRowLockOrThrow, if rowLocksById was cleared before the patch even reached the lock, or from
+			// getRowOrThrow inside patchRow, if it reached the lock a moment earlier) -- never a successful
+			// rowsById.put that would resurrect the row
+			assertThat(patchFailure.get()).isInstanceOf(EntityNotFoundException.class);
 
 			// whichever way the two threads actually interleaved, the row must end up deleted -- never
 			// resurrected by a patch that slipped its rowsById.put in after deleteRow had already removed it

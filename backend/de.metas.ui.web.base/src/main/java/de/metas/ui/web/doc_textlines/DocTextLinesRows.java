@@ -70,11 +70,24 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		this.docTextLineRepository = docTextLineRepository;
 	}
 
+	/**
+	 * Skips (rather than fails on) an id present in {@link #rowIds} with no matching {@link #rowsById} entry.
+	 * That combination is not a corrupted state to reject -- it is the brief, deliberate window inside
+	 * {@link #deleteRow} between its two sequential critical sections, where the row has already been deleted
+	 * (persisted AND removed from {@link #rowsById}) but {@link #rowIds} has not been trimmed yet. A concurrent
+	 * read landing in that window should see the document as if the row were already gone, not throw.
+	 */
 	@Override
 	public Map<DocumentId, DocTextLinesRow> getDocumentId2TopLevelRows()
 	{
 		final ImmutableMap.Builder<DocumentId, DocTextLinesRow> result = ImmutableMap.builder();
-		rowIds.forEach(rowId -> result.put(rowId, rowsById.get(rowId)));
+		rowIds.forEach(rowId -> {
+			final DocTextLinesRow row = rowsById.get(rowId);
+			if (row != null)
+			{
+				result.put(rowId, row);
+			}
+		});
 		return result.build();
 	}
 
@@ -191,10 +204,19 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * {@code true} when there is a row -- of either kind -- immediately before/after {@code rowId} in the merged
 	 * order. The move precondition: a move is only impossible when the selected row already sits at the very
 	 * start or very end of the WHOLE merged list, not merely relative to other text rows.
+	 * <p>
+	 * A precondition check must resolve to a rejection, never throw -- so unlike {@link #moveRow}'s own use of
+	 * {@link #indexOfOrThrow}, a {@code rowId} no longer present in {@link #rowIds} (selected, then removed by a
+	 * concurrent delete before this check ran) resolves to {@code false}: a vanished row has no neighbour to
+	 * exchange with either, which is the correct rejection outcome, not a server error.
 	 */
 	boolean hasNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
 	{
-		final int index = indexOfOrThrow(rowId);
+		final int index = rowIds.indexOf(rowId);
+		if (index < 0)
+		{
+			return false;
+		}
 		return towardStart ? index > 0 : index < rowIds.size() - 1;
 	}
 
@@ -289,47 +311,47 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	/**
-	 * Removes a text row in two sequential (never nested) critical sections:
+	 * Removes a text row in two sequential (never nested) critical sections, ordered so that nothing is
+	 * un-published before the delete has actually succeeded -- the same persist-then-mutate shape
+	 * {@link #insertRowAbove} follows for its own success path, just run in reverse (there, a successful
+	 * persist is followed by widening; here, a successful persist is followed by shrinking):
 	 * <ol>
-	 * <li>Under {@link #structuralLock} -- the same guard {@link #insertRowAbove}/{@link #moveRow} use for
-	 * their own ordering mutation -- {@code rowId} is removed from {@link #rowIds} first. Doing this before the
-	 * second section means no reader can ever observe an id present in {@link #rowIds} but missing from
-	 * {@link #rowsById}: {@link #getDocumentId2TopLevelRows()} would throw building its result map for a row in
-	 * that state ({@code ImmutableMap.Builder} rejects a {@code null} value).</li>
 	 * <li>Under the row's own monitor from {@link #rowLocksById} -- the SAME monitor {@link #patchRow}
-	 * synchronizes on -- the database delete happens, then {@link #rowsById}/{@link #rowLocksById} are cleared.
-	 * Sharing that monitor with {@link #patchRow} is what actually prevents the resurrection risk: without it, a
-	 * {@link #patchRow} in flight on this exact row could finish its {@code rowsById.put} after this method had
-	 * already removed the entry, silently bringing a deleted row back into {@link #rowsById}. Persisting the
-	 * database delete before clearing {@link #rowsById} preserves {@link #patchRow}'s own "no publish before a
-	 * successful persist" invariant.</li>
+	 * synchronizes on -- the database delete happens FIRST; only once it has returned without throwing are
+	 * {@link #rowsById}/{@link #rowLocksById} cleared, still inside this same section. If {@code deleteById}
+	 * throws, this section is exited by the exception before either map is touched, and section 2 below is
+	 * never reached -- the row stays fully intact (in {@link #rowIds}, {@link #rowsById}, the database) rather
+	 * than becoming a ghost that is gone from the merged view but still undeleted underneath. Clearing
+	 * {@link #rowsById} here, in the same section as the persist and before this method's own monitor is
+	 * released, is also what keeps the resurrection guard deterministic: a {@link #patchRow} blocked on this
+	 * exact monitor is only ever admitted AFTER {@link #rowsById} no longer has the entry, so its
+	 * {@code getRowOrThrow} is guaranteed to throw {@link EntityNotFoundException} rather than racing this
+	 * method's second section.</li>
+	 * <li>Under {@link #structuralLock} -- the same guard {@link #insertRowAbove}/{@link #moveRow} use for
+	 * their own ordering mutation -- {@code rowId} is removed from {@link #rowIds} only now, i.e. only after
+	 * the delete is confirmed persisted. Between the two sections, a reader can briefly observe {@code rowId}
+	 * still in {@link #rowIds} with no matching {@link #rowsById} entry; {@link #getDocumentId2TopLevelRows()}
+	 * tolerates exactly that combination by skipping it, for this reason.</li>
 	 * </ol>
-	 * The two sections are sequential, not nested -- {@link #structuralLock} is released before the row's own
-	 * monitor is acquired, so this method never holds both at once, and deadlock is not possible. A
-	 * {@link #patchRow} that starts after section 1 but completes before section 2 acquires the row's monitor
-	 * may still apply its edit and persist it; that edit is then overwritten by the delete moments later -- an
-	 * accepted, benign lost update (the row still ends up cleanly deleted, with no corruption), not the
-	 * resurrection/duplicate-position failure this locking exists to prevent.
+	 * The two sections are sequential, not nested -- the row's own monitor is released before
+	 * {@link #structuralLock} is acquired, so this method never holds both at once, and deadlock is not
+	 * possible.
 	 */
 	void deleteRow(@NonNull final DocumentId rowId)
 	{
-		synchronized (structuralLock)
-		{
-			getTextRowOrThrow(rowId); // validates it exists and is a text row before anything is mutated
-			final int index = rowIds.indexOf(rowId);
-			if (index < 0)
-			{
-				throw new EntityNotFoundException(rowId.toJson());
-			}
-			rowIds.remove(index);
-		}
-
 		synchronized (getRowLockOrThrow(rowId))
 		{
 			final DocTextLinesRow row = getTextRowOrThrow(rowId);
 			docTextLineRepository.deleteById(row.getTextLineId());
+
+			// only reached once the database delete above succeeded
 			rowsById.remove(rowId);
 			rowLocksById.remove(rowId);
+		}
+
+		synchronized (structuralLock)
+		{
+			rowIds.remove(rowId);
 		}
 	}
 
