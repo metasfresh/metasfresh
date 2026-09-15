@@ -1,7 +1,6 @@
 package de.metas.ui.web.doc_textlines;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.doctextline.DocTextLine;
 import de.metas.doctextline.DocTextLineDocumentRef;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
@@ -84,14 +83,15 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 	}
 
 	/**
-	 * Adds {@code newTextLine} to this view as a row, immediately above {@code referenceRowId} -- see
-	 * {@link DocTextLinesRows#insertRowAbove(DocumentId, DocTextLinesRow)} for the placement rule -- and
-	 * notifies the frontend to reload, the same way {@code ProductsProposalView#addOrUpdateRows} does after
-	 * widening its own rows data.
+	 * Persists a new text row and adds it to this view, immediately above {@code referenceRowId} -- see
+	 * {@link DocTextLinesRows#insertRowAbove(DocumentId, DocTextLineDocumentRef, String)} for the placement rule
+	 * and the atomicity it provides -- and notifies the frontend to reload, the same way
+	 * {@code ProductsProposalView#addOrUpdateRows} does after widening its own rows data. This is the one entry
+	 * point an insert-above quick-action process needs; it never touches {@code DocTextLineRepository} itself.
 	 */
-	public void insertRowAbove(@Nullable final DocumentId referenceRowId, @NonNull final DocTextLine newTextLine)
+	public void insertRowAbove(@Nullable final DocumentId referenceRowId, @Nullable final String textLine)
 	{
-		getRowsData().insertRowAbove(referenceRowId, DocTextLinesRow.ofTextLine(newTextLine));
+		getRowsData().insertRowAbove(referenceRowId, documentRef, textLine);
 		invalidateAll();
 	}
 }

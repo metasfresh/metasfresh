@@ -1,17 +1,12 @@
 package de.metas.ui.web.doc_textlines.process;
 
-import de.metas.doctextline.DocTextLine;
-import de.metas.doctextline.DocTextLineRepository;
-import de.metas.doctextline.InsertAboveRequest;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.doc_textlines.DocTextLinesView;
-import de.metas.ui.web.doc_textlines.InsertAbovePositions;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
-import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 
@@ -40,12 +35,11 @@ import javax.annotation.Nullable;
 /**
  * The {@link de.metas.ui.web.doc_textlines.DocTextLinesView} quick action that inserts a new, empty text row
  * immediately above the selected row -- or as the document's only row, when the view has no rows at all to
- * select.
+ * select. Thin glue: all persistence and merged-order arithmetic live behind
+ * {@link DocTextLinesView#insertRowAbove(DocumentId, String)}.
  */
 public class WEBUI_DocTextLines_InsertAbove extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	private final DocTextLineRepository docTextLineRepository = SpringContextHolder.instance.getBean(DocTextLineRepository.class);
-
 	@Override
 	protected DocTextLinesView getView()
 	{
@@ -55,10 +49,28 @@ public class WEBUI_DocTextLines_InsertAbove extends ViewBasedProcessTemplate imp
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+		return checkInsertAbovePreconditions(getView(), getSelectedRowIds());
+	}
+
+	/**
+	 * A row must be selected to insert above -- except when the view has no rows at all to select, which is
+	 * how this action also works on an empty document.
+	 * <p>
+	 * Public so it is directly unit-testable without the {@code JavaProcess} parameter/view-loading machinery,
+	 * same rationale as {@link #insertAbove}.
+	 */
+	public static ProcessPreconditionsResolution checkInsertAbovePreconditions(
+			@NonNull final DocTextLinesView view,
+			@NonNull final DocumentIdsSelection selectedRowIds)
+	{
 		if (selectedRowIds.isMoreThanOneDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only one row can be selected");
+		}
+
+		if (selectedRowIds.isEmpty() && view.size() > 0)
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -76,26 +88,12 @@ public class WEBUI_DocTextLines_InsertAbove extends ViewBasedProcessTemplate imp
 	}
 
 	/**
-	 * The actual insert-above logic: derives the new row's position from the view's merged ordering, persists
-	 * it via {@link DocTextLineRepository#insertAbove}, then adds the resulting row to the view. Public so it
-	 * is directly unit-testable without the {@code JavaProcess} parameter/view-loading machinery.
+	 * Public so it is directly unit-testable without the {@code JavaProcess} parameter/view-loading machinery.
 	 *
 	 * @param referenceRowId the row to insert above; {@code null} only when the document has no rows at all.
 	 */
 	public void insertAbove(@NonNull final DocTextLinesView view, @Nullable final DocumentId referenceRowId)
 	{
-		final InsertAbovePositions positions = view.getInsertAbovePositions(referenceRowId);
-
-		final InsertAboveRequest request = InsertAboveRequest.builder()
-				.documentRef(view.getDocumentRef())
-				.textLine("")
-				.referencePosition(positions.getReferencePosition())
-				.previousPosition(positions.getPreviousPosition())
-				.articleLineExistsBeforeReferencePosition(positions.isArticleLineExistsBeforeReferencePosition())
-				.build();
-
-		final DocTextLine newTextLine = docTextLineRepository.insertAbove(request);
-
-		view.insertRowAbove(referenceRowId, newTextLine);
+		view.insertRowAbove(referenceRowId, "");
 	}
 }

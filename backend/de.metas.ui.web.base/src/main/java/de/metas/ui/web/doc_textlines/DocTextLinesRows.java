@@ -3,7 +3,10 @@ package de.metas.ui.web.doc_textlines;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.doctextline.DocTextLine;
+import de.metas.doctextline.DocTextLineDocumentRef;
 import de.metas.doctextline.DocTextLineRepository;
+import de.metas.doctextline.InsertAboveRequest;
 import de.metas.doctextline.TextLineScope;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
@@ -107,11 +110,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			return InsertAbovePositions.EMPTY_DOCUMENT;
 		}
 
-		final int referenceIndex = rowIds.indexOf(referenceRowId);
-		if (referenceIndex < 0)
-		{
-			throw new EntityNotFoundException(referenceRowId.toJson());
-		}
+		final int referenceIndex = indexOfOrThrow(referenceRowId);
 
 		final BigDecimal referencePosition = rowsById.get(referenceRowId).getLine();
 
@@ -131,37 +130,61 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	/**
-	 * Adds a newly-persisted text row into the merged order, immediately above {@code referenceRowId} -- or as
-	 * the document's only row when {@code referenceRowId} is {@code null} (the document had no rows at all).
-	 * Widens {@link #rowsById} AND {@link #rowLocksById} together with {@link #rowIds}, so the row is
-	 * immediately patchable via {@link #patchRow} the moment this method returns -- a row present in
+	 * Derives the new row's position, persists it via {@link DocTextLineRepository#insertAbove}, and adds it to
+	 * the merged order -- immediately above {@code referenceRowId}, or as the document's only row when
+	 * {@code referenceRowId} is {@code null} (the document had no rows at all). The whole sequence -- read the
+	 * current merged ordering, persist against it, then widen {@link #rowIds}/{@link #rowsById}/
+	 * {@link #rowLocksById} -- runs under {@link #structuralLock}: two concurrent inserts against the same
+	 * {@code referenceRowId} must not both read the same reference/previous positions and persist the same
+	 * midpoint {@code Line} (the collision guard inside {@link DocTextLineRepository#insertAbove} only catches
+	 * a midpoint colliding with its own inputs, not with a concurrently-computed one from another request).
+	 * Widening {@link #rowsById} AND {@link #rowLocksById} together with {@link #rowIds} also means the new row
+	 * is immediately patchable via {@link #patchRow} the moment this method returns -- a row present in
 	 * {@link #rowsById} without a matching {@link #rowLocksById} entry would make {@link #getRowLockOrThrow}
 	 * throw {@link EntityNotFoundException} on the row's very first edit.
+	 * <p>
+	 * The trade-off of holding a database round trip inside {@code structuralLock} is deliberate: contention is
+	 * confined to concurrent insert-above requests on one view instance (one order's modal), which mirrors the
+	 * choice already accepted for {@link #patchRow}'s own per-row locking.
 	 */
-	void insertRowAbove(@Nullable final DocumentId referenceRowId, @NonNull final DocTextLinesRow newRow)
+	DocTextLinesRow insertRowAbove(
+			@Nullable final DocumentId referenceRowId,
+			@NonNull final DocTextLineDocumentRef documentRef,
+			@Nullable final String textLine)
 	{
-		final DocumentId newRowId = newRow.getId();
-
 		synchronized (structuralLock)
 		{
-			final int insertIndex;
-			if (referenceRowId == null)
-			{
-				insertIndex = 0;
-			}
-			else
-			{
-				insertIndex = rowIds.indexOf(referenceRowId);
-				if (insertIndex < 0)
-				{
-					throw new EntityNotFoundException(referenceRowId.toJson());
-				}
-			}
+			final InsertAbovePositions positions = computeInsertAbovePositions(referenceRowId);
+
+			final InsertAboveRequest request = InsertAboveRequest.builder()
+					.documentRef(documentRef)
+					.textLine(textLine)
+					.referencePosition(positions.getReferencePosition())
+					.previousPosition(positions.getPreviousPosition())
+					.articleLineExistsBeforeReferencePosition(positions.isArticleLineExistsBeforeReferencePosition())
+					.build();
+			final DocTextLine persistedTextLine = docTextLineRepository.insertAbove(request);
+			final DocTextLinesRow newRow = DocTextLinesRow.ofTextLine(persistedTextLine);
+			final DocumentId newRowId = newRow.getId();
+
+			final int insertIndex = referenceRowId == null ? 0 : indexOfOrThrow(referenceRowId);
 
 			rowLocksById.put(newRowId, new Object());
 			rowsById.put(newRowId, newRow);
 			rowIds.add(insertIndex, newRowId);
+
+			return newRow;
 		}
+	}
+
+	private int indexOfOrThrow(@NonNull final DocumentId rowId)
+	{
+		final int index = rowIds.indexOf(rowId);
+		if (index < 0)
+		{
+			throw new EntityNotFoundException(rowId.toJson());
+		}
+		return index;
 	}
 
 	/**

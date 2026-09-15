@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.doctextline.DocTextLine;
 import de.metas.doctextline.DocTextLineDocumentRef;
 import de.metas.doctextline.DocTextLineRepository;
 import de.metas.doctextline.TextLineScope;
@@ -11,6 +12,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.doc_textlines.process.WEBUI_DocTextLines_InsertAbove;
 import de.metas.ui.web.shipment_candidates_editor.MockedLookupDataSource;
@@ -32,14 +34,20 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -63,11 +71,11 @@ class DocTextLinesQuickActionsTest
 		docTextLineRepository = new DocTextLineRepository();
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
-		// WEBUI_DocTextLines_InsertAbove extends ViewBasedProcessTemplate, whose field initializers do eager
-		// SpringContextHolder.instance.getBean() lookups -- register exactly those two bean types, same pattern
-		// as WEBUI_Order_DocTextLines_LauncherTest.
+		// WEBUI_DocTextLines_InsertAbove extends ViewBasedProcessTemplate, whose own field initializer does an
+		// eager SpringContextHolder.instance.getBean() lookup -- register that bean type, same pattern as
+		// WEBUI_Order_DocTextLines_LauncherTest. DocTextLineRepository is NOT looked up via Spring by the
+		// process -- it is constructor-injected into DocTextLinesRowsLoader below, per view/rows instance.
 		SpringContextHolder.registerJUnitBean(IViewsRepository.class, mock(IViewsRepository.class));
-		SpringContextHolder.registerJUnitBean(DocTextLineRepository.class, docTextLineRepository);
 		// insertRowAbove() invalidates the view, which publishes a change event over the websocket bus
 		SpringContextHolder.registerJUnitBean(WebsocketSender.class, mock(WebsocketSender.class));
 
@@ -219,6 +227,203 @@ class DocTextLinesQuickActionsTest
 			view.patchViewRow(ctx, ImmutableList.of(JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLine, "typed after insert")));
 
 			assertThat(view.getById(newRowId).getTextLine()).isEqualTo("typed after insert");
+		}
+	}
+
+	/**
+	 * The frozen requirement is: a text line is added by selecting a row in the modal, appearing directly
+	 * above it; a separate requirement covers the empty-document case, where the action must still work with
+	 * nothing to select. So zero selection is only legal when the view itself has no rows to select from.
+	 */
+	@Nested
+	class checkPreconditionsApplicable
+	{
+		@Test
+		void rejectsZeroSelectionOnANonEmptyView()
+		{
+			createArticleLine(10);
+			final DocTextLinesView view = loadView();
+
+			final ProcessPreconditionsResolution resolution =
+					WEBUI_DocTextLines_InsertAbove.checkInsertAbovePreconditions(view, DocumentIdsSelection.EMPTY);
+
+			assertThat(resolution.isAccepted()).isFalse();
+		}
+
+		@Test
+		void acceptsZeroSelectionOnAnEmptyView()
+		{
+			final DocTextLinesView view = loadView();
+			assertThat(rowsOf(view)).isEmpty();
+
+			final ProcessPreconditionsResolution resolution =
+					WEBUI_DocTextLines_InsertAbove.checkInsertAbovePreconditions(view, DocumentIdsSelection.EMPTY);
+
+			assertThat(resolution.isAccepted()).isTrue();
+		}
+
+		@Test
+		void acceptsASingleSelectionOnANonEmptyView()
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final DocTextLinesView view = loadView();
+			final DocumentId rowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article10.getC_OrderLine_ID()));
+
+			final ProcessPreconditionsResolution resolution =
+					WEBUI_DocTextLines_InsertAbove.checkInsertAbovePreconditions(view, DocumentIdsSelection.fromNullable(rowId));
+
+			assertThat(resolution.isAccepted()).isTrue();
+		}
+
+		@Test
+		void rejectsMoreThanOneSelection()
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final I_C_OrderLine article20 = createArticleLine(20);
+			final DocTextLinesView view = loadView();
+			final DocumentId rowId10 = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article10.getC_OrderLine_ID()));
+			final DocumentId rowId20 = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article20.getC_OrderLine_ID()));
+
+			final ProcessPreconditionsResolution resolution = WEBUI_DocTextLines_InsertAbove.checkInsertAbovePreconditions(
+					view, DocumentIdsSelection.of(ImmutableList.of(rowId10, rowId20)));
+
+			assertThat(resolution.isAccepted()).isFalse();
+		}
+	}
+
+	/**
+	 * Two concurrent insert-above requests against the SAME reference row -- two browser tabs open on one
+	 * order, which is exactly the scenario {@code patchRow}'s own per-row locking already treats as real --
+	 * must not both read the same reference/previous positions and persist the same midpoint {@code Line}.
+	 */
+	@Nested
+	class concurrency
+	{
+		@Test
+		void concurrentInsertsAboveTheSameReferenceRow_doNotProduceDuplicatePositions() throws InterruptedException
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final DocumentId referenceRowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article10.getC_OrderLine_ID()));
+
+			final AtomicInteger callIndex = new AtomicInteger(0);
+			final CountDownLatch aReachedPersist = new CountDownLatch(1);
+			final CountDownLatch releaseA = new CountDownLatch(1);
+
+			final DocTextLineRepository racingRepository = Mockito.spy(docTextLineRepository);
+			Mockito.doAnswer(invocation -> {
+						final int index = callIndex.getAndIncrement();
+						if (index == 0)
+						{
+							aReachedPersist.countDown();
+							if (!releaseA.await(5, TimeUnit.SECONDS))
+							{
+								throw new IllegalStateException("test bug: releaseA was never signalled");
+							}
+						}
+						return invocation.callRealMethod();
+					})
+					.when(racingRepository)
+					.insertAbove(any());
+
+			final DocTextLinesRows rows = DocTextLinesRowsLoader.builder()
+					.orderDAO(orderDAO)
+					.docTextLineRepository(racingRepository)
+					.productsLookup(MockedLookupDataSource.withNamePrefix("product"))
+					.orderId(orderId)
+					.build()
+					.load();
+			final DocTextLinesView view = DocTextLinesView.builder()
+					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
+					.rows(rows)
+					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+					.build();
+
+			final AtomicReference<Throwable> threadAFailure = new AtomicReference<>();
+			final AtomicReference<Throwable> threadBFailure = new AtomicReference<>();
+
+			// thread A: reaches the repository call first and is held there by the latch
+			final Thread threadA = new Thread(() -> {
+				try
+				{
+					new WEBUI_DocTextLines_InsertAbove().insertAbove(view, referenceRowId);
+				}
+				catch (final Throwable t)
+				{
+					threadAFailure.set(t);
+				}
+			});
+			threadA.start();
+
+			assertThat(aReachedPersist.await(5, TimeUnit.SECONDS))
+					.as("thread A must reach its repository call")
+					.isTrue();
+
+			// thread B: a second insert-above of the SAME reference row, started while A is still mid-flight
+			final Thread threadB = new Thread(() -> {
+				try
+				{
+					new WEBUI_DocTextLines_InsertAbove().insertAbove(view, referenceRowId);
+				}
+				catch (final Throwable t)
+				{
+					threadBFailure.set(t);
+				}
+			});
+			threadB.start();
+
+			// give thread B a real, bounded chance to reach the same repository call while A still holds it --
+			// true only for a not-yet-atomic implementation; false is the expected (fixed) outcome, where B
+			// blocks trying to enter the same critical section A is inside
+			final boolean bRacedAheadOfA = waitUntilBlockedOrTerminated(threadB, 500);
+
+			releaseA.countDown();
+			threadA.join(5_000);
+			assertThat(threadA.isAlive()).as("thread A finished").isFalse();
+			assertThat(threadAFailure.get()).isNull();
+
+			threadB.join(5_000);
+			assertThat(threadB.isAlive()).as("thread B finished").isFalse();
+			assertThat(threadBFailure.get()).isNull();
+
+			if (bRacedAheadOfA)
+			{
+				// documents that the implementation under test is NOT atomic -- kept so a regression shows up
+				// as a clear assertion message rather than a hang
+				System.out.println("WARNING: thread B was not blocked by thread A -- insert-above is not atomic");
+			}
+
+			final List<BigDecimal> textLinePositions = docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId))
+					.stream()
+					.map(DocTextLine::getLine)
+					.collect(Collectors.toList());
+			assertThat(textLinePositions).hasSize(2);
+			assertThat(textLinePositions.get(0))
+					.as("the two concurrently-inserted text lines must not land on the same position")
+					.isNotEqualByComparingTo(textLinePositions.get(1));
+		}
+
+		/**
+		 * Polls (bounded) until {@code thread} is either blocked/waiting on a monitor or has already
+		 * terminated -- used to give a genuinely concurrent thread B a real chance to contend for the same lock
+		 * thread A holds, without a fixed sleep racing the JVM's own scheduling.
+		 */
+		private boolean waitUntilBlockedOrTerminated(final Thread thread, final long timeoutMillis) throws InterruptedException
+		{
+			final long deadline = System.currentTimeMillis() + timeoutMillis;
+			while (System.currentTimeMillis() < deadline)
+			{
+				final Thread.State state = thread.getState();
+				if (state == Thread.State.BLOCKED || state == Thread.State.WAITING || state == Thread.State.TIMED_WAITING)
+				{
+					return false; // genuinely contending for a lock -- did not race ahead
+				}
+				if (state == Thread.State.TERMINATED)
+				{
+					return true; // ran to completion without ever blocking -- raced ahead
+				}
+				Thread.sleep(10);
+			}
+			return true; // never observed blocked within the window -- treat as raced ahead
 		}
 	}
 }
