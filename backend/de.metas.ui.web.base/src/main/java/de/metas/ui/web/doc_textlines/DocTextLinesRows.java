@@ -188,6 +188,148 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	/**
+	 * Finds the nearest text row in the given direction from {@code rowId}, skipping over any article rows in
+	 * between. A text row can only ever reorder relative to another text row: swapping its position with an
+	 * article row's would mean writing the article row's {@code Line} -- and article positions are never
+	 * touched, they are user-visible and printed. So moving a text row "past" an adjacent article row does not
+	 * swap with that article row; it jumps over it and swaps with the next text row instead.
+	 *
+	 * @return {@code null} when there is no text row in that direction -- {@code rowId} is the first (or last)
+	 *         text row in the merged order.
+	 */
+	@Nullable
+	private DocumentId findTextNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
+	{
+		final int index = indexOfOrThrow(rowId);
+		final int step = towardStart ? -1 : 1;
+		for (int i = index + step; i >= 0 && i < rowIds.size(); i += step)
+		{
+			final DocumentId candidateId = rowIds.get(i);
+			if (rowsById.get(candidateId).isTextLine())
+			{
+				return candidateId;
+			}
+		}
+		return null;
+	}
+
+	/** {@code true} when {@link #findTextNeighbor} would find a row to swap with -- the precondition check for {@link #moveRow}. */
+	boolean hasTextNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
+	{
+		return findTextNeighbor(rowId, towardStart) != null;
+	}
+
+	/**
+	 * Swaps {@code rowId}'s position with its nearest text-row neighbour in the given direction (see
+	 * {@link #findTextNeighbor}), persisted via {@link DocTextLineRepository#swapPositions} -- which swaps only
+	 * the {@code Line} column, so the moved row's {@code TextLineScope} is untouched, matching the requirement
+	 * that moving a text line never changes its stored scope.
+	 * <p>
+	 * Runs entirely under {@link #structuralLock}, the same guard {@link #insertRowAbove} uses for its own
+	 * read-neighbours/persist/mutate sequence: two concurrent moves (or a move racing an insert) reading the
+	 * same merged order and both acting on it is exactly the duplicate-position failure class already fixed
+	 * once for insert-above, and a swap touches the ordering just as much as an insert does.
+	 * <p>
+	 * Deliberately NOT additionally synchronized on either row's own monitor from {@link #rowLocksById} (unlike
+	 * {@link #deleteRow}): a concurrent {@link #patchRow} of one of the two rows only ever writes {@code
+	 * TextLine}/{@code TextLineScope}, disjoint database columns from the {@code Line} column this method
+	 * persists -- metasfresh's PO layer issues an {@code UPDATE} only for the columns actually set on that PO
+	 * instance, so the two saves cannot clobber each other at the database level regardless of interleaving.
+	 * The remaining exposure -- {@link #rowsById}'s in-memory copy of the swapped row briefly reverting a
+	 * concurrent patch's field until the next reload -- is the same severity class already accepted between
+	 * {@link #insertRowAbove} and {@link #patchRow} today (neither takes the other's lock either), not the
+	 * corrupted-ordering failure {@link #structuralLock} exists to prevent. Taking a row's monitor here in
+	 * addition to {@link #structuralLock} would mean holding both at once -- exactly the nesting the class is
+	 * built to avoid -- for a benign race that a disjoint-column analysis already rules out as data-corrupting.
+	 */
+	DocTextLinesRow moveRow(@NonNull final DocumentId rowId, final boolean towardStart)
+	{
+		synchronized (structuralLock)
+		{
+			final DocTextLinesRow row = getTextRowOrThrow(rowId);
+			final DocumentId neighborId = findTextNeighbor(rowId, towardStart);
+			if (neighborId == null)
+			{
+				throw new AdempiereException("No text line to move " + (towardStart ? "up" : "down") + " into")
+						.appendParametersToMessage()
+						.setParameter("rowId", rowId);
+			}
+			final DocTextLinesRow neighbor = rowsById.get(neighborId);
+
+			docTextLineRepository.swapPositions(row.getTextLineId(), neighbor.getTextLineId());
+
+			final DocTextLinesRow newRow = row.toBuilder().line(neighbor.getLine()).build();
+			final DocTextLinesRow newNeighbor = neighbor.toBuilder().line(row.getLine()).build();
+			rowsById.put(rowId, newRow);
+			rowsById.put(neighborId, newNeighbor);
+
+			final int index = indexOfOrThrow(rowId);
+			final int neighborIndex = indexOfOrThrow(neighborId);
+			rowIds.set(index, neighborId);
+			rowIds.set(neighborIndex, rowId);
+
+			return newRow;
+		}
+	}
+
+	/**
+	 * Removes a text row in two sequential (never nested) critical sections:
+	 * <ol>
+	 * <li>Under {@link #structuralLock} -- the same guard {@link #insertRowAbove}/{@link #moveRow} use for
+	 * their own ordering mutation -- {@code rowId} is removed from {@link #rowIds} first. Doing this before the
+	 * second section means no reader can ever observe an id present in {@link #rowIds} but missing from
+	 * {@link #rowsById}: {@link #getDocumentId2TopLevelRows()} would throw building its result map for a row in
+	 * that state ({@code ImmutableMap.Builder} rejects a {@code null} value).</li>
+	 * <li>Under the row's own monitor from {@link #rowLocksById} -- the SAME monitor {@link #patchRow}
+	 * synchronizes on -- the database delete happens, then {@link #rowsById}/{@link #rowLocksById} are cleared.
+	 * Sharing that monitor with {@link #patchRow} is what actually prevents the resurrection risk: without it, a
+	 * {@link #patchRow} in flight on this exact row could finish its {@code rowsById.put} after this method had
+	 * already removed the entry, silently bringing a deleted row back into {@link #rowsById}. Persisting the
+	 * database delete before clearing {@link #rowsById} preserves {@link #patchRow}'s own "no publish before a
+	 * successful persist" invariant.</li>
+	 * </ol>
+	 * The two sections are sequential, not nested -- {@link #structuralLock} is released before the row's own
+	 * monitor is acquired, so this method never holds both at once, and deadlock is not possible. A
+	 * {@link #patchRow} that starts after section 1 but completes before section 2 acquires the row's monitor
+	 * may still apply its edit and persist it; that edit is then overwritten by the delete moments later -- an
+	 * accepted, benign lost update (the row still ends up cleanly deleted, with no corruption), not the
+	 * resurrection/duplicate-position failure this locking exists to prevent.
+	 */
+	void deleteRow(@NonNull final DocumentId rowId)
+	{
+		synchronized (structuralLock)
+		{
+			getTextRowOrThrow(rowId); // validates it exists and is a text row before anything is mutated
+			final int index = rowIds.indexOf(rowId);
+			if (index < 0)
+			{
+				throw new EntityNotFoundException(rowId.toJson());
+			}
+			rowIds.remove(index);
+		}
+
+		synchronized (getRowLockOrThrow(rowId))
+		{
+			final DocTextLinesRow row = getTextRowOrThrow(rowId);
+			docTextLineRepository.deleteById(row.getTextLineId());
+			rowsById.remove(rowId);
+			rowLocksById.remove(rowId);
+		}
+	}
+
+	private DocTextLinesRow getTextRowOrThrow(@NonNull final DocumentId rowId)
+	{
+		final DocTextLinesRow row = getRowOrThrow(rowId);
+		if (!row.isTextLine())
+		{
+			throw new AdempiereException("Article line rows cannot be deleted or moved")
+					.appendParametersToMessage()
+					.setParameter("rowId", rowId);
+		}
+		return row;
+	}
+
+	/**
 	 * Patches one row's text and/or scope. The {@code ctx.documentsCollection}/{@code ctx.userRolePermissions}
 	 * carried by {@link RowEditingContext} are not needed here -- unlike a window-backed document patch, this
 	 * view has no logic-expression re-evaluation or permission-gated field -- only

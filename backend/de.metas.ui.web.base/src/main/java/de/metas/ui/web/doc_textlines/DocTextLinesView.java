@@ -94,4 +94,33 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 		getRowsData().insertRowAbove(referenceRowId, documentRef, textLine);
 		invalidateAll();
 	}
+
+	/** {@code true} when {@code rowId} has a text-row neighbour to swap positions with in the given direction -- the delete/move-precondition seam, mirroring {@link #getInsertAbovePositions}. */
+	public boolean hasTextNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
+	{
+		return getRowsData().hasTextNeighbor(rowId, towardStart);
+	}
+
+	/**
+	 * Swaps {@code rowId}'s position with its nearest text-row neighbour -- see
+	 * {@link DocTextLinesRows#moveRow(DocumentId, boolean)} for the jump-over-article-rows rule and the
+	 * concurrency guard -- and notifies the frontend to reload.
+	 *
+	 * @param towardStart {@code true} to move the row earlier in the merged order ("up"), {@code false} to move it later ("down")
+	 */
+	public void moveRow(@NonNull final DocumentId rowId, final boolean towardStart)
+	{
+		getRowsData().moveRow(rowId, towardStart);
+		invalidateAll();
+	}
+
+	/**
+	 * Deletes a text row -- see {@link DocTextLinesRows#deleteRow(DocumentId)} for the two-critical-section
+	 * concurrency guard -- and notifies the frontend to reload.
+	 */
+	public void deleteRow(@NonNull final DocumentId rowId)
+	{
+		getRowsData().deleteRow(rowId);
+		invalidateAll();
+	}
 }

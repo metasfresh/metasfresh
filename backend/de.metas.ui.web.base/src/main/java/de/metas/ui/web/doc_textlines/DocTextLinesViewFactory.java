@@ -10,7 +10,10 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.ui.web.doc_textlines.process.WEBUI_DocTextLines_Delete;
 import de.metas.ui.web.doc_textlines.process.WEBUI_DocTextLines_InsertAbove;
+import de.metas.ui.web.doc_textlines.process.WEBUI_DocTextLines_MoveDown;
+import de.metas.ui.web.doc_textlines.process.WEBUI_DocTextLines_MoveUp;
 import de.metas.ui.web.doc_textlines.process.WEBUI_Order_DocTextLines_Launcher;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
@@ -34,8 +37,8 @@ import java.util.List;
 /**
  * Builds {@link DocTextLinesView} -- the merged list of one sales order's article lines (read-only) and text
  * lines (inline-editable). {@link WEBUI_Order_DocTextLines_Launcher} opens this view as a modal from the sales
- * order line tab; the delete/move quick actions are wired on top of this separately, insert-above is registered
- * here via {@link #getRelatedProcessDescriptors()}.
+ * order line tab; all four quick actions (insert-above, delete, move-up, move-down) are registered here via
+ * {@link #getRelatedProcessDescriptors()}.
  * <p>
  * Shape copied from {@code shipment_candidates_editor}'s {@code ShipmentCandidatesViewFactory} (a plain
  * {@link IViewFactory}, no window-catalog registration needed for the window id itself) -- see that class for
@@ -112,7 +115,11 @@ public class DocTextLinesViewFactory implements IViewFactory
 
 	private static List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
-		return ImmutableList.of(createProcessDescriptor(WEBUI_DocTextLines_InsertAbove.class));
+		return ImmutableList.of(
+				createProcessDescriptor(WEBUI_DocTextLines_InsertAbove.class),
+				createProcessDescriptor(WEBUI_DocTextLines_Delete.class),
+				createProcessDescriptor(WEBUI_DocTextLines_MoveUp.class),
+				createProcessDescriptor(WEBUI_DocTextLines_MoveDown.class));
 	}
 
 	private static RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
