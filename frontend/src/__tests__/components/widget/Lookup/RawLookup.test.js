@@ -90,6 +90,73 @@ describe('RawLookup component', () => {
       expect(wrapper.find('input').instance().value).toEqual("Convenience Salat 250g_P002737")
     });
 
+    // A first field focuses once per widget instance, but a new document in an already-mounted
+    // window reconciles the widget instead of remounting it. These three pin when that focus is
+    // repeated on a document change - and when it must not be.
+    const mountWithSpentArming = (props) => {
+      const wrapper = mount(<RawLookup {...createDummyProps(props)} />);
+      // Spend the arming the constructor set, the way the first document of a mount does.
+      wrapper.setState({ shouldBeFocused: false });
+      const focusSpy = jest.spyOn(wrapper.instance(), 'focus');
+      return { wrapper, focusSpy };
+    };
+
+    it('focuses the first field again when the document changes', () => {
+      const { wrapper, focusSpy } = mountWithSpentArming({
+        autoFocus: true,
+        dataId: '1000001',
+      });
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).toHaveBeenCalled();
+    });
+
+    it('does not focus the first field on a document change inside a modal', () => {
+      // A process parameter panel and the barcode overlay pass a pinstance id as `dataId` with an
+      // unconditional autoFocus; a change there is not a document change and must not take focus.
+      const { wrapper, focusSpy } = mountWithSpentArming({
+        autoFocus: true,
+        isModal: true,
+        dataId: '1000001',
+      });
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not focus the first field on a document change in a quick-input row', () => {
+      // Same window, same document: the quick-input row's first field carries a permanently-set
+      // autoFocus of its own, but the header's field is the one that must get the focus.
+      const { wrapper, focusSpy } = mountWithSpentArming({
+        autoFocus: true,
+        subentity: 'quickInput',
+        dataId: '1000001',
+      });
+
+      wrapper.setProps({ dataId: '1000002' });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not focus the first field when the arriving document already has a value', () => {
+      const { wrapper, focusSpy } = mountWithSpentArming({
+        autoFocus: true,
+        dataId: '1000001',
+      });
+
+      wrapper.setProps({
+        dataId: '1000002',
+        defaultValue: { caption: 'Convenience Salat 250g_P002737', key: '2005577' },
+      });
+
+      expect(focusSpy).not.toHaveBeenCalled();
+      // Not focusing right now is not enough: the arming must not be left standing either, or a
+      // later event that empties the input would fire a focus nobody asked for.
+      expect(wrapper.state('shouldBeFocused')).toEqual(false);
+    });
+
     it('calls focus/blur handlers properly', () => {
       const dropdownListToggleSpy = jest.fn();
       const props = createDummyProps(
