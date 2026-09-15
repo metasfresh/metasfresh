@@ -94,7 +94,6 @@ pull_request_rules:
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=poster_flotilla_hotfix
               - base=favorable_esteem_hotfix
-              - base=temporary_test202607_hotfix
               - base=oasis_sun_hotfix
               - base=speedy_tiger_hotfix
               - base=neon_underwear_hotfix
@@ -132,7 +131,6 @@ pull_request_rules:
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=poster_flotilla_release
               - base=favorable_esteem_release
-              - base=temporary_test202607_release
               - base=oasis_sun_release
               - base=speedy_tiger_release
               - base=midnight_xylophone_release
