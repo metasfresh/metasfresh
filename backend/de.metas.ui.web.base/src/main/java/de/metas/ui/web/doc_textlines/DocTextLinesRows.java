@@ -23,16 +23,14 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.UnaryOperator;
 
 /**
- * Holder of the merged article-line/text-line rows of one {@link DocTextLinesView} (DESIGN.md § D-E). Row
- * order is fixed at construction time -- it is the merged order {@link DocTextLinesRowsLoader} computed --
- * and preserved here via {@link #rowIds}' insertion order.
+ * Holder of the merged article-line/text-line rows of one {@link DocTextLinesView}. Row order is fixed at
+ * construction time -- it is the merged order {@link DocTextLinesRowsLoader} computed -- and preserved here
+ * via {@link #rowIds}' insertion order.
  * <p>
- * Editable (task 6, {@link IEditableRowsData}): patching a text row's text/scope persists immediately, matching
- * this module's documented WebUI Auto-Save convention (CLAUDE.md, {@code de.metas.ui.web.base}: "Every Field
- * Change Patches the Backend") rather than deferring to a view-close batch the way
+ * Editable ({@link IEditableRowsData}): patching a text row's text/scope persists immediately, in keeping
+ * with this WebUI's field-level auto-save behaviour, rather than deferring to a view-close batch the way
  * {@code shipment_candidates_editor} does for its heavier shipment-schedule business logic -- there is no
  * equivalent batching need here, {@code C_Doc_TextLine.TextLine}/{@code TextLineScope} are plain fields.
  * Article rows stay read-only: {@link DocTextLinesRow#withChanges} rejects the patch before anything is written.
@@ -54,7 +52,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			@NonNull final DocTextLineRepository docTextLineRepository)
 	{
 		// empty is legal here (unlike the shipment-candidates-editor precedent): an order with no lines at
-		// all (AC25) still opens the modal, just with zero rows.
+		// all still opens the modal, just with zero rows.
 		rowIds = rows.stream()
 				.map(DocTextLinesRow::getId)
 				.collect(ImmutableList.toImmutableList());
@@ -84,11 +82,11 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	/**
-	 * DESIGN.md § D-C / the task-5 fix-round-1 seam: given the row a future insert-above quick-action's caller
-	 * selected, derive the three values {@code InsertAboveRequest} needs -- this is the merged ordering's own
-	 * data ({@link #rowIds}), so the derivation lives here rather than being hand-rolled by each caller.
+	 * Given the row a caller selected to insert above, derives the three values {@code InsertAboveRequest}
+	 * needs -- this is the merged ordering's own data ({@link #rowIds}), so the derivation lives here rather
+	 * than being hand-rolled by each caller.
 	 *
-	 * @param referenceRowId the selected row; {@code null} only when the document has no rows at all (AC25).
+	 * @param referenceRowId the selected row; {@code null} only when the document has no rows at all.
 	 */
 	InsertAbovePositions computeInsertAbovePositions(@Nullable final DocumentId referenceRowId)
 	{
@@ -127,10 +125,14 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	/**
-	 * Task 6 (task-6-brief.md): patches one row's text and/or scope. The {@code ctx.documentsCollection}/
-	 * {@code ctx.userRolePermissions} carried by {@link RowEditingContext} are not needed here -- unlike a
-	 * window-backed document patch, this view has no logic-expression re-evaluation or permission-gated field --
-	 * only {@link RowEditingContext#getRowId()} is used, matching {@code ShipmentCandidateRows#patchRow}.
+	 * Patches one row's text and/or scope. The {@code ctx.documentsCollection}/{@code ctx.userRolePermissions}
+	 * carried by {@link RowEditingContext} are not needed here -- unlike a window-backed document patch, this
+	 * view has no logic-expression re-evaluation or permission-gated field -- only
+	 * {@link RowEditingContext#getRowId()} is used.
+	 * <p>
+	 * Persists before mutating the in-memory row, deliberately not the other way round: if the DB write
+	 * fails, a reader of this view (including the same failed request's own error response) must still see
+	 * the old, actually-persisted value -- not a new value that only ever existed in memory.
 	 */
 	@Override
 	public void patchRow(
@@ -138,12 +140,16 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
 		final DocTextLineRowUserChangeRequest userChanges = toUserChangeRequest(fieldChangeRequests);
-		final DocTextLinesRow patchedRow = changeRow(ctx.getRowId(), row -> row.withChanges(userChanges));
+		final DocumentId rowId = ctx.getRowId();
+		final DocTextLinesRow patchedRow = getRowOrThrow(rowId).withChanges(userChanges);
 
 		docTextLineRepository.updateTextAndScope(
 				patchedRow.getTextLineId(),
 				patchedRow.getTextLine(),
 				patchedRow.getTextLineScope());
+
+		// only reached once the DB write above succeeded -- see the persist-before-mutate note above
+		rowsById.put(rowId, patchedRow);
 	}
 
 	private static DocTextLineRowUserChangeRequest toUserChangeRequest(@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
@@ -167,22 +173,13 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		return builder.build();
 	}
 
-	private DocTextLinesRow changeRow(
-			@NonNull final DocumentId rowId,
-			@NonNull final UnaryOperator<DocTextLinesRow> mapper)
+	private DocTextLinesRow getRowOrThrow(@NonNull final DocumentId rowId)
 	{
-		if (!rowIds.contains(rowId))
+		final DocTextLinesRow row = rowsById.get(rowId);
+		if (row == null)
 		{
 			throw new EntityNotFoundException(rowId.toJson());
 		}
-
-		return rowsById.compute(rowId, (key, oldRow) -> {
-			if (oldRow == null)
-			{
-				throw new EntityNotFoundException(rowId.toJson());
-			}
-
-			return mapper.apply(oldRow);
-		});
+		return row;
 	}
 }

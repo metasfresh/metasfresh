@@ -12,11 +12,11 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 
 /**
- * The merged view of one sales order's article lines and text lines (DESIGN.md § D-E). Article rows are
- * read-only, for orientation/positioning only; text rows are inline-editable (task 6, {@link IEditableView}) --
- * {@code ViewRowEditRestController} requires the view itself to implement {@link IEditableView} (it casts via
- * {@link IEditableView#asEditableView}), even though {@code patchViewRow} is already implemented concretely on
- * {@link AbstractCustomView}. Quick actions (insert-above/delete/move) are wired on top of this by later tasks.
+ * The merged view of one sales order's article lines and text lines. Article rows are read-only, for
+ * orientation/positioning only; text rows are inline-editable via {@link IEditableView}. Implementing
+ * {@link IEditableView} is required here because {@code ViewRowEditRestController} casts the view via
+ * {@link IEditableView#asEditableView}, even though {@code patchViewRow} is already implemented concretely on
+ * {@link AbstractCustomView}. Quick actions (insert-above/delete/move) are wired on top of this separately.
  */
 public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> implements IEditableView
 {

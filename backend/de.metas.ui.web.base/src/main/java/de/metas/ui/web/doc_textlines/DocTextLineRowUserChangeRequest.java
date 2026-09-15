@@ -29,10 +29,10 @@ import javax.annotation.Nullable;
  */
 
 /**
- * Shape copied from {@code shipment_candidates_editor}'s {@code ShipmentCandidateRowUserChangeRequest}
- * (DESIGN.md § D-E): a partial-update DTO where {@code null} means "field not touched by this patch", not
- * "clear the field" -- so an edit to an empty text line (AC24) is represented as {@code textLine=""}, which
- * is non-null and therefore applied.
+ * Same shape as {@code shipment_candidates_editor}'s {@code ShipmentCandidateRowUserChangeRequest}: a
+ * partial-update DTO where {@code null} means "field not touched by this patch", not "clear the field" -- so
+ * an edit to an empty text line is represented as {@code textLine=""}, which is non-null and therefore
+ * applied (an empty text line is legal and prints as a blank line).
  */
 @Value
 @Builder

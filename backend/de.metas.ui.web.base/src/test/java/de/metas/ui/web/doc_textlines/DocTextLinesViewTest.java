@@ -31,6 +31,7 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,6 +42,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -339,12 +341,11 @@ class DocTextLinesViewTest
 	}
 
 	/**
-	 * Task 6's Done-when (task-6-brief.md): patching the text and the scope of a text row persists both,
-	 * and patching an article row is rejected (DESIGN.md § D-E / D-F). Patching goes through the real
-	 * production entry point -- {@code AbstractCustomView#patchViewRow}, the same method
-	 * {@code ViewRowEditRestController} calls -- so a wrong implementation of the row-patch path (e.g. one
-	 * that silently no-ops, or one that lets article rows through) is caught the same way it would be in
-	 * production.
+	 * Patching the text and the scope of a text row persists both, and patching an article row is rejected.
+	 * Patching goes through the real production entry point -- {@code AbstractCustomView#patchViewRow}, the
+	 * same method {@code ViewRowEditRestController} calls -- so a wrong implementation of the row-patch path
+	 * (e.g. one that silently no-ops, or one that lets article rows through) is caught the same way it would
+	 * be in production.
 	 */
 	@Nested
 	class patchRow
@@ -406,9 +407,8 @@ class DocTextLinesViewTest
 			final DocTextLinesView view = loadView();
 			final DocumentId rowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article.getC_OrderLine_ID()));
 
-			// message must name the article-row rejection specifically -- not just any "view is not editable"
-			// wording, which is also what AbstractCustomView throws pre-implementation (a weaker assertion here
-			// would pass vacuously against the unimplemented feature)
+			// message must name the article-row rejection specifically -- a generic "view is not editable"
+			// wording would also match an unrelated failure mode and give a false pass here
 			assertThatThrownBy(() -> patch(view, rowId, JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLine, "hack")))
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageContaining("Article");
@@ -416,6 +416,55 @@ class DocTextLinesViewTest
 			// the article line's own DB row is untouched
 			final I_C_OrderLine reloaded = load(article.getC_OrderLine_ID(), I_C_OrderLine.class);
 			assertThat(reloaded.getLine()).isEqualTo(10);
+		}
+
+		@Test
+		void multiLineTextWithBlankLine_roundTripsVerbatim()
+		{
+			final I_C_Doc_TextLine textLine = createTextLine("5", TextLineScope.Document, "original text");
+
+			final DocTextLinesView view = loadView();
+			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
+
+			final String multiLineText = "first line\n\nthird line after a blank one";
+			patch(view, rowId, JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLine, multiLineText));
+
+			final DocTextLinesRow persistedRow = rowsOf(loadView()).get(0);
+			assertThat(persistedRow.getTextLine()).isEqualTo(multiLineText);
+		}
+
+		@Test
+		void repositoryFailure_doesNotCorruptInMemoryRow()
+		{
+			final I_C_Doc_TextLine textLine = createTextLine("5", TextLineScope.Following, "original text");
+
+			final DocTextLineRepository failingRepository = Mockito.spy(docTextLineRepository);
+			Mockito.doThrow(new RuntimeException("simulated DB failure"))
+					.when(failingRepository)
+					.updateTextAndScope(any(), any(), any());
+
+			final DocTextLinesRows rows = DocTextLinesRowsLoader.builder()
+					.orderDAO(orderDAO)
+					.docTextLineRepository(failingRepository)
+					.productsLookup(MockedLookupDataSource.withNamePrefix("product"))
+					.orderId(orderId)
+					.build()
+					.load();
+			final DocTextLinesView view = DocTextLinesView.builder()
+					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
+					.rows(rows)
+					.build();
+
+			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
+
+			assertThatThrownBy(() -> patch(view, rowId, JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLine, "attempted update")))
+					.isInstanceOf(RuntimeException.class)
+					.hasMessage("simulated DB failure");
+
+			// the in-memory row must still read the OLD value -- the DB write never happened, so nothing may
+			// have gotten ahead of it, including the copy the same failed request's own error response reads
+			final DocTextLinesRow inMemoryRow = view.getById(rowId);
+			assertThat(inMemoryRow.getTextLine()).isEqualTo("original text");
 		}
 	}
 }

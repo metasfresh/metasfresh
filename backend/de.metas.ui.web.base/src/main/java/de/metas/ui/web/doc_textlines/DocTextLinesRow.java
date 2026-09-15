@@ -28,10 +28,9 @@ import java.util.Set;
 
 /**
  * A single row of {@link DocTextLinesView}: either an order's article line ({@link RowType#ARTICLE}, read-only,
- * for orientation) or one of the order's {@code C_Doc_TextLine} rows ({@link RowType#TEXT}). Both row types are
- * loaded and merged by {@link DocTextLinesRowsLoader} per DESIGN.md § D-C / D-E; this class only carries the
- * per-row data and the per-row editability (article rows never editable, text rows editable once a future task
- * wires {@code IEditableRowsData} on top of {@link DocTextLinesRows}).
+ * for orientation) or one of the order's {@code C_Doc_TextLine} rows ({@link RowType#TEXT}, inline-editable via
+ * {@link #withChanges}). Both row types are loaded and merged by {@link DocTextLinesRowsLoader}; this class
+ * carries the per-row data and the per-row editability.
  */
 @ToString(exclude = "values")
 public final class DocTextLinesRow implements IViewRow
@@ -126,7 +125,7 @@ public final class DocTextLinesRow implements IViewRow
 	private static ImmutableMap<String, ViewEditorRenderMode> buildEditorRenderModeByFieldName(@NonNull final RowType rowType)
 	{
 		// article rows are read-only (for orientation/positioning only); text rows are the editable half of
-		// the merged view (DESIGN.md § D-E) -- the actual patching is wired by a later task.
+		// the merged view -- see #withChanges for the actual patching.
 		final ViewEditorRenderMode textFieldsMode = rowType == RowType.TEXT ? ViewEditorRenderMode.ALWAYS : ViewEditorRenderMode.NEVER;
 		return ImmutableMap.of(
 				FIELD_TextLine, textFieldsMode,
@@ -154,14 +153,12 @@ public final class DocTextLinesRow implements IViewRow
 	}
 
 	/**
-	 * Applies a user's inline edit (DESIGN.md § D-E / D-F). Article rows are never editable -- the row itself
-	 * refuses the change rather than silently ignoring it (task-6 brief: "patching an article row must be
-	 * rejected, not silently ignored").
+	 * Applies a user's inline edit. Article rows are never editable -- the row itself refuses the change
+	 * rather than silently ignoring it.
 	 * <p>
-	 * A {@code null} field on {@code userChanges} means "not touched by this patch", matching the
-	 * {@code shipment_candidates_editor} precedent's {@code ShipmentCandidateRowUserChangeRequest} shape --
-	 * so an edit to an empty text (AC24) is represented as {@code textLine=""}, which is non-null and is
-	 * therefore applied.
+	 * A {@code null} field on {@code userChanges} means "not touched by this patch" -- so an edit to an empty
+	 * text is represented as {@code textLine=""}, which is non-null and is therefore applied (an empty text
+	 * line is legal and prints as a blank line).
 	 */
 	public DocTextLinesRow withChanges(@NonNull final DocTextLineRowUserChangeRequest userChanges)
 	{

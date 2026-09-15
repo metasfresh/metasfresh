@@ -22,13 +22,13 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 
 /**
- * Builds {@link DocTextLinesView} -- the merged read-only (for now) list of one sales order's article lines and
- * text lines (DESIGN.md § D-E). The launcher process that opens this view as a modal, and the quick actions that
- * edit/insert/delete/move text rows, are later tasks; this factory only creates the view.
+ * Builds {@link DocTextLinesView} -- the merged list of one sales order's article lines (read-only) and text
+ * lines (inline-editable). The launcher process that opens this view as a modal, and the quick actions that
+ * insert/delete/move text rows, are wired on top of this separately; this factory only creates the view.
  * <p>
  * Shape copied from {@code shipment_candidates_editor}'s {@code ShipmentCandidatesViewFactory} (a plain
  * {@link IViewFactory}, no window-catalog registration needed for the window id itself) -- see that class for
- * the precedent; it is not modified by this task.
+ * the precedent.
  */
 @ViewFactory(windowId = DocTextLinesViewFactory.WINDOW_ID_STRING)
 public class DocTextLinesViewFactory implements IViewFactory

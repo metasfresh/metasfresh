@@ -9,10 +9,10 @@ import java.math.BigDecimal;
 
 /**
  * Everything {@link DocTextLineRepository#insertAbove(InsertAboveRequest)} needs to place a new
- * {@link DocTextLine} in the merged order/article-line sequence (DESIGN.md § D-C) and derive its
- * {@link TextLineScope} default (§ D-D). The merged sequence spans a table this repository does not own
- * (article lines), so the caller — which already loaded that merged view — supplies the two positions and
- * the scope-driving fact as plain values; this repository never queries article lines itself.
+ * {@link DocTextLine} in the merged order/article-line sequence and derive its {@link TextLineScope}
+ * default. The merged sequence spans a table this repository does not own (article lines), so the caller —
+ * which already loaded that merged view — supplies the two positions and the scope-driving fact as plain
+ * values; this repository never queries article lines itself.
  */
 @Value
 @Builder
@@ -21,7 +21,7 @@ public class InsertAboveRequest
 	@NonNull DocTextLineDocumentRef documentRef;
 	@Nullable String textLine;
 
-	/** Position of the row selected to insert above; {@code null} when the document has no rows at all (AC25). */
+	/** Position of the row selected to insert above; {@code null} when the document has no rows at all. */
 	@Nullable BigDecimal referencePosition;
 
 	/** Position of the row immediately preceding {@link #referencePosition} in the merged sequence; {@code null} when the reference row is the first row. */
@@ -30,7 +30,7 @@ public class InsertAboveRequest
 	/**
 	 * Whether any article line of the document has a smaller position than {@link #referencePosition} — the
 	 * new line's own position is always between {@link #previousPosition} and {@link #referencePosition}, so
-	 * this is equivalently "does an article line precede the new line" (DESIGN.md § D-D).
+	 * this is equivalently "does an article line precede the new line".
 	 */
 	boolean articleLineExistsBeforeReferencePosition;
 }

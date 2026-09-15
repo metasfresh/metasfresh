@@ -83,8 +83,8 @@ public class DocTextLineRepository
 	}
 
 	/**
-	 * Persists an inline edit of a text row's text and/or scope (webui {@code doc_textlines} task 6, DESIGN.md
-	 * § D-E). {@code textLine} may be empty (AC24: an empty text line is legal and prints as a blank line).
+	 * Persists an inline edit of a text row's text and/or scope. {@code textLine} may be empty -- an empty
+	 * text line is legal and prints as a blank line.
 	 */
 	public void updateTextAndScope(
 			@NonNull final DocTextLineId id,
