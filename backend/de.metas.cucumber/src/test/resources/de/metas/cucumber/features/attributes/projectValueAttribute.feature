@@ -67,3 +67,63 @@ Feature: ProjectValue must not be injected onto project-less records
     And validate M_AttributeInstance is absent:
       | C_OrderLine_ID | AttributeCode |
       | orderLine      | ProjectValue  |
+
+  @Id:S_ProjVal_20
+  Scenario: A new shipment schedule with no project gains no ProjectValue attribute instance
+  ## _Given the S_ProjVal_10 setup, with the order completed so a shipment schedule is generated
+  ## _When the order line has NO project and an ASI already assigned
+  ## _Then the shipment schedule's OWN ASI holds no ProjectValue attribute instance
+
+    Given metasfresh contains M_Attributes:
+      | Identifier     | Value          | AttributeValueType | IsStorageRelevant |
+      | projectValAttr | ProjectValue   | S                  | Y                 |
+      | sizeAttr       | Artikelgroesse | S                  | Y                 |
+    And add M_AttributeSet:
+      | Identifier |
+      | attrSet    |
+    And add M_AttributeUse:
+      | M_AttributeSet_ID | M_Attribute_ID | SeqNo |
+      | attrSet           | sizeAttr       | 10    |
+    And metasfresh contains M_Products:
+      | Identifier | OPT.M_AttributeSet_ID.Identifier |
+      | product    | attrSet                          |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx |
+      | pl         | ps                 | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv        | pl             |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv                    | product      | 10.00    | PCE               |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi":
+      """
+      {
+        "attributeInstances":[
+          {
+            "attributeCode":"Artikelgroesse",
+            "valueStr":"21"
+          }
+        ]
+      }
+      """
+    And metasfresh contains C_BPartners:
+      | Identifier | IsCustomer | M_PricingSystem_ID |
+      | bp         | true       | ps                 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | order      | true    | bp            | 2026-03-01  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_AttributeSetInstance_ID |
+      | orderLine  | order      | product      | 1          | asi                           |
+    And the order identified by order is completed
+
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID | IsToRecompute |
+      | shipmentSchedule | orderLine      | N             |
+    And validate M_ShipmentSchedule M_AttributeInstance is absent:
+      | M_ShipmentSchedule_ID | AttributeCode |
+      | shipmentSchedule      | ProjectValue  |
