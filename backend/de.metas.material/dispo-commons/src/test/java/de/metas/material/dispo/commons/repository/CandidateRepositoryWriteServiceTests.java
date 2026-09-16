@@ -463,4 +463,57 @@ public class CandidateRepositoryWriteServiceTests
 		assertThat(transactionDetailRecord.getMovementQty()).isEqualByComparingTo("1");
 		assertThat(transactionDetailRecord.getM_Transaction_ID()).isEqualTo(33);
 	}
+
+	/**
+	 * Reproduces a real drift case: a {@code TransactionDescriptor} can fan out into several
+	 * {@code TransactionCreatedEvent}s (one per distinct storage-attributes-key, e.g. distinct serial
+	 * numbers on the moved/issued HUs) that all carry the SAME shared {@code M_Transaction_ID}. This
+	 * method's lookup matched purely on {@code M_Transaction_ID}/{@code AD_PInstance_ResetStock_ID} with no
+	 * {@code MD_Candidate_ID} filter, so the second candidate's write silently took the UPDATE branch on
+	 * the FIRST candidate's existing row (never reassigning {@code MD_Candidate_ID}) instead of inserting
+	 * its own - leaving the second candidate with zero detail rows and corrupting the first candidate's row
+	 * with the second's qty/date.
+	 */
+	@Test
+	public void addOrReplaceTransactionDetail_doesNotStealDetailFromDifferentCandidate()
+	{
+		final int sharedTransactionId = 12345;
+
+		final Candidate candidateA = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(newMaterialDescriptor())
+				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(sharedTransactionId).transactionDate(NOW).complete(true).build())
+				.build();
+		final I_MD_Candidate candidateRecordA = newInstance(I_MD_Candidate.class);
+		save(candidateRecordA);
+		candidateRepositoryWriteService.addOrReplaceTransactionDetail(candidateA, candidateRecordA);
+
+		final Candidate candidateB = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
+				.type(CandidateType.DEMAND)
+				.materialDescriptor(newMaterialDescriptor())
+				.transactionDetail(TransactionDetail.builder().quantity(TEN).storageAttributesKey(AttributesKey.ALL).transactionId(sharedTransactionId).transactionDate(NOW).complete(true).build())
+				.build();
+		final I_MD_Candidate candidateRecordB = newInstance(I_MD_Candidate.class);
+		save(candidateRecordB);
+		candidateRepositoryWriteService.addOrReplaceTransactionDetail(candidateB, candidateRecordB);
+
+		final List<I_MD_Candidate_Transaction_Detail> detailsForA = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, candidateRecordA.getMD_Candidate_ID())
+				.create()
+				.list();
+		final List<I_MD_Candidate_Transaction_Detail> detailsForB = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
+				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, candidateRecordB.getMD_Candidate_ID())
+				.create()
+				.list();
+
+		assertThat(detailsForA).as("candidate A must keep its own, uncorrupted transaction detail").hasSize(1);
+		assertThat(detailsForA.get(0).getMovementQty()).isEqualByComparingTo("1");
+
+		assertThat(detailsForB).as("candidate B must get its own transaction detail rather than being left orphaned").hasSize(1);
+		assertThat(detailsForB.get(0).getMovementQty()).isEqualByComparingTo("10");
+	}
 }

@@ -113,6 +113,11 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for {@code PP_Order} — manufacturing orders. Covers creating orders and their
+ * BOM lines, driving their document actions (complete, close, reactivate, void), and asserting the
+ * resulting order state.
+ */
 public class PP_Order_StepDef
 {
 	private static final AdMessageKey MISSING_PRODUCT_PLU_CONFIG = AdMessageKey.of("de.metas.externalsystem.leichmehl.ExportPPOrderToLeichMehlService.MissingPLUConfigForProduct");
@@ -383,7 +388,14 @@ public class PP_Order_StepDef
 		}
 	}
 
-	@And("^the manufacturing order identified by (.*) is (reactivated|completed)$")
+	/**
+	 * Runs a document action on the manufacturing order behind the given identifier and waits for the
+	 * resulting doc status: {@code reactivated} to {@code IsInProgress}, {@code completed} to
+	 * {@code IsCompleted}, {@code closed} to {@code IsClosed}.
+	 * <p>
+	 * Gherkin: {@code the manufacturing order identified by <identifier> is <reactivated|completed|closed>}
+	 */
+	@And("^the manufacturing order identified by (.*) is (reactivated|completed|closed)$")
 	public void order_action(
 			@NonNull final String orderIdentifier,
 			@NonNull final String action)
@@ -399,6 +411,12 @@ public class PP_Order_StepDef
 			case completed:
 				orderRecord.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(orderRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case closed:
+				// Closes a manufacturing order WITHOUT issuing its components — the BOM demand stays
+				// un-issued, which leaves the ATP decremented for stock that was never consumed.
+				orderRecord.setDocAction(IDocument.ACTION_Close);
+				documentBL.processEx(orderRecord, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled PP_Order action")

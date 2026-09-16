@@ -102,6 +102,17 @@ public class RabbitMQ_StepDef
 		waitEmptyMaterialQueue();
 	}
 
+	/**
+	 * Drains the {@code de.metas.material} RabbitMQ queue, i.e. blocks until it is empty or throws after 5 minutes.
+	 * This is the internal collaborator API for a step def that internalizes its own drain (see
+	 * {@code de.metas.cucumber/CLAUDE.md} rule 7) — use this method, not the Gherkin-bound
+	 * {@link #wait_empty_material_queue()}.
+	 */
+	public void waitEmptyMaterialQueue() throws InterruptedException
+	{
+		waitEmptyMaterialQueueInternal();
+	}
+
 	@Given("rabbitMQ queue is created")
 	public void create_queue(@NonNull final DataTable dataTable)
 	{
@@ -335,7 +346,7 @@ public class RabbitMQ_StepDef
 									  .build());
 	}
 
-	private void waitEmptyMaterialQueue() throws InterruptedException
+	private void waitEmptyMaterialQueueInternal() throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis();
 		final long deadLineMillis = nowMillis + (300 * 1000L);    // dev-note: await maximum 5 minutes
