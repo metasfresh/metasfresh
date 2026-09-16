@@ -9,11 +9,13 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingMethod;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -228,20 +230,18 @@ public final class PPOrderCosts
 
 	public void updatePostCalculationAmounts(
 			final CurrencyPrecision precision,
-			@NonNull final CostingMethod costingMethod,
-			@NonNull final FixedCostPriceProvider fixedCostPriceProvider)
+			@NonNull final CostingMethod costingMethod)
 	{
 		for (final CostElementId costElementId : getCostElementIds())
 		{
-			updatePostCalculationAmountsForCostElement(precision, costElementId, costingMethod, fixedCostPriceProvider);
+			updatePostCalculationAmountsForCostElement(precision, costElementId, costingMethod);
 		}
 	}
 
 	public void updatePostCalculationAmountsForCostElement(
 			final CurrencyPrecision precision,
 			final CostElementId costElementId,
-			@NonNull final CostingMethod costingMethod,
-			@NonNull final FixedCostPriceProvider fixedCostPriceProvider)
+			@NonNull final CostingMethod costingMethod)
 	{
 		final List<PPOrderCost> costs = filterAndList(PPOrderCostFilter.builder()
 				.costElementId(costElementId)
@@ -278,7 +278,7 @@ public final class PPOrderCosts
 					.map(PPOrderCost::getProductId)
 					.collect(ImmutableList.toImmutableList());
 			throw new AdempiereException("Co-products' cost distribution percent sum of " + totalCoProductDistributionPercent
-					+ " exceeds 100% for product(s): " + describeProducts(fixedCostPriceProvider, offendingProductIds));
+					+ " exceeds 100% for product(s): " + describeProducts(offendingProductIds));
 		}
 
 		//
@@ -461,12 +461,11 @@ public final class PPOrderCosts
 	}
 
 	/** @return the given products' names (comma-separated), for the negative-main guard message. */
-	private static String describeProducts(
-			@NonNull final FixedCostPriceProvider fixedCostPriceProvider,
-			@NonNull final List<ProductId> productIds)
+	private static String describeProducts(@NonNull final List<ProductId> productIds)
 	{
+		final IProductBL productBL = Services.get(IProductBL.class);
 		return productIds.stream()
-				.map(fixedCostPriceProvider::getProductName)
+				.map(productBL::getProductName)
 				.collect(Collectors.joining(", "));
 	}
 

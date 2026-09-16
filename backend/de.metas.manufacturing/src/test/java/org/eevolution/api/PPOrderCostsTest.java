@@ -15,7 +15,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -73,7 +72,6 @@ public class PPOrderCostsTest
 
 	private I_C_UOM uom;
 	private UomId uomId;
-	private FixedCostPriceProvider fixedCostPriceProvider;
 
 	@BeforeEach
 	public void beforeEach()
@@ -81,7 +79,6 @@ public class PPOrderCostsTest
 		AdempiereTestHelper.get().init();
 		uom = BusinessTestHelper.createUomEach();
 		uomId = UomId.ofRepoId(uom.getC_UOM_ID());
-		fixedCostPriceProvider = Services.get(IPPOrderCostBL.class);
 	}
 
 	@Test
@@ -132,7 +129,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("70"));
 		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("100"));
@@ -179,7 +176,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		// percent(20%) x pool(450) = 90, NOT fixedPrice(8) x qty(6) = 48
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
@@ -228,7 +225,7 @@ public class PPOrderCostsTest
 				.build();
 
 		// Sigma p = 120% > 100% -> guard must reject in percent-space, naming the offending product + the sum
-		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, CostingMethod.AveragePO, fixedCostPriceProvider))
+		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, CostingMethod.AveragePO))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("120%")
 				.hasMessageContaining("overclaimed_coproduct");
@@ -282,7 +279,7 @@ public class PPOrderCostsTest
 				.build();
 
 		// Sigma p = 60% + 50% = 110% > 100% -> guard must reject, naming both products + the sum
-		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, CostingMethod.AveragePO, fixedCostPriceProvider))
+		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, CostingMethod.AveragePO))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("110%")
 				.hasMessageContaining("overclaimed_coproduct_a")
@@ -327,7 +324,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		this.assertThatPostCalculationAmt(orderCosts, byProductId).isEqualByComparingTo(BigDecimal.ZERO);
 		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("450"));
@@ -368,7 +365,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
 		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("360"));
@@ -412,7 +409,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(BigDecimal.ZERO);
 		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("450"));
@@ -453,7 +450,7 @@ public class PPOrderCostsTest
 						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
 						.build())
 				.build();
-		orderCostsAOnly.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCostsAOnly.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		final PPOrderCosts orderCostsAAndB = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -485,7 +482,7 @@ public class PPOrderCostsTest
 						.accumulatedQty(Quantity.of(new BigDecimal("3"), uom))
 						.build())
 				.build();
-		orderCostsAAndB.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCostsAAndB.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		// A's carve (450 * 20% = 90) is IDENTICAL whether B is present or not
 		this.assertThatPostCalculationAmt(orderCostsAOnly, coProductAId).isEqualByComparingTo(new BigDecimal("90"));
@@ -528,7 +525,7 @@ public class PPOrderCostsTest
 						.accumulatedQty(Quantity.of(new BigDecimal("1"), uom))
 						.build())
 				.build();
-		orderCostsSmallQty.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCostsSmallQty.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		final PPOrderCosts orderCostsLargeQty = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -553,7 +550,7 @@ public class PPOrderCostsTest
 						.accumulatedQty(Quantity.of(new BigDecimal("100"), uom))
 						.build())
 				.build();
-		orderCostsLargeQty.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCostsLargeQty.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		this.assertThatPostCalculationAmt(orderCostsSmallQty, coProductSmallQtyId).isEqualByComparingTo(new BigDecimal("90"));
 		this.assertThatPostCalculationAmt(orderCostsLargeQty, coProductLargeQtyId).isEqualByComparingTo(new BigDecimal("90"));
@@ -596,7 +593,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		// null distribution percent -> zero co-product share (no NPE); main keeps the full pool
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(BigDecimal.ZERO);
@@ -641,7 +638,7 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		final CostAmount legA_postCalculationAmount = getPostCalculationCostAmt(orderCosts, coProductId);
 		final CostAmount legB_receiptAmount = orderCosts.getBlankCoProductReceiptAmount(coProductSegment, costingPrecision);
@@ -689,7 +686,7 @@ public class PPOrderCostsTest
 				.cost(materialIssueCost(productId2, "34", "-10", "340"))
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("340"));
 		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("340"));
@@ -704,7 +701,7 @@ public class PPOrderCostsTest
 				.cost(materialIssueCost(productId2, "34", "-10", "340"))
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
 		// 340 issued - 300 received
 		assertThat(orderCosts.getResidualCost(acctSchemaId, costElementId))

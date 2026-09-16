@@ -5,7 +5,7 @@ import org.eevolution.model.I_PP_Order;
 
 import de.metas.util.ISingletonService;
 
-public interface IPPOrderCostBL extends ISingletonService, FixedCostPriceProvider
+public interface IPPOrderCostBL extends ISingletonService
 {
 
 	/**

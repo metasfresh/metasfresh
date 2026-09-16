@@ -149,7 +149,7 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 		//
 		if (orderCosts != null)
 		{
-			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), getAcctSchemaCostingMethod(request), ppOrderCostsService);
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), getAcctSchemaCostingMethod(request));
 			ppOrderCostsService.save(orderCosts);
 		}
 

@@ -389,7 +389,7 @@ class Doc_PPCostCollectorCostDifferenceDistributionTest
 							.build());
 
 			final PPOrderCosts orderCosts = PPOrderCosts.builder().orderId(orderId).costs(costs).build();
-			orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2), CostingMethod.AveragePO, ppOrderCostBL);
+			orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2), CostingMethod.AveragePO);
 			ppOrderCostBL.save(orderCosts);
 		}
 
