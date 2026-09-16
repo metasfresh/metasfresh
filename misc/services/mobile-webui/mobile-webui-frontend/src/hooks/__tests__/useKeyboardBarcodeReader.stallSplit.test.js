@@ -146,21 +146,9 @@ describe('a main-thread stall must not split a scan', () => {
     expect(onReadDone).toHaveBeenCalledWith(code);
   });
 
-  // event.timeStamp counts from the time origin; Date.now() counts from the Unix epoch. If one
-  // keystroke supplies an event time and the next falls back to the wall clock, subtracting one
-  // from the other yields a ~1.7e12 ms gap - clearing not just rateMs but idleAbandonMs, so it
-  // would flush even a partial HU QR that the exemption exists to protect. That is a worse failure
-  // than the one this hook is being fixed for, so pin both crossing directions.
-  // event.timeStamp counts from the time origin; Date.now() counts from the Unix epoch. Mixing
-  // them across a clock-source change breaks the gap in BOTH directions, so pin both - they fail
-  // differently and one test cannot cover the pair.
-  //
-  // Seeding realistic, DIFFERENT epochs is what makes these tests real: with both clocks started
-  // from the same small number the mismatch cannot appear and they pass against the broken code.
-
-  // event time -> fallback: the gap becomes ~1.7e12 ms, clearing not just rateMs but idleAbandonMs,
-  // so it flushes even a partial HU QR the exemption exists to protect - a worse split than the one
-  // this hook is being fixed for.
+  // Crossing the clock source breaks the gap in BOTH directions, so both are pinned: event time ->
+  // fallback yields ~1.7e12 ms and splits a protected partial; the reverse goes negative and merges
+  // two scans. The epochs must be seeded realistically different or neither can appear.
   it('does not invent a gap when a keystroke falls back to the wall clock mid-scan', () => {
     now = 1_700_000_000_000;
     eventTs = 50_000;
