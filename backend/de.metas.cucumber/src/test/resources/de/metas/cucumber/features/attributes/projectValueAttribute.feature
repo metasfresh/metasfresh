@@ -127,3 +127,63 @@ Feature: ProjectValue must not be injected onto project-less records
     And validate M_ShipmentSchedule M_AttributeInstance is absent:
       | M_ShipmentSchedule_ID | AttributeCode |
       | shipmentSchedule      | ProjectValue  |
+
+  @Id:S_ProjVal_30
+  Scenario: A project set on the order header still reaches the line's ASI
+  ## _Given ProjectValue is storage-relevant and a product uses an attribute set with one instance attribute
+  ## _When an order is created with a project on the HEADER and its line (no line-level project, an ASI
+  ## _already assigned) is saved
+  ## _Then the line's ASI holds a ProjectValue attribute instance equal to the project's Value
+
+    Given metasfresh contains M_Attributes:
+      | Identifier     | Value          | AttributeValueType | IsStorageRelevant |
+      | projectValAttr | ProjectValue   | S                  | Y                 |
+      | sizeAttr       | Artikelgroesse | S                  | Y                 |
+    And add M_AttributeSet:
+      | Identifier |
+      | attrSet    |
+    And add M_AttributeUse:
+      | M_AttributeSet_ID | M_Attribute_ID | SeqNo |
+      | attrSet           | sizeAttr       | 10    |
+    And metasfresh contains M_Products:
+      | Identifier | OPT.M_AttributeSet_ID.Identifier |
+      | product    | attrSet                          |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Currency.ISO_Code | SOTrx |
+      | pl         | ps                 | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv        | pl             |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv                    | product      | 10.00    | PCE               |
+    And metasfresh contains M_AttributeSetInstance with identifier "asi":
+      """
+      {
+        "attributeInstances":[
+          {
+            "attributeCode":"Artikelgroesse",
+            "valueStr":"21"
+          }
+        ]
+      }
+      """
+    And metasfresh contains C_BPartners:
+      | Identifier | IsCustomer | M_PricingSystem_ID |
+      | bp         | true       | ps                 |
+    And metasfresh contains C_Projects:
+      | Identifier | Value   |
+      | project    | PROJ-30 |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_Project_ID |
+      | order      | true    | bp            | 2026-03-01  | project      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_AttributeSetInstance_ID |
+      | orderLine  | order      | product      | 1          | asi                           |
+
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | attribute:projectValAttr |
+      | orderLine      | PROJ-30                  |
