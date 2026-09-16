@@ -49,6 +49,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -94,6 +95,23 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			throw new AdempiereException("@NotFound@: " + orderId);
 		}
 		return order;
+	}
+
+	@Override
+	public void lockByIdForUpdate(@NonNull final OrderId orderId)
+	{
+		// selects the key column only -- the record itself is not wanted here, the lock the select leaves
+		// behind is
+		final int lockedOrderRepoId = queryBL.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.setForUpdate(ForUpdate.FOR_UPDATE)
+				.firstIdOnly();
+
+		if (lockedOrderRepoId <= 0)
+		{
+			throw new AdempiereException("@NotFound@: " + orderId);
+		}
 	}
 
 	private List<I_C_Order> getOrdersByExternalIds(@NonNull final List<ExternalId> externalIds)

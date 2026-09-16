@@ -26,7 +26,7 @@ import java.util.stream.Stream;
  * ordering: article-line position and text-line position share one numeric space, so a plain "line ascending,
  * text-before-article on a tie" sort is the whole algorithm.
  */
-final class DocTextLinesRowsLoader
+final class DocTextLinesRowsLoader implements DocTextLinesDocumentAccess
 {
 	/**
 	 * {@code ORDER BY line, sort_rank} with text ranked before article on a tie -- an article line created at
@@ -60,8 +60,19 @@ final class DocTextLinesRowsLoader
 				.rows(loadMergedRows())
 				.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
 				.docTextLineRepository(docTextLineRepository)
-				.mergedOrderReloader(this::loadMergedRows)
+				.documentAccess(this)
 				.build();
+	}
+
+	/**
+	 * Locks the order's own record for the rest of the current transaction, through the DAO that owns
+	 * {@code C_Order} -- the same DAO this class already reads the article lines from, so the rows holder
+	 * still reaches nothing it does not own.
+	 */
+	@Override
+	public void lockDocumentForUpdate()
+	{
+		orderDAO.lockByIdForUpdate(orderId);
 	}
 
 	/**
@@ -73,7 +84,8 @@ final class DocTextLinesRowsLoader
 	 * the merge rule lives in exactly one place, and the repository stays out of the article-line tables it
 	 * does not own.
 	 */
-	ImmutableList<DocTextLinesRow> loadMergedRows()
+	@Override
+	public ImmutableList<DocTextLinesRow> loadMergedRows()
 	{
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(orderId);
 		final List<DocTextLine> textLines = docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId));

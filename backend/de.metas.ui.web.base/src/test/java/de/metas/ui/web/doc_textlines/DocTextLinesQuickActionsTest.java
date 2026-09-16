@@ -40,6 +40,7 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
@@ -1511,6 +1512,46 @@ class DocTextLinesQuickActionsTest
 			final List<BigDecimal> positions = storedTextLinePositions();
 			assertThat(positions).hasSize(2);
 			assertThat(positions.get(0)).isNotEqualByComparingTo(positions.get(1));
+		}
+
+		/**
+		 * The serialisation these tests rely on is a row lock on the order's own record, taken for the rest of
+		 * the transaction the write runs in. That is what reaches a second modal being served by a SECOND
+		 * application instance, which no in-process lock can see.
+		 * <p>
+		 * What this test can show is the half that lives in this code: every structural write asks the order's
+		 * DAO to lock the document, and does so BEFORE it re-derives the merged order -- a lock taken after the
+		 * read would leave exactly the window it exists to close. That the lock then makes a concurrent writer
+		 * wait is PostgreSQL's contract for {@code FOR UPDATE}, and this harness has no database to
+		 * demonstrate it against; it rests on reading, and is stated as such rather than mimicked with a mock.
+		 */
+		@Test
+		void everyStructuralWrite_locksTheOrderRecord_beforeItReDerivesTheOrder()
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final I_C_Doc_TextLine text5 = createTextLine(5, TextLineScope.Document);
+
+			final IOrderDAO lockRecordingOrderDAO = Mockito.spy(orderDAO);
+			final DocTextLinesView view = viewOf(DocTextLinesRowsLoader.builder()
+					.orderDAO(lockRecordingOrderDAO)
+					.docTextLineRepository(docTextLineRepository)
+					.productsLookup(MockedLookupDataSource.withNamePrefix("product"))
+					.orderId(orderId)
+					.build()
+					.load());
+
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, articleRowIdOf(article10));
+
+			final InOrder lockThenRead = Mockito.inOrder(lockRecordingOrderDAO);
+			lockThenRead.verify(lockRecordingOrderDAO).lockByIdForUpdate(orderId);
+			lockThenRead.verify(lockRecordingOrderDAO).retrieveOrderLines(orderId);
+
+			new WEBUI_DocTextLines_MoveDown().moveDown(view, textRowIdOf(text5));
+			new WEBUI_DocTextLines_Delete().delete(view, textRowIdOf(text5));
+
+			// insert, move and delete: each is a structural write, and a delete frees a position the others
+			// may compute against, so none of the three may run unserialised
+			Mockito.verify(lockRecordingOrderDAO, Mockito.times(3)).lockByIdForUpdate(orderId);
 		}
 
 		private DocTextLinesRows loadRowsWith(final DocTextLineRepository repository)

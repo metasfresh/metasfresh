@@ -53,6 +53,21 @@ public interface IOrderDAO extends ISingletonService
 {
 	I_C_Order getById(final OrderId orderId);
 
+	/**
+	 * Takes a row-level {@code FOR UPDATE} lock on the order's own record: a second caller asking for the same
+	 * order blocks until this caller's transaction ends, whether it runs in this application instance or
+	 * another one. For a caller that must read some state of the order, decide something from it and write
+	 * the result back, and needs no other caller to interleave in between.
+	 * <p>
+	 * <b>Must be called inside a transaction</b>, and the reads and writes it is meant to protect must run in
+	 * that same transaction -- PostgreSQL holds a row lock only until the transaction that took it ends, so
+	 * out of transaction this call blocks nobody and silently protects nothing.
+	 * <p>
+	 * Fails rather than returning quietly when there is no such order: a caller that believes it is holding
+	 * the lock while nothing is locked is the one outcome this method must never produce.
+	 */
+	void lockByIdForUpdate(@NonNull OrderId orderId);
+
 	Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds);
 
 	/**

@@ -7,15 +7,19 @@ import lombok.NonNull;
 import java.util.concurrent.locks.Lock;
 
 /**
- * The lock every structural write of one document takes, whichever {@link DocTextLinesView} it comes from.
+ * The in-process half of the serialisation every structural write of one document runs under, taken by every
+ * {@link DocTextLinesView} of that document in this JVM. The half that actually decides the outcome is the
+ * database row lock on the document's own record -- see {@link DocTextLinesRows#withDocumentLocked}, which
+ * takes both -- because two browser tabs can be served by two application instances, and no in-process lock
+ * is visible to the other one.
  * <p>
- * {@link DocTextLinesRows#structuralLock} serialises the writes of ONE rows holder, i.e. of one open modal.
- * That is not enough: every launcher click mints a new view with its own rows holder, so one user with a
- * second browser tab has two of them over the same document, each computing positions against the order as
- * it stood when its own modal was opened. Re-deriving that order from the database inside the write is what
- * removes the resulting duplicate positions -- and re-deriving is only sound if no other write of the same
- * document can slip between one writer's derivation and its persist. This lock is that guarantee, and it is
- * held for the whole derive/compute/persist/publish sequence.
+ * This one is kept in front of it because it covers something the row lock cannot: two rows holders in THIS
+ * JVM publishing into their own in-memory {@code rowsById}/{@code rowIds}, which happens outside any
+ * transaction and goes on living after the commit that ends the row lock. It also keeps a second local
+ * writer from occupying a database connection just to wait on the row.
+ * <p>
+ * {@link DocTextLinesRows#structuralLock} is narrower still and does not overlap either: it serialises the
+ * writes of ONE rows holder, i.e. of one open modal.
  * <p>
  * Striped rather than one lock per document: a map keyed by document would grow for the lifetime of the JVM
  * with an entry per document anyone ever edited. A fixed set of stripes costs nothing and cannot leak; the

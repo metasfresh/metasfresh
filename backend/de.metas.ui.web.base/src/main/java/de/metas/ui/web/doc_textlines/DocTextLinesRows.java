@@ -17,8 +17,10 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
@@ -38,11 +40,12 @@ import java.util.function.Supplier;
  * merged order {@link DocTextLinesRowsLoader} computed, preserved via {@link #rowIds}' order, and is widened
  * by {@link #insertRowAbove} as rows are added.
  * <p>
- * One holder is one open modal, and there can be several over the same document at once. So every write that
- * touches the ORDER -- {@link #insertRowAbove}, {@link #moveRow} -- first re-derives that order from the
- * database ({@link #refreshMergedOrderFromDatabase}) and computes against what it finds, with all writes of
- * one document serialised on {@link DocTextLinesDocumentLocks that document's lock}. A holder's own snapshot
- * is never a safe basis for placing a row: it is taken when the view is built and nothing else refreshes it.
+ * One holder is one open modal, and there can be several over the same document at once -- in this process or
+ * in another one. So every write that touches the ORDER -- {@link #insertRowAbove}, {@link #moveRow} -- first
+ * re-derives that order from the database ({@link #refreshMergedOrderFromDatabase}) and computes against what
+ * it finds, with all writes of one document serialised on a row lock on the document's own record (see
+ * {@link #withDocumentLocked}). A holder's own snapshot is never a safe basis for placing a row: it is taken
+ * when the view is built and nothing else refreshes it.
  * <p>
  * Editable ({@link IEditableRowsData}): patching a text row's text/scope persists immediately, in keeping
  * with this WebUI's field-level auto-save behaviour, rather than deferring to a view-close batch the way
@@ -71,8 +74,10 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	/** The document whose rows these are -- the key every structural write locks on, see {@link DocTextLinesDocumentLocks}. */
 	private final DocTextLineDocumentRef documentRef;
 
-	/** Re-runs {@link DocTextLinesRowsLoader}'s merge against current database state -- see {@link #refreshMergedOrderFromDatabase}. */
-	private final Supplier<ImmutableList<DocTextLinesRow>> mergedOrderReloader;
+	/** Locks the document and re-runs {@link DocTextLinesRowsLoader}'s merge -- see {@link #withDocumentLocked} and {@link #refreshMergedOrderFromDatabase}. */
+	private final DocTextLinesDocumentAccess documentAccess;
+
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	/**
 	 * Serialises the writes that touch the ordering OF THIS HOLDER -- two concurrent requests into one open
@@ -86,7 +91,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			@NonNull final List<DocTextLinesRow> rows,
 			@NonNull final DocTextLineDocumentRef documentRef,
 			@NonNull final DocTextLineRepository docTextLineRepository,
-			@NonNull final Supplier<ImmutableList<DocTextLinesRow>> mergedOrderReloader)
+			@NonNull final DocTextLinesDocumentAccess documentAccess)
 	{
 		// empty is legal here (unlike the shipment-candidates-editor precedent): an order with no lines at
 		// all still opens the modal, just with zero rows.
@@ -98,7 +103,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		rowLocksById = new ConcurrentHashMap<>(rowIds.stream().collect(ImmutableMap.toImmutableMap(id -> id, id -> new Object())));
 		this.documentRef = documentRef;
 		this.docTextLineRepository = docTextLineRepository;
-		this.mergedOrderReloader = mergedOrderReloader;
+		this.documentAccess = documentAccess;
 	}
 
 	/**
@@ -240,7 +245,12 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		{
 			if (!currentRowIds.isEmpty())
 			{
-				throw new AdempiereException("referenceRowId is required unless the document has no rows at all")
+				// no reference row is sent only when this window had no rows to select. Reaching this point
+				// means the document has rows now -- someone added them while this window was open, and the
+				// re-derivation in insertRowAbove has just found them. Placing the new line "first" against
+				// rows this window has never shown would put it at a position one of them may already hold.
+				throw new AdempiereException("This document has gained lines since this window was opened, so there is nothing here to insert above."
+						+ " Please close and reopen it, then try again.")
 						.appendParametersToMessage()
 						.setParameter("rowIds", currentRowIds);
 			}
@@ -288,24 +298,39 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	/**
-	 * Runs {@code action} with this document's lock held -- the one every structural write of this document
-	 * takes, from whichever view it comes. See {@link DocTextLinesDocumentLocks} for what it buys and why one
-	 * rows holder's {@link #structuralLock} cannot buy it.
+	 * Runs {@code action} as the only structural write of this document anywhere, in one transaction.
 	 * <p>
-	 * It is always taken BEFORE {@link #structuralLock} and before any row monitor, and nothing acquires it
-	 * while holding either -- that fixed order is what makes two locks safe here.
+	 * The serialising primitive is the <b>database</b> row lock on the document's own record
+	 * ({@link DocTextLinesDocumentAccess#lockDocumentForUpdate}), because the writers to keep apart are not
+	 * only the ones in this JVM: a second webapi instance serving the second browser tab would not see an
+	 * in-process lock at all, and would re-derive the same ordering and persist into it. The lock is taken
+	 * inside {@code callInThreadInheritedTrx} and released when that transaction ends, which is why the
+	 * action's own reads and writes must run in the same transaction -- they do: the quick action's
+	 * {@code doIt} is already wrapped in one by {@code ProcessExecutor}, and this call joins it (or opens one
+	 * for a caller that has none, rather than letting the lock be released the moment it is taken).
+	 * <p>
+	 * The in-process lock is kept in front of it because it guards something the database lock cannot see:
+	 * the in-memory publication into {@link #rowsById}/{@link #rowIds}, which two rows holders of one JVM
+	 * perform outside any transaction and which outlives the commit that ends the row lock.
+	 * <p>
+	 * Lock order is fixed -- in-process lock, then transaction and row lock, then {@link #structuralLock} or a
+	 * row monitor -- and nothing acquires an outer one while holding an inner one, which is what makes
+	 * holding several safe here.
 	 */
 	private <T> T withDocumentLocked(@NonNull final Supplier<T> action)
 	{
-		final Lock documentLock = DocTextLinesDocumentLocks.forDocument(documentRef);
-		documentLock.lock();
+		final Lock inProcessLock = DocTextLinesDocumentLocks.forDocument(documentRef);
+		inProcessLock.lock();
 		try
 		{
-			return action.get();
+			return trxManager.callInThreadInheritedTrx(() -> {
+				documentAccess.lockDocumentForUpdate();
+				return action.get();
+			});
 		}
 		finally
 		{
-			documentLock.unlock();
+			inProcessLock.unlock();
 		}
 	}
 
@@ -345,7 +370,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 */
 	private void refreshMergedOrderFromDatabase()
 	{
-		final ImmutableList<DocTextLinesRow> freshRows = mergedOrderReloader.get();
+		final ImmutableList<DocTextLinesRow> freshRows = documentAccess.loadMergedRows();
 
 		for (final DocTextLinesRow freshRow : freshRows)
 		{
