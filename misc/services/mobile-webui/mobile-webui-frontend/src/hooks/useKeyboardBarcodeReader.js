@@ -8,6 +8,11 @@ import { checkPartialScannedCode, ScanCompleteness } from '../utils/qrCode/commo
 // 300 ms shrank this to 3 s, i.e. INTO the real inter-chunk range, which would abandon a genuine
 // chunked scan mid-stream. 15 s clears the max real gap with margin and is independent of debounce.
 // Exported so the test asserts against the real value instead of mirroring a magic number.
+// A pause this long between characters means the code arrived in pieces, not as one burst. Chosen
+// well below rateMs (1000 ms on production) so a chunked-but-still-successful scan is visible
+// BEFORE it reaches the gap at which the reader would split it.
+const CHUNK_GAP_MS = 200;
+
 export const IDLE_ABANDON_MS = 15000;
 
 export const useKeyboardBarcodeReader = ({
@@ -21,6 +26,14 @@ export const useKeyboardBarcodeReader = ({
   // Use refs so values persist across rerenders but don't trigger state updates
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
+  // Per-scan delivery stats, reported on the barcodeScanned trace event. Nothing here is measured
+  // for its own sake: gapMs is already computed every keystroke as the flush condition, and the
+  // buffer length is already known, so this only retains values the handler produces anyway. It
+  // dispatches no events, polls nothing and replaces no API - the delivery window it describes is
+  // otherwise unrecorded, because barcodeScanned is stamped only once the scan is already complete.
+  const scanStartTimeRef = useRef(0);
+  const scanMaxGapRef = useRef(0);
+  const scanChunkCountRef = useRef(0);
 
   // useLayoutEffect (not useEffect) so the window-level keydown listener is attached synchronously
   // in the commit phase, BEFORE the browser paints — not in a post-paint passive effect. A scanner
@@ -44,6 +57,9 @@ export const useKeyboardBarcodeReader = ({
     const resetBuffer = () => {
       bufferRef.current = '';
       lastKeyTimeRef.current = 0;
+      scanStartTimeRef.current = 0;
+      scanMaxGapRef.current = 0;
+      scanChunkCountRef.current = 0;
     };
 
     // Emit the assembled buffer as a completed scan and reset for the next one.
@@ -51,9 +67,16 @@ export const useKeyboardBarcodeReader = ({
     // component, so the refs must already be in their next-scan state.
     const completeScan = ({ shouldEnforceMinLength }) => {
       const code = bufferRef.current;
+      // Snapshot before resetBuffer clears them; the callback may unmount this component.
+      const stats = {
+        scanDurationMs: scanStartTimeRef.current ? Date.now() - scanStartTimeRef.current : null,
+        scanCharCount: code.length,
+        scanMaxCharGapMs: Math.round(scanMaxGapRef.current),
+        scanChunkCount: scanChunkCountRef.current,
+      };
       resetBuffer();
       if (code && (!shouldEnforceMinLength || !minLength || code.length >= minLength)) {
-        onReadDone(code);
+        onReadDone(code, stats);
       }
     };
 
@@ -135,6 +158,17 @@ export const useKeyboardBarcodeReader = ({
           // interval-based abandon path below — so a genuinely-stuck code reaches the app as its
           // "QR not recognised" error instead of being silently dropped.
           completeScan({ shouldEnforceMinLength: !isPartial });
+        }
+
+        // Two integer comparisons on gapMs, which line 130 already computed for the flush check.
+        // CHUNK_GAP_MS marks a pause long enough to mean the code arrived in pieces rather than as
+        // one burst - well under rateMs, so a chunk count above zero is an early warning that a
+        // scan is approaching the threshold at which it would be split.
+        if (bufferRef.current) {
+          if (gapMs > scanMaxGapRef.current) scanMaxGapRef.current = gapMs;
+          if (gapMs >= CHUNK_GAP_MS) scanChunkCountRef.current += 1;
+        } else {
+          scanStartTimeRef.current = now;
         }
 
         bufferRef.current += event.key;
