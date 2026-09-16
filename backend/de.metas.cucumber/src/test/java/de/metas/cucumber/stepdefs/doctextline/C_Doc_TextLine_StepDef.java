@@ -151,21 +151,36 @@ public class C_Doc_TextLine_StepDef
 	}
 
 	/**
-	 * Exchanges the given text line with the row immediately after it in the merged article/text-line order --
-	 * the WebUI's "move down" quick action ({@code WEBUI_DocTextLines_MoveDown}, via
-	 * {@code DocTextLinesView#moveRow}). Since the requirements provide no insert-below, this is how a text
-	 * line lands <b>after</b> the last article line: insert it above that article line, then move it down once
-	 * -- the article line's own position is never touched, only the text line's.
+	 * Moves the given text line to the position immediately after the row currently following it in the merged
+	 * article/text-line order -- the state the WebUI's "move down" quick action ({@code
+	 * WEBUI_DocTextLines_MoveDown}) would produce. Since the requirements provide no insert-below, this is the
+	 * step this suite uses to get a text line <b>after</b> the last article line: insert it above that article
+	 * line, then move it down once -- the article line's own position is never touched, only the text line's.
 	 *
-	 * <p><b>Direct-repository invocation (documented exemption)</b>, same module-boundary reason as
-	 * {@link #insertTextLineAboveOrderLine}: the position arithmetic this reproduces lives in
-	 * {@code DocTextLinesRows#moveRow} ({@code de.metas.ui.web.base}), so this step re-derives the two merged-
-	 * order neighbours (the row immediately after the moved line, and whatever follows THAT row) from the
-	 * actually-persisted {@code C_OrderLine}/{@code C_Doc_TextLine} rows, then hands them to
-	 * {@link DocTextLineRepository#computePositionBetween} -- the same shared arithmetic production uses --
-	 * rather than computing a position of its own invention. {@code TextLineScope} is left untouched, matching
-	 * production: moving a text line never changes its stored scope, even once it has crossed to the far side
-	 * of an article line.
+	 * <p><b>This step does NOT exercise the quick action.</b> The decision logic -- which of the two candidate
+	 * neighbours (next article line, next text line) is nearer, and what lies beyond it -- lives in {@code
+	 * DocTextLinesRows#moveRow} ({@code de.metas.ui.web.base}), a class that reasons over the WebUI's merged-row
+	 * view and is not on this module's classpath; {@code de.metas.cucumber} does not, and should not, depend on
+	 * it, and that decision logic is not mechanical enough to move down into a shared, dependency-free location
+	 * the way {@link DocTextLineRepository#articleLineExistsBefore} was for {@link #insertTextLineAboveOrderLine}
+	 * -- it was evaluated and rejected; no cross-module dependency is added here and {@code moveRow} is not
+	 * refactored. This method instead <b>re-implements</b> that branch choice and the far-side-bound lookup
+	 * itself (from the actually-persisted {@code C_OrderLine}/{@code C_Doc_TextLine} rows), then hands the result
+	 * to {@link DocTextLineRepository#computePositionBetween} and {@link DocTextLineRepository#updatePosition} --
+	 * the same shared arithmetic and the same persistence call production uses, so the position it fabricates is
+	 * arithmetically identical to what {@code moveRow} would produce, and the write itself is a genuine
+	 * production call. {@code TextLineScope} is left untouched, matching production: moving a text line never
+	 * changes its stored scope, even once it has crossed to the far side of an article line.
+	 *
+	 * <p><b>Coverage / drift risk.</b> The real move decision ({@code DocTextLinesRows#moveRow}) is unit-tested
+	 * directly in {@code DocTextLinesQuickActionsTest} (e.g. {@code moveDown_acceptsWhenAnArticleRowFollowsImmediately},
+	 * {@code moveUp_thenMoveDown_pastAnArticleRow_roundTripsWithoutTouchingEitherArticle}) -- this scenario's print
+	 * assertions are genuine coverage of the resulting, reachable print state, but a mutation of {@code moveRow}
+	 * itself could never turn this scenario red: if a future change to {@code moveRow}'s neighbour-selection logic
+	 * changes what position it actually produces, this step keeps fabricating the OLD position and the scenario
+	 * stays green while asserting a state the product no longer produces. The Line-value pin assertion right
+	 * after this step exists precisely to shrink that blind spot: a change to either side's arithmetic changes
+	 * the pinned number, which is the signal a silent drift would otherwise have none of.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -202,39 +217,39 @@ public class C_Doc_TextLine_StepDef
 					.setParameter("textLineIdentifier", textLineIdentifier);
 		}
 
-		// the nearer of the two candidate neighbours (by position) is the one actually exchanged with
+		// the nearer of the two candidate neighbours (by position) is the one that would actually be exchanged
+		// with; only the article-line case is implemented below -- no scenario in this suite needs the
+		// text-line-neighbour case, and untested arithmetic left in place merely LOOKS covered, so it is not
+		// carried here. Extend this method (and its Javadoc) when a scenario actually needs it.
 		final boolean neighbourIsArticleLine = nextTextLine
 				.map(textLine -> nextArticlePosition.map(articlePos -> articlePos.compareTo(textLine.getLine()) < 0).orElse(false))
 				.orElse(true);
-
-		if (neighbourIsArticleLine)
+		if (!neighbourIsArticleLine)
 		{
-			final BigDecimal neighbourPosition = nextArticlePosition.get();
-
-			// the next merged-order row after the neighbour article, of either kind -- null when the article
-			// line is itself the last row, letting computePositionBetween place the text line past everything
-			final Optional<BigDecimal> beyondArticle = articleLinePositions.stream()
-					.filter(position -> position.compareTo(neighbourPosition) > 0)
-					.min(Comparator.naturalOrder());
-			final Optional<BigDecimal> beyondText = textLines.stream()
-					.map(DocTextLine::getLine)
-					.filter(position -> position.compareTo(neighbourPosition) > 0)
-					.min(Comparator.naturalOrder());
-			final BigDecimal beyondPosition = Stream.of(beyondArticle, beyondText)
-					.filter(Optional::isPresent)
-					.map(Optional::get)
-					.min(Comparator.naturalOrder())
-					.orElse(null);
-
-			final BigDecimal newPosition = DocTextLineRepository.computePositionBetween(neighbourPosition, beyondPosition);
-			docTextLineRepository.updatePosition(DocTextLineId.ofRepoId(record.getC_Doc_TextLine_ID()), newPosition);
+			throw new AdempiereException("Move-down past a text-line neighbour is not covered by any scenario yet")
+					.appendParametersToMessage()
+					.setParameter("textLineIdentifier", textLineIdentifier);
 		}
-		else
-		{
-			// neighbour is a text line: a genuine two-way exchange of stored positions, matching
-			// DocTextLinesRows#moveRow's own text-neighbour branch
-			docTextLineRepository.swapPositions(DocTextLineId.ofRepoId(record.getC_Doc_TextLine_ID()), nextTextLine.get().getId());
-		}
+
+		final BigDecimal neighbourPosition = nextArticlePosition.get();
+
+		// the next merged-order row after the neighbour article, of either kind -- null when the article
+		// line is itself the last row, letting computePositionBetween place the text line past everything
+		final Optional<BigDecimal> beyondArticle = articleLinePositions.stream()
+				.filter(position -> position.compareTo(neighbourPosition) > 0)
+				.min(Comparator.naturalOrder());
+		final Optional<BigDecimal> beyondText = textLines.stream()
+				.map(DocTextLine::getLine)
+				.filter(position -> position.compareTo(neighbourPosition) > 0)
+				.min(Comparator.naturalOrder());
+		final BigDecimal beyondPosition = Stream.of(beyondArticle, beyondText)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.min(Comparator.naturalOrder())
+				.orElse(null);
+
+		final BigDecimal newPosition = DocTextLineRepository.computePositionBetween(neighbourPosition, beyondPosition);
+		docTextLineRepository.updatePosition(DocTextLineId.ofRepoId(record.getC_Doc_TextLine_ID()), newPosition);
 
 		InterfaceWrapperHelper.refresh(record);
 		textLineTable.putOrReplace(textLineIdentifier, record);
@@ -260,6 +275,37 @@ public class C_Doc_TextLine_StepDef
 
 		final TextLineScope actualScope = TextLineScope.ofCode(record.getTextLineScope());
 		assertThat(actualScope.name()).as("TextLineScope of text line %s", textLineIdentifier).isEqualTo(expectedScope);
+	}
+
+	/**
+	 * Asserts the persisted {@code Line} value of a text line -- a pin, not a derivation the step itself
+	 * computes. This is what narrows the drift risk documented on {@link #moveTextLineDown}: that step
+	 * fabricates the post-move position via the same shared arithmetic production uses, but never runs the
+	 * WebUI's own {@code DocTextLinesRows#moveRow} decision logic, so a future change to THAT logic could not
+	 * otherwise turn this scenario red. Comparing against a literal expected number here means a change to
+	 * either side's arithmetic changes the pinned value too -- the signal a silent drift would otherwise have
+	 * none of. Compared via {@link BigDecimal#compareTo}, not {@code equals}: the persisted value carries the
+	 * column's own scale (e.g. {@code 21.0000}), which a plain string/int comparison would never match.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the text line identified by "trailing" has Line "21"
+	 * </pre>
+	 */
+	@Then("the text line identified by {string} has Line {string}")
+	public void validateTextLineLine(
+			@NonNull final String textLineIdentifier,
+			@NonNull final String expectedLine)
+	{
+		final I_C_Doc_TextLine record = textLineTable.get(textLineIdentifier);
+		InterfaceWrapperHelper.refresh(record);
+
+		final BigDecimal actualLine = record.getLine();
+		final BigDecimal expected = new BigDecimal(expectedLine);
+		assertThat(actualLine.compareTo(expected))
+				.as("Line of text line %s: expected %s, got %s", textLineIdentifier, expected, actualLine)
+				.isZero();
 	}
 
 	/**

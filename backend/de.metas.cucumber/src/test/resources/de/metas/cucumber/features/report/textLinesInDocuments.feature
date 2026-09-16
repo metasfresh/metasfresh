@@ -24,9 +24,16 @@ Feature: Free text lines print at their position on a sales order confirmation
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |
       | 1000000    | false                    |
+    # feeds the order-checkup ("Bestellkontrolle") Plant-level report TC8/TC12 print below: the production
+    # OrderCheckupBL builds that report's "Plant" row for every non-packaging-material order line once the
+    # order's warehouse has a PP_Plant_ID -- no PP_Product_Planning fixture needed for that row. Created
+    # before the warehouse itself: PP_Plant_ID must resolve an already-registered S_Resource identifier.
+    And create S_Resource:
+      | Identifier | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | plant      | 1000000           | Y                       | PT                        | 999             |
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID |
-      | wh             |
+      | M_Warehouse_ID | PP_Plant_ID |
+      | wh             | plant       |
     # Value differs from Name on purpose: the article row shows the Name, the product-number row below it
     # shows the Value, which gives each article two distinct text anchors. Keep the Names short - a
     # wrapping Name would change the line counts the assertions below rely on.
@@ -198,8 +205,12 @@ Feature: Free text lines print at their position on a sales order confirmation
       | line20     | order      | productB     | 1          |
 
     # the requirements give no insert-below; a trailing line is created by inserting above the LAST article
-    # line, then invoking "move down" once -- the WebUI's own quick action for crossing an article row's
-    # position without touching that article row's own Line value (DocTextLinesRows#moveRow)
+    # line, then invoking "move down" once. The move-down step does NOT run the WebUI's own quick action
+    # (DocTextLinesRows#moveRow, de.metas.ui.web.base, not on this module's classpath) -- it fabricates the
+    # position the quick action would produce, via the same shared arithmetic and the same persistence call
+    # production uses, so the write is genuine even though the decision that led to it is not. The real move
+    # decision is unit-tested in DocTextLinesQuickActionsTest; see the step's own Javadoc for the drift risk
+    # this leaves and how the Line-value pin below narrows it.
     When a text line "trailing" is inserted above the order line identified by "line20" with text:
       """
       Vielen Dank für Ihren Einkauf
@@ -210,6 +221,8 @@ Feature: Free text lines print at their position on a sales order confirmation
     # moving it past the last article line afterwards does not re-derive it, so it stays "Following" even
     # though the row is now, in print position, past every article line
     Then the text line identified by "trailing" has TextLineScope "Following"
+    # pins the fabricated position itself -- see C_Doc_TextLine_StepDef#validateTextLineLine
+    And the text line identified by "trailing" has Line "21"
 
     When the order identified by order is completed
     And The jasper process is run
@@ -217,7 +230,8 @@ Feature: Free text lines print at their position on a sales order confirmation
       | Auftrag (Jasper) | order     |
     Then an AD_Archive exists for the record identified by "order"
 
-    # it prints at the very end: nothing else in the document follows it
+    # it prints directly after the last article line -- the zero-line-gap assertion right below is what
+    # proves that, not this one
     And the PDF archived for the record identified by "order" contains text "Vielen Dank für Ihren Einkauf"
     And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "BETA-NR" and text "Vielen Dank für Ihren Einkauf"
     And the PDF archived for the record identified by "order" has no overlapping text
@@ -245,21 +259,20 @@ Feature: Free text lines print at their position on a sales order confirmation
     And the PDF archived for the record identified by "shipment" does not contain text "Vielen Dank für Ihren Einkauf"
     And the PDF archived for the record identified by "shipment" has no overlapping text
 
-    # -- the Bestellkontrolle: the fresh-produce order-checkup report, generated from the same order --
+    # -- the Bestellkontrolle: the fresh-produce order-checkup report, generated from the same order. The
+    # order's warehouse carries a PP_Plant_ID (Background), so OrderCheckupBL builds a real "Plant" row from
+    # both article lines -- Record_ID below targets that row directly (its own C_Order_MFGWarehouse_Report_ID),
+    # the same way a real user prints it from that row's own window, not the order's
     And the order-checkup reports are generated for the order identified by "order"
     And The jasper process is run
-      | Value                       | Record_ID |
-      | C_Order_MFGWarehouse_Report | order     |
-    Then an AD_Archive exists for the record identified by "order"
-    # NOT a guard, and deliberately no PDF-content assertion here: this fixture has neither a manufacturing-
-    # planned product nor a plant on its warehouse, so C_Order_MFGWarehouse_Report generates ZERO rows for
-    # this order regardless of text lines, and the printed PDF carries NO extractable text at all. Every PDF-
-    # content step (including "does not contain text") shares one extraction helper that refuses to run
-    # against an empty extraction ("if it carries none, the render or archiving went wrong" -- by design, the
-    # same guard that keeps an assertion from passing vacuously elsewhere) -- so a text-absence assertion is
-    # not merely vacuous here, it is inexpressible with the existing step vocabulary. Archive existence is
-    # the only assertion this print supports today; a real content guard needs the report to have real rows,
-    # which needs the fixture this task deliberately did not build (see the task report for why).
+      | Value                       | Record_ID     |
+      | C_Order_MFGWarehouse_Report | order_checkup |
+    Then an AD_Archive exists for the record identified by "order_checkup"
+    # the trailing text line belongs to the order confirmation only: the Bestellkontrolle's own report SQL
+    # function does not reference C_Doc_TextLine at all, so this print carries no text-line content by
+    # construction -- proven here now that the print has real rows to extract text from at all
+    And the PDF archived for the record identified by "order_checkup" does not contain text "Vielen Dank für Ihren Einkauf"
+    And the PDF archived for the record identified by "order_checkup" has no overlapping text
 
   @Id:S27486_TC12
   Scenario: An order with no text lines still prints its Description and DescriptionBottom exactly as before
@@ -285,16 +298,23 @@ Feature: Free text lines print at their position on a sales order confirmation
       | Auftrag (Jasper) | order     |
     Then an AD_Archive exists for the record identified by "order"
 
-    # no band was inserted anywhere the feature could have inserted one: the first article's own Description
-    # prints directly below its own product-number row (not the Name row -- same anchor TC1 uses for line40's
-    # "Bruchsichere Verpackung"). DescriptionBottom is anchored on the payment-rule row rather than the last
-    # article: DescriptionBottom is a field of the SAME footer subreport (report_details_footer.jrxml) as
-    # PaymentRule, and prints in the very next band after it (Incoterms sits between them in the JRXML but is
-    # empty and printWhen-suppressed here); the last ARTICLE row sits in an entirely different subreport,
-    # with the order's totals/payment-terms block always between it and the footer regardless of text lines,
-    # so "0 lines" cannot hold for that pair on this template. Same anchor-derivation standard as TC1: the
-    # pairing is the template's own adjacent band, not the nearest text this scenario happens to have printed.
+    # no band was inserted anywhere the feature could have inserted one -- covering the three actual
+    # insertion-point windows the requirement names, each a same-subreport adjacency exactly like TC1's own:
+    # above the first article row, between the two article lines (the first article's own Description prints
+    # directly below its own product-number row, not the Name row -- same anchor TC1 uses for line40's
+    # "Bruchsichere Verpackung"), and after the last article line -- the trailing position TC8's own new
+    # scenario shows is reachable.
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Pos. Artikel" and text "10 AlphaItem"
     And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "ALPHA-NR" and text "Kühlkette einhalten"
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Kühlkette einhalten" and text "BetaItem"
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "BETA-NR" and text "Total 20,00"
+    # the other half of the requirement: DescriptionBottom itself prints, unperturbed, in its own footer band.
+    # PaymentRule and DescriptionBottom are adjacent fields of the SAME footer subreport
+    # (report_details_footer.jrxml, Incoterms sits between them in the JRXML but is empty and
+    # printWhen-suppressed here) -- this pair does NOT cover an insertion-point window (no text line could
+    # ever print between two footer fields; the last ARTICLE row sits in an entirely different subreport, with
+    # the order's totals/payment-terms block always between it and the footer regardless of text lines), it
+    # only proves DescriptionBottom itself still prints correctly
     And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Zahlungsweise Zahlung via Rechnung" and text "Vielen Dank für Ihren Einkauf"
     And the PDF archived for the record identified by "order" has no overlapping text
 
@@ -302,9 +322,6 @@ Feature: Free text lines print at their position on a sales order confirmation
     # report SQL functions do not reference C_Doc_TextLine at all), so an order with zero text lines gives
     # them nothing to catch either way. Printed anyway, per the frozen test case, to prove the feature does
     # not break either pipeline for the ordinary, text-line-free order that is still the common case.
-    # "has no overlapping text" is skipped on the Bestellkontrolle print below: this fixture has neither a
-    # manufacturing-planned product nor a plant on its warehouse, so it renders with no extractable text at
-    # all (same reasoning as TC8) -- kept only on the delivery note, whose content is real --
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss10       | line10         | N             |
@@ -324,9 +341,10 @@ Feature: Free text lines print at their position on a sales order confirmation
 
     And the order-checkup reports are generated for the order identified by "order"
     And The jasper process is run
-      | Value                       | Record_ID |
-      | C_Order_MFGWarehouse_Report | order     |
-    Then an AD_Archive exists for the record identified by "order"
+      | Value                       | Record_ID     |
+      | C_Order_MFGWarehouse_Report | order_checkup |
+    Then an AD_Archive exists for the record identified by "order_checkup"
+    And the PDF archived for the record identified by "order_checkup" has no overlapping text
 
   @Id:S27486_TC13
   Scenario: A text line's markup prints literally and its special characters render correctly
@@ -353,11 +371,15 @@ Feature: Free text lines print at their position on a sales order confirmation
       | Auftrag (Jasper) | order     |
     Then an AD_Archive exists for the record identified by "order"
 
-    # the tags print literally -- this is what the field's markup="none" is what makes true. Asserting on the
-    # tags themselves, not merely the letters "fett", is what catches a template that started INTERPRETING
-    # the markup instead of printing it (see the report task's mutation record for the proof this bites)
+    # the tags print literally: markup="none" on this field suppresses JasperReports' own HTML-tag
+    # interpretation, so the angle brackets are asserted directly, not merely the letters "fett" -- that is
+    # what would catch a template that started INTERPRETING the markup instead of printing it
     And the PDF archived for the record identified by "order" contains text "<b>fett</b>"
-    # German umlauts and ß render rather than falling back to a missing-glyph replacement character
+    # German umlauts and ß render rather than falling back to a missing-glyph replacement character. Caveat:
+    # this reads the PDF's text stream via the font's own ToUnicode map, not the rendered glyph outlines -- a
+    # font that mapped a glyph to the right codepoint but drew it as .notdef (a visible fallback box) would
+    # still pass this assertion, so it proves the text stream carries the right characters, not that they were
+    # drawn correctly
     And the PDF archived for the record identified by "order" contains text "äöüÄÖÜß"
     # the Euro sign renders
     And the PDF archived for the record identified by "order" contains text "5€"

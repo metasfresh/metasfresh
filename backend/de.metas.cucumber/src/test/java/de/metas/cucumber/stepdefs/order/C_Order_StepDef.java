@@ -198,6 +198,7 @@ public class C_Order_StepDef
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
 	@NonNull private final C_OrderLine_StepDef orderLineStepDef;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	@NonNull private final AD_User_StepDefData userTable;
@@ -656,16 +657,31 @@ public class C_Order_StepDef
 	/**
 	 * Generates the order's {@code C_Order_MFGWarehouse_Report} rows -- the "Bestellkontrolle" -- via the
 	 * {@code C_Order_MFGWarehouse_Report_Generate} AD_Process, the same process a user runs from the order
-	 * window's process menu once the order is completed.
+	 * window's process menu once the order is completed. Registers the repo-ID of the generated "Plant"
+	 * (document type {@code PL}) row under {@code <orderIdentifier>_checkup}, so the record can be
+	 * referenced from the generic "The jasper process is run" / "AD_Archive exists" / "PDF archived" steps
+	 * exactly like any other document -- see {@link C_Order_MFGWarehouse_Report_StepDefData}.
 	 * <p>
-	 * Direct AD_Process invocation (resolved by {@code AD_Process.Value}, never by class reference):
-	 * {@code de.metas.cucumber} does not, and should not, depend on {@code de.metas.fresh.base}, where the
-	 * process class and the {@code IOrderCheckupBL}/{@code I_C_Order_MFGWarehouse_Report} types it works
-	 * with all live -- the same module-boundary exemption already used for the WebUI-only
-	 * {@code DocTextLineRepository} insert-above step.
+	 * Direct AD_Process invocation (resolved by {@code AD_Process.Value}, never by class reference), and the
+	 * lookup below via {@code IQueryBL}'s generic, table-name-only {@code createQueryBuilder(String)} (never
+	 * the generated model class): {@code de.metas.cucumber} does not, and should not, depend on {@code
+	 * de.metas.fresh.base}, where the process class and the {@code IOrderCheckupBL}/{@code
+	 * I_C_Order_MFGWarehouse_Report} types it works with all live -- the same module-boundary exemption
+	 * already used for the WebUI-only {@code DocTextLineRepository} insert-above step.
+	 * <p>
+	 * The "Plant" row is the one the production {@code OrderCheckupBL.generateReportsIfEligible} builds
+	 * unconditionally from every non-packaging-material order line once the order's warehouse has a
+	 * {@code PP_Plant_ID} -- unlike the per-workflow "Warehouse" rows, it needs no
+	 * {@code PP_Product_Planning} fixture, which is why only the warehouse-plant fixture is needed here.
+	 * <p>
+	 * The role is looked up by the literal name {@code "WebUI"} rather than taken from the current context,
+	 * because the default cucumber ctx's own role (System/client) matches none of the checkup records -- see
+	 * the comment below. That name is not a free parameter: it is the same role this feature's Background
+	 * already authenticates as. A caller in a different feature, under a different role, would need this
+	 * step extended with an optional role-name column rather than assuming {@code "WebUI"} also exists there.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_Order_MFGWarehouse_Report_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And the order-checkup reports are generated for the order identified by "order"
@@ -699,6 +715,22 @@ public class C_Order_StepDef
 				.executeSync()
 				.getResult()
 				.propagateErrorIfAny();
+
+		// DocumentType='PL' (X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant): one row per order, built
+		// outside the per-line loop -- see OrderCheckupBL.generateReportsIfEligible. firstIdOnly() also pins
+		// that invariant: it throws if more than one 'PL' row exists for this order.
+		final int checkupReportId = queryBL.createQueryBuilder(C_Order_MFGWarehouse_Report_StepDefData.TABLE_NAME)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.addEqualsFilter("DocumentType", "PL")
+				.create()
+				.firstIdOnly();
+		if (checkupReportId <= 0)
+		{
+			throw new AdempiereException("No 'Plant' C_Order_MFGWarehouse_Report row was generated for order "
+					+ orderIdentifier + " (C_Order_ID=" + order.getC_Order_ID() + "). "
+					+ "Check that the order's M_Warehouse has a PP_Plant_ID and that its lines are not all packaging material.");
+		}
+		checkupReportTable.put(StepDefDataIdentifier.ofString(orderIdentifier + "_checkup"), checkupReportId);
 	}
 
 	/**
@@ -888,9 +920,12 @@ public class C_Order_StepDef
 	 *       creation-time column ({@code metasfresh contains C_Orders:} has no such field): setting
 	 *       {@code C_DocTypeTarget_ID}/{@code C_BPartner_ID} at creation re-derives it from the doc type's
 	 *       {@code DocumentNote} ({@code C_Order} model interceptor {@code updateDescriptionFromDocType}), so
-	 *       a value set at creation time is silently overwritten before the insert. This step's own update
-	 *       leaves those two columns untouched, so the interceptor's {@code ifColumnsChanged} guard does not
-	 *       re-fire and the value sticks -- matching the real WebUI edit of the order's own field.</li>
+	 *       a value set at creation time is silently overwritten before the insert. This is only safe when
+	 *       the SAME update row does not also set {@code DocBaseType}/{@code DocSubType} -- doing so resolves
+	 *       a new {@code C_DocTypeTarget_ID} (see below) and re-fires the interceptor's {@code
+	 *       ifColumnsChanged} guard, overwriting {@code DescriptionBottom} again. Put {@code
+	 *       DescriptionBottom} in its own update row, after any row that changes the doc type, matching the
+	 *       real WebUI edit of the order's own field.</li>
 	 * </ul>
 	 *
 	 * <p>Example:
