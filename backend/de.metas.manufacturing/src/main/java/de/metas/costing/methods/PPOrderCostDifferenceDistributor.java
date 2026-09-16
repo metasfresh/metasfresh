@@ -23,6 +23,7 @@
 package de.metas.costing.methods;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -40,6 +41,7 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -178,9 +180,19 @@ public class PPOrderCostDifferenceDistributor
 			return CostDetailCreateResultsList.EMPTY;
 		}
 
+		// Each co-product discharges its own residual independently of the main product's - a co-product's booked
+		// (accumulated) value can diverge from its carve while the main product's own residual is already zero.
+		final boolean anyCoProductDischarged = distributeCoProductResiduals(orderCosts, request);
+
 		final CostAmount residual = mainProductCost.getResidualCost();
 		if (residual.isZero())
 		{
+			// The main product itself has nothing to discharge, but a co-product might still have been - persist
+			// that, since the early-return below would otherwise silently drop it.
+			if (anyCoProductDischarged)
+			{
+				ppOrderCostsService.save(orderCosts);
+			}
 			return CostDetailCreateResultsList.EMPTY;
 		}
 
@@ -251,21 +263,122 @@ public class PPOrderCostDifferenceDistributor
 				utils.createCostDetailRecordNoCostsChanged(request, CostDetailPreviousAmounts.of(currentCost)));
 	}
 
-	/** Adds {@code amt} to the main-product row's accumulated amount, leaving the qty alone - value moves only. */
+	/**
+	 * Adds {@code amt} to the row's accumulated amount, leaving the qty alone - value moves only. The row is
+	 * resolved by {@code request}'s own product, which is the main product for a reversed main-product leg but a
+	 * co-product for a reversed co-product leg: {@link #distributeCoProductResiduals} persists each co-product's
+	 * own MAIN-type {@code CostDetail} row too, and {@code CostingService.createReversalCostDetailsOrEmpty}
+	 * replays every {@code CostDetail} of the original document keyed by its own product, not the main product
+	 * alone.
+	 */
 	private void accumulateOntoMainProduct(
 			@NonNull final PPOrderId orderId,
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CostAmount amt)
 	{
 		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		final PPOrderCost mainProductCost = orderCosts.getMainProductCostOrNull(request.getAcctSchemaId(), request.getCostElementId());
-		if (mainProductCost == null)
+		final PPOrderCost targetCost = getCostForProductOrNull(orderCosts, request.getAcctSchemaId(), request.getCostElementId(), request.getProductId());
+		if (targetCost == null)
 		{
 			return;
 		}
 
-		orderCosts.dischargeOntoMainProduct(mainProductCost, amt, utils.getQuantityUOMConverter());
+		orderCosts.dischargeOntoMainProduct(targetCost, amt, utils.getQuantityUOMConverter());
 		ppOrderCostsService.save(orderCosts);
+	}
+
+	/**
+	 * Discharges each co-product's own WIP residual the same way {@link #createDistributionCostDetails} discharges
+	 * the main product's: {@link #computeSplit} with the co-product's own on-hand qty, its own current cost moved
+	 * by the adjustment leg, and its own {@code CostDetail} rows persisted (own product segment - so a reversal of
+	 * this collector finds and reverses them too, see {@link #accumulateOntoMainProduct}).
+	 * <p>
+	 * These per-co-product results are intentionally NOT folded into the {@link CostDetailCreateResultsList}
+	 * returned by {@link #createDistributionCostDetails}: that list must stay single-cost-segment (one product),
+	 * because {@code CostDetailCreateResultsList.toAggregatedCostAmount} throws on a mixed segment - so
+	 * {@code Doc_PPCostCollector}'s fact-emission mechanics for the main product are reused completely as-is.
+	 *
+	 * @return whether at least one co-product residual was discharged, so the caller knows {@code orderCosts} must
+	 * be persisted even when the main product's own residual is zero.
+	 */
+	private boolean distributeCoProductResiduals(
+			@NonNull final PPOrderCosts orderCosts,
+			@NonNull final CostDetailCreateRequest request)
+	{
+		boolean anyDischarged = false;
+
+		for (final PPOrderCost coProductCost : getCoProductCosts(orderCosts, request.getAcctSchemaId(), request.getCostElementId()))
+		{
+			final CostAmount residual = coProductCost.getResidualCost();
+			if (residual.isZero())
+			{
+				continue;
+			}
+
+			final CurrentCost currentCost = utils.getCurrentCostForUpdate(coProductCost.getCostSegmentAndElement());
+			final CostAmountDetailed split = computeSplit(residual, coProductCost, currentCost);
+
+			final CostDetailCreateRequest coProductRequest = request.withProductIdAndQty(coProductCost.getProductId(), request.getQty().toZero());
+
+			utils.createCostDetailRecordNoCostsChanged(
+					coProductRequest.withAmountAndType(split.getMainAmt(), CostAmountType.MAIN),
+					CostDetailPreviousAmounts.of(currentCost));
+
+			if (!split.getCostAdjustmentAmt().isZero())
+			{
+				utils.createCostDetailRecordWithChangedCosts(
+						coProductRequest.withAmountAndType(split.getCostAdjustmentAmt(), CostAmountType.ADJUSTMENT).withQtyZero(),
+						CostDetailPreviousAmounts.of(currentCost));
+
+				moveCostPriceBy(currentCost, split.getCostAdjustmentAmt(), coProductRequest);
+			}
+
+			if (!split.getAlreadyShippedAmt().isZero())
+			{
+				utils.createCostDetailRecordNoCostsChanged(
+						coProductRequest.withAmountAndType(split.getAlreadyShippedAmt(), CostAmountType.ALREADY_SHIPPED).withQtyZero(),
+						CostDetailPreviousAmounts.of(currentCost));
+			}
+
+			orderCosts.dischargeOntoMainProduct(coProductCost, residual, utils.getQuantityUOMConverter());
+			anyDischarged = true;
+		}
+
+		return anyDischarged;
+	}
+
+	/** @return every co-product cost row for the given schema and cost element (possibly empty). */
+	private static List<PPOrderCost> getCoProductCosts(
+			@NonNull final PPOrderCosts orderCosts,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId)
+	{
+		return orderCosts.toCollection().stream()
+				.filter(PPOrderCost::isCoProduct)
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * @return the main-product OR co-product cost row matching {@code productId}, or {@code null}. Restricted to
+	 * {@code isMainProduct()}/{@code isCoProduct()} rows - never a {@code MaterialIssue}/{@code ResourceUtilization}
+	 * row - so a component that happens to share its product with the finished good is never mistaken for it.
+	 */
+	@Nullable
+	private static PPOrderCost getCostForProductOrNull(
+			@NonNull final PPOrderCosts orderCosts,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final ProductId productId)
+	{
+		return orderCosts.toCollection().stream()
+				.filter(cost -> cost.isMainProduct() || cost.isCoProduct())
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.filter(cost -> productId.equals(cost.getProductId()))
+				.findFirst()
+				.orElse(null);
 	}
 
 	/** Zero qty delta =&gt; reprices the existing on-hand qty by {@code amt}. */
