@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -105,6 +106,27 @@ public class DocTextLineRepository
 			return FIRST_POSITION_IN_EMPTY_DOCUMENT;
 		}
 		return lowerPosition.add(BigDecimal.ONE.setScale(LINE_SCALE));
+	}
+
+	/**
+	 * The scope-driving predicate {@link InsertAboveRequest#isArticleLineExistsBeforeReferencePosition()} needs:
+	 * whether any article line's position is strictly less than {@code referencePosition} -- equivalently,
+	 * whether an article line precedes the row about to be inserted, in the merged article/text-line order.
+	 * <p>
+	 * Pulled out as its own method, taking plain positions rather than reaching into article lines itself (this
+	 * repository's Cluster boundary forbids that -- see {@link InsertAboveRequest}'s javadoc), so that every
+	 * caller who has already resolved the merged order -- the WebUI's in-memory row list
+	 * ({@code DocTextLinesRows#computeInsertAbovePositions}) and any other caller that queries article lines
+	 * directly -- shares this one implementation instead of each re-deriving the same comparison.
+	 *
+	 * @param articleLinePositions every article line's position in the document; order does not matter.
+	 * @param referencePosition the row about to be inserted above.
+	 */
+	public static boolean articleLineExistsBefore(
+			@NonNull final Collection<BigDecimal> articleLinePositions,
+			@NonNull final BigDecimal referencePosition)
+	{
+		return articleLinePositions.stream().anyMatch(position -> position.compareTo(referencePosition) < 0);
 	}
 
 	/**

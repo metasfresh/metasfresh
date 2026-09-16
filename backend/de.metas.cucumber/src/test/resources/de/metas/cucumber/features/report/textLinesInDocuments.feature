@@ -118,6 +118,14 @@ Feature: Free text lines print at their position on a sales order confirmation
     And the order line identified by "line30" still has Line 30
     And the order line identified by "line40" still has Line 40
 
+    # independent of the doc string that wrote it: a Gherkin-layer collapse of the embedded blank line would
+    # still round-trip identically through "has text:" above, since the same string supplies both sides. A
+    # literal line count and blank-line position cannot collapse the same way.
+    And the text line identified by "topBlock" has 4 lines
+    And the text line identified by "topBlock" has a blank line at position 3
+    And the text line identified by "groupHeading" has 2 lines
+    And the text line identified by "groupHeading" has a blank line at position 1
+
     When the order identified by order is completed
     And The jasper process is run
       | Value            | Record_ID |
@@ -138,10 +146,33 @@ Feature: Free text lines print at their position on a sales order confirmation
     And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Sortimentsware" and text "GammaItem"
     And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "GAMMA-NR" and text "DeltaItem"
 
+    # each text line's own row carries its text and nothing else -- no article number, name, quantity, unit
+    # or price glued onto the same visual line
+    And the visual line containing text "Für die Truhe:" in the PDF archived for the record identified by "order" is exactly "Für die Truhe:"
+    And the visual line containing text "Bitte saubere Schalen mit ordentlichem beklebten Deckel" in the PDF archived for the record identified by "order" is exactly "Bitte saubere Schalen mit ordentlichem beklebten Deckel"
+    And the visual line containing text "Kartons bitte mit \"Truhe\" beschriften" in the PDF archived for the record identified by "order" is exactly "Kartons bitte mit \"Truhe\" beschriften"
+    And the visual line containing text "Sortimentsware" in the PDF archived for the record identified by "order" is exactly "Sortimentsware"
+
+    # the article lines print unchanged: each one's Line number precedes its own Name on the printed row,
+    # not merely persisted unchanged in the database (checked above)
+    And the PDF archived for the record identified by "order" contains text "10 AlphaItem"
+    And the PDF archived for the record identified by "order" contains text "20 BetaItem"
+    And the PDF archived for the record identified by "order" contains text "30 GammaItem"
+    And the PDF archived for the record identified by "order" contains text "40 DeltaItem"
+
     # the packing instruction's own embedded blank line occupies exactly one full line: the span across it
     # (from the line before the blank to the line after it) covers exactly twice the height of a single
     # ordinary line within the very same block (from its first line to its second) -- not a collapsed row
     And in the PDF archived for the record identified by "order", the vertical distance from text "Bitte saubere Schalen mit ordentlichem beklebten Deckel" to text "Kartons bitte mit \"Truhe\" beschriften" is 2 times the distance from text "Für die Truhe:" to text "Bitte saubere Schalen mit ordentlichem beklebten Deckel"
+
+    # the heading's own leading blank line likewise consumed real space: the span from the last article
+    # before it to its own text is bigger than an ordinary single-line article-to-article gap, whatever the
+    # exact figure is (the two spans have different band shapes, so no exact multiple can be pinned here)
+    And in the PDF archived for the record identified by "order", the vertical distance from text "BETA-NR" to text "Sortimentsware" is greater than the distance from text "ALPHA-NR" to text "BetaItem"
+    # tighter than "greater than": pins the gap to EXACTLY one article pitch plus one text-line height, so it
+    # catches an OVERSHOOT too -- an extra band rendering blank-but-present ahead of the heading's own text,
+    # which no line-count or content assertion above can see, since a blank band emits no glyphs at all
+    And in the PDF archived for the record identified by "order", the vertical distance from text "BETA-NR" to text "Sortimentsware" equals the distance from text "ALPHA-NR" to text "BetaItem" plus the distance from text "Für die Truhe:" to text "Bitte saubere Schalen mit ordentlichem beklebten Deckel"
 
     # nothing is printed on top of anything else, anywhere in the document
     And the PDF archived for the record identified by "order" has no overlapping text

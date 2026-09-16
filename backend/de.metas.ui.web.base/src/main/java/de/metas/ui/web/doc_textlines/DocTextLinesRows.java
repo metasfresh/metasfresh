@@ -208,15 +208,23 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		// instead of being reported as absent -- see boundPositionAt
 		final BigDecimal previousPosition = boundPositionAt(referenceIndex - 1);
 
-		// this scan asks whether an ARTICLE row precedes the insert position. An unreadable row here is
-		// skipped rather than refused, and that is safe for a reason specific to this question rather than a
+		// this scan collects every ARTICLE row's position ahead of the insert position. An unreadable row here
+		// is skipped rather than refused, and that is safe for a reason specific to this question rather than a
 		// general tolerance: only text rows are ever removed (deleteRow rejects an article row outright), and
 		// a text row answers this question neither way, so a skipped one cannot change the outcome
-		final boolean articleLineExistsBeforeReferencePosition = rowIds.subList(0, referenceIndex).stream()
+		final List<BigDecimal> articleLinePositionsBeforeReference = rowIds.subList(0, referenceIndex).stream()
 				.map(this::resolveRow)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
-				.anyMatch(DocTextLinesRow::isArticleLine);
+				.filter(DocTextLinesRow::isArticleLine)
+				.map(DocTextLinesRow::getLine)
+				.collect(ImmutableList.toImmutableList());
+
+		// shared with any other caller that has already resolved the merged order -- see
+		// DocTextLineRepository#articleLineExistsBefore's javadoc for why this lives in the business layer
+		// rather than being re-derived here
+		final boolean articleLineExistsBeforeReferencePosition =
+				DocTextLineRepository.articleLineExistsBefore(articleLinePositionsBeforeReference, referencePosition);
 
 		return InsertAbovePositions.builder()
 				.referencePosition(referencePosition)

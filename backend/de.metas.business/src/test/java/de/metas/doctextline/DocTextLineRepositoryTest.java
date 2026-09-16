@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -122,6 +124,41 @@ class DocTextLineRepositoryTest
 					.build());
 
 			assertThat(result.getLine()).isEqualByComparingTo("10.0005");
+		}
+	}
+
+	@Nested
+	class articleLineExistsBefore
+	{
+		@Test
+		void trueWhenAnArticlePositionPrecedesTheReference()
+		{
+			final boolean result = DocTextLineRepository.articleLineExistsBefore(
+					Collections.singletonList(new BigDecimal("10")),
+					new BigDecimal("20"));
+
+			assertThat(result).isTrue();
+		}
+
+		@Test
+		void falseWhenNoPositionsAreGiven()
+		{
+			final boolean result = DocTextLineRepository.articleLineExistsBefore(
+					Collections.emptyList(),
+					new BigDecimal("20"));
+
+			assertThat(result).isFalse();
+		}
+
+		@Test
+		void falseWhenEveryArticlePositionIsAtOrAfterTheReference()
+		{
+			// an article at the SAME position, and one strictly after -- neither precedes the reference
+			final boolean result = DocTextLineRepository.articleLineExistsBefore(
+					Arrays.asList(new BigDecimal("20"), new BigDecimal("30")),
+					new BigDecimal("20"));
+
+			assertThat(result).isFalse();
 		}
 	}
 
