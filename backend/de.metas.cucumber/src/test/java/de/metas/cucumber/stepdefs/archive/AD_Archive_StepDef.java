@@ -34,8 +34,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.pdfbox.cos.COSBase;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.TextPosition;
 import org.compiere.model.I_AD_Archive;
@@ -240,6 +246,39 @@ public class AD_Archive_StepDef
 	}
 
 	/**
+	 * Verifies that a vertical distance equals a literal number of points -- the assertion for "this span is
+	 * exactly one band's own declared height", used when no OTHER pair of anchors in the same document is
+	 * available to compare against (the paired form above needs a second span that is independently known to
+	 * be exactly the same height; a band whose own height has no same-height sibling anywhere else in the
+	 * print has none). The expected value is the band's own {@code height} attribute from the JRXML -- a
+	 * source-code fact, not a guess -- so a band that silently gained or lost height (e.g. an unguarded
+	 * sibling band rendering blank-but-present alongside it) changes this measured span and fails here.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order_checkup", the vertical distance from text "AlphaItem" to text "BetaItem" is 47.0 points
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, the vertical distance from text {string} to text {string} is {double} points")
+	public void assert_archived_pdf_vertical_distance_is(
+			@NonNull final String recordIdentifier,
+			@NonNull final String fromText,
+			@NonNull final String toText,
+			final double expectedPoints)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+
+		final float actualDistance = verticalDistance(lines, fromText, toText);
+
+		// same rationale as the paired form: the smallest difference worth catching is one whole
+		// (possibly blank-but-present) band's height, so a fraction of a point of float noise is not a difference.
+		assertThat(actualDistance)
+				.as("Vertical distance '%s'->'%s' in extracted PDF text %s", fromText, toText, textsOf(lines))
+				.isCloseTo((float)expectedPoints, within(0.5f));
+	}
+
+	/**
 	 * Verifies that one vertical distance is a whole multiple of another -- the assertion for "this span covers
 	 * exactly N line-heights", used to prove a multi-line value's embedded blank line(s) occupy real space
 	 * rather than being collapsed. {@code multiplier} lines of a stretched multi-line text field are not
@@ -431,6 +470,85 @@ public class AD_Archive_StepDef
 				.as("Overlapping text in the PDF archived for record %s (tolerance %s points, %s words examined)",
 						recordIdentifier, tolerancePoints, words.size())
 				.isEmpty();
+	}
+
+	/**
+	 * Counts the image XObjects (e.g. a barcode) actually rendered across all pages of the archived PDF.
+	 * Counts OCCURRENCES, not distinct embedded images: the same image object reused on several rows is
+	 * counted once per row, which is what "how many barcodes did this document print" needs.
+	 * <p>
+	 * This is the assertion for "no image renders here", which no text-extraction step above can make: an
+	 * {@code <image>} report element renders as ink with no glyphs, so a barcode requested for a NULL
+	 * content value (Java string concatenation turns that into the literal "null", and JasperReports
+	 * renders it successfully -- it does not throw) leaves no trace in any extracted text stream.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the PDF archived for the record identified by "order_checkup" contains exactly 2 images
+	 * </pre>
+	 */
+	@Then("the PDF archived for the record identified by {string} contains exactly {int} images")
+	public void assert_archived_pdf_contains_exactly_images(
+			@NonNull final String recordIdentifier,
+			final int expectedImageCount)
+	{
+		final int actualImageCount = countPdfImages(recordIdentifier);
+
+		assertThat(actualImageCount)
+				.as("Image XObjects rendered in the PDF archived for record %s", recordIdentifier)
+				.isEqualTo(expectedImageCount);
+	}
+
+	private int countPdfImages(@NonNull final String recordIdentifier)
+	{
+		final byte[] pdfBytes = getLatestArchivedPdfBytes(recordIdentifier);
+
+		try (final PDDocument document = PDDocument.load(pdfBytes))
+		{
+			int count = 0;
+			for (final PDPage page : document.getPages())
+			{
+				count += countImageXObjects(page.getResources(), new HashSet<>());
+			}
+			return count;
+		}
+		catch (final IOException e)
+		{
+			throw new AdempiereException("Failed to count images in the PDF archived for record " + recordIdentifier, e);
+		}
+	}
+
+	/**
+	 * Recurses into form XObjects (a group of drawing instructions that can itself embed images), so an
+	 * image nested inside one is still counted. {@code visited} guards against a form XObject that
+	 * (legally, if unusually) references itself, which would otherwise recurse forever.
+	 */
+	private static int countImageXObjects(@NonNull final PDResources resources, @NonNull final Set<COSBase> visited)
+	{
+		int count = 0;
+		for (final COSName xObjectName : resources.getXObjectNames())
+		{
+			final PDXObject xObject;
+			try
+			{
+				xObject = resources.getXObject(xObjectName);
+			}
+			catch (final IOException e)
+			{
+				throw new AdempiereException("Failed to read XObject " + xObjectName.getName() + " from the archived PDF", e);
+			}
+
+			if (xObject instanceof PDImageXObject)
+			{
+				count++;
+			}
+			else if (xObject instanceof PDFormXObject && visited.add(xObject.getCOSObject()))
+			{
+				count += countImageXObjects(((PDFormXObject)xObject).getResources(), visited);
+			}
+		}
+		return count;
 	}
 
 

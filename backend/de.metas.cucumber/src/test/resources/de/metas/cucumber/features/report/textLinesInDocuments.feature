@@ -18,6 +18,10 @@ Feature: Free text lines print at their position on a sales order confirmation
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
     And set sys config boolean value false for sys config de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant
+    # the Bestellkontrolle (Barcode) template embeds a live barcode image, fetched by JasperReports at render
+    # time over real HTTP; the scrambled test DB's own sysconfig value is a stale port from wherever that
+    # dump's data originated, so it is repointed here at this cucumber JVM's own (ephemeral) embedded server
+    And set sys config 'de.metas.adempiere.report.barcode.BarcodeServlet' to this instance's own URL at '/adempiereJasper/BarcodeServlet'
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
     # another feature in this suite flips this flag; pin it so this scenario cannot depend on suite order.
     # It must stay 'false': the steps read the archive back out of the database.
@@ -194,6 +198,38 @@ Feature: Free text lines print at their position on a sales order confirmation
     # nothing is printed on top of anything else, anywhere in the document
     And the PDF archived for the record identified by "order" has no overlapping text
 
+    # -- the Bestellkontrolle: the fresh-produce order-checkup report, generated from the same order. The
+    # order's warehouse carries a PP_Plant_ID (Background), so OrderCheckupBL builds a real "Plant" row
+    # carrying all four article lines -- both text lines are carried onto it too: "topBlock" is
+    # Document-scoped (rule 5 in the report SQL function: a whole-document-scoped line is always carried),
+    # and "groupHeading"'s own run (line30 onward) sits inside this record's own line set (rule 4)
+    And the order-checkup reports are generated for the order identified by "order"
+    And The jasper process is run
+      | Value                                    | Record_ID     |
+      | C_Order_MFGWarehouse_Report_With_Barcode | order_checkup |
+    Then an AD_Archive exists for the record identified by "order_checkup"
+
+    # each text line prints directly above the article row it precedes here too, same adjacency as on the
+    # order confirmation above
+    And in the PDF archived for the record identified by "order_checkup", exactly 0 lines appear between text "Kartons bitte mit \"Truhe\" beschriften" and text "AlphaItem"
+    And in the PDF archived for the record identified by "order_checkup", exactly 0 lines appear between text "BETA-NR" and text "Sortimentsware"
+    And in the PDF archived for the record identified by "order_checkup", exactly 0 lines appear between text "Sortimentsware" and text "GammaItem"
+
+    # the text rows carry only their own text, never the barcode meant for an article row: the report SQL
+    # function's article-describing columns (barcode included) are NULL on a text row, and Java string
+    # concatenation would otherwise turn that into a bogus barcode encoding the literal text "null" -- this
+    # count proves the guard keeps the barcode-bearing band OFF both text rows: one image per real article
+    # row (line10..line40) plus the document's own logo, none contributed by "topBlock" or "groupHeading"
+    And the PDF archived for the record identified by "order_checkup" contains exactly 5 images
+    And the PDF archived for the record identified by "order_checkup" has no overlapping text
+
+    # the article row itself carries only its own content: pins the article band at exactly its own declared
+    # height (47pt, report_details.jrxml's detail band) -- a text row's own band sitting alongside it renders
+    # blank-but-PRESENT when it is not itself guarded off the article row (isBlankWhenNull suppresses the
+    # glyphs, not the band's reserved height), so an inflated row here is exactly what a missing guard on the
+    # text band looks like: no wrong text anywhere, just silent, growing whitespace
+    And in the PDF archived for the record identified by "order_checkup", the vertical distance from text "AlphaItem" to text "BetaItem" is 47.0 points
+
   @Id:S27486_TC8
   Scenario: A trailing text line prints at the end of the order confirmation but reaches no derived document
     Given metasfresh contains C_Orders:
@@ -259,18 +295,24 @@ Feature: Free text lines print at their position on a sales order confirmation
     And the PDF archived for the record identified by "shipment" does not contain text "Vielen Dank für Ihren Einkauf"
     And the PDF archived for the record identified by "shipment" has no overlapping text
 
-    # -- the Bestellkontrolle: the fresh-produce order-checkup report, generated from the same order. The
-    # order's warehouse carries a PP_Plant_ID (Background), so OrderCheckupBL builds a real "Plant" row from
-    # both article lines -- Record_ID below targets that row directly (its own C_Order_MFGWarehouse_Report_ID),
-    # the same way a real user prints it from that row's own window, not the order's
+    # -- the Bestellkontrolle: the fresh-produce order-checkup report, generated from the same order. Value
+    # picks the barcode-aware print process (C_Order_MFGWarehouse_Report_With_Barcode -> report_details.jrxml
+    # under ordercheckup_with_barcode/), the one whose report SQL function (Docs_Sales_OrderCheckup_Details)
+    # this feature actually touches -- the plain "Bestellkontrolle" process queries an unrelated view and
+    # never sees a text line under any circumstance, feature or no feature. The order's warehouse carries a
+    # PP_Plant_ID (Background), so OrderCheckupBL builds a real "Plant" row from both article lines --
+    # Record_ID below targets that row directly (its own C_Order_MFGWarehouse_Report_ID), the same way a real
+    # user prints it from that row's own window, not the order's
     And the order-checkup reports are generated for the order identified by "order"
     And The jasper process is run
-      | Value                       | Record_ID     |
-      | C_Order_MFGWarehouse_Report | order_checkup |
+      | Value                                    | Record_ID     |
+      | C_Order_MFGWarehouse_Report_With_Barcode | order_checkup |
     Then an AD_Archive exists for the record identified by "order_checkup"
-    # the trailing text line belongs to the order confirmation only: the Bestellkontrolle's own report SQL
-    # function does not reference C_Doc_TextLine at all, so this print carries no text-line content by
-    # construction -- proven here now that the print has real rows to extract text from at all
+    # the trailing text line belongs to the order confirmation only -- not because the Bestellkontrolle's own
+    # report SQL function ignores C_Doc_TextLine (it does not: it emits text rows, and this template prints
+    # them too, see TC1's own Bestellkontrolle assertions above), but because THIS particular line's own run
+    # is empty: it sits after every article line, so no article line of its run lies at or beyond its own
+    # position, and being scope "Following" (not "Document") it fails the carry rule and reaches no report
     And the PDF archived for the record identified by "order_checkup" does not contain text "Vielen Dank für Ihren Einkauf"
     And the PDF archived for the record identified by "order_checkup" has no overlapping text
 
@@ -318,10 +360,10 @@ Feature: Free text lines print at their position on a sales order confirmation
     And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Zahlungsweise Zahlung via Rechnung" and text "Vielen Dank für Ihren Einkauf"
     And the PDF archived for the record identified by "order" has no overlapping text
 
-    # -- the delivery note and the Bestellkontrolle: neither template was touched by this feature (their
-    # report SQL functions do not reference C_Doc_TextLine at all), so an order with zero text lines gives
-    # them nothing to catch either way. Printed anyway, per the frozen test case, to prove the feature does
-    # not break either pipeline for the ordinary, text-line-free order that is still the common case.
+    # -- the delivery note: its own report SQL function does not reference C_Doc_TextLine at all, and its
+    # template was not touched by this feature -- an order with zero text lines gives it nothing to catch
+    # either way. Printed anyway, per the frozen test case, to prove the feature does not break its own
+    # pipeline for the ordinary, text-line-free order that is still the common case.
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss10       | line10         | N             |
@@ -339,10 +381,15 @@ Feature: Free text lines print at their position on a sales order confirmation
     Then an AD_Archive exists for the record identified by "shipment"
     And the PDF archived for the record identified by "shipment" has no overlapping text
 
+    # -- the Bestellkontrolle: Value picks the barcode-aware print process, same as TC1/TC8 above. Its report
+    # SQL function (Docs_Sales_OrderCheckup_Details) DOES reference C_Doc_TextLine (an earlier part of this
+    # feature) and this template now prints text rows too (TC1 above) -- but this order has none, so it
+    # prints exactly as it did before the feature existed. Printed anyway to prove the new guard band never
+    # fires blank in front of an ordinary article row.
     And the order-checkup reports are generated for the order identified by "order"
     And The jasper process is run
-      | Value                       | Record_ID     |
-      | C_Order_MFGWarehouse_Report | order_checkup |
+      | Value                                    | Record_ID     |
+      | C_Order_MFGWarehouse_Report_With_Barcode | order_checkup |
     Then an AD_Archive exists for the record identified by "order_checkup"
     And the PDF archived for the record identified by "order_checkup" has no overlapping text
 

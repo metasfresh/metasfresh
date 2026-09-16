@@ -30,8 +30,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
+import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
 
@@ -72,6 +74,37 @@ public class AD_SysConfig_StepDef
 		}
 
 		CacheMgt.get().reset(I_AD_SysConfig.Table_Name); // also without this, we fire a CacheInvalidation event, but that event may not be processed in time
+	}
+
+	/**
+	 * Points a sysconfig holding a self-referencing servlet URL (e.g. the barcode servlet a Jasper report
+	 * embeds as a live image) at THIS cucumber JVM's own embedded Tomcat, instead of whatever fixed value the
+	 * scrambled test DB happens to carry (a stale port from wherever that dump's data originated).
+	 * <p>
+	 * The embedded server binds an ephemeral port per run ({@code CucumberLifeCycleSupport} starts
+	 * {@code ServerBoot} inline), so the URL cannot be a literal Gherkin value -- it is read from the
+	 * already-bound Spring {@code Environment} property {@code local.server.port}, which Spring Boot's
+	 * embedded servlet container sets once the port is actually bound.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And set sys config 'de.metas.adempiere.report.barcode.BarcodeServlet' to this instance's own URL at '/adempiereJasper/BarcodeServlet'
+	 * </pre>
+	 */
+	@And("set sys config {string} to this instance's own URL at {string}")
+	public void point_sysconfig_at_own_servlet_url(@NonNull final String sysConfigName, @NonNull final String servletPath)
+	{
+		final ApplicationContext applicationContext = SpringContextHolder.instance.getApplicationContext();
+		assertThat(applicationContext).as("Spring application context").isNotNull();
+
+		final String localServerPort = applicationContext.getEnvironment().getProperty("local.server.port");
+		assertThat(localServerPort).as("local.server.port (this instance's own embedded Tomcat port)").isNotBlank();
+
+		final String ownServletUrl = "http://localhost:" + localServerPort + servletPath;
+		sysConfigBL.setValue(sysConfigName, ownServletUrl, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 
 	@And("update AD_SysConfig with login AD_User_ID")
