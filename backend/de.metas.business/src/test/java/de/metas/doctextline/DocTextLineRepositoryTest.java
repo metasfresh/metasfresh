@@ -125,6 +125,11 @@ class DocTextLineRepositoryTest
 					.articleLineExistsBeforeReferencePosition(true)
 					.build()))
 					.isInstanceOf(AdempiereException.class);
+
+			// the comment above claims more than "it throws" -- it claims nothing was persisted either. Pin that
+			// half too: a save-before-guard reordering would still throw (the collision guard doesn't care when
+			// it runs) but would leave a 'Following' row behind, and this line is what catches that.
+			assertThat(docTextLineRepository.getByDocument(documentRef)).isEmpty();
 		}
 
 		@Test

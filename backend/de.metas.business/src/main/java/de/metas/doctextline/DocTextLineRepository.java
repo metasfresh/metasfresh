@@ -122,12 +122,13 @@ public class DocTextLineRepository
 	 * Comparing by position rather than by merged-order index is safe because the only input where the two
 	 * would disagree is a tie between an article's position and {@code referencePosition}, and that tie is
 	 * unreachable: it would force the immediately preceding row's position to tie too, which {@link #insertAbove}'s
-	 * midpoint arithmetic refuses (a gap-exhausted {@link AdempiereException}) before this predicate is ever
-	 * consulted.
+	 * midpoint arithmetic refuses (a gap-exhausted {@link AdempiereException}) before this predicate's answer is
+	 * ever acted upon.
 	 *
-	 * @param articleLinePositions any subset of the document's article-line positions relevant to the question --
-	 *        not necessarily every one (a caller may already have filtered to those before the reference); order
-	 *        does not matter.
+	 * @param articleLinePositions any set of article-line positions that includes every position strictly less
+	 *        than {@code referencePosition}; additional positions at or after it are harmless. Both callers rely
+	 *        on this: the WebUI passes only the rows before the reference index, the cucumber step passes all of
+	 *        them. Order does not matter.
 	 * @param referencePosition the row about to be inserted above.
 	 */
 	public static boolean articleLineExistsBefore(
