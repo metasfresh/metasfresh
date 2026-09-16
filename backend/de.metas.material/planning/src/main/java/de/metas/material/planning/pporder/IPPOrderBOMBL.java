@@ -40,6 +40,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -117,6 +118,11 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 */
 	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
 
+	/**
+	 * @return {@code M_Product.CoProductCostDistributionPercent} of the co-product carried by this order BOM line,
+	 * read live from the product; {@code null} when blank (not opted into manual distribution).
+	 */
+	@Nullable
 	Percent getCoProductCostDistributionPercent(I_PP_Order_BOMLine orderBOMLine);
 
 	void addQty(OrderBOMLineQtyChangeRequest request);

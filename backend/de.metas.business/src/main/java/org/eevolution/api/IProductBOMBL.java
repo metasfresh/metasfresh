@@ -84,6 +84,11 @@ public interface IProductBOMBL extends ISingletonService
 
 	Quantity getQtyExcludingScrap(I_PP_Product_BOMLine bomLine);
 
+	/**
+	 * @return {@code M_Product.CoProductCostDistributionPercent} of the co-product carried by this BOM line, read
+	 * live from the product; {@code null} when blank (not opted into manual distribution).
+	 */
+	@Nullable
 	Percent getCoProductCostDistributionPercent(I_PP_Product_BOMLine bomLine);
 
 	List<QtyCalculationsBOM> getQtyCalculationBOMs(

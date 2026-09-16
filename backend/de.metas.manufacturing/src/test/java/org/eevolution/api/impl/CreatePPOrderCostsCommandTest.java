@@ -28,10 +28,13 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostPrice;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.util.lang.Percent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -175,6 +178,39 @@ public class CreatePPOrderCostsCommandTest
 							.build());
 		}
 
+	}
+
+	@Test
+	public void coProductDistributionPercentComesFromProduct()
+	{
+		final ProductId finishedGoodsProductId = BusinessTestHelper.createProductId("finished goods", helper.uomBag);
+		final ProductId componentId = BusinessTestHelper.createProductId("component", helper.uomBag);
+		final ProductId coProductId = helper.createCoProductId("co-product", helper.uomBag, "30");
+
+		helper.currentCost().productId(componentId).currentCostPrice("1").uom(helper.uomBag).build();
+		// IMPORTANT: no current cost for the co-product -- its PP_Order_Cost is created fresh by
+		// CreatePPOrderCostsCommand, which is exactly the code path under test.
+
+		final I_PP_Order ppOrder = helper.order()
+				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("100").finishedGoodsUOM(helper.uomEach)
+				.componentId(componentId).componentQtyRequired("100").componentUOM(helper.uomBag)
+				.build();
+
+		// a CP (co-product) BOM line whose product carries CoProductCostDistributionPercent=30
+		helper.orderBOMLine()
+				.ppOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
+				.productId(coProductId)
+				.qtyRequired("-50")
+				.uom(helper.uomBag)
+				.componentType(BOMComponentType.CoProduct)
+				.build();
+
+		final PPOrderCosts ppOrderCosts = new CreatePPOrderCostsCommand(ppOrder).execute();
+
+		final List<PPOrderCost> coProductCostsList = ppOrderCosts.getByProductAndCostElements(coProductId, ImmutableSet.of(helper.costElement.getId()));
+		assertThat(coProductCostsList).hasSize(1);
+		assertThat(coProductCostsList.get(0).getCoProductCostDistributionPercent())
+				.isEqualTo(Percent.of(new BigDecimal("30")));
 	}
 
 }

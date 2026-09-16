@@ -55,6 +55,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderId;
@@ -218,14 +219,26 @@ public class PPOrderCostsTestHelper
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final ProductId productId,
 			@NonNull final String qtyRequired,
-			@NonNull final I_C_UOM uom)
+			@NonNull final I_C_UOM uom,
+			@Nullable final BOMComponentType componentType)
 	{
 		final I_PP_Order_BOMLine bomLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
 		bomLine.setPP_Order_ID(ppOrderId.getRepoId());
-		bomLine.setComponentType(BOMComponentType.Component.getCode());
+		bomLine.setComponentType((componentType != null ? componentType : BOMComponentType.Component).getCode());
 		bomLine.setM_Product_ID(productId.getRepoId());
 		bomLine.setC_UOM_ID(uom.getC_UOM_ID());
 		bomLine.setQtyRequiered(new BigDecimal(qtyRequired));
 		InterfaceWrapperHelper.saveRecord(bomLine);
+	}
+
+	/**
+	 * Creates a product carrying {@code M_Product.CoProductCostDistributionPercent}.
+	 */
+	public ProductId createCoProductId(final String name, final I_C_UOM uom, final String coProductCostDistributionPercent)
+	{
+		final I_M_Product product = BusinessTestHelper.createProduct(name, uom);
+		product.setCoProductCostDistributionPercent(new BigDecimal(coProductCostDistributionPercent));
+		InterfaceWrapperHelper.saveRecord(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 }

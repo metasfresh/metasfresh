@@ -20,7 +20,6 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.AbstractBigDecimalAssert;
@@ -748,16 +747,19 @@ public class PPOrderCostsTest
 
 	/**
 	 * Creates a real {@code M_Product} record (so the fixed-price relief can read it live via the product's id) and
-	 * returns its {@link ProductId}. Pass a non-null {@code coProductFixedCostPrice} to set the manual field.
+	 * returns its {@link ProductId}.
+	 * <p>
+	 * {@code coProductFixedCostPrice} is intentionally unused: {@code M_Product.CoProductFixedCostPrice} was a
+	 * branch-only scaffold, discarded before ever being applied to a real database (rewritten in place into
+	 * {@code M_Product.CoProductCostDistributionPercent} — see
+	 * {@code 5824760_sys_M_Product_CoProductCostDistributionPercent.sql}), so there is no column left to set. The
+	 * parameter is kept so every call site continues to document "this is the (would-be) fixed-price product" per
+	 * the AC5/AC6 test comments below — it never affected the computation, which is exactly what those tests assert.
 	 */
+	@SuppressWarnings("unused")
 	private ProductId createProduct(@NonNull final String name, @Nullable final BigDecimal coProductFixedCostPrice)
 	{
 		final I_M_Product product = BusinessTestHelper.createProduct(name, uom);
-		if (coProductFixedCostPrice != null)
-		{
-			product.setCoProductFixedCostPrice(coProductFixedCostPrice);
-			InterfaceWrapperHelper.save(product);
-		}
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 

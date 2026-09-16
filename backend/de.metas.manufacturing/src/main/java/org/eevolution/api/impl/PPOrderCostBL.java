@@ -45,16 +45,17 @@ public class PPOrderCostBL implements IPPOrderCostBL
 	}
 
 	/**
-	 * Reads the co-product's manual {@code M_Product.CoProductFixedCostPrice} live. A blank field (null /
-	 * not-positive) means the product has NOT opted into fixed-price valuation. The product master is read
-	 * fail-loud via {@link IProductDAO#getById(ProductId)}: an orphaned co-product FK surfaces as an exception
-	 * rather than being silently swallowed into the qty-distribution path.
+	 * {@code M_Product.CoProductFixedCostPrice} was a branch-only scaffold that was discarded before it was ever
+	 * applied to a real database — it was rewritten in place into {@code M_Product.CoProductCostDistributionPercent}
+	 * (see {@code 5824760_sys_M_Product_CoProductCostDistributionPercent.sql}). There is no column left to read, so
+	 * no product can ever be opted into fixed-price valuation; this always reports "not opted in". Kept as a stub so
+	 * the {@link org.eevolution.api.FixedCostPriceProvider} seam — still consulted by the Average-PO / Moving-
+	 * Average-Invoice costing-method handlers — keeps compiling.
 	 */
 	@Override
 	public Optional<BigDecimal> getFixedCostPrice(@NonNull final ProductId productId)
 	{
-		return Optional.ofNullable(productDAO.getById(productId).getCoProductFixedCostPrice())
-				.filter(fixedCostPrice -> fixedCostPrice.signum() > 0);
+		return Optional.empty();
 	}
 
 	@Override

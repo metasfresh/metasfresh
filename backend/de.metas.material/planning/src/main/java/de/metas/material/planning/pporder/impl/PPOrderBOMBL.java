@@ -36,6 +36,7 @@ import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.IProductDAO;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductId;
@@ -88,6 +89,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	private final IProductBOMBL bomBL = Services.get(IProductBOMBL.class);
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
@@ -584,13 +586,14 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
+	@Nullable
 	public Percent getCoProductCostDistributionPercent(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, orderBOMLine);
 
-		final Quantity qtyRequiredPositive = getQuantities(orderBOMLine).getQtyRequired_NegateBecauseIsCOProduct();
-		return Percent.of(BigDecimal.ONE, qtyRequiredPositive.toBigDecimal(), 4);
+		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		return Percent.ofNullable(productDAO.getById(productId).getCoProductCostDistributionPercent());
 	}
 
 	@Override

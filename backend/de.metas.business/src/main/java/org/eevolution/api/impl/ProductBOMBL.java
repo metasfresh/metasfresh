@@ -56,6 +56,7 @@ import org.eevolution.api.QtyCalculationsBOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -203,13 +204,14 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
+	@Nullable
 	public Percent getCoProductCostDistributionPercent(final I_PP_Product_BOMLine bomLine)
 	{
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, bomLine);
 
-		final BigDecimal qty = getQtyExcludingScrap(bomLine).toBigDecimal().negate();
-		return Percent.of(BigDecimal.ONE, qty, 4);
+		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+		return Percent.ofNullable(productDAO.getById(productId).getCoProductCostDistributionPercent());
 	}
 
 	/**

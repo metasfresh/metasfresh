@@ -92,6 +92,7 @@ final class CreatePPOrderCostsCommand
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	//
+	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IPPOrderRoutingRepository orderRoutingRepo = Services.get(IPPOrderRoutingRepository.class);
 	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
@@ -119,7 +120,6 @@ final class CreatePPOrderCostsCommand
 		mainProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		mainProductAsiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
 
-		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 		mainProductQty = orderBOMBL.getQuantities(ppOrder).getQtyRequiredToProduce();
 		if (mainProductQty.signum() <= 0)
 		{
@@ -239,7 +239,7 @@ final class CreatePPOrderCostsCommand
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
 		final PPOrderCostTrxType trxType = PPOrderCostTrxType.ofBOMComponentType(bomComponentType);
 		final Percent coProductCostDistributionPercent = trxType.isCoProduct()
-				? Percent.of("0.01") // TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
+				? orderBOMBL.getCoProductCostDistributionPercent(bomLine)
 				: null;
 
 		return PPOrderCostCandidate.builder()
