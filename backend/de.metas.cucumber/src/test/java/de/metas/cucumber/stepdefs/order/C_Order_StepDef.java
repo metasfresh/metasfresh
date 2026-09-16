@@ -658,9 +658,15 @@ public class C_Order_StepDef
 	 * Generates the order's {@code C_Order_MFGWarehouse_Report} rows -- the "Bestellkontrolle" -- via the
 	 * {@code C_Order_MFGWarehouse_Report_Generate} AD_Process, the same process a user runs from the order
 	 * window's process menu once the order is completed. Registers the repo-ID of the generated "Plant"
-	 * (document type {@code PL}) row under {@code <orderIdentifier>_checkup}, so the record can be
-	 * referenced from the generic "The jasper process is run" / "AD_Archive exists" / "PDF archived" steps
-	 * exactly like any other document -- see {@link C_Order_MFGWarehouse_Report_StepDefData}.
+	 * (document type {@code PL}) row under {@code <orderIdentifier>_checkup}, and, when one was built, the
+	 * "Warehouse" (document type {@code WH}) row under {@code <orderIdentifier>_checkup_WH} -- so either
+	 * record can be referenced from the generic "The jasper process is run" / "AD_Archive exists" / "PDF
+	 * archived" steps exactly like any other document -- see {@link C_Order_MFGWarehouse_Report_StepDefData}.
+	 * <p>
+	 * Unlike the "Plant" row, a "Warehouse" row is not guaranteed: {@code OrderCheckupBL} builds one only
+	 * per order line whose product has a manufacturing {@code PP_Product_Planning} with a routing (silent
+	 * skip otherwise), so an order with no such line produces none -- registration is therefore optional,
+	 * never throwing when absent.
 	 * <p>
 	 * Direct AD_Process invocation (resolved by {@code AD_Process.Value}, never by class reference), and the
 	 * lookup below via {@code IQueryBL}'s generic, table-name-only {@code createQueryBuilder(String)} (never
@@ -735,6 +741,22 @@ public class C_Order_StepDef
 					+ "Check that the order's M_Warehouse has a PP_Plant_ID and that its lines are not all packaging material.");
 		}
 		checkupReportTable.put(StepDefDataIdentifier.ofString(orderIdentifier + "_checkup"), checkupReportId);
+
+		// DocumentType='WH' (X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse): one row per order line's
+		// own routing/responsible-user grouping, built only for lines whose product has a manufacturing
+		// PP_Product_Planning with a routing -- see OrderCheckupBL.generateReportsIfEligible. firstIdOnly()
+		// still pins "at most one active row", but unlike 'PL' this row is not guaranteed to exist, so a
+		// missing one is not an error here -- it is simply not registered.
+		final int checkupReportIdWH = queryBL.createQueryBuilder(C_Order_MFGWarehouse_Report_StepDefData.TABLE_NAME)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.addEqualsFilter("DocumentType", "WH")
+				.create()
+				.firstIdOnly();
+		if (checkupReportIdWH > 0)
+		{
+			checkupReportTable.put(StepDefDataIdentifier.ofString(orderIdentifier + "_checkup_WH"), checkupReportIdWH);
+		}
 	}
 
 	/**

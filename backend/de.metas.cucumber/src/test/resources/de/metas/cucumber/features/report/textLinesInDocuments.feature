@@ -460,3 +460,71 @@ Feature: Free text lines print at their position on a sales order confirmation
     Then an AD_Archive exists for the record identified by "order_checkup"
     And the PDF archived for the record identified by "order_checkup" contains text "<b>fett</b>"
     And the PDF archived for the record identified by "order_checkup" has no overlapping text
+
+  @Id:S27486_TC5
+  Scenario: The order checkup's Warehouse report carries only the routed article, while its Plant report carries every article
+    # a manufacturing routing for productB: one S_Resource (the plant), one AD_Workflow whose first node
+    # carries that resource -- both required for OrderCheckupBL to build a "Warehouse" row at all (silent
+    # skip otherwise, see PP_Product_Planning below)
+    Given create S_Resource:
+      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+    And create AD_Workflow:
+      | AD_Workflow_ID.Identifier | Name           | WorkflowType |
+      | checkupRouting            | checkupRouting | M            |
+    And create AD_WF_Node:
+      | AD_WF_Node_ID.Identifier | AD_Workflow_ID.Identifier | OPT.S_Resource_ID.Identifier | Name               | Value              | Duration |
+      | checkupRoutingNode       | checkupRouting            | checkupPlant                 | checkupRoutingNode | checkupRoutingNode | 1        |
+    And update AD_Workflow:
+      | AD_Workflow_ID.Identifier | OPT.AD_WF_Node_ID.Identifier |
+      | checkupRouting            | checkupRoutingNode           |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    # line10's product carries no manufacturing PP_Product_Planning -- OrderCheckupBL.generateReportsIfEligible
+    # (:120-125) silently skips it for the Warehouse report; line20's does (below), so only line20 reaches it
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | line10     | order      | productA     | 1          |
+      | line20     | order      | productB     | 1          |
+    And metasfresh contains PP_Product_Plannings
+      | M_Product_ID | S_Resource_ID | AD_Workflow_ID | M_Warehouse_ID |
+      | productB     | checkupPlant  | checkupRouting | wh             |
+
+    # Document-scoped, so it carries onto every derived report regardless of which article lines that
+    # particular report itself carries (report SQL function rule 5) -- proves a text line prints on the
+    # Warehouse report too, not only the Plant one TC1 already covers
+    When a text line "topBlock" is inserted above the order line identified by "line10" with text:
+      """
+      Kühlkette
+      """
+
+    When the order identified by order is completed
+    And the order-checkup reports are generated for the order identified by "order"
+
+    # the report must exist before anything about its content is asserted -- a fixture missing the
+    # workflow or its routing would silently produce no Warehouse report at all (OrderCheckupBL's own
+    # logged skip), and a content assertion against an absent report can pass for the wrong reason
+    And The jasper process is run
+      | Value                                    | Record_ID     |
+      | C_Order_MFGWarehouse_Report_With_Barcode | order_checkup |
+    Then an AD_Archive exists for the record identified by "order_checkup"
+
+    And The jasper process is run
+      | Value                                    | Record_ID        |
+      | C_Order_MFGWarehouse_Report_With_Barcode | order_checkup_WH |
+    Then an AD_Archive exists for the record identified by "order_checkup_WH"
+
+    # the Plant report carries every non-packaging-material article line unconditionally
+    And the PDF archived for the record identified by "order_checkup" contains text "AlphaItem"
+    And the PDF archived for the record identified by "order_checkup" contains text "BetaItem"
+    And the PDF archived for the record identified by "order_checkup" contains text "Kühlkette"
+    And the PDF archived for the record identified by "order_checkup" has no overlapping text
+
+    # the Warehouse report carries only the routed article (line20/productB) -- line10/productA has no
+    # manufacturing product planning, so OrderCheckupBL never adds it here
+    And the PDF archived for the record identified by "order_checkup_WH" contains text "BetaItem"
+    And the PDF archived for the record identified by "order_checkup_WH" does not contain text "AlphaItem"
+    And the PDF archived for the record identified by "order_checkup_WH" contains text "Kühlkette"
+    And the PDF archived for the record identified by "order_checkup_WH" has no overlapping text
