@@ -22,6 +22,7 @@ import { toastError } from '../../utils/toast';
 import { getIsLoggedInFromState } from '../../reducers/appHandler';
 import { putSettingsAction } from '../../reducers/settings';
 import { useUIEventsTracing } from '../../utils/ui_trace/useUIEventsTracing';
+import ScreenToaster from '../../components/ScreenToaster';
 
 const ApplicationRoot = () => {
   const auth = useAuth();
@@ -70,6 +71,12 @@ const ApplicationRoot = () => {
   return (
     <>
       <ConnectedRouter history={history} basename="./">
+        {/* ONE toast container for the whole app. react-toastify registers each mounted
+            ToastContainer in a module-level `containers` Map; mounting one per screen left an entry
+            behind on every navigation, and each entry holds a forceUpdate bound to that screen's
+            React fiber - which pins the screen's whole DOM subtree. Mounted inside the router so
+            ScreenToaster's useLocationChange still sees route changes. */}
+        <ScreenToaster />
         <Switch>
           <Route exact path="/login">
             <LoginScreen />
