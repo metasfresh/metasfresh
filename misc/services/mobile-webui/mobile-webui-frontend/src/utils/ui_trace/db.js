@@ -43,6 +43,25 @@ db.version(2)
     });
   });
 
+// Release the connection when another tab needs to upgrade the schema.
+//
+// IndexedDB will not run an upgrade while any connection to an older version is still open: the
+// upgrading tab's open() sits in `blocked` indefinitely. This app is documented to run as two
+// instances on one handheld (installed PWA plus a browser tab), so a stale tab holding a v1
+// connection can stall a fresh tab's v2 upgrade for as long as it stays open - and the trigger
+// condition is precisely a schema bump like this one.
+//
+// That stall reaches further than it looks: the sync task keeps a single in-flight promise so its
+// two triggers cannot post the same batch twice (see useUIEventsTracing.js), so an await that never
+// settles - here, anything queued behind a blocked open() - would wedge every later sync from both
+// triggers for the life of the tab.
+//
+// Closing is safe for the events still being written: Dexie re-opens on the next operation unless
+// close({ disableAutoOpen: true }) is passed, and this instance is constructed with default options.
+db.on('versionchange', () => {
+  db.close();
+});
+
 export const saveEvent = async (event) => {
   try {
     const record = { id: event.id, ts: event.timestamp ?? 0, event };
