@@ -1,6 +1,8 @@
 import Dexie from 'dexie';
 import { v4 as uuidv4 } from 'uuid';
 
+import { MAX_STORED_EVENTS } from './constants';
+
 const db = new Dexie('uiTraceEvents');
 db.version(1).stores({
   props: 'key,value',
@@ -16,8 +18,7 @@ db.version(1).stores({
 // ui-trace silently dead on that device.
 // Clearing is cheap at any size and costs little here: v1 has no usable order (see below), so the
 // newest records cannot be identified to be spared anyway, and trimOldestEvents cuts the store to
-// MAX_STORED_EVENTS on the very next cycle regardless. Keep this equal to that cap.
-const UPGRADE_BULK_CLEAR_THRESHOLD = 5000;
+// this same cap on the very next cycle regardless - which is why it IS the cap, not a second literal.
 
 // v2 indexes the event timestamp. v1's primary key is a uuid and its only secondary index was on
 // `event` - a plain object, which IndexedDB cannot index at all (only number/string/Date/binary and
@@ -32,7 +33,7 @@ db.version(2)
   .upgrade((tx) => {
     const events = tx.table('events');
     return events.count().then((count) => {
-      if (count > UPGRADE_BULK_CLEAR_THRESHOLD) return events.clear();
+      if (count > MAX_STORED_EVENTS) return events.clear();
       // Backfill ts for records written by v1. Dexie omits records whose indexed value is undefined
       // from that index, so without this backfill the pre-upgrade backlog would be invisible to
       // every ordered query here - and therefore never sent and never trimmed.

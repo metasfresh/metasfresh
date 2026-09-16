@@ -2,17 +2,9 @@ import { postEventsToBackend } from '../../api/ui_trace';
 import { deleteEvents, getEventsBatch, trimOldestEvents } from './db';
 import { useEventListener } from '../../hooks/useEventListener';
 import { usePeriodicTask } from '../../hooks/usePeriodicTask';
+import { MAX_EVENTS_PER_SYNC, MAX_STORED_EVENTS } from './constants';
 
 const SYNC_INTERVAL_MILLIS = 1000;
-
-// How many events one sync cycle may send. This task runs every second for the entire life of the
-// tab, so the work it does must not scale with the backlog: previously it read and serialised the
-// WHOLE store each time, which turned a degraded backend into steadily growing per-second work.
-export const MAX_EVENTS_PER_SYNC = 200;
-
-// Hard ceiling on the stored backlog. Nothing is deleted unless a POST succeeds, so without this a
-// tab running for days against an unreachable backend grows the store without bound.
-export const MAX_STORED_EVENTS = 5000;
 
 // The two triggers at the bottom of this file - the periodic task AND the `online` listener - are
 // NOT mutually exclusive: usePeriodicTask serialises only its OWN re-invocations. Without this mutex,

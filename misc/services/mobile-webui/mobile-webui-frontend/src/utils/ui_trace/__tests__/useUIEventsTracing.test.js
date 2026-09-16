@@ -30,7 +30,8 @@ jest.mock('../db', () => ({
 
 const { postEventsToBackend } = require('../../../api/ui_trace');
 const { getEventsBatch, deleteEvents, trimOldestEvents, getOrCreateDeviceId } = require('../db');
-const { useUIEventsTracing, MAX_EVENTS_PER_SYNC, MAX_STORED_EVENTS } = require('../useUIEventsTracing');
+const { useUIEventsTracing } = require('../useUIEventsTracing');
+const { MAX_EVENTS_PER_SYNC, MAX_STORED_EVENTS } = require('../constants');
 
 const SYNC_INTERVAL_MILLIS = 1000;
 
