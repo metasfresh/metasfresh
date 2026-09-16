@@ -12,6 +12,11 @@ import { useKeyboardBarcodeReader } from '../useKeyboardBarcodeReader';
 const RATE_MS = 1000;
 const MIN_LENGTH = 7;
 const PLAIN = '1234567890123';
+// A real, complete HU global QR code - parses, so it force-completes on its final character.
+const HU_QR =
+  'HU#1#{"id":"0de63cbd34708add7a9afbb423d0-05650","packingInfo":{"huUnitType":"LU",' +
+  '"packingInstructionsId":1000006,"caption":"Euro Palette"},"product":{"id":1000001,' +
+  '"code":"2680","name":"Sternflow 11 Raps"},"attributes":[]}';
 
 let now;
 
@@ -80,15 +85,16 @@ describe('per-scan delivery stats on the completed scan', () => {
 
   it('counts chunks and reports the worst gap when a code arrives in pieces', () => {
     const onReadDone = mountReader();
-    // Two pauses of 300 ms - chunked, but each well under rateMs so the scan is NOT split.
-    typeString(PLAIN, { gapsAt: [4, 9], gapMs: 300 });
+    // Two pauses of 600 ms - past the chunk threshold (rateMs/2 = 500) but under rateMs, so the
+    // scan is counted as chunked and is NOT split.
+    typeString(PLAIN, { gapsAt: [4, 9], gapMs: 600 });
     goIdleAndTick();
 
     const [code, stats] = onReadDone.mock.calls[0];
     expect(code).toBe(PLAIN); // non-vacuity: the scan really did survive intact
     expect(stats.scanChunkCount).toBe(2);
-    expect(stats.scanMaxCharGapMs).toBe(300);
-    expect(stats.scanDurationMs).toBeGreaterThanOrEqual(600);
+    expect(stats.scanMaxCharGapMs).toBe(600);
+    expect(stats.scanDurationMs).toBeGreaterThanOrEqual(1200);
   });
 
   it('shows a near-split: the worst gap approaching rateMs without crossing it', () => {
@@ -102,9 +108,67 @@ describe('per-scan delivery stats on the completed scan', () => {
     expect(stats.scanMaxCharGapMs).toBeLessThan(RATE_MS);
   });
 
+  // The chunk counter uses >=, so a gap of EXACTLY the threshold must count. Without this case a
+  // mutation from >= to > survives untouched - the reviewer demonstrated exactly that.
+  it('counts a gap of exactly the chunk threshold, not only gaps beyond it', () => {
+    const onReadDone = mountReader();
+    typeString(PLAIN, { gapsAt: [5], gapMs: RATE_MS / 2 });
+    goIdleAndTick();
+
+    const [code, stats] = onReadDone.mock.calls[0];
+    expect(code).toBe(PLAIN); // non-vacuity: the scan survived, so the gap really was under rateMs
+    expect(stats.scanChunkCount).toBe(1);
+  });
+
+  it('does not count a gap one millisecond below the threshold', () => {
+    const onReadDone = mountReader();
+    typeString(PLAIN, { gapsAt: [5], gapMs: RATE_MS / 2 - 1 });
+    goIdleAndTick();
+
+    const [, stats] = onReadDone.mock.calls[0];
+    expect(stats.scanChunkCount).toBe(0);
+  });
+
+  // Every other test here completes via the idle flush. A code that content-completes on its final
+  // character takes a different path through completeScan, and its stats were never asserted.
+  it('reports stats for a scan that content-completes instead of going idle', () => {
+    const onReadDone = mountReader();
+    typeString(HU_QR, { stepMs: 2 });
+    // No goIdleAndTick: a parseable HU QR force-completes on its closing character.
+
+    expect(onReadDone).toHaveBeenCalledTimes(1);
+    const [code, stats] = onReadDone.mock.calls[0];
+    expect(code).toBe(HU_QR);
+    expect(stats.scanCharCount).toBe(HU_QR.length);
+    expect(stats.scanDurationMs).toBeGreaterThan(0);
+    expect(stats.scanChunkCount).toBe(0);
+  });
+
+  // A paste is not a scanner delivery, so the timing fields must be null rather than zero - zero
+  // would read as "arrived instantly" and skew the delivery statistics.
+  it('reports null timings for a clipboard paste, with the length still recorded', async () => {
+    const onReadDone = mountReader();
+    const pasted = 'PASTED1234567';
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { readText: () => Promise.resolve(pasted) },
+      configurable: true,
+    });
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', ctrlKey: true, bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+
+    expect(onReadDone).toHaveBeenCalledWith(pasted, expect.any(Object));
+    const [, stats] = onReadDone.mock.calls[0];
+    expect(stats.scanCharCount).toBe(pasted.length);
+    expect(stats.scanDurationMs).toBeNull();
+    expect(stats.scanMaxCharGapMs).toBeNull();
+  });
+
   it('starts a fresh measurement per scan rather than accumulating across scans', () => {
     const onReadDone = mountReader();
-    typeString(PLAIN, { gapsAt: [4], gapMs: 300 });
+    typeString(PLAIN, { gapsAt: [4], gapMs: 600 });
     goIdleAndTick();
     typeString(PLAIN, { stepMs: 1 });
     goIdleAndTick();
@@ -113,6 +177,6 @@ describe('per-scan delivery stats on the completed scan', () => {
     const [, second] = onReadDone.mock.calls[1];
     expect(first.scanChunkCount).toBe(1);
     expect(second.scanChunkCount).toBe(0); // the previous scan's chunk must not leak in
-    expect(second.scanMaxCharGapMs).toBeLessThan(300);
+    expect(second.scanMaxCharGapMs).toBeLessThan(600);
   });
 });

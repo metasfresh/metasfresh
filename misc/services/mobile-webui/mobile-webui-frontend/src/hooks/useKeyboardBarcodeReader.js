@@ -8,11 +8,6 @@ import { checkPartialScannedCode, ScanCompleteness } from '../utils/qrCode/commo
 // 300 ms shrank this to 3 s, i.e. INTO the real inter-chunk range, which would abandon a genuine
 // chunked scan mid-stream. 15 s clears the max real gap with margin and is independent of debounce.
 // Exported so the test asserts against the real value instead of mirroring a magic number.
-// A pause this long between characters means the code arrived in pieces, not as one burst. Chosen
-// well below rateMs (1000 ms on production) so a chunked-but-still-successful scan is visible
-// BEFORE it reaches the gap at which the reader would split it.
-const CHUNK_GAP_MS = 200;
-
 export const IDLE_ABANDON_MS = 15000;
 
 export const useKeyboardBarcodeReader = ({
@@ -54,6 +49,8 @@ export const useKeyboardBarcodeReader = ({
     // sysconfig (barcodeScanner.inputText.idleAbandonMillis) the same way rateMs is wired from
     // barcodeScanner.inputText.debounceMillis.
 
+    const chunkGapMs = rateMs / 2;
+
     const resetBuffer = () => {
       bufferRef.current = '';
       lastKeyTimeRef.current = 0;
@@ -67,7 +64,6 @@ export const useKeyboardBarcodeReader = ({
     // component, so the refs must already be in their next-scan state.
     const completeScan = ({ shouldEnforceMinLength }) => {
       const code = bufferRef.current;
-      // Snapshot before resetBuffer clears them; the callback may unmount this component.
       const stats = {
         scanDurationMs: scanStartTimeRef.current ? Date.now() - scanStartTimeRef.current : null,
         scanCharCount: code.length,
@@ -95,7 +91,15 @@ export const useKeyboardBarcodeReader = ({
           }
 
           event.preventDefault(); // Prevent default paste behavior
-          onReadDone(clipboardText);
+          // A paste is not a scanner delivery: no characters arrived one at a time, so the timing
+          // fields are null rather than zero. Zero would read as "arrived instantly" and pollute
+          // the delivery statistics this instrumentation exists to produce.
+          onReadDone(clipboardText, {
+            scanDurationMs: null,
+            scanCharCount: clipboardText.length,
+            scanMaxCharGapMs: null,
+            scanChunkCount: null,
+          });
           resetBuffer();
           return;
         } catch (error) {
@@ -160,13 +164,15 @@ export const useKeyboardBarcodeReader = ({
           completeScan({ shouldEnforceMinLength: !isPartial });
         }
 
-        // Two integer comparisons on gapMs, which line 130 already computed for the flush check.
-        // CHUNK_GAP_MS marks a pause long enough to mean the code arrived in pieces rather than as
-        // one burst - well under rateMs, so a chunk count above zero is an early warning that a
-        // scan is approaching the threshold at which it would be split.
+        // Two integer comparisons on gapMs, which the flush check above already computed.
+        // chunkGapMs is derived from rateMs rather than being a free-standing number, so it stays
+        // meaningful when the sysconfig changes: a counted gap is at least HALF WAY to the gap that
+        // would split an unprotected code. A recognised-but-incomplete HU QR is exempt from that
+        // flush until idleAbandonMs, so for those a chunk count is informational about delivery
+        // rather than a warning about splitting.
         if (bufferRef.current) {
           if (gapMs > scanMaxGapRef.current) scanMaxGapRef.current = gapMs;
-          if (gapMs >= CHUNK_GAP_MS) scanChunkCountRef.current += 1;
+          if (gapMs >= chunkGapMs) scanChunkCountRef.current += 1;
         } else {
           scanStartTimeRef.current = now;
         }
