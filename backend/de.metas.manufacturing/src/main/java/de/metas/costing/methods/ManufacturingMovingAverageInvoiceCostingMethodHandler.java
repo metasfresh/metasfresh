@@ -190,21 +190,17 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 			final CostPrice price = getReceiptPrice(currentCost, costSegmentAndElement, isCoProductReceipt);
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
 			final CostAmount amt;
-			if (isCoProductReceipt && !ppOrderCostsService.getFixedCostPrice(costSegmentAndElement.getProductId()).isPresent())
-			{
-				// A blank-fixed-price co-product capitalizes its qty-distribution share of the order's inbound cost
-				// pool - the identical amount leg A relieves in PPOrderCosts.updatePostCalculationAmountsForCostElement
-				// - so both legs book the same value and the order's WIP clears. A blank co-product has no per-unit
-				// price to share (unlike the fixed-price one), so the share amount is taken directly, not derived
-				// from a price; the receipt still carries its qty, so the value reaches P_Asset with the received qty.
-				amt = orderCosts.getBlankCoProductReceiptAmount(costSegmentAndElement, getCostingPrecision(request));
-			}
-			else if (isByProductReceipt)
+			if (isByProductReceipt)
 			{
 				amt = orderCosts.getByProductReceiptAmount(costSegmentAndElement);
 			}
 			else
 			{
+				// A co-product with no fixed price (the common case) books current-cost x received-qty on EACH
+				// receipt, mirroring the finished-good receipt path below - NOT the full, qty-independent
+				// ShareInbound x percent carve share on every single receipt (that landmine over-relieved WIP by
+				// (N-1) x share across N partial receipts). The single CC-170 true-up (the cost-difference
+				// distributor) now carries the carve, once, at order close.
 				amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
 			}
 			requestEffective = request.withAmountAndQty(amt, qty);
