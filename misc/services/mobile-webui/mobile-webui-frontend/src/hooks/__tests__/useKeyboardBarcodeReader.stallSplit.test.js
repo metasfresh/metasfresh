@@ -7,9 +7,9 @@ import { useKeyboardBarcodeReader } from '../useKeyboardBarcodeReader';
 //
 // useKeyboardBarcodeReader derives the inter-character gap from Date.now(), i.e. the delta between
 // when the HANDLER RAN. A GC pause blocks the main thread; the OS still delivered the keystrokes on
-// time and they queue, so the reader sees a gap the scanner never sent. Verified in a bare browser
-// (e2e .../_investigation31264/clock_vs_stall.spec.js): across a 1500 ms stall, Date.now() reports a
-// 1506 ms gap while the same events' e.timeStamp reports 6 ms.
+// time and they queue, so the reader sees a gap the scanner never sent. Verified in a bare browser:
+// across a 1500 ms stall, Date.now() reports a 1506 ms gap while the same events' e.timeStamp
+// reports 6 ms.
 //
 // A stall is modelled EXACTLY that way here: Date.now() jumps by the stall, while the events'
 // timeStamps keep advancing 1 ms apart (because the hardware never paused).
