@@ -819,6 +819,9 @@ class DocTextLinesQuickActionsTest
 					.as("the deleted row is already out of the view, even though the merged order still lists its id")
 					.extracting(DocTextLinesRow::getId)
 					.doesNotContain(rowAId);
+			assertThat(view.hasNeighbor(rowAId, true))
+					.as("the window really is open: the merged order still lists the deleted row's id, so it still has a predecessor")
+					.isTrue();
 
 			new WEBUI_DocTextLines_MoveUp().moveUp(view, rowBId);
 
@@ -828,13 +831,9 @@ class DocTextLinesQuickActionsTest
 			assertThat(storedPositionOf(rowZId)).isEqualByComparingTo("5");
 			assertThat(storedPositionOf(articleCId)).isEqualByComparingTo("10");
 
-			final BigDecimal positionAfterTheMove = storedPositionOf(rowBId);
-			rows.deleteRowRemoveFromMergedOrder(rowAId);
-
-			assertThat(storedPositionOf(rowBId))
-					.as("closing the delete window changes nothing: the move already computed against the document without that row")
-					.isEqualByComparingTo(positionAfterTheMove);
-			assertThat(rowsOf(view)).extracting(DocTextLinesRow::getId).doesNotContain(rowAId);
+			assertThat(view.hasNeighbor(rowAId, true))
+					.as("the write re-read the document and dropped the id it no longer contains -- it is not merely skipped, it is gone from the order")
+					.isFalse();
 		}
 
 		/**
@@ -858,6 +857,10 @@ class DocTextLinesQuickActionsTest
 
 			rows.deleteRowPersistAndUnpublish(rowAId);
 
+			assertThat(view.hasNeighbor(rowAId, true))
+					.as("the window really is open: the merged order still lists the deleted row's id")
+					.isTrue();
+
 			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, referenceRowId);
 
 			assertThat(docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId)))
@@ -865,8 +868,9 @@ class DocTextLinesQuickActionsTest
 					.hasSize(2)
 					.extracting(DocTextLine::getId)
 					.contains(DocTextLineId.ofRepoId(rowZ.getC_Doc_TextLine_ID()));
-
-			rows.deleteRowRemoveFromMergedOrder(rowAId);
+			assertThat(view.hasNeighbor(rowAId, true))
+					.as("the write re-read the document and dropped the id it no longer contains")
+					.isFalse();
 
 			final List<DocTextLinesRow> after = rowsOf(view);
 			assertThat(after).extracting(DocTextLinesRow::getId).containsExactly(rowZId, after.get(1).getId(), referenceRowId);
@@ -896,15 +900,17 @@ class DocTextLinesQuickActionsTest
 
 			rows.deleteRowPersistAndUnpublish(rowAId);
 
+			assertThat(view.hasNeighbor(rowAId, true))
+					.as("the window really is open: the merged order still lists the deleted row's id")
+					.isTrue();
+
 			new WEBUI_DocTextLines_MoveUp().moveUp(view, rowBId);
 
 			assertThat(storedPositionOf(rowBId)).as("exchanged with the row that is actually above it now").isEqualByComparingTo("5");
 			assertThat(storedPositionOf(rowXId)).isEqualByComparingTo("10");
-
-			rows.deleteRowRemoveFromMergedOrder(rowAId);
-
-			assertThat(storedPositionOf(rowBId)).as("closing the delete window changes nothing").isEqualByComparingTo("5");
-			assertThat(storedPositionOf(rowXId)).isEqualByComparingTo("10");
+			assertThat(view.hasNeighbor(rowAId, true))
+					.as("the write re-read the document and dropped the id it no longer contains")
+					.isFalse();
 		}
 
 		/**
@@ -1599,6 +1605,82 @@ class DocTextLinesQuickActionsTest
 							articleRowIdOf(secondArticle),
 							textRowIdOf(movedText),
 							articleRowIdOf(thirdArticle));
+		}
+
+		/**
+		 * The same situation on the move path: the row the user selected is gone, deleted in the other modal.
+		 * The move cannot fall back on anything either -- "one place earlier" is meaningless for a row that is
+		 * not in the order any more -- so it gets the same answer as the insert.
+		 * <p>
+		 * Without the guard the operation is still refused, but by the not-found path deeper in, whose message
+		 * is an internal row id. That is why the assertion below is on the MESSAGE and not merely on the
+		 * exception type: what this pins is that the user is told what happened, in the same words the insert
+		 * path uses.
+		 */
+		@Test
+		void aMoveOfARowAnotherModalDeleted_isRefused_inTheSameWordsAsTheInsertPath()
+		{
+			final I_C_OrderLine article = createArticleLine(10);
+			final I_C_Doc_TextLine deletedText = createTextLine(12, TextLineScope.Following);
+			final I_C_Doc_TextLine survivingText = createTextLine(15, TextLineScope.Following);
+
+			final DocTextLinesView staleModal = loadView();
+			final DocTextLinesView currentModal = loadView();
+
+			new WEBUI_DocTextLines_Delete().delete(currentModal, textRowIdOf(deletedText));
+
+			final Throwable refusal = catchThrowable(
+					() -> new WEBUI_DocTextLines_MoveDown().moveDown(staleModal, textRowIdOf(deletedText)));
+
+			assertThat(refusal)
+					.as("the user must be told their line is gone, not handed an internal row id")
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("select a line again");
+			final List<BigDecimal> positionsAfterTheRefusal = storedTextLinePositions();
+			assertThat(positionsAfterTheRefusal).as("the refused move changed no position").hasSize(1);
+			assertThat(positionsAfterTheRefusal.get(0)).isEqualByComparingTo("15");
+			assertThat(storedMergedOrder()).containsExactly(
+					articleRowIdOf(article),
+					textRowIdOf(survivingText));
+		}
+
+		/**
+		 * The invariant the whole re-derivation rests on, and the reason two guards further down this class are
+		 * unreachable: after a structural write, this modal's rows ARE the document's rows -- same set, same
+		 * order -- however far behind it had fallen. Rows another modal added appear, rows it deleted are gone,
+		 * and positions it changed are current.
+		 * <p>
+		 * Worth pinning on its own rather than leaving it implied by the placement tests: they would still pass
+		 * if the refresh left a deleted row behind and merely avoided computing against it, and that leftover
+		 * is exactly what the arithmetic used to trip over.
+		 */
+		@Test
+		void afterAStructuralWrite_theStaleModalShowsExactlyTheDocumentsRows()
+		{
+			final I_C_OrderLine firstArticle = createArticleLine(10);
+			final I_C_Doc_TextLine deletedText = createTextLine(12, TextLineScope.Following);
+			final I_C_Doc_TextLine movedText = createTextLine(15, TextLineScope.Following);
+			final I_C_OrderLine secondArticle = createArticleLine(20);
+
+			final DocTextLinesView staleModal = loadView();
+			final DocTextLinesView currentModal = loadView();
+
+			new WEBUI_DocTextLines_Delete().delete(currentModal, textRowIdOf(deletedText));
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(currentModal, articleRowIdOf(secondArticle));
+			final DocumentId insertedRowId = rowsOf(currentModal).get(2).getId();
+
+			// the stale modal has seen none of that, and now writes
+			new WEBUI_DocTextLines_MoveDown().moveDown(staleModal, textRowIdOf(movedText));
+
+			assertThat(rowsOf(staleModal))
+					.as("the modal lists exactly the document's rows, in the document's order")
+					.extracting(DocTextLinesRow::getId)
+					.containsExactlyElementsOf(storedMergedOrder());
+			assertThat(storedMergedOrder()).containsExactly(
+					articleRowIdOf(firstArticle),
+					insertedRowId,
+					textRowIdOf(movedText),
+					articleRowIdOf(secondArticle));
 		}
 
 		/**

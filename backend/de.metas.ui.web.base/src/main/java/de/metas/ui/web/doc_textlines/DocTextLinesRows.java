@@ -145,12 +145,19 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * <p>
 	 * <b>The one sanctioned cause of a miss is {@link #deleteRow}'s own two-section shape.</b> Its row-lock
 	 * section clears {@link #rowsById} only after a successful persist, and its separate {@link #structuralLock}
-	 * section trims {@link #rowIds} afterwards; between the two, {@link #structuralLock} is briefly free, so
-	 * another thread's {@link #moveRow}, {@link #insertRowAbove} (via {@link #computeInsertAbovePositions}), or
-	 * {@link #getDocumentId2TopLevelRows} can observe an id still in {@link #rowIds} with no matching
-	 * {@link #rowsById} entry. That combination is the ONLY legitimate reason this method ever returns empty.
-	 * It is not a general licence to treat a missing row as unremarkable -- any other cause would be a genuine
-	 * bug in this class, and a caller silently swallowing it here would only hide that bug rather than fix it.
+	 * section trims {@link #rowIds} afterwards; between the two, {@link #structuralLock} is briefly free, so an
+	 * id can be listed in {@link #rowIds} with no matching {@link #rowsById} entry. That combination is the
+	 * ONLY legitimate reason this method ever returns empty. It is not a general licence to treat a missing row
+	 * as unremarkable -- any other cause would be a genuine bug in this class, and a caller silently swallowing
+	 * it here would only hide that bug rather than fix it.
+	 * <p>
+	 * <b>Which callers can still see it:</b> only the ones that do NOT re-derive first --
+	 * {@link #getDocumentId2TopLevelRows} and {@link DocTextLinesView#getInsertAbovePositions} (through
+	 * {@link #computeInsertAbovePositions}). The structural writes cannot: {@link #refreshMergedOrderFromDatabase}
+	 * leaves {@link #rowIds} and {@link #rowsById} holding exactly the same ids, and it runs at the top of each
+	 * of them, inside the same document lock a delete holds across both of its sections. A miss reaching one of
+	 * THOSE callers means that invariant has been broken, which is why they treat it as an internal error
+	 * rather than as a transient state to retry -- see {@link #mergedOrderDisagreesWithRows}.
 	 */
 	private Optional<DocTextLinesRow> resolveRow(@NonNull final DocumentId rowId)
 	{
@@ -236,6 +243,19 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 				+ " Please close and reopen the window, then select a line again.")
 				.appendParametersToMessage()
 				.setParameter("rowIds", rowIds);
+	}
+
+	/**
+	 * Failure of this class's own invariant: an id listed in {@link #rowIds} with no {@link #rowsById} entry,
+	 * seen by a caller that has just re-derived both from the database and so cannot legitimately meet one.
+	 * Distinct from {@link #rowIsBeingRemoved}, which describes a real, transient state a non-refreshing reader
+	 * can meet and retry out of; this one means the code is wrong, and retrying would not help.
+	 */
+	private static AdempiereException mergedOrderDisagreesWithRows(@NonNull final DocumentId rowId)
+	{
+		return new AdempiereException("Internal error: the document's line order lists a line that cannot be read, so nothing was changed.")
+				.appendParametersToMessage()
+				.setParameter("rowId", rowId);
 	}
 
 	@Override
@@ -393,6 +413,17 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * gone is not a position; it is a reference the user has to be told about, which is what
 	 * {@link #rowNoLongerExists} is for.</li>
 	 * </ul>
+	 * Dropping happens WITHOUT the dropped row's own monitor, which is a deliberate choice and the one place
+	 * this class lets a row leave {@link #rowsById} other than under that monitor. A {@link #patchRow} already
+	 * inside its monitor when this runs can therefore put its row back after this method dropped it -- an
+	 * entry in {@link #rowsById} that no {@link #rowIds} entry points at. That is harmless: nothing reads
+	 * {@link #rowsById} except through {@link #rowIds}, the next structural write drops it again, and a later
+	 * patch of that id fails cleanly on {@link #getRowLockOrThrow}. Taking the monitor instead would mean
+	 * holding a row monitor inside {@link #structuralLock} -- the nesting {@link #moveRow}'s javadoc explains
+	 * this class is built to avoid -- to buy nothing but tidiness. (The worse variant cannot occur: every
+	 * fresh row's monitor is re-established before anything is dropped, and ids are primary keys, never
+	 * reused, so two threads can never hold different monitors for one row.)
+	 * <p>
 	 * Dropping is safe here for a reason that only became true once {@link #deleteRow} took the document lock
 	 * across BOTH of its sections: a delete of this document can no longer be half-done while this method
 	 * runs, so "absent from the database" no longer has to be read as "possibly being deleted right now". The
@@ -544,9 +575,11 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * orderings; only one of them is a duplicate.
 	 * <p>
 	 * Every position this method reads (the neighbour's, and the row beyond it) is read from
-	 * {@link #rowsById}/{@link #rowIds} after that refresh, never cached across calls. If one of those rows is
-	 * in the middle of being removed, so that its position cannot be read at all, the move is refused rather
-	 * than computed against a substitute -- see {@link #boundPositionAt}.
+	 * {@link #rowsById}/{@link #rowIds} after that refresh, never cached across calls -- so each one is a row
+	 * the database returned moments earlier, in this same transaction, with the document's row lock held. The
+	 * one row that can be missing is the selected row itself, deleted in another window before this one acted;
+	 * that is refused with {@link #rowNoLongerExists}, because the user's reference point is gone and no
+	 * position can stand in for it.
 	 * <p>
 	 * Deliberately NOT additionally synchronized on either row's own monitor from {@link #rowLocksById} (unlike
 	 * {@link #deleteRow}): a concurrent {@link #patchRow} of a row this method touches only ever writes {@code
@@ -590,12 +623,15 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			}
 
 			final DocumentId neighborId = rowIds.get(neighborIndex);
-			// a neighbour that is listed but unreadable is a row in the middle of being removed, which is a
-			// different situation from the "nothing on that side" rejected just above: there IS an exchange
-			// partner, it is simply not one this move can act on right now, so the refusal says so and invites
-			// a retry rather than claiming the row is already at the edge of the list
+			// unreachable by construction: the refresh above leaves rowIds and rowsById holding the same ids,
+			// and nothing can remove from rowsById in between (a delete of this document holds the same
+			// document lock this method runs under). Kept as an assert rather than dropped, because the cost is
+			// one map lookup and the alternative is silent: should a later change stop the refresh being total,
+			// or remove a row from rowsById without updating rowIds, this exchange would otherwise be computed
+			// against a row this view cannot read -- which is the wrong-position defect this class exists to
+			// prevent. It is an internal error, not a transient state, so it does not invite a retry.
 			final DocTextLinesRow neighbor = resolveRow(neighborId)
-					.orElseThrow(() -> rowIsBeingRemoved(neighborId));
+					.orElseThrow(() -> mergedOrderDisagreesWithRows(neighborId));
 
 			final DocTextLinesRow newRow;
 			if (neighbor.isTextLine())
@@ -677,10 +713,15 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * merged view but still undeleted underneath.
 	 * <p>
 	 * Clearing {@link #rowsById} here, in the same section as the persist and before this method's own monitor
-	 * is released, is also what keeps the resurrection guard deterministic: a {@link #patchRow} blocked on
-	 * this exact monitor is only ever admitted AFTER {@link #rowsById} no longer has the entry, so its
-	 * {@code getRowOrThrow} is guaranteed to throw {@link EntityNotFoundException} rather than racing the
+	 * is released, is also what keeps the resurrection guard deterministic FOR A DELETE: a {@link #patchRow}
+	 * blocked on this exact monitor is only ever admitted AFTER {@link #rowsById} no longer has the entry, so
+	 * its {@code getRowOrThrow} is guaranteed to throw {@link EntityNotFoundException} rather than racing the
 	 * second section.
+	 * <p>
+	 * That reasoning covers this method only. It is NOT a class-wide invariant that {@link #rowsById} is only
+	 * ever cleared under a row's monitor: {@link #refreshMergedOrderFromDatabase} also drops rows, without the
+	 * monitor and deliberately -- see its javadoc for why, and for why a patch re-publishing such a row is
+	 * harmless.
 	 */
 	void deleteRowPersistAndUnpublish(@NonNull final DocumentId rowId)
 	{
