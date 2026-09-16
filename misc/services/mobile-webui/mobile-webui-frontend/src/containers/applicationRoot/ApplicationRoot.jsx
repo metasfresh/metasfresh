@@ -71,13 +71,6 @@ const ApplicationRoot = () => {
   return (
     <>
       <ConnectedRouter history={history} basename="./">
-        {/* ONE toast container for the whole app: react-toastify removes an unmounted container
-            from its registry via setTimeout, and the next container to mount cancels all pending
-            removals - so a route swap (unmount + mount in the same tick) orphaned the old entry
-            for good, and that entry holds a callback bound to the old screen's fiber, pinning its
-            whole DOM. A single container never unmounts, so there is nothing left to cancel.
-            Inside the router so useLocationChange still sees route changes. */}
-        <ScreenToaster />
         <Switch>
           <Route exact path="/login">
             <LoginScreen />
@@ -93,6 +86,19 @@ const ApplicationRoot = () => {
             ))}
           </PrivateRoute>
         </Switch>
+        {/* ONE toast container for the whole app: react-toastify removes an unmounted container
+            from its registry via setTimeout, and the next container to mount cancels all pending
+            removals - so a route swap (unmount + mount in the same tick) orphaned the old entry
+            for good, and that entry holds a callback bound to the old screen's fiber, pinning its
+            whole DOM. A single container never unmounts, so there is nothing left to cancel.
+            Inside the router so useLocationChange still sees route changes.
+
+            AFTER <Switch>, not before: the toast container and .prompt-dialog BOTH carry
+            z-index 9999 (ReactToastify.css / assets/prompt-dialog.scss), so paint order is DOM
+            order. Mounted ahead of the routes the toast rendered UNDERNEATH the full-screen
+            dialog overlay - present in the DOM but unclickable, which is what the previously
+            per-screen mounts (rendered after <Component/>) had always avoided. */}
+        <ScreenToaster />
       </ConnectedRouter>
       {REGISTER_SERVICE_WORKER && <VersionChecker updateIntervalMillis={VERSION_CHECK_INTERVAL_MILLIS} />}
     </>
