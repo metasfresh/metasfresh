@@ -604,9 +604,15 @@ public class CandidateRepositoryWriteService
 				transactionOrPInstanceId.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_AD_PInstance_ResetStock_ID, transactionDetail.getResetStockPInstanceId().getRepoId());
 			}
 
+			// scoped to THIS candidate as well: a M_Transaction_ID/AD_PInstance_ResetStock_ID value is not
+			// guaranteed unique across candidates (e.g. one TransactionDescriptor can fan out into several
+			// TransactionCreatedEvents - one per distinct storage-attributes-key - all sharing one
+			// M_Transaction_ID). Without this filter, a different candidate's write would silently UPDATE
+			// this candidate's existing row instead of inserting its own.
 			final I_MD_Candidate_Transaction_Detail existingDetail = //
 					queryBL.createQueryBuilder(I_MD_Candidate_Transaction_Detail.class)
 							.addOnlyActiveRecordsFilter()
+							.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
 							.filter(transactionOrPInstanceId)
 							.create()
 							.firstOnly(I_MD_Candidate_Transaction_Detail.class);
