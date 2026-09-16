@@ -166,6 +166,44 @@ class DocTextLinesQuickActionsTest
 		return view.streamByIds(DocumentIdsSelection.ALL).collect(Collectors.toList());
 	}
 
+	/** The merged order as it is actually stored right now -- read back through a freshly loaded view, so it is what a newly opened modal would show. */
+	private List<DocumentId> storedMergedOrder()
+	{
+		return rowsOf(loadView()).stream().map(DocTextLinesRow::getId).collect(Collectors.toList());
+	}
+
+	private List<BigDecimal> storedTextLinePositions()
+	{
+		return docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId))
+				.stream()
+				.map(DocTextLine::getLine)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Polls (bounded) until {@code thread} is either blocked/waiting on a monitor or has already
+	 * terminated -- used to give a genuinely concurrent thread B a real chance to contend for the same lock
+	 * thread A holds, without a fixed sleep racing the JVM's own scheduling.
+	 */
+	private static boolean waitUntilBlockedOrTerminated(final Thread thread, final long timeoutMillis) throws InterruptedException
+	{
+		final long deadline = System.currentTimeMillis() + timeoutMillis;
+		while (System.currentTimeMillis() < deadline)
+		{
+			final Thread.State state = thread.getState();
+			if (state == Thread.State.BLOCKED || state == Thread.State.WAITING || state == Thread.State.TIMED_WAITING)
+			{
+				return false; // genuinely contending for a lock -- did not race ahead
+			}
+			if (state == Thread.State.TERMINATED)
+			{
+				return true; // ran to completion without ever blocking -- raced ahead
+			}
+			Thread.sleep(10);
+		}
+		return true; // never observed blocked within the window -- treat as raced ahead
+	}
+
 	@Nested
 	class testInsertAbove
 	{
@@ -926,9 +964,10 @@ class DocTextLinesQuickActionsTest
 	}
 
 	/**
-	 * Two concurrent insert-above requests against the SAME reference row -- two browser tabs open on one
-	 * order, which is exactly the scenario {@code patchRow}'s own per-row locking already treats as real --
-	 * must not both read the same reference/previous positions and persist the same midpoint {@code Line}.
+	 * Two concurrent insert-above requests against the SAME reference row, sharing ONE rows holder -- i.e. two
+	 * requests into one open modal -- must not both read the same reference/previous positions and persist the
+	 * same midpoint {@code Line}. The two-rows-holder case (two open modals over the same order, which is what
+	 * a second browser tab actually is) is {@link acrossTwoOpenModalsOfTheSameOrder}.
 	 */
 	@Nested
 	class concurrency
@@ -1275,28 +1314,214 @@ class DocTextLinesQuickActionsTest
 			assertThat(positions).doesNotHaveDuplicates();
 		}
 
+	}
+
+	/**
+	 * TWO open modals over the same order -- one user with a second browser tab is enough. Each modal has its
+	 * own rows holder, holding the merged order as it stood when that modal was opened, and nothing refreshes
+	 * that snapshot while the modal stays open. So the second modal computes its next stored position against
+	 * an order the first one has already changed underneath it.
+	 * <p>
+	 * No timing luck is involved and the first three of these tests use no threads at all: the two writes are
+	 * strictly sequential, and the second one still computes against the state the first one replaced. A test
+	 * that drives only one rows holder cannot fail on this -- which is why the single-holder tests in
+	 * {@link concurrency} pass even when a second modal can persist a duplicate position. A duplicate matters
+	 * because both report functions order by position and then by "text before article", which is no tiebreak
+	 * at all between two text rows: an unrelated later edit can silently swap them in the printed document,
+	 * and a text line scoped to the following lines then applies to different article lines than it did.
+	 */
+	@Nested
+	class acrossTwoOpenModalsOfTheSameOrder
+	{
 		/**
-		 * Polls (bounded) until {@code thread} is either blocked/waiting on a monitor or has already
-		 * terminated -- used to give a genuinely concurrent thread B a real chance to contend for the same lock
-		 * thread A holds, without a fixed sleep racing the JVM's own scheduling.
+		 * Both modals insert above the SAME article row, each halving that article's position because it is
+		 * the document's first row -- the second modal cannot see the row the first one put there, so both
+		 * arrive at the same midpoint.
 		 */
-		private boolean waitUntilBlockedOrTerminated(final Thread thread, final long timeoutMillis) throws InterruptedException
+		@Test
+		void twoInsertsAboveTheSameArticleRow_doNotShareAPosition()
 		{
-			final long deadline = System.currentTimeMillis() + timeoutMillis;
-			while (System.currentTimeMillis() < deadline)
-			{
-				final Thread.State state = thread.getState();
-				if (state == Thread.State.BLOCKED || state == Thread.State.WAITING || state == Thread.State.TIMED_WAITING)
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final DocumentId referenceRowId = articleRowIdOf(article10);
+
+			final DocTextLinesView firstModal = loadView();
+			final DocTextLinesView secondModal = loadView();
+
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(firstModal, referenceRowId);
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(secondModal, referenceRowId);
+
+			final List<BigDecimal> positions = storedTextLinePositions();
+			assertThat(positions).hasSize(2);
+			assertThat(positions.get(0))
+					.as("the second modal must not persist the position the first one already took")
+					.isNotEqualByComparingTo(positions.get(1));
+			assertThat(positions).allSatisfy(position -> assertThat(position).isLessThan(BigDecimal.TEN));
+		}
+
+		/**
+		 * The second interleaving: an insert-above and a move-up that land on the same midpoint. The first
+		 * modal inserts between the two articles; the second modal moves its own text row up past the second
+		 * article, and -- computed against a snapshot that does not contain the inserted row -- that
+		 * reposition targets the very same midpoint.
+		 */
+		@Test
+		void anInsertAboveAndAMoveUpPastAnArticle_doNotLandOnTheSameMidpoint()
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final I_C_OrderLine article20 = createArticleLine(20);
+			final I_C_Doc_TextLine text25 = createTextLine(25, TextLineScope.Document);
+
+			final DocTextLinesView firstModal = loadView();
+			final DocTextLinesView secondModal = loadView();
+
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(firstModal, articleRowIdOf(article20));
+			final DocumentId insertedRowId = rowsOf(firstModal).get(1).getId();
+
+			new WEBUI_DocTextLines_MoveUp().moveUp(secondModal, textRowIdOf(text25));
+
+			final List<BigDecimal> positions = storedTextLinePositions();
+			assertThat(positions).hasSize(2);
+			assertThat(positions.get(0))
+					.as("the moved row must not land on the position the other modal's insert already took")
+					.isNotEqualByComparingTo(positions.get(1));
+
+			assertThat(storedMergedOrder())
+					.as("the moved row ends up one place earlier in the order that actually exists, i.e. between the inserted row and the article it moved past")
+					.containsExactly(
+							articleRowIdOf(article10),
+							insertedRowId,
+							textRowIdOf(text25),
+							articleRowIdOf(article20));
+		}
+
+		/**
+		 * The swap shape of a move, which trades two stored positions and so cannot produce a tie by itself --
+		 * but exchanges the wrong pair when the snapshot it picks the exchange partner from is stale, which
+		 * scrambles the order just as badly. The first modal swaps the first two text rows; the second modal
+		 * then moves the last row up, and must exchange it with the row that is above it NOW, not with the one
+		 * that was above it when the modal was opened.
+		 */
+		@Test
+		void aMoveUpSwappingWithATextNeighbour_exchangesWithTheCurrentNeighbourNotTheRememberedOne()
+		{
+			final I_C_Doc_TextLine text10 = createTextLine(10, TextLineScope.Document);
+			final I_C_Doc_TextLine text20 = createTextLine(20, TextLineScope.Document);
+			final I_C_Doc_TextLine text30 = createTextLine(30, TextLineScope.Document);
+
+			final DocTextLinesView firstModal = loadView();
+			final DocTextLinesView secondModal = loadView();
+
+			// first modal: text10 and text20 trade places, so text20 is now the first row and text10 the second
+			new WEBUI_DocTextLines_MoveDown().moveDown(firstModal, textRowIdOf(text10));
+			// second modal: the row above text30 is text10 by now -- the remembered neighbour text20 is two
+			// places away, and exchanging with it would move text30 up by two places instead of one
+			new WEBUI_DocTextLines_MoveUp().moveUp(secondModal, textRowIdOf(text30));
+
+			assertThat(storedMergedOrder()).containsExactly(
+					textRowIdOf(text20),
+					textRowIdOf(text30),
+					textRowIdOf(text10));
+			assertThat(storedTextLinePositions()).doesNotHaveDuplicates();
+		}
+
+		/**
+		 * The same two modals, genuinely concurrent this time: re-deriving the order inside the write only
+		 * removes the duplicate if the second write cannot re-derive while the first one is still between its
+		 * own derivation and its own persist. Both modals insert above the same article; the first is held
+		 * inside the repository call while the second starts, so the second must wait rather than compute
+		 * against an order that is about to change.
+		 */
+		@Test
+		void concurrentInsertsAboveTheSameArticleRow_fromTwoModals_areSerialised() throws InterruptedException
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final DocumentId referenceRowId = articleRowIdOf(article10);
+
+			final AtomicInteger callIndex = new AtomicInteger(0);
+			final CountDownLatch firstReachedPersist = new CountDownLatch(1);
+			final CountDownLatch releaseFirst = new CountDownLatch(1);
+
+			final DocTextLineRepository racingRepository = Mockito.spy(docTextLineRepository);
+			Mockito.doAnswer(invocation -> {
+						final int index = callIndex.getAndIncrement();
+						if (index == 0)
+						{
+							firstReachedPersist.countDown();
+							if (!releaseFirst.await(5, TimeUnit.SECONDS))
+							{
+								throw new IllegalStateException("test bug: releaseFirst was never signalled");
+							}
+						}
+						return invocation.callRealMethod();
+					})
+					.when(racingRepository)
+					.insertAbove(any());
+
+			final DocTextLinesView firstModal = viewOf(loadRowsWith(racingRepository));
+			final DocTextLinesView secondModal = viewOf(loadRowsWith(racingRepository));
+
+			final AtomicReference<Throwable> firstFailure = new AtomicReference<>();
+			final AtomicReference<Throwable> secondFailure = new AtomicReference<>();
+
+			final Thread firstThread = new Thread(() -> {
+				try
 				{
-					return false; // genuinely contending for a lock -- did not race ahead
+					new WEBUI_DocTextLines_InsertAbove().insertAbove(firstModal, referenceRowId);
 				}
-				if (state == Thread.State.TERMINATED)
+				catch (final Throwable t)
 				{
-					return true; // ran to completion without ever blocking -- raced ahead
+					firstFailure.set(t);
 				}
-				Thread.sleep(10);
-			}
-			return true; // never observed blocked within the window -- treat as raced ahead
+			});
+			firstThread.start();
+
+			assertThat(firstReachedPersist.await(5, TimeUnit.SECONDS))
+					.as("the first modal's insert must reach its repository call")
+					.isTrue();
+
+			final Thread secondThread = new Thread(() -> {
+				try
+				{
+					new WEBUI_DocTextLines_InsertAbove().insertAbove(secondModal, referenceRowId);
+				}
+				catch (final Throwable t)
+				{
+					secondFailure.set(t);
+				}
+			});
+			secondThread.start();
+
+			// a real, bounded chance for the second modal to reach the same repository call while the first
+			// one is still holding it -- with the two writes serialised on the order they share, it blocks
+			// instead, and the value here is the expected false
+			final boolean secondRacedAhead = waitUntilBlockedOrTerminated(secondThread, 500);
+
+			releaseFirst.countDown();
+			firstThread.join(5_000);
+			secondThread.join(5_000);
+			assertThat(firstThread.isAlive()).as("the first modal's insert finished").isFalse();
+			assertThat(secondThread.isAlive()).as("the second modal's insert finished").isFalse();
+			assertThat(firstFailure.get()).isNull();
+			assertThat(secondFailure.get()).isNull();
+
+			assertThat(secondRacedAhead)
+					.as("two modals of the same order must not both be inside the compute-and-persist sequence at once")
+					.isFalse();
+
+			final List<BigDecimal> positions = storedTextLinePositions();
+			assertThat(positions).hasSize(2);
+			assertThat(positions.get(0)).isNotEqualByComparingTo(positions.get(1));
+		}
+
+		private DocTextLinesRows loadRowsWith(final DocTextLineRepository repository)
+		{
+			return DocTextLinesRowsLoader.builder()
+					.orderDAO(orderDAO)
+					.docTextLineRepository(repository)
+					.productsLookup(MockedLookupDataSource.withNamePrefix("product"))
+					.orderId(orderId)
+					.build()
+					.load();
 		}
 	}
 }

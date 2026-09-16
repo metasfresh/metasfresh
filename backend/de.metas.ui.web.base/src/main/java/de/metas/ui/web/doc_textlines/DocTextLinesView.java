@@ -74,6 +74,11 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 	 * {@code ProductsProposalView}. The actual derivation lives in {@link DocTextLinesRows}, where the merged
 	 * ordering is held.
 	 *
+	 * Reports what THIS view's ordering says, which is the ordering as of the last write it made -- another
+	 * open view of the same order may have moved on since. {@link #insertRowAbove} does not go through here
+	 * for that reason: it re-derives the ordering from the database inside its own write and computes the
+	 * stored position against that. So this is a question to ask about the view, never the basis for a write.
+	 *
 	 * @param referenceRowId the row the user selected before invoking insert-above; {@code null} only when the
 	 *                        document has no rows at all.
 	 */
@@ -84,14 +89,14 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 
 	/**
 	 * Persists a new text row and adds it to this view, immediately above {@code referenceRowId} -- see
-	 * {@link DocTextLinesRows#insertRowAbove(DocumentId, DocTextLineDocumentRef, String)} for the placement rule
-	 * and the atomicity it provides -- and notifies the frontend to reload, the same way
+	 * {@link DocTextLinesRows#insertRowAbove(DocumentId, String)} for the placement rule and the atomicity it
+	 * provides -- and notifies the frontend to reload, the same way
 	 * {@code ProductsProposalView#addOrUpdateRows} does after widening its own rows data. This is the one entry
 	 * point an insert-above quick-action process needs; it never touches {@code DocTextLineRepository} itself.
 	 */
 	public void insertRowAbove(@Nullable final DocumentId referenceRowId, @Nullable final String textLine)
 	{
-		getRowsData().insertRowAbove(referenceRowId, documentRef, textLine);
+		getRowsData().insertRowAbove(referenceRowId, textLine);
 		invalidateAll();
 	}
 

@@ -2,6 +2,7 @@ package de.metas.ui.web.doc_textlines;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.doctextline.DocTextLine;
 import de.metas.doctextline.DocTextLineDocumentRef;
@@ -23,16 +24,25 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Holder of the merged article-line/text-line rows of one {@link DocTextLinesView}. Row order starts as the
- * merged order {@link DocTextLinesRowsLoader} computed, preserved via {@link #rowIds}' insertion order, and is
- * widened in place by {@link #insertRowAbove} as rows are added.
+ * merged order {@link DocTextLinesRowsLoader} computed, preserved via {@link #rowIds}' order, and is widened
+ * by {@link #insertRowAbove} as rows are added.
+ * <p>
+ * One holder is one open modal, and there can be several over the same document at once. So every write that
+ * touches the ORDER -- {@link #insertRowAbove}, {@link #moveRow} -- first re-derives that order from the
+ * database ({@link #refreshMergedOrderFromDatabase}) and computes against what it finds, with all writes of
+ * one document serialised on {@link DocTextLinesDocumentLocks that document's lock}. A holder's own snapshot
+ * is never a safe basis for placing a row: it is taken when the view is built and nothing else refreshes it.
  * <p>
  * Editable ({@link IEditableRowsData}): patching a text row's text/scope persists immediately, in keeping
  * with this WebUI's field-level auto-save behaviour, rather than deferring to a view-close batch the way
@@ -47,28 +57,61 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		return (DocTextLinesRows)rowsData;
 	}
 
-	private final List<DocumentId> rowIds; // preserves the merged order; mutated only under #structuralLock
+	/**
+	 * The merged order. Replaced wholesale, never mutated in place: every write goes through
+	 * {@link #updateRowIds} while {@link #structuralLock} is held, and the readers that walk it hold no lock
+	 * at all, so a reader must always see one whole ordering rather than the halves of two.
+	 */
+	private volatile ImmutableList<DocumentId> rowIds;
+
 	private final ConcurrentHashMap<DocumentId, DocTextLinesRow> rowsById;
 	private final ConcurrentHashMap<DocumentId, Object> rowLocksById; // one dedicated monitor per row, see #patchRow
 	private final DocTextLineRepository docTextLineRepository;
 
-	/** Guards {@link #insertRowAbove} against two concurrent inserts corrupting {@link #rowIds}' index arithmetic. */
+	/** The document whose rows these are -- the key every structural write locks on, see {@link DocTextLinesDocumentLocks}. */
+	private final DocTextLineDocumentRef documentRef;
+
+	/** Re-runs {@link DocTextLinesRowsLoader}'s merge against current database state -- see {@link #refreshMergedOrderFromDatabase}. */
+	private final Supplier<ImmutableList<DocTextLinesRow>> mergedOrderReloader;
+
+	/**
+	 * Serialises the writes that touch the ordering OF THIS HOLDER -- two concurrent requests into one open
+	 * modal must not corrupt {@link #rowIds}' index arithmetic. Writes coming from a DIFFERENT holder of the
+	 * same document are a different problem, and {@link DocTextLinesDocumentLocks} is what answers it.
+	 */
 	private final Object structuralLock = new Object();
 
 	@Builder
 	private DocTextLinesRows(
 			@NonNull final List<DocTextLinesRow> rows,
-			@NonNull final DocTextLineRepository docTextLineRepository)
+			@NonNull final DocTextLineDocumentRef documentRef,
+			@NonNull final DocTextLineRepository docTextLineRepository,
+			@NonNull final Supplier<ImmutableList<DocTextLinesRow>> mergedOrderReloader)
 	{
 		// empty is legal here (unlike the shipment-candidates-editor precedent): an order with no lines at
 		// all still opens the modal, just with zero rows.
-		rowIds = new CopyOnWriteArrayList<>(rows.stream()
+		rowIds = rows.stream()
 				.map(DocTextLinesRow::getId)
-				.collect(ImmutableList.toImmutableList()));
+				.collect(ImmutableList.toImmutableList());
 
 		rowsById = new ConcurrentHashMap<>(Maps.uniqueIndex(rows, DocTextLinesRow::getId));
 		rowLocksById = new ConcurrentHashMap<>(rowIds.stream().collect(ImmutableMap.toImmutableMap(id -> id, id -> new Object())));
+		this.documentRef = documentRef;
 		this.docTextLineRepository = docTextLineRepository;
+		this.mergedOrderReloader = mergedOrderReloader;
+	}
+
+	/**
+	 * Replaces {@link #rowIds} with the result of applying {@code mutation} to a copy of it. Callers must hold
+	 * {@link #structuralLock}: the copy-mutate-publish sequence is only atomic with respect to other writers
+	 * because they are serialised there. Readers need no lock -- they see either the old ordering or the new
+	 * one, never a half-applied mutation.
+	 */
+	private void updateRowIds(@NonNull final Consumer<List<DocumentId>> mutation)
+	{
+		final List<DocumentId> updatedRowIds = new ArrayList<>(rowIds);
+		mutation.accept(updatedRowIds);
+		rowIds = ImmutableList.copyOf(updatedRowIds);
 	}
 
 	@Override
@@ -135,12 +178,16 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	@Nullable
 	private BigDecimal boundPositionAt(final int index)
 	{
-		if (index < 0 || index >= rowIds.size())
+		// one read of the volatile field: "is there a row there" and "which row is there" must be answered
+		// about the same ordering, or a concurrent structural write between the two would turn a shrinking
+		// list into an IndexOutOfBoundsException
+		final List<DocumentId> currentRowIds = rowIds;
+		if (index < 0 || index >= currentRowIds.size())
 		{
 			return null;
 		}
 
-		final DocumentId boundRowId = rowIds.get(index);
+		final DocumentId boundRowId = currentRowIds.get(index);
 		return resolveRow(boundRowId)
 				.map(DocTextLinesRow::getLine)
 				.orElseThrow(() -> rowIsBeingRemoved(boundRowId));
@@ -177,23 +224,30 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * <p>
 	 * Refuses rather than answers when the row it would have to read as the lower bound is in the middle of
 	 * being removed -- see {@link #boundPositionAt} for why a guessed bound is the worse of the two outcomes.
+	 * <p>
+	 * It answers about THIS view's ordering, which is only as current as the last
+	 * {@link #refreshMergedOrderFromDatabase} -- that is why {@link #insertRowAbove} runs one immediately
+	 * before calling this, and why an answer taken from here on its own must not be turned into a stored
+	 * position by anyone else.
 	 *
 	 * @param referenceRowId the selected row; {@code null} only when the document has no rows at all.
 	 */
 	InsertAbovePositions computeInsertAbovePositions(@Nullable final DocumentId referenceRowId)
 	{
+		final List<DocumentId> currentRowIds = rowIds; // one read, see boundPositionAt
+
 		if (referenceRowId == null)
 		{
-			if (!rowIds.isEmpty())
+			if (!currentRowIds.isEmpty())
 			{
 				throw new AdempiereException("referenceRowId is required unless the document has no rows at all")
 						.appendParametersToMessage()
-						.setParameter("rowIds", rowIds);
+						.setParameter("rowIds", currentRowIds);
 			}
 			return InsertAbovePositions.EMPTY_DOCUMENT;
 		}
 
-		final int referenceIndex = indexOfOrThrow(referenceRowId);
+		final int referenceIndex = indexOfOrThrow(currentRowIds, referenceRowId);
 
 		// the reference row was explicitly selected by the caller -- if it vanished between selection and this
 		// computation, there is nothing sensible to insert above; reject cleanly rather than crash
@@ -212,7 +266,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		// is skipped rather than refused, and that is safe for a reason specific to this question rather than a
 		// general tolerance: only text rows are ever removed (deleteRow rejects an article row outright), and
 		// a text row answers this question neither way, so a skipped one cannot change the outcome
-		final List<BigDecimal> articleLinePositionsBeforeReference = rowIds.subList(0, referenceIndex).stream()
+		final List<BigDecimal> articleLinePositionsBeforeReference = currentRowIds.subList(0, referenceIndex).stream()
 				.map(this::resolveRow)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
@@ -234,54 +288,175 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	/**
+	 * Runs {@code action} with this document's lock held -- the one every structural write of this document
+	 * takes, from whichever view it comes. See {@link DocTextLinesDocumentLocks} for what it buys and why one
+	 * rows holder's {@link #structuralLock} cannot buy it.
+	 * <p>
+	 * It is always taken BEFORE {@link #structuralLock} and before any row monitor, and nothing acquires it
+	 * while holding either -- that fixed order is what makes two locks safe here.
+	 */
+	private <T> T withDocumentLocked(@NonNull final Supplier<T> action)
+	{
+		final Lock documentLock = DocTextLinesDocumentLocks.forDocument(documentRef);
+		documentLock.lock();
+		try
+		{
+			return action.get();
+		}
+		finally
+		{
+			documentLock.unlock();
+		}
+	}
+
+	/**
+	 * Re-derives the document's merged order from the database and folds it into this view's own, so that the
+	 * position arithmetic that follows computes against the order that ACTUALLY exists rather than the one
+	 * this view was created with. Called at the top of each structural write, with this document's lock and
+	 * {@link #structuralLock} both held.
+	 * <p>
+	 * This is what a second open modal needs. A rows holder's ordering is taken once, when its view is built,
+	 * and nothing refreshes it while the view lives -- so two modals on one document (one user, two browser
+	 * tabs) each keep placing rows relative to a picture the other has already invalidated, and two text rows
+	 * end up at the same {@code Line}. Nothing in the schema rejects that, the midpoint guard in
+	 * {@link DocTextLineRepository#computeInsertAbovePosition} only compares against the two bounds it was
+	 * handed, and both report functions order text rows by position alone -- so a tie leaves the printed
+	 * order of the two rows to chance, and a text line scoped to the lines below it then applies to different
+	 * article lines than the one the user placed it under.
+	 * <p>
+	 * Three deliberate asymmetries in how the fresh data is folded in:
+	 * <ul>
+	 * <li><b>Only the POSITION of a row this view already knows is refreshed</b> -- never its text or scope.
+	 * Those belong to {@link #patchRow}, which owns them under the row's own monitor; overwriting them from
+	 * here would let a structural write in one modal undo an edit being made in another.</li>
+	 * <li><b>Rows the fresh load does not contain are kept, not dropped.</b> Removing a row from the merged
+	 * order is {@link #deleteRow}'s job, done in its own section after its own persist. From here, a row
+	 * missing from the database is indistinguishable from one a delete is in the middle of removing, and the
+	 * two call for opposite handling -- see {@link #resolveRow}. A kept row that is genuinely gone costs a
+	 * stale line in this modal until it is reopened, which is what the modal showed anyway; it cannot cause a
+	 * duplicate position, because a midpoint computed against a freed position is a position no row holds.</li>
+	 * <li><b>A row this view has never seen is published whole</b>, with its own monitor, so it is
+	 * immediately patchable and movable like any other -- the same reason {@link #insertRowAbove} widens all
+	 * three structures together.</li>
+	 * </ul>
+	 * Re-publishing a row cannot resurrect one that a concurrent {@link #deleteRow} has just removed: delete
+	 * holds this same document lock across its own persist-and-unpublish section, so it cannot run between
+	 * this method's read and its write.
+	 */
+	private void refreshMergedOrderFromDatabase()
+	{
+		final ImmutableList<DocTextLinesRow> freshRows = mergedOrderReloader.get();
+
+		for (final DocTextLinesRow freshRow : freshRows)
+		{
+			final DocumentId rowId = freshRow.getId();
+			rowLocksById.computeIfAbsent(rowId, id -> new Object());
+			rowsById.merge(rowId, freshRow, (knownRow, fresh) -> knownRow.getLine().compareTo(fresh.getLine()) == 0
+					? knownRow
+					: knownRow.toBuilder().line(fresh.getLine()).build());
+		}
+
+		rowIds = mergedOrderOf(freshRows, rowIds);
+	}
+
+	/**
+	 * The ids of {@code freshRows}, in their (merged) order, with every id of {@code currentRowIds} that the
+	 * fresh load does not know about put back where it was -- immediately after the row it already followed,
+	 * or first if it was first. Such an id has no readable position to sort by (that is exactly what makes it
+	 * unknown here), so keeping its neighbourhood is the only placement available; the arithmetic never reads
+	 * its position anyway, because {@link #boundPositionAt} refuses rather than guess at it.
+	 */
+	private static ImmutableList<DocumentId> mergedOrderOf(
+			@NonNull final List<DocTextLinesRow> freshRows,
+			@NonNull final List<DocumentId> currentRowIds)
+	{
+		final ImmutableSet<DocumentId> freshRowIds = freshRows.stream()
+				.map(DocTextLinesRow::getId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final List<DocumentId> mergedOrder = new ArrayList<>(freshRowIds);
+
+		DocumentId predecessor = null;
+		for (final DocumentId currentRowId : currentRowIds)
+		{
+			if (!freshRowIds.contains(currentRowId))
+			{
+				// the predecessor is either a fresh row or an id put back by an earlier turn of this loop, so
+				// it is always already in mergedOrder
+				mergedOrder.add(predecessor == null ? 0 : mergedOrder.indexOf(predecessor) + 1, currentRowId);
+			}
+			predecessor = currentRowId;
+		}
+
+		return ImmutableList.copyOf(mergedOrder);
+	}
+
+	/**
 	 * Derives the new row's position, persists it via {@link DocTextLineRepository#insertAbove}, and adds it to
 	 * the merged order -- immediately above {@code referenceRowId}, or as the document's only row when
-	 * {@code referenceRowId} is {@code null} (the document had no rows at all). The whole sequence -- read the
-	 * current merged ordering, persist against it, then widen {@link #rowIds}/{@link #rowsById}/
-	 * {@link #rowLocksById} -- runs under {@link #structuralLock}: two concurrent inserts against the same
-	 * {@code referenceRowId} must not both read the same reference/previous positions and persist the same
-	 * midpoint {@code Line} (the collision guard inside {@link DocTextLineRepository#insertAbove} only catches
-	 * a midpoint colliding with its own inputs, not with a concurrently-computed one from another request).
+	 * {@code referenceRowId} is {@code null} (the document had no rows at all). The whole sequence --
+	 * {@link #refreshMergedOrderFromDatabase re-derive} the merged order, compute against THAT, persist, then
+	 * widen {@link #rowIds}/{@link #rowsById}/{@link #rowLocksById} -- runs under this document's lock and
+	 * {@link #structuralLock}, in that order.
+	 * <p>
+	 * Both are needed and neither is sufficient. {@link #structuralLock} keeps two concurrent inserts within
+	 * ONE modal from reading the same reference/previous positions and persisting the same midpoint
+	 * {@code Line} (the collision guard inside {@link DocTextLineRepository#insertAbove} only catches a
+	 * midpoint colliding with its own inputs, not with a concurrently-computed one from another request). The
+	 * re-derivation is what keeps a SECOND modal of the same document from computing against an ordering the
+	 * first has already replaced -- no concurrency required for that one, a snapshot minutes old is enough.
+	 * And the document lock is what makes the re-derivation trustworthy: without it, the two modals could
+	 * re-derive the same ordering and both still persist into it.
+	 * <p>
 	 * Widening {@link #rowsById} AND {@link #rowLocksById} together with {@link #rowIds} also means the new row
 	 * is immediately patchable via {@link #patchRow} the moment this method returns -- a row present in
 	 * {@link #rowsById} without a matching {@link #rowLocksById} entry would make {@link #getRowLockOrThrow}
 	 * throw {@link EntityNotFoundException} on the row's very first edit.
 	 * <p>
-	 * The trade-off of holding a database round trip inside {@code structuralLock} is deliberate: contention is
-	 * confined to concurrent insert-above requests on one view instance (one order's modal), which mirrors the
-	 * choice already accepted for {@link #patchRow}'s own per-row locking.
+	 * The trade-off of holding database round trips inside the locks is deliberate: contention is confined to
+	 * structural writes on one document, which mirrors the choice already accepted for {@link #patchRow}'s own
+	 * per-row locking. Ordinary field edits take neither lock and are unaffected.
 	 */
 	DocTextLinesRow insertRowAbove(
 			@Nullable final DocumentId referenceRowId,
-			@NonNull final DocTextLineDocumentRef documentRef,
 			@Nullable final String textLine)
 	{
-		synchronized (structuralLock)
-		{
-			final InsertAbovePositions positions = computeInsertAbovePositions(referenceRowId);
+		return withDocumentLocked(() -> {
+			synchronized (structuralLock)
+			{
+				refreshMergedOrderFromDatabase();
 
-			final InsertAboveRequest request = InsertAboveRequest.builder()
-					.documentRef(documentRef)
-					.textLine(textLine)
-					.referencePosition(positions.getReferencePosition())
-					.previousPosition(positions.getPreviousPosition())
-					.articleLineExistsBeforeReferencePosition(positions.isArticleLineExistsBeforeReferencePosition())
-					.build();
-			final DocTextLine persistedTextLine = docTextLineRepository.insertAbove(request);
-			final DocTextLinesRow newRow = DocTextLinesRow.ofTextLine(persistedTextLine);
-			final DocumentId newRowId = newRow.getId();
+				final InsertAbovePositions positions = computeInsertAbovePositions(referenceRowId);
 
-			final int insertIndex = referenceRowId == null ? 0 : indexOfOrThrow(referenceRowId);
+				final InsertAboveRequest request = InsertAboveRequest.builder()
+						.documentRef(documentRef)
+						.textLine(textLine)
+						.referencePosition(positions.getReferencePosition())
+						.previousPosition(positions.getPreviousPosition())
+						.articleLineExistsBeforeReferencePosition(positions.isArticleLineExistsBeforeReferencePosition())
+						.build();
+				final DocTextLine persistedTextLine = docTextLineRepository.insertAbove(request);
+				final DocTextLinesRow newRow = DocTextLinesRow.ofTextLine(persistedTextLine);
+				final DocumentId newRowId = newRow.getId();
 
-			rowLocksById.put(newRowId, new Object());
-			rowsById.put(newRowId, newRow);
-			rowIds.add(insertIndex, newRowId);
+				final int insertIndex = referenceRowId == null ? 0 : indexOfOrThrow(referenceRowId);
 
-			return newRow;
-		}
+				rowLocksById.put(newRowId, new Object());
+				rowsById.put(newRowId, newRow);
+				updateRowIds(ids -> ids.add(insertIndex, newRowId));
+
+				return newRow;
+			}
+		});
 	}
 
 	private int indexOfOrThrow(@NonNull final DocumentId rowId)
+	{
+		return indexOfOrThrow(rowIds, rowId);
+	}
+
+	/** Overload for a caller that has already taken its own snapshot of the merged order and must stay on it -- see {@link #boundPositionAt}. */
+	private static int indexOfOrThrow(@NonNull final List<DocumentId> rowIds, @NonNull final DocumentId rowId)
 	{
 		final int index = rowIds.indexOf(rowId);
 		if (index < 0)
@@ -303,12 +478,13 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 */
 	boolean hasNeighbor(@NonNull final DocumentId rowId, final boolean towardStart)
 	{
-		final int index = rowIds.indexOf(rowId);
+		final List<DocumentId> currentRowIds = rowIds; // one read, see boundPositionAt
+		final int index = currentRowIds.indexOf(rowId);
 		if (index < 0)
 		{
 			return false;
 		}
-		return towardStart ? index > 0 : index < rowIds.size() - 1;
+		return towardStart ? index > 0 : index < currentRowIds.size() - 1;
 	}
 
 	/**
@@ -326,16 +502,19 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * simply past it when there is nothing on that far side. The two rows still visibly trade places in the
 	 * merged order -- only one of their two stored positions actually changes.</li>
 	 * </ul>
-	 * Both shapes run entirely under {@link #structuralLock}, the same guard {@link #insertRowAbove} uses for
-	 * its own read-neighbours/persist/mutate sequence: two concurrent moves (or a move racing an insert or a
-	 * delete) reading the same merged order and both acting on it is exactly the duplicate-position failure
-	 * class already fixed once for insert-above, and a move touches the ordering just as much as an insert
-	 * does. Every position read this method uses (the neighbour's, and the row beyond it) is read fresh from
-	 * {@link #rowsById}/{@link #rowIds} at the moment the lock is held, never cached across calls -- so a move
-	 * queued behind another structural change always computes against the ordering that change left behind, not
-	 * a stale snapshot. If one of those rows is in the middle of being removed, so that its position cannot be
-	 * read at all, the move is refused rather than computed against a substitute -- see
-	 * {@link #boundPositionAt}.
+	 * Both shapes run entirely under this document's lock and {@link #structuralLock}, behind the same
+	 * {@link #refreshMergedOrderFromDatabase re-derivation} {@link #insertRowAbove} runs -- a move touches the
+	 * ordering just as much as an insert does, and needs the same freshness for a reason of its own. The
+	 * article-neighbour shape computes a new position and can land on one another modal has just taken. The
+	 * text-neighbour shape computes nothing and cannot produce a tie at all -- it permutes two values that
+	 * already exist -- but picks its exchange partner BY POSITION IN THE MERGED ORDER, so a stale order makes
+	 * it trade places with the wrong row and move the selected row past several at once. Both are corrupted
+	 * orderings; only one of them is a duplicate.
+	 * <p>
+	 * Every position this method reads (the neighbour's, and the row beyond it) is read from
+	 * {@link #rowsById}/{@link #rowIds} after that refresh, never cached across calls. If one of those rows is
+	 * in the middle of being removed, so that its position cannot be read at all, the move is refused rather
+	 * than computed against a substitute -- see {@link #boundPositionAt}.
 	 * <p>
 	 * Deliberately NOT additionally synchronized on either row's own monitor from {@link #rowLocksById} (unlike
 	 * {@link #deleteRow}): a concurrent {@link #patchRow} of a row this method touches only ever writes {@code
@@ -352,8 +531,15 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 */
 	DocTextLinesRow moveRow(@NonNull final DocumentId rowId, final boolean towardStart)
 	{
+		return withDocumentLocked(() -> moveRowLocked(rowId, towardStart));
+	}
+
+	private DocTextLinesRow moveRowLocked(@NonNull final DocumentId rowId, final boolean towardStart)
+	{
 		synchronized (structuralLock)
 		{
+			refreshMergedOrderFromDatabase();
+
 			final DocTextLinesRow row = getTextRowOrThrow(rowId);
 			final int index = indexOfOrThrow(rowId);
 			final int neighborIndex = towardStart ? index - 1 : index + 1;
@@ -382,8 +568,10 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 				rowsById.put(rowId, newRow);
 				rowsById.put(neighborId, newNeighbor);
 
-				rowIds.set(index, neighborId);
-				rowIds.set(neighborIndex, rowId);
+				updateRowIds(ids -> {
+					ids.set(index, neighborId);
+					ids.set(neighborIndex, rowId);
+				});
 			}
 			else
 			{
@@ -399,8 +587,10 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 				newRow = row.toBuilder().line(newPosition).build();
 				rowsById.put(rowId, newRow);
 
-				rowIds.remove(index);
-				rowIds.add(neighborIndex, rowId);
+				updateRowIds(ids -> {
+					ids.remove(index);
+					ids.add(neighborIndex, rowId);
+				});
 			}
 
 			return newRow;
@@ -420,11 +610,22 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * They are kept as two separately-callable methods so that the boundary between them -- the one moment at
 	 * which a row is already gone from {@link #rowsById} but still listed in {@link #rowIds} -- is an
 	 * addressable point rather than an instant buried inside one method body.
+	 * <p>
+	 * Both sections run under this document's lock, which a delete needs for one specific reason: a structural
+	 * write in another modal re-reads the document from the database and publishes what it finds
+	 * ({@link #refreshMergedOrderFromDatabase}). Were that read allowed between this delete's own persist and
+	 * its clearing of {@link #rowsById}, it would put the deleted row back into a view as a row with no record
+	 * behind it. Holding the document lock across both sections removes that interleaving; it also means the
+	 * moment described above is never observed by another structural write of the same document, only by the
+	 * lock-free readers for which {@link #resolveRow} and {@link #boundPositionAt} exist.
 	 */
 	void deleteRow(@NonNull final DocumentId rowId)
 	{
-		deleteRowPersistAndUnpublish(rowId);
-		deleteRowRemoveFromMergedOrder(rowId);
+		withDocumentLocked(() -> {
+			deleteRowPersistAndUnpublish(rowId);
+			deleteRowRemoveFromMergedOrder(rowId);
+			return null;
+		});
 	}
 
 	/**
@@ -467,7 +668,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	{
 		synchronized (structuralLock)
 		{
-			rowIds.remove(rowId);
+			updateRowIds(ids -> ids.remove(rowId));
 		}
 	}
 

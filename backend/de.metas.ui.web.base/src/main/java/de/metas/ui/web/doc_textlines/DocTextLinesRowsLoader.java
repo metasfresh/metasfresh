@@ -32,7 +32,7 @@ final class DocTextLinesRowsLoader
 	 * {@code ORDER BY line, sort_rank} with text ranked before article on a tie -- an article line created at
 	 * the same position as an existing text line sorts into the run the text introduces.
 	 */
-	private static final Comparator<DocTextLinesRow> MERGED_ORDER =
+	static final Comparator<DocTextLinesRow> MERGED_ORDER =
 			Comparator.comparing(DocTextLinesRow::getLine)
 					.thenComparing(row -> row.isTextLine() ? 0 : 1);
 
@@ -56,19 +56,33 @@ final class DocTextLinesRowsLoader
 
 	public DocTextLinesRows load()
 	{
+		return DocTextLinesRows.builder()
+				.rows(loadMergedRows())
+				.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+				.docTextLineRepository(docTextLineRepository)
+				.mergedOrderReloader(this::loadMergedRows)
+				.build();
+	}
+
+	/**
+	 * Reads both halves and merges them, in merged order. Called once to build the view's rows, and again by
+	 * {@link DocTextLinesRows} inside each structural write, which must place a row against the order as it
+	 * stands in the database at that moment rather than as it stood when the view was created -- see
+	 * {@code DocTextLinesRows#refreshMergedOrderFromDatabase}. Keeping that re-derivation here rather than
+	 * spelling the merge out a second time in the writer is what keeps the two orderings the same ordering:
+	 * the merge rule lives in exactly one place, and the repository stays out of the article-line tables it
+	 * does not own.
+	 */
+	ImmutableList<DocTextLinesRow> loadMergedRows()
+	{
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(orderId);
 		final List<DocTextLine> textLines = docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId));
 
-		final ImmutableList<DocTextLinesRow> rows = Stream.concat(
+		return Stream.concat(
 						orderLines.stream().map(this::toArticleRow),
 						textLines.stream().map(DocTextLinesRowsLoader::toTextRow))
 				.sorted(MERGED_ORDER)
 				.collect(ImmutableList.toImmutableList());
-
-		return DocTextLinesRows.builder()
-				.rows(rows)
-				.docTextLineRepository(docTextLineRepository)
-				.build();
 	}
 
 	private DocTextLinesRow toArticleRow(@NonNull final I_C_OrderLine orderLine)
