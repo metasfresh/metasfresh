@@ -17,7 +17,7 @@ jest.mock('../db', () => ({
 
 const { postEventsToBackend } = require('../../../api/ui_trace');
 const { getEventsBatch, deleteEvents, trimOldestEvents, getOrCreateDeviceId } = require('../db');
-const { useUIEventsTracing } = require('../useUIEventsTracing');
+const { useUIEventsTracing, DB_OP_TIMEOUT_MILLIS } = require('../useUIEventsTracing');
 const { MAX_EVENTS_PER_SYNC, MAX_STORED_EVENTS } = require('../constants');
 
 const SYNC_INTERVAL_MILLIS = 1000;
@@ -249,5 +249,32 @@ describe('UI-trace sync — an `online` event arriving during an in-flight POST'
     const postedIds = postEventsToBackend.mock.calls.flatMap(([events]) => events.map((e) => e.id));
     expect(postedIds.length).toBeGreaterThan(0); // non-vacuity
     expect(new Set(postedIds).size).toBe(postedIds.length); // no event delivered twice
+  });
+});
+
+describe('UI-trace sync — a store operation that never settles', () => {
+  it('times out instead of wedging every later sync', async () => {
+    // The mutex makes one stuck await poison both triggers for the life of the tab. A db.open()
+    // blocked by a stale tab on an older schema is exactly such an await.
+    trimOldestEvents.mockImplementation(() => new Promise(() => {}));
+    postEventsToBackend.mockImplementation(async () => ({}));
+
+    pushEvent(2);
+    const { unmount } = mountTracing();
+    await settle();
+    expect(postEventsToBackend).not.toHaveBeenCalled(); // stuck before reaching the POST
+
+    await act(async () => {
+      jest.advanceTimersByTime(DB_OP_TIMEOUT_MILLIS + 10);
+    });
+    await settle();
+
+    // The store recovers; the next cycle must be able to run rather than joining a dead promise.
+    trimOldestEvents.mockImplementation(async () => 0);
+    await runOneCycle();
+    unmount();
+
+    expect(postEventsToBackend).toHaveBeenCalled();
+    expect(postEventsToBackend.mock.calls[0][0]).toHaveLength(2);
   });
 });
