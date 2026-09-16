@@ -61,9 +61,9 @@ Feature: ProjectValue must not be injected onto project-less records
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | OPT.M_AttributeSetInstance_ID |
       | orderLine  | order      | product      | 1          | asi                           |
 
-    Then validate C_OrderLine:
-      | C_OrderLine_ID | OPT.M_AttributeSetInstance_ID |
-      | orderLine      | asi                           |
+    Then validate C_OrderLine keeps its own M_AttributeSetInstance:
+      | C_OrderLine_ID | M_AttributeSetInstance_ID |
+      | orderLine      | asi                       |
     And validate M_AttributeInstance is absent:
       | C_OrderLine_ID | AttributeCode |
       | orderLine      | ProjectValue  |
