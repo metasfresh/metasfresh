@@ -7,19 +7,19 @@ import lombok.NonNull;
 import java.util.concurrent.locks.Lock;
 
 /**
- * The in-process half of the serialisation every structural write of one document runs under, taken by every
- * {@link DocTextLinesView} of that document in this JVM. The half that actually decides the outcome is the
+ * An in-process fast path in front of the lock that actually serialises a structural write, which is the
  * database row lock on the document's own record -- see {@link DocTextLinesRows#withDocumentLocked}, which
- * takes both -- because two browser tabs can be served by two application instances, and no in-process lock
- * is visible to the other one.
+ * takes both. The row lock is the one that decides the outcome, because two browser tabs can be served by two
+ * application instances and no in-process lock is visible to the other one.
  * <p>
- * This one is kept in front of it because it covers something the row lock cannot: two rows holders in THIS
- * JVM publishing into their own in-memory {@code rowsById}/{@code rowIds}, which happens outside any
- * transaction and goes on living after the commit that ends the row lock. It also keeps a second local
- * writer from occupying a database connection just to wait on the row.
+ * This one carries no part of that guarantee. It saves the second writer IN THIS JVM from opening a
+ * transaction, taking a pooled database connection and then waiting inside PostgreSQL for a lock a sibling
+ * thread is holding; it waits on a monitor instead. It is also the only serialisation the unit-test harness
+ * has, since that harness has no database, so it is what lets an in-JVM concurrency test of these writes mean
+ * anything.
  * <p>
- * {@link DocTextLinesRows#structuralLock} is narrower still and does not overlap either: it serialises the
- * writes of ONE rows holder, i.e. of one open modal.
+ * {@link DocTextLinesRows#structuralLock} is narrower still and nests inside both: it serialises the writes of
+ * ONE rows holder, i.e. of one open modal.
  * <p>
  * Striped rather than one lock per document: a map keyed by document would grow for the lifetime of the JVM
  * with an entry per document anyone ever edited. A fixed set of stripes costs nothing and cannot leak; the

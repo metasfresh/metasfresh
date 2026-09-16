@@ -81,8 +81,9 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 
 	/**
 	 * Serialises the writes that touch the ordering OF THIS HOLDER -- two concurrent requests into one open
-	 * modal must not corrupt {@link #rowIds}' index arithmetic. Writes coming from a DIFFERENT holder of the
-	 * same document are a different problem, and {@link DocTextLinesDocumentLocks} is what answers it.
+	 * modal must not corrupt {@link #rowIds}' index arithmetic. It is held inside the document's row lock, not
+	 * instead of it: writes coming from a DIFFERENT holder of the same document are a different problem, and
+	 * the row lock {@link #withDocumentLocked} takes is what answers that one.
 	 */
 	private final Object structuralLock = new Object();
 
@@ -210,6 +211,33 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 				.setParameter("rowId", rowId);
 	}
 
+	/**
+	 * Refusal for an operation whose own selected row is no longer part of the document -- somebody deleted it
+	 * while this window was open. Unlike {@link #rowIsBeingRemoved} this does not resolve itself: there is
+	 * nothing to retry against, so the message asks for the window to be reopened and a line chosen again.
+	 */
+	private static AdempiereException rowNoLongerExists(@NonNull final DocumentId rowId)
+	{
+		return new AdempiereException("The line you selected is not part of this document any more -- it was removed while this window was open."
+				+ " Please close and reopen the window, then select a line again.")
+				.appendParametersToMessage()
+				.setParameter("rowId", rowId);
+	}
+
+	/**
+	 * Refusal for an insert-above on a window that was opened on a document with no lines at all, while the
+	 * document has lines by now. No reference row is ever sent in that case, so there is nothing to place the
+	 * new line above, and placing it "first" against lines this window has never shown is exactly the guess
+	 * this class refuses to make.
+	 */
+	private static AdempiereException documentGainedRowsSinceWindowOpened(@NonNull final List<DocumentId> rowIds)
+	{
+		return new AdempiereException("This document has gained lines since this window was opened, so there is nothing here to insert above."
+				+ " Please close and reopen the window, then select a line again.")
+				.appendParametersToMessage()
+				.setParameter("rowIds", rowIds);
+	}
+
 	@Override
 	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs)
 	{
@@ -245,27 +273,20 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		{
 			if (!currentRowIds.isEmpty())
 			{
-				// no reference row is sent only when this window had no rows to select. Reaching this point
-				// means the document has rows now -- someone added them while this window was open, and the
-				// re-derivation in insertRowAbove has just found them. Placing the new line "first" against
-				// rows this window has never shown would put it at a position one of them may already hold.
-				throw new AdempiereException("This document has gained lines since this window was opened, so there is nothing here to insert above."
-						+ " Please close and reopen it, then try again.")
-						.appendParametersToMessage()
-						.setParameter("rowIds", currentRowIds);
+				throw documentGainedRowsSinceWindowOpened(currentRowIds);
 			}
 			return InsertAbovePositions.EMPTY_DOCUMENT;
 		}
 
-		final int referenceIndex = indexOfOrThrow(currentRowIds, referenceRowId);
-
-		// the reference row was explicitly selected by the caller -- if it vanished between selection and this
-		// computation, there is nothing sensible to insert above; reject cleanly rather than crash
+		// the reference row was explicitly selected by the caller. If it is gone -- deleted in another window,
+		// which the re-derivation has just established -- then the user's whole reference point is gone, and
+		// no position can stand in for it. Asked BEFORE the index lookup so that the answer the user gets is
+		// the one that tells them what happened, rather than a bare not-found on an internal row id.
 		final BigDecimal referencePosition = resolveRow(referenceRowId)
 				.map(DocTextLinesRow::getLine)
-				.orElseThrow(() -> new AdempiereException("Cannot insert above a row that no longer exists")
-						.appendParametersToMessage()
-						.setParameter("referenceRowId", referenceRowId));
+				.orElseThrow(() -> rowNoLongerExists(referenceRowId));
+
+		final int referenceIndex = indexOfOrThrow(currentRowIds, referenceRowId);
 
 		// index -1 means the reference row is the first of the merged order, so there genuinely is no previous
 		// row and the midpoint arithmetic is unbounded below; a row listed there but unreadable is refused
@@ -309,13 +330,19 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * {@code doIt} is already wrapped in one by {@code ProcessExecutor}, and this call joins it (or opens one
 	 * for a caller that has none, rather than letting the lock be released the moment it is taken).
 	 * <p>
-	 * The in-process lock is kept in front of it because it guards something the database lock cannot see:
-	 * the in-memory publication into {@link #rowsById}/{@link #rowIds}, which two rows holders of one JVM
-	 * perform outside any transaction and which outlives the commit that ends the row lock.
+	 * The in-process lock in front of it is NOT part of that guarantee and must not be read as one: everything
+	 * this method's action does -- including publishing into {@link #rowsById}/{@link #rowIds} -- happens
+	 * inside the transaction while the row lock is held, so the row lock alone already serialises two rows
+	 * holders of this JVM exactly as it serialises two application instances. What the in-process lock buys is
+	 * cheaper waiting: a second local writer waits here instead of opening a transaction, taking a pooled
+	 * database connection and then sitting idle in a lock wait inside PostgreSQL. It is also the only
+	 * serialisation available to the unit-test harness, which has no database at all, and so is what makes an
+	 * in-JVM concurrency test of this method mean anything.
 	 * <p>
-	 * Lock order is fixed -- in-process lock, then transaction and row lock, then {@link #structuralLock} or a
-	 * row monitor -- and nothing acquires an outer one while holding an inner one, which is what makes
-	 * holding several safe here.
+	 * Lock order is fixed -- in-process lock, then the transaction, then the row lock, then
+	 * {@link #structuralLock} (or, in {@link #deleteRow}, a row monitor and then {@link #structuralLock}) --
+	 * and nothing acquires an outer one while holding an inner one, which is what makes holding several safe
+	 * here.
 	 */
 	private <T> T withDocumentLocked(@NonNull final Supplier<T> action)
 	{
@@ -349,28 +376,36 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * order of the two rows to chance, and a text line scoped to the lines below it then applies to different
 	 * article lines than the one the user placed it under.
 	 * <p>
-	 * Three deliberate asymmetries in how the fresh data is folded in:
+	 * After it, this view's rows ARE the document's rows: same set, same order. Two asymmetries in how the
+	 * fresh data is folded in, and one thing that is deliberately total:
 	 * <ul>
 	 * <li><b>Only the POSITION of a row this view already knows is refreshed</b> -- never its text or scope.
 	 * Those belong to {@link #patchRow}, which owns them under the row's own monitor; overwriting them from
 	 * here would let a structural write in one modal undo an edit being made in another.</li>
-	 * <li><b>Rows the fresh load does not contain are kept, not dropped.</b> Removing a row from the merged
-	 * order is {@link #deleteRow}'s job, done in its own section after its own persist. From here, a row
-	 * missing from the database is indistinguishable from one a delete is in the middle of removing, and the
-	 * two call for opposite handling -- see {@link #resolveRow}. A kept row that is genuinely gone costs a
-	 * stale line in this modal until it is reopened, which is what the modal showed anyway; it cannot cause a
-	 * duplicate position, because a midpoint computed against a freed position is a position no row holds.</li>
 	 * <li><b>A row this view has never seen is published whole</b>, with its own monitor, so it is
 	 * immediately patchable and movable like any other -- the same reason {@link #insertRowAbove} widens all
 	 * three structures together.</li>
+	 * <li><b>A row the database no longer has is dropped</b>, from all three structures. Keeping it would
+	 * leave the arithmetic a bound with nothing behind it: the vanished row's position is remembered from
+	 * whenever this view was built, while the rows around it carry the positions they have now, so a midpoint
+	 * between the two can land in a completely different article gap -- and a text line scoped to the lines
+	 * that follow it then applies to a different run of articles than the user was pointing at. A row that is
+	 * gone is not a position; it is a reference the user has to be told about, which is what
+	 * {@link #rowNoLongerExists} is for.</li>
 	 * </ul>
-	 * Re-publishing a row cannot resurrect one that a concurrent {@link #deleteRow} has just removed: delete
-	 * holds this same document lock across its own persist-and-unpublish section, so it cannot run between
-	 * this method's read and its write.
+	 * Dropping is safe here for a reason that only became true once {@link #deleteRow} took the document lock
+	 * across BOTH of its sections: a delete of this document can no longer be half-done while this method
+	 * runs, so "absent from the database" no longer has to be read as "possibly being deleted right now". The
+	 * same property is what stops this method re-publishing a row a concurrent delete has just removed.
+	 * {@link #resolveRow}'s narrower case -- an id listed in {@link #rowIds} with no {@link #rowsById} entry --
+	 * survives only on the read paths that do not refresh, such as {@link DocTextLinesView#getInsertAbovePositions}.
 	 */
 	private void refreshMergedOrderFromDatabase()
 	{
 		final ImmutableList<DocTextLinesRow> freshRows = documentAccess.loadMergedRows();
+		final ImmutableSet<DocumentId> freshRowIds = freshRows.stream()
+				.map(DocTextLinesRow::getId)
+				.collect(ImmutableSet.toImmutableSet());
 
 		for (final DocTextLinesRow freshRow : freshRows)
 		{
@@ -381,39 +416,11 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 					: knownRow.toBuilder().line(fresh.getLine()).build());
 		}
 
-		rowIds = mergedOrderOf(freshRows, rowIds);
-	}
+		rowsById.keySet().retainAll(freshRowIds);
+		rowLocksById.keySet().retainAll(freshRowIds);
 
-	/**
-	 * The ids of {@code freshRows}, in their (merged) order, with every id of {@code currentRowIds} that the
-	 * fresh load does not know about put back where it was -- immediately after the row it already followed,
-	 * or first if it was first. Such an id has no readable position to sort by (that is exactly what makes it
-	 * unknown here), so keeping its neighbourhood is the only placement available; the arithmetic never reads
-	 * its position anyway, because {@link #boundPositionAt} refuses rather than guess at it.
-	 */
-	private static ImmutableList<DocumentId> mergedOrderOf(
-			@NonNull final List<DocTextLinesRow> freshRows,
-			@NonNull final List<DocumentId> currentRowIds)
-	{
-		final ImmutableSet<DocumentId> freshRowIds = freshRows.stream()
-				.map(DocTextLinesRow::getId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final List<DocumentId> mergedOrder = new ArrayList<>(freshRowIds);
-
-		DocumentId predecessor = null;
-		for (final DocumentId currentRowId : currentRowIds)
-		{
-			if (!freshRowIds.contains(currentRowId))
-			{
-				// the predecessor is either a fresh row or an id put back by an earlier turn of this loop, so
-				// it is always already in mergedOrder
-				mergedOrder.add(predecessor == null ? 0 : mergedOrder.indexOf(predecessor) + 1, currentRowId);
-			}
-			predecessor = currentRowId;
-		}
-
-		return ImmutableList.copyOf(mergedOrder);
+		// ImmutableSet iterates in insertion order, so this is the fresh merged order
+		rowIds = freshRowIds.asList();
 	}
 
 	/**
@@ -564,6 +571,13 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		synchronized (structuralLock)
 		{
 			refreshMergedOrderFromDatabase();
+
+			// the row the user selected may have been deleted in another window, which the re-derivation has
+			// just established -- same situation as on the insert path, same answer
+			if (!resolveRow(rowId).isPresent())
+			{
+				throw rowNoLongerExists(rowId);
+			}
 
 			final DocTextLinesRow row = getTextRowOrThrow(rowId);
 			final int index = indexOfOrThrow(rowId);

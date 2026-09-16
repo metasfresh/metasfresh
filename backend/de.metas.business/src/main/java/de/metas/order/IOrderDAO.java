@@ -54,10 +54,16 @@ public interface IOrderDAO extends ISingletonService
 	I_C_Order getById(final OrderId orderId);
 
 	/**
-	 * Takes a row-level {@code FOR UPDATE} lock on the order's own record: a second caller asking for the same
-	 * order blocks until this caller's transaction ends, whether it runs in this application instance or
-	 * another one. For a caller that must read some state of the order, decide something from it and write
+	 * Takes a row-level {@code FOR NO KEY UPDATE} lock on the order's own record: a second caller asking for
+	 * the same order blocks until this caller's transaction ends, whether it runs in this application instance
+	 * or another one. For a caller that must read some state of the order, decide something from it and write
 	 * the result back, and needs no other caller to interleave in between.
+	 * <p>
+	 * That strength, and not {@code FOR UPDATE}: the two are equally exclusive against each other, so callers
+	 * of this method still serialise, but {@code FOR UPDATE} also conflicts with the {@code FOR KEY SHARE}
+	 * PostgreSQL takes on this row while a concurrent transaction writes a record that references it -- an
+	 * order line, for instance -- and would make that ordinary work wait on a lock that has nothing to do with
+	 * it. Holding it says nothing about the order record itself; this method does not modify it.
 	 * <p>
 	 * <b>Must be called inside a transaction</b>, and the reads and writes it is meant to protect must run in
 	 * that same transaction -- PostgreSQL holds a row lock only until the transaction that took it ends, so
@@ -66,7 +72,7 @@ public interface IOrderDAO extends ISingletonService
 	 * Fails rather than returning quietly when there is no such order: a caller that believes it is holding
 	 * the lock while nothing is locked is the one outcome this method must never produce.
 	 */
-	void lockByIdForUpdate(@NonNull OrderId orderId);
+	void lockByIdForUpdate(@NonNull final OrderId orderId);
 
 	Map<ExternalId, OrderId> getOrderIdsForExternalIds(final List<ExternalId> externalIds);
 

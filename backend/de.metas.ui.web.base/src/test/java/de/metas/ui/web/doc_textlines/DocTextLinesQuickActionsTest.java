@@ -30,6 +30,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import de.metas.websocket.sender.WebsocketSender;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Doc_TextLine;
@@ -55,6 +56,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
@@ -773,20 +775,31 @@ class DocTextLinesQuickActionsTest
 	 * therefore entered on purpose and every assertion below is reached on every run, on any JVM: nothing here
 	 * depends on which of two threads a monitor happens to admit first, which Java does not specify and which
 	 * would let these tests quietly stop exercising the branch they exist for.
+	 * <p>
+	 * What the window means to a WRITE changed once writes started re-deriving the merged order from the
+	 * database: the first section has already persisted the delete, so a write re-reading the document finds
+	 * the row genuinely gone and computes against the rows that remain -- it no longer has to refuse, because
+	 * there is nothing left to guess at. The window still matters to every reader that does NOT re-derive, and
+	 * {@link DocTextLinesRows#boundPositionAt}'s refusal is still what protects those; the last test here is
+	 * the one that pins it.
 	 */
 	@Nested
 	class duringTheDeleteWindow
 	{
 		/**
 		 * The position bound one step beyond the moved row's neighbour is the row currently being deleted.
-		 * Treating that as "no bound at all" would halve down from the neighbour rather than land between two
+		 * Guessing it as "no bound at all" would halve down from the neighbour rather than land between two
 		 * bounds -- here straight onto 5, the position of the row before it: a duplicate the collision guard
-		 * cannot catch, because it only compares the result against the two bounds it was handed. The move is
-		 * refused instead, leaving every stored position untouched; once the delete has finished, the very
-		 * same move succeeds and lands strictly between its two real bounds.
+		 * cannot catch, because it only compares the result against the two bounds it was handed.
+		 * <p>
+		 * The move neither guesses nor refuses: it re-reads the document, where the first delete section has
+		 * already removed that row, and lands strictly between the two bounds that are actually there. The
+		 * stored result is the same one this move used to produce only after the delete had finished --
+		 * asserted below both before and after the second section runs, because the row is gone from the
+		 * merged order by then either way.
 		 */
 		@Test
-		void aMoveWhosePositionBoundIsBeingDeleted_isRefusedRatherThanGuessingTheBound()
+		void aMoveWhosePositionBoundIsBeingDeleted_landsBetweenTheBoundsTheDatabaseActuallyHas()
 		{
 			final I_C_Doc_TextLine rowZ = createTextLine(5, TextLineScope.Document);
 			final I_C_Doc_TextLine rowA = createTextLine(7, TextLineScope.Document);
@@ -807,34 +820,31 @@ class DocTextLinesQuickActionsTest
 					.extracting(DocTextLinesRow::getId)
 					.doesNotContain(rowAId);
 
-			assertThatThrownBy(() -> new WEBUI_DocTextLines_MoveUp().moveUp(view, rowBId))
-					.as("a bound that is mid-delete is unknowable, not absent -- refuse, rather than compute against the wrong neighbour")
-					.isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
-
-			assertThat(storedPositionOf(rowBId)).as("the refused move wrote nothing").isEqualByComparingTo("15");
-			assertThat(storedPositionOf(rowZId)).isEqualByComparingTo("5");
-			assertThat(storedPositionOf(articleCId)).isEqualByComparingTo("10");
-
-			rows.deleteRowRemoveFromMergedOrder(rowAId);
-
 			new WEBUI_DocTextLines_MoveUp().moveUp(view, rowBId);
 
 			assertThat(storedPositionOf(rowBId))
-					.as("retried once the window has closed, the move lands strictly between its two real bounds")
+					.as("the move lands strictly between its two real bounds -- the row that used to sit between them is already deleted")
 					.isStrictlyBetween(new BigDecimal("5"), new BigDecimal("10"));
 			assertThat(storedPositionOf(rowZId)).isEqualByComparingTo("5");
 			assertThat(storedPositionOf(articleCId)).isEqualByComparingTo("10");
+
+			final BigDecimal positionAfterTheMove = storedPositionOf(rowBId);
+			rows.deleteRowRemoveFromMergedOrder(rowAId);
+
+			assertThat(storedPositionOf(rowBId))
+					.as("closing the delete window changes nothing: the move already computed against the document without that row")
+					.isEqualByComparingTo(positionAfterTheMove);
+			assertThat(rowsOf(view)).extracting(DocTextLinesRow::getId).doesNotContain(rowAId);
 		}
 
 		/**
-		 * Same distinction on the insert-above path: the row immediately before the reference row -- the lower
-		 * bound of the midpoint arithmetic -- is the one being deleted. Treated as "no previous row", the
-		 * midpoint would be half of the reference position, landing exactly on the row before that. Refused
-		 * instead, with nothing persisted; retried after the delete has finished, it lands between the two
-		 * real bounds.
+		 * The same on the insert-above path: the row immediately before the reference row -- the lower bound of
+		 * the midpoint arithmetic -- is the one being deleted. Guessed as "no previous row", the midpoint would
+		 * be half of the reference position, landing exactly on the row before that. Re-read from the database
+		 * instead, where that row is already gone, so the new row lands between the two bounds that remain.
 		 */
 		@Test
-		void anInsertAboveWhosePreviousBoundIsBeingDeleted_isRefusedRatherThanGuessingTheBound()
+		void anInsertAboveWhosePreviousBoundIsBeingDeleted_landsBetweenTheBoundsTheDatabaseActuallyHas()
 		{
 			final I_C_Doc_TextLine rowZ = createTextLine(5, TextLineScope.Document);
 			final I_C_Doc_TextLine rowA = createTextLine(7, TextLineScope.Document);
@@ -848,34 +858,31 @@ class DocTextLinesQuickActionsTest
 
 			rows.deleteRowPersistAndUnpublish(rowAId);
 
-			assertThatThrownBy(() -> new WEBUI_DocTextLines_InsertAbove().insertAbove(view, referenceRowId))
-					.as("a previous-row bound that is mid-delete is unknowable, not absent")
-					.isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, referenceRowId);
 
 			assertThat(docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId)))
-					.as("the refused insert persisted no new text line")
+					.as("the deleted row is gone and exactly one new text line was persisted")
+					.hasSize(2)
 					.extracting(DocTextLine::getId)
-					.containsExactly(DocTextLineId.ofRepoId(rowZ.getC_Doc_TextLine_ID()));
+					.contains(DocTextLineId.ofRepoId(rowZ.getC_Doc_TextLine_ID()));
 
 			rows.deleteRowRemoveFromMergedOrder(rowAId);
-
-			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, referenceRowId);
 
 			final List<DocTextLinesRow> after = rowsOf(view);
 			assertThat(after).extracting(DocTextLinesRow::getId).containsExactly(rowZId, after.get(1).getId(), referenceRowId);
 			assertThat(after.get(1).isTextLine()).isTrue();
 			assertThat(after.get(1).getLine())
-					.as("retried once the window has closed, the new row lands strictly between its two real bounds")
+					.as("the new row lands strictly between its two real bounds")
 					.isStrictlyBetween(new BigDecimal("5"), new BigDecimal("10"));
 		}
 
 		/**
-		 * The row the move is about to exchange with is itself being deleted. There is no honest exchange
-		 * partner, so the move is refused; retried after the delete has finished, it exchanges with the row
-		 * that is genuinely adjacent by then.
+		 * The row the move is about to exchange with is itself being deleted, so it is no longer an exchange
+		 * partner at all. Re-reading the document finds that out and exchanges with the row that is genuinely
+		 * adjacent instead -- the same outcome this move used to produce only once the delete had finished.
 		 */
 		@Test
-		void aMoveWhoseExchangePartnerIsBeingDeleted_isRefused()
+		void aMoveWhoseExchangePartnerIsBeingDeleted_exchangesWithTheRowThatIsActuallyAdjacent()
 		{
 			final I_C_Doc_TextLine rowX = createTextLine(5, TextLineScope.Document);
 			final I_C_Doc_TextLine rowA = createTextLine(7, TextLineScope.Document);
@@ -889,16 +896,14 @@ class DocTextLinesQuickActionsTest
 
 			rows.deleteRowPersistAndUnpublish(rowAId);
 
-			assertThatThrownBy(() -> new WEBUI_DocTextLines_MoveUp().moveUp(view, rowBId))
-					.isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
-			assertThat(storedPositionOf(rowBId)).isEqualByComparingTo("10");
-			assertThat(storedPositionOf(rowXId)).isEqualByComparingTo("5");
+			new WEBUI_DocTextLines_MoveUp().moveUp(view, rowBId);
+
+			assertThat(storedPositionOf(rowBId)).as("exchanged with the row that is actually above it now").isEqualByComparingTo("5");
+			assertThat(storedPositionOf(rowXId)).isEqualByComparingTo("10");
 
 			rows.deleteRowRemoveFromMergedOrder(rowAId);
 
-			new WEBUI_DocTextLines_MoveUp().moveUp(view, rowBId);
-
-			assertThat(storedPositionOf(rowBId)).isEqualByComparingTo("5");
+			assertThat(storedPositionOf(rowBId)).as("closing the delete window changes nothing").isEqualByComparingTo("5");
 			assertThat(storedPositionOf(rowXId)).isEqualByComparingTo("10");
 		}
 
@@ -928,6 +933,32 @@ class DocTextLinesQuickActionsTest
 					.as("nothing precedes the article, so the moved row simply lands before it")
 					.isLessThan(new BigDecimal("10"));
 			assertThat(storedPositionOf(articleCId)).isEqualByComparingTo("10");
+		}
+
+		/**
+		 * The refusal that used to protect the writes still protects the readers, and this is where it now
+		 * lives. {@link DocTextLinesView#getInsertAbovePositions} answers about the view's own merged order and
+		 * does NOT re-read the document -- so it, unlike a write, really can be looking at an id with no row
+		 * behind it, and really cannot tell an absent bound from an unreadable one. It refuses.
+		 * <p>
+		 * Without this test nothing would fail if that refusal were deleted, because every other caller of it
+		 * re-derives first.
+		 */
+		@Test
+		void aPositionQueryThatDoesNotReDerive_refusesABoundThatIsMidDelete()
+		{
+			createTextLine(5, TextLineScope.Document);
+			final I_C_Doc_TextLine rowA = createTextLine(7, TextLineScope.Document);
+			final I_C_OrderLine referenceArticle = createArticleLine(10);
+
+			final DocTextLinesRows rows = loadRows();
+			final DocTextLinesView view = viewOf(rows);
+
+			rows.deleteRowPersistAndUnpublish(textRowIdOf(rowA));
+
+			assertThatThrownBy(() -> view.getInsertAbovePositions(articleRowIdOf(referenceArticle)))
+					.as("a bound that is listed but unreadable is unknowable, not absent -- refuse rather than answer about the wrong neighbour")
+					.isInstanceOf(org.adempiere.exceptions.AdempiereException.class);
 		}
 
 		/**
@@ -1515,6 +1546,62 @@ class DocTextLinesQuickActionsTest
 		}
 
 		/**
+		 * The row the user selected is gone from the database by the time they act on it -- another modal
+		 * deleted it -- and the order has moved on around it.
+		 * <p>
+		 * Placing the new line relative to a row that no longer exists is not a near-miss: the remembered row
+		 * carries the position it had, while the rows still around it carry the positions they have NOW, so
+		 * the midpoint between them can land in an entirely different article gap. Here the user asks for a
+		 * line above a remark that used to sit between the first and second article; computed against the
+		 * vanished row's old position it lands AFTER the second article instead, and because the new line's
+		 * scope is "the lines that follow", it then applies to a different run of articles than the one the
+		 * user was pointing at. Nothing reports any of this.
+		 * <p>
+		 * The only honest answer is to refuse: the user's reference point is gone, and no position can stand
+		 * in for it.
+		 */
+		@Test
+		void anInsertAboveARowAnotherModalDeleted_isRefused_ratherThanPlacedAgainstTheVanishedRow()
+		{
+			final I_C_OrderLine firstArticle = createArticleLine(10);
+			final I_C_Doc_TextLine movedText = createTextLine(12, TextLineScope.Following);
+			final I_C_Doc_TextLine deletedText = createTextLine(15, TextLineScope.Following);
+			final I_C_OrderLine secondArticle = createArticleLine(20);
+			final I_C_OrderLine thirdArticle = createArticleLine(40);
+
+			final DocTextLinesView staleModal = loadView();
+			final DocTextLinesView currentModal = loadView();
+
+			// the other modal removes the row the stale one is about to reference, and moves the row above it
+			// past the second article -- so the vanished row's remembered position and its neighbour's real
+			// position now sit on opposite sides of that article
+			new WEBUI_DocTextLines_Delete().delete(currentModal, textRowIdOf(deletedText));
+			new WEBUI_DocTextLines_MoveDown().moveDown(currentModal, textRowIdOf(movedText));
+			assertThat(storedTextLinePositions())
+					.as("fixture: the surviving text line now sits between the second and third article")
+					.containsExactly(new BigDecimal("30.0000"));
+
+			final Throwable refusal = catchThrowable(
+					() -> new WEBUI_DocTextLines_InsertAbove().insertAbove(staleModal, textRowIdOf(deletedText)));
+
+			assertThat(storedTextLinePositions())
+					.as("no line may be stored against a row that no longer exists -- a position derived from it lands in the wrong article gap")
+					.containsExactly(new BigDecimal("30.0000"));
+			assertThat(refusal)
+					.as("the user must be told their reference line is gone, not silently given a different place")
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("select a line again");
+
+			assertThat(storedMergedOrder())
+					.as("the document is exactly as the other modal left it")
+					.containsExactly(
+							articleRowIdOf(firstArticle),
+							articleRowIdOf(secondArticle),
+							textRowIdOf(movedText),
+							articleRowIdOf(thirdArticle));
+		}
+
+		/**
 		 * The serialisation these tests rely on is a row lock on the order's own record, taken for the rest of
 		 * the transaction the write runs in. That is what reaches a second modal being served by a SECOND
 		 * application instance, which no in-process lock can see.
@@ -1526,26 +1613,15 @@ class DocTextLinesQuickActionsTest
 		 * demonstrate it against; it rests on reading, and is stated as such rather than mimicked with a mock.
 		 */
 		@Test
-		void everyStructuralWrite_locksTheOrderRecord_beforeItReDerivesTheOrder()
+		void insertMoveAndDelete_eachLockTheOrderRecord()
 		{
 			final I_C_OrderLine article10 = createArticleLine(10);
 			final I_C_Doc_TextLine text5 = createTextLine(5, TextLineScope.Document);
 
 			final IOrderDAO lockRecordingOrderDAO = Mockito.spy(orderDAO);
-			final DocTextLinesView view = viewOf(DocTextLinesRowsLoader.builder()
-					.orderDAO(lockRecordingOrderDAO)
-					.docTextLineRepository(docTextLineRepository)
-					.productsLookup(MockedLookupDataSource.withNamePrefix("product"))
-					.orderId(orderId)
-					.build()
-					.load());
+			final DocTextLinesView view = viewOf(loadRowsWith(lockRecordingOrderDAO));
 
 			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, articleRowIdOf(article10));
-
-			final InOrder lockThenRead = Mockito.inOrder(lockRecordingOrderDAO);
-			lockThenRead.verify(lockRecordingOrderDAO).lockByIdForUpdate(orderId);
-			lockThenRead.verify(lockRecordingOrderDAO).retrieveOrderLines(orderId);
-
 			new WEBUI_DocTextLines_MoveDown().moveDown(view, textRowIdOf(text5));
 			new WEBUI_DocTextLines_Delete().delete(view, textRowIdOf(text5));
 
@@ -1554,7 +1630,42 @@ class DocTextLinesQuickActionsTest
 			Mockito.verify(lockRecordingOrderDAO, Mockito.times(3)).lockByIdForUpdate(orderId);
 		}
 
+		/**
+		 * The other half, and the one with an ordering in it: the two writes that re-derive the merged order
+		 * must hold the lock BEFORE they read. A lock taken after the read would leave exactly the window it
+		 * exists to close -- another writer could commit in between, and the position would be computed
+		 * against an order that no longer exists by the time it is stored.
+		 */
+		@Test
+		void insertAndMove_lockTheOrderRecord_beforeTheyReadTheOrderLines()
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final I_C_Doc_TextLine text5 = createTextLine(5, TextLineScope.Document);
+
+			final IOrderDAO lockRecordingOrderDAO = Mockito.spy(orderDAO);
+			final DocTextLinesView view = viewOf(loadRowsWith(lockRecordingOrderDAO));
+
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, articleRowIdOf(article10));
+			new WEBUI_DocTextLines_MoveDown().moveDown(view, textRowIdOf(text5));
+
+			final InOrder lockThenRead = Mockito.inOrder(lockRecordingOrderDAO);
+			lockThenRead.verify(lockRecordingOrderDAO).lockByIdForUpdate(orderId);
+			lockThenRead.verify(lockRecordingOrderDAO).retrieveOrderLines(orderId);
+			lockThenRead.verify(lockRecordingOrderDAO).lockByIdForUpdate(orderId);
+			lockThenRead.verify(lockRecordingOrderDAO).retrieveOrderLines(orderId);
+		}
+
 		private DocTextLinesRows loadRowsWith(final DocTextLineRepository repository)
+		{
+			return loadRowsWith(orderDAO, repository);
+		}
+
+		private DocTextLinesRows loadRowsWith(final IOrderDAO orderDAO)
+		{
+			return loadRowsWith(orderDAO, docTextLineRepository);
+		}
+
+		private DocTextLinesRows loadRowsWith(final IOrderDAO orderDAO, final DocTextLineRepository repository)
 		{
 			return DocTextLinesRowsLoader.builder()
 					.orderDAO(orderDAO)
