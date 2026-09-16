@@ -21,11 +21,8 @@ export const useKeyboardBarcodeReader = ({
   // Use refs so values persist across rerenders but don't trigger state updates
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
-  // Per-scan delivery stats, reported on the barcodeScanned trace event. Nothing here is measured
-  // for its own sake: gapMs is already computed every keystroke as the flush condition, and the
-  // buffer length is already known, so this only retains values the handler produces anyway. It
-  // dispatches no events, polls nothing and replaces no API - the delivery window it describes is
-  // otherwise unrecorded, because barcodeScanned is stamped only once the scan is already complete.
+  // Per-scan delivery stats for the barcodeScanned event; all derived from values the flush check
+  // already computes.
   const scanStartTimeRef = useRef(0);
   const scanMaxGapRef = useRef(0);
   const scanChunkCountRef = useRef(0);
@@ -91,9 +88,7 @@ export const useKeyboardBarcodeReader = ({
           }
 
           event.preventDefault(); // Prevent default paste behavior
-          // A paste is not a scanner delivery: no characters arrived one at a time, so the timing
-          // fields are null rather than zero. Zero would read as "arrived instantly" and pollute
-          // the delivery statistics this instrumentation exists to produce.
+          // A paste has no per-character delivery: null, not zero, which would read as instant.
           onReadDone(clipboardText, {
             scanDurationMs: null,
             scanCharCount: clipboardText.length,
@@ -164,12 +159,8 @@ export const useKeyboardBarcodeReader = ({
           completeScan({ shouldEnforceMinLength: !isPartial });
         }
 
-        // Two integer comparisons on gapMs, which the flush check above already computed.
-        // chunkGapMs is derived from rateMs rather than being a free-standing number, so it stays
-        // meaningful when the sysconfig changes: a counted gap is at least HALF WAY to the gap that
-        // would split an unprotected code. A recognised-but-incomplete HU QR is exempt from that
-        // flush until idleAbandonMs, so for those a chunk count is informational about delivery
-        // rather than a warning about splitting.
+        // chunkGapMs is rateMs/2, so a counted gap is at least halfway to one that would split an
+        // unprotected code. A partial HU QR is exempt until idleAbandonMs, so its count is advisory.
         if (bufferRef.current) {
           if (gapMs > scanMaxGapRef.current) scanMaxGapRef.current = gapMs;
           if (gapMs >= chunkGapMs) scanChunkCountRef.current += 1;

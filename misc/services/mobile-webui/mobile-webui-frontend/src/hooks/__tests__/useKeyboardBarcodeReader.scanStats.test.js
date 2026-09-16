@@ -3,11 +3,8 @@ import { render } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import { useKeyboardBarcodeReader } from '../useKeyboardBarcodeReader';
 
-// The delivery window - first character to completion - is currently unrecorded: barcodeScanned is
-// stamped only once the scan is already assembled, so a code that took 13 s to arrive and one that
-// took 200 ms produce identical rows. These stats close that gap, riding on the SAME event.
-//
-// Production sysconfig, read from prod ui_trace eventdata: debounceMillis=1000, minLen=7.
+// barcodeScanned is stamped once the scan is already assembled, so the delivery window is
+// otherwise unrecorded. Config values below are production's.
 
 const RATE_MS = 1000;
 const MIN_LENGTH = 7;
@@ -76,7 +73,6 @@ describe('per-scan delivery stats on the completed scan', () => {
 
     expect(onReadDone).toHaveBeenCalledWith(PLAIN, expect.any(Object));
     const [, stats] = onReadDone.mock.calls[0];
-    // 13 characters at 1 ms apart, measured from the FIRST character, then the idle wait.
     expect(stats.scanCharCount).toBe(13);
     expect(stats.scanMaxCharGapMs).toBeLessThan(RATE_MS);
     expect(stats.scanChunkCount).toBe(0);
@@ -85,8 +81,7 @@ describe('per-scan delivery stats on the completed scan', () => {
 
   it('counts chunks and reports the worst gap when a code arrives in pieces', () => {
     const onReadDone = mountReader();
-    // Two pauses of 600 ms - past the chunk threshold (rateMs/2 = 500) but under rateMs, so the
-    // scan is counted as chunked and is NOT split.
+    // Past the chunk threshold (rateMs/2) but under rateMs: counted as chunked, not split.
     typeString(PLAIN, { gapsAt: [4, 9], gapMs: 600 });
     goIdleAndTick();
 
@@ -108,8 +103,7 @@ describe('per-scan delivery stats on the completed scan', () => {
     expect(stats.scanMaxCharGapMs).toBeLessThan(RATE_MS);
   });
 
-  // The chunk counter uses >=, so a gap of EXACTLY the threshold must count. Without this case a
-  // mutation from >= to > survives untouched - the reviewer demonstrated exactly that.
+  // Boundary: without this, a mutation from >= to > survives.
   it('counts a gap of exactly the chunk threshold, not only gaps beyond it', () => {
     const onReadDone = mountReader();
     typeString(PLAIN, { gapsAt: [5], gapMs: RATE_MS / 2 });
@@ -129,8 +123,7 @@ describe('per-scan delivery stats on the completed scan', () => {
     expect(stats.scanChunkCount).toBe(0);
   });
 
-  // Every other test here completes via the idle flush. A code that content-completes on its final
-  // character takes a different path through completeScan, and its stats were never asserted.
+  // Every other case completes via the idle flush; this one takes the content-completion path.
   it('reports stats for a scan that content-completes instead of going idle', () => {
     const onReadDone = mountReader();
     typeString(HU_QR, { stepMs: 2 });
@@ -144,8 +137,7 @@ describe('per-scan delivery stats on the completed scan', () => {
     expect(stats.scanChunkCount).toBe(0);
   });
 
-  // A paste is not a scanner delivery, so the timing fields must be null rather than zero - zero
-  // would read as "arrived instantly" and skew the delivery statistics.
+  // A paste has no per-character delivery, so timings must be null rather than zero.
   it('reports null timings for a clipboard paste, with the length still recorded', async () => {
     const onReadDone = mountReader();
     const pasted = 'PASTED1234567';

@@ -65,11 +65,8 @@ const BarcodeScannerComponent = ({
 
       let resolvedResult;
       if (resolveScannedBarcode) {
-        // Bracket the EXISTING await with plain timestamps - no extra await, no Promise wrapper,
-        // so no microtask tick is inserted and the call is not perturbed by being timed. Measured
-        // client-side on purpose: the server's own audit records only request-arrival to
-        // response-departure, so network transit is invisible there, and that is where the
-        // difference between a 5 s server call and a 13 s operator wait has to live.
+        // No Promise wrapper: that would add a microtask tick to the call being timed. Client-side
+        // because the server's audit excludes network transit.
         const resolveStartedAt = Date.now();
         resolvedResult = await resolveScannedBarcode({ scannedBarcode });
         uiTrace.putContext({ resolveDurationMs: Date.now() - resolveStartedAt });
