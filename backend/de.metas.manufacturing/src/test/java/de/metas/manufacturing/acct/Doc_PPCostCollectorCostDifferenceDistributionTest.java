@@ -23,6 +23,7 @@
 package de.metas.manufacturing.acct;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchemaId;
@@ -464,6 +465,121 @@ class Doc_PPCostCollectorCostDifferenceDistributionTest
 			final Doc_PPCostCollector.CostDifferenceDistributionLeg wip = legByAcctType(legs, ProductAcctType.P_WIP_Acct);
 			assertThat(wip.isDebit()).isFalse(); // credit
 			assertThat(wip.getAbsAmt().toBigDecimal()).isEqualTo("40");
+		}
+
+		private CostAmountDetailed detailed(final String mainAmt, final String costAdjustmentAmt, final String alreadyShippedAmt)
+		{
+			return CostAmountDetailed.builder()
+					.mainAmt(CostAmount.of(new BigDecimal(mainAmt), currencyId))
+					.costAdjustmentAmt(CostAmount.of(new BigDecimal(costAdjustmentAmt), currencyId))
+					.alreadyShippedAmt(CostAmount.of(new BigDecimal(alreadyShippedAmt), currencyId))
+					.build();
+		}
+
+		/**
+		 * AC8 / TC1: the co-product's own residual, read back from its persisted {@code CostDetail} rows, is turned
+		 * into a balanced Dr/Cr leg-set BY {@code Doc_PPCostCollector}'s fact-emission seam - the step that was
+		 * missing (co-product rows were persisted but never posted). Asserts the seam carries the CO-PRODUCT's own
+		 * {@code ProductId} (so accounts resolve against it, not the main product) and emits the write-down signs.
+		 */
+		@Test
+		void coProductLegs_fullOnHandWriteDown_emitsCoProductAssetWipLegs()
+		{
+			final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+
+			seedOrderCosts(costElement.getId(), "15", "150"); // residual -50 (over-booked -> write-down)
+			saveCurrentCost(coProductId, costElement.getId(), "10", "20"); // full on-hand
+
+			distributor.createCostDetails(mainRequest(costElement), orderId);
+
+			// The map Doc_PPCostCollector builds from the collector's persisted CostDetail rows. When the main
+			// product's own residual is zero it persists no rows, so only the co-product is present - exactly the
+			// case the pre-fix early-return silently dropped.
+			final ImmutableMap<ProductId, CostAmountDetailed> amountsByProduct = ImmutableMap.of(
+					coProductId, coProductSplit(costElement.getId()));
+
+			final ImmutableList<Doc_PPCostCollector.CoProductDistributionLegs> byProduct =
+					Doc_PPCostCollector.coProductDistributionLegs(amountsByProduct, mainProductId);
+
+			assertThat(byProduct).hasSize(1);
+			final Doc_PPCostCollector.CoProductDistributionLegs coLegs = byProduct.get(0);
+			assertThat(coLegs.getProductId()).isEqualTo(coProductId); // AC8: the CO-PRODUCT's own accounts
+
+			final ImmutableList<Doc_PPCostCollector.CostDifferenceDistributionLeg> legs = coLegs.getLegs();
+			assertThat(legs).hasSize(2); // fully on-hand: no COGS leg
+
+			final Doc_PPCostCollector.CostDifferenceDistributionLeg asset = legByAcctType(legs, ProductAcctType.P_Asset_Acct);
+			assertThat(asset.isDebit()).isFalse(); // CREDIT - the write-down sign
+			assertThat(asset.getAbsAmt().toBigDecimal()).isEqualTo("50");
+
+			final Doc_PPCostCollector.CostDifferenceDistributionLeg wip = legByAcctType(legs, ProductAcctType.P_WIP_Acct);
+			assertThat(wip.isDebit()).isTrue(); // DEBIT
+			assertThat(wip.getAbsAmt().toBigDecimal()).isEqualTo("50");
+
+			assertThat(sumDr(legs).subtract(sumCr(legs))).isEqualTo(BigDecimal.ZERO); // the co-product leg-set balances
+		}
+
+		@Test
+		void coProductLegs_partialOnHandWriteUp_emitsCoProductAssetCogsWipLegs()
+		{
+			final CostElement costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, CostingMethod.AveragePO);
+
+			seedOrderCosts(costElement.getId(), "6", "60"); // residual +40 (under-booked -> write-up)
+			saveCurrentCost(coProductId, costElement.getId(), "8", "30"); // 8 of 10 on hand -> partial
+
+			distributor.createCostDetails(mainRequest(costElement), orderId);
+
+			final ImmutableMap<ProductId, CostAmountDetailed> amountsByProduct = ImmutableMap.of(
+					coProductId, coProductSplit(costElement.getId()));
+
+			final ImmutableList<Doc_PPCostCollector.CoProductDistributionLegs> byProduct =
+					Doc_PPCostCollector.coProductDistributionLegs(amountsByProduct, mainProductId);
+
+			assertThat(byProduct).hasSize(1);
+			final ImmutableList<Doc_PPCostCollector.CostDifferenceDistributionLeg> legs = byProduct.get(0).getLegs();
+			assertThat(legs).hasSize(3);
+
+			final Doc_PPCostCollector.CostDifferenceDistributionLeg asset = legByAcctType(legs, ProductAcctType.P_Asset_Acct);
+			assertThat(asset.isDebit()).isTrue();
+			assertThat(asset.getAbsAmt().toBigDecimal()).isEqualTo("32");
+
+			final Doc_PPCostCollector.CostDifferenceDistributionLeg cogs = legByAcctType(legs, ProductAcctType.P_COGS_Acct);
+			assertThat(cogs.isDebit()).isTrue();
+			assertThat(cogs.getAbsAmt().toBigDecimal()).isEqualTo("8");
+
+			final Doc_PPCostCollector.CostDifferenceDistributionLeg wip = legByAcctType(legs, ProductAcctType.P_WIP_Acct);
+			assertThat(wip.isDebit()).isFalse(); // credit
+			assertThat(wip.getAbsAmt().toBigDecimal()).isEqualTo("40");
+
+			assertThat(sumDr(legs).subtract(sumCr(legs))).isEqualTo(BigDecimal.ZERO);
+		}
+
+		/** The main product is never re-emitted here - its leg is already posted by the existing main-product path. */
+		@Test
+		void coProductLegs_excludesMainProduct_evenWhenItHasLegs()
+		{
+			final ImmutableMap<ProductId, CostAmountDetailed> amountsByProduct = ImmutableMap.of(
+					mainProductId, detailed("40", "32", "8"), // main has a non-zero residual
+					coProductId, detailed("-50", "-50", "0"));
+
+			final ImmutableList<Doc_PPCostCollector.CoProductDistributionLegs> byProduct =
+					Doc_PPCostCollector.coProductDistributionLegs(amountsByProduct, mainProductId);
+
+			assertThat(byProduct).hasSize(1); // main excluded
+			assertThat(byProduct.get(0).getProductId()).isEqualTo(coProductId);
+		}
+
+		/** A co-product whose residual nets to zero contributes no legs, so no empty co-product Fact is emitted. */
+		@Test
+		void coProductLegs_zeroResidualCoProduct_producesNoEntry()
+		{
+			final ImmutableMap<ProductId, CostAmountDetailed> amountsByProduct = ImmutableMap.of(
+					coProductId, detailed("0", "0", "0"));
+
+			final ImmutableList<Doc_PPCostCollector.CoProductDistributionLegs> byProduct =
+					Doc_PPCostCollector.coProductDistributionLegs(amountsByProduct, mainProductId);
+
+			assertThat(byProduct).isEmpty();
 		}
 	}
 }

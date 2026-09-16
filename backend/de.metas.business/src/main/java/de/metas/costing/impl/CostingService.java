@@ -1,6 +1,7 @@
 package de.metas.costing.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Range;
@@ -38,6 +39,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costing.methods.CostAmountType;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
@@ -58,8 +60,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -180,6 +185,28 @@ public class CostingService implements ICostingService
 		{
 			return ExplainedOptional.of(CostDetailCreateResultsList.ofList(costElementResults));
 		}
+	}
+
+	@Override
+	public ImmutableMap<ProductId, CostAmountDetailed> getCostDetailAmountsToPostByProduct(
+			@NonNull final CostingDocumentRef documentRef,
+			@NonNull final AcctSchema as)
+	{
+		final List<CostDetail> costDetails = costDetailsService.getAllForDocumentAndAcctSchemaId(documentRef, as.getId());
+		if (costDetails.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		// Group by product FIRST: each product's rows are one cost segment, so toCostDetailCreateResultsList (which
+		// requires a single segment) is applied per product, never across the whole mixed-product document.
+		final Map<ProductId, List<CostDetail>> byProduct = costDetails.stream()
+				.collect(Collectors.groupingBy(CostDetail::getProductId, LinkedHashMap::new, Collectors.toList()));
+
+		final ImmutableMap.Builder<ProductId, CostAmountDetailed> result = ImmutableMap.builder();
+		byProduct.forEach((productId, rows) ->
+				result.put(productId, costDetailsService.toCostDetailCreateResultsList(rows).getTotalAmountToPost(as)));
+		return result.build();
 	}
 
 	private Stream<CostDetailCreateResult> createCostDetailUsingHandlersAndStream(final CostDetailCreateRequest request)

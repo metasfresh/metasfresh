@@ -21,6 +21,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
@@ -101,7 +103,20 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 			@NonNull final ProductAcctType acctType,
 			@NonNull final AcctSchema as)
 	{
-		final ProductId productId = getProductId();
+		return getAccount(acctType, as, getProductId());
+	}
+
+	/**
+	 * Resolves the product account for an EXPLICIT product rather than this line's own (main) product. Used to post
+	 * a co-product's own CostDifferenceDistribution residual against the co-product's product accounts (AC8), while
+	 * every other caller keeps resolving against the line's product via {@link #getAccount(ProductAcctType, AcctSchema)}.
+	 */
+	@NonNull
+	public Account getAccount(
+			@NonNull final ProductAcctType acctType,
+			@NonNull final AcctSchema as,
+			@Nullable final ProductId productId)
+	{
 		if (productId == null)
 		{
 			return super.getAccount(acctType, as);

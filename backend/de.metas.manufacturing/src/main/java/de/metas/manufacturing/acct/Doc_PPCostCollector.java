@@ -24,6 +24,7 @@ package de.metas.manufacturing.acct;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
@@ -32,9 +33,12 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.methods.CostAmountDetailed;
+import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,6 +54,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Post Cost Collector
@@ -470,29 +475,101 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	/**
 	 * Posts the WIP residual: DR Product Asset (capitalized) + DR COGS (shipped remainder) / CR WIP, each leg
 	 * flipped when the residual is negative.
+	 * <p>
+	 * The main product's residual is posted from the single-cost-segment {@link AggregatedCostAmount} the collector
+	 * line returns (unchanged). Each co-product's residual is posted as its OWN additional, self-balanced Fact,
+	 * resolved against the co-product's own product accounts (AC8): {@link PPOrderCostDifferenceDistributor}
+	 * persists a {@code CostDetail} row per co-product but deliberately keeps them OUT of that single-segment list
+	 * (mixing segments would break {@code toAggregatedCostAmount}), so they are read back here per product instead.
+	 * The co-product path runs even when the main product's own residual is zero - that case returns no main
+	 * {@code AggregatedCostAmount}, and the co-product legs would otherwise be silently dropped.
 	 */
 	private List<Fact> createFacts_CostDifferenceDistribution(final AcctSchema as)
 	{
 		final DocLine_CostCollector docLine = getLine();
+		// Also persists the per-co-product CostDetail rows this method reads back below (or replays them on reversal).
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
-		if (costResult == null)
+
+		final ArrayList<Fact> facts = new ArrayList<>();
+
+		if (costResult != null)
+		{
+			final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(costResult.getTotalAmountToPost(as));
+			if (!legs.isEmpty())
+			{
+				final Fact fact = new Fact(this, as, PostingType.Actual);
+				for (final CostDifferenceDistributionLeg leg : legs)
+				{
+					addCostDifferenceFactLine(fact, docLine, docLine.getAccount(leg.getAcctType(), as), leg);
+				}
+				facts.add(fact);
+			}
+		}
+
+		facts.addAll(createCoProductDifferenceFacts(as, docLine));
+
+		return facts;
+	}
+
+	/**
+	 * One additional, self-balanced Fact per co-product that carries a residual, resolved against the co-product's
+	 * OWN product accounts. Reads the collector's persisted {@code CostDetail} rows grouped by product; the
+	 * main-product rows are excluded because that leg is already posted above.
+	 */
+	private List<Fact> createCoProductDifferenceFacts(
+			@NonNull final AcctSchema as,
+			@NonNull final DocLine_CostCollector docLine)
+	{
+		final CostingDocumentRef documentRef = CostingDocumentRef.ofCostCollectorId(docLine.get_ID());
+		final ImmutableMap<ProductId, CostAmountDetailed> amountsByProduct = getServices().getCostDetailAmountsToPostByProduct(documentRef, as);
+
+		final ImmutableList<CoProductDistributionLegs> coProductLegs = coProductDistributionLegs(amountsByProduct, docLine.getProductId());
+		if (coProductLegs.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(costResult.getTotalAmountToPost(as));
-		if (legs.isEmpty())
+		final ArrayList<Fact> facts = new ArrayList<>();
+		for (final CoProductDistributionLegs coProduct : coProductLegs)
 		{
-			return ImmutableList.of();
+			final Fact fact = new Fact(this, as, PostingType.Actual);
+			for (final CostDifferenceDistributionLeg leg : coProduct.getLegs())
+			{
+				final Account account = docLine.getAccount(leg.getAcctType(), as, coProduct.getProductId());
+				addCostDifferenceFactLine(fact, docLine, account, leg);
+			}
+			facts.add(fact);
 		}
 
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-		for (final CostDifferenceDistributionLeg leg : legs)
-		{
-			addCostDifferenceFactLine(fact, docLine, leg, as);
-		}
+		return facts;
+	}
 
-		return ImmutableList.of(fact);
+	/**
+	 * Turns each product's detailed residual into its balanced Dr/Cr leg-set, dropping the main product (already
+	 * posted) and any product whose residual nets to zero (no leg-set, so no empty Fact). Pure so the co-product
+	 * fact-emission gap can be tested without the accounting SQL that resolves the per-product accounts.
+	 */
+	@VisibleForTesting
+	static ImmutableList<CoProductDistributionLegs> coProductDistributionLegs(
+			@NonNull final ImmutableMap<ProductId, CostAmountDetailed> amountsToPostByProduct,
+			@NonNull final ProductId mainProductId)
+	{
+		final ImmutableList.Builder<CoProductDistributionLegs> result = ImmutableList.builder();
+		for (final Map.Entry<ProductId, CostAmountDetailed> entry : amountsToPostByProduct.entrySet())
+		{
+			final ProductId productId = entry.getKey();
+			if (productId.equals(mainProductId))
+			{
+				continue;
+			}
+
+			final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(entry.getValue());
+			if (!legs.isEmpty())
+			{
+				result.add(new CoProductDistributionLegs(productId, legs));
+			}
+		}
+		return result.build();
 	}
 
 	/**
@@ -502,10 +579,9 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	private void addCostDifferenceFactLine(
 			@NonNull final Fact fact,
 			@NonNull final DocLine_CostCollector docLine,
-			@NonNull final CostDifferenceDistributionLeg leg,
-			@NonNull final AcctSchema as)
+			@NonNull final Account account,
+			@NonNull final CostDifferenceDistributionLeg leg)
 	{
-		final Account account = docLine.getAccount(leg.getAcctType(), as);
 		final CostAmount absAmt = leg.getAbsAmt();
 		fact.createLine()
 				.setDocLine(docLine)
@@ -569,5 +645,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		{
 			return amt.negateIf(amt.signum() < 0);
 		}
+	}
+
+	/** A single co-product's balanced residual leg-set, tagged with the product whose accounts each leg resolves against. */
+	@Value
+	static class CoProductDistributionLegs
+	{
+		@NonNull ProductId productId;
+		@NonNull ImmutableList<CostDifferenceDistributionLeg> legs;
 	}
 }
