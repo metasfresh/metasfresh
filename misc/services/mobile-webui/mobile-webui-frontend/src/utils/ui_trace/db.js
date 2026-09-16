@@ -71,6 +71,9 @@ export const trimOldestEvents = async (max) => {
   const excess = count - max;
   const oldestIds = await db.events.orderBy('ts').limit(excess).primaryKeys();
   await db.events.bulkDelete(oldestIds);
+  // Loud on purpose: reaching the cap means the backend has been unreachable long enough to lose
+  // diagnostic data, and the trace itself cannot record that it happened.
+  console.warn(`ui_trace: dropped ${oldestIds.length} oldest events, store capped at ${max}`);
   return oldestIds.length;
 };
 
