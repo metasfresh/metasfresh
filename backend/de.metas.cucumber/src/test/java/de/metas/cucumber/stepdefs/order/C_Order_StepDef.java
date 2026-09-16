@@ -80,7 +80,11 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -94,6 +98,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
@@ -180,6 +185,7 @@ public class C_Order_StepDef
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -648,6 +654,54 @@ public class C_Order_StepDef
 	}
 
 	/**
+	 * Generates the order's {@code C_Order_MFGWarehouse_Report} rows -- the "Bestellkontrolle" -- via the
+	 * {@code C_Order_MFGWarehouse_Report_Generate} AD_Process, the same process a user runs from the order
+	 * window's process menu once the order is completed.
+	 * <p>
+	 * Direct AD_Process invocation (resolved by {@code AD_Process.Value}, never by class reference):
+	 * {@code de.metas.cucumber} does not, and should not, depend on {@code de.metas.fresh.base}, where the
+	 * process class and the {@code IOrderCheckupBL}/{@code I_C_Order_MFGWarehouse_Report} types it works
+	 * with all live -- the same module-boundary exemption already used for the WebUI-only
+	 * {@code DocTextLineRepository} insert-above step.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the order-checkup reports are generated for the order identified by "order"
+	 * </pre>
+	 */
+	@And("the order-checkup reports are generated for the order identified by {string}")
+	public void generateOrderCheckupReports(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue("C_Order_MFGWarehouse_Report_Generate");
+
+		// run with the order's client ctx + WebUI role; the default cucumber ctx (System client/role) would match no records
+		final ClientId orderClientId = ClientId.ofRepoId(order.getAD_Client_ID());
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+				.stream()
+				.filter(r -> "WebUI".equals(r.getName()))
+				.map(Role::getId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.setClientId(orderClientId)
+				.setRoleId(roleId)
+				.setCreateTemporaryCtx()
+				.setRecord(I_C_Order.Table_Name, order.getC_Order_ID())
+				.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult()
+				.propagateErrorIfAny();
+	}
+
+	/**
 	 * Asserts that purchase order(s) are created.
 	 *
 	 * <p><strong>Columns:</strong>
@@ -830,6 +884,13 @@ public class C_Order_StepDef
 	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
 	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
 	 *       repeated local runs</li>
+	 *   <li>{@code DescriptionBottom} – text printed at the end of the order document. Deliberately NOT a
+	 *       creation-time column ({@code metasfresh contains C_Orders:} has no such field): setting
+	 *       {@code C_DocTypeTarget_ID}/{@code C_BPartner_ID} at creation re-derives it from the doc type's
+	 *       {@code DocumentNote} ({@code C_Order} model interceptor {@code updateDescriptionFromDocType}), so
+	 *       a value set at creation time is silently overwritten before the insert. This step's own update
+	 *       leaves those two columns untouched, so the interceptor's {@code ifColumnsChanged} guard does not
+	 *       re-fire and the value sticks -- matching the real WebUI edit of the order's own field.</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -877,6 +938,8 @@ public class C_Order_StepDef
 		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
 		tableRow.getAsOptionalName(COLUMNNAME_POReference)
 				.ifPresent(order::setPOReference);
+		tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DescriptionBottom)
+				.ifPresent(order::setDescriptionBottom);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);

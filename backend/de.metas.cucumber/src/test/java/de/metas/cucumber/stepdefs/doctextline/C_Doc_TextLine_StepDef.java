@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.doctextline;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.doctextline.DocTextLine;
 import de.metas.doctextline.DocTextLineDocumentRef;
+import de.metas.doctextline.DocTextLineId;
 import de.metas.doctextline.DocTextLineRepository;
 import de.metas.doctextline.InsertAboveRequest;
 import de.metas.doctextline.TextLineScope;
@@ -35,6 +36,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Doc_TextLine;
@@ -45,6 +47,7 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -144,6 +147,96 @@ public class C_Doc_TextLine_StepDef
 				.build());
 
 		final I_C_Doc_TextLine record = InterfaceWrapperHelper.load(inserted.getId().getRepoId(), I_C_Doc_TextLine.class);
+		textLineTable.putOrReplace(textLineIdentifier, record);
+	}
+
+	/**
+	 * Exchanges the given text line with the row immediately after it in the merged article/text-line order --
+	 * the WebUI's "move down" quick action ({@code WEBUI_DocTextLines_MoveDown}, via
+	 * {@code DocTextLinesView#moveRow}). Since the requirements provide no insert-below, this is how a text
+	 * line lands <b>after</b> the last article line: insert it above that article line, then move it down once
+	 * -- the article line's own position is never touched, only the text line's.
+	 *
+	 * <p><b>Direct-repository invocation (documented exemption)</b>, same module-boundary reason as
+	 * {@link #insertTextLineAboveOrderLine}: the position arithmetic this reproduces lives in
+	 * {@code DocTextLinesRows#moveRow} ({@code de.metas.ui.web.base}), so this step re-derives the two merged-
+	 * order neighbours (the row immediately after the moved line, and whatever follows THAT row) from the
+	 * actually-persisted {@code C_OrderLine}/{@code C_Doc_TextLine} rows, then hands them to
+	 * {@link DocTextLineRepository#computePositionBetween} -- the same shared arithmetic production uses --
+	 * rather than computing a position of its own invention. {@code TextLineScope} is left untouched, matching
+	 * production: moving a text line never changes its stored scope, even once it has crossed to the far side
+	 * of an article line.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the text line identified by "trailing" is moved down
+	 * </pre>
+	 */
+	@When("the text line identified by {string} is moved down")
+	public void moveTextLineDown(@NonNull final String textLineIdentifier)
+	{
+		final I_C_Doc_TextLine record = textLineTable.get(textLineIdentifier);
+		InterfaceWrapperHelper.refresh(record);
+
+		final OrderId orderId = OrderId.ofRepoId(record.getC_Order_ID());
+		final DocTextLineDocumentRef documentRef = DocTextLineDocumentRef.ofOrderId(orderId);
+		final BigDecimal currentPosition = record.getLine();
+
+		final List<BigDecimal> articleLinePositions = orderDAO.retrieveOrderLines(orderId).stream()
+				.map(orderLine -> BigDecimal.valueOf(orderLine.getLine()))
+				.collect(Collectors.toList());
+		final List<DocTextLine> textLines = docTextLineRepository.getByDocument(documentRef);
+
+		final Optional<BigDecimal> nextArticlePosition = articleLinePositions.stream()
+				.filter(position -> position.compareTo(currentPosition) > 0)
+				.min(Comparator.naturalOrder());
+		final Optional<DocTextLine> nextTextLine = textLines.stream()
+				.filter(textLine -> textLine.getLine().compareTo(currentPosition) > 0)
+				.min(Comparator.comparing(DocTextLine::getLine));
+
+		if (!nextArticlePosition.isPresent() && !nextTextLine.isPresent())
+		{
+			throw new AdempiereException("Cannot move text line down: it is already the last row")
+					.appendParametersToMessage()
+					.setParameter("textLineIdentifier", textLineIdentifier);
+		}
+
+		// the nearer of the two candidate neighbours (by position) is the one actually exchanged with
+		final boolean neighbourIsArticleLine = nextTextLine
+				.map(textLine -> nextArticlePosition.map(articlePos -> articlePos.compareTo(textLine.getLine()) < 0).orElse(false))
+				.orElse(true);
+
+		if (neighbourIsArticleLine)
+		{
+			final BigDecimal neighbourPosition = nextArticlePosition.get();
+
+			// the next merged-order row after the neighbour article, of either kind -- null when the article
+			// line is itself the last row, letting computePositionBetween place the text line past everything
+			final Optional<BigDecimal> beyondArticle = articleLinePositions.stream()
+					.filter(position -> position.compareTo(neighbourPosition) > 0)
+					.min(Comparator.naturalOrder());
+			final Optional<BigDecimal> beyondText = textLines.stream()
+					.map(DocTextLine::getLine)
+					.filter(position -> position.compareTo(neighbourPosition) > 0)
+					.min(Comparator.naturalOrder());
+			final BigDecimal beyondPosition = Stream.of(beyondArticle, beyondText)
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.min(Comparator.naturalOrder())
+					.orElse(null);
+
+			final BigDecimal newPosition = DocTextLineRepository.computePositionBetween(neighbourPosition, beyondPosition);
+			docTextLineRepository.updatePosition(DocTextLineId.ofRepoId(record.getC_Doc_TextLine_ID()), newPosition);
+		}
+		else
+		{
+			// neighbour is a text line: a genuine two-way exchange of stored positions, matching
+			// DocTextLinesRows#moveRow's own text-neighbour branch
+			docTextLineRepository.swapPositions(DocTextLineId.ofRepoId(record.getC_Doc_TextLine_ID()), nextTextLine.get().getId());
+		}
+
+		InterfaceWrapperHelper.refresh(record);
 		textLineTable.putOrReplace(textLineIdentifier, record);
 	}
 
