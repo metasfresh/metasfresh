@@ -14,9 +14,10 @@ export const useLocationChange = (onChange) => {
   // still holds the PREVIOUS match when the callback fires - currentLocation is correct, currentRoute
   // is one navigation behind. Nothing is affected today, but not because the field is unused:
   // useUITraceLocationChange DOES read currentRoute.params.applicationId - its callback simply never
-  // executes, because ScreenToaster's child-level effect always claims the shared lastKnownLocation
-  // key first. Whoever fixes that will start hitting this immediately, so derive the route from the
-  // reported location (matchPath) rather than trusting this field.
+  // executes, because ScreenToaster, mounted as an early sibling of <Switch>, always commits its
+  // effect first and claims the shared lastKnownLocation key. Whoever fixes that will start hitting
+  // this immediately, so derive the route from the reported location (matchPath) rather than
+  // trusting this field.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const currentRouteRef = useRef(currentRoute);
