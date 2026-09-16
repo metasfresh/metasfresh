@@ -7,25 +7,40 @@ db.version(1).stores({
   events: 'id, event',
 });
 
-// v2 indexes the event timestamp. The v1 primary key is a uuid, so the store had no usable order:
-// neither "send the oldest first" nor "drop the oldest when full" could be expressed. Both are
-// needed to keep the store bounded (see trimOldestEvents / getEventsBatch below).
+// Above this many stored records the v1->v2 upgrade bulk-clears instead of rewriting every row.
+// .modify() rewrites each record inside ONE atomic versionchange transaction that cannot be split.
+// On precisely the devices this change targets - those whose backlog grew unbounded against a failing
+// backend - that transaction is huge: it blocks the tab's DB connection while it runs, and if it
+// aborts (the browser kills a long versionchange, quota is exceeded, the tab is closed) then NOTHING
+// commits, the database stays at v1, and every relaunch retries the same doomed rewrite forever with
+// ui-trace silently dead on that device.
+// Clearing is cheap at any size and costs little here: v1 has no usable order (see below), so the
+// newest records cannot be identified to be spared anyway, and trimOldestEvents cuts the store to
+// MAX_STORED_EVENTS on the very next cycle regardless. Keep this equal to that cap.
+const UPGRADE_BULK_CLEAR_THRESHOLD = 5000;
+
+// v2 indexes the event timestamp. v1's primary key is a uuid and its only secondary index was on
+// `event` - a plain object, which IndexedDB cannot index at all (only number/string/Date/binary and
+// arrays of those), so that index held no entries and dropping it costs nothing. The store therefore
+// had no usable order: neither "send the oldest first" nor "drop the oldest when full" could be
+// expressed, and both are needed to keep it bounded (see getEventsBatch / trimOldestEvents below).
 db.version(2)
   .stores({
     props: 'key,value',
     events: 'id, ts',
   })
-  .upgrade((tx) =>
-    // Backfill ts for records written by v1. Dexie omits records whose indexed value is undefined
-    // from that index, so without this backfill the pre-upgrade backlog would be invisible to
-    // every ordered query here — and therefore never sent and never trimmed.
-    tx
-      .table('events')
-      .toCollection()
-      .modify((record) => {
+  .upgrade((tx) => {
+    const events = tx.table('events');
+    return events.count().then((count) => {
+      if (count > UPGRADE_BULK_CLEAR_THRESHOLD) return events.clear();
+      // Backfill ts for records written by v1. Dexie omits records whose indexed value is undefined
+      // from that index, so without this backfill the pre-upgrade backlog would be invisible to
+      // every ordered query here - and therefore never sent and never trimmed.
+      return events.toCollection().modify((record) => {
         record.ts = record.event?.timestamp ?? 0;
-      })
-  );
+      });
+    });
+  });
 
 export const saveEvent = async (event) => {
   try {

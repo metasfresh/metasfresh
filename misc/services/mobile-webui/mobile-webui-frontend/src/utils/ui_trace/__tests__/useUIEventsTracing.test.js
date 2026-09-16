@@ -78,7 +78,13 @@ beforeEach(() => {
   store = [];
   seq = 0;
   // Implementations MUST be set here — see the resetMocks note above.
-  getEventsBatch.mockImplementation(async (limit) => store.slice(0, limit));
+  // Ordered by ts, like the real getEventsBatch (db.js does `.orderBy('ts')`). Slicing the array in
+  // insertion order would coincide with that only because pushEvent happens to append increasing
+  // timestamps, making the fake agree with the real one by accident rather than by construction.
+  // NOTE: db.js itself is mocked away here, so its ordering and its v1->v2 migration are NOT covered
+  // by this suite - that needs fake-indexeddb against a real Dexie instance.
+  const byTs = () => [...store].sort((a, b) => a.timestamp - b.timestamp);
+  getEventsBatch.mockImplementation(async (limit) => byTs().slice(0, limit));
   deleteEvents.mockImplementation(async (ids) => {
     const drop = new Set(ids);
     store = store.filter((event) => !drop.has(event.id));
@@ -86,7 +92,12 @@ beforeEach(() => {
   trimOldestEvents.mockImplementation(async (max) => {
     if (store.length <= max) return 0;
     const excess = store.length - max;
-    store = store.slice(excess); // drop the oldest
+    const oldest = new Set(
+      byTs()
+        .slice(0, excess)
+        .map((event) => event.id)
+    );
+    store = store.filter((event) => !oldest.has(event.id));
     return excess;
   });
   getOrCreateDeviceId.mockImplementation(async () => 'test-device');
@@ -214,5 +225,41 @@ describe('UI-trace sync — offline', () => {
     } finally {
       onLineSpy.mockRestore();
     }
+  });
+});
+
+describe('UI-trace sync — an `online` event arriving during an in-flight POST', () => {
+  it('joins the in-flight sync instead of re-posting the same batch', async () => {
+    let releasePost;
+    postEventsToBackend.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          releasePost = resolve;
+        })
+    );
+
+    pushEvent(2);
+    const { unmount } = mountTracing();
+    await settle();
+
+    expect(postEventsToBackend).toHaveBeenCalledTimes(1); // non-vacuity: a POST is genuinely in flight
+
+    // Connectivity returns while that POST is still unresolved. Without the in-flight mutex this
+    // starts a second sync which reads the SAME undeleted batch (nothing is deleted until the first
+    // POST resolves) and posts it again — duplicate rows, since the backend does not dedupe.
+    await act(async () => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await settle();
+
+    expect(postEventsToBackend).toHaveBeenCalledTimes(1);
+
+    releasePost({});
+    await settle();
+    unmount();
+
+    const postedIds = postEventsToBackend.mock.calls.flatMap(([events]) => events.map((e) => e.id));
+    expect(postedIds.length).toBeGreaterThan(0); // non-vacuity
+    expect(new Set(postedIds).size).toBe(postedIds.length); // no event delivered twice
   });
 });
