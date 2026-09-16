@@ -219,7 +219,17 @@ Feature: Free text lines print at their position on a sales order confirmation
     # function's article-describing columns (barcode included) are NULL on a text row, and Java string
     # concatenation would otherwise turn that into a bogus barcode encoding the literal text "null" -- this
     # count proves the guard keeps the barcode-bearing band OFF both text rows: one image per real article
-    # row (line10..line40) plus the document's own logo, none contributed by "topBlock" or "groupHeading"
+    # row (line10..line40) plus the document's own logo, none contributed by "topBlock" or "groupHeading".
+    # Removing the article-band guard alone does NOT isolate this: it dies on $F{capacity} being NULL (a
+    # DecimalFormat.format(null) IllegalArgumentException) before the <image> element is even reached, so
+    # that mutation proves the band guard is load-bearing but says nothing about the barcode on its own. The
+    # isolating check: article-band guard removed AND the capacity expression null-safed so the render
+    # survives -> 7 image XObjects, two of them drawn on the two text rows (six barcodes, one for each of
+    # topBlock/line10/line20/groupHeading/line30/line40, plus the logo) -- exactly the failure this count
+    # exists to catch. This report field carries just the logo's own page-count caveat: report.jrxml invokes
+    # the logo subreport a second time on every page after the first, so a fixture spilling onto page 2 would
+    # add a sixth image with no barcode involved -- moot for this one-page fixture, but the reason the count
+    # is not "4 articles + 1 logo, always"
     And the PDF archived for the record identified by "order_checkup" contains exactly 5 images
     And the PDF archived for the record identified by "order_checkup" has no overlapping text
 
@@ -383,14 +393,19 @@ Feature: Free text lines print at their position on a sales order confirmation
 
     # -- the Bestellkontrolle: Value picks the barcode-aware print process, same as TC1/TC8 above. Its report
     # SQL function (Docs_Sales_OrderCheckup_Details) DOES reference C_Doc_TextLine (an earlier part of this
-    # feature) and this template now prints text rows too (TC1 above) -- but this order has none, so it
-    # prints exactly as it did before the feature existed. Printed anyway to prove the new guard band never
-    # fires blank in front of an ordinary article row.
+    # feature) and this template now prints text rows too (TC1 above) -- but this order has none, so every
+    # row here is an ordinary article row: the purest form of the "guard band never fires blank in front of
+    # an article row" case, since nothing here could ever make the text band's own guard evaluate true.
     And the order-checkup reports are generated for the order identified by "order"
     And The jasper process is run
       | Value                                    | Record_ID     |
       | C_Order_MFGWarehouse_Report_With_Barcode | order_checkup |
     Then an AD_Archive exists for the record identified by "order_checkup"
+    # "has no overlapping text" alone cannot see this: a band that renders blank-but-present shifts rows down
+    # without colliding with anything. This pins the article band at exactly its own declared height (47pt) --
+    # see the step's own Javadoc for why "equals a literal" is the only shape that survives BOTH legs of a
+    # pitch inflating together, which is exactly what an unguarded text band on every row would do here
+    And in the PDF archived for the record identified by "order_checkup", the vertical distance from text "AlphaItem" to text "BetaItem" is 47.0 points
     And the PDF archived for the record identified by "order_checkup" has no overlapping text
 
   @Id:S27486_TC13
@@ -433,3 +448,15 @@ Feature: Free text lines print at their position on a sales order confirmation
     # a plain ASCII double quote pair renders (no smart-quote substitution, no dropped character)
     And the PDF archived for the record identified by "order" contains text "\"Sonderangebot\""
     And the PDF archived for the record identified by "order" has no overlapping text
+
+    # -- the Bestellkontrolle: its own text band sets markup="none" too (matching the sales-order templates
+    # above), but nothing above pins THIS template's own property -- a regression to markup="html" here would
+    # collapse "<b>fett</b>" into a bolded, tag-stripped "fett" and every one of TC1's own checkup assertions
+    # (adjacency, image count, band height) would still pass, since none of them look at markup interpretation
+    And the order-checkup reports are generated for the order identified by "order"
+    And The jasper process is run
+      | Value                                    | Record_ID     |
+      | C_Order_MFGWarehouse_Report_With_Barcode | order_checkup |
+    Then an AD_Archive exists for the record identified by "order_checkup"
+    And the PDF archived for the record identified by "order_checkup" contains text "<b>fett</b>"
+    And the PDF archived for the record identified by "order_checkup" has no overlapping text

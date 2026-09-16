@@ -473,9 +473,13 @@ public class AD_Archive_StepDef
 	}
 
 	/**
-	 * Counts the image XObjects (e.g. a barcode) actually rendered across all pages of the archived PDF.
-	 * Counts OCCURRENCES, not distinct embedded images: the same image object reused on several rows is
-	 * counted once per row, which is what "how many barcodes did this document print" needs.
+	 * Counts the image XObjects (e.g. a barcode) referenced across all pages of the archived PDF.
+	 * Counts DISTINCT image XObjects per page (one entry per page's XObject resource dictionary), not
+	 * {@code Do} draw operations: an image object drawn more than once on the same page from the same
+	 * resource entry is counted once, not once per draw. In this report every article row's barcode is its
+	 * own distinct object (confirmed even for two rows with an identical, NULL-derived barcode content), so
+	 * the count matches "one per article row" here -- but a report that drew one shared image object
+	 * repeatedly on a page would undercount against that reading.
 	 * <p>
 	 * This is the assertion for "no image renders here", which no text-extraction step above can make: an
 	 * {@code <image>} report element renders as ink with no glyphs, so a barcode requested for a NULL
