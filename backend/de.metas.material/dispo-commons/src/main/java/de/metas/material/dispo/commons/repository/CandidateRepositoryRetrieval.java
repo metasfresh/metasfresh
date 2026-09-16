@@ -541,27 +541,30 @@ public class CandidateRepositoryRetrieval
 	@Nullable
 	private Candidate fromCandidateRecordOrNullTolerant(@NonNull final I_MD_Candidate candidateRecordOrNull)
 	{
-		final Candidate candidate = fromCandidateRecordOrNull(candidateRecordOrNull);
-		if (candidate == null)
-		{
-			return null;
-		}
-
 		try
 		{
-			// explicit call, so this fires even under Adempiere.isUnitTestMode() - unlike the constructor's
-			// own validation, which is skipped in that mode (see Candidate's constructor)
+			// fromCandidateRecordOrNull's builder.build() runs the Candidate constructor, which itself calls
+			// validateNonStockCandidate() whenever !Adempiere.isUnitTestMode() (see Candidate's constructor) -
+			// so in a real (non-unit-test) run, a drifted candidate throws HERE, not on the explicit call below.
+			// Both must be inside this try: the constructor's own check is what actually fires in production;
+			// the explicit call below is what makes a unit test (which runs in unit-test mode, suppressing the
+			// constructor's check) exercise the same guarantee.
+			final Candidate candidate = fromCandidateRecordOrNull(candidateRecordOrNull);
+			if (candidate == null)
+			{
+				return null;
+			}
+
 			candidate.validateNonStockCandidate();
+			return candidate;
 		}
 		catch (final RuntimeException e)
 		{
 			logger.warn("Skipping MD_Candidate_ID={} (type={}): fails validateNonStockCandidate() -- likely drifted"
 							+ " legacy data; excluding it from the result rather than aborting the whole read",
-					candidateRecordOrNull.getMD_Candidate_ID(), candidate.getType(), e);
+					candidateRecordOrNull.getMD_Candidate_ID(), candidateRecordOrNull.getMD_Candidate_Type(), e);
 			return null;
 		}
-
-		return candidate;
 	}
 
 	/**
