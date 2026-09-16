@@ -28,6 +28,7 @@ import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -81,13 +82,14 @@ class ShipmentScheduleBL_UpdateASIFromProjectIdTest
 		saveRecord(attribute);
 	}
 
-	private void createOtherAttr()
+	private I_M_Attribute createOtherAttr()
 	{
 		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
 		attribute.setValue(OTHER_ATTR_CODE.getCode());
 		attribute.setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
 		attribute.setIsStorageRelevant(true);
 		saveRecord(attribute);
+		return attribute;
 	}
 
 	private I_M_Product createProduct(final String productValue)
@@ -286,11 +288,12 @@ class ShipmentScheduleBL_UpdateASIFromProjectIdTest
 		// Given: an ASI carrying a real, non-Project attribute value, but no ProjectValue instance,
 		// and a schedule with no project at all
 		final I_M_Product product = createProduct("Product-8");
-		createOtherAttr();
+		final I_M_Attribute otherAttr = createOtherAttr();
 		final I_M_AttributeSetInstance asi = createASI();
-		final AttributeSetInstanceId seededAsiId = attributeSetInstanceBL.setAttributeInstanceValue(
-				AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID()),
-				OTHER_ATTR_CODE,
+		final AttributeSetInstanceId seededAsiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		attributeSetInstanceBL.setAttributeInstanceValue(
+				seededAsiId,
+				AttributeId.ofRepoId(otherAttr.getM_Attribute_ID()),
 				OTHER_ATTR_VALUE);
 
 		final I_M_ShipmentSchedule schedule = createShipmentSchedule(product, null, null, false);
