@@ -12,9 +12,11 @@ export const useLocationChange = (onChange) => {
   // mounts, which is before Router's own subscription further up the tree, so it runs before Router
   // has propagated a fresh RouteContext. For a caller that never remounts, currentRouteRef therefore
   // still holds the PREVIOUS match when the callback fires - currentLocation is correct, currentRoute
-  // is one navigation behind. Neither current caller reads currentRoute, so nothing is affected
-  // today; a caller that needs it should derive it from the reported location (matchPath) rather
-  // than trust this field.
+  // is one navigation behind. Nothing is affected today, but not because the field is unused:
+  // useUITraceLocationChange DOES read currentRoute.params.applicationId - its callback simply never
+  // executes, because ScreenToaster's child-level effect always claims the shared lastKnownLocation
+  // key first. Whoever fixes that will start hitting this immediately, so derive the route from the
+  // reported location (matchPath) rather than trusting this field.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const currentRouteRef = useRef(currentRoute);
