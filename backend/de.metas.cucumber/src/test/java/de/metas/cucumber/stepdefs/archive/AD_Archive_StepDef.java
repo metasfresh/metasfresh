@@ -240,6 +240,44 @@ public class AD_Archive_StepDef
 	}
 
 	/**
+	 * Verifies that one vertical distance is a whole multiple of another -- the assertion for "this span covers
+	 * exactly N line-heights", used to prove a multi-line value's embedded blank line(s) occupy real space
+	 * rather than being collapsed. {@code multiplier} lines of a stretched multi-line text field are not
+	 * necessarily the same height as {@code multiplier} lines spanning a DIFFERENT band boundary (a band-to-band
+	 * transition and a line-to-line transition inside one stretched field are computed differently), so pick
+	 * both distances from lines of the SAME stretched value whenever possible -- see
+	 * {@link #assert_archived_pdf_vertical_distances_equal} for the sibling equals-form and its own reference-pick
+	 * guidance.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then in the PDF archived for the record identified by "order", the vertical distance from text "line2" to text "line4" is 2 times the distance from text "line1" to text "line2"
+	 * </pre>
+	 */
+	@Then("in the PDF archived for the record identified by {string}, the vertical distance from text {string} to text {string} is {int} times the distance from text {string} to text {string}")
+	public void assert_archived_pdf_vertical_distance_is_multiple_of(
+			@NonNull final String recordIdentifier,
+			@NonNull final String actualFromText,
+			@NonNull final String actualToText,
+			final int multiplier,
+			@NonNull final String unitFromText,
+			@NonNull final String unitToText)
+	{
+		final List<PdfLine> lines = extractPdfVisualLines(recordIdentifier);
+
+		final float actualDistance = verticalDistance(lines, actualFromText, actualToText);
+		final float unitDistance = verticalDistance(lines, unitFromText, unitToText);
+
+		// same rationale as the equals-form: the smallest difference worth catching is one whole line-height,
+		// so a fraction of a point of float noise in the glyph coordinates is not a difference.
+		assertThat(actualDistance)
+				.as("Vertical distance '%s'->'%s' vs %s times '%s'->'%s' in extracted PDF text %s",
+						actualFromText, actualToText, multiplier, unitFromText, unitToText, textsOf(lines))
+				.isCloseTo(unitDistance * multiplier, within(0.5f));
+	}
+
+	/**
 	 * Asserts that no two words in the archived PDF are printed on top of each other.
 	 * <p>
 	 * A generic layout net: it needs no knowledge of the document, so it can be added to any scenario that
