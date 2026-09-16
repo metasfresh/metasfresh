@@ -179,8 +179,11 @@ public class C_Doc_TextLine_StepDef
 	 * itself could never turn this scenario red: if a future change to {@code moveRow}'s neighbour-selection logic
 	 * changes what position it actually produces, this step keeps fabricating the OLD position and the scenario
 	 * stays green while asserting a state the product no longer produces. The Line-value pin assertion right
-	 * after this step exists precisely to shrink that blind spot: a change to either side's arithmetic changes
-	 * the pinned number, which is the signal a silent drift would otherwise have none of.
+	 * after this step tracks the shared LEAF arithmetic ({@link DocTextLineRepository#computePositionBetween})
+	 * this step calls -- it changes if that arithmetic changes. It cannot track {@code moveRow}'s own
+	 * neighbour-selection and far-side-bound decisions, because this step supplies those as arguments itself,
+	 * independently of {@code moveRow}; the blind spot described above remains exactly that -- a blind spot,
+	 * not one the pin closes.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -279,13 +282,14 @@ public class C_Doc_TextLine_StepDef
 
 	/**
 	 * Asserts the persisted {@code Line} value of a text line -- a pin, not a derivation the step itself
-	 * computes. This is what narrows the drift risk documented on {@link #moveTextLineDown}: that step
-	 * fabricates the post-move position via the same shared arithmetic production uses, but never runs the
-	 * WebUI's own {@code DocTextLinesRows#moveRow} decision logic, so a future change to THAT logic could not
-	 * otherwise turn this scenario red. Comparing against a literal expected number here means a change to
-	 * either side's arithmetic changes the pinned value too -- the signal a silent drift would otherwise have
-	 * none of. Compared via {@link BigDecimal#compareTo}, not {@code equals}: the persisted value carries the
-	 * column's own scale (e.g. {@code 21.0000}), which a plain string/int comparison would never match.
+	 * computes. Related to the drift risk documented on {@link #moveTextLineDown}, but narrower than it may
+	 * look: this pin tracks the shared LEAF arithmetic ({@link DocTextLineRepository#computePositionBetween})
+	 * that step calls -- a change to that arithmetic changes the pinned value. It does NOT track the WebUI's
+	 * own {@code DocTextLinesRows#moveRow} neighbour-selection/far-side-bound decisions, because {@link
+	 * #moveTextLineDown} supplies those as arguments itself, never by running {@code moveRow}; a change to
+	 * THAT logic leaves this pin exactly where it was, still green. Compared via {@link BigDecimal#compareTo},
+	 * not {@code equals}: the persisted value carries the column's own scale (e.g. {@code 21.0000}), which a
+	 * plain string/int comparison would never match.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example

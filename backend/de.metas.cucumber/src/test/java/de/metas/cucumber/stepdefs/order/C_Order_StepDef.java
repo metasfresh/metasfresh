@@ -718,8 +718,12 @@ public class C_Order_StepDef
 
 		// DocumentType='PL' (X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant): one row per order, built
 		// outside the per-line loop -- see OrderCheckupBL.generateReportsIfEligible. firstIdOnly() also pins
-		// that invariant: it throws if more than one 'PL' row exists for this order.
+		// that invariant: it throws if more than one ACTIVE 'PL' row exists for this order. The active-only
+		// filter is required, not cosmetic: voidReports() deactivates the previous row rather than deleting
+		// it, so a regenerate (this step called twice for the same order) would otherwise leave two rows and
+		// firstIdOnly() would throw "more than one" even though only one is current.
 		final int checkupReportId = queryBL.createQueryBuilder(C_Order_MFGWarehouse_Report_StepDefData.TABLE_NAME)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
 				.addEqualsFilter("DocumentType", "PL")
 				.create()
