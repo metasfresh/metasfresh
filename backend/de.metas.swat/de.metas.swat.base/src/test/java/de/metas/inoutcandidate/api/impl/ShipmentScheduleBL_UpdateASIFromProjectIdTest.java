@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -56,6 +57,8 @@ class ShipmentScheduleBL_UpdateASIFromProjectIdTest
 {
 	private static final String PROJECT_VALUE = "PROJECT-001";
 	private static final String PROJECT_VALUE_2 = "PROJECT-002";
+	private static final AttributeCode OTHER_ATTR_CODE = AttributeCode.ofString("TestSize");
+	private static final String OTHER_ATTR_VALUE = "SIZE-21";
 
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private IShipmentScheduleBL shipmentScheduleBL;
@@ -75,6 +78,15 @@ class ShipmentScheduleBL_UpdateASIFromProjectIdTest
 		attribute.setValue(AttributeConstants.ATTR_Project.getCode());
 		attribute.setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
 		attribute.setIsStorageRelevant(storageRelevant);
+		saveRecord(attribute);
+	}
+
+	private void createOtherAttr()
+	{
+		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
+		attribute.setValue(OTHER_ATTR_CODE.getCode());
+		attribute.setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
+		attribute.setIsStorageRelevant(true);
 		saveRecord(attribute);
 	}
 
@@ -266,5 +278,40 @@ class ShipmentScheduleBL_UpdateASIFromProjectIdTest
 		// Then: ASI untouched
 		assertThat(schedule.getM_AttributeSetInstance_ID()).isEqualTo(initialAsiId);
 		assertThat(getProjectValueFromASI(AttributeSetInstanceId.ofRepoId(initialAsiId))).isNull();
+	}
+
+	@Test
+	void projectNeverSet_asiHasOtherAttributeButNoProjectValue_doesNotCloneOrInjectProjectAttribute()
+	{
+		// Given: an ASI carrying a real, non-Project attribute value, but no ProjectValue instance,
+		// and a schedule with no project at all
+		final I_M_Product product = createProduct("Product-8");
+		createOtherAttr();
+		final I_M_AttributeSetInstance asi = createASI();
+		final AttributeSetInstanceId seededAsiId = attributeSetInstanceBL.setAttributeInstanceValue(
+				AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID()),
+				OTHER_ATTR_CODE,
+				OTHER_ATTR_VALUE);
+
+		final I_M_ShipmentSchedule schedule = createShipmentSchedule(product, null, null, false);
+		schedule.setM_AttributeSetInstance_ID(seededAsiId.getRepoId());
+
+		// sanity: the seeded ASI does not yet carry a ProjectValue instance
+		assertThat(attributeSetInstanceBL.getImmutableAttributeSetById(seededAsiId).hasAttribute(AttributeConstants.ATTR_Project))
+				.as("Sanity: seeded ASI must not already carry a ProjectValue instance")
+				.isFalse();
+
+		// When
+		shipmentScheduleBL.updateASIFromProjectId(schedule);
+
+		// Then: no clone happened - the guard's early return was taken
+		assertThat(schedule.getM_AttributeSetInstance_ID())
+				.as("ASI must not be cloned when there is no project and no existing ProjectValue instance")
+				.isEqualTo(seededAsiId.getRepoId());
+
+		// And: still no ProjectValue instance was materialized on the ASI
+		assertThat(attributeSetInstanceBL.getImmutableAttributeSetById(AttributeSetInstanceId.ofRepoId(schedule.getM_AttributeSetInstance_ID())).hasAttribute(AttributeConstants.ATTR_Project))
+				.as("No ProjectValue instance should be materialized when the schedule has no project")
+				.isFalse();
 	}
 }

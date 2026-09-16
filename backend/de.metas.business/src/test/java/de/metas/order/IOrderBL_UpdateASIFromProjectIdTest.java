@@ -25,6 +25,7 @@ package de.metas.order;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -45,6 +46,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.model.X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -57,6 +59,8 @@ class IOrderBL_UpdateASIFromProjectIdTest
 {
 	private static final String PROJECT_VALUE = "PROJECT-001";
 	private static final String PROJECT_VALUE_2 = "PROJECT-002";
+	private static final AttributeCode OTHER_ATTR_CODE = AttributeCode.ofString("TestSize");
+	private static final String OTHER_ATTR_VALUE = "SIZE-21";
 
 	final private IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
@@ -72,6 +76,15 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	{
 		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
 		attribute.setValue(AttributeConstants.ATTR_Project.getCode());
+		attribute.setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
+		attribute.setIsStorageRelevant(true);
+		saveRecord(attribute);
+	}
+
+	private void createOtherAttr()
+	{
+		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
+		attribute.setValue(OTHER_ATTR_CODE.getCode());
 		attribute.setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
 		attribute.setIsStorageRelevant(true);
 		saveRecord(attribute);
@@ -262,5 +275,44 @@ class IOrderBL_UpdateASIFromProjectIdTest
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
 		final String actualProjectValue = getProjectValueFromASI(asiId);
 		assertEquals(PROJECT_VALUE, actualProjectValue);
+	}
+
+	@Test
+	void updateASIFromProjectId_WhenASIHasOtherAttributeAndNoProjectValue_AndProjectWasNeverSet_ShouldNotCloneOrInjectProjectAttribute()
+	{
+		// Given: an ASI carrying a real, non-Project attribute value, but no ProjectValue instance,
+		// and a line with no project at all
+		final I_M_Product product = createProduct("Product-7");
+		createOtherAttr();
+		final I_M_AttributeSetInstance asi = createASI(product);
+		final AttributeSetInstanceId seededAsiId = attributeSetInstanceBL.setAttributeInstanceValue(
+				AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID()),
+				OTHER_ATTR_CODE,
+				OTHER_ATTR_VALUE);
+		final I_C_OrderLine orderLine = createOrderLine(product);
+		orderLine.setM_AttributeSetInstance_ID(seededAsiId.getRepoId());
+		// No C_Project_ID is set - the line never had a project
+		saveRecord(orderLine);
+
+		// sanity: the seeded ASI does not yet carry a ProjectValue instance
+		assertFalse(
+				attributeSetInstanceBL.getImmutableAttributeSetById(seededAsiId).hasAttribute(AttributeConstants.ATTR_Project),
+				"Sanity: seeded ASI must not already carry a ProjectValue instance");
+
+		// When
+		final IOrderBL toBeTested = Services.get(IOrderBL.class);
+		toBeTested.updateASIFromProjectId(orderLine);
+
+		// Then: no clone happened - the guard's early return was taken
+		assertEquals(
+				seededAsiId.getRepoId(),
+				orderLine.getM_AttributeSetInstance_ID(),
+				"ASI must not be cloned when there is no project and no existing ProjectValue instance");
+
+		// And: still no ProjectValue instance was materialized on the ASI
+		final AttributeSetInstanceId finalAsiId = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
+		assertFalse(
+				attributeSetInstanceBL.getImmutableAttributeSetById(finalAsiId).hasAttribute(AttributeConstants.ATTR_Project),
+				"No ProjectValue instance should be materialized when the line has no project");
 	}
 }
