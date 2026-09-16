@@ -71,12 +71,15 @@ Feature: Free text lines print at their position on a sales order confirmation
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
       | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    # line40 carries its own Description -- an article line printing alongside text lines is a realistic
+    # order, and it is exactly the interaction the guard-removal sweep below needs: the unguarded text band
+    # would print this same value a second time, which only exists to be caught if some article line has one
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | line10     | order      | productA     | 1          |
-      | line20     | order      | productB     | 1          |
-      | line30     | order      | productC     | 1          |
-      | line40     | order      | productD     | 1          |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | Description             |
+      | line10     | order      | productA     | 1          |                         |
+      | line20     | order      | productB     | 1          |                         |
+      | line30     | order      | productC     | 1          |                         |
+      | line40     | order      | productD     | 1          | Bruchsichere Verpackung |
 
     # the packing instruction: entered above the very first article line, so nothing precedes it at all
     When a text line "topBlock" is inserted above the order line identified by "line10" with text:
@@ -145,6 +148,13 @@ Feature: Free text lines print at their position on a sales order confirmation
     # the heading prints directly above the first article of the group it introduces
     And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Sortimentsware" and text "GammaItem"
     And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "GAMMA-NR" and text "DeltaItem"
+    # the last article's own Description prints directly below its product-number row
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "DELTA-NR" and text "Bruchsichere Verpackung"
+    # ...and nothing stands between that Description and the item table's own total -- the guard that keeps
+    # the text band off an ARTICLE row is what this pins: were it removed, the band would render unconditionally,
+    # and since this article line HAS a Description (unlike the others), that value would print a second time
+    # right here, between its own Description row and the total, where a line-count assertion can see it
+    And in the PDF archived for the record identified by "order", exactly 0 lines appear between text "Bruchsichere Verpackung" and text "Total 40,00"
 
     # each text line's own row carries its text and nothing else -- no article number, name, quantity, unit
     # or price glued onto the same visual line
