@@ -170,29 +170,32 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	@Test
 	void updateASIFromProjectId_WhenASIExists_AndProjectIsNull_ShouldClearProjectAttribute()
 	{
-		// Given
+		// Given: an order line whose ASI carries ProjectValue with a real value, set via C_Project_ID
 		final I_M_Product product = createProduct("Product-3");
+		final I_C_Project project = createProject(PROJECT_VALUE);
 		final I_M_AttributeSetInstance asi = createASI(product);
-
-		// First set a project value
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-		attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, PROJECT_VALUE);
-
 		final I_C_OrderLine orderLine = createOrderLine(product);
 		orderLine.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
+		orderLine.setC_Project_ID(project.getC_Project_ID());
 		saveRecord(orderLine);
 
-		// Now clear the project
-		orderLine.setC_Project_ID(-1);
-
-		// When
 		final IOrderBL toBeTested = Services.get(IOrderBL.class);
 		toBeTested.updateASIFromProjectId(orderLine);
 
-		// Then
+		// sanity: the project value did land on the line's (cloned) ASI before we clear it
+		final AttributeSetInstanceId asiIdWithProject = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
+		assertEquals(PROJECT_VALUE, getProjectValueFromASI(asiIdWithProject));
+
+		// When: the project is cleared and the update runs again
+		orderLine.setC_Project_ID(-1);
+		toBeTested.updateASIFromProjectId(orderLine);
+
+		// Then: the M_AttributeInstance row is still present on the (again cloned) ASI, with a null value
 		final AttributeSetInstanceId updatedAsiId = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
-		final String actualProjectValue = getProjectValueFromASI(updatedAsiId);
-		assertNull(actualProjectValue, "Project attribute should be cleared");
+		final boolean hasProjectValueInstance = attributeSetInstanceBL.getImmutableAttributeSetById(updatedAsiId)
+				.hasAttribute(AttributeConstants.ATTR_Project);
+		assertTrue(hasProjectValueInstance, "ProjectValue instance row should still exist after clearing");
+		assertNull(getProjectValueFromASI(updatedAsiId), "Project attribute value should be cleared");
 	}
 
 	@Test

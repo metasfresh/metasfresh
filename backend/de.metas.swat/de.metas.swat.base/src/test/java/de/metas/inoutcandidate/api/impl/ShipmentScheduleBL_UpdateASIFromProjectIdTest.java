@@ -195,13 +195,20 @@ class ShipmentScheduleBL_UpdateASIFromProjectIdTest
 		final I_M_ShipmentSchedule schedule = createShipmentSchedule(product, asi, ProjectId.ofRepoId(project.getC_Project_ID()), false);
 		shipmentScheduleBL.updateASIFromProjectId(schedule);
 
+		// sanity: the project value did land on the schedule's (cloned) ASI before we clear it
+		final AttributeSetInstanceId asiIdWithProject = AttributeSetInstanceId.ofRepoId(schedule.getM_AttributeSetInstance_ID());
+		assertThat(getProjectValueFromASI(asiIdWithProject)).isEqualTo(PROJECT_VALUE);
+
 		// When: clear the project on the schedule and fire again
 		schedule.setC_Project_ID(0);
 		shipmentScheduleBL.updateASIFromProjectId(schedule);
 
-		// Then
-		assertThat(getProjectValueFromASI(AttributeSetInstanceId.ofRepoId(schedule.getM_AttributeSetInstance_ID())))
-				.isNull();
+		// Then: the M_AttributeInstance row is still present on the (again cloned) ASI, with a null value
+		final AttributeSetInstanceId updatedAsiId = AttributeSetInstanceId.ofRepoId(schedule.getM_AttributeSetInstance_ID());
+		final boolean hasProjectValueInstance = attributeSetInstanceBL.getImmutableAttributeSetById(updatedAsiId)
+				.hasAttribute(AttributeConstants.ATTR_Project);
+		assertThat(hasProjectValueInstance).as("ProjectValue instance row should still exist after clearing").isTrue();
+		assertThat(getProjectValueFromASI(updatedAsiId)).isNull();
 	}
 
 	@Test
