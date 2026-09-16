@@ -32,8 +32,8 @@ const LMQ = 'LMQ#1#{"lotNo":"1M2608280001"}';
 const PICKING_SLOT = 'PICKING_SLOT#1#{"pickingSlotId":1000169,"caption":"slot1"}';
 const PLAIN_DIGITS = '2968132037562';
 
-let now;      // mocked Date.now()  - jumps by the stall
-let eventTs;  // event.timeStamp    - never jumps; the hardware did not pause
+let now; // mocked Date.now()  - jumps by the stall
+let eventTs; // event.timeStamp    - never jumps; the hardware did not pause
 
 function mountReader() {
   const onReadDone = jest.fn();
@@ -76,9 +76,9 @@ function pressKey(key) {
 // because a DataWedge wedge at 0 ms inter-character delay had already queued them.
 function typeWithStall(code, { stallAtIndex, stallMs }) {
   for (let i = 0; i < code.length; i += 1) {
-    if (i === stallAtIndex) now += stallMs;   // handler resumes late...
+    if (i === stallAtIndex) now += stallMs; // handler resumes late...
     now += 1;
-    eventTs += 1;                             // ...but the event was created on time
+    eventTs += 1; // ...but the event was created on time
     pressKey(code[i]);
   }
 }
@@ -118,7 +118,8 @@ describe('me03 31264 - a main-thread stall must not split a scan', () => {
     const rows = [];
     for (const { name, code } of CASES) {
       for (const stallMs of [1200, 2000, 16000]) {
-        now = 10_000; eventTs = 10_000;
+        now = 10_000;
+        eventTs = 10_000;
         jest.clearAllMocks();
         const { onReadDone, restarts } = mountReader();
         typeWithStall(code, { stallAtIndex: Math.floor(code.length / 2), stallMs });
@@ -127,10 +128,10 @@ describe('me03 31264 - a main-thread stall must not split a scan', () => {
         const intact = emissions.some((e) => e === code);
         rows.push(
           `  ${name}  stall=${String(stallMs).padStart(5)}ms  ` +
-          `SPLIT=${split ? 'YES' : 'no '}  ` +
-          `delivered_intact=${intact ? 'yes' : 'NO '}  ` +
-          `emitted=${emissions.length}` +
-          (split ? `  lost_fragment_len=${restarts[0].length}` : '')
+            `SPLIT=${split ? 'YES' : 'no '}  ` +
+            `delivered_intact=${intact ? 'yes' : 'NO '}  ` +
+            `emitted=${emissions.length}` +
+            (split ? `  lost_fragment_len=${restarts[0].length}` : '')
         );
       }
     }
