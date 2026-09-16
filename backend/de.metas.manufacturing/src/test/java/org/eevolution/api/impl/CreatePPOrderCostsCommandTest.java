@@ -25,7 +25,9 @@ package org.eevolution.api.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
+import de.metas.costing.CostingMethod;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.util.lang.Percent;
@@ -39,6 +41,8 @@ import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -208,6 +212,52 @@ public class CreatePPOrderCostsCommandTest
 		final PPOrderCosts ppOrderCosts = new CreatePPOrderCostsCommand(ppOrder).execute();
 
 		final List<PPOrderCost> coProductCostsList = ppOrderCosts.getByProductAndCostElements(coProductId, ImmutableSet.of(helper.costElement.getId()));
+		assertThat(coProductCostsList).hasSize(1);
+		assertThat(coProductCostsList.get(0).getCoProductCostDistributionPercent())
+				.isEqualTo(Percent.of(new BigDecimal("30")));
+	}
+
+	/**
+	 * Unlike {@link #coProductDistributionPercentComesFromProduct()}, the co-product here ALREADY has a
+	 * current cost -- i.e. it goes through the "existing current cost" path instead of the fresh/zero-cost
+	 * path. That path only carries the real product percent through to {@code PP_Order_Cost} for the
+	 * costing methods that trigger the BOM rollup (AveragePO, AverageInvoice, and -- once wired -- MAI);
+	 * for any other costing method the percent is silently dropped.
+	 */
+	@ParameterizedTest
+	@EnumSource(value = CostingMethod.class, names = { "AveragePO", "MovingAverageInvoice" })
+	public void coProductDistributionPercentReachesOrderCost_whenCoProductAlreadyHasACurrentCost(final CostingMethod costingMethod)
+	{
+		final CostElement costElementForMethod = helper.costElementRepo.getOrCreateMaterialCostElement(helper.clientId, costingMethod);
+
+		final ProductId finishedGoodsProductId = BusinessTestHelper.createProductId("finished goods", helper.uomBag);
+		final ProductId componentId = BusinessTestHelper.createProductId("component", helper.uomBag);
+		final ProductId coProductId = helper.createCoProductId("co-product", helper.uomBag, "30");
+
+		helper.currentCost().productId(componentId).currentCostPrice("1").uom(helper.uomBag)
+				.costElementId(costElementForMethod.getId()).build();
+		// IMPORTANT: unlike coProductDistributionPercentComesFromProduct, the co-product ALREADY has a
+		// current cost here -- this is exactly the path that drops the percent unless the costing method
+		// is included in the BOM-rollup wiring.
+		helper.currentCost().productId(coProductId).currentCostPrice("5").uom(helper.uomBag)
+				.costElementId(costElementForMethod.getId()).build();
+
+		final I_PP_Order ppOrder = helper.order()
+				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("100").finishedGoodsUOM(helper.uomEach)
+				.componentId(componentId).componentQtyRequired("100").componentUOM(helper.uomBag)
+				.build();
+
+		helper.orderBOMLine()
+				.ppOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
+				.productId(coProductId)
+				.qtyRequired("-50")
+				.uom(helper.uomBag)
+				.componentType(BOMComponentType.CoProduct)
+				.build();
+
+		final PPOrderCosts ppOrderCosts = new CreatePPOrderCostsCommand(ppOrder).execute();
+
+		final List<PPOrderCost> coProductCostsList = ppOrderCosts.getByProductAndCostElements(coProductId, ImmutableSet.of(costElementForMethod.getId()));
 		assertThat(coProductCostsList).hasSize(1);
 		assertThat(coProductCostsList.get(0).getCoProductCostDistributionPercent())
 				.isEqualTo(Percent.of(new BigDecimal("30")));

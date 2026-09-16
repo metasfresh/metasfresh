@@ -29,6 +29,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -94,6 +95,7 @@ public class PPOrderCostsTestHelper
 	private final AcctSchemaId acctSchemaId;
 	private final CostTypeId costTypeId = CostTypeId.ofRepoId(1);
 	public final CostElement costElement;
+	public final CostElementRepository costElementRepo;
 
 	public PPOrderCostsTestHelper()
 	{
@@ -112,7 +114,7 @@ public class PPOrderCostsTestHelper
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
-		final CostElementRepository costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
+		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		SpringContextHolder.registerJUnitBean(ICurrentCostsRepository.class, new CurrentCostsRepository(costElementRepo));
 		SpringContextHolder.registerJUnitBean(ICostElementRepository.class, costElementRepo);
 
@@ -139,11 +141,12 @@ public class PPOrderCostsTestHelper
 	private void createCurrentCost(
 			final ProductId productId,
 			final I_C_UOM uom,
-			final String currentCostPrice)
+			final String currentCostPrice,
+			@Nullable final CostElementId costElementId)
 	{
 		final I_M_Cost cost = InterfaceWrapperHelper.newInstance(I_M_Cost.class);
 		cost.setC_AcctSchema_ID(acctSchemaId.getRepoId());
-		cost.setM_CostElement_ID(costElement.getId().getRepoId());
+		cost.setM_CostElement_ID((costElementId != null ? costElementId : costElement.getId()).getRepoId());
 		cost.setM_CostType_ID(costTypeId.getRepoId());
 		cost.setM_Product_ID(productId.getRepoId());
 		cost.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());

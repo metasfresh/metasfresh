@@ -378,7 +378,8 @@ final class CreatePPOrderCostsCommand
 	{
 		return ImmutableSet.of(
 				CostingMethod.AverageInvoice,
-				CostingMethod.AveragePO);
+				CostingMethod.AveragePO,
+				CostingMethod.MovingAverageInvoice);
 	}
 
 	@Value
