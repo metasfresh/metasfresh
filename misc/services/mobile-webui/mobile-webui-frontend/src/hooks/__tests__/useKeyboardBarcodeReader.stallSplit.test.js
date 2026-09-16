@@ -5,19 +5,18 @@ import { useKeyboardBarcodeReader } from '../useKeyboardBarcodeReader';
 
 // CHARACTERISATION: what a main-thread stall does to a scan, per code type.
 //
-// useKeyboardBarcodeReader derives the inter-character gap from Date.now(), i.e. the delta between
-// when the HANDLER RAN. A GC pause blocks the main thread; the OS still delivered the keystrokes on
-// time and they queue, so the reader sees a gap the scanner never sent. Verified in a bare browser:
-// across a 1500 ms stall, Date.now() reports a 1506 ms gap while the same events' e.timeStamp
-// reports 6 ms.
+// The gap is derived from Date.now(), i.e. the delta between when the HANDLER RAN, so a blocked
+// main thread makes queued keystrokes look late and the reader sees a gap the scanner never sent.
+// Measured in a bare browser: across a 1500 ms block, Date.now() reports 1506 ms while the same
+// events' e.timeStamp reports 6 ms. What BLOCKS the thread is not established - garbage collection
+// is plausible but unmeasured, and this fix helps only when the gap is an artifact of delayed
+// processing, never when the scanner genuinely paused.
 //
-// A stall is modelled EXACTLY that way here: Date.now() jumps by the stall, while the events'
-// timeStamps keep advancing 1 ms apart (because the hardware never paused).
+// Modelled exactly that way: Date.now() jumps, the events' timestamps keep their 1 ms cadence.
 //
-// The code predicts an ASYMMETRY, and production agrees:
-//   * NOT_APPLICABLE buffers (LMQ#, PICKING_SLOT#, plain digits) flush at gapMs >= rateMs (1000 ms).
-//   * A recognised-but-incomplete HU QR is isPartial and EXEMPT until idleAbandonMs (15000 ms).
-// Prod anomaly rate at 6h+ session age: short codes 5.22%, long HU QR 0.68%.
+// The two code classes differ because of the isPartial exemption, whatever causes the gap:
+// NOT_APPLICABLE buffers flush at rateMs (1000 ms); a recognised-but-incomplete HU QR is exempt
+// until idleAbandonMs (15000 ms).
 //
 // Production sysconfig (read from prod ui_trace eventdata): debounceMillis=1000, minLen=7,
 // idleAbandonMillis=15000.
