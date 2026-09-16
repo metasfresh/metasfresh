@@ -9,22 +9,12 @@ db.version(1).stores({
   events: 'id, event',
 });
 
-// Above this many stored records the v1->v2 upgrade bulk-clears instead of rewriting every row.
-// .modify() rewrites each record inside ONE atomic versionchange transaction that cannot be split.
-// On precisely the devices this change targets - those whose backlog grew unbounded against a failing
-// backend - that transaction is huge: it blocks the tab's DB connection while it runs, and if it
-// aborts (the browser kills a long versionchange, quota is exceeded, the tab is closed) then NOTHING
-// commits, the database stays at v1, and every relaunch retries the same doomed rewrite forever with
-// ui-trace silently dead on that device.
-// Clearing is cheap at any size and costs little here: v1 has no usable order (see below), so the
-// newest records cannot be identified to be spared anyway, and trimOldestEvents cuts the store to
-// this same cap on the very next cycle regardless - which is why it IS the cap, not a second literal.
-
-// v2 indexes the event timestamp. v1's primary key is a uuid and its only secondary index was on
-// `event` - a plain object, which IndexedDB cannot index at all (only number/string/Date/binary and
-// arrays of those), so that index held no entries and dropping it costs nothing. The store therefore
-// had no usable order: neither "send the oldest first" nor "drop the oldest when full" could be
-// expressed, and both are needed to keep it bounded (see getEventsBatch / trimOldestEvents below).
+// Above this many records the v1->v2 upgrade clears instead of backfilling: .modify() rewrites every
+// row in one versionchange transaction that cannot be split, and if it aborts nothing commits, so a
+// huge backlog would retry the same doomed rewrite on every launch. Nothing of value is lost - v1 has
+// no order, so the newest cannot be spared anyway, and trimOldestEvents cuts to this same cap next
+// cycle. v2 adds the ts index; v1 had none usable (its only one was on `event`, a plain object, which
+// IndexedDB cannot index at all).
 db.version(2)
   .stores({
     props: 'key,value',
@@ -34,30 +24,17 @@ db.version(2)
     const events = tx.table('events');
     return events.count().then((count) => {
       if (count > MAX_STORED_EVENTS) return events.clear();
-      // Backfill ts for records written by v1. Dexie omits records whose indexed value is undefined
-      // from that index, so without this backfill the pre-upgrade backlog would be invisible to
-      // every ordered query here - and therefore never sent and never trimmed.
+      // Without the backfill Dexie leaves ts-less v1 records out of the index entirely: never sent,
+      // never trimmed.
       return events.toCollection().modify((record) => {
         record.ts = record.event?.timestamp ?? 0;
       });
     });
   });
 
-// Release the connection when another tab needs to upgrade the schema.
-//
-// IndexedDB will not run an upgrade while any connection to an older version is still open: the
-// upgrading tab's open() sits in `blocked` indefinitely. This app is documented to run as two
-// instances on one handheld (installed PWA plus a browser tab), so a stale tab holding a v1
-// connection can stall a fresh tab's v2 upgrade for as long as it stays open - and the trigger
-// condition is precisely a schema bump like this one.
-//
-// That stall reaches further than it looks: the sync task keeps a single in-flight promise so its
-// two triggers cannot post the same batch twice (see useUIEventsTracing.js), so an await that never
-// settles - here, anything queued behind a blocked open() - would wedge every later sync from both
-// triggers for the life of the tab.
-//
-// Closing is safe for the events still being written: Dexie re-opens on the next operation unless
-// close({ disableAutoOpen: true }) is passed, and this instance is constructed with default options.
+// A stale tab holding a v1 connection blocks a new tab's v2 upgrade indefinitely, and this app does
+// run as two instances on one handheld. Anything queued behind that blocked open() never settles,
+// which wedges the sync mutex for the life of the tab. Dexie re-opens on the next operation.
 db.on('versionchange', () => {
   db.close();
 });
@@ -71,40 +48,22 @@ export const saveEvent = async (event) => {
   }
 };
 
-/**
- * Oldest-first page of stored events, at most `limit` of them.
- *
- * The sync task runs once a second for the whole life of the tab, so the cost of one cycle must not
- * depend on how large the backlog has grown. Reading the entire table (the previous getAllEvents)
- * made a degraded backend quadratic: every second it re-read and re-serialised everything it had so
- * far failed to post.
- */
+// Bounded so one sync cycle costs the same whatever the backlog: reading the whole table every
+// second made a degraded backend quadratic.
 export const getEventsBatch = async (limit) => {
   const records = await db.events.orderBy('ts').limit(limit).toArray();
   return records.map((record) => record.event);
 };
 
-/**
- * Deletes exactly the given ids.
- *
- * Replaces clearEvents(), which emptied the whole table after a successful POST and so destroyed any
- * event saved while that POST was in flight — silent trace loss, worst precisely when the device is
- * scanning fastest and events arrive thickest.
- */
+// Only the posted ids - the previous clearEvents() emptied the table and took with it anything saved
+// while the POST was in flight.
 export const deleteEvents = async (ids) => {
   if (!ids?.length) return;
   await db.events.bulkDelete(ids);
 };
 
-/**
- * Enforces a ceiling on the stored backlog by dropping the OLDEST events, and returns how many were
- * dropped.
- *
- * Without a ceiling, a tab that lives for days with an unreachable backend grows this store without
- * bound: nothing is deleted unless a POST succeeds. Dropping the oldest (rather than refusing new
- * events) is deliberate — a UI trace is read to diagnose what the device is doing now, so the newest
- * events are the ones worth keeping.
- */
+// Nothing is deleted unless a POST succeeds, so an unreachable backend needs this ceiling. Oldest
+// go first: a trace is read to see what the device is doing now.
 export const trimOldestEvents = async (max) => {
   const count = await db.events.count();
   if (count <= max) return 0;

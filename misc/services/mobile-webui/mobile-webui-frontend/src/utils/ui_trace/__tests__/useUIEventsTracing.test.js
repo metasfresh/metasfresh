@@ -2,22 +2,9 @@ import React from 'react';
 import { render } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 
-// UI-trace sync must stay bounded and must not destroy events.
-//
-// Two defects are covered here. Each test below was written against the previous implementation
-// and observed to FAIL there before the fix landed:
-//
-//   1. clearEvents() dropped the WHOLE table after a successful POST, so any event saved while
-//      that POST was in flight was destroyed — silent trace loss, worst exactly when the device
-//      is busy scanning and events arrive fastest.
-//   2. A failing POST cleared nothing, while the periodic task kept reading the ENTIRE store
-//      every second. On a tab that lives for days with a degraded backend, each cycle re-read and
-//      re-serialised a strictly larger backlog, forever.
-//
-// NOTE: react-scripts sets jest `resetMocks: true`, which strips the implementation passed to
-// `jest.fn(impl)` before each test. Every mock implementation must therefore be assigned in
-// beforeEach via mockImplementation — otherwise the mocks return undefined and these tests pass
-// VACUOUSLY (no POST ever fires). Each test below carries an explicit non-vacuity assertion.
+// react-scripts sets jest resetMocks:true, so every mock implementation must be (re)assigned in
+// beforeEach - otherwise these pass vacuously with no POST ever firing. Hence the non-vacuity
+// assertion in each test.
 
 jest.mock('../../../api/ui_trace', () => ({ postEventsToBackend: jest.fn() }));
 jest.mock('../db', () => ({

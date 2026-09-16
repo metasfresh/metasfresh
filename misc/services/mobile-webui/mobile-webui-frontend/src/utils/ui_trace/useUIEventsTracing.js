@@ -6,21 +6,15 @@ import { MAX_EVENTS_PER_SYNC, MAX_STORED_EVENTS } from './constants';
 
 const SYNC_INTERVAL_MILLIS = 1000;
 
-// The two triggers at the bottom of this file - the periodic task AND the `online` listener - are
-// NOT mutually exclusive: usePeriodicTask serialises only its OWN re-invocations. Without this mutex,
-// an `online` event arriving while a POST is in flight starts a second sync that reaches
-// getEventsBatch() before the first reaches deleteEvents(), so it reads the SAME still-undeleted
-// batch and POSTs it again. The backend does not dedupe (UI_Trace's ExternalId index is non-unique
-// and the primary key is server-generated), so that lands as duplicate rows, which then double-count
-// in the api_request_audit joins used to reconstruct a device session.
-// This does NOT give exactly-once delivery: a tab closing between a successful POST and deleteEvents
-// still resends, and the mutex is per-tab while IndexedDB is shared across tabs of the same origin.
-// Closing those requires a server-side unique constraint on ExternalId.
+// The periodic task and the `online` listener both call this and are not mutually exclusive
+// (usePeriodicTask serialises only its own re-invocations), so without the mutex an `online` event
+// during a POST reads the same undeleted batch and posts it twice. The backend does not dedupe -
+// UI_Trace's ExternalId index is non-unique - so that lands as duplicate rows. Not exactly-once: a
+// tab closing between POST and delete still resends, and this is per-tab while IndexedDB is not.
 let inFlightSync = null;
 
 const syncEventsToBackend = (reason = 'programmatic') => {
-  // Coalesce rather than queue: a sync already in flight is draining the same store, so the right
-  // response to a second trigger is to join it, not to start a competing pass over the same events.
+  // Join the in-flight sync rather than queueing: it is already draining the same store.
   if (inFlightSync) return inFlightSync;
   inFlightSync = doSyncEventsToBackend(reason).finally(() => {
     inFlightSync = null;
@@ -30,8 +24,7 @@ const syncEventsToBackend = (reason = 'programmatic') => {
 
 const doSyncEventsToBackend = async (reason) => {
   try {
-    // Enforced FIRST, every cycle, so the offline early-return below is not a path that skips it —
-    // a device out of Wi-Fi coverage is exactly the case where the backlog grows unchecked.
+    // Before the offline check: out of coverage is exactly when the backlog grows unchecked.
     await trimOldestEvents(MAX_STORED_EVENTS);
 
     if (!navigator.onLine) {
@@ -44,8 +37,7 @@ const doSyncEventsToBackend = async (reason) => {
 
     await postEventsToBackend(events);
 
-    // Delete exactly what was posted — never the whole table. Any event saved while the POST above
-    // was in flight is still in the store, unposted, and must survive to be sent on a later cycle.
+    // Only what was posted: anything saved during the POST is still unposted and must survive.
     await deleteEvents(events.map((event) => event.id));
   } catch (error) {
     console.error('Error syncing events:', error);

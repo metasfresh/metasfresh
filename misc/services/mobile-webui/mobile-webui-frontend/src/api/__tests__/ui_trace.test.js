@@ -1,12 +1,7 @@
 import axios from 'axios';
 
-// The trace POST must carry an explicit timeout.
-//
-// axios 0.21's default is 0 (none), and the sync task holds a single in-flight promise so the
-// periodic task and the `online` listener cannot post the same batch twice. A POST that never
-// settles would leave that promise pending forever, so every later sync from either trigger would
-// join a dead promise and do nothing — ui-trace would go permanently silent on the device with no
-// error and no log. The timeout is what makes that unreachable, so it is pinned here.
+// axios 0.21 defaults to no timeout, and the sync holds one in-flight promise - a POST that never
+// settles would wedge every later sync for the life of the tab. So the timeout is pinned here.
 
 jest.mock('axios', () => ({ post: jest.fn() }));
 
