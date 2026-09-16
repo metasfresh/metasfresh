@@ -278,27 +278,27 @@ public interface I_M_Product
 	String COLUMNNAME_Content = "Content";
 
 	/**
-	 * Set Co-Product Fixed Cost Price.
-	 * Manually maintained, overridable fixed cost price for a co-product (rework output). Blank = today's behaviour.
+	 * Set Co-Product Cost Distribution Percent.
+	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = today's quantity-based distribution.
 	 *
-	 * <br>Type: CostPrice
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCoProductFixedCostPrice (@Nullable BigDecimal CoProductFixedCostPrice);
+	void setCoProductCostDistributionPercent (@Nullable BigDecimal CoProductCostDistributionPercent);
 
 	/**
-	 * Get Co-Product Fixed Cost Price.
-	 * Manually maintained, overridable fixed cost price for a co-product (rework output). Blank = today's behaviour.
+	 * Get Co-Product Cost Distribution Percent.
+	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = today's quantity-based distribution.
 	 *
-	 * <br>Type: CostPrice
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getCoProductFixedCostPrice();
+	BigDecimal getCoProductCostDistributionPercent();
 
-	ModelColumn<I_M_Product, Object> COLUMN_CoProductFixedCostPrice = new ModelColumn<>(I_M_Product.class, "CoProductFixedCostPrice", null);
-	String COLUMNNAME_CoProductFixedCostPrice = "CoProductFixedCostPrice";
+	ModelColumn<I_M_Product, Object> COLUMN_CoProductCostDistributionPercent = new ModelColumn<>(I_M_Product.class, "CoProductCostDistributionPercent", null);
+	String COLUMNNAME_CoProductCostDistributionPercent = "CoProductCostDistributionPercent";
 
 	/**
 	 * Get Created.
