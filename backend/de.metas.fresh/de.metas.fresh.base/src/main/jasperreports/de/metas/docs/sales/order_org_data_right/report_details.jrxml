@@ -32,6 +32,7 @@
 	<field name="p_value" class="java.lang.String"/>
 	<field name="p_description" class="java.lang.String"/>
 	<field name="order_description" class="java.lang.String"/>
+	<field name="istextline" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -131,6 +132,7 @@ new Boolean (false)]]></printWhenExpression>
 	<detail>
 		<band height="18" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[!"Y".equals($F{istextline})]]></printWhenExpression>
 			<textField>
 				<reportElement x="56" y="6" width="45" height="12" uuid="ef540692-3078-4ed3-9dfb-47ebd575dbaa">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -222,6 +224,20 @@ new Boolean (false)]]></printWhenExpression>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_description}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA["Y".equals($F{istextline})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="56" y="0" width="394" height="12" uuid="f2c44bc2-cb8d-4f3f-a92c-3d7743cef14e">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Left">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
