@@ -45,6 +45,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
+import org.compiere.acct.FactLineBuilder;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
@@ -500,7 +501,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				final Fact fact = new Fact(this, as, PostingType.Actual);
 				for (final CostDifferenceDistributionLeg leg : legs)
 				{
-					addCostDifferenceFactLine(fact, docLine, docLine.getAccount(leg.getAcctType(), as), leg);
+					addCostDifferenceFactLine(fact, docLine, docLine.getAccount(leg.getAcctType(), as), leg, null);
 				}
 				facts.add(fact);
 			}
@@ -536,7 +537,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			for (final CostDifferenceDistributionLeg leg : coProduct.getLegs())
 			{
 				final Account account = docLine.getAccount(leg.getAcctType(), as, coProduct.getProductId());
-				addCostDifferenceFactLine(fact, docLine, account, leg);
+				addCostDifferenceFactLine(fact, docLine, account, leg, coProduct.getProductId());
 			}
 			facts.add(fact);
 		}
@@ -575,15 +576,21 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	/**
 	 * The line carries a ZERO qty: the receipt already accounted for the quantity, so a qty here would be
 	 * counted a second time by the inventory valuation (Lagerwert) report.
+	 * <p>
+	 * {@code productId} tags the Fact line's own {@code M_Product_ID}. Pass {@code null} for the main
+	 * product's own legs (the line then falls back to {@link DocLine_CostCollector#getProductId()}, i.e. the
+	 * main product); pass the co-product's own {@link ProductId} for a co-product's legs so it carries its
+	 * own product instead of silently inheriting the main product's.
 	 */
 	private void addCostDifferenceFactLine(
 			@NonNull final Fact fact,
 			@NonNull final DocLine_CostCollector docLine,
 			@NonNull final Account account,
-			@NonNull final CostDifferenceDistributionLeg leg)
+			@NonNull final CostDifferenceDistributionLeg leg,
+			@Nullable final ProductId productId)
 	{
 		final CostAmount absAmt = leg.getAbsAmt();
-		fact.createLine()
+		final FactLineBuilder factLineBuilder = fact.createLine()
 				.setDocLine(docLine)
 				.setAccount(account)
 				.setAmtSource(absAmt.getCurrencyId(),
@@ -594,8 +601,14 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 				.projectId(docLine.getC_Project_ID())
 				.activityId(docLine.getActivityId())
 				.campaignId(docLine.getC_Campaign_ID())
-				.locatorId(docLine.getM_Locator_ID())
-				.buildAndAdd();
+				.locatorId(docLine.getM_Locator_ID());
+
+		if (productId != null)
+		{
+			factLineBuilder.productId(productId);
+		}
+
+		factLineBuilder.buildAndAdd();
 	}
 
 	/**
