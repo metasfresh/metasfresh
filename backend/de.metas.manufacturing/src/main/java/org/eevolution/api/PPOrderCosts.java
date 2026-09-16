@@ -26,8 +26,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -63,15 +61,6 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 public final class PPOrderCosts
 {
-	/**
-	 * The costing methods under which the manual co-product {@code CoProductFixedCostPrice} valuation is supported.
-	 * Both legs of the feature (the post-calc relief here and the co-product receipt valuation in the costing-method
-	 * handlers) exist ONLY for these two methods; a fixed price set under any other method drives the two legs out of
-	 * sync (leg A relieves, leg B does not), so it is rejected at posting rather than silently applied.
-	 */
-	private static final ImmutableSet<CostingMethod> COSTING_METHODS_SUPPORTING_FIXED_CO_PRODUCT_PRICE =
-			ImmutableSet.of(CostingMethod.AveragePO, CostingMethod.MovingAverageInvoice);
-
 	@Getter
 	private final PPOrderId orderId;
 	private final HashMap<CostSegmentAndElement, PPOrderCost> costs;
@@ -279,41 +268,10 @@ public final class PPOrderCosts
 				.orElseThrow(() -> new AdempiereException("No inbound costs found in " + costs));
 
 		//
-		// Update co-product costs and calculate total co-product costs.
-		// A co-product whose product carries a manual CoProductFixedCostPrice is valued at fixedPrice x received-qty
-		// (so the main product is relieved by the remainder); a blank price keeps today's qty-distribution behaviour.
-		final List<ProductId> fixedPricedCoProductIds = new ArrayList<>();
-		for (final PPOrderCost coProductCost : coProductCosts)
-		{
-			final BigDecimal fixedCostPrice = fixedCostPriceProvider.getFixedCostPrice(coProductCost.getProductId()).orElse(null);
-			final CostAmount coProductAmount;
-			if (fixedCostPrice != null)
-			{
-				// C3 method-gate: the ORDER's costing method (the acct schema's — passed in as costingMethod, NOT
-				// the invoking handler's; see the handlers' getAcctSchemaCostingMethod) must be Average PO or Moving
-				// Average Invoice. Under any other method leg B never books the co-product receipt at the fixed price,
-				// so applying the relief would silently unbalance the order — reject at posting instead. Gated on the
-				// co-product having actually been received (accumulatedQty != 0 — the point the fixed price is applied),
-				// mirroring the qty-driven negative-main and by-product guards so the reject binds at the co-product
-				// receipt rather than at an earlier component issue.
-				if (!coProductCost.getAccumulatedQty().isZero()
-						&& !COSTING_METHODS_SUPPORTING_FIXED_CO_PRODUCT_PRICE.contains(costingMethod))
-				{
-					throw new AdempiereException("Co-product fixed cost price for " + describeProducts(fixedCostPriceProvider, ImmutableList.of(coProductCost.getProductId()))
-							+ " is set, but the fixed-price co-product valuation is supported only under the Average PO and Moving Average Invoice costing methods, not " + costingMethod);
-				}
-				coProductAmount = CostAmount.of(
-								fixedCostPrice.multiply(coProductCost.getAccumulatedQty().toBigDecimal()),
-								totalInboundCostAmount.getCurrencyId())
-						.roundToPrecisionIfNeeded(precision);
-				fixedPricedCoProductIds.add(coProductCost.getProductId());
-			}
-			else
-			{
-				coProductAmount = computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision);
-			}
-			coProductCost.setPostCalculationAmount(coProductAmount);
-		}
+		// Update co-product costs and calculate total co-product costs: every co-product is valued through
+		// computeBlankCoProductAmount — the AC5 seam (CP_i = p_i x SigmaInboundCost, realized as pool x percent).
+		coProductCosts.forEach(coProductCost ->
+				coProductCost.setPostCalculationAmount(computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision)));
 		final CostAmount totalCoProductsCostAmount = coProductCosts.stream()
 				.map(PPOrderCost::getPostCalculationAmount)
 				.reduce(CostAmount::add)
@@ -325,35 +283,16 @@ public final class PPOrderCosts
 		final CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
 		if (mainProductAmount.signum() < 0)
 		{
-			final List<ProductId> offendingCoProductIds = !fixedPricedCoProductIds.isEmpty()
-					? fixedPricedCoProductIds
-					: coProductCosts.stream().map(PPOrderCost::getProductId).collect(Collectors.toList());
-			throw new AdempiereException("Co-product fixed cost price for " + describeProducts(fixedCostPriceProvider, offendingCoProductIds)
-					+ " values the co-products at " + totalCoProductsCostAmount
-					+ ", which exceeds the production order's input cost pool of " + totalInboundCostAmount
+			throw new AdempiereException("Co-products' total valuation " + totalCoProductsCostAmount
+					+ " exceeds the production order's input cost pool of " + totalInboundCostAmount
 					+ " and would drive the main product negative");
 		}
 
 		//
 		// Clear by-product costs.
-		// C2 by-product guard: the fixed-price valuation applies to co-product (CP) lines ONLY, symmetric with
-		// leg B. Once a by-product line whose product carries a fixed price is actually RECEIVED (accumulatedQty
-		// != 0), its receipt would capitalize at the fixed price (leg B) while this post-calc zeroes it (leg A) —
-		// a silent divergence — so reject at posting instead. Mirrors the qty-driven negative-main guard above:
-		// the reject binds at the point the fixed price would actually be applied, not at an earlier component
-		// issue when the by-product has not been produced yet. Runs BEFORE the main-product mutation below so a
-		// reject throws before any post-calculation amount is changed, like the two guards above.
 		costs.stream()
 				.filter(PPOrderCost::isByProduct)
-				.forEach(byProductCost -> {
-					if (!byProductCost.getAccumulatedQty().isZero()
-							&& fixedCostPriceProvider.getFixedCostPrice(byProductCost.getProductId()).isPresent())
-					{
-						throw new AdempiereException("Co-product fixed cost price for " + describeProducts(fixedCostPriceProvider, ImmutableList.of(byProductCost.getProductId()))
-								+ " is set on a by-product (BY) line, but the fixed-price valuation is supported for co-product (CP) lines only, not by-products");
-					}
-					byProductCost.setPostCalculationAmountAsZero();
-				});
+				.forEach(PPOrderCost::setPostCalculationAmountAsZero);
 
 		//
 		// Update main product cost

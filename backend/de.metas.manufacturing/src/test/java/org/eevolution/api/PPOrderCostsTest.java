@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -146,13 +145,14 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * A co-product whose product carries a manual {@code CoProductFixedCostPrice} must be valued at
-	 * {@code fixedPrice x co_qty} (relieving the main product by the remainder, cost conserved), replacing the
-	 * qty-derived {@code coProductCostDistributionPercent} path. Customer case: 450 CHF pool, Randstücke 6 kg
-	 * fixed at 8 CHF/kg -> co-product 48, main 402, Sigma = 450.
+	 * AC5 seam: a co-product whose product carries a (would-be) manual fixed cost price is STILL valued at
+	 * {@code percent x pool} via {@code computeBlankCoProductAmount}, NOT at {@code fixedPrice x qty} — the
+	 * {@code FixedCostPriceProvider} leg is no longer consulted by the post-calculation at all. Same pool/percent
+	 * as the fixed-price scenario this replaces (450 pool, 20%, Randstücke 6 kg, field set to 8) would previously
+	 * have produced 48 (fixedPrice x qty); the collapsed seam now produces 90 (percent x pool) regardless.
 	 */
 	@Test
-	public void testFixedPrice_reliefAndConservation()
+	public void testCoProductWithFixedPriceFieldSet_valuedByPercentTimesPool_notFixedPriceTimesQty()
 	{
 		final ProductId mainProductId = createProduct("blocks_main", null);
 		final ProductId issueProductId = createProduct("input_milk", null);
@@ -184,10 +184,10 @@ public class PPOrderCostsTest
 
 		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
 
-		// co-product valued at fixedPrice(8) * co_qty(6) = 48, NOT the 20%-distribution (= 450 * 20% = 90)
-		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("48"));
-		// main relieved by the remainder 450 - 48 = 402
-		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("402"));
+		// percent(20%) x pool(450) = 90, NOT fixedPrice(8) x qty(6) = 48
+		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
+		// main relieved by the remainder 450 - 90 = 360
+		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("360"));
 		// cost conserved: Sigma(outputs) = totalInbound
 		final BigDecimal sumOutputs = getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal()
 				.add(getPostCalculationCostAmt(orderCosts, coProductId).toBigDecimal());
@@ -195,16 +195,16 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * The guard: when {@code Sigma(CoProductFixedCostPrice x co_qty)} would exceed the total input cost pool (so the
-	 * main product would be driven negative), costing must throw an {@link AdempiereException} naming the offending
-	 * product and both amounts, and must NOT persist a negative main-product amount. Here 80 * 6 = 480 > 450.
+	 * The bare conservation guard (Task 8 later refines it into the AC6 {@code Sigma p <= 100%} guard): when the
+	 * co-products' percent-carved total exceeds the order's input cost pool, the main product would go negative —
+	 * costing must reject BEFORE persisting a negative main-product amount. Here percent 120% x pool 450 = 540 > 450.
 	 */
 	@Test
-	public void testFixedPrice_guardThrowsWhenMainNegative()
+	public void testConservationGuard_throwsWhenCoProductsExceedPool()
 	{
 		final ProductId mainProductId = createProduct("blocks_main", null);
 		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("Randstuecke", new BigDecimal("80"));
+		final ProductId coProductId = createProduct("overclaimed_coproduct", null);
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -225,16 +225,15 @@ public class PPOrderCostsTest
 						.trxType(PPOrderCostTrxType.CoProduct)
 						.costSegmentAndElement(costSegmentAndElement(coProductId))
 						.price(CostPrice.zero(currencyId, uomId))
-						.coProductCostDistributionPercent(Percent.of(20))
+						.coProductCostDistributionPercent(Percent.of(120))
 						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
 						.build())
 				.build();
 
-		// fixedPrice(80) * co_qty(6) = 480 > totalInbound 450 -> main would go negative -> guard must reject
+		// percent(120%) x pool(450) = 540 > totalInbound 450 -> main would go negative -> guard must reject
 		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, CostingMethod.AveragePO, fixedCostPriceProvider))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Randstuecke")
-				.hasMessageContaining("480")
+				.hasMessageContaining("540")
 				.hasMessageContaining("450");
 
 		// the guard must reject BEFORE persisting a negative main-product amount
@@ -243,58 +242,11 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * C3 method-gate: the fixed-price co-product valuation is supported ONLY when the ORDER's costing method
-	 * (the acct schema's — the {@code costingMethod} argument) is Average PO or Moving Average Invoice. A
-	 * received co-product carrying a fixed price under any other method (here LastPO) must be REJECTED at posting
-	 * rather than silently applied (leg A applies the relief but leg B never books the receipt at the fixed price
-	 * → the two legs diverge). Same fail-loud policy as the negative-main guard.
+	 * By-products are always zeroed, unconditionally — even when the product carries a (would-be) fixed-price
+	 * field, since the fixed-price leg is no longer consulted. No throw, no by-product-specific guard.
 	 */
 	@Test
-	public void testFixedPrice_rejectedUnderUnsupportedCostingMethod()
-	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("Randstuecke", new BigDecimal("8"));
-
-		final PPOrderCosts orderCosts = PPOrderCosts.builder()
-				.orderId(ppOrderId)
-				.cost(PPOrderCost.builder()
-						.trxType(PPOrderCostTrxType.MainProduct)
-						.costSegmentAndElement(costSegmentAndElement(mainProductId))
-						.price(CostPrice.zero(currencyId, uomId))
-						.accumulatedQty(Quantity.zero(uom))
-						.build())
-				.cost(PPOrderCost.builder()
-						.trxType(PPOrderCostTrxType.MaterialIssue)
-						.costSegmentAndElement(costSegmentAndElement(issueProductId))
-						.price(CostPrice.zero(currencyId, uomId))
-						.accumulatedAmount(CostAmount.of(450, currencyId))
-						.accumulatedQty(Quantity.zero(uom))
-						.build())
-				.cost(PPOrderCost.builder()
-						.trxType(PPOrderCostTrxType.CoProduct)
-						.costSegmentAndElement(costSegmentAndElement(coProductId))
-						.price(CostPrice.zero(currencyId, uomId))
-						.coProductCostDistributionPercent(Percent.of(20))
-						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
-						.build())
-				.build();
-
-		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, CostingMethod.LastPOPrice, fixedCostPriceProvider))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Randstuecke")
-				.hasMessageContaining("Moving Average Invoice")
-				.hasMessageContaining("LastPOPrice");
-	}
-
-	/**
-	 * C2 by-product guard: the fixed-price valuation applies to co-product (CP) lines ONLY. A by-product (BY)
-	 * line whose product carries a fixed price is an unsupported combination (leg A zeroes BY, so the receipt
-	 * would capitalize at the fixed price with nothing relieving it) → it must be REJECTED at posting, not
-	 * silently zeroed.
-	 */
-	@Test
-	public void testFixedPrice_byProductWithFixedPrice_rejected()
+	public void testByProduct_alwaysZeroed_regardlessOfFixedPriceField()
 	{
 		final ProductId mainProductId = createProduct("blocks_main", null);
 		final ProductId issueProductId = createProduct("input_milk", null);
@@ -323,23 +275,22 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, CostingMethod.AveragePO, fixedCostPriceProvider))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("whey_feed")
-				.hasMessageContaining("by-product");
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+
+		this.assertThatPostCalculationAmt(orderCosts, byProductId).isEqualByComparingTo(BigDecimal.ZERO);
+		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("450"));
 	}
 
 	/**
-	 * L1: a NEGATIVE {@code CoProductFixedCostPrice} is treated-as-unset (consistent with the blank fallback,
-	 * the safe behaviour) — the provider filters it out ({@code signum() > 0}), so the co-product keeps today's
-	 * qty-distribution (450 * 20% = 90, main 360) and there is NO throw. A negative price never drives valuation.
+	 * AC6 no-regression / formula: a BLANK fixed-price field leaves the qty-distribution formula intact - the
+	 * co-product is valued by {@code coProductCostDistributionPercent x pool} (450 * 20% = 90), main = 360.
 	 */
 	@Test
-	public void testNegativeFixedPrice_treatedAsUnset()
+	public void testBlankFixedPriceField_percentDistributionFormulaApplies()
 	{
 		final ProductId mainProductId = createProduct("blocks_main", null);
 		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("Randstuecke", new BigDecimal("-8")); // negative -> treated as unset
+		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK fixed price field
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -367,50 +318,6 @@ public class PPOrderCostsTest
 
 		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
 
-		// negative price ignored -> qty-distribution (unchanged), no throw
-		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
-		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("360"));
-	}
-
-	/**
-	 * AC6 no-regression: a BLANK {@code CoProductFixedCostPrice} leaves today's behaviour intact - the co-product
-	 * is still valued by {@code coProductCostDistributionPercent} (450 * 20% = 90), main = 360, no throw.
-	 * This test passes today and must keep passing after the fixed-price relief is implemented.
-	 */
-	@Test
-	public void testBlankFixedPrice_unchanged()
-	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK fixed price
-
-		final PPOrderCosts orderCosts = PPOrderCosts.builder()
-				.orderId(ppOrderId)
-				.cost(PPOrderCost.builder()
-						.trxType(PPOrderCostTrxType.MainProduct)
-						.costSegmentAndElement(costSegmentAndElement(mainProductId))
-						.price(CostPrice.zero(currencyId, uomId))
-						.accumulatedQty(Quantity.zero(uom))
-						.build())
-				.cost(PPOrderCost.builder()
-						.trxType(PPOrderCostTrxType.MaterialIssue)
-						.costSegmentAndElement(costSegmentAndElement(issueProductId))
-						.price(CostPrice.zero(currencyId, uomId))
-						.accumulatedAmount(CostAmount.of(450, currencyId))
-						.accumulatedQty(Quantity.zero(uom))
-						.build())
-				.cost(PPOrderCost.builder()
-						.trxType(PPOrderCostTrxType.CoProduct)
-						.costSegmentAndElement(costSegmentAndElement(coProductId))
-						.price(CostPrice.zero(currencyId, uomId))
-						.coProductCostDistributionPercent(Percent.of(20))
-						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
-						.build())
-				.build();
-
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
-
-		// blank fixed price -> unchanged 20%-distribution: co = 450 * 20% = 90, main = 360 (AC6 no-regression)
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
 		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("360"));
 		final BigDecimal sumOutputs = getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal()
@@ -419,21 +326,15 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * The seam: {@code updatePostCalculationAmounts} must resolve the co-product fixed price through the injected
-	 * {@link FixedCostPriceProvider}, NOT by reading the product master itself. Proven by giving the co-product a
-	 * BLANK master fixed price but injecting a fake provider that returns 8: the fixed-price path (8 * 6 = 48) must
-	 * win over the qty-distribution path the blank master would otherwise take (450 * 20% = 90).
+	 * Explicit 0% (not null/blank) must carve zero too - {@code computeBlankCoProductAmount}'s guard is
+	 * {@code signum() <= 0}, so a co-product that explicitly distributes 0% claims nothing from the pool.
 	 */
 	@Test
-	public void testFixedPrice_resolvedThroughInjectedProvider_notProductMaster()
+	public void testExplicitZeroPercent_carvesZero()
 	{
 		final ProductId mainProductId = createProduct("blocks_main", null);
 		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK in the master
-
-		final FixedCostPriceProvider fakeProvider = productId -> productId.equals(coProductId)
-				? Optional.of(new BigDecimal("8"))
-				: Optional.empty();
+		final ProductId coProductId = createProduct("zero_pct_coproduct", null);
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -454,16 +355,156 @@ public class PPOrderCostsTest
 						.trxType(PPOrderCostTrxType.CoProduct)
 						.costSegmentAndElement(costSegmentAndElement(coProductId))
 						.price(CostPrice.zero(currencyId, uomId))
-						.coProductCostDistributionPercent(Percent.of(20))
+						.coProductCostDistributionPercent(Percent.of(0)) // explicit 0%, not null
 						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
 						.build())
 				.build();
 
-		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fakeProvider);
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
 
-		// the INJECTED provider (8) was consulted, not the blank master (which would give the 90 distribution)
-		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("48"));
-		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("402"));
+		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(BigDecimal.ZERO);
+		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("450"));
+	}
+
+	/**
+	 * AC12: adding a second co-product must leave the first co-product's carve unchanged - each co-product's
+	 * amount is {@code percent x pool} independently, not a remainder-based split among co-products.
+	 */
+	@Test
+	public void testSecondCoProduct_doesNotChangeFirstCoProductsCarve()
+	{
+		final ProductId mainProductId = createProduct("blocks_main", null);
+		final ProductId issueProductId = createProduct("input_milk", null);
+		final ProductId coProductAId = createProduct("coproduct_a", null);
+		final ProductId coProductBId = createProduct("coproduct_b", null);
+
+		final PPOrderCosts orderCostsAOnly = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductAId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(20))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.build();
+		orderCostsAOnly.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+
+		final PPOrderCosts orderCostsAAndB = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductAId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(20))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductBId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(10))
+						.accumulatedQty(Quantity.of(new BigDecimal("3"), uom))
+						.build())
+				.build();
+		orderCostsAAndB.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+
+		// A's carve (450 * 20% = 90) is IDENTICAL whether B is present or not
+		this.assertThatPostCalculationAmt(orderCostsAOnly, coProductAId).isEqualByComparingTo(new BigDecimal("90"));
+		this.assertThatPostCalculationAmt(orderCostsAAndB, coProductAId).isEqualByComparingTo(new BigDecimal("90"));
+	}
+
+	/**
+	 * AC13 pool-cap: a co-product's carve is {@code percent x pool}, independent of its received qty
+	 * ({@code accumulatedQty}) - a larger received quantity must NOT raise the co-product's total claim on the
+	 * pool. Same percent (20%) and pool (450), qty 1 vs qty 100 -> identical 90 carve both times.
+	 */
+	@Test
+	public void testReceivedQtyDoesNotRaiseTotalClaim()
+	{
+		final ProductId mainProductId = createProduct("blocks_main", null);
+		final ProductId issueProductId = createProduct("input_milk", null);
+		final ProductId coProductSmallQtyId = createProduct("coproduct_smallqty", null);
+		final ProductId coProductLargeQtyId = createProduct("coproduct_largeqty", null);
+
+		final PPOrderCosts orderCostsSmallQty = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductSmallQtyId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(20))
+						.accumulatedQty(Quantity.of(new BigDecimal("1"), uom))
+						.build())
+				.build();
+		orderCostsSmallQty.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+
+		final PPOrderCosts orderCostsLargeQty = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductLargeQtyId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(20))
+						.accumulatedQty(Quantity.of(new BigDecimal("100"), uom))
+						.build())
+				.build();
+		orderCostsLargeQty.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO, fixedCostPriceProvider);
+
+		this.assertThatPostCalculationAmt(orderCostsSmallQty, coProductSmallQtyId).isEqualByComparingTo(new BigDecimal("90"));
+		this.assertThatPostCalculationAmt(orderCostsLargeQty, coProductLargeQtyId).isEqualByComparingTo(new BigDecimal("90"));
 	}
 
 	/**
