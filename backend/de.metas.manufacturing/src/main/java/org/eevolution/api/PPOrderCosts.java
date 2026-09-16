@@ -341,6 +341,25 @@ public final class PPOrderCosts
 		return computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision);
 	}
 
+	/**
+	 * The amount a by-product receipt must capitalize to inventory: ZERO, regardless of the by-product's own
+	 * current M_Cost - symmetric to the by-product's central post-calculation zeroing (leg A, above:
+	 * {@code costs.stream().filter(PPOrderCost::isByProduct).forEach(PPOrderCost::setPostCalculationAmountAsZero)}).
+	 * A costing-method handler values the by-product receipt (leg B) at this amount so a stray current cost on
+	 * the by-product's own product cannot drive the AvgPO/MAI pool negative. Keyed on {@link PPOrderCost#isByProduct()}
+	 * alone - no fixed-price/percent artefact - unlike the co-product share in {@link #getBlankCoProductReceiptAmount}.
+	 */
+	public CostAmount getByProductReceiptAmount(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	{
+		final PPOrderCost byProductCost = getByCostSegmentAndElement(costSegmentAndElement)
+				.orElseThrow(() -> new AdempiereException("No by-product cost row found for " + costSegmentAndElement));
+		if (!byProductCost.isByProduct())
+		{
+			throw new AdempiereException("Not a by-product cost row: " + byProductCost);
+		}
+		return byProductCost.getAccumulatedAmount().toZero();
+	}
+
 	private CostAmount getTotalInboundCostAmount(@NonNull final CostElementId costElementId)
 	{
 		final List<PPOrderCost> costsForElement = filterAndList(PPOrderCostFilter.builder()

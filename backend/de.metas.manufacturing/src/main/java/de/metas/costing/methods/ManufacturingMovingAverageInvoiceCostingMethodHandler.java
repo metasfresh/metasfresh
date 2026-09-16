@@ -172,6 +172,13 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 				&& orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
 						.map(PPOrderCost::isCoProduct)
 						.orElse(false);
+		// AC15: a by-product receipt always books ZERO, regardless of the by-product's own current M_Cost -
+		// symmetric to the by-product's central post-calculation zeroing in PPOrderCosts. Keyed on isByProduct()
+		// alone, so a stray current cost on the by-product's own product cannot drive the MAI pool negative.
+		final boolean isByProductReceipt = isCoOrByProductReceipt
+				&& orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
+						.map(PPOrderCost::isByProduct)
+						.orElse(false);
 
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
@@ -191,6 +198,10 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 				// price to share (unlike the fixed-price one), so the share amount is taken directly, not derived
 				// from a price; the receipt still carries its qty, so the value reaches P_Asset with the received qty.
 				amt = orderCosts.getBlankCoProductReceiptAmount(costSegmentAndElement, getCostingPrecision(request));
+			}
+			else if (isByProductReceipt)
+			{
+				amt = orderCosts.getByProductReceiptAmount(costSegmentAndElement);
 			}
 			else
 			{
