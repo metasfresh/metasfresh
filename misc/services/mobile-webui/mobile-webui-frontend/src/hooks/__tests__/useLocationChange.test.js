@@ -5,18 +5,8 @@ import { createBrowserHistory } from 'history';
 
 import { useLocationChange } from '../useLocationChange';
 
-// useLocationChange must fire on EVERY navigation, including history.push/replace.
-//
-// It used to listen only for the native 'popstate'/'hashchange' events, which fire for browser
-// back/forward but NOT for pushState/replaceState — and useMobileNavigation routes essentially all
-// in-app navigation through history.replace(). What actually drove the callback was the fact that
-// its host component remounted on each navigation, re-running the mount-time trackLocation().
-//
-// That made the hook silently dependent on being mounted per screen. ScreenToaster relies on it to
-// dismiss toasts on navigation (toast.dismiss()), so once ScreenToaster was mounted once at the app
-// root instead, a toast raised on one screen would persist onto the next.
-//
-// These tests pin the behaviour the hook is supposed to provide, independent of remounting.
+// The hook used to fire only via popstate/hashchange, which pushState/replaceState never emit - it
+// worked only because its caller remounted on each navigation. These pin it without that accident.
 
 const Probe = ({ onChange }) => {
   useLocationChange(onChange);
@@ -24,8 +14,7 @@ const Probe = ({ onChange }) => {
 };
 
 beforeEach(() => {
-  // Both the stored marker and the URL carry over between tests in jsdom; reset both so each test
-  // starts from a known location (the hook compares window.location.href against the marker).
+  // jsdom carries both over between tests, and the hook compares one against the other.
   sessionStorage.clear();
   window.history.replaceState({}, '', '/');
 });
