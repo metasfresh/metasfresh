@@ -260,6 +260,28 @@ public final class PPOrderCosts
 				.collect(ImmutableList.toImmutableList());
 
 		//
+		// AC6 guard: Sigma p_i <= 100%. The co-products' cost distribution percent must not exceed the whole pool.
+		// This is the single consumption point of the percent (post-calc is one-shot; PP_Order closes afterward),
+		// so it is checked here, in PERCENT-space, BEFORE any amount is carved from the pool - fail loud and name
+		// the offending co-product(s) + the sum, rather than let it surface later as a negative main product.
+		final Percent totalCoProductDistributionPercent = coProductCosts.stream()
+				.map(PPOrderCost::getCoProductCostDistributionPercent)
+				.filter(percent -> percent != null && percent.signum() > 0)
+				.reduce(Percent.ZERO, Percent::add);
+		if (totalCoProductDistributionPercent.compareTo(Percent.ONE_HUNDRED) > 0)
+		{
+			final List<ProductId> offendingProductIds = coProductCosts.stream()
+					.filter(coProductCost -> {
+						final Percent percent = coProductCost.getCoProductCostDistributionPercent();
+						return percent != null && percent.signum() > 0;
+					})
+					.map(PPOrderCost::getProductId)
+					.collect(ImmutableList.toImmutableList());
+			throw new AdempiereException("Co-products' cost distribution percent sum of " + totalCoProductDistributionPercent
+					+ " exceeds 100% for product(s): " + describeProducts(fixedCostPriceProvider, offendingProductIds));
+		}
+
+		//
 		// Update inbound costs and calculate total inbound costs
 		inboundCosts.forEach(PPOrderCost::setPostCalculationAmountAsAccumulatedAmt);
 		final CostAmount totalInboundCostAmount = inboundCosts.stream()
@@ -278,8 +300,11 @@ public final class PPOrderCosts
 				.orElseGet(totalInboundCostAmount::toZero);
 
 		//
-		// Guard: the co-products must not consume more than the order's input cost pool, which would drive the
-		// main product's value negative. Reject here, BEFORE persisting the negative main-product amount below.
+		// Value-space BACKSTOP (kept behind the percent-space AC6 guard above): the co-products must not consume
+		// more than the order's input cost pool, which would drive the main product's value negative. The percent
+		// guard above rejects Sigma p > 100% before any amount is computed, so this only catches whatever that
+		// check does not reach (e.g. rounding at the pool's precision). Reject here, BEFORE persisting the
+		// negative main-product amount below.
 		final CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
 		if (mainProductAmount.signum() < 0)
 		{

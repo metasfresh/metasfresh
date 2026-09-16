@@ -28,8 +28,6 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nullable;
-
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -93,9 +91,9 @@ public class PPOrderCostsTest
 		// master live for the fixed-price relief, and each by-product's master live for the by-product fixed-price
 		// reject-guard (both via IProductDAO.getById, fail-loud) — so a fabricated ProductId with no M_Product row would
 		// throw. Blank fixed price -> today's qty-distribution behaviour is exercised.
-		final ProductId coProductId3 = createProduct("coproduct_20pct", null);
-		final ProductId coProductId4 = createProduct("coproduct_10pct", null);
-		final ProductId byProductId = createProduct("byproduct", null);
+		final ProductId coProductId3 = createProduct("coproduct_20pct");
+		final ProductId coProductId4 = createProduct("coproduct_10pct");
+		final ProductId byProductId = createProduct("byproduct");
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -153,9 +151,9 @@ public class PPOrderCostsTest
 	@Test
 	public void testCoProductWithFixedPriceFieldSet_valuedByPercentTimesPool_notFixedPriceTimesQty()
 	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("Randstuecke", new BigDecimal("8"));
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductId = createProduct("Randstuecke");
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -194,16 +192,16 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * The bare conservation guard (Task 8 later refines it into the AC6 {@code Sigma p <= 100%} guard): when the
-	 * co-products' percent-carved total exceeds the order's input cost pool, the main product would go negative —
-	 * costing must reject BEFORE persisting a negative main-product amount. Here percent 120% x pool 450 = 540 > 450.
+	 * AC6 {@code Sigma p <= 100%} guard, single-offender case: the co-products' distribution percent must not
+	 * exceed 100% of the pool, in PERCENT-space — checked and rejected BEFORE any amount is carved from the pool
+	 * (and therefore before the main product could ever be driven negative). Here a single co-product claims 120%.
 	 */
 	@Test
 	public void testConservationGuard_throwsWhenCoProductsExceedPool()
 	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("overclaimed_coproduct", null);
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductId = createProduct("overclaimed_coproduct");
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -229,11 +227,66 @@ public class PPOrderCostsTest
 						.build())
 				.build();
 
-		// percent(120%) x pool(450) = 540 > totalInbound 450 -> main would go negative -> guard must reject
+		// Sigma p = 120% > 100% -> guard must reject in percent-space, naming the offending product + the sum
 		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, CostingMethod.AveragePO, fixedCostPriceProvider))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("540")
-				.hasMessageContaining("450");
+				.hasMessageContaining("120%")
+				.hasMessageContaining("overclaimed_coproduct");
+
+		// the guard must reject BEFORE persisting a negative main-product amount
+		assertThat(getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal())
+				.isGreaterThanOrEqualTo(BigDecimal.ZERO);
+	}
+
+	/**
+	 * AC6 {@code Sigma p <= 100%} guard, two-co-product case: no single co-product exceeds 100% on its own, but
+	 * their SUM does (60% + 50% = 110%) - the guard must still reject, naming BOTH offending products and the sum.
+	 */
+	@Test
+	public void testConservationGuard_throwsWhenTwoCoProductsSumExceedsPool()
+	{
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductAId = createProduct("overclaimed_coproduct_a");
+		final ProductId coProductBId = createProduct("overclaimed_coproduct_b");
+
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(450, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductAId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(60))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductBId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of(50))
+						.accumulatedQty(Quantity.of(new BigDecimal("3"), uom))
+						.build())
+				.build();
+
+		// Sigma p = 60% + 50% = 110% > 100% -> guard must reject, naming both products + the sum
+		assertThatThrownBy(() -> orderCosts.updatePostCalculationAmountsForCostElement(costingPrecision, costElementId, CostingMethod.AveragePO, fixedCostPriceProvider))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("110%")
+				.hasMessageContaining("overclaimed_coproduct_a")
+				.hasMessageContaining("overclaimed_coproduct_b");
 
 		// the guard must reject BEFORE persisting a negative main-product amount
 		assertThat(getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal())
@@ -247,9 +300,9 @@ public class PPOrderCostsTest
 	@Test
 	public void testByProduct_alwaysZeroed_regardlessOfFixedPriceField()
 	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId byProductId = createProduct("whey_feed", new BigDecimal("8"));
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId byProductId = createProduct("whey_feed");
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -287,9 +340,9 @@ public class PPOrderCostsTest
 	@Test
 	public void testBlankFixedPriceField_percentDistributionFormulaApplies()
 	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK fixed price field
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductId = createProduct("Randstuecke"); // BLANK distribution percent field
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -331,9 +384,9 @@ public class PPOrderCostsTest
 	@Test
 	public void testExplicitZeroPercent_carvesZero()
 	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("zero_pct_coproduct", null);
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductId = createProduct("zero_pct_coproduct");
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -372,10 +425,10 @@ public class PPOrderCostsTest
 	@Test
 	public void testSecondCoProduct_doesNotChangeFirstCoProductsCarve()
 	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductAId = createProduct("coproduct_a", null);
-		final ProductId coProductBId = createProduct("coproduct_b", null);
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductAId = createProduct("coproduct_a");
+		final ProductId coProductBId = createProduct("coproduct_b");
 
 		final PPOrderCosts orderCostsAOnly = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -447,10 +500,10 @@ public class PPOrderCostsTest
 	@Test
 	public void testReceivedQtyDoesNotRaiseTotalClaim()
 	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductSmallQtyId = createProduct("coproduct_smallqty", null);
-		final ProductId coProductLargeQtyId = createProduct("coproduct_largeqty", null);
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductSmallQtyId = createProduct("coproduct_smallqty");
+		final ProductId coProductLargeQtyId = createProduct("coproduct_largeqty");
 
 		final PPOrderCosts orderCostsSmallQty = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -515,9 +568,9 @@ public class PPOrderCostsTest
 	@Test
 	public void testBlankCoProduct_nullDistributionPercent_noNpe_zeroShare()
 	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK fixed price
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductId = createProduct("Randstuecke"); // BLANK distribution percent
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
@@ -558,9 +611,9 @@ public class PPOrderCostsTest
 	@Test
 	public void getBlankCoProductReceiptAmount_matchesLegAPostCalculation()
 	{
-		final ProductId mainProductId = createProduct("blocks_main", null);
-		final ProductId issueProductId = createProduct("input_milk", null);
-		final ProductId coProductId = createProduct("Randstuecke", null); // BLANK fixed price
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductId = createProduct("Randstuecke"); // BLANK distribution percent
 
 		final CostSegmentAndElement coProductSegment = costSegmentAndElement(coProductId);
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
@@ -746,18 +799,11 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * Creates a real {@code M_Product} record (so the fixed-price relief can read it live via the product's id) and
-	 * returns its {@link ProductId}.
-	 * <p>
-	 * {@code coProductFixedCostPrice} is intentionally unused: {@code M_Product.CoProductFixedCostPrice} was a
-	 * branch-only scaffold, discarded before ever being applied to a real database (rewritten in place into
-	 * {@code M_Product.CoProductCostDistributionPercent} — see
-	 * {@code 5824760_sys_M_Product_CoProductCostDistributionPercent.sql}), so there is no column left to set. The
-	 * parameter is kept so every call site continues to document "this is the (would-be) fixed-price product" per
-	 * the AC5/AC6 test comments below — it never affected the computation, which is exactly what those tests assert.
+	 * Creates a real {@code M_Product} record (so the post-calculation's product-name lookup, used to name an
+	 * offending co-product in the AC6 {@code Sigma p <= 100%} guard message, can read it live via the product's id)
+	 * and returns its {@link ProductId}.
 	 */
-	@SuppressWarnings("unused")
-	private ProductId createProduct(@NonNull final String name, @Nullable final BigDecimal coProductFixedCostPrice)
+	private ProductId createProduct(@NonNull final String name)
 	{
 		final I_M_Product product = BusinessTestHelper.createProduct(name, uom);
 		return ProductId.ofRepoId(product.getM_Product_ID());
