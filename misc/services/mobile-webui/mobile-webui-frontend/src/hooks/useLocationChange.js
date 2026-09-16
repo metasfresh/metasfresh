@@ -7,6 +7,14 @@ export const useLocationChange = (onChange) => {
 
   // The subscription below is installed once, so it must not close over the first render's props.
   // Refs keep the callback and the matched route current without re-subscribing on every render.
+  //
+  // CAVEAT on currentRoute: this hook's history.listen subscription is registered when its owner
+  // mounts, which is before Router's own subscription further up the tree, so it runs before Router
+  // has propagated a fresh RouteContext. For a caller that never remounts, currentRouteRef therefore
+  // still holds the PREVIOUS match when the callback fires - currentLocation is correct, currentRoute
+  // is one navigation behind. Neither current caller reads currentRoute, so nothing is affected
+  // today; a caller that needs it should derive it from the reported location (matchPath) rather
+  // than trust this field.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const currentRouteRef = useRef(currentRoute);
