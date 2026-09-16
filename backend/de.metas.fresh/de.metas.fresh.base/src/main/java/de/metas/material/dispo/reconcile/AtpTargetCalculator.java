@@ -115,8 +115,12 @@ public class AtpTargetCalculator
 			@NonNull final Instant date,
 			@Nullable final Instant livenessCutoff)
 	{
+		// Tolerant: this reads a key's ENTIRE historical candidate range in one pass (no document scope),
+		// so it is the first reader that can hit a years-old drifted candidate no other, document-scoped
+		// caller of this repository ever reaches - such a row must be skipped, not allowed to abort the
+		// whole computation (see CandidateRepositoryRetrieval#retrieveOrderedByDateAndSeqNoTolerant).
 		final List<Candidate> candidates = candidateRepository
-				.retrieveOrderedByDateAndSeqNo(createCandidatesQueryUntilDate(key, date, BPartnerClassifier.any()));
+				.retrieveOrderedByDateAndSeqNoTolerant(createCandidatesQueryUntilDate(key, date, BPartnerClassifier.any()));
 
 		// QtyFulfilled is not part of the Candidate value object, so it is fetched separately - in one query
 		// for the whole chain, see CandidateRepositoryRetrieval#getQtyFulfilledByCandidateIds

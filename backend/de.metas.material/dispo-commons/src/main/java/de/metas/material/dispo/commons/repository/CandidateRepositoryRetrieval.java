@@ -47,6 +47,7 @@ import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,6 +61,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,6 +70,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -115,6 +118,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 @RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class CandidateRepositoryRetrieval
 {
+	private static final Logger logger = LogManager.getLogger(CandidateRepositoryRetrieval.class);
+
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final DimensionService dimensionService;
 	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
@@ -499,6 +504,64 @@ public class CandidateRepositoryRetrieval
 	{
 		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
 		return retrieveForQueryBuilder(queryBuilderWithoutOrdering);
+	}
+
+	/**
+	 * Same as {@link #retrieveOrderedByDateAndSeqNo(CandidatesQuery)}, but tolerates a candidate that fails
+	 * {@link Candidate#validateNonStockCandidate()} - e.g. an {@code UNEXPECTED_INCREASE}/
+	 * {@code UNEXPECTED_DECREASE} row with no {@code MD_Candidate_Transaction_Detail} at all, which this
+	 * repository's own write path never produces (the constructor enforces the invariant at creation time)
+	 * but which real drifted data can contain - by skipping that one candidate (logged as a warning)
+	 * instead of aborting the whole read.
+	 * <p>
+	 * Intended for a caller that reads a product's <i>entire</i> historical candidate range in one pass and
+	 * can therefore hit years of accumulated data-integrity drift that a document-scoped caller of this
+	 * repository never encounters; every other caller keeps using the strict
+	 * {@link #retrieveOrderedByDateAndSeqNo(CandidatesQuery)} unchanged.
+	 */
+	public List<Candidate> retrieveOrderedByDateAndSeqNoTolerant(@NonNull final CandidatesQuery query)
+	{
+		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
+		return retrieveForQueryBuilderTolerant(queryBuilderWithoutOrdering);
+	}
+
+	@NonNull
+	private List<Candidate> retrieveForQueryBuilderTolerant(@NonNull final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering)
+	{
+		final Stream<I_MD_Candidate> candidateRecords = addOrderingYoungestFirst(queryBuilderWithoutOrdering)
+				.create()
+				.stream();
+
+		return candidateRecords
+				.map(this::fromCandidateRecordOrNullTolerant)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+	}
+
+	@Nullable
+	private Candidate fromCandidateRecordOrNullTolerant(@NonNull final I_MD_Candidate candidateRecordOrNull)
+	{
+		final Candidate candidate = fromCandidateRecordOrNull(candidateRecordOrNull);
+		if (candidate == null)
+		{
+			return null;
+		}
+
+		try
+		{
+			// explicit call, so this fires even under Adempiere.isUnitTestMode() - unlike the constructor's
+			// own validation, which is skipped in that mode (see Candidate's constructor)
+			candidate.validateNonStockCandidate();
+		}
+		catch (final RuntimeException e)
+		{
+			logger.warn("Skipping MD_Candidate_ID={} (type={}): fails validateNonStockCandidate() -- likely drifted"
+							+ " legacy data; excluding it from the result rather than aborting the whole read",
+					candidateRecordOrNull.getMD_Candidate_ID(), candidate.getType(), e);
+			return null;
+		}
+
+		return candidate;
 	}
 
 	/**
