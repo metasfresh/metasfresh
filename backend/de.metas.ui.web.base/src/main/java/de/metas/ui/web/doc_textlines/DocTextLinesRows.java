@@ -155,9 +155,17 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * {@link #getDocumentId2TopLevelRows} and {@link DocTextLinesView#getInsertAbovePositions} (through
 	 * {@link #computeInsertAbovePositions}). The structural writes cannot: {@link #refreshMergedOrderFromDatabase}
 	 * leaves {@link #rowIds} and {@link #rowsById} holding exactly the same ids, and it runs at the top of each
-	 * of them, inside the same document lock a delete holds across both of its sections. A miss reaching one of
-	 * THOSE callers means that invariant has been broken, which is why they treat it as an internal error
-	 * rather than as a transient state to retry -- see {@link #mergedOrderDisagreesWithRows}.
+	 * of them, inside the same document lock a delete holds across both of its sections. A miss reaching a
+	 * write therefore means that invariant has been broken.
+	 * <p>
+	 * The two places a write could meet one word it differently, and that is deliberate rather than
+	 * overlooked. {@link #moveRow}'s neighbour lookup is reached from a write ONLY, so it says what such a
+	 * miss would be: {@link #mergedOrderDisagreesWithRows}, an internal error. {@link #boundPositionAt} is
+	 * shared with {@link DocTextLinesView#getInsertAbovePositions}, where the state is real and transient, so
+	 * it keeps the wording that fits the caller who can actually see it -- {@link #rowIsBeingRemoved}, inviting
+	 * a retry. On a write that wording would describe a state that cannot arise, but no write can reach it to
+	 * print it, and splitting the method by caller would mean a parameter carrying nothing but the phrasing of
+	 * a message nobody can be shown.
 	 */
 	private Optional<DocTextLinesRow> resolveRow(@NonNull final DocumentId rowId)
 	{
@@ -180,7 +188,12 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * it was handed, so it cannot see the row that result would actually duplicate. The outcome is a duplicate
 	 * position, or short of exact equality an inverted order, with nothing anywhere reporting it. So the
 	 * operation is refused instead. That state resolves itself within the same request that caused it, so a
-	 * refusal the user can simply repeat costs a retry; a guessed position costs a corrupted document.</li>
+	 * refusal the user can simply repeat costs a retry; a guessed position costs a corrupted document.
+	 * <p>
+	 * Which caller that refusal is really for: {@link DocTextLinesView#getInsertAbovePositions}, the one
+	 * that answers from this view's ordering without re-deriving it. A structural write re-derives first and
+	 * cannot meet an unreadable bound at all -- see {@link #resolveRow} -- so on those paths this branch is
+	 * an assert, and its "try again" wording is addressed to a caller that can never take the advice.</li>
 	 * </ul>
 	 * Walking further out to the next readable row is deliberately NOT done. It would be sound only while the
 	 * unreadable row's own database row is already gone, which is true of one specific ordering inside
@@ -416,9 +429,11 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * Dropping happens WITHOUT the dropped row's own monitor, which is a deliberate choice and the one place
 	 * this class lets a row leave {@link #rowsById} other than under that monitor. A {@link #patchRow} already
 	 * inside its monitor when this runs can therefore put its row back after this method dropped it -- an
-	 * entry in {@link #rowsById} that no {@link #rowIds} entry points at. That is harmless: nothing reads
-	 * {@link #rowsById} except through {@link #rowIds}, the next structural write drops it again, and a later
-	 * patch of that id fails cleanly on {@link #getRowLockOrThrow}. Taking the monitor instead would mean
+	 * entry in {@link #rowsById} that no {@link #rowIds} entry points at. That is harmless, and the reason is
+	 * the row's monitor rather than the map: the monitor was dropped in the same breath as the row, so a later
+	 * {@link #patchRow} of that id never gets as far as reading {@link #rowsById} -- it fails on
+	 * {@link #getRowLockOrThrow} first. The readers that walk {@link #rowIds} cannot see the entry either,
+	 * since the id is not listed, and the next structural write drops it again. Taking the monitor instead would mean
 	 * holding a row monitor inside {@link #structuralLock} -- the nesting {@link #moveRow}'s javadoc explains
 	 * this class is built to avoid -- to buy nothing but tidiness. (The worse variant cannot occur: every
 	 * fresh row's monitor is re-established before anything is dropped, and ids are primary keys, never
