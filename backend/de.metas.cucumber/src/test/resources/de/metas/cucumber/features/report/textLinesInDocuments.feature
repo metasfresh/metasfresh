@@ -462,19 +462,23 @@ Feature: Free text lines print at their position on a sales order confirmation
     And the PDF archived for the record identified by "order_checkup" has no overlapping text
 
   @Id:S27486_TC5
-  Scenario: The order checkup's Warehouse report carries only the routed article, while its Plant report carries every article
-    # a manufacturing routing for productB: one S_Resource (the plant), one AD_Workflow whose first node
-    # carries that resource -- both required for OrderCheckupBL to build a "Warehouse" row at all (silent
-    # skip otherwise, see PP_Product_Planning below)
-    Given create S_Resource:
-      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
-      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+  Scenario: The order checkup's Warehouse report carries only the routed article, prints its whole-document text line at the head, and drops a following-scoped one whose run never reaches it
+    # the routing's own responsible user -- the discriminator the "Warehouse" grouping key actually uses
+    # (Util.mkKey(order, "WH", responsibleUserId)); reusing the Background's own seeded login keeps the
+    # fixture to the one user-in-charge this scenario needs, see the firstIdOnly() comment on the step def
+    Given load AD_User:
+      | Login      | AD_User_ID.Identifier |
+      | metasfresh | checkupUser           |
+    # the manufacturing routing for productD: an AD_Workflow whose first node carries a resource -- both
+    # required for OrderCheckupBL to build a "Warehouse" row at all (silent skip otherwise, see
+    # PP_Product_Planning below). Reuses the Background's own "plant" S_Resource -- the same physical plant
+    # already serving the order's warehouse, no second one needed.
     And create AD_Workflow:
-      | AD_Workflow_ID.Identifier | Name           | WorkflowType |
-      | checkupRouting            | checkupRouting | M            |
+      | AD_Workflow_ID.Identifier | WorkflowType | OPT.AD_User_InCharge_ID.Identifier |
+      | checkupRouting            | M            | checkupUser                        |
     And create AD_WF_Node:
       | AD_WF_Node_ID.Identifier | AD_Workflow_ID.Identifier | OPT.S_Resource_ID.Identifier | Name               | Value              | Duration |
-      | checkupRoutingNode       | checkupRouting            | checkupPlant                 | checkupRoutingNode | checkupRoutingNode | 1        |
+      | checkupRoutingNode       | checkupRouting            | plant                        | checkupRoutingNode | checkupRoutingNode | 1        |
     And update AD_Workflow:
       | AD_Workflow_ID.Identifier | OPT.AD_WF_Node_ID.Identifier |
       | checkupRouting            | checkupRoutingNode           |
@@ -482,30 +486,56 @@ Feature: Free text lines print at their position on a sales order confirmation
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
       | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
-    # line10's product carries no manufacturing PP_Product_Planning -- OrderCheckupBL.generateReportsIfEligible
-    # (:120-125) silently skips it for the Warehouse report; line20's does (below), so only line20 reaches it
+    # only line40/productD carries a manufacturing PP_Product_Planning (below) -- line10/20/30 are silently
+    # skipped for the Warehouse report by OrderCheckupBL.generateReportsIfEligible (:120-125), so the
+    # Warehouse record's own line set is exactly {line40}
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | line10     | order      | productA     | 1          |
       | line20     | order      | productB     | 1          |
+      | line30     | order      | productC     | 1          |
+      | line40     | order      | productD     | 1          |
     And metasfresh contains PP_Product_Plannings
       | M_Product_ID | S_Resource_ID | AD_Workflow_ID | M_Warehouse_ID |
-      | productB     | checkupPlant  | checkupRouting | wh             |
+      | productD     | plant         | checkupRouting | wh             |
 
-    # Document-scoped, so it carries onto every derived report regardless of which article lines that
-    # particular report itself carries (report SQL function rule 5) -- proves a text line prints on the
-    # Warehouse report too, not only the Plant one TC1 already covers
+    # topBlock (Document-scoped, above the very first line) has a run bounded by midNote -- article lines
+    # 10 only. line40 (the Warehouse record's only line) sits outside that run, so the record SQL function's
+    # whole-document override (Docs_Sales_OrderCheckup_Details :199-211) is the only way it can reach the
+    # Warehouse report at all: the ordinary carry test (:246-252) is false there, and only TextLineScope='D'
+    # forces it through anyway, printing it at the head (a negative computed position, ahead of every
+    # article). On the Plant record its run DOES intersect (line10 is on that record too), so it carries
+    # there ordinarily -- same text, two different reasons, which is exactly what the head-placement
+    # assertions below pin apart from plain "does it print".
     When a text line "topBlock" is inserted above the order line identified by "line10" with text:
       """
       Kühlkette
+      """
+    # midNote (Following-scoped, above line20) has a run bounded by routingNote -- article lines 20 and 30
+    # only. Neither is on the Warehouse record (only line40 is), so its run is genuinely absent there and,
+    # being Following- not Document-scoped, nothing forces it through: it must not print on the Warehouse
+    # report at all, while it prints normally on the Plant one (whose line set has both 20 and 30)
+    And a text line "midNote" is inserted above the order line identified by "line20" with text:
+      """
+      Sonderposten
+      """
+    # routingNote (Following-scoped, directly above the routed line itself) has a run of article 40 only --
+    # exactly the Warehouse record's own line -- so it carries there by the ordinary rule, at its own
+    # position immediately above DeltaItem: the ordinary-carry counterpart to topBlock's override
+    And a text line "routingNote" is inserted above the order line identified by "line40" with text:
+      """
+      Expresslieferung
       """
 
     When the order identified by order is completed
     And the order-checkup reports are generated for the order identified by "order"
 
-    # the report must exist before anything about its content is asserted -- a fixture missing the
-    # workflow or its routing would silently produce no Warehouse report at all (OrderCheckupBL's own
-    # logged skip), and a content assertion against an absent report can pass for the wrong reason
+    # the report must exist before anything about its content is asserted. The guarantee itself comes from
+    # Java: "the order-checkup reports are generated..." only ever registers a Warehouse-row identifier when
+    # OrderCheckupBL actually built one, so a fixture that failed to route any line resolves no identifier at
+    # all and the very next step -- printing it -- dies in identifier resolution, one step before any content
+    # assertion could even run. The "AD_Archive exists" step below still earns its place: it is what would
+    # catch the different failure of "a Warehouse row was built and printed, but nothing got archived".
     And The jasper process is run
       | Value                                    | Record_ID     |
       | C_Order_MFGWarehouse_Report_With_Barcode | order_checkup |
@@ -516,15 +546,26 @@ Feature: Free text lines print at their position on a sales order confirmation
       | C_Order_MFGWarehouse_Report_With_Barcode | order_checkup_WH |
     Then an AD_Archive exists for the record identified by "order_checkup_WH"
 
-    # the Plant report carries every non-packaging-material article line unconditionally
+    # the Plant report carries every non-packaging-material article line, and every text line, unconditionally
     And the PDF archived for the record identified by "order_checkup" contains text "AlphaItem"
     And the PDF archived for the record identified by "order_checkup" contains text "BetaItem"
+    And the PDF archived for the record identified by "order_checkup" contains text "GammaItem"
+    And the PDF archived for the record identified by "order_checkup" contains text "DeltaItem"
     And the PDF archived for the record identified by "order_checkup" contains text "Kühlkette"
+    And the PDF archived for the record identified by "order_checkup" contains text "Sonderposten"
+    And the PDF archived for the record identified by "order_checkup" contains text "Expresslieferung"
     And the PDF archived for the record identified by "order_checkup" has no overlapping text
 
-    # the Warehouse report carries only the routed article (line20/productB) -- line10/productA has no
-    # manufacturing product planning, so OrderCheckupBL never adds it here
-    And the PDF archived for the record identified by "order_checkup_WH" contains text "BetaItem"
+    # the Warehouse report carries only the routed article (line40/productD) -- the three unrouted products
+    # never reach it
+    And the PDF archived for the record identified by "order_checkup_WH" contains text "DeltaItem"
     And the PDF archived for the record identified by "order_checkup_WH" does not contain text "AlphaItem"
-    And the PDF archived for the record identified by "order_checkup_WH" contains text "Kühlkette"
+    # midNote's run never reaches the Warehouse record -- it must not print there at all
+    And the PDF archived for the record identified by "order_checkup_WH" does not contain text "Sonderposten"
+    # topBlock (head override) and routingNote (ordinary carry) are the Warehouse record's ONLY other two
+    # rows besides DeltaItem itself -- "0 lines between" pins their adjacency to each other and to DeltaItem,
+    # which together fix the print order as topBlock, then routingNote, then DeltaItem: topBlock first (the
+    # head placement the override exists for), with nothing -- in particular not midNote -- between any pair
+    And in the PDF archived for the record identified by "order_checkup_WH", exactly 0 lines appear between text "Kühlkette" and text "Expresslieferung"
+    And in the PDF archived for the record identified by "order_checkup_WH", exactly 0 lines appear between text "Expresslieferung" and text "DeltaItem"
     And the PDF archived for the record identified by "order_checkup_WH" has no overlapping text

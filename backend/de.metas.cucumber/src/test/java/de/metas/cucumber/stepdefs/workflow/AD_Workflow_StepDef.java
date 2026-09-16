@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -39,6 +40,7 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.PO;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,6 +48,7 @@ import java.util.Optional;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.model.I_AD_Workflow.COLUMNNAME_AD_User_InCharge_ID;
 import static org.compiere.model.I_AD_Workflow.COLUMNNAME_AD_WF_Node_ID;
 import static org.compiere.model.I_AD_Workflow.COLUMNNAME_AD_Workflow_ID;
 import static org.compiere.model.I_AD_Workflow.COLUMNNAME_AccessLevel;
@@ -71,13 +74,16 @@ public class AD_Workflow_StepDef
 
 	private final AD_Workflow_StepDefData workflowTable;
 	private final AD_WF_Node_StepDefData wfNodeTable;
+	private final AD_User_StepDefData userTable;
 
 	public AD_Workflow_StepDef(
 			@NonNull final AD_Workflow_StepDefData workflowTable,
-			@NonNull final AD_WF_Node_StepDefData wfNodeTable)
+			@NonNull final AD_WF_Node_StepDefData wfNodeTable,
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.workflowTable = workflowTable;
 		this.wfNodeTable = wfNodeTable;
+		this.userTable = userTable;
 	}
 
 	@And("load AD_Workflow:")
@@ -98,6 +104,17 @@ public class AD_Workflow_StepDef
 		}
 	}
 
+	/**
+	 * Creates an {@code AD_Workflow} (routing) record per row.
+	 * <p>
+	 * Required: {@code AD_Workflow_ID.Identifier}, {@code WorkflowType}. {@code Name} is optional — when
+	 * omitted, a per-run-unique one is generated from the identifier, so the fixture never collides with a
+	 * leftover row of the same name from an earlier local run (see the field-level comment on
+	 * {@link #createWorkflow(Map)}). Also optional: {@code OPT.AD_User_InCharge_ID.Identifier}, an
+	 * {@code AD_User} registered earlier (e.g. via {@code load AD_User:}) — carried through to
+	 * {@code PPRouting.getUserInChargeId()}, the responsible-user grouping key the order-checkup report
+	 * builds its "Warehouse" rows by.
+	 */
 	@And("create AD_Workflow:")
 	public void create_AD_Workflow(@NonNull final DataTable dataTable)
 	{
@@ -149,7 +166,15 @@ public class AD_Workflow_StepDef
 
 	private void createWorkflow(@NonNull final Map<String, String> row)
 	{
-		final String workflowName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Name);
+		final String workflowIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		// AD_Workflow has UNIQUE(AD_Client_ID, Name) and this step always INSERTs (no upsert), so a fixed literal
+		// collides on the next local run against a persistent (non-testcontainer) DB. A table that pins a known
+		// Name (e.g. for a later "validate AD_Workflow:" assertion) still gets exactly that literal, unchanged;
+		// only an omitted Name falls back to a per-run-unique one, mirroring S_Resource_StepDef's suggestValueAndName().
+		final String workflowName = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_Name))
+				.filter(Check::isNotBlank)
+				.orElseGet(() -> workflowIdentifier + "_" + Instant.now());
 		final String workflowType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_WorkflowType);
 
 		final I_AD_Workflow workflowRecord = InterfaceWrapperHelper.newInstance(I_AD_Workflow.class);
@@ -202,9 +227,12 @@ public class AD_Workflow_StepDef
 
 		workflowRecord.setIsDefault(DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsDefault, false));
 
+		Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_User_InCharge_ID + "." + TABLECOLUMN_IDENTIFIER))
+				.map(userTable::get)
+				.ifPresent(user -> workflowRecord.setAD_User_InCharge_ID(user.getAD_User_ID()));
+
 		saveRecord(workflowRecord);
 
-		final String workflowIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER);
 		workflowTable.putOrReplace(workflowIdentifier, workflowRecord);
 	}
 

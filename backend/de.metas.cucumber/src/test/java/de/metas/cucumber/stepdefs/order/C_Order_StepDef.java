@@ -742,11 +742,15 @@ public class C_Order_StepDef
 		}
 		checkupReportTable.put(StepDefDataIdentifier.ofString(orderIdentifier + "_checkup"), checkupReportId);
 
-		// DocumentType='WH' (X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse): one row per order line's
-		// own routing/responsible-user grouping, built only for lines whose product has a manufacturing
-		// PP_Product_Planning with a routing -- see OrderCheckupBL.generateReportsIfEligible. firstIdOnly()
-		// still pins "at most one active row", but unlike 'PL' this row is not guaranteed to exist, so a
-		// missing one is not an error here -- it is simply not registered.
+		// DocumentType='WH' (X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse): one row per (order,
+		// responsible-user) grouping, built only for lines whose product has a manufacturing PP_Product_Planning
+		// with a routing -- see OrderCheckupBL.generateReportsIfEligible. UNLIKE 'PL', "at most one active row"
+		// is NOT a production invariant here: the builder keys 'WH' rows by Util.mkKey(order, "WH",
+		// responsibleUserId), so an order whose routed lines run through workflows with DIFFERENT users-in-charge
+		// legitimately produces several. firstIdOnly() below throws DBException("QueryMoreThanOneRecordsFound")
+		// in that shape -- this step registers the 'WH' row only for an order whose routed lines share ONE
+		// user-in-charge (or have none); a multi-user order needs an explicit selector column, not added here.
+		// A missing row (no routed line at all) is not an error -- it is simply not registered.
 		final int checkupReportIdWH = queryBL.createQueryBuilder(C_Order_MFGWarehouse_Report_StepDefData.TABLE_NAME)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
