@@ -908,6 +908,12 @@ public class C_OrderLine_StepDef
 							.orElse(AttributesKey.NONE);
 
 					softly.assertThat(orderLineAttributesKeys).isEqualTo(expectedASIKey);
+
+					// AttributesKeys filters out null-valued attribute parts, so it cannot detect a clone that
+					// carries an extra null-valued row (e.g. an injected empty ProjectValue). Assert id-equality too.
+					softly.assertThat(orderLine.getM_AttributeSetInstance_ID())
+							.as("M_AttributeSetInstance_ID for C_OrderLine Identifier=%s must not have been cloned", identifierStr)
+							.isEqualTo(expectedASI.getM_AttributeSetInstance_ID());
 				});
 
 		row.getAsOptionalString(I_M_AttributeInstance.COLUMNNAME_M_Attribute_ID + ":" + I_M_AttributeInstance.Table_Name + "." + I_M_AttributeInstance.COLUMNNAME_Value)
