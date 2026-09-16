@@ -216,7 +216,7 @@
 				<reportElement key="textField-19" x="447" y="6" width="30" height="12" forecolor="#000000" uuid="c1f6b764-712b-4383-aeeb-3354ce943452">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean("Y".equals($F{isdiscountprinted}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -345,6 +345,7 @@
 	<detail>
 		<band height="12" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[!"Y".equals($F{istextline})]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="398" y="0" width="49" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -491,7 +492,7 @@
 			<staticText>
 				<reportElement x="469" y="0" width="8" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($F{discount} != null && $F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{discount} != null && "Y".equals($F{isdiscountprinted}))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="9"/>
