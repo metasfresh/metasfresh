@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,9 +38,11 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_S_Resource;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
@@ -52,6 +55,9 @@ public class AD_WF_Node_StepDef
 	private final AD_WF_Node_StepDefData workflowNodeTable;
 	private final AD_Workflow_StepDefData workflowTable;
 	private final S_Resource_StepDefData resourceTable;
+
+	/** Every {@code AD_WF_Node} this step-def created, deactivated afterwards -- see {@code AD_Workflow_StepDef}'s own cleanup of the same shape, for the workflow that owns these nodes. */
+	private final Set<Integer> createdNodeIds = new HashSet<>();
 
 	public AD_WF_Node_StepDef(
 			@NonNull final AD_WF_Node_StepDefData workflowNodeTable,
@@ -108,9 +114,43 @@ public class AD_WF_Node_StepDef
 			wfNode.setS_Resource_ID(resourceID);
 
 			InterfaceWrapperHelper.saveRecord(wfNode);
+			createdNodeIds.add(wfNode.getAD_WF_Node_ID());
 
 			final String wfNodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID + "." + TABLECOLUMN_IDENTIFIER);
 			workflowNodeTable.put(wfNodeIdentifier, wfNode);
+		}
+	}
+
+	/**
+	 * Deactivates every {@code AD_WF_Node} this scenario created (tracked in {@link #createdNodeIds}). Runs on
+	 * scenario pass AND failure.
+	 * <p>
+	 * First clears any {@code AD_Workflow.AD_WF_Node_ID} still pointing at the node: a production guard refuses
+	 * to deactivate a workflow's own first step ("Der erste Arbeitsschritt eines Arbeitsablaufs kann nicht
+	 * deaktiviert werden"), and {@code AD_Workflow_StepDef}'s own teardown deactivates the owning workflow in
+	 * this same phase without a defined ordering between the two -- clearing the reference here makes this
+	 * method's own deactivation self-sufficient regardless of which teardown runs first.
+	 */
+	@After
+	public void deactivateCreatedNodes()
+	{
+		for (final Integer nodeId : createdNodeIds)
+		{
+			queryBL.createQueryBuilder(I_AD_Workflow.class)
+					.addEqualsFilter(I_AD_Workflow.COLUMNNAME_AD_WF_Node_ID, nodeId)
+					.create()
+					.list()
+					.forEach(workflow -> {
+						workflow.setAD_WF_Node_ID(0);
+						InterfaceWrapperHelper.saveRecord(workflow);
+					});
+
+			final I_AD_WF_Node record = InterfaceWrapperHelper.load(nodeId, I_AD_WF_Node.class);
+			if (record.isActive())
+			{
+				record.setIsActive(false);
+				InterfaceWrapperHelper.saveRecord(record);
+			}
 		}
 	}
 

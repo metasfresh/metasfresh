@@ -26,9 +26,11 @@ import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -40,10 +42,11 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.PO;
 
-import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -75,6 +78,14 @@ public class AD_Workflow_StepDef
 	private final AD_Workflow_StepDefData workflowTable;
 	private final AD_WF_Node_StepDefData wfNodeTable;
 	private final AD_User_StepDefData userTable;
+
+	/**
+	 * Every {@code AD_Workflow} this step-def created, so {@link #deactivateCreatedWorkflows()} can deactivate
+	 * them afterwards -- unlike the {@code Name} collision (fixed by uniquifying it), a created-but-never-
+	 * deactivated workflow does not break anything by itself, but it accumulates forever on a persistent local
+	 * DB, one row per run. Mirrors {@code PP_Product_Planning_StepDef}'s own cleanup of the same shape.
+	 */
+	private final Set<Integer> createdWorkflowIds = new HashSet<>();
 
 	public AD_Workflow_StepDef(
 			@NonNull final AD_Workflow_StepDefData workflowTable,
@@ -109,8 +120,11 @@ public class AD_Workflow_StepDef
 	 * <p>
 	 * Required: {@code AD_Workflow_ID.Identifier}, {@code WorkflowType}. {@code Name} is optional — when
 	 * omitted, a per-run-unique one is generated from the identifier, so the fixture never collides with a
-	 * leftover row of the same name from an earlier local run (see the field-level comment on
-	 * {@link #createWorkflow(Map)}). Also optional: {@code OPT.AD_User_InCharge_ID.Identifier}, an
+	 * leftover row of the same name from an earlier local run (see the comment on the fallback inside
+	 * {@link #createWorkflow(Map)}). A table that pins a literal {@code Name} (e.g. because a later step
+	 * asserts it) keeps that exact collision risk on a persistent local DB -- unavoidable without breaking
+	 * that assertion, so it is not this step's call to make silently. Also optional: {@code
+	 * OPT.AD_User_InCharge_ID.Identifier}, an
 	 * {@code AD_User} registered earlier (e.g. via {@code load AD_User:}) — carried through to
 	 * {@code PPRouting.getUserInChargeId()}, the responsible-user grouping key the order-checkup report
 	 * builds its "Warehouse" rows by.
@@ -170,11 +184,14 @@ public class AD_Workflow_StepDef
 
 		// AD_Workflow has UNIQUE(AD_Client_ID, Name) and this step always INSERTs (no upsert), so a fixed literal
 		// collides on the next local run against a persistent (non-testcontainer) DB. A table that pins a known
-		// Name (e.g. for a later "validate AD_Workflow:" assertion) still gets exactly that literal, unchanged;
-		// only an omitted Name falls back to a per-run-unique one, mirroring S_Resource_StepDef's suggestValueAndName().
+		// Name (e.g. for a later "validate AD_Workflow:" assertion) still gets exactly that literal, unchanged --
+		// uniquifying it unconditionally would break that assertion, so this fallback only ever applies when the
+		// table omits Name. ValueAndName.unique(prefix) is the same helper suggestValueAndName() (S_Resource_StepDef's
+		// own convention) falls back to when neither Name nor Value is given -- used directly here since createWorkflow
+		// is still Map-based, not yet on DataTableRow.
 		final String workflowName = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_Name))
 				.filter(Check::isNotBlank)
-				.orElseGet(() -> workflowIdentifier + "_" + Instant.now());
+				.orElseGet(() -> ValueAndName.unique(workflowIdentifier).getName());
 		final String workflowType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_WorkflowType);
 
 		final I_AD_Workflow workflowRecord = InterfaceWrapperHelper.newInstance(I_AD_Workflow.class);
@@ -232,8 +249,27 @@ public class AD_Workflow_StepDef
 				.ifPresent(user -> workflowRecord.setAD_User_InCharge_ID(user.getAD_User_ID()));
 
 		saveRecord(workflowRecord);
+		createdWorkflowIds.add(workflowRecord.getAD_Workflow_ID());
 
 		workflowTable.putOrReplace(workflowIdentifier, workflowRecord);
+	}
+
+	/**
+	 * Deactivates every {@code AD_Workflow} this scenario created (tracked in {@link #createdWorkflowIds}) --
+	 * see that field's own Javadoc. Runs on scenario pass AND failure.
+	 */
+	@After
+	public void deactivateCreatedWorkflows()
+	{
+		for (final Integer workflowId : createdWorkflowIds)
+		{
+			final I_AD_Workflow record = InterfaceWrapperHelper.load(workflowId, I_AD_Workflow.class);
+			if (record.isActive())
+			{
+				record.setIsActive(false);
+				InterfaceWrapperHelper.saveRecord(record);
+			}
+		}
 	}
 
 	private void cloneWorkflow(@NonNull final Map<String, String> row)

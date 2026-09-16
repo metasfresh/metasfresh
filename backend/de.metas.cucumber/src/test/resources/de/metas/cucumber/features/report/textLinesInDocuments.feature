@@ -463,9 +463,12 @@ Feature: Free text lines print at their position on a sales order confirmation
 
   @Id:S27486_TC5
   Scenario: The order checkup's Warehouse report carries only the routed article, prints its whole-document text line at the head, and drops a following-scoped one whose run never reaches it
-    # the routing's own responsible user -- the discriminator the "Warehouse" grouping key actually uses
-    # (Util.mkKey(order, "WH", responsibleUserId)); reusing the Background's own seeded login keeps the
-    # fixture to the one user-in-charge this scenario needs, see the firstIdOnly() comment on the step def
+    # the routing's own responsible user -- fixture realism for the "Warehouse" grouping key
+    # (Util.mkKey(order, "WH", responsibleUserId)), matching the requirements' description of that grouping.
+    # Not independently asserted: no step here queries AD_User_Responsible_ID, and discriminating on it would
+    # need a second user-in-charge producing a second Warehouse record, which the firstIdOnly() comment on
+    # the step def explicitly scopes out of this single-order contrast. Reuses the Background's own seeded
+    # login.
     Given load AD_User:
       | Login      | AD_User_ID.Identifier |
       | metasfresh | checkupUser           |
@@ -499,29 +502,45 @@ Feature: Free text lines print at their position on a sales order confirmation
       | M_Product_ID | S_Resource_ID | AD_Workflow_ID | M_Warehouse_ID |
       | productD     | plant         | checkupRouting | wh             |
 
-    # topBlock (Document-scoped, above the very first line) has a run bounded by midNote -- article lines
-    # 10 only. line40 (the Warehouse record's only line) sits outside that run, so the record SQL function's
-    # whole-document override (Docs_Sales_OrderCheckup_Details :199-211) is the only way it can reach the
-    # Warehouse report at all: the ordinary carry test (:246-252) is false there, and only TextLineScope='D'
-    # forces it through anyway, printing it at the head (a negative computed position, ahead of every
-    # article). On the Plant record its run DOES intersect (line10 is on that record too), so it carries
-    # there ordinarily -- same text, two different reasons, which is exactly what the head-placement
-    # assertions below pin apart from plain "does it print".
+    # topBlock is inserted above the very first line (Document scope, nothing precedes it) and then moved
+    # past every article -- one "moved down" per article, before any other text line exists so each hop's
+    # nearest neighbour is always an article, never a text line (the only shape this step implements; see
+    # its own Javadoc). Moving never re-derives scope (also documented there), so it stays Document-scoped
+    # while its own persisted Line ends up AFTER line40 -- greater than every article's Line, including the
+    # Warehouse record's only one. This is the case the function's head-offset (Docs_Sales_OrderCheckup_Details
+    # :199-211, "tl_line - 1000000") exists for: a whole-document line whose OWN ordinary position would sort
+    # it to the FOOT of the Warehouse record, which must still print at the head there. Its run (computed from
+    # this final position) is bounded below by nothing -- it is now the last text line -- so line40 is not in
+    # it either way; the override fires for the same absence-of-run reason as before, but now the offset is
+    # what makes the difference between head and foot, not merely between printing and not.
     When a text line "topBlock" is inserted above the order line identified by "line10" with text:
       """
       Kühlkette
       """
+    And the text line identified by "topBlock" is moved down
+    And the text line identified by "topBlock" is moved down
+    And the text line identified by "topBlock" is moved down
+    And the text line identified by "topBlock" is moved down
+    # unchanged by the move above: scope is derived once, at insert time, and never re-derived (see TC8's own
+    # established coverage of this invariant) -- pinned here because this scenario is the one whose head-offset
+    # assertions depend on it still being 'D' after crossing every article
+    Then the text line identified by "topBlock" has TextLineScope "Document"
+
     # midNote (Following-scoped, above line20) has a run bounded by routingNote -- article lines 20 and 30
     # only. Neither is on the Warehouse record (only line40 is), so its run is genuinely absent there and,
     # being Following- not Document-scoped, nothing forces it through: it must not print on the Warehouse
-    # report at all, while it prints normally on the Plant one (whose line set has both 20 and 30)
+    # report at all, while it prints normally on the Plant one (whose line set has both 20 and 30). Inserted
+    # only now, after topBlock has already moved past this position, so it cannot become one of topBlock's
+    # move-down neighbours.
     And a text line "midNote" is inserted above the order line identified by "line20" with text:
       """
       Sonderposten
       """
     # routingNote (Following-scoped, directly above the routed line itself) has a run of article 40 only --
     # exactly the Warehouse record's own line -- so it carries there by the ordinary rule, at its own
-    # position immediately above DeltaItem: the ordinary-carry counterpart to topBlock's override
+    # position immediately above DeltaItem: the ordinary-carry counterpart to topBlock's override. Its own
+    # upper run bound is now topBlock's post-move position (the next text line after it), not unbounded, but
+    # line40 -- the only line that matters -- is still within it either way
     And a text line "routingNote" is inserted above the order line identified by "line40" with text:
       """
       Expresslieferung
@@ -565,7 +584,11 @@ Feature: Free text lines print at their position on a sales order confirmation
     # topBlock (head override) and routingNote (ordinary carry) are the Warehouse record's ONLY other two
     # rows besides DeltaItem itself -- "0 lines between" pins their adjacency to each other and to DeltaItem,
     # which together fix the print order as topBlock, then routingNote, then DeltaItem: topBlock first (the
-    # head placement the override exists for), with nothing -- in particular not midNote -- between any pair
+    # head placement the override exists for), with nothing -- in particular not midNote -- between any pair.
+    # This pair is now load-bearing on the offset itself, not merely on "prints somewhere": topBlock's own
+    # post-move Line sorts AFTER line40, so without the "- 1000000" it would print at the FOOT, after
+    # DeltaItem -- these two adjacency checks would then find DeltaItem sitting between topBlock and
+    # routingNote and fail, rather than merely holding for a different reason.
     And in the PDF archived for the record identified by "order_checkup_WH", exactly 0 lines appear between text "Kühlkette" and text "Expresslieferung"
     And in the PDF archived for the record identified by "order_checkup_WH", exactly 0 lines appear between text "Expresslieferung" and text "DeltaItem"
     And the PDF archived for the record identified by "order_checkup_WH" has no overlapping text
