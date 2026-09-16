@@ -5,21 +5,10 @@ export const useLocationChange = (onChange) => {
   const currentRoute = useRouteMatch();
   const history = useHistory();
 
-  // The subscription below is installed once, so it must not close over the first render's props.
-  // Refs keep the callback and the matched route current without re-subscribing on every render.
-  //
-  // CAVEAT on currentRoute: this hook's history.listen subscription is registered when its owner
-  // mounts, which is before Router's own subscription further up the tree, so it runs before Router
-  // has propagated a fresh RouteContext. For a caller that never remounts, currentRouteRef therefore
-  // still holds the PREVIOUS match when the callback fires - currentLocation is correct, currentRoute
-  // is one navigation behind. Nothing is affected today, but not because the field is unused:
-  // useUITraceLocationChange DOES read currentRoute.params.applicationId - its callback simply never
-  // executes, because ScreenToaster, mounted as an early sibling of <Switch>, always commits its
-  // effect first and claims the shared lastKnownLocation key. Whoever fixes that will start hitting
-  // this immediately, so derive the route from the reported location (matchPath) rather than
-  // trusting this field.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  // Stale by one navigation for a caller that never remounts: our listener runs before Router
+  // propagates the new RouteContext. Derive the route from currentLocation if you need it exact.
   const currentRouteRef = useRef(currentRoute);
   currentRouteRef.current = currentRoute;
 
@@ -38,11 +27,8 @@ export const useLocationChange = (onChange) => {
   };
 
   useEffect(() => {
-    // history.push/replace do NOT emit a native popstate event — that fires only for genuine browser
-    // back/forward. Without the router subscription this hook depended on its host component
-    // REMOUNTING on each navigation, so that the trackLocation() call below re-ran; a caller mounted
-    // once for the app's lifetime (ScreenToaster, which dismisses toasts on navigation) would then
-    // never fire again, and a toast raised on one screen would follow the operator to the next.
+    // history.listen is what catches push/replace; popstate only fires on browser back/forward.
+    // Without it the hook only worked because its caller remounted on every navigation.
     const unlisten = history.listen(trackLocation);
     window.addEventListener('popstate', trackLocation);
     window.addEventListener('hashchange', trackLocation);

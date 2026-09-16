@@ -71,11 +71,12 @@ const ApplicationRoot = () => {
   return (
     <>
       <ConnectedRouter history={history} basename="./">
-        {/* ONE toast container for the whole app. react-toastify registers each mounted
-            ToastContainer in a module-level `containers` Map; mounting one per screen left an entry
-            behind on every navigation, and each entry holds a forceUpdate bound to that screen's
-            React fiber - which pins the screen's whole DOM subtree. Mounted inside the router so
-            ScreenToaster's useLocationChange still sees route changes. */}
+        {/* ONE toast container for the whole app: react-toastify removes an unmounted container
+            from its registry via setTimeout, and the next container to mount cancels all pending
+            removals - so a route swap (unmount + mount in the same tick) orphaned the old entry
+            for good, and that entry holds a callback bound to the old screen's fiber, pinning its
+            whole DOM. A single container never unmounts, so there is nothing left to cancel.
+            Inside the router so useLocationChange still sees route changes. */}
         <ScreenToaster />
         <Switch>
           <Route exact path="/login">
