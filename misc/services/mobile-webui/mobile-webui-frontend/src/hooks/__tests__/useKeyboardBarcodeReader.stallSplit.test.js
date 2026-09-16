@@ -3,7 +3,7 @@ import { render } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import { useKeyboardBarcodeReader } from '../useKeyboardBarcodeReader';
 
-// me03 31264 - CHARACTERISATION: what a main-thread stall does to a scan, per code type.
+// CHARACTERISATION: what a main-thread stall does to a scan, per code type.
 //
 // useKeyboardBarcodeReader derives the inter-character gap from Date.now(), i.e. the delta between
 // when the HANDLER RAN. A GC pause blocks the main thread; the OS still delivered the keystrokes on
@@ -58,15 +58,17 @@ function mountReader() {
     });
     return null;
   }
-  render(<TestComponent />);
-  return { onReadDone, restarts };
+  const { unmount } = render(<TestComponent />);
+  return { onReadDone, restarts, unmount };
 }
 
-function pressKey(key) {
+function pressKey(key, { withEventTime = true } = {}) {
   act(() => {
     const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
     // timeStamp is readonly and stamped at construction; override so the test controls it.
-    Object.defineProperty(event, 'timeStamp', { value: eventTs, configurable: true });
+    // withEventTime:false models an event carrying no usable creation time, which drives the
+    // hook's wall-clock fallback - otherwise an entirely uncovered branch.
+    Object.defineProperty(event, 'timeStamp', { value: withEventTime ? eventTs : 0, configurable: true });
     window.dispatchEvent(event);
   });
 }
@@ -105,7 +107,7 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe('me03 31264 - a main-thread stall must not split a scan', () => {
+describe('a main-thread stall must not split a scan', () => {
   const CASES = [
     { name: 'LMQ#          (NOT_APPLICABLE, unprotected)', code: LMQ },
     { name: 'PICKING_SLOT# (NOT_APPLICABLE, unprotected)', code: PICKING_SLOT },
@@ -121,11 +123,12 @@ describe('me03 31264 - a main-thread stall must not split a scan', () => {
         now = 10_000;
         eventTs = 10_000;
         jest.clearAllMocks();
-        const { onReadDone, restarts } = mountReader();
+        const { onReadDone, restarts, unmount } = mountReader();
         typeWithStall(code, { stallAtIndex: Math.floor(code.length / 2), stallMs });
         const emissions = onReadDone.mock.calls.map(([c]) => c);
         const split = restarts.length > 0;
         const intact = emissions.some((e) => e === code);
+        unmount(); // each iteration mounts its own reader; leaving 12 alive would cross-talk
         rows.push(
           `  ${name}  stall=${String(stallMs).padStart(5)}ms  ` +
             `SPLIT=${split ? 'YES' : 'no '}  ` +
@@ -135,7 +138,7 @@ describe('me03 31264 - a main-thread stall must not split a scan', () => {
         );
       }
     }
-    console.log('\n=== me03 31264 - stall vs code type (CURRENT code, Date.now() gap) ===');
+    console.log('\n=== stall vs code type (CURRENT code, Date.now() gap) ===');
     console.log('A SPLIT means the reader emitted a FRAGMENT mid-scan: the operator sees');
     console.log('"QR not recognised", re-scans, and it works - the reported symptom.');
     console.log(rows.join('\n'));
@@ -155,6 +158,61 @@ describe('me03 31264 - a main-thread stall must not split a scan', () => {
     goIdleAndTick();
     expect(restarts).toEqual([]);
     expect(onReadDone).toHaveBeenCalledWith(code);
+  });
+
+  // event.timeStamp counts from the time origin; Date.now() counts from the Unix epoch. If one
+  // keystroke supplies an event time and the next falls back to the wall clock, subtracting one
+  // from the other yields a ~1.7e12 ms gap - clearing not just rateMs but idleAbandonMs, so it
+  // would flush even a partial HU QR that the exemption exists to protect. That is a worse failure
+  // than the one this hook is being fixed for, so pin both crossing directions.
+  // event.timeStamp counts from the time origin; Date.now() counts from the Unix epoch. Mixing
+  // them across a clock-source change breaks the gap in BOTH directions, so pin both - they fail
+  // differently and one test cannot cover the pair.
+  //
+  // Seeding realistic, DIFFERENT epochs is what makes these tests real: with both clocks started
+  // from the same small number the mismatch cannot appear and they pass against the broken code.
+
+  // event time -> fallback: the gap becomes ~1.7e12 ms, clearing not just rateMs but idleAbandonMs,
+  // so it flushes even a partial HU QR the exemption exists to protect - a worse split than the one
+  // this hook is being fixed for.
+  it('does not invent a gap when a keystroke falls back to the wall clock mid-scan', () => {
+    now = 1_700_000_000_000;
+    eventTs = 50_000;
+    const { onReadDone, restarts } = mountReader();
+
+    const head = HU_QR.slice(0, 60); // recognised and incomplete => isPartial, normally exempt
+    for (let i = 0; i < head.length; i += 1) {
+      now += 1;
+      eventTs += 1;
+      pressKey(head[i], { withEventTime: i < head.length - 1 });
+    }
+
+    expect(restarts).toEqual([]);
+    expect(onReadDone).not.toHaveBeenCalled();
+  });
+
+  // fallback -> event time: the gap goes NEGATIVE, so a real pause between two scans is never seen
+  // and the next scan is merged into the previous buffer instead of being separated.
+  it('still separates two scans when the clock source changes between them', () => {
+    now = 1_700_000_000_000;
+    eventTs = 50_000;
+    const { onReadDone, restarts } = mountReader();
+
+    // First scan arrives with no usable event time, so the hook stores a wall-clock value.
+    for (let i = 0; i < PLAIN_DIGITS.length; i += 1) {
+      now += 1;
+      eventTs += 1;
+      pressKey(PLAIN_DIGITS[i], { withEventTime: false });
+    }
+
+    // A genuine operator pause, well beyond rateMs, then a NEW scan carrying an event time.
+    now += RATE_MS * 2;
+    eventTs += RATE_MS * 2;
+    pressKey('9', { withEventTime: true });
+
+    // The pause must have closed the first scan rather than merging '9' into it.
+    expect(onReadDone).toHaveBeenCalledWith(PLAIN_DIGITS);
+    expect(restarts.length).toBeGreaterThan(0);
   });
 
   it('HU QR is shielded from the same stall by the isPartial exemption', () => {

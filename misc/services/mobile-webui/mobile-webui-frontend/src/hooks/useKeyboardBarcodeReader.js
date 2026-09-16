@@ -22,9 +22,11 @@ export const useKeyboardBarcodeReader = ({
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
 
-  // Event-creation time of the last keystroke, for the stall-immune gap above. Separate from
-  // lastKeyTimeRef because timeStamp and Date.now() have different epochs.
+  // Event-creation time of the last keystroke, for the stall-immune gap below. Separate from
+  // lastKeyTimeRef because timeStamp and Date.now() have different epochs, and paired with a flag
+  // recording which clock produced it so a comparison can never straddle the two.
   const lastKeyEventTimeRef = useRef(0);
+  const lastKeyHadEventTimeRef = useRef(false);
   // useLayoutEffect (not useEffect) so the window-level keydown listener is attached synchronously
   // in the commit phase, BEFORE the browser paints — not in a post-paint passive effect. A scanner
   // screen renders its offscreen input during commit, but a passive useEffect runs a task later, so
@@ -48,6 +50,7 @@ export const useKeyboardBarcodeReader = ({
       bufferRef.current = '';
       lastKeyTimeRef.current = 0;
       lastKeyEventTimeRef.current = 0;
+      lastKeyHadEventTimeRef.current = false;
     };
 
     // Emit the assembled buffer as a completed scan and reset for the next one.
@@ -131,16 +134,21 @@ export const useKeyboardBarcodeReader = ({
         // flushed by the idle-abandon fallback below rather than here. The guarantee here is only
         // that a deliberate re-scan after the gap has exceeded idleAbandonMs — the operator has
         // clearly given up — is never merged.)
-        // Measure the inter-character gap with the event's OWN creation timestamp, NOT Date.now().
-        // Date.now() here is when the HANDLER RAN: a GC pause or long task blocks the main thread
-        // while the OS keeps delivering keystrokes, so they queue and are processed late. Measuring
-        // the gap from the handler then blames the scanner for a gap it never produced, and the
-        // buffer is flushed mid-code. Verified in a bare browser: across a 1500 ms stall Date.now()
-        // reports a 1506 ms gap for the same events whose timeStamp deltas stay at 6 ms.
-        // timeStamp is stamped when the browser CREATES the event, before queuing, so it reflects
-        // the hardware's real cadence. Falls back to the wall clock if absent (synthetic events).
-        const eventTimeMs = typeof event.timeStamp === 'number' && event.timeStamp > 0 ? event.timeStamp : now;
-        const gapMs = eventTimeMs - lastKeyEventTimeRef.current;
+        // Measure the gap from the event's OWN creation time, not the handler's execution time:
+        // a stalled main thread processes queued keystrokes late, and Date.now() would then report
+        // a gap the scanner never sent (see the stallSplit test for the measured difference).
+        //
+        // Both sides of the subtraction MUST come from the same clock. event.timeStamp counts from
+        // the time origin while Date.now() counts from the Unix epoch, so mixing them yields a
+        // ~1.7e12 ms "gap" that clears idleAbandonMs and would flush even a partial buffer the
+        // exemption exists to protect. When either side lacks an event time, compare wall clocks
+        // instead: that loses stall-immunity for one keystroke but stays correct.
+        const hasEventTime = typeof event.timeStamp === 'number' && event.timeStamp > 0;
+        const eventTimeMs = hasEventTime ? event.timeStamp : now;
+        const gapMs =
+          hasEventTime && lastKeyHadEventTimeRef.current
+            ? eventTimeMs - lastKeyEventTimeRef.current
+            : now - lastKeyTimeRef.current;
         const isPartial = checkPartialScannedCode(bufferRef.current) === ScanCompleteness.PARTIAL_SCAN;
         if (bufferRef.current && gapMs >= rateMs && (!isPartial || gapMs >= idleAbandonMs)) {
           // A normal back-to-back scan (non-partial) is length-gated exactly as before; a partial we
@@ -159,6 +167,7 @@ export const useKeyboardBarcodeReader = ({
         event.preventDefault();
         lastKeyTimeRef.current = now;
         lastKeyEventTimeRef.current = eventTimeMs;
+        lastKeyHadEventTimeRef.current = hasEventTime;
 
         // Content-based completion: force-complete immediately (no idle wait) once the buffer is a
         // COMPLETE, TERMINAL recognised code. Safe ONLY because COMPLETE_SCAN is invariant-bound to
