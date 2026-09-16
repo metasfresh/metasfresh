@@ -3,23 +3,14 @@ import { render } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import { useKeyboardBarcodeReader } from '../useKeyboardBarcodeReader';
 
-// CHARACTERISATION: what a main-thread stall does to a scan, per code type.
+// What a blocked main thread does to a scan, per code type. The gap is derived from Date.now(),
+// i.e. when the HANDLER RAN, so queued keystrokes look late and the reader sees a gap the scanner
+// never sent - measured in a bare browser as 1506 ms against 6 ms of e.timeStamp for the same
+// events. What blocks the thread is not established, and this helps only when the gap is an
+// artifact of delayed processing, never when the scanner genuinely paused.
 //
-// The gap is derived from Date.now(), i.e. the delta between when the HANDLER RAN, so a blocked
-// main thread makes queued keystrokes look late and the reader sees a gap the scanner never sent.
-// Measured in a bare browser: across a 1500 ms block, Date.now() reports 1506 ms while the same
-// events' e.timeStamp reports 6 ms. What BLOCKS the thread is not established - garbage collection
-// is plausible but unmeasured, and this fix helps only when the gap is an artifact of delayed
-// processing, never when the scanner genuinely paused.
-//
-// Modelled exactly that way: Date.now() jumps, the events' timestamps keep their 1 ms cadence.
-//
-// The two code classes differ because of the isPartial exemption, whatever causes the gap:
-// NOT_APPLICABLE buffers flush at rateMs (1000 ms); a recognised-but-incomplete HU QR is exempt
-// until idleAbandonMs (15000 ms).
-//
-// Production sysconfig (read from prod ui_trace eventdata): debounceMillis=1000, minLen=7,
-// idleAbandonMillis=15000.
+// Modelled that way below: Date.now() jumps, the events' timestamps keep their cadence.
+// Config values are production's.
 
 const RATE_MS = 1000;
 const MIN_LENGTH = 7;
@@ -36,11 +27,9 @@ let eventTs; // event.timeStamp    - never jumps; the hardware did not pause
 
 function mountReader() {
   const onReadDone = jest.fn();
-  // A SPLIT is a buffer RESTART, not an emission. Emissions miss two cases: the legitimate
-  // content-completion of a full HU QR looks like an emission but is correct, and a fragment below
-  // minLength is dropped SILENTLY (completeScan resets the buffer before the length gate), so the
-  // scan is corrupted with nothing emitted at all. Watching onReadInProgress catches both: if the
-  // in-progress buffer ever gets SHORTER than the previous one, the buffer was reset mid-scan.
+  // A split is a buffer RESTART, not an emission: a fragment below minLength is dropped silently
+  // (completeScan resets before the length gate), and a full HU QR's content-completion is a
+  // legitimate emission. A shrinking in-progress buffer catches both.
   const restarts = [];
   let prev = '';
   const onReadInProgress = (buf) => {
@@ -64,17 +53,15 @@ function mountReader() {
 function pressKey(key, { withEventTime = true } = {}) {
   act(() => {
     const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
-    // timeStamp is readonly and stamped at construction; override so the test controls it.
-    // withEventTime:false models an event carrying no usable creation time, which drives the
-    // hook's wall-clock fallback - otherwise an entirely uncovered branch.
+    // timeStamp is readonly; override so the test controls it. withEventTime:false drives the
+    // hook's wall-clock fallback, otherwise uncovered.
     Object.defineProperty(event, 'timeStamp', { value: withEventTime ? eventTs : 0, configurable: true });
     window.dispatchEvent(event);
   });
 }
 
-// Types `code`, inserting a main-thread stall of `stallMs` before the character at `stallAtIndex`.
-// The stall advances the WALL CLOCK only - the events' own timestamps keep their 1 ms cadence,
-// because a DataWedge wedge at 0 ms inter-character delay had already queued them.
+// The stall advances the WALL CLOCK only: a 0 ms-delay wedge had already queued the characters,
+// so their own timestamps keep their cadence.
 function typeWithStall(code, { stallAtIndex, stallMs }) {
   for (let i = 0; i < code.length; i += 1) {
     if (i === stallAtIndex) now += stallMs; // handler resumes late...

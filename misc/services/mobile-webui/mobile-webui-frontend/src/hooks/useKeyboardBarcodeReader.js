@@ -22,9 +22,8 @@ export const useKeyboardBarcodeReader = ({
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
 
-  // Event-creation time of the last keystroke, for the stall-immune gap below. Separate from
-  // lastKeyTimeRef because timeStamp and Date.now() have different epochs, and paired with a flag
-  // recording which clock produced it so a comparison can never straddle the two.
+  // Event-creation time of the last keystroke, with a flag for which clock produced it so a
+  // comparison can never straddle the two epochs.
   const lastKeyEventTimeRef = useRef(0);
   const lastKeyHadEventTimeRef = useRef(false);
   // useLayoutEffect (not useEffect) so the window-level keydown listener is attached synchronously
@@ -134,15 +133,11 @@ export const useKeyboardBarcodeReader = ({
         // flushed by the idle-abandon fallback below rather than here. The guarantee here is only
         // that a deliberate re-scan after the gap has exceeded idleAbandonMs — the operator has
         // clearly given up — is never merged.)
-        // Measure the gap from the event's OWN creation time, not the handler's execution time:
-        // a stalled main thread processes queued keystrokes late, and Date.now() would then report
-        // a gap the scanner never sent (see the stallSplit test for the measured difference).
-        //
-        // Both sides of the subtraction MUST come from the same clock. event.timeStamp counts from
-        // the time origin while Date.now() counts from the Unix epoch, so mixing them yields a
-        // ~1.7e12 ms "gap" that clears idleAbandonMs and would flush even a partial buffer the
-        // exemption exists to protect. When either side lacks an event time, compare wall clocks
-        // instead: that loses stall-immunity for one keystroke but stays correct.
+        // Gap from the event's own creation time, not the handler's: a blocked thread processes
+        // queued keystrokes late. Both sides must come from the SAME clock - timeStamp counts from
+        // the time origin, Date.now() from the Unix epoch, so mixing them yields a ~1.7e12 ms gap
+        // that clears even idleAbandonMs. Falling back to wall clocks loses stall-immunity for one
+        // keystroke but stays correct.
         const hasEventTime = typeof event.timeStamp === 'number' && event.timeStamp > 0;
         const eventTimeMs = hasEventTime ? event.timeStamp : now;
         const gapMs =
