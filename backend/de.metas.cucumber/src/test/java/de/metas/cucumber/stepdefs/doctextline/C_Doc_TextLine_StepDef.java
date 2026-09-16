@@ -74,12 +74,12 @@ public class C_Doc_TextLine_StepDef
 	 * inputs the view derives from the merged article/text-line order -- the position immediately preceding the
 	 * reference line, and whether any article line precedes it -- from the actual persisted {@code C_OrderLine}
 	 * and {@code C_Doc_TextLine} rows (via {@link IOrderDAO#retrieveOrderLines(OrderId)}, the same call
-	 * {@code DocTextLinesRowsLoader} makes), and passes them to the repository. The scope-driving predicate
-	 * itself -- whether any article line precedes the reference position -- is answered by
-	 * {@link DocTextLineRepository#articleLineExistsBefore}, the same method the WebUI's merged-row scan
-	 * (production) calls, so this step and production share that one implementation rather than each
-	 * re-deriving it. The repository is what then derives and persists {@code TextLineScope}; this step never
-	 * sets it.
+	 * {@code DocTextLinesRowsLoader} makes). The scope-driving predicate itself is answered by
+	 * {@link DocTextLineRepository#articleLineExistsBefore}, and every article line's position is handed to it
+	 * <b>unfiltered</b> -- the {@code "< referencePosition"} comparison happens inside that shared method, not in
+	 * a pre-applied filter here, so this step and production genuinely exercise the same comparison rather than
+	 * one of them merely reducing to "is the list non-empty". The repository is what then derives and persists
+	 * {@code TextLineScope}; this step never sets it.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -110,13 +110,19 @@ public class C_Doc_TextLine_StepDef
 		// matches DocTextLinesRowsLoader.load()'s own article-line source
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(orderId);
 
-		final List<BigDecimal> articleLinePositionsBeforeReference = orderLines.stream()
-				.filter(orderLine -> orderLine.getLine() < referenceOrderLine.getLine())
+		// unfiltered: articleLineExistsBefore's own "< referencePosition" comparison must be the thing that
+		// decides the outcome, not a pre-applied filter that leaves the call unable to see a mutation of it
+		final List<BigDecimal> articleLinePositions = orderLines.stream()
 				.map(orderLine -> BigDecimal.valueOf(orderLine.getLine()))
 				.collect(Collectors.toList());
 
 		final boolean articleLineExistsBeforeReferencePosition =
-				DocTextLineRepository.articleLineExistsBefore(articleLinePositionsBeforeReference, referencePosition);
+				DocTextLineRepository.articleLineExistsBefore(articleLinePositions, referencePosition);
+
+		final BigDecimal previousArticleLinePosition = articleLinePositions.stream()
+				.filter(line -> line.compareTo(referencePosition) < 0)
+				.max(Comparator.naturalOrder())
+				.orElse(null);
 
 		final BigDecimal previousTextLinePosition = docTextLineRepository.getByDocument(documentRef).stream()
 				.map(DocTextLine::getLine)
@@ -124,7 +130,7 @@ public class C_Doc_TextLine_StepDef
 				.max(Comparator.naturalOrder())
 				.orElse(null);
 
-		final BigDecimal previousPosition = Stream.concat(articleLinePositionsBeforeReference.stream(), Stream.of(previousTextLinePosition))
+		final BigDecimal previousPosition = Stream.of(previousArticleLinePosition, previousTextLinePosition)
 				.filter(Objects::nonNull)
 				.max(Comparator.naturalOrder())
 				.orElse(null);

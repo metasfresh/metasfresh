@@ -111,6 +111,23 @@ class DocTextLineRepositoryTest
 		}
 
 		@Test
+		void tiedPositionsThrowBeforeScopeIsDerived()
+		{
+			// pins the invariant articleLineExistsBefore's javadoc names: a literal tie between previousPosition
+			// and referencePosition -- the one input where "does an article precede the merged-order index" and
+			// "is any article position strictly less than referencePosition" could disagree -- is refused HERE,
+			// before the ternary that reads articleLineExistsBeforeReferencePosition ever runs. Passing true (as
+			// a caller wrongly believing an article precedes, the divergent answer) proves the derivation never
+			// gets that far: reaching it would persist a 'Following' row instead of throwing.
+			assertThatThrownBy(() -> docTextLineRepository.insertAbove(requestBuilder()
+					.previousPosition(BigDecimal.valueOf(10))
+					.referencePosition(BigDecimal.valueOf(10))
+					.articleLineExistsBeforeReferencePosition(true)
+					.build()))
+					.isInstanceOf(AdempiereException.class);
+		}
+
+		@Test
 		void roundsHalfUpOnATie()
 		{
 			// (10.0002 + 10.0007) / 2 = 10.00045 -- a genuine tie at the 5th decimal, only reachable this way
@@ -157,6 +174,31 @@ class DocTextLineRepositoryTest
 			final boolean result = DocTextLineRepository.articleLineExistsBefore(
 					Arrays.asList(new BigDecimal("20"), new BigDecimal("30")),
 					new BigDecimal("20"));
+
+			assertThat(result).isFalse();
+		}
+
+		@Test
+		void trueWhenPositionsAreMixedBeforeAndAtOrAfterTheReference()
+		{
+			// one position before, one at-or-after -- only one of them needs to precede
+			final boolean result = DocTextLineRepository.articleLineExistsBefore(
+					Arrays.asList(new BigDecimal("10"), new BigDecimal("20"), new BigDecimal("30")),
+					new BigDecimal("20"));
+
+			assertThat(result).isTrue();
+		}
+
+		@Test
+		void falseWhenAnEqualPositionHasADifferentScale()
+		{
+			// the WebUI feeds scale-0 article positions (BigDecimal.valueOf(int)) against a reference that can be
+			// a text row's scale-4 Line -- these two are compareTo-equal despite the different scale, and the
+			// method must still treat "equal" as "not before". A refactor to .equals() (or a BigDecimal
+			// set/contains form) would treat them as unequal and could flip this outcome; compareTo must not.
+			final boolean result = DocTextLineRepository.articleLineExistsBefore(
+					Collections.singletonList(new BigDecimal("10")),
+					new BigDecimal("10.0000"));
 
 			assertThat(result).isFalse();
 		}

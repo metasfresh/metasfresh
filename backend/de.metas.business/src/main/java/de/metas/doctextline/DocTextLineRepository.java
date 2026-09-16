@@ -118,8 +118,16 @@ public class DocTextLineRepository
 	 * caller who has already resolved the merged order -- the WebUI's in-memory row list
 	 * ({@code DocTextLinesRows#computeInsertAbovePositions}) and any other caller that queries article lines
 	 * directly -- shares this one implementation instead of each re-deriving the same comparison.
+	 * <p>
+	 * Comparing by position rather than by merged-order index is safe because the only input where the two
+	 * would disagree is a tie between an article's position and {@code referencePosition}, and that tie is
+	 * unreachable: it would force the immediately preceding row's position to tie too, which {@link #insertAbove}'s
+	 * midpoint arithmetic refuses (a gap-exhausted {@link AdempiereException}) before this predicate is ever
+	 * consulted.
 	 *
-	 * @param articleLinePositions every article line's position in the document; order does not matter.
+	 * @param articleLinePositions any subset of the document's article-line positions relevant to the question --
+	 *        not necessarily every one (a caller may already have filtered to those before the reference); order
+	 *        does not matter.
 	 * @param referencePosition the row about to be inserted above.
 	 */
 	public static boolean articleLineExistsBefore(
