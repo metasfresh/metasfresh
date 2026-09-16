@@ -43,6 +43,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -61,6 +62,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -192,6 +194,43 @@ public class AtpTargetCalculatorTest
 		// the sum stays customer-agnostic: 200 - 30
 		assertThat(divergence.getExpectedAtp()).isEqualByComparingTo("170");
 		assertThat(divergence.getDifference()).isEqualByComparingTo("0");
+	}
+
+	/**
+	 * Reproduces a real-world drift case: some write path can leave an {@code UNEXPECTED_INCREASE}/
+	 * {@code UNEXPECTED_DECREASE} {@code MD_Candidate} row with NO {@code MD_Candidate_Transaction_Detail}
+	 * row at all - something {@link Candidate}'s own constructor forbids for a freshly-built candidate
+	 * ({@link Candidate#validateNonStockCandidate()}), but that {@link AtpTargetCalculator} must still
+	 * tolerate when reading such a row back from the DB, since it is the first caller to ever read a
+	 * product's <i>entire</i> historical candidate range in one pass. Measured on a real instance: every
+	 * such row has {@code Qty == QtyFulfilled}, so its correct contribution is zero either way - the row is
+	 * inserted directly (bypassing {@link CandidateRepositoryWriteService}, which always attaches a
+	 * transaction detail) to reproduce exactly that shape.
+	 */
+	@Test
+	public void orphanedUnexpectedDecreaseCandidate_isSkippedRatherThanAborting()
+	{
+		createStockRecord(new BigDecimal("200"));
+		createOrphanedUnexpectedDecreaseCandidate(BEFORE_D, new BigDecimal("1"));
+
+		assertThat(atpTargetCalculator.computeTarget(KEY, D)).isEqualByComparingTo("200");
+	}
+
+	private void createOrphanedUnexpectedDecreaseCandidate(final Instant date, final BigDecimal qty)
+	{
+		final I_MD_Candidate record = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
+		InterfaceWrapperHelper.setValue(record, I_MD_Candidate.COLUMNNAME_AD_Client_ID, CLIENT_ID.getRepoId());
+		record.setAD_Org_ID(ORG_ID.getRepoId());
+		record.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
+		record.setM_Product_ID(PRODUCT_ID.getRepoId());
+		record.setStorageAttributesKey(AttributesKey.NONE.getAsString());
+		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE);
+		record.setMD_Candidate_Status(X_MD_Candidate.MD_CANDIDATE_STATUS_Processed);
+		record.setDateProjected(Timestamp.from(date));
+		record.setQty(qty);
+		record.setQtyFulfilled(qty);
+		InterfaceWrapperHelper.save(record);
+		// deliberately NOT creating a matching MD_Candidate_Transaction_Detail row
 	}
 
 	private void createStockRecord(final BigDecimal qtyOnHand)
