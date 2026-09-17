@@ -25,5 +25,8 @@ package de.metas.edi.api;
 
 public enum ValidationState
 {
-	INVALID, ALREADY_VALID, UPDATED_VALID
+	INVALID, ALREADY_VALID, UPDATED_VALID;
+
+	public boolean isInvalid() {return INVALID == this;}
+	public boolean isAlreadyValid() {return ALREADY_VALID == this;}
 }

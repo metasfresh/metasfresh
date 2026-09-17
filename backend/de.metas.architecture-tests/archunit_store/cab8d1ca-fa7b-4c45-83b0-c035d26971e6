@@ -1,0 +1,2 @@
+Method <de.metas.procurement.base.impl.PMMContractsBL.getDefaultContractUserInCharge_ID(java.util.Properties)> calls method <org.compiere.util.Env.getAD_Client_ID(java.util.Properties)> in (PMMContractsBL.java:44)
+Method <de.metas.procurement.base.impl.PMMContractsBL.getDefaultContractUserInCharge_ID(java.util.Properties)> calls method <org.compiere.util.Env.getAD_Org_ID(java.util.Properties)> in (PMMContractsBL.java:45)

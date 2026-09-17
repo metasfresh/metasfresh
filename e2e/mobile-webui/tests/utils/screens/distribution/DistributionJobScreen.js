@@ -1,0 +1,180 @@
+import { test } from "../../../../playwright.config";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { DistributionLineScreen } from './DistributionLineScreen';
+import { YesNoDialog } from '../../dialogs/YesNoDialog';
+import { DistributionJobsListScreen } from './DistributionJobsListScreen';
+import { DistributionDropAllToScreen } from './DistributionDropAllToScreen';
+import { expect } from '@playwright/test';
+import { expectClasses } from '../../expectations';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { DistributionLinePickFromScreen } from './DistributionLinePickFromScreen';
+import { DistributionUtils } from './DistributionUtils';
+
+const NAME = 'DistributionJobScreen';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('#WFProcessScreen');
+
+export const DistributionJobScreen = {
+    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectJobId: async ({ distributionJobId }) => await test.step(`${NAME} - Expect jobId=${distributionJobId}`, async () => {
+        await DistributionJobScreen.waitForScreen();
+        await DistributionUtils.expectJobId({ distributionJobId });
+    }),
+
+    // `exact` defaults to false (substring value match) to preserve the long-standing behaviour of
+    // this method's existing callers. The shared helper additionally requires the row to be visible.
+    expectHeaderProperty: async ({ caption, value, exact = false }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'${exact ? '' : ' (substring)'}`, async () => {
+        await DistributionUtils.expectHeaderProperty({ caption, value, exact });
+    }),
+
+    scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: huQRCode });
+        await DistributionLinePickFromScreen.scanHUToMove({
+            // huQRCode: null,
+            productScannedCode,
+            expectQuantityDialog,
+            expectedQtyToMove,
+            expectNextScreen
+        })
+    }),
+
+    // Split variant of scanHUToMove: use when the product-code scan must be asserted
+    // on its own (e.g. wrapped in expectErrorToast).
+    scanHU: async ({ huQRCode }) => await test.step(`${NAME} - Scan HU ${huQRCode}`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: huQRCode });
+        await DistributionLinePickFromScreen.waitForScreen();
+    }),
+
+    clickLineButton: async ({ index }) => await test.step(`${NAME} - Click line ${index}`, async () => {
+        await lineButtonLocator({ index }).tap({ timeout: FAST_ACTION_TIMEOUT });
+        await DistributionLineScreen.waitForScreen();
+    }),
+
+    expectLineButton: async ({ index, qtyToPick, qtyPicked, color }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
+        const lineButton = lineButtonLocator({ index });
+
+        if (qtyToPick !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtytarget', value: qtyToPick });
+        }
+        if (qtyPicked !== undefined) {
+            await expectLineButtonAttribute({ lineButton, attribute: 'data-qtycurrent', value: qtyPicked });
+        }
+        if (color !== undefined) {
+            await expectClasses({
+                locator: lineButton.locator(`[data-testid="indicator"]`),
+                expectedClasses: `indicator-color-${color}`
+            });
+        }
+    }),
+
+    complete: async () => await test.step(`${NAME} - Complete`, async () => {
+        await clickCompleteButton();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await DistributionJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectDropAllButton: async ({ enabled }) => await test.step(`${NAME} - Expect Drop All button`, async () => {
+        const dropAllButton = dropAllButtonLocator();
+
+        if (enabled != null) {
+            if (enabled) {
+                await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
+            } else {
+                await expect(dropAllButton).toBeDisabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
+            }
+        }
+    }),
+
+    expectSwitchPickFromLocatorButton: async ({ visible }) => await test.step(`${NAME} - Expect Switch Pick-From Locator button visible=${visible}`, async () => {
+        const button = switchPickFromLocatorButtonLocator();
+        if (visible) {
+            await expect(button).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        } else {
+            await expect(button).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+        }
+    }),
+
+    getPickFromLocator: async () => await test.step(`${NAME} - Get current pick-from locator`, async () => {
+        const button = switchPickFromLocatorButtonLocator();
+        await expect(button).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        return await button.getAttribute('data-pickfromlocator');
+    }),
+
+    switchPickFromLocator: async ({ expectNextLocatorId } = {}) => await test.step(`${NAME} - Switch pick-from locator to next`, async () => {
+        const button = switchPickFromLocatorButtonLocator();
+        await expect(button).toBeEnabled({ timeout: FAST_ACTION_TIMEOUT });
+        // Set up the response listener immediately before the tap so we don't return
+        // while the (spinner-less) switch POST is still in flight.
+        const responsePromise = page.waitForResponse(
+            (response) => response.url().includes('/switchPickFromLocatorToNext') && response.request().method() === 'POST',
+            { timeout: SLOW_ACTION_TIMEOUT }
+        );
+        await button.tap();
+        await responsePromise;
+        await DistributionJobScreen.waitForScreen();
+
+        if (expectNextLocatorId !== undefined) {
+            // The thunk dispatches the redux update after the POST resolves, so the rendered attribute
+            // settles a render-tick later — poll until it reflects the expected locator id.
+            await expect
+                .poll(async () => await DistributionJobScreen.getPickFromLocator(), { timeout: FAST_ACTION_TIMEOUT })
+                .toEqual(String(expectNextLocatorId));
+        }
+    }),
+
+    dropAllTo: async ({ dropToLocatorQRCode, expectNextScreen }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
+        const dropAllButton = dropAllButtonLocator();
+        await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
+        await dropAllButton.tap();
+        await DistributionDropAllToScreen.waitForScreen();
+        await DistributionDropAllToScreen.typeQRCode(dropToLocatorQRCode);
+
+        if (!expectNextScreen || expectNextScreen === 'DistributionJobScreen') {
+            await DistributionJobScreen.waitForScreen();
+        } else if (expectNextScreen === 'DistributionJobsListScreen') {
+            await DistributionJobsListScreen.waitForScreen();
+        } else {
+            throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
+        }
+    }),
+
+    abort: async () => await step(`${NAME} - Abort`, async () => {
+        await page.locator('#abort-button').tap();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await DistributionJobsListScreen.waitForScreen();
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+        await DistributionJobsListScreen.waitForScreen();
+    }),
+
+};
+
+const lineButtonLocator = ({ index }) => {
+    return page.getByTestId(`line-${index}-button`);
+};
+
+const expectLineButtonAttribute = async ({ lineButton, attribute, value }) => await step(`${NAME} - Expect line button attribute ${attribute}='${value}'`, async () => {
+    const lineButtonInfo = lineButton.locator('.picking-row-info');
+    await expect(lineButtonInfo).toHaveAttribute(attribute, value);
+});
+
+const dropAllButtonLocator = () => {
+    return page.getByTestId('scanDropToLocator-button');
+};
+
+const switchPickFromLocatorButtonLocator = () => {
+    return page.getByTestId('switchPickFromLocator-button');
+};
+
+const clickCompleteButton = async () => await test.step(`${NAME} - Click Complete button`, async () => {
+    await page.locator('#last-confirm-button').tap();
+});
+

@@ -26,19 +26,24 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.inout.PriorityRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
+import org.adempiere.warehouse.WarehouseId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -66,6 +71,7 @@ public class ShipmentSchedule
 	@Nullable private final LocalDate deliveryDateEffective;
 	private int numberOfItemsForSameShipment;
 	@NonNull private final ProductId productId;
+	@NonNull private final WarehouseId warehouseId;
 	@NonNull private final Quantity quantityToDeliver;
 	@NonNull private final Quantity orderedQuantity;
 	@NonNull private final Quantity deliveredQuantity;
@@ -79,6 +85,8 @@ public class ShipmentSchedule
 	@Nullable private String carrierAdviseErrorMessage;
 	@Nullable private CarrierProductId carrierProductId;
 	@Nullable private CarrierGoodsTypeId carrierGoodsTypeId;
+	@Nullable private PriorityRule priorityRule;
+	@Nullable private ExternalSystemId externalSystemId;
 
 	@Getter(AccessLevel.NONE)
 	@Nullable private Set<CarrierServiceId> carrierServices;
@@ -91,6 +99,12 @@ public class ShipmentSchedule
 			throw new AdempiereException("Carrier services were not loaded for " + this);
 		}
 		return carrierServices;
+	}
+
+	@Nullable
+	public OrderId getOrderId()
+	{
+		return getOrderAndLineId() != null ? getOrderAndLineId().getOrderId() : null;
 	}
 
 	public boolean hasAttributes(@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds, @NonNull final IAttributeSetInstanceBL asiBL)
@@ -110,5 +124,11 @@ public class ShipmentSchedule
 		final ImmutableAttributeSet shipmentScheduleAsi = asiBL.getImmutableAttributeSetById(getAttributeSetInstanceId());
 
 		return nonNullTargetAsiIds.stream().map(asiBL::getImmutableAttributeSetById).anyMatch(shipmentScheduleAsi::containsAttributeValues);
+	}
+
+	@Nullable
+	public UserId getShipContactUserId()
+	{
+		return shipContactId != null ? shipContactId.getUserId() : null;
 	}
 }

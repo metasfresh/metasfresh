@@ -13,7 +13,6 @@
     <artifactId>de.metas.device.adempiere</artifactId>
 
     <properties>
-        <migration-sql-basedir>41-de.metas.device</migration-sql-basedir>
     </properties>
 
     <dependencies>

@@ -219,7 +219,28 @@ public class ADReferenceService
 				// dev-note: custom windows are handled directly in WindowRestController
 				.zoomSO_Window_ID(soWindowId)
 				.zoomPO_Window_ID(poWindowId)
+				.zoomAD_Window_ID_Override(resolveWindowId(soWindowId, poWindowId))
 				.build();
+	}
+
+	@Nullable
+	private static AdWindowId resolveWindowId(@Nullable final AdWindowId soWindowId, @Nullable final AdWindowId poWindowId)
+	{
+		// Case 1: Only SO window is defined
+		if (soWindowId != null && poWindowId == null)
+		{
+			return soWindowId;
+		}
+
+		// Case 2: Only PO window is defined
+		if (soWindowId == null && poWindowId != null)
+		{
+			return poWindowId;
+		}
+
+		// Case 3: Both defined OR both null
+		// Return null to allow IsSOTrx-based window selection
+		return null;
 	}
 
 	public ADRefTable retrieveAccountTableRefInfo()

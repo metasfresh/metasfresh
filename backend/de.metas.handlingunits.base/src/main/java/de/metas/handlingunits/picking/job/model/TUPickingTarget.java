@@ -24,6 +24,7 @@ package de.metas.handlingunits.picking.job.model;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -44,6 +45,8 @@ public class TUPickingTarget
 	// New TU
 	@Nullable HuPackingInstructionsId tuPIId;
 	boolean isDefaultPacking;
+	/** Meaningful only for the new-TU form (when {@link #tuPIId} is set). Always {@code null} for existing-TU targets. */
+	@Nullable GRAI grai;
 
 	//
 	// Existing TU
@@ -55,6 +58,7 @@ public class TUPickingTarget
 			@NonNull final String caption,
 			@Nullable final HuPackingInstructionsId tuPIId,
 			final boolean isDefaultPacking,
+			@Nullable final GRAI grai,
 			@Nullable HuId tuId,
 			@Nullable HUQRCode tuQRCode)
 	{
@@ -64,6 +68,7 @@ public class TUPickingTarget
 		{
 			this.tuPIId = null;
 			this.isDefaultPacking = false;
+			this.grai = null;
 			this.tuId = tuId;
 			this.tuQRCode = tuQRCode;
 			this.id = "existing-" + tuId.getRepoId();
@@ -72,6 +77,7 @@ public class TUPickingTarget
 		{
 			this.tuPIId = tuPIId;
 			this.isDefaultPacking = isDefaultPacking;
+			this.grai = grai;
 			this.tuId = null;
 			this.tuQRCode = null;
 			this.id = "new-" + tuPIId.getRepoId();
@@ -90,7 +96,13 @@ public class TUPickingTarget
 	@NonNull
 	public static TUPickingTarget ofPackingInstructions(@NonNull final HuPackingInstructionsId tuPIId, @NonNull final String caption)
 	{
-		return builder().tuPIId(tuPIId).caption(caption).build();
+		return ofPackingInstructions(tuPIId, caption, null);
+	}
+
+	@NonNull
+	public static TUPickingTarget ofPackingInstructions(@NonNull final HuPackingInstructionsId tuPIId, @NonNull final String caption, @Nullable final GRAI grai)
+	{
+		return builder().tuPIId(tuPIId).caption(caption).grai(grai).build();
 	}
 
 	public static TUPickingTarget ofExistingHU(@NonNull final HuId luId, @NonNull final HUQRCode qrCode)

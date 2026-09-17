@@ -1,22 +1,22 @@
 package org.adempiere.inout.util;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_UOM;
-import org.eevolution.api.BOMComponentType;
-
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.business.BusinessTestHelper;
 import de.metas.material.event.commons.AttributesKey;
-import org.eevolution.api.QtyCalculationsBOM;
-import org.eevolution.api.QtyCalculationsBOMLine;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMLine;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -28,12 +28,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,7 +41,7 @@ import lombok.Value;
  */
 
 @Value
-final class ChristmasPackTestData
+class ChristmasPackTestData
 {
 	@NonNull
 	ShipmentScheduleAvailableStockDetail christmasPackStockDetail;
@@ -61,7 +61,7 @@ final class ChristmasPackTestData
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(111);
 
-		final I_C_UOM uomEach = uom("Each", 0);
+		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 		final ProductId christmasPackProductId = product("christmas pack", uomEach);
 		final ProductId chocolateProductId = product("chocolate", uomEach);
 		final ProductId socksProductId = product("socks", uomEach);
@@ -92,21 +92,27 @@ final class ChristmasPackTestData
 				.build();
 
 		chocolateStockDetail = ShipmentScheduleAvailableStockDetail.builder()
-				.productId(chocolateProductId)
-				.warehouseId(warehouseId)
-				.storageAttributesKey(AttributesKey.ALL)
+				.stockMatchingKey(StockMatchingKey.builder()
+						.productId(chocolateProductId)
+						.warehouseId(warehouseId)
+						.attributesKey(AttributesKey.ALL)
+						.build())
 				.qtyOnHand(new BigDecimal(chocolate_qtyOnHand))
 				.build();
 		socksStockDetail = ShipmentScheduleAvailableStockDetail.builder()
-				.productId(socksProductId)
-				.warehouseId(warehouseId)
-				.storageAttributesKey(AttributesKey.ALL)
+				.stockMatchingKey(StockMatchingKey.builder()
+						.productId(socksProductId)
+						.warehouseId(warehouseId)
+						.attributesKey(AttributesKey.ALL)
+						.build())
 				.qtyOnHand(new BigDecimal(socks_qtyOnHand))
 				.build();
 		christmasPackStockDetail = ShipmentScheduleAvailableStockDetail.builder()
-				.productId(christmasPackProductId)
-				.warehouseId(warehouseId)
-				.storageAttributesKey(AttributesKey.ALL)
+				.stockMatchingKey(StockMatchingKey.builder()
+						.productId(christmasPackProductId)
+						.warehouseId(warehouseId)
+						.attributesKey(AttributesKey.ALL)
+						.build())
 				.qtyOnHand(new BigDecimal(christmasPack_qtyOnHand))
 				//
 				.pickingBOM(pickingBOM)
@@ -114,16 +120,6 @@ final class ChristmasPackTestData
 				.componentStockDetail(socksStockDetail)
 				//
 				.build();
-	}
-
-	private static I_C_UOM uom(final String name, final int precision)
-	{
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
-		uom.setName(name);
-		uom.setUOMSymbol(name);
-		uom.setStdPrecision(precision);
-		saveRecord(uom);
-		return uom;
 	}
 
 	private static ProductId product(final String name, final I_C_UOM stockingUOM)

@@ -351,7 +351,7 @@ public class ShipmentService
 						.quantityTypeToUse(request.getQuantityTypeToUse())
 						.onTheFlyPickToPackingInstructions(false) // backwards compatibility: on-the-fly-pick to (anonymous) CUs
 						.qtyToDeliverOverrides(QtyToDeliverMap.EMPTY)
-						.isFailIfNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found
+						.failOnSingleScheduleWithNoPickedHUs(true) // backwards compatibility: true - fail if no picked HUs found (REST API typically processes single schedules)
 						.build()
 		);
 
@@ -374,6 +374,7 @@ public class ShipmentService
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
 					.bpartnerValue(bPartnerValue)
+					.isCustomerFilter(true)
 					.build());
 		}
 	}

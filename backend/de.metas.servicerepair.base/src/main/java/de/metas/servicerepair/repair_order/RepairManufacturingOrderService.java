@@ -149,7 +149,8 @@ public class RepairManufacturingOrderService
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId resourceId = ResourceId.ofRepoId(ppCostCollector.getS_Resource_ID());
-			final ProductId productId = resourceProductService.getProductIdByResourceId(resourceId);
+			final ProductId productId = resourceProductService.getProductIdByResourceId(resourceId)
+					.orElseThrow(() -> new AdempiereException("No product found for " + resourceId));
 			final Quantity duration = ppCostCollectorBL.getTotalDurationReportedAsQuantity(ppCostCollector);
 
 			return RepairManufacturingCostCollector.builder()

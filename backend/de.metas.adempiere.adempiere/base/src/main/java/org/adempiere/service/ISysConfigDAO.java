@@ -50,4 +50,7 @@ public interface ISysConfigDAO extends ISingletonService
 	void setValue(@NonNull final String name, final boolean value, @NonNull final ClientAndOrgId clientAndOrgId);
 
 	void setValue(@NonNull final String name, final int value, @NonNull final ClientAndOrgId clientAndOrgId);
+
+	/** @return the ConfigurationLevel ('S'/'C'/'O') declared on the System-level (client=0,org=0) record, or empty if none. */
+	Optional<String> getConfigurationLevel(@NonNull String name);
 }

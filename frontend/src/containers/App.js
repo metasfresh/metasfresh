@@ -64,8 +64,8 @@ const App = () => {
   const dispatch = useDispatch();
   const store = useStore();
   const language = useSelector((state) => state.appHandler.me.language);
-  useNotificationsWebsocket({ isLoggedIn: !!auth.isLoggedIn });
-  useSessionWebsocket({ isLoggedIn: !!auth.isLoggedIn });
+  useNotificationsWebsocket();
+  useSessionWebsocket();
 
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);

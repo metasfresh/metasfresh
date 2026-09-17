@@ -376,7 +376,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	private Field getAnnotatedParamField(final ProcessClassParamInfo paramInfo)
 	{
 		final ArrayKey fieldKey = paramInfo.getFieldKey();
-		return ((Map<ArrayKey, Field>)_fieldsIndexedByFieldKey).get(fieldKey);
+		return _fieldsIndexedByFieldKey.get(fieldKey);
 	}
 
 	/**
@@ -803,7 +803,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return _processInfo;
 	}
 
-	protected final ProcessExecutionResult getResult()
+	@VisibleForTesting
+	public final ProcessExecutionResult getResult()
 	{
 		return getProcessInfo().getResult();
 	}
@@ -1097,16 +1098,33 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 * Retrieves the records which where selected and attached to this process execution, i.e.
+	 * Convenience overload that applies active-records and context-client filters by default.
+	 *
+	 * @see #retrieveSelectedRecordsQueryBuilder(Class, boolean)
+	 */
+	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
+	{
+		return retrieveSelectedRecordsQueryBuilder(modelClass, true);
+	}
+
+	/**
+	 * Retrieves the records which were selected and attached to this process execution, i.e.
 	 * <ul>
-	 * <li>if there is any {@link ProcessInfo#getQueryFilterOrElse(IQueryFilter)} that will be used to fetch the records
-	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will will be used
+	 * <li>if there is any {@link ProcessInfo#getQueryFilterOrElse(IQueryFilter)} that will be used to fetch the records,
+	 *     optionally filtered by active records (see {@code applyActiveRecordsFilter}) and restricted to the current client
+	 * <li>else if the single record is set ({@link ProcessInfo}'s AD_Table_ID/Record_ID) that will be used as-is,
+	 *     without any active-records or client filter
 	 * <li>else an exception is thrown
 	 * </ul>
 	 *
-	 * @return query builder which will provide selected record(s)
+	 * @param modelClass             the model class to query
+	 * @param applyActiveRecordsFilter if {@code true}, {@link IQueryBuilder#addOnlyActiveRecordsFilter()} is applied
+	 *                               when a selection query filter is used. Pass {@code false} to also include inactive records
+	 *                               (e.g. for reactivation processes).
+	 * @return query builder which will provide the selected record(s)
 	 */
-	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
+	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass,
+			final boolean applyActiveRecordsFilter)
 	{
 		final ProcessInfo pi = getProcessInfo();
 		final String tableName = pi.getTableNameOrNull();
@@ -1120,9 +1138,12 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		final IQueryFilter<ModelType> selectionQueryFilter = pi.getQueryFilterOrElse(null);
 		if (selectionQueryFilter != null)
 		{
-			queryBuilder.filter(selectionQueryFilter)
-					.addOnlyActiveRecordsFilter()
-					.addOnlyContextClient();
+			queryBuilder.filter(selectionQueryFilter);
+			if (applyActiveRecordsFilter)
+			{
+				queryBuilder.addOnlyActiveRecordsFilter();
+			}
+			queryBuilder.addOnlyContextClient();
 		}
 		//
 		// Try fetching the single selected record from AD_PInstance's AD_Table_ID/Record_ID.

@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Database errors",
+    "messageRegex": ".*SQLException.*|.*database.*|.*PostgreSQL.*|.*constraint violation.*",
+    "matchedStatuses": ["failed", "broken"]
+  },
+  {
+    "name": "Timeout issues",
+    "messageRegex": ".*timeout.*|.*timed out.*|.*TimeoutException.*",
+    "matchedStatuses": ["failed", "broken"]
+  },
+  {
+    "name": "API errors",
+    "messageRegex": ".*REST.*|.*API.*|.*HTTP.*|.*status code.*|.*response.*",
+    "matchedStatuses": ["failed", "broken"]
+  },
+  {
+    "name": "Assertion failures",
+    "messageRegex": ".*AssertionError.*|.*Expected.*but.*|.*should be.*but was.*",
+    "matchedStatuses": ["failed"]
+  },
+  {
+    "name": "Infrastructure issues",
+    "messageRegex": ".*container.*|.*docker.*|.*connection refused.*|.*RabbitMQ.*",
+    "matchedStatuses": ["failed", "broken"]
+  }
+]

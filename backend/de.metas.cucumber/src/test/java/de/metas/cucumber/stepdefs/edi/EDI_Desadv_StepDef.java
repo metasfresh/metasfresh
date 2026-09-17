@@ -33,8 +33,10 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvResult;
@@ -90,6 +92,7 @@ public class EDI_Desadv_StepDef
 	private final @NonNull C_BPartner_StepDefData bpartnerTable;
 	private final @NonNull C_Order_StepDefData orderTable;
 	private final @NonNull EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
+	private final @NonNull M_InOut_StepDefData inoutTable;
 	private final @NonNull TestContext restTestContext;
 
 	@Given("metasfresh is configured for One-DESADV-Per-ORDERS")
@@ -160,10 +163,87 @@ public class EDI_Desadv_StepDef
 		}
 	}
 
+	/**
+	 * Asserts that a replication-interface-exported DESADV XML (captured earlier via
+	 * "RabbitMQ receives a EDI_Exp_Desadv") still carries an expected set of business-critical
+	 * elements — a superset check that catches a whole class of regressions where an export
+	 * {@code EXP_FormatLine} is silently lost (e.g. cascade-deleted by a {@code DROP COLUMN}),
+	 * not just a single field. Tolerant of newly-added elements.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *   <li>{@code EDI_Exp_Desadv_ID.Identifier} (required) — the captured DESADV document.</li>
+	 *   <li>{@code TagName} (required) — XML element that MUST be present.</li>
+	 *   <li>{@code OPT.UnderTag} (optional) — restrict the search to the first occurrence of this
+	 *       ancestor element (e.g. {@code C_BPartner_ID}); empty = search the whole document.</li>
+	 *   <li>{@code OPT.Value} (optional) — when set, the element's text content must equal it.</li>
+	 * </ul>
+	 * Example:
+	 * <pre>
+	 * Then the following EDI_Exp_Desadv XML carries the expected elements:
+	 *   | EDI_Exp_Desadv_ID.Identifier | OPT.UnderTag  | TagName         | OPT.Value     |
+	 *   | e_d_1                        | C_BPartner_ID | EdiRecipientGLN | 1234567890123 |
+	 *   | e_d_1                        |               | MovementDate    |               |
+	 * </pre>
+	 */
+	@Then("the following EDI_Exp_Desadv XML carries the expected elements:")
+	public void validate_EDI_Exp_Desadv_elements(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::validateEDIExpDesadvElement);
+	}
+
 	@Then("^after not more than (.*)s, EDI_Desadv records have the following export status$")
 	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
 	{
 		DataTableRows.of(table).forEach(row -> validateExportStatus(timeoutSec, row));
+	}
+
+	/**
+	 * Asserts that all given M_InOut records point to the same {@code EDI_Desadv_ID}.
+	 * This is used to verify the test precondition that multiple shipments share
+	 * a single DESADV (e.g. because they originate from orders with the same POReference + BPartner).
+	 * <p>
+	 * Each record must have a non-zero {@code EDI_Desadv_ID}, and all must match.
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code M_InOut_ID} (required) — identifier of an M_InOut record from {@link M_InOut_StepDefData}</li>
+	 * </ul>
+	 * <p>
+	 * Example usage:
+	 * <pre>
+	 * Then M_InOut records share the same EDI_Desadv:
+	 *   | M_InOut_ID |
+	 *   | s_1        |
+	 *   | s_2        |
+	 * </pre>
+	 */
+	@Then("M_InOut records share the same EDI_Desadv:")
+	public void assertShipmentsShareSameDesadv(@NonNull final DataTable dataTable)
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+		assertThat(rows).as("Need at least 2 M_InOut records to compare").hasSizeGreaterThanOrEqualTo(2);
+
+		int firstDesadvId = -1;
+		for (final DataTableRow row : rows)
+		{
+			final org.compiere.model.I_M_InOut inoutRecord = row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+			final I_M_InOut ediInout = InterfaceWrapperHelper.create(inoutRecord, I_M_InOut.class);
+			InterfaceWrapperHelper.refresh(ediInout);
+			final int desadvId = ediInout.getEDI_Desadv_ID();
+			assertThat(desadvId).as("M_InOut %s should have EDI_Desadv_ID set", row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID)).isGreaterThan(0);
+
+			if (firstDesadvId < 0)
+			{
+				firstDesadvId = desadvId;
+			}
+			else
+			{
+				assertThat(desadvId)
+						.as("All M_InOut records should share the same EDI_Desadv_ID")
+						.isEqualTo(firstDesadvId);
+			}
+		}
 	}
 
 	private void validateEdiDesadv(@NonNull final Map<String, String> tableRow)
@@ -225,6 +305,38 @@ public class EDI_Desadv_StepDef
 			final Element qtyTu = getElement(desadvPackElement, QTY_TU_TAGNAME);
 			assertThat(qtyTu).as(QTY_TU_TAGNAME).isNotNull();
 			assertThat(qtyTu.getTextContent()).as(QTY_TU_TAGNAME).isEqualTo(qtyTuExpected);
+		}
+	}
+
+	private void validateEDIExpDesadvElement(@NonNull final DataTableRow row)
+	{
+		final Document ediExpDesadv = row.getAsIdentifier("EDI_Exp_Desadv_ID").lookupNotNullIn(ediExpDesadvTable);
+
+		final String tagName = row.getAsString("TagName");
+		final String underTag = row.getAsOptionalString("UnderTag").orElse(null);
+		final String expectedValue = row.getAsOptionalString("Value").orElse(null);
+
+		final Node scope;
+		if (Check.isNotBlank(underTag))
+		{
+			final Element parent = getElement(ediExpDesadv, underTag);
+			assertThat(parent).as("the exported DESADV XML must contain element <%s>", underTag).isNotNull();
+			scope = parent;
+		}
+		else
+		{
+			scope = ediExpDesadv;
+		}
+
+		final Element element = getElement(scope, tagName);
+		assertThat(element)
+				.as("the exported DESADV XML must carry element <%s>%s",
+						tagName, Check.isNotBlank(underTag) ? " under <" + underTag + ">" : "")
+				.isNotNull();
+
+		if (Check.isNotBlank(expectedValue))
+		{
+			assertThat(element.getTextContent()).as("<%s> value", tagName).isEqualTo(expectedValue);
 		}
 	}
 

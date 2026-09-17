@@ -295,7 +295,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			}
 
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
-			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
+			// A ComponentIssue line carries a negated qty (DocLine_CostCollector.setQty(movementQty, isSOTrx=true)),
+			// so getCreateCosts returns a negative cost. Posting it uncompensated would invert the direction
+			// (DR-WIP negative / CR-Asset negative). Compensate the sign here — mirroring createFacts_Variance —
+			// so a component issue posts DR P_WIP_Acct (positive) / CR P_Asset_Acct (positive): inventory down, WIP up.
+			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qtyIssued.negate());
 			if (fact != null)
 			{
 				facts.add(fact);

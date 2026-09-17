@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
 @topic:commissionContracts
 @ghActions:run_on_executor3
 Feature: Trade margin commission contract
+## F09000: Commission Contract
   As a user
   I have a trade margin contract, when order is processed commission points and commission deed are computed accordingly
 
@@ -12,6 +15,8 @@ Feature: Trade margin commission contract
     And metasfresh has date and time 2021-12-02T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
+@allure.label.epic:E0900_Commission
+@allure.label.feature:F09000
   @topic:commissionContracts
   @Id:S0150_190
   Scenario: Margin commission combined having one sales rep and one customer

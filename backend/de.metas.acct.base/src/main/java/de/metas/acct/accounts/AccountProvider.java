@@ -167,6 +167,12 @@ public class AccountProvider
 	}
 
 	@NonNull
+	public Optional<Account> getAcctSchemaDefaultPayBankFeeAccount(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		return bankAccountAcctRepository.getAcctSchemaDefaultPayBankFeeAccount(acctSchemaId);
+	}
+
+	@NonNull
 	public Account getCashAccount(
 			@NonNull final AcctSchemaId ignoredAcctSchemaId,
 			final int ignoredCashBookId,
@@ -291,6 +297,19 @@ public class AccountProvider
 			if (productRevenueAcct != null)
 			{
 				return productRevenueAcct;
+			}
+		}
+
+		//
+		// Product Expense: check/use the override defined on tax level
+		if (acctType == ProductAcctType.P_Expense_Acct && taxId != null)
+		{
+			final Account productExpenseAcct = taxAccountsRepository.getAccounts(taxId, acctSchemaId)
+					.getT_Expense_Acct()
+					.orElse(null);
+			if (productExpenseAcct != null)
+			{
+				return productExpenseAcct;
 			}
 		}
 

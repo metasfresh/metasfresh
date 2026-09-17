@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -90,12 +91,13 @@ import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_UserID
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
 @RequiredArgsConstructor
 public class S_ExternalReference_StepDef
 {
-	private final OrgId defaultOrgId = OrgId.ofRepoId(1000000);
+	private final OrgId defaultOrgId = OrgId.MAIN;
 
 	private final AD_User_StepDefData userTable;
 	private final S_ExternalReference_StepDefData externalRefTable;
@@ -103,6 +105,7 @@ public class S_ExternalReference_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalReferenceTypes externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
@@ -111,28 +114,53 @@ public class S_ExternalReference_StepDef
 
 	private final TestContext testContext;
 
+	/**
+	 * Verifies that an {@code S_ExternalReference} record exists with the given field values,
+	 * scoped to a specific org.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code ExternalSystem} – code of the external system (e.g. {@code GRS})</li>
+	 *   <li>{@code Type} – external reference type code</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns (absent cell = not asserted):
+	 * {@code ExternalReference}, {@code ExternalReferenceURL},
+	 * {@code AD_Org_ID} – org identifier previously registered in {@link AD_Org_StepDefData}; scopes the
+	 * lookup to that org (defaults to the main org when omitted). External references are unique per org,
+	 * so this lets the same reference be asserted independently for two different orgs.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then verify that S_ExternalReference was created
+	 *   | ExternalSystem | Type      | ExternalReference | AD_Org_ID |
+	 *   | GRS            | BPartner  | ext-001           | org1      |
+	 * </pre>
+	 */
 	@Then("verify that S_ExternalReference was created")
 	public void verifyExists(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> externalReferencesTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : externalReferencesTableList)
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(DataTableUtil.extractStringForColumnName(dataTableRow, "ExternalSystem"));
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(row.getAsString("ExternalSystem"));
 			final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
-			final IExternalReferenceType type = externalReferenceTypes.ofCodeNotNull(DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "Type"));
-			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
-			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
+			final IExternalReferenceType type = externalReferenceTypes.ofCodeNotNull(row.getAsString("Type"));
+			final String externalReference = row.getAsOptionalString("ExternalReference").map(DataTableUtil::nullToken2Null).orElse(null);
+			final String externalReferenceURL = row.getAsOptionalString("ExternalReferenceURL").map(DataTableUtil::nullToken2Null).orElse(null);
 
-			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+			final I_S_ExternalReference externalRefRecord = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId())
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
+					// scope by org so the same external reference can be asserted independently per org (defaults to the main org)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID,
+							row.getAsOptionalIdentifier(I_S_ExternalReference.COLUMNNAME_AD_Org_ID).map(orgTable::getId).orElse(OrgId.MAIN))
 					.create()
-					.anyMatch();
+					.firstOnlyOrNull(I_S_ExternalReference.class);
 
-			assertThat(externalRefExists).isTrue();
-		}
+			assertThat(externalRefRecord).as("S_ExternalReference exists for externalReference=%s", externalReference).isNotNull();
+		});
 	}
 
 	@And("metasfresh contains S_ExternalReference:")
@@ -187,6 +215,14 @@ public class S_ExternalReference_StepDef
 				assertThat(shipper).isNotNull();
 
 				externalReferenceRecord.setRecord_ID(shipper.getM_Shipper_ID());
+			}
+			else if (type.getCode().equals(BPartnerExternalReferenceType.BPARTNER.getCode()))
+			{
+				final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_BPartner_ID);
+				assertThat(partnerIdentifier).isNotNull();
+
+				final I_C_BPartner partnerRecord = bpartnerTable.get(partnerIdentifier);
+				externalReferenceRecord.setRecord_ID(partnerRecord.getC_BPartner_ID());
 			}
 			else
 			{

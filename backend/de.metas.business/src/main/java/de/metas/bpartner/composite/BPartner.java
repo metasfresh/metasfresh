@@ -3,17 +3,22 @@ package de.metas.bpartner.composite;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.CreditorId;
+import de.metas.bpartner.DebtorId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.IncotermsId;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.User;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -66,17 +71,23 @@ public class BPartner
 	public static final String URL_2 = "url2";
 	public static final String URL_3 = "url3";
 	public static final String GROUP_ID = "groupId";
+	public static final String BPGROUPID = "bpGroupId";
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
 	public static final String COMPANY = "company";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
+	public static final String SALESTREPID = "salesRepId";
+	public static final String DISCOUNT_PRINTED = "discountPrinted";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
+	public static final String EORI = "EORI";
+	public static final String E_INVOICE_BUYER_REFERENCE = "einvoiceBuyerReference";
 	public static final String GREETING_ID = "greetingId";
 	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
 	public static final String CUSTOMER_PRICING_SYSTEM_ID = "customerPricingSystemId";
+	public static final String CUSTOMER_INCOTERMS = "customerIncoterms";
 	public static final String VENDOR_PAYMENTTERM_ID = "vendorPaymentTermId";
 	public static final String VENDOR_PRICING_SYSTEM_ID = "vendorPricingSystemId";
 	public static final String EXCLUDE_FROM_PROMOTIONS = "excludeFromPromotions";
@@ -134,6 +145,7 @@ public class BPartner
 	private boolean company;
 	private @Nullable String salesPartnerCode;
 	private @Nullable SalesRep salesRep;
+	private boolean discountPrinted;
 	private @Nullable PaymentRule paymentRule;
 	private @Nullable String internalName;
 
@@ -143,6 +155,12 @@ public class BPartner
 	private @Nullable String globalId;
 
 	private @Nullable String vatId;
+
+	private @Nullable String eori;
+
+	private @Nullable String eInvoiceBuyerReference;
+
+	private @Nullable SalesRepContact salesRepContact;
 
 	private @Nullable OrgMappingId orgMappingId;
 
@@ -162,7 +180,9 @@ public class BPartner
 	private boolean identifiedByExternalReference;
 
 	private final PaymentTermId customerPaymentTermId;
-	private final PricingSystemId customerPricingSystemId;
+	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's priceListId
+	private PricingSystemId customerPricingSystemId;
+	private final IncotermsId customerIncotermsId;
 
 	private final PaymentTermId vendorPaymentTermId;
 	private final PricingSystemId vendorPricingSystemId;
@@ -171,8 +191,10 @@ public class BPartner
 	private final String referrer;
 	@Nullable private final CampaignId campaignId;
 
-	private final Integer creditorId;
-	private final Integer debtorId;
+	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's creditorId
+	private @Nullable CreditorId creditorId;
+	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's debtorId
+	private @Nullable DebtorId debtorId;
 
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
@@ -203,9 +225,13 @@ public class BPartner
 			@Nullable final Boolean company,
 			@Nullable final String salesPartnerCode,
 			@Nullable final SalesRep salesRep,
+			@Nullable final Boolean discountPrinted,
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final String internalName,
 			@Nullable final String vatId,
+			@Nullable final String eori,
+			@Nullable final String eInvoiceBuyerReference,
+			@Nullable final SalesRepContact salesRepContact,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy,
 			@Nullable final Boolean identifiedByExternalReference,
@@ -213,6 +239,7 @@ public class BPartner
 			@Nullable final String memo,
 			@Nullable final PaymentTermId customerPaymentTermId,
 			@Nullable final PricingSystemId customerPricingSystemId,
+			@Nullable final  IncotermsId customerIncotermsId,
 			@Nullable final PaymentTermId vendorPaymentTermId,
 			@Nullable final PricingSystemId vendorPricingSystemId,
 			final boolean excludeFromPromotions,
@@ -221,8 +248,8 @@ public class BPartner
 			@Nullable final DocTypeId soDocTypeTargetId,
 			@Nullable final String firstName,
 			@Nullable final String lastName,
-			@Nullable final Integer creditorId,
-			@Nullable final Integer debtorId,
+			@Nullable final CreditorId creditorId,
+			@Nullable final DebtorId debtorId,
 			@Nullable final String glnLookupLabel)
 	{
 		this.id = id;
@@ -250,10 +277,13 @@ public class BPartner
 		this.company = coalesceNotNull(company, false);
 		this.salesPartnerCode = salesPartnerCode;
 		this.salesRep = salesRep;
+		this.discountPrinted = coalesceNotNull(discountPrinted, false);
 		this.paymentRule = paymentRule;
 		this.internalName = internalName;
 		this.vatId = vatId;
-
+		this.eori = eori;
+		this.eInvoiceBuyerReference = eInvoiceBuyerReference;
+		this.salesRepContact = salesRepContact;
 		this.changeLog = changeLog;
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 		this.orgMappingId = orgMappingId;
@@ -262,6 +292,7 @@ public class BPartner
 
 		this.customerPaymentTermId = customerPaymentTermId;
 		this.customerPricingSystemId = customerPricingSystemId;
+		this.customerIncotermsId = customerIncotermsId;
 
 		this.vendorPaymentTermId = vendorPaymentTermId;
 		this.vendorPricingSystemId = vendorPricingSystemId;

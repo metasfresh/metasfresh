@@ -1,12 +1,8 @@
-package de.metas.inoutcandidate.spi.impl;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,13 +20,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_UOM;
+package de.metas.inoutcandidate.spi.impl;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
@@ -39,6 +29,15 @@ import de.metas.inout.model.I_M_QualityNote;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_UOM;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Collects {@link HUReceiptLinePartCandidate}s and behaves like a candidate for receipt line (i.e. {@link I_M_InOutLine}).
@@ -90,13 +89,10 @@ import lombok.NonNull;
 	 * Merges the given {@code candidate} with one of the previously added candidates if one matches match, or adds the given {@code candidate} as a new one.
 	 * Calls {@link #canAdd(HUReceiptLinePartCandidate)} to find out if the candidate can be added or not.
 	 *
-	 * @param candidate
 	 * @return {@code true} if the candidate could be added.
 	 */
-	public boolean add(final HUReceiptLinePartCandidate candidate)
+	public boolean add(@NonNull final HUReceiptLinePartCandidate candidate)
 	{
-		Check.assumeNotNull(candidate, "receiptLinePartToAdd not null");
-
 		//
 		// Check if we can add this Part to somewhere to this candidate
 		if (!canAdd(candidate))
@@ -134,10 +130,9 @@ import lombok.NonNull;
 	 *
 	 * A part can be added if this candidate is new or if it was compatible fields.
 	 *
-	 * @param receiptLinePartToAdd
 	 * @return true if part can be added
 	 */
-	private final boolean canAdd(final HUReceiptLinePartCandidate receiptLinePartToAdd)
+	private boolean canAdd(@NonNull final HUReceiptLinePartCandidate receiptLinePartToAdd)
 	{
 		// If this is a new candidate, we can accept everything
 		if (isNew())

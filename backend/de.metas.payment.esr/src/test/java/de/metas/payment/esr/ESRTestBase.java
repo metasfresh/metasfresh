@@ -16,6 +16,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.money.CurrencyId;
 import de.metas.payment.api.C_Payment_ProcessInterceptor;
@@ -337,6 +338,7 @@ public class ESRTestBase
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo(invDocNo);
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
+		invoice.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice.setIsPaid(invPaid);
 		invoice.setIsSOTrx(true);

@@ -57,6 +57,9 @@
 	<field name="issourcesupplycert" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="issourcesupplycert"/>
 	</field>
+	<field name="isfactoringpartner" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isfactoringpartner"/>
+	</field>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
@@ -263,6 +266,9 @@
 				</subreportParameter>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="IsFactoringPartner">
+					<subreportParameterExpression><![CDATA[$F{isfactoringpartner}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>

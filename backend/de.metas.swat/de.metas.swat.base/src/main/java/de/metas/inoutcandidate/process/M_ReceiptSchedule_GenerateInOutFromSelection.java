@@ -24,6 +24,7 @@ package de.metas.inoutcandidate.process;
 
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -31,12 +32,16 @@ import org.adempiere.ad.dao.impl.ProcessInfoSelectionQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
+import org.compiere.SpringContextHolder;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.impl.ReceiptScheduleDeliveryStopGuard;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
@@ -75,17 +80,23 @@ public class M_ReceiptSchedule_GenerateInOutFromSelection extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Iterator<I_M_ReceiptSchedule> schedules = getReceiptSchedules();
+		// Materialise the selection (without the old silent IsDeliveryStop=false filter)
+		// so we can (a) check for empty and (b) pass the list to the guard and then to generateInOuts.
+		final List<I_M_ReceiptSchedule> schedules = ImmutableList.copyOf(getReceiptSchedules());
 
-		if (!schedules.hasNext())
+		if (schedules.isEmpty())
 		{
 			throw new AdempiereException("@" + MSG_NO_RECEIPT_SCHEDULES_SELECTED + "@");
 		}
 
+		// Layer 1: reject atomically if ANY schedule belongs to a delivery-stopped vendor
+		SpringContextHolder.instance.getBean(ReceiptScheduleDeliveryStopGuard.class)
+				.assertNoneBlocked(schedules);
+
 		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class).createEmptyInOutGenerateResult(false); // storeReceipts=false
 		final IInOutProducer producer = receiptScheduleBL.createInOutProducer(result, p_IsComplete);
 
-		receiptScheduleBL.generateInOuts(getCtx(), producer, schedules);
+		receiptScheduleBL.generateInOuts(getCtx(), producer, schedules.iterator());
 
 		return "@Created@ @M_InOut_ID@: #" + result.getInOutCount();
 	}

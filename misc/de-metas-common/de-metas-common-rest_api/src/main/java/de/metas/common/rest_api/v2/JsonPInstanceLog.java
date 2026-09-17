@@ -43,7 +43,8 @@ public class JsonPInstanceLog
 
 	@JsonCreator
 	@Builder
-	private JsonPInstanceLog(@JsonProperty("message") @NonNull final String message)
+	private JsonPInstanceLog(
+			@JsonProperty("message") @NonNull final String message)
 	{
 		this.message = message;
 	}

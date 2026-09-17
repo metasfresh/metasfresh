@@ -2,8 +2,8 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.OptionalBoolean;
@@ -120,8 +120,8 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 	}
 
 	@Nullable
-	public ITranslatableString getSingleProductNameOrNull()
+	public ProductValueAndName getSingleProductValueAndNameOrNull()
 	{
-		return singleProduct != null ? singleProduct.getProductName() : null;
+		return singleProduct != null ? singleProduct.getProductValueAndName() : null;
 	}
 }

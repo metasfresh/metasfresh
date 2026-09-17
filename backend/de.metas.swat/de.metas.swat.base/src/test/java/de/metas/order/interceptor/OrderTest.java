@@ -1,23 +1,41 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.order.interceptor;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.BPartnerSupplierApprovalRepository;
-import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.money.CurrencyId;
-import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.model.interceptor.C_Order;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
-import de.metas.shipping.PurchaseOrderToShipperTransportationService;
-import de.metas.user.UserGroupRepository;
-import de.metas.user.UserRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,28 +55,6 @@ import org.junit.jupiter.api.Test;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class OrderTest
 {
 	public static final String PARTNER_NAME_1 = "PartnerName1";
@@ -72,17 +68,17 @@ public class OrderTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		SpringContextHolder.registerJUnitBean(BPartnerOrderParamsRepository.newInstanceForUnitTesting());
+		// C_Order.newInstanceForUnitTesting() transitively builds OrderPayScheduleLCStepService ->
+		// OrderPayScheduleRegularInvoiceService, whose Services.get(IInvoiceLineBL.class) instantiates
+		// InvoiceLineBL, which pulls ProductTaxCategoryService out of the spring context on construction.
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
-		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		final DocumentLocationBL documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
-		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
-		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
-		final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
-		final OrderPayScheduleService orderPayScheduleService = OrderPayScheduleService.newInstanceForUnitTesting();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPayScheduleService));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Order.newInstanceForUnitTesting());
 
 		defaultIncoterm = newInstance(I_C_Incoterms.class);
 		defaultIncoterm.setName("System Default Incoterm");
+		defaultIncoterm.setValue("System Default Incoterm");
 		defaultIncoterm.setIsDefault(true);
 		defaultIncoterm.setAD_Org_ID(TEST_ORG_ID);
 		defaultIncoterm.setDefaultLocation("Default City");
@@ -153,6 +149,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -176,6 +173,8 @@ public class OrderTest
 		doctype.setName(name);
 		doctype.setDescription(description);
 		doctype.setDocumentNote(documentNote);
+		doctype.setDocBaseType(DocBaseType.SalesOrder.getCode());
+		doctype.setDocSubType(DocSubType.StandardOrder.getCode());
 
 		doctype.setCopyDescriptionAndDocumentNote(CopyDescriptionAndDocumentNote.CopyDescAndDocumentNote.getCode());
 
@@ -214,11 +213,19 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
+
+		final I_C_Incoterms incoterms = newInstance(I_C_Incoterms.class);
+		incoterms.setName("Incoterm");
+		incoterms.setValue("Incoterm");
+		incoterms.setAD_Org_ID(TEST_ORG_ID);
+		incoterms.setDefaultLocation("Location");
+		save(incoterms);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
 		bpartner.setName("PartnerWithIncoterms");
-		bpartner.setC_Incoterms_Customer_ID(100);
+		bpartner.setC_Incoterms_Customer_ID(incoterms.getC_Incoterms_ID());
 		bpartner.setIncotermLocation("City");
 		bpartner.setC_BP_Group(group);
 		save(bpartner);
@@ -229,8 +236,146 @@ public class OrderTest
 
 		save(order);
 
-		Assertions.assertEquals(100, order.getC_Incoterms_ID());
+		Assertions.assertEquals(incoterms.getC_Incoterms_ID(), order.getC_Incoterms_ID());
 		Assertions.assertEquals("City", order.getIncotermLocation());
+	}
+
+	/**
+	 * A programmatically created order (e.g. from an OLCand) that already carries a provided Bill_BPartner
+	 * must NOT have it overwritten by the deviating-bill-partner group resolution.
+	 */
+	@Test
+	public void setBillBPartner_doesNotOverwriteProvidedBillBPartner_whenNotUIAction()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+
+		final I_C_BPartner centralBilling = createBPartnerInGroup("CentralBilling", plainGroup);
+		final I_C_BPartner providedBill = createBPartnerInGroup("ProvidedBill", plainGroup);
+
+		final I_C_BP_Group deviatingGroup = newInstance(I_C_BP_Group.class);
+		deviatingGroup.setName("DeviatingBillGroup");
+		deviatingGroup.setValue("DeviatingBillGroup");
+		deviatingGroup.setIsDeviatingBillBPartner(true);
+		deviatingGroup.setBill_BPartner_ID(centralBilling.getC_BPartner_ID());
+		save(deviatingGroup);
+
+		final I_C_BPartner member = createBPartnerInGroup("Member", deviatingGroup);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setBill_BPartner_ID(providedBill.getC_BPartner_ID());
+		order.setIsSOTrx(true);
+		save(order);
+
+		Assertions.assertEquals(providedBill.getC_BPartner_ID(), order.getBill_BPartner_ID());
+	}
+
+	/**
+	 * When no Bill_BPartner is provided, the deviating-bill-partner group resolution still applies.
+	 */
+	@Test
+	public void setBillBPartner_appliesGroupBill_whenNoBillBPartnerProvided()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner centralBilling = createBPartnerInGroup("CentralBilling", plainGroup);
+
+		final I_C_BP_Group deviatingGroup = newInstance(I_C_BP_Group.class);
+		deviatingGroup.setName("DeviatingBillGroup");
+		deviatingGroup.setValue("DeviatingBillGroup");
+		deviatingGroup.setIsDeviatingBillBPartner(true);
+		deviatingGroup.setBill_BPartner_ID(centralBilling.getC_BPartner_ID());
+		save(deviatingGroup);
+
+		final I_C_BPartner member = createBPartnerInGroup("Member", deviatingGroup);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setIsSOTrx(true);
+		save(order);
+
+		Assertions.assertEquals(centralBilling.getC_BPartner_ID(), order.getBill_BPartner_ID());
+	}
+
+	/**
+	 * On a programmatic BEFORE_CHANGE (C_BPartner_ID changed on an order that already carries a provided
+	 * bill partner), the provided Bill_BPartner is preserved — not re-resolved from the new partner's group.
+	 */
+	@Test
+	public void setBillBPartner_doesNotOverwriteProvidedBillBPartner_onProgrammaticChange()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner centralBilling = createBPartnerInGroup("CentralBilling", plainGroup);
+		final I_C_BPartner providedBill = createBPartnerInGroup("ProvidedBill", plainGroup);
+
+		final I_C_BP_Group deviatingGroup = newInstance(I_C_BP_Group.class);
+		deviatingGroup.setName("DeviatingBillGroup");
+		deviatingGroup.setValue("DeviatingBillGroup");
+		deviatingGroup.setIsDeviatingBillBPartner(true);
+		deviatingGroup.setBill_BPartner_ID(centralBilling.getC_BPartner_ID());
+		save(deviatingGroup);
+
+		final I_C_BPartner member1 = createBPartnerInGroup("Member1", deviatingGroup);
+		final I_C_BPartner member2 = createBPartnerInGroup("Member2", deviatingGroup);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member1.getC_BPartner_ID());
+		order.setBill_BPartner_ID(providedBill.getC_BPartner_ID());
+		order.setIsSOTrx(true);
+		save(order);
+
+		// a programmatic partner change must not re-resolve the already-provided bill partner
+		order.setC_BPartner_ID(member2.getC_BPartner_ID());
+		save(order);
+
+		Assertions.assertEquals(providedBill.getC_BPartner_ID(), order.getBill_BPartner_ID());
+	}
+
+	/**
+	 * The standard own-bill-to default (Bill_BPartner == C_BPartner, as set by setBillLocation before this
+	 * interceptor) is NOT a "provided" bill partner — the deviating-group resolution still overwrites it.
+	 * Guards against the OLCand guard being too broad and suppressing the feature for programmatic orders.
+	 */
+	@Test
+	public void setBillBPartner_overwritesOwnBillToDefault_withGroupBill()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner centralBilling = createBPartnerInGroup("CentralBilling", plainGroup);
+
+		final I_C_BP_Group deviatingGroup = newInstance(I_C_BP_Group.class);
+		deviatingGroup.setName("DeviatingBillGroup");
+		deviatingGroup.setValue("DeviatingBillGroup");
+		deviatingGroup.setIsDeviatingBillBPartner(true);
+		deviatingGroup.setBill_BPartner_ID(centralBilling.getC_BPartner_ID());
+		save(deviatingGroup);
+
+		final I_C_BPartner member = createBPartnerInGroup("Member", deviatingGroup);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		// simulate the own-bill-to default that setBillLocation sets before this interceptor
+		order.setBill_BPartner_ID(member.getC_BPartner_ID());
+		order.setIsSOTrx(true);
+		save(order);
+
+		Assertions.assertEquals(centralBilling.getC_BPartner_ID(), order.getBill_BPartner_ID());
+	}
+
+	private I_C_BP_Group createPlainBPGroup()
+	{
+		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
+		group.setName("PlainGroup");
+		group.setValue("PlainGroup");
+		save(group);
+		return group;
+	}
+
+	private I_C_BPartner createBPartnerInGroup(final String name, final I_C_BP_Group group)
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setName(name);
+		bpartner.setC_BP_Group(group);
+		save(bpartner);
+		return bpartner;
 	}
 
 	@Test
@@ -238,11 +383,19 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
+
+		final I_C_Incoterms incoterms = newInstance(I_C_Incoterms.class);
+		incoterms.setName("Incoterm");
+		incoterms.setValue("Incoterm");
+		incoterms.setAD_Org_ID(TEST_ORG_ID);
+		incoterms.setDefaultLocation("Location");
+		save(incoterms);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
 		bpartner.setName("PartnerWithIncoterms");
-		bpartner.setC_Incoterms_Vendor_ID(100);
+		bpartner.setC_Incoterms_Vendor_ID(incoterms.getC_Incoterms_ID());
 		bpartner.setPO_IncotermLocation("City");
 		bpartner.setC_BP_Group(group);
 		save(bpartner);
@@ -253,7 +406,7 @@ public class OrderTest
 
 		save(order);
 
-		Assertions.assertEquals(100, order.getC_Incoterms_ID());
+		Assertions.assertEquals(incoterms.getC_Incoterms_ID(), order.getC_Incoterms_ID());
 		Assertions.assertEquals("City", order.getIncotermLocation());
 	}
 
@@ -262,6 +415,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
@@ -286,6 +440,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);

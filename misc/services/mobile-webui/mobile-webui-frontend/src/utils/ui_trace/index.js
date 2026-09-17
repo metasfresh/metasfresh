@@ -143,3 +143,8 @@ export const putContext = (properties) => {
 export const setModalDialogName = (name) => {
   modalDialog.name = name;
 };
+
+export const traceLogWarn = (message, properties) => {
+  console.warn(message, properties);
+  trace({ ...properties, eventName: 'logWarn', message });
+};

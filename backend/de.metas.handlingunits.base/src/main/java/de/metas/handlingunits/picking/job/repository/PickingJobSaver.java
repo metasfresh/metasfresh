@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
@@ -52,10 +53,12 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -65,6 +68,7 @@ import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -78,6 +82,13 @@ import java.util.function.BiFunction;
 public class PickingJobSaver
 {
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * Resolved via {@link SpringContextHolder#getBean} because this class is instantiated plain
+	 * (via {@code new}, outside Spring's bean lifecycle — see {@link PickingJobLoaderAndSaver#forSaving()}).
+	 */
+	@NonNull protected final PickingJobLineCarrierServiceRepository lineCarrierServiceRepository =
+			SpringContextHolder.instance.getBean(PickingJobLineCarrierServiceRepository.class);
 
 	protected final HashMap<PickingJobId, I_M_Picking_Job> pickingJobs = new HashMap<>();
 	protected final ArrayListMultimap<PickingJobId, I_M_Picking_Job_HUAlternative> pickingJobHUAlternatives = ArrayListMultimap.create();
@@ -167,6 +178,8 @@ public class PickingJobSaver
 			// NOTE: atm we have nothing to sync on line level
 			updateRecord(existingRecord, line, docStatus);
 			InterfaceWrapperHelper.save(existingRecord);
+
+			lineCarrierServiceRepository.assignServicesToLine(line.getId(), line.getCarrierServices());
 
 			saveSteps(line.getSteps(), pickingJobId, line.getId(), orgId, docStatus);
 		}
@@ -351,6 +364,9 @@ public class PickingJobSaver
 
 		updateRecord(record, from.getCurrentPickingTarget());
 
+		record.setCarrier_Product_ID(CarrierProductId.toRepoId(from.getCarrierProductId()));
+		record.setIsCarrierAdviseReadOnly(from.isCarrierAdviseReadOnly());
+
 		record.setDocStatus(from.getDocStatus().getCode());
 		record.setProcessed(from.getDocStatus().isProcessed());
 	}
@@ -369,6 +385,8 @@ public class PickingJobSaver
 			final TUPickingTarget tuPickingTarget = from.getTuPickingTarget().orElse(null);
 			record.setM_TU_HU_PI_ID(HuPackingInstructionsId.toRepoId(tuPickingTarget != null ? tuPickingTarget.getTuPIId() : null));
 			record.setM_TU_HU_ID(HuId.toRepoId(tuPickingTarget != null ? tuPickingTarget.getTuId() : null));
+			final GRAI grai = tuPickingTarget != null ? tuPickingTarget.getGrai() : null;
+			record.setCurrent_PickTo_TU_GRAI(grai != null ? grai.toCanonicalString() : null);
 		}
 	}
 
@@ -378,6 +396,11 @@ public class PickingJobSaver
 			@NonNull final PickingJobDocStatus docStatus)
 	{
 		updateRecord(record, from.getCurrentPickingTarget());
+
+		record.setCarrier_Product_ID(CarrierProductId.toRepoId(from.getCarrierProductId()));
+		record.setIsCarrierAdviseReadOnly(from.isCarrierAdviseReadOnly());
+		record.setIsCarrierAdviseManual(from.isManual());
+		record.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(from.getCarrierGoodsTypeId()));
 
 		final boolean isManuallyClosed = from.isManuallyClosed();
 		record.setIsManuallyClosed(isManuallyClosed);
@@ -404,6 +427,8 @@ public class PickingJobSaver
 			record.setCurrent_PickTo_TU_QRCode(currentTUPickingTarget != null && currentTUPickingTarget.getTuQRCode() != null
 					? currentTUPickingTarget.getTuQRCode().toGlobalQRCodeString()
 					: null);
+			final GRAI grai = currentTUPickingTarget != null ? currentTUPickingTarget.getGrai() : null;
+			record.setCurrent_PickTo_TU_GRAI(grai != null ? grai.toCanonicalString() : null);
 		}
 	}
 

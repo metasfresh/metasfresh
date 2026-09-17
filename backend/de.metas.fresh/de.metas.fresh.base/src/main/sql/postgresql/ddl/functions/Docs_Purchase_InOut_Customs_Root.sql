@@ -1,6 +1,6 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN p_record_id numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN record_id numeric)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN p_record_id numeric)
 RETURNS TABLE 
 	(
 	ad_org_id numeric,

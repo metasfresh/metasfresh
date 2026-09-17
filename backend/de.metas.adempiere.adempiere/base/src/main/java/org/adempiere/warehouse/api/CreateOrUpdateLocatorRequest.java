@@ -49,5 +49,7 @@ public class CreateOrUpdateLocatorRequest
 	String y;
 	String z;
 	String x1;
+	@Nullable Integer priorityNo;
+	@Nullable Boolean isGroundLocator;
 	ZonedDateTime dateLastInventory;
 }

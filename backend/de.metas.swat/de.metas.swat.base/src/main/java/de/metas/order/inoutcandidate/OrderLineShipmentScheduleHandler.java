@@ -38,13 +38,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -91,10 +92,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	private final PickingBOMService pickingBOMService;
 
 	private final OrderLineShipmentScheduleHandlerExtension extensions;
-	
 
 	public OrderLineShipmentScheduleHandler(
-			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL, 
+			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
 			@NonNull final PickingBOMService pickingBOMService,
 			@NonNull final Optional<List<OrderLineShipmentScheduleHandlerExtension>> extensions)
 	{
@@ -144,10 +144,10 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final I_M_ShipmentSchedule newSched = newInstance(I_M_ShipmentSchedule.class);
 
 		Check.errorUnless(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
-						  "The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
-		
+				"The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
+
 		updateShipmentScheduleFromOrderLine(newSched, orderLine);
-		
+
 		// Moved this from updateShipmentScheduleFromOrderLine() to here as a workaround, until we have M_ShipmentSchedule.M_AttributeSetInstance_Override_ID
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		if (asiId.isRegular())
@@ -218,6 +218,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setShipmentAllocation_BestBefore_Policy(orderLine.getShipmentAllocation_BestBefore_Policy());
 
 		shipmentSchedule.setM_Shipper_ID(orderLine.getM_Shipper_ID());
+		shipmentSchedule.setC_Project_ID(orderLine.getC_Project_ID());
 
 		// Moved this to createShipmentScheduleForOrderLine() as a workaround, until we have M_ShipmentSchedule.M_AttributeSetInstance_Override_ID
 		// final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
@@ -235,7 +236,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
 
 		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.of(orderLine.getQtyReserved(), productId), orderLine);
-		
+
 		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual()));
 
 		// only display item products
@@ -265,7 +266,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setPriorityRule(order.getPriorityRule());
 
 		final BPartnerLocationAndCaptureId billToLocationId = orderBL.getBillToLocationId(order);
-		BPartnerContactId billToContactId;
+		final BPartnerContactId billToContactId;
 		if (orderBL.hasBillToContactId(order))
 		{
 			billToContactId = orderBL.getBillToContactId(order);
@@ -282,11 +283,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		ShipmentScheduleDocumentLocationAdapterFactory
 				.billLocationAdapter(shipmentSchedule)
 				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(billToLocationId.getBpartnerId())
-								 .bpartnerLocationId(billToLocationId.getBpartnerLocationId())
-								 .locationId(billToLocationId.getLocationCaptureId())
-								 .contactId(billToContactId)
-								 .build());
+						.bpartnerId(billToLocationId.getBpartnerId())
+						.bpartnerLocationId(billToLocationId.getBpartnerLocationId())
+						.locationId(billToLocationId.getLocationCaptureId())
+						.contactId(billToContactId)
+						.build());
 
 		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
@@ -349,7 +350,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	@Override
 	public Iterator<?> retrieveModelsWithMissingCandidates(
 			final Properties ctx,
-			final String trxName)
+			final String trxName,
+			@NonNull final QueryLimit limit)
 	{
 		// task 08896: don't use the where clause with all those INs.
 		// Its performance can turn catastrophic for large numbers or orderlines and orders.
@@ -358,12 +360,16 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final String wc = " C_OrderLine_ID IN ( select C_OrderLine_ID from C_OrderLine_ID_With_Missing_ShipmentSchedule_v ) ";
 		final TypedSqlQueryFilter<I_C_OrderLine> orderLinesFilter = TypedSqlQueryFilter.of(wc);
 
+		// Note: the query limit is pushed down here (not only enforced by the caller's processing budget) so that
+		// OPTION_GuaranteedIteratorRequired below only ever materializes a selection of up to `limit` rows instead of
+		// the whole (potentially huge, tens-of-thousands rows) missing-schedule backlog on every batch run.
 		return queryBL
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(orderLinesFilter)
 				.addOnlyContextClient(ctx)
 				.orderBy().addColumn(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).endOrderBy()
+				.setLimit(limit)
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
@@ -399,29 +405,29 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final Quantity qtyOrdered = Quantity.of(salesOrderLine.getQtyOrdered(), stockUOM);
 
 		final I_PP_Order ppOrder = ppOrderBL.createOrder(PPOrderCreateRequest.builder()
-																	   .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
-																	   .productPlanningId(config.getProductPlanningId())
-																	   // .materialDispoGroupId(null)
-																	   //
-																	   .plantId(config.getPlantId())
-																	   .warehouseId(warehouseId)
-																	   .plannerId(config.getPlannerId())
-																	   //
-																	   .bomId(config.getBomId())
-																	   .productId(productId)
-																	   .attributeSetInstanceId(asiId)
-																	   .qtyRequired(qtyOrdered)
-																	   //
-																	   .dateOrdered(SystemTime.asInstant())
-																	   .datePromised(TimeUtil.asInstant(salesOrderLine.getDatePromised()))
-																	   .dateStartSchedule(SystemTime.asInstant())
-																	   //
-																	   .salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
-																	   .customerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
-																	   //
-																	   .completeDocument(true)
-																	   //
-																	   .build());
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
+				.productPlanningId(config.getProductPlanningId())
+				// .materialDispoGroupId(null)
+				//
+				.plantId(config.getPlantId())
+				.warehouseId(warehouseId)
+				.plannerId(config.getPlannerId())
+				//
+				.bomId(config.getBomId())
+				.productId(productId)
+				.attributeSetInstanceId(asiId)
+				.qtyRequired(qtyOrdered)
+				//
+				.dateOrdered(SystemTime.asInstant())
+				.datePromised(TimeUtil.asInstant(salesOrderLine.getDatePromised()))
+				.dateStartSchedule(SystemTime.asInstant())
+				//
+				.salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
+				.customerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
+				//
+				.completeDocument(true)
+				//
+				.build());
 
 		return PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 	}

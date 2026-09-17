@@ -19,7 +19,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Detai
                 incotermlocation  character varying,
                 deliveryrule      character varying,
                 deliveryviarule   character varying,
-                additionaltext    text
+                additionaltext    text,
+                taxnote           text
             )
 AS
 $$
@@ -61,7 +62,8 @@ SELECT i.descriptionbottom,
            WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Delivery_Via_Rule') = 'N' THEN
                COALESCE(o_dvr_trl.name, o_dvr.name)
        END                                                                                            AS deliveryviarule,
-       report.getBPartner_CustomDocumentText(i.C_DocTypeTarget_ID, i.c_bpartner_id)                   AS AdditionalText
+       report.getBPartner_CustomDocumentText(i.C_DocTypeTarget_ID, i.c_bpartner_id)                   AS AdditionalText,
+       report.TaxNote(NULL, p_Invoice_ID, p_Language)                                                 AS taxnote
 FROM C_Invoice i
          LEFT OUTER JOIN C_PaymentTerm pt ON i.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
          LEFT OUTER JOIN C_PaymentTerm_Trl ptt ON i.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = p_Language

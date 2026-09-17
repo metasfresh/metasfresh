@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.sql.Timestamp;
@@ -38,21 +39,26 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.TimeZone;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DatabaseTest
 {
+	private TimeZone jvmTimezoneBackup;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		SystemTime.resetTimeSource();
+		jvmTimezoneBackup = TimeZone.getDefault();
 	}
 
 	@AfterEach
 	void afterEach()
 	{
 		SystemTime.resetTimeSource();
+		TimeZone.setDefault(jvmTimezoneBackup);
 	}
 
 	@Test
@@ -89,18 +95,27 @@ public class DatabaseTest
 		@Test
 		void null_Time() {assert_TO_DATE(null, DisplayType.Time).isEqualTo("current_date()");}
 
-		@Test
-		void ZonedDateTime_asTimestamp_Date()
+		/**
+		 * dev-note: a column without time information is a {@code timestamp without time zone} and carries no zone of its own,
+		 * so the value is rendered as the timestamp's wall clock in the JVM's default time zone.
+		 * The instant under test, {@code 2023-12-04T23:59:59Z}, therefore falls on a different day east and west of UTC.
+		 */
+		@ParameterizedTest(name = "JVM.zoneId={0}")
+		@CsvSource({
+				"America/Jamaica, 2023-12-04", // -05:00
+				"UTC, 2023-12-04",
+				"Europe/Berlin, 2023-12-05", // +01:00
+				"Asia/Tokyo, 2023-12-05", // +09:00
+		})
+		void ZonedDateTime_asTimestamp_Date(final String jvmTimezone, final String expectedLocalDate)
 		{
+			TimeZone.setDefault(TimeZone.getTimeZone(jvmTimezone));
+
 			final ZonedDateTime zonedDateTime = ZonedDateTime.parse("2023-12-04T23:59:59.000+00:00")
 					.withZoneSameInstant(ZoneId.of("Etc/UTC"));
 			final Timestamp time = TimeUtil.asTimestamp(zonedDateTime);
 
-			// setting zoneId to Europe/Berlin
-			SystemTime.setFixedTimeSource(ZonedDateTime.now(ZoneId.of("Europe/Berlin")));
-
-			// dev-note: we expect 2023-12-05 as for column without time information, the values should always be in local time
-			assert_TO_DATE(time, DisplayType.Date).isEqualTo("'2023-12-05'::timestamp without time zone");
+			assert_TO_DATE(time, DisplayType.Date).isEqualTo("'" + expectedLocalDate + "'::timestamp without time zone");
 		}
 
 		@Test

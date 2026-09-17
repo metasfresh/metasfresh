@@ -7,7 +7,7 @@ import { mergeWFProcessToState, updateUserEditable } from './utils';
 export const workflowReducer = ({ draftState, action }) => {
   switch (action.type) {
     case workflowTypes.UPDATE_WORKFLOW_PROCESS: {
-      const { wfProcess: fromWFProcess, parent } = action.payload;
+      const { wfProcess: fromWFProcess, parent, timestamp } = action.payload;
 
       let draftWFProcess = draftState[fromWFProcess.id];
 
@@ -24,6 +24,13 @@ export const workflowReducer = ({ draftState, action }) => {
         parent,
       });
 
+      // Remember when this process was last updated locally so a launchers snapshot that predates
+      // the update cannot prune it (see POPULATE_LAUNCHERS_COMPLETE below). `timestamp` is stamped
+      // by the updateWFProcess action creator, keeping this reducer pure.
+      if (timestamp != null) {
+        draftState[fromWFProcess.id].updatedAt = timestamp;
+      }
+
       return draftState;
     }
 
@@ -38,12 +45,16 @@ export const workflowReducer = ({ draftState, action }) => {
       return draftState;
     }
 
+    // Only a REQUESTED snapshot may prune: it is stamped when the request was issued, so it cannot claim
+    // knowledge of a job started later. A pushed snapshot carries no such bound, so it has its own action
+    // type that no case here handles -- attaching the prune to the type keeps it unreachable by accident.
     case launcherTypes.POPULATE_LAUNCHERS_COMPLETE: {
-      const { applicationLaunchers } = action.payload;
+      const { applicationLaunchers, requestTimestamp } = action.payload;
 
       removeWFProcessesFromState({
         draftState,
         wfProcessIdsToKeep: extractStartedWFProcessIdsFromLaunchers(applicationLaunchers.launchers),
+        launchersFetchStartedAt: requestTimestamp,
       });
 
       return draftState;
@@ -64,12 +75,34 @@ const extractStartedWFProcessIdsFromLaunchers = (launchers) => {
   }, []);
 };
 
-const removeWFProcessesFromState = ({ draftState, wfProcessIdsToKeep }) => {
-  const wfProcessIdsInState = Object.keys(original(draftState));
+const removeWFProcessesFromState = ({ draftState, wfProcessIdsToKeep, launchersFetchStartedAt }) => {
+  const originalState = original(draftState);
+  const wfProcessIdsInState = Object.keys(originalState);
 
   wfProcessIdsInState.forEach((wfProcessIdInState) => {
-    if (!wfProcessIdsToKeep.includes(wfProcessIdInState)) {
-      delete draftState[wfProcessIdInState];
+    // Present in the snapshot => a live started job => keep.
+    if (wfProcessIdsToKeep.includes(wfProcessIdInState)) {
+      return;
     }
+
+    // Absent from the snapshot: prune ONLY when we can prove the snapshot is authoritative about
+    // this process, i.e. the launchers fetch was issued strictly AFTER the process was last updated
+    // locally. A launchers response cannot be authoritative about a process started after its
+    // request was issued, so a snapshot that predates (or is concurrent with) the local update must
+    // not delete the process — otherwise a pre-start refresh resolving after a start would bounce
+    // the operator home mid-flow. Conservative default: if either timestamp is unknown, KEEP.
+    // Residual risk (accepted): both stamps are wall-clock Date.now(), not monotonic, so a backward
+    // clock adjustment between them could invert this comparison — orders of magnitude rarer than
+    // the race being fixed.
+    const wfProcessUpdatedAt = originalState[wfProcessIdInState]?.updatedAt;
+    if (wfProcessUpdatedAt == null || launchersFetchStartedAt == null) {
+      return;
+    }
+    if (wfProcessUpdatedAt >= launchersFetchStartedAt) {
+      return;
+    }
+
+    // Older than the snapshot and absent from it => genuinely gone => prune (GC).
+    delete draftState[wfProcessIdInState];
   });
 };

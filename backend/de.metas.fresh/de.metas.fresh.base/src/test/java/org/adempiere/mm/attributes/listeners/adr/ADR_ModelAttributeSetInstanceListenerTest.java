@@ -31,15 +31,11 @@ import de.metas.ad_reference.AdRefListRepositoryMocked;
 import de.metas.ad_reference.AdRefTableRepositoryMocked;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.edi.api.IEDIOLCandBL;
-import de.metas.edi.api.impl.EDIOLCandBL;
 import de.metas.fresh.model.I_C_BPartner;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.ADRAttributeDAO;
@@ -102,10 +98,6 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 	 * Document's BPartner
 	 */
 	private I_C_BPartner bpartner;
-	/**
-	 * {@link IEDIOLCandBL#isEDIInput(I_C_OLCand)} return value
-	 */
-	private Boolean isEDIInput_ReturnValue = null;
 
 	@BeforeEach
 	public void init()
@@ -136,19 +128,6 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 										   //
 			);
 		}
-
-		//
-		// Mock EDIOLCandBL
-		final EDIOLCandBL ediOLCandBL = new EDIOLCandBL()
-		{
-			@Override
-			public boolean isEDIInput(I_C_OLCand olCand)
-			{
-				Check.assumeNotNull(isEDIInput_ReturnValue, "isEDIInput_ReturnValue shall be set before");
-				return isEDIInput_ReturnValue;
-			}
-		};
-		Services.registerService(IEDIOLCandBL.class, ediOLCandBL);
 
 		SpringContextHolder.registerJUnitBean(newADReferenceService());
 	}
@@ -269,16 +248,15 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 	}
 
 	/**
-	 * Expectation: ADR attribute shall be copied even if it's from EDI or not
+	 * Expectation: ADR attribute shall be copied
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/08692_EDI_-_ADR_and_other_Attributes_from_PLV_not_in_Orderline_%28102526374063%29
 	 */
 	@Test
-	public void test_Purchase_OrderLineAlloc_EDI()
+	public void test_Purchase_OrderLineAlloc()
 	{
 		setADR_Vendor(I_C_BPartner.ADRZertifizierung_L_GMAA);
 		final boolean isSOTrx = false;
-		this.isEDIInput_ReturnValue = true;
 
 		final I_C_Order_Line_Alloc alloc = createC_Order_Line_Alloc(isSOTrx);
 		new OrderLineAllocADRModelAttributeSetInstanceListener().modelChanged(alloc);
@@ -288,60 +266,21 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 	}
 
 	/**
-	 * Expectation: ADR attribute shall be copied even if it's from EDI or not
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/08692_EDI_-_ADR_and_other_Attributes_from_PLV_not_in_Orderline_%28102526374063%29
-	 */
-	@Test
-	public void test_Purchase_OrderLineAlloc_NotEDI()
-	{
-		setADR_Vendor(I_C_BPartner.ADRZertifizierung_L_GMAA);
-		final boolean isSOTrx = false;
-		this.isEDIInput_ReturnValue = false;
-
-		final I_C_Order_Line_Alloc alloc = createC_Order_Line_Alloc(isSOTrx);
-		new OrderLineAllocADRModelAttributeSetInstanceListener().modelChanged(alloc);
-		//
-		final I_M_AttributeSetInstance asi = alloc.getC_OrderLine().getM_AttributeSetInstance();
-		helper.assertAttributeValue(I_C_BPartner.ADRZertifizierung_L_GMAA, asi, attr_ADR);
-	}
-
-	/**
-	 * Expectation: ADR attribute shall <b>not</b> be copied,even though the C_OLCand is from EDI
+	 * Expectation: ADR attribute shall <b>not</b> be copied
 	 *
 	 * @task dewiki908/mediawiki/index.php/08803_ADR_from_Partner_versus_Pricelist
 	 */
 	@Test
-	public void test_Sales_OrderLineAlloc_EDI()
+	public void test_Sales_OrderLineAlloc()
 	{
 		setADR_Customer(I_C_BPartner.ADRZertifizierung_L_GMAA);
 		final boolean isSOTrx = true;
-		this.isEDIInput_ReturnValue = true;
 
 		final I_C_Order_Line_Alloc alloc = createC_Order_Line_Alloc(isSOTrx);
 		new OrderLineAllocADRModelAttributeSetInstanceListener().modelChanged(alloc);
 		//
 		final I_M_AttributeSetInstance asi = alloc.getC_OrderLine().getM_AttributeSetInstance();
 		// helper.assertAttributeValue(I_C_BPartner.ADRZertifizierung_L_GMAA, asi, attr_ADR);
-		helper.assertAttributeValue(EXPECT_NoAttributeValue, asi, attr_ADR);
-	}
-
-	/**
-	 * Expectation: ADR attribute shall be copied only if the C_OLCand is from EDI
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/08692_EDI_-_ADR_and_other_Attributes_from_PLV_not_in_Orderline_%28102526374063%29
-	 */
-	@Test
-	public void test_Sales_OrderLineAlloc_NotEDI()
-	{
-		setADR_Customer(I_C_BPartner.ADRZertifizierung_L_GMAA);
-		final boolean isSOTrx = true;
-		this.isEDIInput_ReturnValue = false;
-
-		final I_C_Order_Line_Alloc alloc = createC_Order_Line_Alloc(isSOTrx);
-		new OrderLineAllocADRModelAttributeSetInstanceListener().modelChanged(alloc);
-		//
-		final I_M_AttributeSetInstance asi = alloc.getC_OrderLine().getM_AttributeSetInstance();
 		helper.assertAttributeValue(EXPECT_NoAttributeValue, asi, attr_ADR);
 	}
 

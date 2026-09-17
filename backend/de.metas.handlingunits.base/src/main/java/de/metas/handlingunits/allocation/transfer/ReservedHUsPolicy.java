@@ -20,6 +20,15 @@ public final class ReservedHUsPolicy
 	public static final ReservedHUsPolicy CONSIDER_ALL = builder().vhuReservedStatus(OptionalBoolean.UNKNOWN).build();
 	public static final ReservedHUsPolicy CONSIDER_ONLY_NOT_RESERVED = builder().vhuReservedStatus(OptionalBoolean.FALSE).build();
 
+	/**
+	 * Creates a policy that excludes reserved VHUs but makes an exception for the given IDs.
+	 * <p>
+	 * <b>Important:</b> Because this policy has {@code vhuReservedStatus=FALSE},
+	 * {@link #requiresRecursiveReservationGuard()} returns {@code false}, which skips the recursive
+	 * reservation guard in {@link HUTransformService#husToNewCUs}.
+	 * Callers must therefore also populate {@link HUTransformService#allowedReservedVhuIds}
+	 * with the same IDs to ensure the direct guard ({@code assertNotReserved}) is also bypassed.
+	 */
 	public static ReservedHUsPolicy onlyNotReservedExceptVhuIds(@NonNull final Collection<HuId> vhuIdsToConsiderEvenIfReserved)
 	{
 		return vhuIdsToConsiderEvenIfReserved.isEmpty()
@@ -67,5 +76,21 @@ public final class ReservedHUsPolicy
 	private boolean isHUReservedStatusMatches(@NonNull final I_M_HU vhu)
 	{
 		return vhuReservedStatus.isUnknown() || vhuReservedStatus.isTrue() == vhu.isReserved();
+	}
+
+	/**
+	 * @return true if this policy would potentially process reserved VHUs
+	 *         (i.e., it does NOT explicitly exclude reserved VHUs).
+	 *         Used by {@link HUTransformService} to decide whether a recursive reservation-guard check is needed.
+	 *         <p>
+	 *         <b>Note:</b> This method only inspects {@code vhuReservedStatus} — it does NOT consider
+	 *         {@link #alwaysConsiderVhuIds}. A policy created via {@link #onlyNotReservedExceptVhuIds}
+	 *         returns {@code false} here even though it <em>can</em> process specific reserved VHUs.
+	 *         Those VHUs must also be listed in {@link HUTransformService}'s {@code allowedReservedVhuIds}
+	 *         so they pass the per-method guards.
+	 */
+	public boolean requiresRecursiveReservationGuard()
+	{
+		return vhuReservedStatus.isUnknown() || vhuReservedStatus.isTrue();
 	}
 }

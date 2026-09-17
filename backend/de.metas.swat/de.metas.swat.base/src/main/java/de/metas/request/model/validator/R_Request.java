@@ -76,7 +76,7 @@ public class R_Request
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_R_Request.COLUMNNAME_M_InOut_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_R_Request.COLUMNNAME_M_InOut_ID)
 	@CalloutMethod(columnNames = { I_R_Request.COLUMNNAME_M_InOut_ID })
 	public void onMInOutSet(final de.metas.request.model.I_R_Request request)
 	{

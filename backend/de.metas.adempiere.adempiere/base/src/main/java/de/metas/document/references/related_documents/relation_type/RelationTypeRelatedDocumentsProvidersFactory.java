@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -68,7 +69,7 @@ import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_OrderByClause;
 import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
 
 @Component
-public final class RelationTypeRelatedDocumentsProvidersFactory implements IRelatedDocumentsProvider
+public class RelationTypeRelatedDocumentsProvidersFactory implements IRelatedDocumentsProvider
 {
 	private static final Logger logger = LogManager.getLogger(RelationTypeRelatedDocumentsProvidersFactory.class);
 	private final ADReferenceService adReferenceService;
@@ -260,6 +261,11 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		}
 
 		return result;
+	}
+
+	public Optional<SpecificRelationTypeRelatedDocumentsProvider> findRelatedDocumentsProvider(@NonNull final RelationTypeId relationTypeId)
+	{
+		return Optional.ofNullable(findRelatedDocumentsProvider(loadOutOfTrx(relationTypeId.getRepoId(), I_AD_RelationType.class)));
 	}
 
 	@VisibleForTesting

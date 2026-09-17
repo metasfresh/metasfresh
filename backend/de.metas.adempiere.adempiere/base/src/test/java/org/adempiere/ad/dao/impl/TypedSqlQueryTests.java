@@ -1,6 +1,8 @@
 package org.adempiere.ad.dao.impl;
 
+import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_OrderLine;
@@ -172,6 +174,123 @@ public class TypedSqlQueryTests
 											  + " WHERE (M_Product_ID=1000002)\n"
 											  + " ORDER BY C_OrderLine_ID\n"
 											  + ")\n");
+		}
+	}
+
+	@Nested
+	public class forUpdateClauses
+	{
+		@Test
+		public void forUpdate_emitsClauseAfterOrderBy()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+			query.setForUpdate(ForUpdate.FOR_UPDATE);
+
+			final String sql = query.buildSQL("SELECT *", null, null, true);
+
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID\n"
+							+ " FOR UPDATE");
+		}
+
+		@Test
+		public void forNoKeyUpdate_emitsClauseAfterOrderBy()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+			query.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE);
+
+			final String sql = query.buildSQL("SELECT *", null, null, true);
+
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID\n"
+							+ " FOR NO KEY UPDATE");
+		}
+
+		@Test
+		public void forUpdateSkipLocked_emitsClause()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+			query.setForUpdate(ForUpdate.FOR_UPDATE_SKIP_LOCKED);
+
+			final String sql = query.buildSQL("SELECT *", null, null, true);
+
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID\n"
+							+ " FOR UPDATE SKIP LOCKED");
+		}
+
+		@Test
+		public void none_emitsNoLockingClause()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+			query.setForUpdate(ForUpdate.NONE);
+
+			final String sql = query.buildSQL("SELECT *", null, null, true);
+
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID");
+		}
+
+		@Test
+		public void default_emitsNoLockingClause()
+		{
+			// No setForUpdate call at all — the default state must not emit any locking clause
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setOrderBy("AD_Table_ID");
+
+			final String sql = query.buildSQL("SELECT *", null, null, true);
+
+			assertThat(sql).isEqualToIgnoringWhitespace(
+					"SELECT *  FROM AD_Table\n"
+							+ " WHERE (IsActive='Y')\n"
+							+ " ORDER BY AD_Table_ID");
+		}
+
+		@Test
+		public void lockWithUnion_throwsAdempiereException()
+		{
+			final Properties ctx = new Properties();
+			final TypedSqlQuery<I_C_OrderLine> query = new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=1", ITrx.TRXNAME_None);
+			query.setForUpdate(ForUpdate.FOR_UPDATE);
+			query.addUnion(new TypedSqlQuery<>(ctx, I_C_OrderLine.class, "M_Product_ID=2", ITrx.TRXNAME_None), true);
+
+			assertThatThrownBy(() -> query.buildSQL("SELECT *", null, null, true))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessage("FOR UPDATE cannot be combined with UNION queries");
+		}
+
+		@Test
+		public void lockWithGroupBy_throwsAdempiereException()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setForUpdate(ForUpdate.FOR_UPDATE);
+
+			assertThatThrownBy(() -> query.buildSQL("SELECT *", null, "TableName", true))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessage("FOR UPDATE cannot be combined with GROUP BY");
+		}
+
+		@Test
+		public void lockWithNonSelectClause_throwsAdempiereException()
+		{
+			final TypedSqlQuery<I_AD_Table> query = new TypedSqlQuery<>(Env.getCtx(), I_AD_Table.class, "IsActive='Y'", ITrx.TRXNAME_None);
+			query.setForUpdate(ForUpdate.FOR_UPDATE);
+
+			assertThatThrownBy(() -> query.buildSQL("DELETE", null, null, true))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessage("Locking clause (FOR UPDATE/...) is only valid for SELECT statements");
 		}
 	}
 }

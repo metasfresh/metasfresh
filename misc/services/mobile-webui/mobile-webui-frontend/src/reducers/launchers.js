@@ -10,9 +10,10 @@ export const useApplicationLaunchers = ({ applicationId }) => {
   const {
     list: launchers,
     filterByQRCode,
+    actions,
     requestTimestamp,
   } = useSelector((state) => getApplicationLaunchers(state, applicationId));
-  return { launchers, filterByQRCode, requestTimestamp };
+  return { launchers, filterByQRCode, actions, requestTimestamp };
 };
 const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
 
@@ -24,7 +25,7 @@ export const useFacets = ({ applicationId }) => {
   return useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
 };
 
-const getApplicationLaunchersFacetIds = (state, applicationId) => {
+export const getApplicationLaunchersFacetIds = (state, applicationId) => {
   const facets = getApplicationLaunchersFacets(state, applicationId);
   return facets?.length > 0 ? extractFacetIdsFromFacetsArray(facets) : EMPTY_ARRAY;
 };
@@ -38,7 +39,7 @@ export const useFilters = ({ applicationId }) => {
   return useSelector((state) => getApplicationLaunchersFilters(state, applicationId));
 };
 
-const getApplicationLaunchersFilters = (state, applicationId) => {
+export const getApplicationLaunchersFilters = (state, applicationId) => {
   const launchers = getApplicationLaunchers(state, applicationId);
   return {
     filterByDocumentNo: launchers.filterByDocumentNo,
@@ -65,15 +66,21 @@ export default function launchers(state = initialState, action) {
       return copyAndMergeToState(state, applicationId, {
         isLoading: true,
         filterByQRCode: toQRCodeObject(filterByQRCode),
+        actions: [],
         requestTimestamp: timestamp,
       });
     }
-    case types.POPULATE_LAUNCHERS_COMPLETE: {
+    // A pushed snapshot refreshes the visible list exactly like a requested one. Note that neither case
+    // writes `requestTimestamp` -- so this is unchanged behaviour for the REST fetch effect in
+    // useLaunchers.js, whose dependency array reads that field.
+    case types.POPULATE_LAUNCHERS_COMPLETE:
+    case types.POPULATE_LAUNCHERS_PUSHED_BY_SERVER: {
       const { applicationId, applicationLaunchers } = payload;
       return copyAndMergeToState(state, applicationId, {
         isLoading: false,
         filterByQRCode: applicationLaunchers.filterByQRCode,
         list: applicationLaunchers.launchers,
+        actions: applicationLaunchers.actions ?? [],
       });
     }
     case types.CLEAR_LAUNCHERS: {
@@ -81,6 +88,7 @@ export default function launchers(state = initialState, action) {
       return copyAndMergeToState(state, applicationId, {
         isLoading: false,
         list: [],
+        actions: [],
         requestTimestamp: null,
       });
     }

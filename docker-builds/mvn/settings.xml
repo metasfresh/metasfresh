@@ -10,31 +10,12 @@
                 <metasfresh.version>10.0.0</metasfresh.version>
             </properties>
             <repositories>
-                <!-- Maven Central declared first so it is queried BEFORE the rate-limited
-                     GitHub Packages repo. github-3rdparty-maven holds only legacy 3rd-party
-                     jars that are NOT on Central; keeping it second means it is consulted
-                     only as a fallback (Central 404) for those, instead of being hit first
-                     for every artifact (which exhausts the shared read token and can hang). -->
-                <repository>
-                    <id>central</id>
-                    <name>Maven Central</name>
-                    <url>https://repo.maven.apache.org/maven2</url>
-                    <releases><enabled>true</enabled></releases>
-                    <snapshots><enabled>false</enabled></snapshots>
-                </repository>
                 <repository>
                     <id>github-3rdparty-maven</id>
                     <url>https://maven.pkg.github.com/metasfresh/metasfresh-maven-repo/</url>
                 </repository>
             </repositories>
             <pluginRepositories>
-                <pluginRepository>
-                    <id>central</id>
-                    <name>Maven Central</name>
-                    <url>https://repo.maven.apache.org/maven2</url>
-                    <releases><enabled>true</enabled></releases>
-                    <snapshots><enabled>false</enabled></snapshots>
-                </pluginRepository>
                 <pluginRepository>
                     <id>github-3rdparty-maven</id>
                     <url>https://maven.pkg.github.com/metasfresh/metasfresh-maven-repo/</url>

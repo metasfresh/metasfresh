@@ -212,7 +212,10 @@ public class ADProcessPostProcessService
 		WindowId windowId = WindowId.fromNullableJson(recordsToOpen.getWindowIdString());
 		if (windowId == null)
 		{
-			windowId = WindowId.ofNullable(RecordWindowFinder.findAdWindowId(recordRef).orElse(null));
+			windowId = WindowId.ofNullable(RecordWindowFinder.newInstance(recordRef)
+					.checkRecordPresentInWindow()
+					.findAdWindowId()
+					.orElse(null));
 		}
 
 		return DocumentPath.rootDocumentPath(windowId, documentId);

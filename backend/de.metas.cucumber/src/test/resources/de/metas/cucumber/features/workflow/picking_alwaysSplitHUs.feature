@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
 @ghActions:run_on_executor7
 Feature: Picking workflow - always split HUs
+## F00183: Workflow
 
   Background:
     Given infrastructure and metasfresh are running
@@ -62,6 +65,8 @@ Feature: Picking workflow - always split HUs
       | PS_S0406   | 063.2       | Y         |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_10
   Scenario: AlwaysSplitHU = Y, pick less than available => split
     Given set mobile UI picking profile
@@ -102,6 +107,8 @@ Feature: Picking workflow - always split HUs
       | splitHU_pickingProductHU_Storage_17663 | splitHU_17663      | picking_product_17663   | 1   |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_20
   Scenario: AlwaysSplitHU = Y, pick exactly what's available => split
     Given set mobile UI picking profile
@@ -142,6 +149,8 @@ Feature: Picking workflow - always split HUs
       | splitHU_pickingProductHU_Storage_17663 | splitHU_17663      | picking_product_17663   | 10  |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_30
   Scenario: AlwaysSplitHU = Y, pick more than what's available => split due virtual inventory for the diff
     Given set mobile UI picking profile
@@ -182,6 +191,8 @@ Feature: Picking workflow - always split HUs
       | pickingProductHU_Storage_splitHU_17663 | splitHU_17663      | picking_product_17663   | 11  |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_40
   Scenario: AlwaysSplitHU = N, pick less than available => split
     Given set mobile UI picking profile
@@ -222,6 +233,8 @@ Feature: Picking workflow - always split HUs
       | splitHU_pickingProductHU_Storage_17663 | splitHU_17663      | picking_product_17663   | 1   |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_50
   Scenario: AlwaysSplitHU = N, pick exactly what's available => DON'T split
     Given set mobile UI picking profile
@@ -255,6 +268,8 @@ Feature: Picking workflow - always split HUs
       | pickingShipmentSchedule          | pickingProductHU_17663 | N                           |
 
   @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00183
   @Id:S0406_60
   Scenario: AlwaysSplitHU = N, pick more than what's available => split due to virtual inventory for the diff
     Given set mobile UI picking profile

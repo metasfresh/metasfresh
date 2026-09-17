@@ -56,12 +56,6 @@ public interface I_EDI_Document_Extension extends I_EDI_Document
 	// @formatter:on
 
 	// @formatter:off
-	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
-	boolean isEdiEnabled();
-	void setIsEdiEnabled(boolean IsEdiEnabled);
-	// @formatter:on
-
-	// @formatter:off
     String COLUMNNAME_Reversal_ID = "Reversal_ID";
 	void setReversal_ID (int Reversal_ID);
 	int getReversal_ID();

@@ -2,7 +2,8 @@
 DROP VIEW IF EXISTS C_Invoice_PaySelectionTrxType_V;
 CREATE OR REPLACE VIEW C_Invoice_PaySelectionTrxType_V AS
 SELECT C_Invoice_ID,
-	CASE 
+	CASE
+	    WHEN i.IsFinancial='N' THEN 'XX'
 		WHEN /* CREDIT_TRANSFER_TO_VENDOR - "OUT" */ i.IsSOTrx='N' AND i.PaymentRule IN ('T'/*DirectDeposit*/, 'P'/*OnCredit*/) AND i.DocStatus IN ('CO', 'CL') THEN 'CT'
 		WHEN /* DIRECT_DEBIT_FROM_CUSTOMER - "CDD" */ i.IsSOTrx='Y' AND dt.DocBaseType != 'ARC' AND i.PaymentRule = 'D'/*DirectDebit*/ AND i.DocStatus IN ('CO', 'CL') THEN 'DD'
 		WHEN /* CREDIT_TRANSFER_TO_CUSTOMER - "CRE" */ i.IsSOTrx='Y' AND dt.DocBaseType = 'ARC' AND i.PaymentRule IN ('T'/*DirectDeposit*/, 'P'/*OnCredit*/) AND i.DocStatus IN ('CO', 'CL') THEN 'CT'

@@ -26,6 +26,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;
 
+import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_EXTERNAL_SYSTEM_CODE;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_IMPORT_ORDERS_CONTEXT;
 
 @UtilityClass
@@ -37,6 +38,7 @@ class ImportUtil
 		if (importOrdersRouteContext == null)
 		{
 			importOrdersRouteContext = new ImportOrdersRouteContext();
+			importOrdersRouteContext.setExternalSystemCode(exchange.getProperty(PROPERTY_EXTERNAL_SYSTEM_CODE, String.class));
 			exchange.setProperty(PROPERTY_IMPORT_ORDERS_CONTEXT, importOrdersRouteContext);
 		}
 		return importOrdersRouteContext;

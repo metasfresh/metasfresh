@@ -25,12 +25,13 @@ package de.metas.externalsystem.scriptedexportconversion;
 import de.metas.document.DocBaseType;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
-import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointId;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.process.AdProcessId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.table.api.AdTableAndClientId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
 
@@ -42,7 +43,7 @@ public class ExternalSystemScriptedExportConversionConfig implements IExternalSy
 {
 	@NonNull ExternalSystemScriptedExportConversionConfigId id;
 	@NonNull ExternalSystemParentConfigId parentId;
-	@NonNull ExternalSystemOutboundEndpointId externalSystemOutboundEndpointId;
+	@NonNull ExternalSystemEndpointId externalSystemEndpointId;
 	@NonNull String value;
 	@Nullable String description;
 	@Nullable AdProcessId outboundDataProcessId;
@@ -50,15 +51,19 @@ public class ExternalSystemScriptedExportConversionConfig implements IExternalSy
 	@Nullable String outboundHttpEndpoint;
 	@Nullable String outboundHttpToken;
 	@Nullable String outboundHttpMethod;
-	@NonNull AdTableId adTableId;
+	@NonNull AdTableAndClientId tableAndClientId;
 	@Nullable DocBaseType docBaseType;
 	@NonNull String whereClause;
-	@NonNull SeqNo seqNo;
-	@NonNull ClientId clientId;
 	boolean active;
+	boolean isTriggerOnComplete;
 
 	public static ExternalSystemScriptedExportConversionConfig cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		return (ExternalSystemScriptedExportConversionConfig)childConfig;
 	}
+
+	@NonNull public AdTableId getTableId() {return tableAndClientId.getTableId();}
+	@NonNull public ClientId getClientId() {return tableAndClientId.getClientId();}
+
+	public boolean isMatching(@NonNull final AdTableAndClientId tableAndClientId){return AdTableAndClientId.equals(tableAndClientId, this.tableAndClientId);}
 }

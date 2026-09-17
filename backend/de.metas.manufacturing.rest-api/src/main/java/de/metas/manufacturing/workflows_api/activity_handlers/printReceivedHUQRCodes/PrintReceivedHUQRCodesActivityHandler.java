@@ -39,6 +39,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -170,10 +171,11 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 			this.huLabelService = huLabelService;
 		}
 
-		private HULabelConfig getLabelConfig(final @NonNull HUToReport hu)
+		@Nullable
+		private HULabelConfig getLabelConfigOrNull(final @NonNull HUToReport hu)
 		{
 			return cache.computeIfAbsent(toHULabelConfigQuery(hu), huLabelService::getFirstMatching)
-					.orElseThrow();
+					.orElse(null);
 		}
 
 		private static HULabelConfigQuery toHULabelConfigQuery(final @NonNull HUToReport hu)
@@ -202,14 +204,21 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 		{
 			for (final HUToReport hu : hus)
 			{
-				add(hu, labelConfigProvider.getLabelConfig(hu));
-
+				final HULabelConfig labelConfigOrNull = labelConfigProvider.getLabelConfigOrNull(hu);
+				if (labelConfigOrNull != null)
+				{
+					add(hu, labelConfigOrNull);
+				}
 				final HuUnitType huUnitType = hu.getHUUnitType();
 				if (huUnitType == HuUnitType.LU)
 				{
 					for (final HUToReport includedHU : hu.getIncludedHUs())
 					{
-						add(includedHU, labelConfigProvider.getLabelConfig(includedHU));
+						final HULabelConfig includedLabelConfig = labelConfigProvider.getLabelConfigOrNull(includedHU);
+						if (includedLabelConfig != null) // only attempt printing included HU if there is a matching config
+						{
+							add(includedHU, includedLabelConfig);
+						}
 					}
 				}
 			}

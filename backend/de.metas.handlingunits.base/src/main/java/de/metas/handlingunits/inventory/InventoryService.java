@@ -8,7 +8,10 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateCommand;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateRequest;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreateResponse;
@@ -19,6 +22,7 @@ import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreate
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProducer;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.AggregationType;
@@ -42,6 +46,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.Adempiere;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -50,6 +55,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -82,10 +88,12 @@ public class InventoryService
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	@NonNull @Getter private final InventoryRepository inventoryRepository = new InventoryRepository();
 	@NonNull HuForInventoryLineFactory huForInventoryLineFactory;
 	@NonNull private final SourceHUsService sourceHUsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HULabelService huLabelService;
 
 	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
 
@@ -96,7 +104,8 @@ public class InventoryService
 		return new InventoryService(
 				new HuForInventoryLineFactory(),
 				SourceHUsService.get(),
-				HUQRCodesService.newInstanceForUnitTesting()
+				HUQRCodesService.newInstanceForUnitTesting(),
+				HULabelService.newInstanceForUnitTesting()
 		);
 	}
 
@@ -107,6 +116,7 @@ public class InventoryService
 
 	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) {return inventoryRepository.toInventory(inventoryRecord);}
 
+	@Nullable
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
 		return inventoryRepository.extractDocBaseAndSubTypeOrNull(inventoryRecord);
@@ -229,10 +239,40 @@ public class InventoryService
 				.inventoryRepository(inventoryRepository)
 				.sourceHUsService(sourceHUsService)
 				.huQRCodesService(huQRCodesService)
+				.huLabelService(huLabelService)
 				.inventory(inventory)
 				.build()
 				//
 				.execute();
+	}
+
+	/**
+	 * Stamps {@link AttributeConstants#ATTR_DateReceived} with {@code inventoryRecord.getMovementDate()} on every
+	 * assigned HU that does not yet carry a value. Skip-if-set preserves the original receipt date for HUs that
+	 * already exist in stock and are merely being re-counted; HUs newly created by the inventory get the
+	 * inventory date as their initial value. No-op for material-disposal inventories — those remove stock and
+	 * carry no receipt-date semantics.
+	 */
+	public void setReceivedDateOnInventoryHUs(@NonNull final I_M_Inventory inventoryRecord)
+	{
+		if (isMaterialDisposal(inventoryRecord))
+		{
+			return;
+		}
+
+		final ImmutableSet<HuId> huIds = inventoryRepository.toInventory(inventoryRecord).getHuIds();
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+
+		huAttributesBL.updateHUAttributeRecursive(
+				huIds,
+				HUAttributeUpdateRequest.builder()
+						.attributeCode(AttributeConstants.ATTR_DateReceived)
+						.attributeValue(inventoryRecord.getMovementDate())
+						.onlyIfNotSet(true)
+						.build());
 	}
 
 	/**
@@ -263,7 +303,9 @@ public class InventoryService
 	@NonNull
 	public HuId createInventoryForMissingQty(@NonNull final CreateVirtualInventoryWithQtyReq req)
 	{
-		final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(req.getWarehouseId());
+		final LocatorId locatorId = req.getLocatorId() != null
+				? req.getLocatorId()
+				: warehouseBL.getOrCreateDefaultLocatorId(req.getWarehouseId());
 
 		final InventoryHeaderCreateRequest createHeaderRequest = InventoryHeaderCreateRequest
 				.builder()
@@ -371,6 +413,11 @@ public class InventoryService
 	public void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId)
 	{
 		inventoryRepository.setQtyCountToQtyBookForInventory(inventoryId);
+	}
+
+	public Set<HuId> getAssignedHUIds(@NonNull final InventoryLineId inventoryLineId)
+	{
+		return inventoryRepository.getAssignedHUIds(inventoryLineId);
 	}
 
 }

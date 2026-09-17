@@ -45,7 +45,9 @@ SELECT t.ad_window_id
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)                                                                                               AS ad_val_rule_id
      , c.ad_process_id
      , c.isalwaysupdateable
-     , c.readonlylogic
+     -- mf15#4157: honour AD_Field-level ReadOnlyLogic override; fall back to AD_Column when the field has no override.
+     -- NULLIF treats empty-string as "not overridden" (legacy AD_Field rows often carry ''-default instead of NULL).
+     , COALESCE(NULLIF(f.readonlylogic, ''), c.readonlylogic)                                                                                    AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
      , c.isencrypted                                                                                                                              AS isencryptedcolumn
@@ -74,10 +76,11 @@ SELECT t.ad_window_id
      , (CASE WHEN f.IsFilterField = 'Y' AND f.FilterOperator IS NOT NULL THEN f.FilterOperator ELSE c.FilterOperator END)                         AS FilterOperator
      , c.IsShowFilterIncrementButtons
      , (CASE WHEN f.IsFilterField = 'Y' AND f.IsShowFilterInline IS NOT NULL THEN f.IsShowFilterInline ELSE c.IsShowFilterInline END)             AS IsShowFilterInline
-     , (CASE WHEN f.IsFilterField = 'Y' AND f.IsOverrideFilterDefaultValue = 'Y' THEN f.FilterDefaultValue ELSE c.FilterDefaultValue END)           AS FilterDefaultValue
+     , (CASE WHEN f.IsFilterField = 'Y' AND f.IsOverrideFilterDefaultValue = 'Y' THEN f.FilterDefaultValue ELSE c.FilterDefaultValue END)         AS FilterDefaultValue
      , (CASE WHEN f.IsFacetFilter = 'Y' THEN f.IsFacetFilter ELSE c.IsFacetFilter END)                                                            AS IsFacetFilter
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.FacetFilterSeqNo, 0) != 0 THEN f.FacetFilterSeqNo ELSE c.FacetFilterSeqNo END)             AS FacetFilterSeqNo
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.MaxFacetsToFetch, 0) != 0 THEN f.MaxFacetsToFetch ELSE c.MaxFacetsToFetch END)             AS MaxFacetsToFetch
+     , (CASE WHEN f.IsShowFilterInactiveValues = 'Y' THEN f.IsShowFilterInactiveValues ELSE c.IsShowFilterInactiveValues END)                     AS IsShowFilterInactiveValues
 --
 FROM ad_tab t
          JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id

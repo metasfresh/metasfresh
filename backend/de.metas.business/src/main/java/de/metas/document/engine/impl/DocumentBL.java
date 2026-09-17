@@ -17,8 +17,11 @@ import org.compiere.util.DB;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 public final class DocumentBL extends AbstractDocumentBL
 {
+	@Nullable
 	@Override
 	protected IDocument getLegacyDocumentOrNull(final Object documentObj, final boolean throwEx)
 	{
@@ -71,9 +74,9 @@ public final class DocumentBL extends AbstractDocumentBL
 	}
 
 	@Override
-	public boolean isDocumentTable(String tableName)
+	public boolean isDocumentTable(final String tableName)
 	{
-		Class<?> clazz = TableModelClassLoader.instance.getClass(tableName);
+		final Class<?> clazz = TableModelClassLoader.instance.getClass(tableName);
 		if (clazz == null)
 		{
 			return false;
@@ -88,7 +91,7 @@ public final class DocumentBL extends AbstractDocumentBL
 	}
 
 	@Override
-	public int getC_DocType_ID(Properties ctx, int AD_Table_ID, int Record_ID)
+	public int getC_DocType_ID(final Properties ctx, final int AD_Table_ID, final int Record_ID)
 	{
 		if (AD_Table_ID <= 0 || Record_ID <= 0)
 			return -1;
@@ -119,6 +122,7 @@ public final class DocumentBL extends AbstractDocumentBL
 		return C_DocType_ID;
 	}
 
+	@Nullable
 	@Override
 	protected String retrieveString(final int adTableId, final int recordId, final String columnName)
 	{
@@ -151,15 +155,16 @@ public final class DocumentBL extends AbstractDocumentBL
 	}
 
 	@Override
-	protected Object retrieveModelOrNull(Properties ctx, int adTableId, int recordId)
+	protected Object retrieveModelOrNull(final Properties ctx, final int adTableId, final int recordId)
 	{
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 		final String trxName = ITrx.TRXNAME_None;
 		return TableModelLoader.instance.getPO(ctx, tableName, recordId, trxName);
 	}
 
+	@Nullable
 	@Override
-	public LocalDate getDocumentDate(Properties ctx, int adTableID, int recordId)
+	public LocalDate getDocumentDate(final Properties ctx, final int adTableID, final int recordId)
 	{
 		final Object model = retrieveModelOrNull(ctx, adTableID, recordId);
 		return getDocumentDate(model);

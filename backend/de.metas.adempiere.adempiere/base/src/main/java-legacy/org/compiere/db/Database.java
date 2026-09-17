@@ -91,6 +91,12 @@ public class Database
 
 	/**
 	 * Create SQL TO Date String from Timestamp
+	 * <p>
+	 * dev-note: for {@link DisplayType#Date} and {@link DisplayType#Time} the target column is a {@code timestamp without time zone}
+	 * that carries no zone of its own, so the timestamp's wall clock is read in the <b>JVM default zone</b> — deliberately NOT
+	 * {@link SystemTime#zoneId()}. Such a timestamp comes from JDBC decoding a zone-less column in this same JVM, so decoding and
+	 * re-encoding cancel out whichever zone the JVM runs in. {@link DisplayType#DateTime} is the instant-carrying case and is
+	 * rendered in UTC instead. See {@code DatabaseTest} and {@code docs/coding-rules/java-time.md} § "Unit Test Timezone Rules".
 	 *
 	 * @param timestamp Date to be converted; if {@code null}, then the current time is returned.
 	 */

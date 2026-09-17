@@ -16,6 +16,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -78,11 +79,13 @@ public class OrderLineBuilder
 	@Nullable private BigDecimal manualPrice;
 	@Nullable private UomId priceUomId;
 	private BigDecimal manualDiscount;
+	@Nullable private BigDecimal qtyEnteredTU;
 
 	@Nullable
 	private String description;
 
 	private boolean hideWhenPrinting;
+	@Nullable private ExternalId externalId;
 
 	private final ArrayList<OrderLineDetailCreateRequest> detailCreateRequests = new ArrayList<>();
 
@@ -143,7 +146,13 @@ public class OrderLineBuilder
 			orderLine.setDescription(description);
 		}
 
+		if (qtyEnteredTU != null)
+		{
+			orderLine.setQtyEnteredTU(qtyEnteredTU);
+		}
+
 		orderLine.setIsHideWhenPrinting(hideWhenPrinting);
+		orderLine.setExternalId(ExternalId.toValue(externalId));
 
 		saveRecord(orderLine);
 
@@ -245,6 +254,13 @@ public class OrderLineBuilder
 		return this;
 	}
 
+	public OrderLineBuilder externalId(@Nullable final ExternalId externalId)
+	{
+		assertNotBuilt();
+		this.externalId = externalId;
+		return this;
+	}
+	
 	public OrderLineBuilder manualPrice(@Nullable final BigDecimal manualPrice)
 	{
 		assertNotBuilt();
@@ -264,6 +280,13 @@ public class OrderLineBuilder
 		return this;
 	}
 
+	public OrderLineBuilder qtyEnteredTU(@Nullable final BigDecimal qtyEnteredTU)
+	{
+		assertNotBuilt();
+		this.qtyEnteredTU = qtyEnteredTU;
+		return this;
+	}
+
 	public OrderLineBuilder setDimension(final Dimension dimension)
 	{
 		assertNotBuilt();
@@ -271,12 +294,6 @@ public class OrderLineBuilder
 		this.dimension = dimension;
 
 		return this;
-	}
-
-	public boolean isProductAndUomMatching(@Nullable final ProductId productId, @Nullable final UomId uomId)
-	{
-		return ProductId.equals(getProductId(), productId)
-				&& UomId.equals(getUomId(), uomId);
 	}
 
 	public OrderLineBuilder description(@Nullable final String description)

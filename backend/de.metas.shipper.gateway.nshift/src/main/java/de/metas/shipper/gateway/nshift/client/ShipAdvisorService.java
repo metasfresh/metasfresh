@@ -24,9 +24,12 @@ package de.metas.shipper.gateway.nshift.client;
 
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import de.metas.shipper.client.nshift.NShiftOrderAdvisorService;
 import de.metas.shipper.client.nshift.NShiftShipAdvisorService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_Carrier_Config;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,9 +37,20 @@ import org.springframework.stereotype.Service;
 public class ShipAdvisorService
 {
 	private final NShiftShipAdvisorService shipAdvisorService;
+	private final NShiftOrderAdvisorService orderAdvisorService;
 
 	public JsonDeliveryAdvisorResponse advise(@NonNull final JsonDeliveryAdvisorRequest deliveryRequest)
 	{
-		return shipAdvisorService.advise(deliveryRequest);
+		final String adviseTypeCode = deliveryRequest.getShipperConfig().getAdditionalProperty(I_Carrier_Config.COLUMNNAME_AdviseType);
+		final AdviseType adviseType = adviseTypeCode != null ? AdviseType.ofCode(adviseTypeCode) : AdviseType.ORDER;
+		switch (adviseType)
+		{
+			case SHIP:
+				return shipAdvisorService.advise(deliveryRequest);
+			case ORDER:
+				return orderAdvisorService.advise(deliveryRequest);
+			default:
+				throw new AdempiereException("Unhandled " + AdviseType.class.getSimpleName() + ": " + adviseType);
+		}
 	}
 }

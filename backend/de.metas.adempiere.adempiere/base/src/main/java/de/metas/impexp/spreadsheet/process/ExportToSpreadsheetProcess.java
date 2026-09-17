@@ -84,9 +84,11 @@ public class ExportToSpreadsheetProcess extends JavaProcess
 		else if (spreadsheetFormat == SpreadsheetFormat.CSV)
 		{
 			final JdbcCSVExporter jdbcCSVExporter = JdbcCSVExporter.builder()
-					.adLanguage(Env.getAD_Language(getCtx()))
+					.adLanguage(Env.getADLanguageOrBaseLanguage(getCtx()))
 					.translateHeaders(spreadsheetExportOptions.isTranslateHeaders())
 					.fieldDelimiter(spreadsheetExportOptions.getCsvFieldDelimiter())
+					.fieldQualifier(spreadsheetExportOptions.getCsvFieldQualifier())
+					.includeHeader(spreadsheetExportOptions.isIncludeCSVHeaderRow())
 					.build();
 
 			spreadsheetExporterService.processDataFromSQL(sql, evalCtx, jdbcCSVExporter);

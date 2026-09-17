@@ -19,6 +19,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
@@ -55,6 +56,9 @@ public class C_BPartner_Product
 	private final static AdMessageKey MSG_C_BPartner_Product_Duplicate_ASI = AdMessageKey.of("C_BPartner_Product_Duplicate_ASI");
 
 	private final IBPartnerProductBL bpartnerProductBL = Services.get(IBPartnerProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_SyncEANAndGTIN = "M_Product.SyncEANAndGTIN";
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BPartner_Product.COLUMNNAME_M_AttributeSetInstance_ID)
 	public void onASISet(final I_C_BPartner_Product bpProduct)
@@ -116,6 +120,12 @@ public class C_BPartner_Product
 			ifColumnsChanged = { I_C_BPartner_Product.COLUMNNAME_GTIN, I_C_BPartner_Product.COLUMNNAME_EAN_CU, I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode })
 	private void normalizeProductCodeFields(@NonNull I_C_BPartner_Product record)
 	{
+		final boolean syncEANAndGTIN = sysConfigBL.getBooleanValue(SYSCONFIG_SyncEANAndGTIN, true, record.getAD_Client_ID(), record.getAD_Org_ID());
+		if (!syncEANAndGTIN)
+		{
+			return;
+		}
+
 		if (InterfaceWrapperHelper.isValueChanged(record, I_C_BPartner_Product.COLUMNNAME_GTIN))
 		{
 			final GTIN gtin = GTIN.ofNullableString(record.getGTIN());

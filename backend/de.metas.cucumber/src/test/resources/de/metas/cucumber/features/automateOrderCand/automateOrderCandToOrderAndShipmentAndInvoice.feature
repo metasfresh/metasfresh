@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
 @topic:orderCandidate
 @ghActions:run_on_executor3
 Feature: Process order candidate and automatically generate shipment and invoice for it
+## F00101: Order Candidates
   As a user
   I create an order candidate and the process EP will automatically generate shipment schedule, shipment, invoice candidate and invoice
 
@@ -15,6 +18,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_100
   @Id:S0469_100
@@ -65,8 +70,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
-      | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | Shopware6            |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | OrderType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | SO        | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | Shopware6            |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -90,6 +95,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_110
   @Id:S0469_110
@@ -148,6 +155,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
     # We didn't close the order, so we expect QtyOrdered=10
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_120
   @Id:S0469_120
@@ -244,6 +253,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_130
   @Id:S0469_130
@@ -364,6 +375,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_140
   @Id:S0469_140
@@ -497,6 +510,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoiceLine_1_2             | invoice_1               | product_1               | 2           | true      |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_150
   @Id:S0469_150
@@ -576,6 +591,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_160
   @Id:S0469_160
@@ -681,6 +698,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00101
   @topic:orderCandidate
   @Id:S0150_135
   @Id:S0469_135
@@ -805,4 +824,104 @@ Feature: Process order candidate and automatically generate shipment and invoice
 # we don't yet have an API endpoint that enqueued the invoice candidate and then **waits** for the invoices
 
 
-    
+  @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00101
+  @topic:orderCandidate
+  @Id:S0469_200
+  Scenario: v2 OLCand first-class fields — promotionCode, isWithoutCharge, reason propagate to order and order line
+    Given metasfresh contains C_PromotionCode:
+      | Identifier  | Value           |
+      | promoCode_1 | PROMO_S0469_200 |
+
+    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
+  """
+{
+    "orgCode": "001",
+    "externalLineId": "S0469_200_line",
+    "externalHeaderId": "S0469_200_hdr",
+    "externalSystemCode": "Shopware6",
+    "dataSource": "int-Shopware",
+    "bpartner": {
+        "bpartnerIdentifier": "2156425",
+        "bpartnerLocationIdentifier": "2205175",
+        "contactIdentifier": "2188224"
+    },
+    "dateRequired": "2021-08-20",
+    "dateOrdered": "2021-07-20",
+    "orderDocType": "SalesOrder",
+    "paymentTerm": "val-1000002",
+    "productIdentifier": 2005577,
+    "qty": 5,
+    "price": 10,
+    "currencyCode": "EUR",
+    "discount": 0,
+    "poReference": "po_ref_S0469_200",
+    "deliveryViaRule": "S",
+    "deliveryRule": "F",
+    "promotionCode": "PROMO_S0469_200",
+    "isWithoutCharge": true,
+    "reason": "P"
+}
+"""
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "S0469_200_hdr",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+
+    Then process metasfresh response
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
+      | order_S0469_200       | null                  | null                    |
+
+    And validate the created orders
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus | C_PromotionCode_ID |
+      | order_S0469_200       | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | true      | CO        | promoCode_1        |
+
+    And validate the created order lines
+      # IsWithoutCharge=true zeroes the line charge → PriceEntered 0 (request price 10 is intentionally not charged).
+      # Non-zero request-price → order-line price propagation is covered by S0469_100 et al. (request price 5 → line price 5).
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | price | currencyCode | processed | IsWithoutCharge | Reason |
+      | ol_S0469_200              | order_S0469_200       | product_1               | 5          | 0     | EUR          | true      | true            | P      |
+
+
+  @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00101
+  @topic:orderCandidate
+  @Id:S0469_220
+  Scenario: v2 OLCand validation — unknown promotionCode is rejected with HTTP 400
+    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '400' status code
+  """
+{
+    "orgCode": "001",
+    "externalLineId": "S0469_220_line",
+    "externalHeaderId": "S0469_220_hdr",
+    "externalSystemCode": "Shopware6",
+    "dataSource": "int-Shopware",
+    "bpartner": {
+        "bpartnerIdentifier": "2156425",
+        "bpartnerLocationIdentifier": "2205175",
+        "contactIdentifier": "2188224"
+    },
+    "dateRequired": "2021-08-20",
+    "dateOrdered": "2021-07-20",
+    "orderDocType": "SalesOrder",
+    "paymentTerm": "val-1000002",
+    "productIdentifier": 2005577,
+    "qty": 5,
+    "price": 10,
+    "currencyCode": "EUR",
+    "discount": 0,
+    "poReference": "po_ref_S0469_220",
+    "deliveryViaRule": "S",
+    "deliveryRule": "F",
+    "promotionCode": "NONEXISTENT_PROMO_CODE_XYZ"
+}
+"""

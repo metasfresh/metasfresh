@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Shipper
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1763517836L;
+	private static final long serialVersionUID = 1732067806L;
 
     /** Standard Constructor */
     public X_M_Shipper (final Properties ctx, final int M_Shipper_ID, @Nullable final String trxName)
@@ -71,6 +71,18 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public java.lang.String getInternalName() 
 	{
 		return get_ValueAsString(COLUMNNAME_InternalName);
+	}
+
+	@Override
+	public void setIsApiCarrierAdvise (final boolean IsApiCarrierAdvise)
+	{
+		set_Value (COLUMNNAME_IsApiCarrierAdvise, IsApiCarrierAdvise);
+	}
+
+	@Override
+	public boolean isApiCarrierAdvise() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsApiCarrierAdvise);
 	}
 
 	@Override

@@ -23,14 +23,15 @@
 package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDef;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -39,12 +40,12 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Campaign_Price;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -55,30 +56,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class C_CampaignPrice_StepDef
 {
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
-	private final M_Product_StepDefData productTable;
-	private final CurrencyRepository currencyRepository;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final M_PricingSystem_StepDefData pricingSystemTable;
-
-	public C_CampaignPrice_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemTable)
-	{
-		this.productTable = productTable;
-		this.currencyRepository = currencyRepository;
-		this.bpartnerTable = bpartnerTable;
-		this.pricingSystemTable = pricingSystemTable;
-	}
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
+	@NonNull private final C_TaxCategory_StepDef taxCategoryStepDef;
 
 	@And("metasfresh contains C_CampaignPrices")
 	public void add_C_CampaignPrice(@NonNull final DataTable dataTable)
@@ -103,20 +93,19 @@ public class C_CampaignPrice_StepDef
 		final String currencyISO = DataTableUtil.extractStringForColumnName(tableRow, I_C_Currency.Table_Name + "." + I_C_Currency.COLUMNNAME_ISO_Code);
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyISO));
 
-		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_C_Campaign_Price.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
-		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
-		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
+		final Optional<TaxCategoryId> taxCategoryId = taxCategoryStepDef.extractTaxCategoryId(DataTableRow.singleRow(tableRow));
+		assertThat(taxCategoryId).as("Tax category column cell must be set").isPresent();
 
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Campaign_Price.COLUMNNAME_ValidFrom);
 		final Timestamp validTo = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Campaign_Price.COLUMNNAME_ValidTo);
 
 		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID + ".Identifier");
-		final Integer bPartnerGroupId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID );
+		final Integer bPartnerGroupId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID);
 
 		final Integer bPartnerId = Optional.ofNullable(bpartnerIdentifier)
 				.map(bPIdentifier -> bpartnerTable.getOptional(bPIdentifier)
-					.map(I_C_BPartner::getC_BPartner_ID)
-					.orElseGet(() -> Integer.parseInt(bPIdentifier)))
+						.map(I_C_BPartner::getC_BPartner_ID)
+						.orElseGet(() -> Integer.parseInt(bPIdentifier)))
 				.orElse(null);
 
 		final String pricingSystem = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID + ".Identifier");

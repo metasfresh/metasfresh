@@ -23,6 +23,8 @@ public class JsonDDOrderRequest
 	@Nullable String priority;
 	@Nullable SeqNo seqNo;
 	@NonNull List<Line> lines;
+	@Nullable Identifier forwardPPOrder;
+	@Nullable Identifier forwardPPOrderBOMLine;
 
 	//
 	//

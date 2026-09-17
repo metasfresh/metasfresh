@@ -1,16 +1,14 @@
 package de.metas.materialtracking;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -65,7 +63,7 @@ public class MaterialTrackingId implements RepoIdAware
 		return TableRecordReference.of(I_M_Material_Tracking.Table_Name, getRepoId());
 	}
 
-	public static int toRepoId(final MaterialTrackingId materialTrackingId)
+	public static int toRepoId(@Nullable final MaterialTrackingId materialTrackingId)
 	{
 		return materialTrackingId != null ? materialTrackingId.getRepoId() : -1;
 	}

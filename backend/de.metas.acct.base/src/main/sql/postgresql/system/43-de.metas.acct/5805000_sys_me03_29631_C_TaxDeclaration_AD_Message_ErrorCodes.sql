@@ -1,0 +1,10 @@
+-- Backfill ErrorCode on the Tax Declaration Corrections AD_Messages.
+-- UPPER_SNAKE ErrorCode matching AD_Message.Value, required for error-code assertions in cucumber/JUnit (prefixed TAXDECLARATION_).
+-- Idempotent: only sets ErrorCode where it is still NULL, so it is a no-op on fresh DBs
+-- (the INSERTs already carry the ErrorCode).
+
+UPDATE AD_Message SET ErrorCode='TAXDECLARATION_HAS_CORRECTIONS',          Updated=TO_TIMESTAMP('2026-05-26 00:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE Value='TaxDeclaration_HasCorrections'                     AND ErrorCode IS NULL;
+UPDATE AD_Message SET ErrorCode='TAXDECLARATION_ORIGINAL_MUST_BE_ORIGINAL',Updated=TO_TIMESTAMP('2026-05-26 00:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE Value='TaxDeclaration_OriginalMustBeOriginal'             AND ErrorCode IS NULL;
+UPDATE AD_Message SET ErrorCode='TAXDECLARATION_ORIGINAL_REQUIRED',        Updated=TO_TIMESTAMP('2026-05-26 00:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE Value='TaxDeclaration_OriginalRequired'                   AND ErrorCode IS NULL;
+UPDATE AD_Message SET ErrorCode='TAXDECLARATION_CORRECTION_INHERITS_PD',   Updated=TO_TIMESTAMP('2026-05-26 00:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE Value='TaxDeclaration_CorrectionInheritsPeriod'           AND ErrorCode IS NULL;
+UPDATE AD_Message SET ErrorCode='TAXDECLARATION_CORRECTION_NOT_LOCKED',    Updated=TO_TIMESTAMP('2026-05-26 00:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE Value='TaxDeclaration_CreateCorrection_OriginalNotLocked' AND ErrorCode IS NULL;

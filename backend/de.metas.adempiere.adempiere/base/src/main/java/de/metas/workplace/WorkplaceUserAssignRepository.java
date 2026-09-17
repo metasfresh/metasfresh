@@ -66,12 +66,24 @@ public class WorkplaceUserAssignRepository
 				.firstOnlyOptional(I_C_Workplace_User_Assign.class);
 	}
 
+	@NonNull
+	private Optional<I_C_Workplace_User_Assign> retrieveRecordByUserIdIncludingInactive(final @NonNull UserId userId)
+	{
+		return queryBL.createQueryBuilder(I_C_Workplace_User_Assign.class)
+				.addEqualsFilter(I_C_Workplace_User_Assign.COLUMNNAME_AD_User_ID, userId)
+				.create()
+				.firstOnlyOptional(I_C_Workplace_User_Assign.class);
+	}
+
 	public void create(@NonNull final WorkplaceAssignmentCreateRequest request)
 	{
 		final UserId userId = request.getUserId();
 		final WorkplaceId workplaceId = request.getWorkplaceId();
 
-		final I_C_Workplace_User_Assign record = retrieveActiveRecordByUserId(userId)
+		// Reuse the user's existing row regardless of IsActive: the unique index
+		// One_User_Per_Org (AD_User_ID, AD_Org_ID) spans inactive rows too, so inserting a
+		// second row for a user who has a deactivated assignment would violate it.
+		final I_C_Workplace_User_Assign record = retrieveRecordByUserIdIncludingInactive(userId)
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class));
 
 		record.setIsActive(true);

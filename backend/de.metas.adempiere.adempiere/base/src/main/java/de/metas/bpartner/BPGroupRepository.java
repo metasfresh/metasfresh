@@ -74,10 +74,12 @@ public class BPGroupRepository
 			return Optional.empty();
 		}
 
-		return Optional.of(BPGroup.of(
-				OrgId.ofRepoIdOrAny(groupRecord.getAD_Org_ID()),
-				BPGroupId.ofRepoId(groupRecord.getC_BP_Group_ID()),
-				groupRecord.getName()));
+		return Optional.of(BPGroup.builder()
+				.id(BPGroupId.ofRepoId(groupRecord.getC_BP_Group_ID()))
+				.orgId(OrgId.ofRepoIdOrAny(groupRecord.getAD_Org_ID()))
+				.value(groupRecord.getValue())
+				.name(groupRecord.getName())
+				.build());
 
 	}
 
@@ -87,6 +89,7 @@ public class BPGroupRepository
 
 		groupRecord.setAD_Org_ID(bpGroup.getOrgId().getRepoId());
 		groupRecord.setName(bpGroup.getName());
+		groupRecord.setValue(bpGroup.getValue());
 
 		saveRecord(groupRecord);
 		return BPGroupId.ofRepoId(groupRecord.getC_BP_Group_ID());

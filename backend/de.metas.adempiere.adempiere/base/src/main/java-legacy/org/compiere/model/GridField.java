@@ -670,46 +670,29 @@ public class GridField
 		 * (b) SQL Statement (for data integity & consistency)
 		 */
 		String defStr = "";
-		if (m_vo.DefaultValue.startsWith("@SQL="))
+		if (DB.isSqlDefaultValue(m_vo.DefaultValue))
 		{
-			String sql = m_vo.DefaultValue.substring(5);			// w/o tag
-			// sql = Env.parseContext(ctx, m_vo.WindowNo, sql, false, true); // replace variables
-			// hengsin, capture unparseable error to avoid subsequent sql exception
-			sql = Env.parseContext(ctx, m_vo.WindowNo, sql, false, false);	// replace variables
-			if (sql.equals(""))
+			String sql = m_vo.DefaultValue.substring(DB.SQL_DEFAULT_VALUE_PREFIX.length());
+			// Use window-specific context for @Variable@ resolution (not global context)
+			sql = Env.parseContext(ctx, m_vo.WindowNo, sql, false, false);
+			if (Check.isBlank(sql))
 			{
-				log.warn("(" + m_vo.getColumnName() + ") - Default SQL variable parse failed: "
-						+ m_vo.DefaultValue);
+				log.warn("({}) - Default SQL variable parse failed: {}", m_vo.getColumnName(), m_vo.DefaultValue);
 			}
 			else
 			{
-				PreparedStatement stmt = null;
-				ResultSet rs = null;
 				try
 				{
-					stmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-					rs = stmt.executeQuery();
-					if (rs.next())
-					{
-						defStr = rs.getString(1);
-					}
-					else
-					{
-						log.warn("(" + m_vo.getColumnName() + ") - no Result: " + sql);
-					}
+					defStr = DB.getSQLValueStringEx(ITrx.TRXNAME_None, sql);
 				}
-				catch (SQLException e)
+				catch (final Exception e)
 				{
-					log.warn("(" + m_vo.getColumnName() + ") " + sql, e);
-				}
-				finally
-				{
-					DB.close(rs, stmt);
+					log.warn("({}) {}", m_vo.getColumnName(), sql, e);
 				}
 			}
 			if (defStr != null && defStr.length() > 0)
 			{
-				log.debug("[SQL] " + m_vo.getColumnName() + "=" + defStr);
+				log.debug("[SQL] {}={}", m_vo.getColumnName(), defStr);
 				return createDefault(defStr);
 			}
 		}	// SQL Statement
@@ -717,7 +700,7 @@ public class GridField
 		/**
 		 * (c) Field DefaultValue === similar code in AStartRPDialog.getDefault ===
 		 */
-		if (!m_vo.DefaultValue.equals("") && !m_vo.DefaultValue.startsWith("@SQL="))
+		if (!m_vo.DefaultValue.equals("") && !DB.isSqlDefaultValue(m_vo.DefaultValue))
 		{
 			defStr = "";		// problem is with texts like 'sss;sss'
 			// It is one or more variables/constants

@@ -73,6 +73,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
+import de.metas.request.RequestConfidentialType;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
@@ -104,7 +105,6 @@ import org.compiere.model.I_C_BPartner_Location_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_R_Request;
-import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -391,7 +391,7 @@ public class BPartnerQuickInputService
 	{
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(summary)
-				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
+				.confidentialType(RequestConfidentialType.PartnerConfidential)
 				.orgId(partnerOrgId)
 				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
 				.requestTypeId(requestTypeId)
@@ -703,6 +703,7 @@ public class BPartnerQuickInputService
 							.billToDefault(bpartnerLocationTemplate.isBillToDefault())
 							.shipTo(bpartnerLocationTemplate.isShipTo())
 							.shipToDefault(bpartnerLocationTemplate.isShipToDefault())
+							.visitorsAddress(bpartnerLocationTemplate.isVisitorsAddress())
 							.build())
 					.active(bpartnerLocationTemplate.isActive())
 					.email(bpartnerLocationTemplate.getEMail())
@@ -717,7 +718,6 @@ public class BPartnerQuickInputService
 					.replicationLookupDefault(bpartnerLocationTemplate.isReplicationLookupDefault())
 					.remitTo(bpartnerLocationTemplate.isRemitTo())
 					.handOverLocation(bpartnerLocationTemplate.isHandOverLocation())
-					.visitorsAddress(bpartnerLocationTemplate.isVisitorsAddress())
 					.build());
 		}
 

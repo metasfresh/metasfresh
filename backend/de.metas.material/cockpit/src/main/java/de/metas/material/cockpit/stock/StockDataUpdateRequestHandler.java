@@ -11,6 +11,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -71,6 +72,34 @@ public class StockDataUpdateRequestHandler
 		fireStockChangedEvent(dataRecord, qtyOnHandOld, dataUpdateRequest.getSourceInfo());
 	}
 
+	/**
+	 * Idempotently set {@code MD_Stock.QtyOnHand} to an absolute target (the HU-derived truth) — the
+	 * reset semantics used by {@code MD_Stock_Update_From_M_HUs}. Unlike {@link #handleDataUpdateRequest}
+	 * (which ADDS a delta, correct for the transaction-event path), this SETS the value, so overlapping
+	 * concurrent reset runs all converge to the same truth instead of compounding into a runaway.
+	 */
+	public void handleResetToQtyOnHand(
+			@NonNull final StockDataRecordIdentifier identifier,
+			@NonNull final BigDecimal targetQtyOnHand,
+			@NonNull final StockChangeSourceInfo sourceInfo)
+	{
+		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(targetQtyOnHand);
+
+		final I_MD_Stock dataRecord = retrieveOrCreateDataRecord(identifier);
+		final BigDecimal qtyOnHandOld = dataRecord.getQtyOnHand();
+
+		// Idempotent: setting to the same truth twice (overlapping reset runs) is a no-op the second time.
+		if (qtyOnHandOld.compareTo(qtyOnHandNew) == 0)
+		{
+			return;
+		}
+
+		dataRecord.setQtyOnHand(qtyOnHandNew);
+		save(dataRecord);
+
+		fireStockChangedEvent(dataRecord, qtyOnHandOld, sourceInfo);
+	}
+
 	private I_MD_Stock retrieveOrCreateDataRecord(@NonNull final StockDataRecordIdentifier identifier)
 	{
 		final IQuery<I_MD_Stock> query = createQueryForIdentifier(identifier);
@@ -89,7 +118,23 @@ public class StockDataUpdateRequestHandler
 		newDataRecord.setAttributesKey(identifier.getStorageAttributesKey().getAsString());
 		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId().getRepoId());
 
-		return newDataRecord;
+		try
+		{
+			save(newDataRecord);
+			return newDataRecord;
+		}
+		catch (final DBUniqueConstraintException e)
+		{
+			// meanwhile another thread created the same bucket; return the existing one.
+			// The event dispatch path does not retry on a bare exception, so this in-code fallback
+			// is the only guarantee against a lost update on a create-create race.
+			final I_MD_Stock winner = query.firstOnly(I_MD_Stock.class);
+			if (winner != null)
+			{
+				return winner;
+			}
+			throw e;
+		}
 	}
 
 	private IQuery<I_MD_Stock> createQueryForIdentifier(@NonNull final StockDataRecordIdentifier identifier)

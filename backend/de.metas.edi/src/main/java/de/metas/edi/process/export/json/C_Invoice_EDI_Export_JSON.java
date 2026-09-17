@@ -23,15 +23,15 @@
 package de.metas.edi.process.export.json;
 
 import de.metas.common.util.Check;
+import de.metas.edi.api.impl.EDIInvoiceDAO;
 import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.edi.model.I_C_Invoice;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
 import de.metas.process.Param;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
+import org.compiere.SpringContextHolder;
 
 /**
  * Exports one particular invoice to JSON.
@@ -42,7 +42,7 @@ public class C_Invoice_EDI_Export_JSON extends EDI_Export_JSON
 {
 	public static final String PARAM_C_INVOICE_ID = "C_Invoice_ID";
 
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final EDIInvoiceDAO ediInvoiceDAO = SpringContextHolder.instance.getBean(EDIInvoiceDAO.class);
 
 	@Param(parameterName = PARAM_C_INVOICE_ID, mandatory = true)
 	private int c_invoice_id;
@@ -50,7 +50,7 @@ public class C_Invoice_EDI_Export_JSON extends EDI_Export_JSON
 	@Override
 	protected I_EDI_Document_Extension loadRecordOutOfTrx()
 	{
-		final I_C_Invoice invoiceRecord = invoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(c_invoice_id), I_C_Invoice.class);
+		final I_C_Invoice invoiceRecord = ediInvoiceDAO.getByIdOutOfTrx(InvoiceId.ofRepoId(c_invoice_id));
 		Check.assumeNotNull(invoiceRecord, "C_Invoice with ID={} shall not be null", c_invoice_id);
 		return InterfaceWrapperHelper.create(invoiceRecord, I_EDI_Document_Extension.class);
 	}
@@ -59,6 +59,6 @@ public class C_Invoice_EDI_Export_JSON extends EDI_Export_JSON
 	protected void saveRecord(@NonNull final I_EDI_Document_Extension record)
 	{
 		final I_C_Invoice invoiceRecord = InterfaceWrapperHelper.create(record, I_C_Invoice.class);
-		invoiceDAO.save(invoiceRecord);
+		ediInvoiceDAO.saveOutOfTrx(invoiceRecord); //Should be saved before possible externalSystemInvocation could return an error
 	}
 }

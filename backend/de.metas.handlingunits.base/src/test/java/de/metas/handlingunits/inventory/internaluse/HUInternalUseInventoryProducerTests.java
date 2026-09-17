@@ -127,7 +127,7 @@ public class HUInternalUseInventoryProducerTests
 		saveRecord(wh);
 
 		locator = newInstance(I_M_Locator.class);
-		locator.setM_Warehouse(wh);
+		locator.setM_Warehouse_ID(wh.getM_Warehouse_ID());
 		saveRecord(locator);
 
 		Services.get(ISysConfigBL.class).setValue(InventoryBL.SYSCONFIG_QuickInput_Charge_ID, 1234, ClientId.SYSTEM, OrgId.ANY);

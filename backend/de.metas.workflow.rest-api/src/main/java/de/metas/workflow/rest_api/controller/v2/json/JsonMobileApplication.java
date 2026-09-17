@@ -28,6 +28,7 @@ public class JsonMobileApplication
 	boolean allowStartNextJobOnly;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
+	boolean requiresTrolley;
 	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
@@ -53,6 +54,7 @@ public class JsonMobileApplication
 				.allowStartNextJobOnly(appInfo.isAllowStartNextJobOnly())
 				.requiresWorkstation(appInfo.isRequiresWorkstation())
 				.requiresWorkplace(appInfo.isRequiresWorkplace())
+				.requiresTrolley(appInfo.isRequiresTrolley())
 				.showFilterByQRCode(appInfo.isShowFilterByQRCode())
 				.showFilters(appInfo.isShowFilters())
 				.showFilterByDocumentNo(appInfo.isShowFilterByDocumentNo())

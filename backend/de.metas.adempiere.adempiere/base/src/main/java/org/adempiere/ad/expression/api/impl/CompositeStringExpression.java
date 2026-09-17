@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.IStringExpressionWrapper;
@@ -56,7 +57,7 @@ import java.util.stream.Collectors;
 
 /**
  * An {@link IStringExpression} implementation which contains several other {@link IStringExpression}s.
- *
+ * <p>
  * It has a powerful builder which is able to also reduce expressions.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -73,9 +74,9 @@ public final class CompositeStringExpression implements IStringExpression
 	private static Collector<IStringExpression, ?, IStringExpression> toCompositeExpression()
 	{
 		final Supplier<Builder> supplier = Builder::new;
-		final BiConsumer<Builder, IStringExpression> accumulator = (builder, expr) -> builder.append(expr);
-		final BinaryOperator<Builder> combiner = (left, right) -> left.append(right);
-		final Function<Builder, IStringExpression> finisher = (builder) -> builder.build();
+		final BiConsumer<Builder, IStringExpression> accumulator = Builder::append;
+		final BinaryOperator<Builder> combiner = Builder::append;
+		final Function<Builder, IStringExpression> finisher = Builder::build;
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
@@ -137,18 +138,12 @@ public final class CompositeStringExpression implements IStringExpression
 	}
 
 	@Override
-	public Class<String> getValueClass()
-	{
-		return String.class;
-	}
-
-	@Override
 	public String getExpressionString()
 	{
 		if (_expressionStr == null)
 		{
 			_expressionStr = expressions.stream()
-					.map(expression -> expression.getExpressionString())
+					.map(IExpression::getExpressionString)
 					.collect(Collectors.joining());
 		}
 		return _expressionStr;
@@ -160,7 +155,7 @@ public final class CompositeStringExpression implements IStringExpression
 		if (_formatedExpressionString == null)
 		{
 			_formatedExpressionString = expressions.stream()
-					.map(expression -> expression.getFormatedExpressionString())
+					.map(IExpression::getFormatedExpressionString)
 					.collect(Collectors.joining());
 		}
 		return _formatedExpressionString;
@@ -300,9 +295,6 @@ public final class CompositeStringExpression implements IStringExpression
 			return this;
 		}
 
-		/**
-		 * @return reduced expression or <code>null</code> if the expressions could not be reduced
-		 */
 		private void reduceAndAppend(final IStringExpression expr)
 		{
 			if (expr instanceof ConstantStringExpression)

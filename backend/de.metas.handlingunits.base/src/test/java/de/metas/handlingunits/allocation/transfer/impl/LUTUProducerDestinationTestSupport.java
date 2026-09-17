@@ -200,6 +200,7 @@ public class LUTUProducerDestinationTestSupport
 	private LocatorId createLocatorId()
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setName("locatorIdTestWarehouse");
 		saveRecord(warehouse);
 
 		final I_M_Locator locator = newInstance(I_M_Locator.class);

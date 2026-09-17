@@ -77,6 +77,12 @@ public final class DocumentValidStatus
 	private transient String _toString; // lazy
 	@Getter private final String errorCode;
 
+	/**
+	 * Computed from exception: this invalid state is a user-fixable business rejection, not a system/technical
+	 * fault. Used by {@link DocumentCollection} to decide whether a child invalidation may evict (self-heal) the root.
+	 */
+	@Getter private final boolean userValidationError;
+
 	private DocumentValidStatus(
 			final boolean valid,
 			@Nullable final ITranslatableString reason,
@@ -91,6 +97,7 @@ public final class DocumentValidStatus
 		this.exception = exception;
 		this.fieldName = fieldName;
 		this.errorCode = errorCode;
+		this.userValidationError = AdempiereException.isUserValidationError(exception);
 	}
 
 	@Override
@@ -110,7 +117,10 @@ public final class DocumentValidStatus
 
 			if (!TranslatableStrings.isBlank(reason))
 			{
-				sb.append("('").append(reason).append("')");
+				// Bound the rendered reason to avoid exponential growth when an exception message
+				// is built from Document.toString() (which embeds this validStatus). See
+				// DocumentSaveStatus#TOSTRING_REASON_MAX_CHARS for rationale.
+				sb.append("('").append(DocumentSaveStatus.truncateReasonForToString(reason)).append("')");
 			}
 
 			toString = this._toString = sb.toString();

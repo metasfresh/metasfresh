@@ -86,25 +86,25 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 ;
 
 -- 2026-02-18T17:49:09.101Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584543,0,'ValidDaysBack',TO_TIMESTAMP('2026-02-18 17:49:09.091000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Days Back','Days Back',TO_TIMESTAMP('2026-02-18 17:49:09.091000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584568,0,'ValidDaysBack',TO_TIMESTAMP('2026-02-18 17:49:09.091000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Days Back','Days Back',TO_TIMESTAMP('2026-02-18 17:49:09.091000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2026-02-18T17:49:09.102Z
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584543 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584568 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 
 -- 2026-02-18T17:49:16.523Z
-UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2026-02-18 17:49:16.523000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584543
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2026-02-18 17:49:16.523000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584568
 ;
 
 -- 2026-02-18T17:49:16.552Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584543,'de_DE')
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584568,'de_DE')
 ;
 
 -- Process: deactivate_old_plv_productprices(de.metas.process.ExecuteUpdateSQL)
 -- ParameterName: ValidDaysBack
 -- 2026-02-18T17:49:46.076Z
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,584543,0,585572,543128,11,'ValidDaysBack',TO_TIMESTAMP('2026-02-18 17:49:46.076000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'org.adempiere.pricing',0,'Y','N','Y','N','N','N','Days Back',60,TO_TIMESTAMP('2026-02-18 17:49:46.076000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,584568,0,585572,543128,11,'ValidDaysBack',TO_TIMESTAMP('2026-02-18 17:49:46.076000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'org.adempiere.pricing',0,'Y','N','Y','N','N','N','Days Back',60,TO_TIMESTAMP('2026-02-18 17:49:46.076000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2026-02-18T17:49:46.077Z
@@ -125,16 +125,16 @@ UPDATE AD_Process_Para SET FieldLength=1,Updated=TO_TIMESTAMP('2026-02-18 17:49:
 
 -- 2026-02-18T17:51:21.240Z
 UPDATE AD_Element SET Help='Minimum days for PLV deactivation (INCLUSIVE). PLVs with validfrom this many days ago or older are eligible for deactivation.
-Example: 30 means PLVs from 30 days ago or earlier will be deactivated (only if a newer version exists).',Updated=TO_TIMESTAMP('2026-02-18 17:51:21.240000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584543
+Example: 30 means PLVs from 30 days ago or earlier will be deactivated (only if a newer version exists).',Updated=TO_TIMESTAMP('2026-02-18 17:51:21.240000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584568
 ;
 
 -- 2026-02-18T17:51:21.241Z
 UPDATE AD_Element_Trl trl SET Help='Minimum days for PLV deactivation (INCLUSIVE). PLVs with validfrom this many days ago or older are eligible for deactivation.
-Example: 30 means PLVs from 30 days ago or earlier will be deactivated (only if a newer version exists).' WHERE AD_Element_ID=584543 AND AD_Language='de_DE'
+Example: 30 means PLVs from 30 days ago or earlier will be deactivated (only if a newer version exists).' WHERE AD_Element_ID=584568 AND AD_Language='de_DE'
 ;
 
 -- 2026-02-18T17:51:21.243Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584543,'de_DE')
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584568,'de_DE')
 ;
 
 -- Value: deactivate_old_plv_productprices

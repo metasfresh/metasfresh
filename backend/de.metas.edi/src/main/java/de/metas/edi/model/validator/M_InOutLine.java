@@ -1,5 +1,9 @@
 package de.metas.edi.model.validator;
 
+import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.impl.DesadvBL;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 
 /*
@@ -29,21 +33,22 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.model.I_M_InOutLine;
-import de.metas.util.Services;
 
 @Interceptor(I_M_InOutLine.class)
 @Component
+@RequiredArgsConstructor
 public class M_InOutLine
 {
+	@NonNull private final DesadvBL desadvBL;
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(final I_M_InOutLine inOutLine)
 	{
-		if (inOutLine.getEDI_DesadvLine_ID() < 0)
+		if (EDIDesadvLineId.ofRepoIdOrNull(inOutLine.getEDI_DesadvLine_ID()) == null)
 		{
 			return;
 		}
-		Services.get(IDesadvBL.class).removeInOutLineFromDesadv(inOutLine);
+		desadvBL.removeInOutLineFromDesadv(inOutLine);
 	}
 }

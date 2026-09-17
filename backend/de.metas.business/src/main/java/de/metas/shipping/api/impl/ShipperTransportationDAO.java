@@ -144,6 +144,12 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		return ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
 	}
 
+	@Override
+	public void save(@NonNull final I_M_ShipperTransportation shipperTransportation)
+	{
+		saveRecord(shipperTransportation);
+	}
+
 	@NonNull
 	public Optional<ShipperTransportationId> getSingleByQuery(@NonNull final ShipperTransportationQuery shipperTransportationQuery)
 	{

@@ -42,7 +42,7 @@ public class AttributesKeyPatternsUtil
 				.omitEmptyStrings()
 				.splitToList(string)
 				.stream()
-				.map(attributesKeyStr -> parseSinglePartPattern(attributesKeyStr))
+				.map(AttributesKeyPatternsUtil::parseSinglePartPattern)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

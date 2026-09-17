@@ -27,6 +27,7 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
@@ -87,7 +88,8 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 		final boolean anyEDIInvoiceSelected = context.streamSelectedModels(I_C_Doc_Outbound_Log.class)
 				.filter(record -> record.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
 				.map(this::loadEDIDocument)
-				.anyMatch(I_EDI_Document_Extension::isEdiEnabled);
+				.map(ediDoc -> EDIExportStatus.ofCode(ediDoc.getEDI_ExportStatus()))
+				.anyMatch(EDIExportStatus::isPending);
 		if (!anyEDIInvoiceSelected)
 		{
 			final ITranslatableString reason = msgBL.getTranslatableMsgText(MSG_No_DocOutboundLog_Selection);
@@ -179,20 +181,12 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 		final int logTableId = logRecord.getAD_Table_ID();
 		final int logRecordId = logRecord.getRecord_ID();
 		final String logTableName = adTableDAO.retrieveTableName(logTableId);
-		final I_EDI_Document_Extension ediDocument = InterfaceWrapperHelper.create(getCtx(), logTableName, logRecordId, I_EDI_Document_Extension.class, getTrxName());
 
-		return ediDocument;
+		return InterfaceWrapperHelper.create(getCtx(), logTableName, logRecordId, I_EDI_Document_Extension.class, getTrxName());
 	}
 
 	private boolean filterEligibleDocument(@NonNull final I_EDI_Document_Extension ediDocument)
 	{
-		// Only EDI-enabled documents
-		if (!ediDocument.isEdiEnabled())
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
-			return false;
-		}
-
 		//
 		// Only pending EDI documents
 		// note that there might be a problem with inouts, if we used this process: inOuts might be invalid, but still we want to aggregate them, and then fix stuff in the DESADV record itself

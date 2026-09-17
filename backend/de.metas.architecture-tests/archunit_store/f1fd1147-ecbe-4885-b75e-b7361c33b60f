@@ -1,0 +1,7 @@
+Method <org.compiere.apps.AWindowSaveStateModel.save(org.compiere.model.GridField)> calls method <org.adempiere.model.InterfaceWrapperHelper.load(de.metas.util.lang.RepoIdAware, java.lang.Class)> in (AWindowSaveStateModel.java:108)
+Method <org.compiere.apps.AWindowSaveStateModel.save(org.compiere.model.GridField)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (AWindowSaveStateModel.java:117)
+Method <org.compiere.apps.form.ArchiveViewer.cmd_updateArchive()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (ArchiveViewer.java:482)
+Method <org.compiere.apps.wf.WFContentPanel$WFPopupItem.execute()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (WFContentPanel.java:618)
+Method <org.compiere.grid.ed.VBPartner.actionSave()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (VBPartner.java:535)
+Method <org.compiere.grid.ed.VImageDialog.actionPerformed(java.awt.event.ActionEvent)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (VImageDialog.java:175)
+Method <org.compiere.grid.ed.VLocationDialog.action_OK()> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (VLocationDialog.java:506)

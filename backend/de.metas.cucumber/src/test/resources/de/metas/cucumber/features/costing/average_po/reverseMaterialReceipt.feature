@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
 @ghActions:run_on_executor6
 Feature: Average PO - Check costing when reversing a material receipt
+## F1500: Costing
 
   Background:
     Given infrastructure and metasfresh are running
@@ -69,6 +73,9 @@ Feature: Average PO - Check costing when reversing a material receipt
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock
     #
     # Create material receipt 
@@ -87,7 +94,7 @@ Feature: Average PO - Check costing when reversing a material receipt
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | hu1                | rs1                             | N               | 1     | N               | 1     | N               | 10          | 101                                | 1000006                      |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu1                | rs1                             | receipt1              |
@@ -167,6 +174,9 @@ Feature: Average PO - Check costing when reversing a material receipt
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: With initial stock
     #
     # Create the initial inventory 

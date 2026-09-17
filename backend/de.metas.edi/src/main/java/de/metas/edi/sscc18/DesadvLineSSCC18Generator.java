@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
-import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPack;
@@ -82,7 +82,7 @@ public class DesadvLineSSCC18Generator
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final SSCC18CodeBL sscc18CodeBL;
-	private final IDesadvBL desadvBL;
+	private final DesadvBL desadvBL;
 	private final EDIDesadvPackService ediDesadvPackService;
 
 	//
@@ -108,7 +108,7 @@ public class DesadvLineSSCC18Generator
 	@Builder
 	private DesadvLineSSCC18Generator(
 			@NonNull final SSCC18CodeBL sscc18CodeService,
-			@NonNull final IDesadvBL desadvBL,
+			@NonNull final DesadvBL desadvBL,
 			final boolean printExistingLabels,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final EDIDesadvPackService ediDesadvPackService)
@@ -167,6 +167,16 @@ public class DesadvLineSSCC18Generator
 
 				// Subtract one LU from total QtyCUs remaining.
 				final LUQtys luQtys = totalQtyCUsRemaining.subtractOneLU();
+
+				// Skip a 0-qty / null LU (exhausted or misconfigured calculator): persisting a MovementQty=0
+				// pack item would create an un-reclaimable orphan.
+				if (luQtys.isNull())
+				{
+					logger.warn("Skipping SSCC pack-item creation for desadvLine={} because LU breakdown returned Qty-0 (luQtys={}). "
+									+ "No pack/pack-item will be created for this label slot.",
+							desadvLine, luQtys);
+					continue;
+				}
 
 				final EDIDesadvPack desadvPack = generateDesadvLineSSCC(desadvLine, luQtys, tuPIItemProduct);
 				enqueueToPrint(desadvPack);

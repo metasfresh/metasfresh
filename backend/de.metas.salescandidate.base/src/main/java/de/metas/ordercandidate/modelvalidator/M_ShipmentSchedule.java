@@ -28,11 +28,11 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesService;
-import de.metas.material.cockpit.availableforsales.EnqueueAvailableForSalesRequest;
 import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.PoReferenceLookupKey;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -44,7 +44,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -52,14 +51,13 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Map;
-import java.util.Properties;
 
 @Interceptor(I_M_ShipmentSchedule.class)
 @Component
@@ -70,7 +68,6 @@ public class M_ShipmentSchedule
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	private final AvailableForSalesService availableForSalesService;
@@ -177,9 +174,9 @@ public class M_ShipmentSchedule
 	}
 
 	private void updateNrOfOLCandsWithSamePOReference(@NonNull final String poReference,
-													  @NonNull final OrgId orgId,
-													  final int nrOfOLCandsWithSamePOReference,
-													  @Nullable final LocalDateInterval queryTimeWindow)
+	                                                  @NonNull final OrgId orgId,
+	                                                  final int nrOfOLCandsWithSamePOReference,
+	                                                  @Nullable final LocalDateInterval queryTimeWindow)
 	{
 
 		final IQueryBuilder<I_M_ShipmentSchedule> shipmentScheduleSToUpdate = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -234,19 +231,22 @@ public class M_ShipmentSchedule
 			@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord,
 			@NonNull final AvailableForSalesConfig config)
 	{
-		final Properties ctx = Env.copyCtx(InterfaceWrapperHelper.getCtx(shipmentScheduleRecord));
-		final ProductId productId = ProductId.ofRepoId(shipmentScheduleRecord.getM_Product_ID());
-		final OrgId orgId = OrgId.ofRepoId(shipmentScheduleRecord.getAD_Org_ID());
 
-		final AttributesKey storageAttributesKey = AttributesKeys
-				.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoIdOrNone(shipmentScheduleRecord.getM_AttributeSetInstance_ID()))
+		availableForSalesService.enqueueAvailableForSalesRequestAfterCommit(
+				availableForSalesUtil.requestWithPreparationDateNow()
+						.ctx(InterfaceWrapperHelper.getCtx(shipmentScheduleRecord))
+						.config(config)
+						.productId(ProductId.ofRepoId(shipmentScheduleRecord.getM_Product_ID()))
+						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(shipmentScheduleRecord.getAD_Client_ID(), shipmentScheduleRecord.getAD_Org_ID()))
+						.storageAttributesKey(extractStorageAttributesKey(shipmentScheduleRecord))
+						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentScheduleRecord))
+						.build()
+		);
+	}
+
+	private static AttributesKey extractStorageAttributesKey(final @NotNull I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		return AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoIdOrNone(shipmentScheduleRecord.getM_AttributeSetInstance_ID()))
 				.orElse(AttributesKey.NONE);
-		
-		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(shipmentScheduleRecord);
-
-		final EnqueueAvailableForSalesRequest enqueueAvailableForSalesRequest = availableForSalesUtil.
-				createRequestWithPreparationDateNow(ctx, config, productId, orgId, storageAttributesKey, warehouseId);
-
-		trxManager.runAfterCommit(() -> availableForSalesService.enqueueAvailableForSalesRequest(enqueueAvailableForSalesRequest));
 	}
 }

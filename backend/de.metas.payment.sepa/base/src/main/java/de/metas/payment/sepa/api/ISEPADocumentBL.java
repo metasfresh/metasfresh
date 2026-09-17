@@ -31,7 +31,7 @@ import java.util.Date;
 
 public interface ISEPADocumentBL extends ISingletonService
 {
-	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from);
+	I_SEPA_Export createSEPAExportFromPaySelection(I_C_PaySelection from, boolean isGroupTransactions);
 
 	Date getDueDate(I_SEPA_Export_Line line);
 

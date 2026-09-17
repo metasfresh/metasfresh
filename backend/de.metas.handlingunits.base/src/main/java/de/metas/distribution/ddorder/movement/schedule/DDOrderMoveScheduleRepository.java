@@ -12,8 +12,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.IQuery;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -74,7 +77,7 @@ public class DDOrderMoveScheduleRepository
 		return newLoaderAndSaver().updateById(id, updater);
 	}
 
-	public List<DDOrderMoveSchedule> updateByIds(final Set<DDOrderMoveScheduleId> ids, Consumer<DDOrderMoveSchedule> updater)
+	public ImmutableList<DDOrderMoveSchedule> updateByIds(final Set<DDOrderMoveScheduleId> ids, Consumer<DDOrderMoveSchedule> updater)
 	{
 		return newLoaderAndSaver().updateByIds(ids, updater);
 	}
@@ -172,9 +175,14 @@ public class DDOrderMoveScheduleRepository
 				.anyMatch();
 	}
 
-	public ImmutableList<DDOrderMoveSchedule> getSchedules(final DDOrderId ddOrderId)
+	public ImmutableList<DDOrderMoveSchedule> getByDDOrderId(final DDOrderId ddOrderId)
 	{
 		return newLoaderAndSaver().loadByDDOrderId(ddOrderId);
+	}
+
+	public ImmutableList<DDOrderMoveSchedule> getByDDOrderLineIds(final Set<DDOrderLineId> ddOrderLineIds)
+	{
+		return newLoaderAndSaver().loadByDDOrderLineIds(ddOrderLineIds);
 	}
 
 	public boolean hasInProgressSchedules(@NonNull final DDOrderLineId ddOrderLineId)
@@ -196,4 +204,37 @@ public class DDOrderMoveScheduleRepository
 				.create()
 				.anyMatch();
 	}
+
+	/** The batch flavour of {@link #hasInProgressSchedules(DDOrderId)}, for a caller that has to ask about a whole set of orders. */
+	public ImmutableSet<DDOrderId> retrieveIdsOfOrdersWithInProgressSchedules(@NonNull final Set<DDOrderId> ddOrderIds)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_Order_MoveSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.addEqualsFilter(I_DD_Order_MoveSchedule.COLUMNNAME_Status, DDOrderMoveScheduleStatus.IN_PROGRESS)
+				.create()
+				.listDistinctAsImmutableSet(I_DD_Order_MoveSchedule.COLUMNNAME_DD_Order_ID, DDOrderId.class);
+	}
+
+	public Set<DDOrderId> retrieveDDOrderIdsInTransit(@NonNull final LocatorId inTransitLocatorId)
+	{
+		return queryInTransitSchedules(inTransitLocatorId)
+				.create()
+				.listDistinctAsImmutableSet(I_DD_OrderLine_HU_Candidate.COLUMNNAME_DD_Order_ID, DDOrderId.class);
+	}
+
+	public IQueryBuilder<I_DD_OrderLine_HU_Candidate> queryInTransitSchedules(final @NotNull LocatorId inTransitLocatorId)
+	{
+		return queryBL.createQueryBuilder(I_DD_OrderLine_HU_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMNNAME_Status, DDOrderMoveScheduleStatus.IN_PROGRESS)
+				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMNNAME_InTransit_Locator_ID, inTransitLocatorId)
+				.addNotNull(I_DD_OrderLine_HU_Candidate.COLUMNNAME_M_HU_ID);
+	}
+
 }

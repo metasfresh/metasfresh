@@ -33,6 +33,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Services;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Locator;

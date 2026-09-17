@@ -23,7 +23,6 @@
 package de.metas.rest_api.v2.invoice;
 
 import de.metas.Profiles;
-import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
@@ -42,6 +41,7 @@ import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesR
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
@@ -91,7 +91,7 @@ public class InvoicesRestController
 	private final @NonNull ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final @NonNull JsonServiceFactory jsonServiceFactory;
 	private final @NonNull ExternalSystemRepository externalSystemRepository;
-	private final @NonNull BPartnerEffectiveBL bPartnerEffectiveBL;
+	private final @NonNull BPartnerMasterdataProvider bPartnerMasterdataProvider;
 
 	@ApiOperation("Create new invoice candidates")
 	@ApiResponses(value = {
@@ -110,7 +110,7 @@ public class InvoicesRestController
 				.externalReferenceRestControllerService(externalReferenceRestControllerService)
 				.jsonRetrieverService(jsonServiceFactory.createRetriever())
 				.externalSystemRepository(externalSystemRepository)
-				.bPartnerEffectiveBL(bPartnerEffectiveBL)
+				.bPartnerMasterdataProvider(bPartnerMasterdataProvider)
 				.build();
 		// TODO make individual IC accessible via URL, then return "created" instead
 		final JsonCreateInvoiceCandidatesResponse response = createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider);

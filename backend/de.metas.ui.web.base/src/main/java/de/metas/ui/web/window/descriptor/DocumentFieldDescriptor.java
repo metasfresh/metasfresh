@@ -110,6 +110,7 @@ public final class DocumentFieldDescriptor
 
 	private final LookupDescriptorProvider lookupDescriptorProvider;
 	@Getter private final boolean supportZoomInto;
+	@Getter private final boolean showInactiveValues;
 
 	@Getter private final boolean virtualField;
 	@Getter private final Optional<IDocumentFieldValueProvider> virtualFieldValueProvider;
@@ -204,6 +205,7 @@ public final class DocumentFieldDescriptor
 		defaultFilterInfo = builder.defaultFilterInfo;
 
 		deviceDescriptorsProvider = builder.getDeviceDescriptorsProvider();
+		showInactiveValues = builder.isShowInactiveValues();
 	}
 
 	@Override
@@ -327,6 +329,7 @@ public final class DocumentFieldDescriptor
 		private Class<?> _valueClass;
 		private boolean _allowShowPassword = false; // in case widgetType is Password
 		private BarcodeScannerType _barcodeScannerType;
+		@Getter private boolean showInactiveValues = false;
 
 		// Lookup
 		private LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProviders.NULL;
@@ -511,6 +514,13 @@ public final class DocumentFieldDescriptor
 			assertNotBuilt();
 			virtualField = true;
 			this.virtualFieldValueProvider = Optional.of(virtualFieldValueProvider);
+			return this;
+		}
+
+		public Builder setShowInactiveValues(final boolean showInactiveValues)
+		{
+			assertNotBuilt();
+			this.showInactiveValues = showInactiveValues;
 			return this;
 		}
 
@@ -1016,7 +1026,7 @@ public final class DocumentFieldDescriptor
 			return !WindowConstants.TABLENAME_AD_Ref_List.equals(lookupTableName);
 		}
 
-		public Builder setDefaultFilterInfo(@Nullable DocumentFieldDefaultFilterDescriptor defaultFilterInfo)
+		public Builder setDefaultFilterInfo(@Nullable final DocumentFieldDefaultFilterDescriptor defaultFilterInfo)
 		{
 			this.defaultFilterInfo = defaultFilterInfo;
 			return this;

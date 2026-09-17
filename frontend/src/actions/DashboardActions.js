@@ -37,7 +37,7 @@ export function changeTargetIndicatorsItem(id, values) {
   if (data.length <= 0) return;
   return axios.patch(
     `${config.API_URL}/dashboard/targetIndicators/${id}`,
-    values
+    data
   );
 }
 

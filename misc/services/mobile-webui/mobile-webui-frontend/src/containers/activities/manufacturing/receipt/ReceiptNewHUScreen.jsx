@@ -43,9 +43,21 @@ const ReceiptNewHUScreen = () => {
     history.goTo(manufacturingReceiptScreenLocation);
   };
 
+  const luTargets = availableReceivingTargets?.values ?? [];
+  const tuTargets = availableReceivingTUTargets?.values ?? [];
+  const hasTargets = luTargets.length > 0 || tuTargets.length > 0;
+  // When no receiving Gebinde can be offered, the backend supplies a localized, actionable
+  // reason on either target list. Show it instead of an empty screen.
+  const emptyReason = availableReceivingTargets?.emptyReason || availableReceivingTUTargets?.emptyReason;
+
   return (
     <div className="section pt-2">
-      {availableReceivingTargets.values.map((target) => (
+      {!hasTargets && emptyReason && (
+        <div className="notification is-warning" data-testid="receive-no-gebinde-guidance">
+          {emptyReason}
+        </div>
+      )}
+      {luTargets.map((target) => (
         <ButtonWithIndicator
           key={target.luPIItemId}
           caption={target.luCaption}
@@ -55,8 +67,8 @@ const ReceiptNewHUScreen = () => {
           <div className="row is-full is-size-7">{target.tuCaption}</div>
         </ButtonWithIndicator>
       ))}
-      {availableReceivingTUTargets?.values?.length > 0 && <br />}
-      {availableReceivingTUTargets?.values?.map((tuTarget) => (
+      {tuTargets.length > 0 && <br />}
+      {tuTargets.map((tuTarget) => (
         <ButtonWithIndicator
           key={tuTarget.tuPIItemProductId}
           caption={tuTarget.caption}

@@ -14,6 +14,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -219,7 +220,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				new ReferenceGenerator(),
-				dimensionService
+				dimensionService,
+				new ExternalSystemRepository()
 		);
 
 		final MoneyService moneyService = new MoneyService(currencyRepository);

@@ -125,6 +125,30 @@
   height: 4em !important;
 }
 
+// Carrier caption + disabled-reason live in one info row (like .picking-row-info), stacked as
+// centered lines that ellipsis-clip so a long carrier/product name truncates instead of breaking
+// the outlined border. When the reason line is present the two-line info row does not fit the fixed
+// 2.5em button, so grow it — mirrors the per-line qtyAvailable grow-rule for .picking-row-available
+// in pick-products.scss.
+.carrier-advise-info {
+  width: 100%;
+}
+
+.carrier-advise-line {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.advise-carrier-disabled-reason {
+  font-style: italic;
+}
+
+.button:has(.advise-carrier-disabled-reason),
+.full-size-btn:has(.advise-carrier-disabled-reason) {
+  height: 4.5em !important;
+}
 
 .warning-sign {
   color: $indicator-yellow;

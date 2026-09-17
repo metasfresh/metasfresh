@@ -37,6 +37,13 @@ public class Topic
 		return builder().name(name).type(Type.LOCAL).build();
 	}
 
+	public static Topic localAndAsync(final String name)
+	{
+		final Topic topic = local(name);
+		EventBusConfig.alwaysConsiderAsync(topic);
+		return topic;
+	}
+
 	public static Topic of(final String name, final Type type)
 	{
 		return builder().name(name).type(type).build();

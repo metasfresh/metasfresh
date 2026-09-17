@@ -54,7 +54,9 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.joda.time.Instant;
@@ -96,14 +98,16 @@ public class C_OLCandToOrderEnqueuer
 	}
 
 	public OlCandEnqueueResult enqueueBatch(@NonNull final AsyncBatchId asyncBatchId,
-											final boolean propagateAsyncIdsToShipmentSchduleWPs)
+	                                        final boolean propagateAsyncIdsToShipmentSchduleWPs)
 	{
 		// IMPORTANT: we shall create the selection out of transaction because
 		// else the selection (T_Selection) won't be available when creating the main lock for records of this selection.
 		final PInstanceId batchSelectionId = queryBL.createQueryBuilderOutOfTrx(I_C_OLCand.class)
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
 				.create()
-				.createSelection();
+				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElseThrow(() -> new AdempiereException("No C_OLCands found for async batch " + asyncBatchId));
 
 		return lockAndEnqueueSelection(batchSelectionId, asyncBatchId, propagateAsyncIdsToShipmentSchduleWPs);
 	}

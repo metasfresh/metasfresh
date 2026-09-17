@@ -20,9 +20,12 @@ public class TaxAccounts
 	@NonNull Account T_Liability_Acct;
 	@NonNull Account T_Credit_Acct;
 	@NonNull Account T_Receivables_Acct;
-	@NonNull Account T_Expense_Acct;
 	/**
-	 * i.e. C_Tax_Acct.T_Revenue_Acct
+	 * i.e. C_Tax_Acct.T_Expense_Acct — per-tax override of the product's Aufwandskonto (P_Expense_Acct).
+	 */
+	@NonNull Optional<Account> T_Expense_Acct;
+	/**
+	 * i.e. C_Tax_Acct.T_Revenue_Acct — per-tax override of the product's Erlöskonto (P_Revenue_Acct).
 	 */
 	@NonNull Optional<Account> T_Revenue_Acct;
 	@NonNull Optional<Account> T_PayDiscount_Exp_Acct;
@@ -49,7 +52,7 @@ public class TaxAccounts
 		}
 		else if (TaxAcctType.TaxExpense == acctType)
 		{
-			return Optional.of(T_Expense_Acct);
+			return T_Expense_Acct;
 		}
 		else if (TaxAcctType.T_Revenue_Acct == acctType)
 		{

@@ -38,6 +38,10 @@ import javax.annotation.Nullable;
 @Value
 public class ReserveHUsRequest
 {
+
+	/**
+	 * The quantity to reserve.
+	 */
 	@NonNull Quantity qtyToReserve;
 
 	@NonNull HUReservationDocRef documentRef;
@@ -52,21 +56,29 @@ public class ReserveHUsRequest
 	 */
 	@NonNull ImmutableSet<HuId> huIds;
 
+	/**
+	 * If true, the expectation is that the selected HUs are reserved as-is, if possible.
+	 * If false, reserve qty up to the qtyToReserve value from selected HUs.
+	 */
+	boolean reserveActualHUs;
+
 	@Builder
 	private ReserveHUsRequest(
 			@NonNull final Quantity qtyToReserve,
 			@NonNull final HUReservationDocRef documentRef,
 			@NonNull final ProductId productId,
 			@Nullable final BPartnerId customerId,
-			@Singular @NonNull final ImmutableSet<HuId> huIds)
+			@Singular @NonNull final ImmutableSet<HuId> huIds,
+			final boolean reserveActualHUs)
 	{
 		Check.assumeNotEmpty(huIds, "huIds needs to be not empty; this={}", this);
-		Check.assume(qtyToReserve.signum() > 0, "Parameter qtyCU={} needs to be >0; this={}", qtyToReserve, this);
+		Check.assume(qtyToReserve.isPositive(), "qtyToReserve={} shall be >0; this={}",qtyToReserve, this);
 
 		this.qtyToReserve = qtyToReserve;
 		this.documentRef = documentRef;
 		this.productId = productId;
 		this.customerId = customerId;
 		this.huIds = huIds;
+		this.reserveActualHUs = reserveActualHUs;
 	}
 }

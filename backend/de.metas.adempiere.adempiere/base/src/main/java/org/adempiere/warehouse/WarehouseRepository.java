@@ -23,23 +23,38 @@
 package org.adempiere.warehouse;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import de.metas.cache.CCache;
+import de.metas.material.planning.ddorder.DistributionNetworkId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
-import lombok.Getter;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+/**
+ * Repository Tables: M_Warehouse, M_Warehouse_SourceHUConfig, M_Locator
+ * Repository Cluster: WarehouseRepository, WarehouseDAO
+ */
 @Repository
 public class WarehouseRepository
 {
@@ -49,79 +64,181 @@ public class WarehouseRepository
 	public static WarehouseRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new WarehouseRepository();
+		return SpringContextHolder.getBeanOrSupply(WarehouseRepository.class, WarehouseRepository::new);
 	}
 
 	private final CCache<Integer, WarehouseMap> cache = CCache.<Integer, WarehouseMap>builder()
 			.tableName(I_M_Warehouse.Table_Name)
+			.additionalTableNameToResetFor(I_M_Warehouse_SourceHUConfig.Table_Name)
+			.additionalTableNameToResetFor(I_M_Locator.Table_Name)
 			.build();
 
 	@NonNull
-	public Warehouse getById (@NonNull final WarehouseId warehouseId)
+	public Warehouse getById(@NonNull final WarehouseId warehouseId)
 	{
 		return getWarehouseMap().getById(warehouseId);
 	}
 
 	private WarehouseMap getWarehouseMap()
 	{
-		return cache.getOrLoad(0, this::retrieveWarehouseMap);
+		return cache.getOrLoadNonNull(0, this::retrieveWarehouseMap);
 	}
 
+	@NonNull
 	private WarehouseMap retrieveWarehouseMap()
 	{
-		final ImmutableList<Warehouse> warehouses = queryBL.createQueryBuilder(I_M_Warehouse.class)
-				//.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.map(WarehouseRepository::fromRecord)
+		final ImmutableList<I_M_Warehouse> warehouseRecords = retrieveWarehouseRecords();
+		final Multimap<WarehouseId, Locator> locators = retrieveLocatorRecords();
+		final Multimap<WarehouseId, WarehouseSourceHUConfig> sourceHUs = retrieveWarehouseSourceHUConfigRecords();
+
+		final ImmutableList<Warehouse> warehouses = warehouseRecords.stream()
+				.map(record -> fromRecord(record, locators, sourceHUs))
 				.collect(ImmutableList.toImmutableList());
 
 		return new WarehouseMap(warehouses);
 	}
 
-	private static Warehouse fromRecord(@NonNull final I_M_Warehouse warehouse)
+	private ImmutableList<I_M_Warehouse> retrieveWarehouseRecords()
 	{
-		return Warehouse.builder()
-				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
-				.name(warehouse.getName())
-				.resourceId(ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID()))
-				.active(warehouse.isActive())
+		return queryBL.createQueryBuilder(I_M_Warehouse.class)
+				//.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private Multimap<WarehouseId, WarehouseSourceHUConfig> retrieveWarehouseSourceHUConfigRecords()
+	{
+		return queryBL.createQueryBuilder(I_M_Warehouse_SourceHUConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.collect(Multimaps.toMultimap(
+						record -> WarehouseId.ofRepoId(record.getM_Warehouse_ID()),
+						WarehouseRepository::fromRecord,
+						HashMultimap::create
+				));
+	}
+
+	private Multimap<WarehouseId, Locator> retrieveLocatorRecords()
+	{
+		return queryBL.createQueryBuilder(I_M_Locator.class)
+				//.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.collect(Multimaps.toMultimap(
+						record -> WarehouseId.ofRepoId(record.getM_Warehouse_ID()),
+						WarehouseRepository::fromRecord,
+						HashMultimap::create
+				));
+	}
+
+	private static WarehouseSourceHUConfig fromRecord(@NonNull final I_M_Warehouse_SourceHUConfig record)
+	{
+		return WarehouseSourceHUConfig.builder()
+				.id(WarehouseSourceHUConfigId.ofRepoId(record.getM_Warehouse_SourceHUConfig_ID()))
+				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.productCategoryId(ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()))
 				.build();
 	}
+
+	private static Locator fromRecord(final I_M_Locator record)
+	{
+		final LocatorId locatorId = LocatorId.ofRecord(record);
+
+		// M_Locator.Value is not a mandatory column, so it may be null/blank in real databases.
+		// Locator.value is @NonNull (used as display caption / QR caption), so fall back to the locator id
+		// rather than letting the whole warehouse-map load fail with an NPE.
+		final String value = StringUtils.trimBlankToNull(record.getValue());
+
+		return Locator.builder()
+				.locatorId(locatorId)
+				.active(record.isActive())
+				.value(value != null ? value : "<" + locatorId.getRepoId() + ">")
+				.priorityNo(record.getPriorityNo())
+				.isGroundFloor(record.isGroundLocator())
+				.build();
+	}
+
+	private static Warehouse fromRecord(
+			@NonNull final I_M_Warehouse record,
+			@NonNull final Multimap<WarehouseId, Locator> locatorsMap,
+			@NonNull final Multimap<WarehouseId, WarehouseSourceHUConfig> sourceHUConfigsMap)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(record.getM_Warehouse_ID());
+		return Warehouse.builder()
+				.warehouseId(warehouseId)
+				.active(record.isActive())
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.name(record.getName())
+				.plantId(ResourceId.ofRepoIdOrNull(record.getPP_Plant_ID()))
+				.isInTransit(record.isInTransit())
+				.isReceiveAsSourceHU(record.isReceiveAsSourceHU())
+				.isAutoDistributionOrder(record.isAutoDistributionOrder())
+				.distributionNetworkId(DistributionNetworkId.ofRepoIdOrNull(record.getDD_NetworkDistribution_ID()))
+				.locators(locatorsMap.get(warehouseId))
+				.warehouseSourceHUConfigs(WarehouseSourceHUConfigList.ofCollection(sourceHUConfigsMap.get(warehouseId)))
+				.build();
+	}
+
+	public void updateReplenishment(
+			@NonNull final WarehouseId warehouseId,
+			@Nullable final DistributionNetworkId networkId,
+			final boolean autoDistributionOrder)
+	{
+		final I_M_Warehouse warehouseRecord = load(warehouseId, I_M_Warehouse.class);
+
+		if (networkId != null)
+		{
+			warehouseRecord.setDD_NetworkDistribution_ID(networkId.getRepoId());
+		}
+		warehouseRecord.setIsAutoDistributionOrder(autoDistributionOrder);
+
+		// Both columns in one save: M_Warehouse_DDOrderPickingInterceptor rejects IsAutoDistributionOrder without a network.
+		saveRecord(warehouseRecord);
+	}
+
 	@NonNull
 	public ImmutableSet<WarehouseId> getAllActiveIds()
 	{
-		return getWarehouseMap().allActive.stream()
-				.map(Warehouse::getWarehouseId)
-				.collect(ImmutableSet.toImmutableSet());
+		return getWarehouseMap().getAllActiveIds();
 	}
 
-	//
-	//
-	//
-	//
-	//
-
-	private static final class WarehouseMap
+	public String getWarehouseName(@NonNull final WarehouseId warehouseId)
 	{
-		@Getter private final ImmutableList<Warehouse> allActive;
-		private final ImmutableMap<WarehouseId, Warehouse> byId;
-
-		WarehouseMap(final List<Warehouse> list)
-		{
-			this.allActive = list.stream().filter(Warehouse::isActive).collect(ImmutableList.toImmutableList());
-			this.byId = Maps.uniqueIndex(list, Warehouse::getWarehouseId);
-		}
-
-		@NonNull
-		public Warehouse getById(@NonNull final WarehouseId id)
-		{
-			final Warehouse warehouse = byId.get(id);
-			if (warehouse == null)
-			{
-				throw new AdempiereException("Warehouse not found by ID: " + id);
-			}
-			return warehouse;
-		}
+		return getWarehouseMap().getWarehouseName(warehouseId);
 	}
+
+	public String getLocatorNameById(final @NonNull LocatorId locatorId)
+	{
+		return getLocatorById(locatorId).getValue();
+	}
+
+	public Locator getLocatorByRepoId(final int locatorRepoId)
+	{
+		return getWarehouseMap().getLocatorByRepoId(locatorRepoId);
+	}
+
+	public Locator getLocatorById(@NonNull final LocatorId locatorId)
+	{
+		return getWarehouseMap().getLocatorById(locatorId);
+	}
+
+	@NonNull
+	public WarehouseId getInTransitWarehouseId(@NonNull final OrgId adOrgId)
+	{
+		return getInTransitWarehouseIdIfExists(adOrgId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsInTransit@, @AD_Org_ID@:" + adOrgId.getRepoId() + ")"));
+	}
+
+	public Optional<WarehouseId> getInTransitWarehouseIdIfExists(@NonNull final OrgId orgId)
+	{
+		return getWarehouseMap().getInTransitWarehouseIdIfExists(orgId);
+	}
+
+	public Optional<ResourceId> getPlantId(final WarehouseId warehouseId)
+	{
+		return Optional.ofNullable(getById(warehouseId).getPlantId());
+	}
+
 }

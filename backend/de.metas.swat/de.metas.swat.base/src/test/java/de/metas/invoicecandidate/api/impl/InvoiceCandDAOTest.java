@@ -13,7 +13,9 @@ import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,7 +98,9 @@ public class InvoiceCandDAOTest
 
 		final PInstanceId selectionId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
 				.create()
-				.createSelection();
+				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElseThrow(() -> new AdempiereException("No candidates found"));
 
 		// create an unrelated IC that also has no payment term; it shall be left untouched
 		final I_C_Invoice_Candidate unrelatedInvoiceCandidateWithoutPaymentTerm = newInstance(I_C_Invoice_Candidate.class);
@@ -149,12 +153,12 @@ public class InvoiceCandDAOTest
 
 		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
 				.query(InvoiceCandidateQuery.builder().externalIds(ExternalHeaderIdWithExternalLineIds.builder()
-						.externalHeaderId(EXTERNAL_HEADER_ID1)
-						.externalLineId(EXTERNAL_LINE_ID1).build())
+								.externalHeaderId(EXTERNAL_HEADER_ID1)
+								.externalLineId(EXTERNAL_LINE_ID1).build())
 						.build())
 				.query(InvoiceCandidateQuery.builder().externalIds(ExternalHeaderIdWithExternalLineIds.builder()
-						.externalHeaderId(EXTERNAL_HEADER_ID2)
-						.externalLineId(EXTERNAL_LINE_ID2).build())
+								.externalHeaderId(EXTERNAL_HEADER_ID2)
+								.externalLineId(EXTERNAL_LINE_ID2).build())
 						.build())
 				.build();
 
@@ -175,16 +179,16 @@ public class InvoiceCandDAOTest
 
 		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
 				.query(InvoiceCandidateQuery.builder().externalIds(
-						ExternalHeaderIdWithExternalLineIds.builder()
-								.externalHeaderId(EXTERNAL_HEADER_ID2)
-								.externalLineId(EXTERNAL_LINE_ID2)
-								.build())
+								ExternalHeaderIdWithExternalLineIds.builder()
+										.externalHeaderId(EXTERNAL_HEADER_ID2)
+										.externalLineId(EXTERNAL_LINE_ID2)
+										.build())
 						.build())
 				.build();
 
 		final int selection = invoiceCandDAO.createSelectionByQuery(multiQuery, PInstanceId.ofRepoId(P_INSTANCE_ID));
 
-		assertThat(selection).isEqualTo(0);
+		assertThat(selection).isZero();
 	}
 
 	@Test
@@ -193,17 +197,17 @@ public class InvoiceCandDAOTest
 
 		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
 				.query(InvoiceCandidateQuery.builder().externalIds(
-						ExternalHeaderIdWithExternalLineIds.builder()
-								.externalHeaderId(EXTERNAL_HEADER_ID3)
-								.externalLineId(EXTERNAL_LINE_ID3)
-								.build())
+								ExternalHeaderIdWithExternalLineIds.builder()
+										.externalHeaderId(EXTERNAL_HEADER_ID3)
+										.externalLineId(EXTERNAL_LINE_ID3)
+										.build())
 						.build())
 				.build();
 
 		// invoke the method under test
 		final int selection = invoiceCandDAO.createSelectionByQuery(multiQuery, PInstanceId.ofRepoId(P_INSTANCE_ID));
 
-		assertThat(selection).isEqualTo(0);
+		assertThat(selection).isZero();
 	}
 
 	@Test
@@ -216,17 +220,17 @@ public class InvoiceCandDAOTest
 
 		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
 				.query(InvoiceCandidateQuery.builder().externalIds(
-						ExternalHeaderIdWithExternalLineIds.builder()
-								.externalHeaderId(EXTERNAL_HEADER_ID1)
-								.externalLineId(EXTERNAL_LINE_ID1)
-								.externalLineId(EXTERNAL_LINE_ID2).build())
+								ExternalHeaderIdWithExternalLineIds.builder()
+										.externalHeaderId(EXTERNAL_HEADER_ID1)
+										.externalLineId(EXTERNAL_LINE_ID1)
+										.externalLineId(EXTERNAL_LINE_ID2).build())
 						.build())
 				.build();
 
 		// invoke the method under test
 		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		assertThat(records.size()).isEqualTo(2);
+		assertThat(records).hasSize(2);
 
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
@@ -245,7 +249,7 @@ public class InvoiceCandDAOTest
 
 		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
 				.query(InvoiceCandidateQuery.builder().externalIds(
-						ExternalHeaderIdWithExternalLineIds.builder().externalHeaderId(EXTERNAL_HEADER_ID1).build())
+								ExternalHeaderIdWithExternalLineIds.builder().externalHeaderId(EXTERNAL_HEADER_ID1).build())
 						.build())
 				.build();
 
@@ -253,7 +257,7 @@ public class InvoiceCandDAOTest
 
 		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		assertThat(records.size()).isEqualTo(3);
+		assertThat(records).hasSize(3);
 
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
@@ -278,14 +282,14 @@ public class InvoiceCandDAOTest
 						ExternalHeaderIdWithExternalLineIds.builder().externalHeaderId(EXTERNAL_HEADER_ID1).build() // all with headerId1
 				).build())
 				.query(InvoiceCandidateQuery.builder().externalIds(
-						ExternalHeaderIdWithExternalLineIds.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineId(EXTERNAL_LINE_ID2).externalLineId(EXTERNAL_LINE_ID3).build())
+								ExternalHeaderIdWithExternalLineIds.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineId(EXTERNAL_LINE_ID2).externalLineId(EXTERNAL_LINE_ID3).build())
 						.build())
 				.build();
 
 		// invoke the method under test
 		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		assertThat(records.size()).isEqualTo(5);
+		assertThat(records).hasSize(5);
 
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")

@@ -22,7 +22,7 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;

@@ -1,0 +1,25 @@
+# Playwright
+node_modules/
+test-results/
+playwright-report/
+playwright-frontend-report*/
+playwright-frontend-report.zip
+blob-report/
+playwright/.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Credentials (sensitive)
+credentials/
+
+# Allure reports
+allure-results/
+allure-report/

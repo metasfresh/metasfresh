@@ -1,8 +1,18 @@
 package de.metas.workplace;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPGroupId;
+import de.metas.document.DocTypeId;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.order.OrderPickingType;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.shipping.CarrierProductId;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -17,4 +27,17 @@ public class WorkplaceCreateRequest
 	@NonNull WarehouseId warehouseId;
 	@Nullable LocatorId pickFromLocatorId;
 	@Nullable PickingSlotId pickingSlotId;
+	@Nullable SeqNo seqNo;
+	@Nullable OrderPickingType orderPickingType;
+	int maxPickingJobs;
+	/** Defaults to {@code true} to match the {@code C_Workplace.IsPackingPlace} DB column default ('Y'): a workplace created without an explicit role is a packing place, preserving the pre-existing launcher behaviour. */
+	@Builder.Default boolean isPackingPlace = true;
+	boolean warnShelfLifeUndercut;
+
+	@NonNull @Singular ImmutableSet<ProductCategoryId> productCategoryIds;
+	@NonNull @Singular ImmutableSet<ProductId> productIds;
+	@NonNull @Singular ImmutableSet<ExternalSystemId> externalSystemIds;
+	@NonNull @Singular ImmutableSet<CarrierProductId> carrierProductIds;
+	@NonNull @Singular ImmutableSet<BPGroupId> bpGroupIds;
+	@NonNull @Singular ImmutableSet<DocTypeId> docTypeIds;
 }
