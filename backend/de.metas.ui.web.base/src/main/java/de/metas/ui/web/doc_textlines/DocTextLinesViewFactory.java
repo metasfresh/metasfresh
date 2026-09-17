@@ -113,7 +113,7 @@ public class DocTextLinesViewFactory implements IViewFactory
 				.build();
 	}
 
-	private static List<RelatedProcessDescriptor> getRelatedProcessDescriptors()
+	private static ImmutableList<RelatedProcessDescriptor> getRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
 				createProcessDescriptor(WEBUI_DocTextLines_InsertAbove.class),

@@ -121,7 +121,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	}
 
 	@Override
-	public Map<DocumentId, DocTextLinesRow> getDocumentId2TopLevelRows()
+	public ImmutableMap<DocumentId, DocTextLinesRow> getDocumentId2TopLevelRows()
 	{
 		final ImmutableMap.Builder<DocumentId, DocTextLinesRow> result = ImmutableMap.builder();
 		rowIds.forEach(rowId -> resolveRow(rowId).ifPresent(row -> result.put(rowId, row)));
@@ -497,7 +497,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 */
 	DocTextLinesRow insertRowAbove(
 			@Nullable final DocumentId referenceRowId,
-			@Nullable final String textLine)
+			@NonNull final String textLine)
 	{
 		return withDocumentLocked(() -> {
 			synchronized (structuralLock)

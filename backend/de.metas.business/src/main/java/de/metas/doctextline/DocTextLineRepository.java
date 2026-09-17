@@ -1,5 +1,6 @@
 package de.metas.doctextline;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.inout.InOutId;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
@@ -15,8 +16,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Repository Tables: C_Doc_TextLine
@@ -185,7 +184,7 @@ public class DocTextLineRepository
 		return ofRecord(record);
 	}
 
-	public List<DocTextLine> getByDocument(@NonNull final DocTextLineDocumentRef documentRef)
+	public ImmutableList<DocTextLine> getByDocument(@NonNull final DocTextLineDocumentRef documentRef)
 	{
 		final IQueryBuilder<I_C_Doc_TextLine> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_TextLine.class)
 				.addOnlyActiveRecordsFilter();
@@ -207,7 +206,7 @@ public class DocTextLineRepository
 				.list()
 				.stream()
 				.map(DocTextLineRepository::ofRecord)
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public void deleteById(@NonNull final DocTextLineId id)

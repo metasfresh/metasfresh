@@ -50,7 +50,7 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 	}
 
 	@Override
-	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	public ImmutableList<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
 		return processes;
 	}
@@ -94,7 +94,7 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 	 * {@code ProductsProposalView#addOrUpdateRows} does after widening its own rows data. This is the one entry
 	 * point an insert-above quick-action process needs; it never touches {@code DocTextLineRepository} itself.
 	 */
-	public void insertRowAbove(@Nullable final DocumentId referenceRowId, @Nullable final String textLine)
+	public void insertRowAbove(@Nullable final DocumentId referenceRowId, @NonNull final String textLine)
 	{
 		getRowsData().insertRowAbove(referenceRowId, textLine);
 		invalidateAll();

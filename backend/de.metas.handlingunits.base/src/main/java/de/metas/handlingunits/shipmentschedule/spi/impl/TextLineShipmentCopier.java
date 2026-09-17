@@ -328,7 +328,7 @@ class TextLineShipmentCopier
 		for (int rank = 0; rank < blockSize; rank++)
 		{
 			final DocTextLine textLine = block.get(rank);
-			if (textLine.getScope() == TextLineScope.Following && !runPresentOnShipment)
+			if (textLine.getScope().isFollowing() && !runPresentOnShipment)
 			{
 				continue;
 			}

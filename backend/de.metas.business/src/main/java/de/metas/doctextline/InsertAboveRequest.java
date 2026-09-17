@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 public class InsertAboveRequest
 {
 	@NonNull DocTextLineDocumentRef documentRef;
-	@Nullable String textLine;
+	@NonNull String textLine;
 
 	/** Position of the row selected to insert above; {@code null} when the document has no rows at all. */
 	@Nullable BigDecimal referencePosition;

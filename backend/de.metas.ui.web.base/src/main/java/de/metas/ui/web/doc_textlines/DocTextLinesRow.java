@@ -225,7 +225,7 @@ public final class DocTextLinesRow implements IViewRow
 	}
 
 	@Override
-	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	public ImmutableMap<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
 	{
 		return editorRenderModeByFieldName;
 	}
