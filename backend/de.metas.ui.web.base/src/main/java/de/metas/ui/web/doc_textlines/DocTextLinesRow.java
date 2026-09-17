@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.doctextline.DocTextLine;
 import de.metas.doctextline.DocTextLineId;
 import de.metas.doctextline.TextLineScope;
+import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderLineId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
@@ -46,6 +47,8 @@ public final class DocTextLinesRow implements IViewRow
 		ARTICLE,
 		TEXT
 	}
+
+	private static final AdMessageKey MSG_ArticleLineCannotBeEditedHere = AdMessageKey.of("DocTextLines_ArticleLineCannotBeEditedHere");
 
 	private static final String ROWID_PREFIX_ARTICLE = "A";
 	private static final String ROWID_PREFIX_TEXT = "T";
@@ -176,8 +179,7 @@ public final class DocTextLinesRow implements IViewRow
 	{
 		if (!isTextLine())
 		{
-			throw new AdempiereException("Article lines cannot be edited here."
-					+ " Only text lines are editable in this window; an article line is changed on the order's line tab.")
+			throw new AdempiereException(MSG_ArticleLineCannotBeEditedHere)
 					.setParameter("rowId", getId());
 		}
 

@@ -1599,7 +1599,7 @@ class DocTextLinesQuickActionsTest
 			assertThat(refusal)
 					.as("the user must be told their reference line is gone, not silently given a different place")
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("select a line again");
+					.hasMessageContaining("DocTextLines_RowNoLongerExists");
 
 			assertThat(storedMergedOrder())
 					.as("the document is exactly as the other modal left it")
@@ -1638,7 +1638,7 @@ class DocTextLinesQuickActionsTest
 			assertThat(refusal)
 					.as("the user must be told their line is gone, not handed an internal row id")
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("select a line again");
+					.hasMessageContaining("DocTextLines_RowNoLongerExists");
 			final List<BigDecimal> positionsAfterTheRefusal = storedTextLinePositions();
 			assertThat(positionsAfterTheRefusal).as("the refused move changed no position").hasSize(1);
 			assertThat(positionsAfterTheRefusal.get(0)).isEqualByComparingTo("15");
@@ -1708,15 +1708,15 @@ class DocTextLinesQuickActionsTest
 				assertThat(catchThrowable(() -> new WEBUI_DocTextLines_InsertAbove().insertAbove(view, articleRowIdOf(article10))))
 						.as("insert-above is refused while another writer holds the document")
 						.isInstanceOf(AdempiereException.class)
-						.hasMessageContaining("try again in a moment");
+						.hasMessageContaining("DocTextLines_DocumentIsBeingEditedRightNow");
 				assertThat(catchThrowable(() -> new WEBUI_DocTextLines_MoveDown().moveDown(view, textRowIdOf(text5))))
 						.as("a move is refused while another writer holds the document")
 						.isInstanceOf(AdempiereException.class)
-						.hasMessageContaining("try again in a moment");
+						.hasMessageContaining("DocTextLines_DocumentIsBeingEditedRightNow");
 				assertThat(catchThrowable(() -> new WEBUI_DocTextLines_Delete().delete(view, textRowIdOf(text5))))
 						.as("a delete is refused while another writer holds the document")
 						.isInstanceOf(AdempiereException.class)
-						.hasMessageContaining("try again in a moment");
+						.hasMessageContaining("DocTextLines_DocumentIsBeingEditedRightNow");
 			}
 			finally
 			{
@@ -1800,7 +1800,7 @@ class DocTextLinesQuickActionsTest
 			// the row the stale modal points at is gone, so its move is refused after it has taken the lock
 			assertThat(catchThrowable(() -> new WEBUI_DocTextLines_MoveDown().moveDown(staleModal, textRowIdOf(text5))))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("select a line again");
+					.hasMessageContaining("DocTextLines_RowNoLongerExists");
 
 			assertThat(isDocumentLocked())
 					.as("the refused write released the document on its way out")

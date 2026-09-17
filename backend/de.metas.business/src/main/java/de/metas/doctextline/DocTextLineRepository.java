@@ -1,6 +1,7 @@
 package de.metas.doctextline;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
@@ -34,6 +35,8 @@ public class DocTextLineRepository
 	 * Must stay equal to the scale of {@code C_Doc_TextLine.Line} and of the report function's {@code line} column (Docs_Sales_Order_Details.sql).
 	 */
 	private static final int LINE_SCALE = 4;
+
+	private static final AdMessageKey MSG_PositionGapExhausted = AdMessageKey.of("DocTextLines_PositionGapExhausted");
 
 	/** Position given to the first text line ever inserted into an otherwise empty document. */
 	private static final BigDecimal FIRST_POSITION_IN_EMPTY_DOCUMENT = BigDecimal.ONE.setScale(LINE_SCALE);
@@ -79,9 +82,12 @@ public class DocTextLineRepository
 		final boolean collidesWithPrevious = previousPosition != null && newPosition.compareTo(previousPosition) == 0;
 		if (collidesWithReference || collidesWithPrevious)
 		{
-			throw new AdempiereException("Cannot insert a text line between " + previousPosition + " and " + referencePosition
-					+ ": the position gap is exhausted at scale " + LINE_SCALE + " (the midpoint " + newPosition
-					+ " would duplicate an existing position). Move a neighbouring row first to free up space.");
+			// the three positions say nothing the user can act on, so they stay parameters for the log
+			throw new AdempiereException(MSG_PositionGapExhausted)
+					.setParameter("previousPosition", previousPosition)
+					.setParameter("referencePosition", referencePosition)
+					.setParameter("computedPosition", newPosition)
+					.setParameter("lineScale", LINE_SCALE);
 		}
 
 		return newPosition;

@@ -413,10 +413,11 @@ class DocTextLinesViewTest
 			final DocumentId rowId = DocTextLinesRow.articleRowId(OrderLineId.ofRepoId(article.getC_OrderLine_ID()));
 
 			// message must name the article-row rejection specifically -- a generic "view is not editable"
-			// wording would also match an unrelated failure mode and give a false pass here
+			// wording would also match an unrelated failure mode and give a false pass here. Asserted on the
+			// AD_Message key, which is what the untranslated message renders to outside a database.
 			assertThatThrownBy(() -> patch(view, rowId, JSONDocumentChangedEvent.replace(DocTextLinesRow.FIELD_TextLine, "hack")))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("Article");
+					.hasMessageContaining("DocTextLines_ArticleLineCannotBeEditedHere");
 
 			// the article line's own DB row is untouched
 			final I_C_OrderLine reloaded = load(article.getC_OrderLine_ID(), I_C_OrderLine.class);

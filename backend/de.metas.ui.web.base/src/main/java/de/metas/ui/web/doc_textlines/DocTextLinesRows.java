@@ -9,6 +9,7 @@ import de.metas.doctextline.DocTextLineDocumentRef;
 import de.metas.doctextline.DocTextLineRepository;
 import de.metas.doctextline.InsertAboveRequest;
 import de.metas.doctextline.TextLineScope;
+import de.metas.i18n.AdMessageKey;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.template.IEditableRowsData;
@@ -55,6 +56,14 @@ import java.util.function.Supplier;
  */
 final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 {
+	private static final AdMessageKey MSG_NeighbourRowIsBeingRemoved = AdMessageKey.of("DocTextLines_NeighbourRowIsBeingRemoved");
+	private static final AdMessageKey MSG_RowNoLongerExists = AdMessageKey.of("DocTextLines_RowNoLongerExists");
+	private static final AdMessageKey MSG_DocumentGainedRows = AdMessageKey.of("DocTextLines_DocumentGainedRows");
+	private static final AdMessageKey MSG_LineOrderIsInconsistent = AdMessageKey.of("DocTextLines_LineOrderIsInconsistent");
+	private static final AdMessageKey MSG_CannotMoveUpAnyFurther = AdMessageKey.of("DocTextLines_CannotMoveUpAnyFurther");
+	private static final AdMessageKey MSG_CannotMoveDownAnyFurther = AdMessageKey.of("DocTextLines_CannotMoveDownAnyFurther");
+	private static final AdMessageKey MSG_OnlyTextLinesCanBeChangedHere = AdMessageKey.of("DocTextLines_OnlyTextLinesCanBeChangedHere");
+
 	static DocTextLinesRows cast(final IRowsData<DocTextLinesRow> rowsData)
 	{
 		return (DocTextLinesRows)rowsData;
@@ -226,7 +235,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 */
 	private static AdempiereException rowIsBeingRemoved(@NonNull final DocumentId rowId)
 	{
-		return new AdempiereException("A neighbouring row is being removed right now, so this row cannot be placed safely. Please try again.")
+		return new AdempiereException(MSG_NeighbourRowIsBeingRemoved)
 				.setParameter("rowId", rowId);
 	}
 
@@ -237,8 +246,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 */
 	private static AdempiereException rowNoLongerExists(@NonNull final DocumentId rowId)
 	{
-		return new AdempiereException("The line you selected is not part of this document any more -- it was removed while this window was open."
-				+ " Please close and reopen the window, then select a line again.")
+		return new AdempiereException(MSG_RowNoLongerExists)
 				.setParameter("rowId", rowId);
 	}
 
@@ -250,8 +258,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 */
 	private static AdempiereException documentGainedRowsSinceWindowOpened(@NonNull final List<DocumentId> rowIds)
 	{
-		return new AdempiereException("This document has gained lines since this window was opened, so there is nothing here to insert above."
-				+ " Please close and reopen the window, then select a line again.")
+		return new AdempiereException(MSG_DocumentGainedRows)
 				.setParameter("rowIds", rowIds);
 	}
 
@@ -263,7 +270,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 */
 	private static AdempiereException mergedOrderDisagreesWithRows(@NonNull final DocumentId rowId)
 	{
-		return new AdempiereException("Internal error: the document's line order lists a line that cannot be read, so nothing was changed.")
+		return new AdempiereException(MSG_LineOrderIsInconsistent)
 				.setParameter("rowId", rowId);
 	}
 
@@ -619,8 +626,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			final int neighborIndex = towardStart ? index - 1 : index + 1;
 			if (neighborIndex < 0 || neighborIndex >= rowIds.size())
 			{
-				throw new AdempiereException("This line cannot be moved " + (towardStart ? "up" : "down")
-						+ " any further -- there is no line beyond it in that direction.")
+				throw new AdempiereException(towardStart ? MSG_CannotMoveUpAnyFurther : MSG_CannotMoveDownAnyFurther)
 						.setParameter("rowId", rowId);
 			}
 
@@ -759,8 +765,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		final DocTextLinesRow row = getRowOrThrow(rowId);
 		if (!row.isTextLine())
 		{
-			throw new AdempiereException("Only text lines can be deleted or moved here."
-					+ " An article line belongs to the order itself and is changed on the order's line tab.")
+			throw new AdempiereException(MSG_OnlyTextLinesCanBeChangedHere)
 					.setParameter("rowId", rowId);
 		}
 		return row;

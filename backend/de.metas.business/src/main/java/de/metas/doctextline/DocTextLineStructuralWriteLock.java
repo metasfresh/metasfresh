@@ -1,6 +1,7 @@
 package de.metas.doctextline;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
@@ -38,6 +39,8 @@ import javax.annotation.Nullable;
 public final class DocTextLineStructuralWriteLock
 {
 	private static final String LOCK_OWNER_NAME_PREFIX = DocTextLineStructuralWriteLock.class.getSimpleName();
+
+	private static final AdMessageKey MSG_DocumentIsBeingEditedRightNow = AdMessageKey.of("DocTextLines_DocumentIsBeingEditedRightNow");
 
 	/**
 	 * Locks {@code documentRef}'s own record for the rest of the caller's transaction.
@@ -82,8 +85,7 @@ public final class DocTextLineStructuralWriteLock
 	{
 		@Nullable final ImmutableList<ExistingLockInfo> existingLocks = cause.getExistingLocks();
 
-		return new AdempiereException("This document's text lines are being edited right now."
-				+ " Please try again in a moment.", cause)
+		return new AdempiereException(cause, MSG_DocumentIsBeingEditedRightNow)
 				.setParameter("document", documentRecord)
 				.setParameter("existingLocks", existingLocks);
 	}
