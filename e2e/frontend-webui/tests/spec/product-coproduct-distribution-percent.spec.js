@@ -23,11 +23,15 @@
  *
  * Language handling: the test runs once per language (de_DE, en_US). Fields are SELECTED only by
  * the language-invariant DB ColumnName (`.form-field-CoProductCostDistributionPercent`) and
- * persistence is verified by the raw WebAPI field value — never by localized text. The label
- * caption IS asserted, but against the expected value FOR THE RUN's language, which is exactly
- * what proves the AD_Element_Trl translation is correct; the expectation varies with the language,
- * so the assertion stays language-independent (it never hardcodes one language's caption for a run
- * in another).
+ * persistence is verified by the raw WebAPI field value — never by localized text. The label IS
+ * asserted, but LANGUAGE-INDEPENDENTLY (per e2e/frontend-webui/CLAUDE.md "Specs MUST be
+ * language-independent"): the expected caption is NOT a hardcoded per-language string literal — it
+ * is fetched at runtime from the backend window layout for THIS session's language
+ * (getWindowLayout → getFieldLabelFromLayout), the same AD_Element_Trl-derived source the frontend
+ * renders the label from, and the rendered DOM label is asserted to match it (plus be non-empty).
+ * This catches a label/translation regression for the field (blank / wrong / mis-wired AD_Element,
+ * frontend rendering a different caption) in ANY language without pinning a caption literal. The
+ * exact AD_Element_Trl content per language is verified by the migration + window-designer layer.
  *
  * Widget type: Number (AD_Reference 22) -> renders as .form-field-CoProductCostDistributionPercent
  * with a plain numeric input; driven via NumericWidget.
@@ -42,19 +46,18 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { NumericWidget } from '../utils/widgets/NumericWidget';
 import { WidgetCommon } from '../utils/widgets/WidgetCommon';
 import { PRODUCT_COST_WINDOW_ID } from '../utils/WindowIds';
-import { assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
+import {
+  assertRecordIsValid,
+  getFieldData,
+  getWindowLayout,
+  getFieldLabelFromLayout,
+} from '../utils/WebAPIValidation';
 
 // AD_Column.ColumnName for the new co-product cost-distribution field (language-invariant selector).
 const FIELD_NAME = 'CoProductCostDistributionPercent';
 
 // The percentage we enter and expect back after reload.
 const TEST_VALUE = 37.5;
-
-// AD_Element_Trl.Name per UI language — the translations under test.
-const LABEL_BY_LANGUAGE = {
-  de_DE: 'Co-Product Kostenverteilungsanteil',
-  en_US: 'Co-Product Cost Distribution Percent',
-};
 
 const testCases = [
   { language: 'de_DE', label: 'German' },
@@ -77,8 +80,6 @@ Verifies that the manually maintained co-product cost-distribution percentage fi
 Product Costs master-data window (344 / tab 700), is editable, persists a value across save + reload,
 and carries the correct ${language} label.
       `);
-
-      const expectedCaption = LABEL_BY_LANGUAGE[language];
 
       // Create a fresh test user (pinned to this language) + a dedicated test product.
       const masterdata = await Backend.createMasterdata({
@@ -123,11 +124,23 @@ and carries the correct ${language} label.
         console.log(`[INFO] (${language}) CoProductCostDistributionPercent field renders inside its element-group panel`);
       });
 
-      // === STEP 2: correct per-language label (AD_Element_Trl translation under test) ===
-      await test.step(`Assert ${language} label is "${expectedCaption}"`, async () => {
+      // === STEP 2: label matches the backend-served translation (language-independent) ===
+      // Language-independence (e2e/frontend-webui/CLAUDE.md "Specs MUST be language-independent"):
+      // the expected caption is NOT a hardcoded per-language literal. We fetch it at runtime from
+      // the backend window layout for THIS session's language — the same AD_Element_Trl-derived
+      // source the frontend paints the label from — and assert the rendered DOM label equals it (and
+      // that it is a present, non-empty label). This proves the field is labelled (right AD_Element,
+      // non-blank, not mis-wired / not the wrong caption) and that the frontend renders the backend's
+      // translation, in ANY language, without pinning a caption string. The exact AD_Element_Trl text
+      // per language is verified by the migration + window-designer layer, not here.
+      await test.step(`Assert the field label matches the backend-served translation (${language})`, async () => {
+        const layout = await getWindowLayout(PRODUCT_COST_WINDOW_ID);
+        const expectedCaption = getFieldLabelFromLayout(layout, FIELD_NAME);
+        expect(expectedCaption, `window ${PRODUCT_COST_WINDOW_ID} layout must expose a label for ${FIELD_NAME}`).toBeTruthy();
+
         const labelEl = WidgetCommon.getFieldContainer(FIELD_NAME).locator('label.form-control-label');
         await expect(labelEl).toHaveText(expectedCaption);
-        console.log(`[INFO] (${language}) label caption = "${expectedCaption}"`);
+        console.log(`[INFO] (${language}) field label matches backend layout caption = "${expectedCaption}"`);
       });
 
       // === STEP 3: the field is editable ===
