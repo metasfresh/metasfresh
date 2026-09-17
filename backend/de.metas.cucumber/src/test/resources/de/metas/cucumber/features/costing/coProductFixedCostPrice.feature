@@ -1267,3 +1267,85 @@ Feature: Co-product valuation via cost-distribution percent
       | AccountConceptualName | AcctBalance |
       | P_Asset_Acct          | 0           |
       | P_WIP_Acct            | 0           |
+
+  @from:cucumber
+  @Id:S29488_TC15
+  Scenario: Reversing the CostDifferenceDistribution collector that carries a co-product residual nets to zero
+    # The CC-170 CostDifferenceDistribution collector carries BOTH the main product's residual AND the
+    # co-product's own residual (per-product CostDetail rows under one collector). The forward posting emits
+    # a per-product leg-set for each. Reversing that collector via the REAL Reverse-Correct DocAction must
+    # therefore emit the SAME per-product breakdown negated - NOT funnel every product's rows through the
+    # single-segment aggregate (which throws once >=2 product segments are present). The reversal's own legs
+    # must be the exact per-product negation of the forward legs, so each product's P_Asset/P_WIP nets back
+    # to zero - the same customer write-down case as TC1 (carve 48, own current cost 9.9 CHF/PCE).
+    And update M_Product:
+      | M_Product_ID.Identifier | CoProductCostDistributionPercent |
+      | coProd                  | 10.666667                        |
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | coProd       | 9.9 CHF          |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
+
+    And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
+
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 24          | mainProdItem                       |
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | coProdBomLine       | coHU               | N               | 0     | N               | 1     | N               | 6           | coProdItem                         |
+
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
+    And Wait until documents coReceiptCostCollector are posted
+
+    # Distribute the order (CC-170 true-up): main product residual 402 capitalizes; the co-product's own
+    # residual is written down 11.4 (Cr P_Asset / Dr P_WIP) - both on the SAME distribution collector.
+    And the manufacturing order identified by ppOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # Forward per-product legs (main 402 write-up, co-product 11.4 write-down), asserted per product.
+    And Fact_Acct records are matching
+      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 11.4      | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | 11.4      | 0         | 0 PCE |
+
+    # Reverse the distribution collector via the REAL Reverse-Correct DocAction. Before the fix this posting
+    # THROWS (all products' CostDetail rows funnel through the single-segment aggregate); after the fix the
+    # reversal emits one negated leg-set PER PRODUCT and posts cleanly.
+    And the PP_Cost_Collector identified by distributionCostCollector is reversed as distReversalCostCollector
+    And Wait until documents distReversalCostCollector are posted
+
+    # The reversal's own legs are the exact per-product negation of the forward legs (Dr/Cr swapped, amount
+    # unchanged): main product 402 the other way, co-product 11.4 the other way - each resolved against its
+    # OWN product accounts, not aggregated. Asserted per product, not just via the whole-set balance below.
+    And Fact_Acct records are matching
+      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distReversalCostCollector | P_Asset_Acct          | mainProd     | 0         | 402       | 0 PCE |
+      | distReversalCostCollector | P_WIP_Acct            | mainProd     | 402       | 0         | 0 PCE |
+      | distReversalCostCollector | P_Asset_Acct          | coProd       | 11.4      | 0         | 0 PCE |
+      | distReversalCostCollector | P_WIP_Acct            | coProd       | 0         | 11.4      | 0 PCE |
+
+    # The whole distribute+reversal set nets to zero on both accounts, across both products: no stale
+    # inventory value or WIP residual remains once the distribution collector is fully reversed.
+    And Fact_Acct records balances for documents distributionCostCollector,distReversalCostCollector are matching
+      | AccountConceptualName | AcctBalance |
+      | P_Asset_Acct          | 0           |
+      | P_WIP_Acct            | 0           |

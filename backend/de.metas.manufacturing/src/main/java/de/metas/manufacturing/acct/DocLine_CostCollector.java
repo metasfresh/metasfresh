@@ -147,6 +147,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 		if (isReversalLine())
 		{
+			final ProductId mainProductId = getProductId();
 			return services.createReversalCostDetailsOrEmpty(
 							CostDetailReverseRequest.builder()
 									.acctSchemaId(acctSchemaId)
@@ -154,7 +155,19 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 									.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
 									.date(getDateAcctAsInstant())
 									.build())
-					.map(CostDetailCreateResultsList::toAggregatedCostAmount);
+					// A CC-170 CostDifferenceDistribution reversal loads the initial document's CostDetail rows for the
+					// main product AND each co-product (distinct cost segments); toAggregatedCostAmount requires a single
+					// segment. Post the MAIN product's residual from its own single-segment aggregate here, exactly as the
+					// forward path does in Doc_PPCostCollector.createFacts_CostDifferenceDistribution; the co-products'
+					// reversal legs are re-emitted per product by createCoProductDifferenceFacts from the persisted
+					// reversal rows. Every other reversal (receipt, issue, single-product distribution) already carries
+					// exactly one product segment, so this narrowing is a no-op there. Return empty when the main product
+					// itself has no residual to reverse (its forward residual was zero) so the caller skips the main leg,
+					// mirroring the forward path's null-costResult handling.
+					.map(results -> {
+						final CostDetailCreateResultsList mainProductResults = results.filterByProductId(mainProductId);
+						return mainProductResults.isEmpty() ? null : mainProductResults.toAggregatedCostAmount();
+					});
 		}
 		else
 		{
