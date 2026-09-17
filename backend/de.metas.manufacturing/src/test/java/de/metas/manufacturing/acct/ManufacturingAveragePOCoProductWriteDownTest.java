@@ -276,10 +276,12 @@ class ManufacturingAveragePOCoProductWriteDownTest
 		assertThat(sumDr(allLegs)).isEqualByComparingTo(sumCr(allLegs));
 
 		//
-		// And the WHOLE production order's P_WIP nets to 0: the 450 the component issue put INTO WIP is exactly
-		// relieved by the two receipts (main 0 + co 59.4, out of WIP) and the CC-170 legs (main P_WIP Cr 402 minus
-		// co P_WIP Dr 11.4). Each term below was pinned to its own literal above; their sum closing to zero is the
-		// value-neutrality (Lagerwert) check the whole feature exists to protect.
+		// Consistency sanity check: the individually-pinned legs sum back to a net-zero order WIP (the 450 the
+		// component issue put INTO WIP, relieved by the two receipts (main 0 + co 59.4) and the CC-170 legs
+		// (main P_WIP Cr 402 minus co P_WIP Dr 11.4)). NOTE this closes by CONSTRUCTION — main carve = total − co
+		// carve is enforced in updatePostCalculationAmountsForCostElement regardless of whether the carve % is
+		// business-correct — so it is NOT an independent value-neutrality proof; the carve / residual / write-down-
+		// sign assertions above are what actually catch a regression.
 		final BigDecimal wholeOrderWip = totalInboundCost.toBigDecimal()          // component issue: Dr P_WIP 450
 				.subtract(mainBooked.toBigDecimal())                              // main receipt:    Cr P_WIP 0
 				.subtract(accumulatedCoBookedBeforeDistribution)                  // co receipt:      Cr P_WIP 59.4
