@@ -359,7 +359,7 @@ class Doc_PPCostCollectorCostDifferenceDistributionTest
 				final String coProductAccumulatedAmt)
 		{
 			final ImmutableList<PPOrderCost> costs = ImmutableList.of(
-					// issued=100 -> the whole order's inbound cost pool
+					// issued=100 -> the whole order's total inbound costs
 					PPOrderCost.builder()
 							.trxType(PPOrderCostTrxType.MaterialIssue)
 							.costSegmentAndElement(segment(componentProductId, costElementId))
@@ -369,7 +369,7 @@ class Doc_PPCostCollectorCostDifferenceDistributionTest
 							// same convention as PPOrderCostDifferenceDistributorCostDetailsTest.addPPOrderCosts.
 							.accumulatedAmount(CostAmount.of(new BigDecimal("100"), currencyId))
 							.build(),
-					// the main product claims none of the pool here (0%): its own residual stays zero throughout,
+					// the main product claims none of the total inbound costs here (0%): its own residual stays zero throughout,
 					// isolating the assertions below to the co-product's own path.
 					PPOrderCost.builder()
 							.trxType(PPOrderCostTrxType.MainProduct)
@@ -378,7 +378,7 @@ class Doc_PPCostCollectorCostDifferenceDistributionTest
 							.accumulatedQty(Quantity.zero(uomEach))
 							.accumulatedAmount(CostAmount.zero(currencyId))
 							.build(),
-					// the co-product carves the WHOLE pool (100%) = 100, but was booked at a different amount at
+					// the co-product carves the WHOLE of the total inbound costs (100%) = 100, but was booked at a different amount at
 					// receipt time - the gap between the two is this row's own residual.
 					PPOrderCost.builder()
 							.trxType(PPOrderCostTrxType.CoProduct)

@@ -139,10 +139,10 @@ public class PPOrderCostsTest
 
 	/**
 	 * A co-product carrying a manual cost price on its product is still valued by its cost distribution percent
-	 * times the input pool: 450 pool × 20% = 90 (Randstücke, 6 kg). The manual cost price is not consulted.
+	 * times the total inbound costs: 450 total inbound costs × 20% = 90 (Randstücke, 6 kg). The manual cost price is not consulted.
 	 */
 	@Test
-	public void testCoProductWithFixedPriceFieldSet_valuedByPercentTimesPool_notFixedPriceTimesQty()
+	public void testCoProductWithFixedPriceFieldSet_valuedByPercentTimesTotalInboundCosts_notFixedPriceTimesQty()
 	{
 		final ProductId mainProductId = createProduct("blocks_main");
 		final ProductId issueProductId = createProduct("input_milk");
@@ -174,7 +174,7 @@ public class PPOrderCostsTest
 
 		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
-		// percent(20%) × pool(450) = 90
+		// percent(20%) × total inbound costs(450) = 90
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
 		// main relieved by the remainder 450 - 90 = 360
 		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("360"));
@@ -186,11 +186,11 @@ public class PPOrderCostsTest
 
 	/**
 	 * AC6 {@code Sigma p <= 100%} guard, single-offender case: the co-products' distribution percent must not
-	 * exceed 100% of the pool, in PERCENT-space — checked and rejected BEFORE any amount is carved from the pool
+	 * exceed 100% of the total inbound costs, in PERCENT-space — checked and rejected BEFORE any amount is carved from the total inbound costs
 	 * (and therefore before the main product could ever be driven negative). Here a single co-product claims 120%.
 	 */
 	@Test
-	public void testConservationGuard_throwsWhenCoProductsExceedPool()
+	public void testConservationGuard_throwsWhenCoProductsExceedTotalInboundCosts()
 	{
 		final ProductId mainProductId = createProduct("blocks_main");
 		final ProductId issueProductId = createProduct("input_milk");
@@ -236,7 +236,7 @@ public class PPOrderCostsTest
 	 * their SUM does (60% + 50% = 110%) - the guard must still reject, naming BOTH offending products and the sum.
 	 */
 	@Test
-	public void testConservationGuard_throwsWhenTwoCoProductsSumExceedsPool()
+	public void testConservationGuard_throwsWhenTwoCoProductsSumExceedsTotalInboundCosts()
 	{
 		final ProductId mainProductId = createProduct("blocks_main");
 		final ProductId issueProductId = createProduct("input_milk");
@@ -393,7 +393,7 @@ public class PPOrderCostsTest
 
 	/**
 	 * A co-product with no manual cost price is valued by the distribution formula:
-	 * {@code coProductCostDistributionPercent × pool} (450 × 20% = 90), main = 360.
+	 * {@code coProductCostDistributionPercent × total inbound costs} (450 × 20% = 90), main = 360.
 	 */
 	@Test
 	public void testBlankFixedPriceField_percentDistributionFormulaApplies()
@@ -437,7 +437,7 @@ public class PPOrderCostsTest
 
 	/**
 	 * Explicit 0% (not null/blank) must carve zero too - {@code computeBlankCoProductAmount}'s guard is
-	 * {@code signum() <= 0}, so a co-product that explicitly distributes 0% claims nothing from the pool.
+	 * {@code signum() <= 0}, so a co-product that explicitly distributes 0% claims nothing from the total inbound costs.
 	 */
 	@Test
 	public void testExplicitZeroPercent_carvesZero()
@@ -478,7 +478,7 @@ public class PPOrderCostsTest
 
 	/**
 	 * AC12: adding a second co-product must leave the first co-product's carve unchanged - each co-product's
-	 * amount is {@code percent x pool} independently, not a remainder-based split among co-products.
+	 * amount is {@code percent x total inbound costs} independently, not a remainder-based split among co-products.
 	 */
 	@Test
 	public void testSecondCoProduct_doesNotChangeFirstCoProductsCarve()
@@ -551,9 +551,9 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * AC13 pool-cap: a co-product's carve is {@code percent x pool}, independent of its received qty
+	 * AC13 total-inbound-costs cap: a co-product's carve is {@code percent x total inbound costs}, independent of its received qty
 	 * ({@code accumulatedQty}) - a larger received quantity must NOT raise the co-product's total claim on the
-	 * pool. Same percent (20%) and pool (450), qty 1 vs qty 100 -> identical 90 carve both times.
+	 * total inbound costs. Same percent (20%) and total inbound costs (450), qty 1 vs qty 100 -> identical 90 carve both times.
 	 */
 	@Test
 	public void testReceivedQtyDoesNotRaiseTotalClaim()
@@ -620,7 +620,7 @@ public class PPOrderCostsTest
 	/**
 	 * A co-product whose {@code coProductCostDistributionPercent} is NULL (the DAO leaves it nullable, especially
 	 * under Moving Average Invoice) must not NPE in the post-calculation: a null / non-positive percent yields a
-	 * ZERO co-product share, so the main product keeps the full input pool.
+	 * ZERO co-product share, so the main product keeps the whole of the total inbound costs.
 	 */
 	@Test
 	public void testBlankCoProduct_nullDistributionPercent_noNpe_zeroShare()
@@ -655,7 +655,7 @@ public class PPOrderCostsTest
 
 		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
-		// null distribution percent -> zero co-product share (no NPE); main keeps the full pool
+		// null distribution percent -> zero co-product share (no NPE); main keeps the whole of the total inbound costs
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(BigDecimal.ZERO);
 		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("450"));
 	}
@@ -663,7 +663,7 @@ public class PPOrderCostsTest
 	/**
 	 * The invariant that makes the order's WIP clear: leg B (the co-product receipt valuation in the
 	 * costing-method handlers, via {@link PPOrderCosts#getBlankCoProductReceiptAmount}) must book the IDENTICAL
-	 * amount as leg A (the co-product's post-calculation relief). Here 450 pool × 1/6 = 75.0002 at precision 4.
+	 * amount as leg A (the co-product's post-calculation relief). Here 450 total inbound costs × 1/6 = 75.0002 at precision 4.
 	 */
 	@Test
 	public void getBlankCoProductReceiptAmount_matchesLegAPostCalculation()
@@ -705,7 +705,7 @@ public class PPOrderCostsTest
 
 		// leg B books exactly what leg A relieved -> co-product residual is 0 -> the order's WIP clears
 		assertThat(legB_receiptAmount).isEqualTo(legA_postCalculationAmount);
-		// and it is the 1/qty share of the 450 pool (450 x 1/6 = 75.0002 at precision 4)
+		// and it is the 1/qty share of the 450 total inbound costs (450 x 1/6 = 75.0002 at precision 4)
 		assertThat(legB_receiptAmount.toBigDecimal()).isEqualByComparingTo(new BigDecimal("75.0002"));
 	}
 

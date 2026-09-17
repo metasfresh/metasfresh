@@ -98,8 +98,8 @@ class ManufacturingCoProductPartialReceiptTest
 	private static final String COPRODUCT_COST_PRICE = "10";
 	private static final String COPRODUCT_CURRENT_QTY = "0";
 
-	/** the order's inbound cost pool (e.g. a material issue already booked) - qty-independent, stays fixed across both receipts */
-	private static final String INBOUND_POOL_AMOUNT = "450";
+	/** the order's total inbound costs (e.g. a material issue already booked) - qty-independent, stays fixed across both receipts */
+	private static final String TOTAL_INBOUND_COSTS_AMOUNT = "450";
 
 	private static final BigDecimal FIRST_RECEIPT_QTY = new BigDecimal("3");
 	private static final BigDecimal SECOND_RECEIPT_QTY = new BigDecimal("3");
@@ -271,7 +271,7 @@ class ManufacturingCoProductPartialReceiptTest
 
 	/**
 	 * The rows {@code CreatePPOrderCostsCommand} leaves behind for a freshly created order: a main-product row
-	 * (mandatory - post-calculation requires exactly one per cost element), an inbound material-issue pool (fixed,
+	 * (mandatory - post-calculation requires exactly one per cost element), total inbound costs from a material issue (fixed,
 	 * qty-independent - the very thing the old full-share path multiplied by a percent on every single receipt),
 	 * and the co-product row itself, carrying the BOM's qty-distribution percent (1/6, as the co-product is
 	 * eventually received across the two 3kg receipts below).
@@ -282,7 +282,7 @@ class ManufacturingCoProductPartialReceiptTest
 				.trxType(PPOrderCostTrxType.MaterialIssue)
 				.costSegmentAndElement(utils.extractCostSegmentAndElement(firstReceiptRequest().withProductId(issueProductId)))
 				.price(costPrice("0"))
-				.accumulatedAmount(CostAmount.of(new BigDecimal(INBOUND_POOL_AMOUNT), currencyId))
+				.accumulatedAmount(CostAmount.of(new BigDecimal(TOTAL_INBOUND_COSTS_AMOUNT), currencyId))
 				.accumulatedQty(Quantity.zero(uomEach))
 				.build();
 
