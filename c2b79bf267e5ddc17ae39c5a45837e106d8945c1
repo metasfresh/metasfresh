@@ -1,0 +1,7 @@
+checking_base_sha: 3b298c887510c7a4b77ae4d97fc6e86e9bee7655
+previous_check_retries: []
+previous_failed_batches: []
+pull_requests:
+  - number: 25969
+    scopes: []
+scopes: []
