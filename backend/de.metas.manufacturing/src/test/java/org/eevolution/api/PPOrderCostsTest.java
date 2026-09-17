@@ -660,9 +660,11 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * The invariant that makes the order's WIP clear: leg B (the co-product receipt valuation in the
-	 * costing-method handlers, via {@link PPOrderCosts#getBlankCoProductReceiptAmount}) must book the IDENTICAL
-	 * amount as leg A (the co-product's post-calculation relief). Here 450 total inbound costs × 1/6 = 75.0002 at precision 4.
+	 * Exercises {@link PPOrderCosts#getBlankCoProductReceiptAmount} as a SUPERSEDED reference formula — it is NOT
+	 * how the shipped handlers value a co-product receipt (they book current-cost × received-qty per receipt and
+	 * let the CC-170 distributor apply the carve once at close; this helper has no production callers). The test
+	 * only pins the formula itself: the helper returns the same amount leg A relieves on post-calculation, i.e.
+	 * the co-product's cost-distribution share of the 450 total inbound costs (450 × 1/6 = 75.0002 at precision 4).
 	 */
 	@Test
 	public void getBlankCoProductReceiptAmount_matchesLegAPostCalculation()

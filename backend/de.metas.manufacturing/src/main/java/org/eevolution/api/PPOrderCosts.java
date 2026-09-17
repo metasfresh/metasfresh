@@ -346,11 +346,17 @@ public final class PPOrderCosts
 	}
 
 	/**
-	 * The amount a co-product receipt must capitalize to inventory: the co-product's share of the order's
-	 * total inbound costs (cost-distribution percent) for its cost element - the IDENTICAL amount
-	 * {@link #updatePostCalculationAmountsForCostElement} books as the co-product's post-calculation relief
-	 * (leg A). A costing-method handler values the co-product receipt (leg B) at this amount so both legs book
-	 * the same value, cost is conserved and the order's WIP clears.
+	 * SUPERSEDED reference formula - NOT used by the shipped receipt valuation.
+	 * <p>
+	 * It computes the co-product's cost-distribution share of the order's total inbound costs (the same carve
+	 * {@link #updatePostCalculationAmountsForCostElement} applies on leg A). It was intended for a costing-method
+	 * handler to value the co-product receipt (leg B) at the identical amount, so both legs booked the same value.
+	 * The shipped handlers instead value a co-product receipt at its CURRENT M_Cost × received-qty per receipt
+	 * ({@code ManufacturingAveragePOCostingMethodHandler} / {@code ...MovingAverageInvoice...} /
+	 * {@code ...LastPO...}), leaving the make-vs-average delta in WIP; the per-product percent carve is applied
+	 * once at order close by the CC-170 cost-difference distributor, not per receipt. This method therefore has no
+	 * production callers - only {@code PPOrderCostsTest} exercises it as a reference formula. Kept for reference
+	 * (removal pending); contrast {@link #getByProductReceiptAmount}, which IS the live by-product receipt value.
 	 */
 	public CostAmount getBlankCoProductReceiptAmount(
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
