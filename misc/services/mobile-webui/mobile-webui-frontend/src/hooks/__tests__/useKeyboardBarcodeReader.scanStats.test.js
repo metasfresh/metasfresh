@@ -113,9 +113,8 @@ describe('per-scan delivery stats on the completed scan', () => {
     expect(stats.scanMaxCharGapMs).toBeLessThan(RATE_MS);
   });
 
-  // gapMs is stall-immune post-fix, so it alone cannot show a blocked thread. The wall-clock
-  // counterpart can: the two diverge by exactly the block, which is what says whether the
-  // event-clock fix is saving scans in the field.
+  // gapMs is stall-immune, so it alone cannot show a blocked thread; the wall-clock counterpart
+  // can, because the two diverge by exactly the block.
   it('separates a blocked thread from a real pause', () => {
     const onReadDone = mountReader();
     // Characters keep their 1 ms cadence; the WALL clock jumps 1200 ms mid-scan, i.e. the thread

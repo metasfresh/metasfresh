@@ -186,9 +186,8 @@ export const useKeyboardBarcodeReader = ({
         // unprotected code. A partial HU QR is exempt until idleAbandonMs, so its count is advisory.
         if (bufferRef.current) {
           if (gapMs > scanMaxGapRef.current) scanMaxGapRef.current = gapMs;
-          // Same gap on the WALL clock. gapMs is stall-immune, so the two differ only by how long
-          // the thread was blocked - which is the one signal that says whether the event-clock fix
-          // is actually saving scans here.
+          // Same gap on the WALL clock. gapMs is stall-immune, so the two differ by exactly how
+          // long the thread was blocked.
           const procGapMs = now - lastKeyTimeRef.current;
           if (procGapMs > scanMaxProcGapRef.current) scanMaxProcGapRef.current = procGapMs;
           if (gapMs >= chunkGapMs) scanChunkCountRef.current += 1;
