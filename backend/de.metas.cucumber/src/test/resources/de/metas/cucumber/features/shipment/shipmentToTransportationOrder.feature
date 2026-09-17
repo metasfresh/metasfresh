@@ -48,8 +48,8 @@ Feature: shipment to transportation order
   @from:cucumber
   Scenario: TC2 - adding a shipment with shipped HUs still creates one package per HU (regression guard)
     Given metasfresh contains M_Products:
-      | Identifier | Name         |
-      | p_hu       | to_huProduct |
+      | Identifier | Name              |
+      | p_hu       | to_huProduct_pair |
     And metasfresh contains M_PricingSystems
       | Identifier | Name     | Value    | OPT.IsActive |
       | ps_2       | to_hu_ps | to_hu_ps | true         |
@@ -71,13 +71,19 @@ Feature: shipment to transportation order
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | inv_2                     | 2023-05-02   | 540008         |
+    # two separate inventory lines -> two separate HUs for the same product, so the shipment ends
+    # up with 2 top-level HUs (see the two "there are added M_HUs" rows below): the with-HU branch
+    # creates one M_Package per HU (2), while the whole-shipment fallback would still only ever
+    # create 1 - this is what makes the "exactly 2" assertion below discriminate between them.
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
-      | inv_2                     | inv_l_2                       | p_hu                    | 0       | 5        | PCE          |
+      | inv_2                     | inv_l_2                       | p_hu                    | 0       | 3        | PCE          |
+      | inv_2                     | inv_l_2b                      | p_hu                    | 0       | 2        | PCE          |
     And the inventory identified by inv_2 is completed
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inv_l_2                       | hu_2               |
+      | inv_l_2b                      | hu_2b              |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
       | o_2        | true    | cust_2                   | 2023-06-01  | to_hu_po        |
@@ -98,7 +104,7 @@ Feature: shipment to transportation order
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_2                            | ship_2                | CO            |
     And M_ShipperTransportation_AddShipments is invoked for shipment ship_2 and transportation order: to_2
-    Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: to_2
+    Then metasfresh contains exactly 2 M_ShippingPackages for transportation order: to_2
     And validate M_ShipperTransportation_ID for shipment ship_2 is set
 
   @from:cucumber
