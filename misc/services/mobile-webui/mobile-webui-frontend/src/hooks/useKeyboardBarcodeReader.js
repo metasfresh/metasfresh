@@ -32,7 +32,7 @@ export const useKeyboardBarcodeReader = ({
   // comparison can never straddle the two epochs.
   const lastKeyEventTimeRef = useRef(0);
   const lastKeyHadEventTimeRef = useRef(false);
-  
+
   // useLayoutEffect (not useEffect): the keydown listener must attach/detach synchronously in the
   // commit phase, BEFORE the browser paints — not in a post-paint passive effect. This closes two
   // sub-frame gaps that would otherwise silently drop a scan:
