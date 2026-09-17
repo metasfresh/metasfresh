@@ -231,7 +231,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 				.build();
 
 		// what every costing-method handler does after an issue or a receipt
-		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2), CostingMethod.MovingAverageInvoice);
+		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2));
 
 		ppOrderCostBL.save(orderCosts);
 	}

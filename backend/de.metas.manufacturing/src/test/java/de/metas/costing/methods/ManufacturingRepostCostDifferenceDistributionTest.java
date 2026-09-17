@@ -329,7 +329,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 		orderId = createCompletedPPOrder();
 		distributionCollectorId = createCostDifferenceDistributionCollector();
 
-		seedOrderCostsWithResidual(handlerUnderTest.costingMethod);
+		seedOrderCostsWithResidual();
 		saveMainProductCurrentCost();
 	}
 
@@ -355,7 +355,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 	}
 
 	/** The {@code PP_Order_Cost} rows a completed order carries: an issue and a main-product receipt, leaving a residual. */
-	private void seedOrderCostsWithResidual(@NonNull final CostingMethod costingMethod)
+	private void seedOrderCostsWithResidual()
 	{
 		final BigDecimal issuedQty = new BigDecimal(ISSUED_QTY);
 		final BigDecimal receivedQty = new BigDecimal(RECEIVED_QTY);
@@ -384,9 +384,8 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.build();
 
 		// what every costing-method handler does after an issue or a receipt; the seed carries no co-products, so the
-		// costing method only decides the (unreached) co-product cost-distribution gate - thread the method under test
-		// through so the seed stays consistent across every @EnumSource leg.
-		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2), costingMethod);
+		// post-calculation only reflects the main-product residual.
+		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2));
 
 		ppOrderCostBL.save(orderCosts);
 	}
