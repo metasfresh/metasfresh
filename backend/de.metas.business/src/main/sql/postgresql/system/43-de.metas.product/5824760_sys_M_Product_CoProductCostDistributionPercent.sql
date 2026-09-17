@@ -32,8 +32,14 @@ UPDATE AD_Element_Trl SET Name='Co-Product Cost Distribution Percent', PrintName
 WHERE AD_Element_ID=585471 AND AD_Language='en_US'
 ;
 
--- de_DE/de_CH rows keep IsTranslated='N' as seeded above (convention: only en_US is marked
--- actively translated when overridden; see sibling migration 5619940_sys_gh12205_add_product_alternatives.sql).
+-- de_DE/de_CH rows already carry the correct German base text (seeded from AD_Element above);
+-- flip them to actively-translated (convention: see sibling 5824770_sys_AD_Message_..._OutOfRange.sql).
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-16 10:00:13','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Element_ID=585471 AND AD_Language='de_DE'
+;
+UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-16 10:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Element_ID=585471 AND AD_Language='de_CH'
+;
 
 -- AD_Column (reference 22 = Number, the metasfresh convention for a percent value — see e.g.
 -- GL_DistributionLine.Percent; there is no dedicated "Percent" AD_Reference. Nullable, not mandatory.)

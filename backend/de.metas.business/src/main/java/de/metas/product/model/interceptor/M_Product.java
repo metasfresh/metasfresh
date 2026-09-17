@@ -67,7 +67,7 @@ public class M_Product
 {
 
 	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
-	private static final AdMessageKey MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE = AdMessageKey.of("de.metas.product.model.interceptor.M_Product.CoProductCostDistributionPercent_OutOfRange");
+	public static final AdMessageKey MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE = AdMessageKey.of("de.metas.product.model.interceptor.M_Product.CoProductCostDistributionPercent_OutOfRange");
 
 	private static final BigDecimal COPRODUCT_COST_DISTRIBUTION_PERCENT_MIN = BigDecimal.ZERO;
 	private static final BigDecimal COPRODUCT_COST_DISTRIBUTION_PERCENT_MAX = BigDecimal.valueOf(100);

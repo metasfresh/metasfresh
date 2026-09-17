@@ -495,53 +495,53 @@ Feature: Co-product valuation via cost-distribution percent
 
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | mainProd4Item                      | packTUItem                 | mainProd4                | 100 | 2022-01-01 |
-      | coProdA4Item                       | packTUItem                 | coProdA4                 | 100 | 2022-01-01 |
-      | coProdB4Item                       | packTUItem                 | coProdB4                 | 100 | 2022-01-01 |
+      | mainProd4Item                      | packTUItem                 | mainProd4               | 100 | 2022-01-01 |
+      | coProdA4Item                       | packTUItem                 | coProdA4                | 100 | 2022-01-01 |
+      | coProdB4Item                       | packTUItem                 | coProdB4                | 100 | 2022-01-01 |
 
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | bom4       | mainProd4                | 2021-01-02 | bomVersion4                          |
+      | bom4       | mainProd4               | 2021-01-02 | bomVersion4                          |
     And metasfresh contains PP_Product_BOMLines
       | Identifier   | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch | ComponentType |
-      | inputLine4   | bom4                         | inputProd4               | 2021-01-02 | 5        | CO            |
-      | coProdALine4 | bom4                         | coProdA4                 | 2021-01-02 | -1       | CP            |
-      | coProdBLine4 | bom4                         | coProdB4                 | 2021-01-02 | -1       | CP            |
+      | inputLine4   | bom4                         | inputProd4              | 2021-01-02 | 5        | CO            |
+      | coProdALine4 | bom4                         | coProdA4                | 2021-01-02 | -1       | CP            |
+      | coProdBLine4 | bom4                         | coProdB4                | 2021-01-02 | -1       | CP            |
     And the PP_Product_BOM identified by bom4 is completed
 
     And metasfresh contains PP_Product_Plannings
       | Identifier | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | prodPlan4  | mobileWorkflow                | mainProd4                | bomVersion4                              | false        |
+      | prodPlan4  | mobileWorkflow                | mainProd4               | bomVersion4                              | false        |
 
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
-      | ppOrder4                | MOP         | mainProd4                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan4                              |
+      | ppOrder4               | MOP         | mainProd4               | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan4                             |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine4                  | ppOrder4                | inputProd4               | 30           | false           | PCE               | CO            |
-      | coProdABomLine4                | ppOrder4                | coProdA4                 | -6           | false           | PCE               | CP            |
-      | coProdBBomLine4                | ppOrder4                | coProdB4                 | -6           | false           | PCE               | CP            |
+      | inputBomLine4                  | ppOrder4               | inputProd4              | 30           | false           | PCE               | CO            |
+      | coProdABomLine4                | ppOrder4               | coProdA4                | -6           | false           | PCE               | CP            |
+      | coProdBBomLine4                | ppOrder4               | coProdB4                | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU4 is issued whole to PP_Order_BOMLine inputBomLine4
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
       | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder4    | mainHU4             | N               | 0     | N               | 1     | N               | 24          | mainProd4Item                       |
+      | ppOrder4    | mainHU4            | N               | 0     | N               | 1     | N               | 24          | mainProd4Item                      |
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
       | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder4    | coProdABomLine4      | coHUA4              | N               | 0     | N               | 1     | N               | 6           | coProdA4Item                        |
+      | ppOrder4    | coProdABomLine4     | coHUA4             | N               | 0     | N               | 1     | N               | 6           | coProdA4Item                       |
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
       | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder4    | coProdBBomLine4      | coHUB4              | N               | 0     | N               | 1     | N               | 6           | coProdB4Item                        |
+      | ppOrder4    | coProdBBomLine4     | coHUB4             | N               | 0     | N               | 1     | N               | 6           | coProdB4Item                       |
 
     When complete planning for PP_Order:
       | PP_Order_ID.Identifier |
-      | ppOrder4                |
+      | ppOrder4               |
 
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
-      | coReceiptCostCollectorA4        | ppOrder4                | coProdA4                 | -6          | CO        | MixVariance       |
-      | coReceiptCostCollectorB4        | ppOrder4                | coProdB4                 | -6          | CO        | MixVariance       |
+      | coReceiptCostCollectorA4        | ppOrder4               | coProdA4                | -6          | CO        | MixVariance       |
+      | coReceiptCostCollectorB4        | ppOrder4               | coProdB4                | -6          | CO        | MixVariance       |
     And the PP_Cost_Collector identified by coReceiptCostCollectorA4 was rejected at posting with error containing exceeds 100% for product(s)
     And the PP_Cost_Collector identified by coReceiptCostCollectorB4 was rejected at posting with error containing exceeds 100% for product(s)
 
@@ -558,7 +558,7 @@ Feature: Co-product valuation via cost-distribution percent
     # amount is carved, so the finished good's post-calculation amount is untouched (still its initial 0).
     And PP_Order_Cost are found:
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder4                | mainProd4                | AveragePO        | MR                    | 0                  |
+      | ppOrder4               | mainProd4               | AveragePO        | MR                    | 0                  |
 
   @from:cucumber
   @Id:S29488_TC9

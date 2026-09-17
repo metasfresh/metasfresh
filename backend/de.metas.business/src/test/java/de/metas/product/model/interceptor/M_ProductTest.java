@@ -23,7 +23,6 @@ package de.metas.product.model.interceptor;
  */
 
 import de.metas.business.BusinessTestHelper;
-import de.metas.i18n.AdMessageKey;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -47,8 +46,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
  */
 public class M_ProductTest
 {
-	private static final AdMessageKey MSG_OUT_OF_RANGE = AdMessageKey.of("de.metas.product.model.interceptor.M_Product.CoProductCostDistributionPercent_OutOfRange");
-
 	private M_Product interceptor;
 
 	@BeforeEach
@@ -71,7 +68,7 @@ public class M_ProductTest
 		final I_M_Product product = createProduct(new BigDecimal("120"));
 		assertThatThrownBy(() -> interceptor.beforeSave(product))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(MSG_OUT_OF_RANGE.toAD_Message());
+				.hasMessageContaining(M_Product.MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE.toAD_Message());
 	}
 
 	@Test
@@ -80,7 +77,7 @@ public class M_ProductTest
 		final I_M_Product product = createProduct(new BigDecimal("-5"));
 		assertThatThrownBy(() -> interceptor.beforeSave(product))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(MSG_OUT_OF_RANGE.toAD_Message());
+				.hasMessageContaining(M_Product.MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE.toAD_Message());
 	}
 
 	@Test
@@ -126,7 +123,7 @@ public class M_ProductTest
 		final I_M_Product product = createProduct(new BigDecimal("100.01"));
 		assertThatThrownBy(() -> interceptor.beforeSave(product))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(MSG_OUT_OF_RANGE.toAD_Message());
+				.hasMessageContaining(M_Product.MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE.toAD_Message());
 	}
 
 	/**
@@ -138,6 +135,6 @@ public class M_ProductTest
 		final I_M_Product product = createProduct(new BigDecimal("-0.01"));
 		assertThatThrownBy(() -> interceptor.beforeSave(product))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(MSG_OUT_OF_RANGE.toAD_Message());
+				.hasMessageContaining(M_Product.MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE.toAD_Message());
 	}
 }
