@@ -76,7 +76,8 @@ describe('per-scan delivery stats on the completed scan', () => {
     expect(stats.scanCharCount).toBe(13);
     expect(stats.scanMaxCharGapMs).toBeLessThan(RATE_MS);
     expect(stats.scanChunkCount).toBe(0);
-    expect(stats.scanDurationMs).toBeGreaterThan(0);
+    // Delivery only: 13 characters 1 ms apart. Must NOT include the idle wait that follows.
+    expect(stats.scanDurationMs).toBe(12);
   });
 
   it('counts chunks and reports the worst gap when a code arrives in pieces', () => {
@@ -89,7 +90,7 @@ describe('per-scan delivery stats on the completed scan', () => {
     expect(code).toBe(PLAIN); // non-vacuity: the scan really did survive intact
     expect(stats.scanChunkCount).toBe(2);
     expect(stats.scanMaxCharGapMs).toBe(600);
-    expect(stats.scanDurationMs).toBeGreaterThanOrEqual(1200);
+    expect(stats.scanDurationMs).toBe(1210); // 10 x 1 ms steps between chars + two 600 ms pauses
   });
 
   it('shows a near-split: the worst gap approaching rateMs without crossing it', () => {

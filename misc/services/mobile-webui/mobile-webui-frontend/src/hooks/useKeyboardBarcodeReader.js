@@ -62,7 +62,10 @@ export const useKeyboardBarcodeReader = ({
     const completeScan = ({ shouldEnforceMinLength }) => {
       const code = bufferRef.current;
       const stats = {
-        scanDurationMs: scanStartTimeRef.current ? Date.now() - scanStartTimeRef.current : null,
+        // First to LAST character, not to completion: a plain barcode has no content signal, so
+        // completion waits out rateMs of silence first, and including that would make the same
+        // delivery speed read differently per code type.
+        scanDurationMs: scanStartTimeRef.current ? lastKeyTimeRef.current - scanStartTimeRef.current : null,
         scanCharCount: code.length,
         scanMaxCharGapMs: Math.round(scanMaxGapRef.current),
         scanChunkCount: scanChunkCountRef.current,
