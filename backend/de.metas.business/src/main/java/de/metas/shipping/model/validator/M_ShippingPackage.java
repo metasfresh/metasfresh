@@ -43,6 +43,7 @@ import de.metas.util.Services;
 public class M_ShippingPackage
 {
 	final MPackageRepository packageRepo = SpringContextHolder.instance.getBean(MPackageRepository.class);
+	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 
 	@Init
 	public void setupCaching()
@@ -92,6 +93,6 @@ public class M_ShippingPackage
 		final InOutId inOutId = InOutId.ofRepoIdOrNull(shippingPackage.getM_InOut_ID());
 		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoIdOrNull(shippingPackage.getM_ShipperTransportation_ID());
 
-		Services.get(IShipperTransportationBL.class).unlinkShipmentIfOrphaned(inOutId, shipperTransportationId);
+		shipperTransportationBL.unlinkShipmentIfOrphaned(inOutId, shipperTransportationId);
 	}
 }
