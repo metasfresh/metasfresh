@@ -36,6 +36,7 @@ import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CurrentCost;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
@@ -66,6 +67,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Cost;
 import org.compiere.util.Env;
@@ -80,6 +82,7 @@ import org.eevolution.api.impl.MockedProductCostingBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -103,6 +106,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>
  * Every expected figure below is an independent literal, never a value read back out of the code under test.
  */
+@ExtendWith(AdempiereTestWatcher.class)
 class ManufacturingAveragePOCoProductWriteDownTest
 {
 	private final ClientId clientId = ClientId.ofRepoId(1);
@@ -129,9 +133,6 @@ class ManufacturingAveragePOCoProductWriteDownTest
 	private PPCostCollectorId mainReceiptCollectorId;
 	private PPCostCollectorId coReceiptCollectorId;
 	private PPCostCollectorId ccDistributionCollectorId;
-
-	/** The co-product's booked value, captured BEFORE the CC-170 discharge folds the residual back onto the row. */
-	private BigDecimal accumulatedCoBookedBeforeDistribution;
 
 	@BeforeEach
 	void setUp()
@@ -211,7 +212,8 @@ class ManufacturingAveragePOCoProductWriteDownTest
 		final CostAmount totalInboundCost = accumulatedOf(rawProductId);
 		assertThat(totalInboundCost.toBigDecimal()).isEqualByComparingTo("450");
 
-		assertThat(accumulatedOf(coProductId).toBigDecimal()).isEqualByComparingTo("59.4"); // booked at own current cost
+		final BigDecimal coBookedBD = accumulatedOf(coProductId).toBigDecimal();
+		assertThat(coBookedBD).isEqualByComparingTo("59.4");                                // booked at own current cost
 		assertThat(carveOf(coProductId).toBigDecimal()).isEqualByComparingTo("48");         // p × 450
 		assertThat(residualOf(coProductId).toBigDecimal()).isEqualByComparingTo("-11.4");   // 48 − 59.4: a write-DOWN
 
@@ -276,15 +278,22 @@ class ManufacturingAveragePOCoProductWriteDownTest
 		assertThat(sumDr(allLegs)).isEqualByComparingTo(sumCr(allLegs));
 
 		//
-		// Consistency sanity check: the individually-pinned legs sum back to a net-zero order WIP (the 450 the
-		// component issue put INTO WIP, relieved by the two receipts (main 0 + co 59.4) and the CC-170 legs
-		// (main P_WIP Cr 402 minus co P_WIP Dr 11.4)). NOTE this closes by CONSTRUCTION — main carve = total − co
-		// carve is enforced in updatePostCalculationAmountsForCostElement regardless of whether the carve % is
-		// business-correct — so it is NOT an independent value-neutrality proof; the carve / residual / write-down-
-		// sign assertions above are what actually catch a regression.
+		// Independent value-neutrality evidence, read FRESH from the co-product's current cost AFTER the CC-170
+		// reprice - not recombined from the assertions above: the write-down moved its cost price to
+		// (59.4 − 11.4) / 6 = 8, so its 6 on-hand units are now valued at exactly the 48 carve (matching the
+		// cucumber sibling's post-distribution InventoryValueAcctAmt 48 / Acct_CostPrice 8).
+		final CurrentCost coCurrentCostAfter = utils.getCurrentCostForUpdate(segmentOf(coProductId, coReceiptCollectorId, "6"));
+		assertThat(coCurrentCostAfter.getCurrentQty().toBigDecimal()).isEqualByComparingTo("6");
+		assertThat(coCurrentCostAfter.getCostPrice().toBigDecimal()).isEqualByComparingTo("8");
+
+		//
+		// Executable documentation of the whole-order WIP flow (a restated arithmetic identity, NOT extra coverage):
+		// the 450 the component issue put INTO WIP is relieved by the two receipts (main 0 + co 59.4) and the CC-170
+		// legs (main P_WIP Cr 402 minus co P_WIP Dr 11.4). It closes by construction once the terms above hold - the
+		// carve / residual / write-down-sign and current-cost assertions are what actually catch a regression.
 		final BigDecimal wholeOrderWip = totalInboundCost.toBigDecimal()          // component issue: Dr P_WIP 450
 				.subtract(mainBooked.toBigDecimal())                              // main receipt:    Cr P_WIP 0
-				.subtract(accumulatedCoBookedBeforeDistribution)                  // co receipt:      Cr P_WIP 59.4
+				.subtract(coBookedBD)                                             // co receipt:      Cr P_WIP 59.4
 				.subtract(mainWip.getAbsAmt().toBigDecimal())                     // CC-170 main:     Cr P_WIP 402
 				.add(coWip.getAbsAmt().toBigDecimal());                           // CC-170 co:       Dr P_WIP 11.4
 		assertThat(wholeOrderWip).isEqualByComparingTo("0");
@@ -419,13 +428,7 @@ class ManufacturingAveragePOCoProductWriteDownTest
 
 	private CostAmount accumulatedOf(final ProductId productId)
 	{
-		final CostAmount accumulated = orderCostOf(productId).getAccumulatedAmount();
-		if (productId.equals(coProductId))
-		{
-			// capture the pre-distribution booked value for the whole-order WIP check (CC-170 folds the residual in)
-			accumulatedCoBookedBeforeDistribution = accumulated.toBigDecimal();
-		}
-		return accumulated;
+		return orderCostOf(productId).getAccumulatedAmount();
 	}
 
 	private CostAmount carveOf(final ProductId productId)
