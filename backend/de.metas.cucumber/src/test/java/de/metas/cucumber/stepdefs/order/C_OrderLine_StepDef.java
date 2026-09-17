@@ -487,6 +487,42 @@ public class C_OrderLine_StepDef
 	}
 
 	/**
+	 * Asserts that a {@code C_OrderLine} still points to the exact same {@code M_AttributeSetInstance} row
+	 * it was assigned (identity, not just equal attribute values).
+	 * <p>
+	 * Unlike {@code validate C_OrderLine:}'s {@code OPT.M_AttributeSetInstance_ID} column — which only compares
+	 * the two ASIs' {@code AttributesKeys} (equal attribute *values*, e.g. an attribute-price-template ASI vs. the
+	 * order line's own, distinct, DB row) — this step asserts id-equality: the line must NOT have been silently
+	 * re-pointed to a cloned ASI row.
+	 * <p>
+	 * Required columns: {@code C_OrderLine_ID} (identifier-ref), {@code M_AttributeSetInstance_ID} (identifier-ref).
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate C_OrderLine keeps its own M_AttributeSetInstance:
+	 *   | C_OrderLine_ID | M_AttributeSetInstance_ID |
+	 *   | orderLine      | asi                       |
+	 * </pre>
+	 */
+	@And("validate C_OrderLine keeps its own M_AttributeSetInstance:")
+	public void validate_C_OrderLine_keeps_own_M_AttributeSetInstance(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+				.forEach(row -> {
+					final I_C_OrderLine orderLine = orderLineTable.get(row.getAsIdentifier());
+					InterfaceWrapperHelper.refresh(orderLine);
+
+					final StepDefDataIdentifier attributeSetInstanceIdentifier = row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID);
+					final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+
+					assertThat(orderLine.getM_AttributeSetInstance_ID())
+							.as("M_AttributeSetInstance_ID for C_OrderLine Identifier=%s must not have been cloned", row.getAsIdentifier().getAsString())
+							.isEqualTo(expectedASI.getM_AttributeSetInstance_ID());
+				});
+	}
+
+	/**
 	 * Polling variant of {@code validate C_OrderLine:} — retries the same assertion loop until it
 	 * passes or {@code maxWaitSec} elapses. Useful when an async listener (e.g.
 	 * {@code UpdateSalesOrderFromPurchaseOrderProjectListener}) needs time to push a value onto the

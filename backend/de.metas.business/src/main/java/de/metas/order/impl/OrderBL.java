@@ -1539,6 +1539,14 @@ public class OrderBL implements IOrderBL
 		}
 		else
 		{
+			if (!attributeSetInstanceBL.getImmutableAttributeSetById(asiId).hasAttribute(AttributeConstants.ATTR_Project))
+			{
+				// No ProjectValue instance on this ASI and no project on the line: nothing to clear.
+				// Creating one here would materialize an empty attribute (and clone the ASI)
+				// on every project-less order line.
+				return;
+			}
+
 			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, null);
 			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 		}

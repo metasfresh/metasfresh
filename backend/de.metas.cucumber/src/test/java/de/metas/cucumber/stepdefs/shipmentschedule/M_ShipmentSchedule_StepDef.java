@@ -115,7 +115,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -196,6 +199,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
@@ -924,6 +928,44 @@ public class M_ShipmentSchedule_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
 				.forEach(row -> validateShipmentSchedule(timeoutSec, row));
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts that no {@code M_AttributeInstance} row exists for the given attribute on the
+	 *                   {@code M_ShipmentSchedule}'s CURRENT ASI (as opposed to a row that exists but carries a
+	 *                   null value). The ASI is resolved fresh from the shipment-schedule record — never from a
+	 *                   setup-time ASI identifier — because the schedule is given its own private ASI copied
+	 *                   from the order line via {@code AttributeSetInstanceBL.syncAttributesToASIAware}
+	 *                   (called from {@code OrderLineShipmentScheduleHandler}), so a captured identifier would
+	 *                   not follow it. Twin of {@code M_AttributeSetInstance_StepDef.validate_M_AttributeInstance_absent}
+	 *                   for the {@code C_OrderLine} case.
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the shipment schedule whose current ASI is checked.<br>
+	 *   <b>AttributeCode</b> — (required) the {@code M_Attribute.Value} that must be absent.<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate M_ShipmentSchedule M_AttributeInstance is absent:
+	 *   | M_ShipmentSchedule_ID | AttributeCode |
+	 *   | shipmentSchedule      | ProjectValue  |
+	 * </pre>
+	 */
+	@And("validate M_ShipmentSchedule M_AttributeInstance is absent:")
+	public void validate_M_ShipmentSchedule_AttributeInstance_absent(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final AttributeCode attributeCode = AttributeCode.ofString(row.getAsString("AttributeCode"));
+
+			final I_M_ShipmentSchedule shipmentSchedule = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIn(shipmentScheduleTable);
+			InterfaceWrapperHelper.refresh(shipmentSchedule);
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
+
+			final ImmutableAttributeSet asi = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
+
+			assertThat(asi.hasAttribute(attributeCode))
+					.as("M_AttributeInstance for %s must NOT exist on M_ShipmentSchedule %s's current ASI %s", attributeCode, shipmentSchedule.getM_ShipmentSchedule_ID(), asiId)
+					.isFalse();
+		});
 	}
 
 	/**
