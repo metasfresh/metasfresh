@@ -164,9 +164,8 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
 
-		// AC15: a by-product receipt always books ZERO, regardless of the by-product's own current M_Cost -
-		// symmetric to the by-product's central post-calculation zeroing in PPOrderCosts. Keyed on isByProduct()
-		// alone, so a stray current cost on the by-product's own product cannot drive the MAI pool negative.
+		// A by-product receipt books ZERO regardless of the by-product's own M_Cost, mirroring its
+		// post-calculation zeroing in PPOrderCosts - so a stray current cost cannot drive the pool negative.
 		final boolean isByProductReceipt = isCoOrByProductReceipt
 				&& orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
 						.map(PPOrderCost::isByProduct)
@@ -186,19 +185,14 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 			}
 			else
 			{
-				// A co-product with no fixed price (the common case) books current-cost x received-qty on EACH
-				// receipt, mirroring the finished-good receipt path below - NOT the full, qty-independent
-				// ShareInbound x percent carve share on every single receipt (that landmine over-relieved WIP by
-				// (N-1) x share across N partial receipts). The single CC-170 true-up (the cost-difference
-				// distributor) now carries the carve, once, at order close.
+				// A co-product books current-cost x received-qty per receipt, like the finished good. The
+				// per-product percent carve is applied once at order close by the CC-170 cost-difference
+				// distributor, not per receipt.
 				amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
 			}
 			requestEffective = request.withAmountAndQty(amt, qty);
-			// Persisted only on this non-reversal path. A reversal leaves the persisted price unchanged,
-			// which is harmless: nothing reads PP_Order_Cost.price between a reversal and the next receipt
-			// (updatePostCalculationAmountsForCostElement reads only accumulatedAmount/postCalculationAmount,
-			// and Doc_PPCostCollector posts from M_CostDetail, never from PP_Order_Cost.price); the next
-			// non-reversal receipt overwrites it.
+			// Snapshot the price on non-reversal receipts only. A reversal leaves the old snapshot in place
+			// harmlessly: nothing reads PP_Order_Cost.price before the next receipt overwrites it.
 			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price);
 		}
 		else
