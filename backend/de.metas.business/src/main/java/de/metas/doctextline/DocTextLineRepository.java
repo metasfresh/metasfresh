@@ -29,6 +29,7 @@ import java.util.Collection;
 public class DocTextLineRepository
 {
 	/** Four decimals, and inserts are midpoints: a gap survives ~13 successive inserts at the same spot before {@link #computeInsertAbovePosition} refuses it. */
+	/** Four decimals, and inserts are midpoints: a gap survives ~13 successive inserts at the same spot before {@link #computeInsertAbovePosition} refuses it. */
 	private static final int LINE_SCALE = 4;
 
 	/** Position given to the first text line ever inserted into an otherwise empty document. */
