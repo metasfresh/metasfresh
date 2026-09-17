@@ -21,6 +21,12 @@ export const useKeyboardBarcodeReader = ({
   // Use refs so values persist across rerenders but don't trigger state updates
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
+  // Per-scan delivery stats for the barcodeScanned event. Mostly reuse of the flush check's gapMs;
+  // scanMaxProcGapRef is its wall-clock sibling, needed because gapMs is stall-immune.
+  const scanStartTimeRef = useRef(0);
+  const scanMaxGapRef = useRef(0);
+  const scanMaxProcGapRef = useRef(0);
+  const scanChunkCountRef = useRef(0);
 
   // Event-creation time of the last keystroke, with a flag for which clock produced it so a
   // comparison can never straddle the two epochs.
@@ -45,11 +51,17 @@ export const useKeyboardBarcodeReader = ({
     // sysconfig (barcodeScanner.inputText.idleAbandonMillis) the same way rateMs is wired from
     // barcodeScanner.inputText.debounceMillis.
 
+    const chunkGapMs = rateMs / 2;
+
     const resetBuffer = () => {
       bufferRef.current = '';
       lastKeyTimeRef.current = 0;
       lastKeyEventTimeRef.current = 0;
       lastKeyHadEventTimeRef.current = false;
+      scanStartTimeRef.current = 0;
+      scanMaxGapRef.current = 0;
+      scanMaxProcGapRef.current = 0;
+      scanChunkCountRef.current = 0;
     };
 
     // Emit the assembled buffer as a completed scan and reset for the next one.
@@ -57,9 +69,19 @@ export const useKeyboardBarcodeReader = ({
     // component, so the refs must already be in their next-scan state.
     const completeScan = ({ shouldEnforceMinLength }) => {
       const code = bufferRef.current;
+      const stats = {
+        // First to LAST character, not to completion: a plain barcode has no content signal, so
+        // completion waits out rateMs of silence first, and including that would make the same
+        // delivery speed read differently per code type.
+        scanDurationMs: scanStartTimeRef.current ? lastKeyTimeRef.current - scanStartTimeRef.current : null,
+        scanCharCount: code.length,
+        scanMaxCharGapMs: Math.round(scanMaxGapRef.current),
+        scanMaxProcessingGapMs: Math.round(scanMaxProcGapRef.current),
+        scanChunkCount: scanChunkCountRef.current,
+      };
       resetBuffer();
       if (code && (!shouldEnforceMinLength || !minLength || code.length >= minLength)) {
-        onReadDone(code);
+        onReadDone(code, stats);
       }
     };
 
@@ -78,7 +100,14 @@ export const useKeyboardBarcodeReader = ({
           }
 
           event.preventDefault(); // Prevent default paste behavior
-          onReadDone(clipboardText);
+          // A paste has no per-character delivery: null, not zero, which would read as instant.
+          onReadDone(clipboardText, {
+            scanDurationMs: null,
+            scanCharCount: clipboardText.length,
+            scanMaxCharGapMs: null,
+            scanMaxProcessingGapMs: null,
+            scanChunkCount: null,
+          });
           resetBuffer();
           return;
         } catch (error) {
@@ -151,6 +180,19 @@ export const useKeyboardBarcodeReader = ({
           // interval-based abandon path below — so a genuinely-stuck code reaches the app as its
           // "QR not recognised" error instead of being silently dropped.
           completeScan({ shouldEnforceMinLength: !isPartial });
+        }
+
+        // chunkGapMs is rateMs/2, so a counted gap is at least halfway to one that would split an
+        // unprotected code. A partial HU QR is exempt until idleAbandonMs, so its count is advisory.
+        if (bufferRef.current) {
+          if (gapMs > scanMaxGapRef.current) scanMaxGapRef.current = gapMs;
+          // Same gap on the WALL clock. gapMs is stall-immune, so the two differ by exactly how
+          // long the thread was blocked.
+          const procGapMs = now - lastKeyTimeRef.current;
+          if (procGapMs > scanMaxProcGapRef.current) scanMaxProcGapRef.current = procGapMs;
+          if (gapMs >= chunkGapMs) scanChunkCountRef.current += 1;
+        } else {
+          scanStartTimeRef.current = now;
         }
 
         bufferRef.current += event.key;

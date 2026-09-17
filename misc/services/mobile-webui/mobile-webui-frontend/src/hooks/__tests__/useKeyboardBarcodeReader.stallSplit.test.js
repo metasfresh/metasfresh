@@ -143,7 +143,7 @@ describe('a main-thread stall must not split a scan', () => {
     // so it completes only on the idle flush - advance past it before asserting delivery.
     goIdleAndTick();
     expect(restarts).toEqual([]);
-    expect(onReadDone).toHaveBeenCalledWith(code);
+    expect(onReadDone).toHaveBeenCalledWith(code, expect.any(Object));
   });
 
   // Crossing the clock source breaks the gap in BOTH directions, so both are pinned: event time ->
@@ -185,7 +185,7 @@ describe('a main-thread stall must not split a scan', () => {
     pressKey('9', { withEventTime: true });
 
     // The pause must have closed the first scan rather than merging '9' into it.
-    expect(onReadDone).toHaveBeenCalledWith(PLAIN_DIGITS);
+    expect(onReadDone).toHaveBeenCalledWith(PLAIN_DIGITS, expect.any(Object));
     expect(restarts.length).toBeGreaterThan(0);
   });
 
@@ -193,6 +193,6 @@ describe('a main-thread stall must not split a scan', () => {
     const { onReadDone, restarts } = mountReader();
     typeWithStall(HU_QR, { stallAtIndex: Math.floor(HU_QR.length / 2), stallMs: 1200 });
     expect(restarts).toEqual([]);
-    expect(onReadDone).toHaveBeenCalledWith(HU_QR);
+    expect(onReadDone).toHaveBeenCalledWith(HU_QR, expect.any(Object));
   });
 });
