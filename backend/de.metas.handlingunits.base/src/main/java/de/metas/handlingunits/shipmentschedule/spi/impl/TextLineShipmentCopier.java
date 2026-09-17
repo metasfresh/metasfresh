@@ -42,9 +42,12 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Copies an order's text lines ({@code C_Doc_TextLine}) onto a shipment's own new text-line rows once the
@@ -59,32 +62,35 @@ import java.util.List;
  * Java because this copy step runs before the shipment's own text lines are ever persisted anywhere, and works
  * from the shipment's just-built lines rather than a stored report record.
  * <p>
- * <b>Stored position, and why it is the text line's own -- not the anchor's:</b> a carried line is stored at
- * its OWN original {@code Line} (matching the order-checkup SQL, which emits {@code tl_line} rather than an
- * anchor's position). That is provably still "immediately before" the run: the run's own lower bound is
- * always strictly greater than the text line's {@code Line} (that gap is exactly what the run-boundary
- * computation below carves out), so the text line's own value sorts ahead of every run member without having
- * to know which one is numerically first. It also keeps two text lines of one block at distinct stored
- * positions, rather than collapsing them onto one shared anchor value and leaning on an undocumented
- * {@code C_Doc_TextLine_ID} tie-break.
+ * <b>Stored position: tied with the run's anchor, not the text line's own.</b> A carried "run present" line
+ * is stored at the same {@code Line} as the run's first usable shipment line (its "anchor") -- the print-time
+ * tie-break (text ranks before article on an exact match, the same rule the order-checkup SQL relies on)
+ * then renders it immediately before that member. That is the only choice safe on a shipment that aggregates
+ * several orders: another order's own article line can sit anywhere in the numeric range between a text
+ * line's original order-side position and its run, so a position taken from the order's own sequence is not
+ * safe, even though it always is on a single-order shipment. Tying with an actual {@code Line} value already
+ * present on THIS shipment is. When several text lines fold into one block sharing that run, only the LAST
+ * one ties with the anchor; earlier members are placed at successive {@link #BLOCK_MEMBER_STEP}-sized steps
+ * below it, in their original relative order -- distinct from one another, and still close enough to the
+ * anchor that no other (always whole-number) {@code Line} can land between them. See
+ * {@link #anchorTiedPosition} for the exact arithmetic and its bound.
  * <p>
  * <b>A shipment-line collision does not corrupt this.</b> A Line-number collision only ever touches an
- * article shipment line's own {@code Line} (never a text line's, which this class assigns); since the stored
- * position never reads that value, a collision cannot corrupt it. What a collision CAN do is make the run's
- * only representative(s) on this shipment unusable as an "is a real member actually here" signal once
- * {@link IInOutDAO#unsetLineNos} has acted on them -- see {@link #copyTextLinesToShipment} for how that is
- * handled: by consulting the exact collision set the producer already computed, not by reading a shipment
- * line's {@code Line} value (which a real database renumbers away from {@code 0}, see that method's javadoc).
+ * article shipment line's own {@code Line} (never a text line's, which this class assigns); the anchor is
+ * chosen only among a run's NON-collided members, so a collided member's {@code Line} is never read as a
+ * position signal. What a collision CAN do is make every representative of a run on this shipment unusable
+ * as that signal once {@link IInOutDAO#unsetLineNos} has acted on them -- see {@link #copyTextLinesToShipment}
+ * for how that is handled: by consulting the exact collision set the producer already computed, not by
+ * reading a shipment line's {@code Line} value (which a real database renumbers away from {@code 0}, see that
+ * method's javadoc).
  * <p>
- * <b>Multi-order shipments (a decision, not an oversight):</b> when one shipment aggregates lines from several
- * orders, this class groups the shipment's lines by their own {@code C_Order_ID} and processes each order's
- * text lines independently, against that order's own text/article sequence. The result on the shipment is
- * that both orders' copied text lines are interleaved by their stored {@code Line} values with the shipment's
- * article lines, exactly as the order side already interleaves text and article rows sharing one numeric
- * position space. This is deliberate: a text line belongs to exactly one order and is positioned relative to
- * that order's own article lines wherever they land on the shipment; nothing about a second order sharing the
- * same shipment changes what "immediately before this run" means for the first order's text. The
- * Line-number-collision guard remains the loud-failure path for the case the numeric spaces actually clash.
+ * <b>Multi-order shipments:</b> when one shipment aggregates lines from several orders, this class groups the
+ * shipment's lines by their own {@code C_Order_ID} and resolves each order's text lines against that order's
+ * own text/article sequence, independently of any other order sharing the shipment. What keeps the result
+ * correct once everything is merged onto one shipment is the stored position itself (see above): because it
+ * ties with an actual {@code Line} already present on this shipment rather than a value from the order's own,
+ * separate numeric space, another order's article line interleaving numerically between the two cannot land
+ * between a text line and its run.
  */
 class TextLineShipmentCopier
 {
@@ -106,6 +112,15 @@ class TextLineShipmentCopier
 	 * reason and at the same value; it never stores it, so it carries no such bound.
 	 */
 	private static final BigDecimal HEAD_OFFSET = BigDecimal.valueOf(1_000_000);
+
+	/**
+	 * Spacing between successive text lines of one block when they are placed below their run's anchor -- see
+	 * {@link #anchorTiedPosition}. {@code C_Doc_TextLine.Line} is {@code numeric(10,4)}, so this is the
+	 * smallest representable step; every real shipment-line {@code Line} is a whole number, so any position
+	 * within one whole unit below an anchor is guaranteed free of them, regardless of what other order's lines
+	 * share the shipment.
+	 */
+	private static final BigDecimal BLOCK_MEMBER_STEP = new BigDecimal("0.0001");
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -131,6 +146,14 @@ class TextLineShipmentCopier
 	 * collided line ends up renumbered to the end of the document -- an ordinary-looking, non-zero value that
 	 * is indistinguishable from a genuinely-last line once written). Reading {@code Line} after that rewrite
 	 * can therefore never detect the collision; consulting the caller's own pre-computed collision set can.
+	 * <p>
+	 * That collision set ({@code ShipmentLineNoInfo}) is fed a Line value {@code ShipmentLineBuilder} captures
+	 * BEFORE it saves each shipment line, precisely so the save-time rewrite above can never be mistaken for a
+	 * collision -- but the set itself is a field of the producer, not of one shipment: it is never reset
+	 * between shipments, so a Line number that collides on one shipment of a multi-shipment producer run is
+	 * registered against every shipment of that run, not scoped to the one it actually collided on. This class
+	 * trusts the set as given; it cannot, from here, tell a same-run cross-shipment false positive apart from
+	 * a genuine one.
 	 */
 	void copyTextLinesToShipment(
 			@NonNull final I_M_InOut shipment,
@@ -155,8 +178,7 @@ class TextLineShipmentCopier
 						line -> line));
 
 		// see the class javadoc "Multi-order shipments" -- each order's text lines are resolved independently,
-		// against that order's own article/text sequence; the interleaving that results on the shipment is the
-		// deliberate outcome, not an accident of iteration order.
+		// against that order's own article/text sequence.
 		for (final OrderId orderId : shipmentLinesByOrder.keySet())
 		{
 			copyTextLinesForOrder(orderId, shipmentLinesByOrder.get(orderId), shipmentId, collidedShipmentLineIds);
@@ -187,9 +209,6 @@ class TextLineShipmentCopier
 		final List<BigDecimal> allOrderLineLines = orderLines.stream()
 				.map(orderLine -> BigDecimal.valueOf(orderLine.getLine()))
 				.collect(ImmutableList.toImmutableList());
-		final List<BigDecimal> allTextLineLines = textLines.stream()
-				.map(DocTextLine::getLine)
-				.collect(ImmutableList.toImmutableList());
 
 		// this shipment's own carried lines are matched by their ORDER line's own Line (never touched by a
 		// collision) -- run membership and block boundaries are computed on the order's own line numbers, not
@@ -197,47 +216,84 @@ class TextLineShipmentCopier
 		final ImmutableMap<Integer, Integer> orderLineIdToOrderLine = orderLines.stream()
 				.collect(ImmutableMap.toImmutableMap(I_C_OrderLine::getC_OrderLine_ID, I_C_OrderLine::getLine));
 
-		for (final DocTextLine textLine : textLines)
+		// consecutive text lines with no active order line strictly between them fold into one block, sharing
+		// the run of the block's LAST member. Grouped once here (rather than independently per text line)
+		// because every member of a block needs to know the block's full size and its own rank within it, to
+		// keep several text lines of the same block at distinct, correctly-ordered positions -- see
+		// copyOneBlock / anchorTiedPosition.
+		final List<ImmutableList<DocTextLine>> blocks = groupIntoBlocks(textLines, allOrderLineLines);
+
+		for (int blockIndex = 0; blockIndex < blocks.size(); blockIndex++)
 		{
-			copyOneTextLine(textLine, allOrderLineLines, allTextLineLines, orderLineIdToOrderLine,
-					shipmentLinesOfOrder, shipmentId, collidedShipmentLineIds);
+			final ImmutableList<DocTextLine> block = blocks.get(blockIndex);
+			// the next text line strictly after this block -- open end of the run if there is none.
+			final BigDecimal nextBlockStartLine = blockIndex + 1 < blocks.size()
+					? blocks.get(blockIndex + 1).get(0).getLine()
+					: null;
+			copyOneBlock(block, nextBlockStartLine, orderLineIdToOrderLine, shipmentLinesOfOrder, shipmentId, collidedShipmentLineIds);
 		}
 	}
 
-	private void copyOneTextLine(
-			@NonNull final DocTextLine textLine,
-			@NonNull final List<BigDecimal> allOrderLineLines,
-			@NonNull final List<BigDecimal> allTextLineLines,
+	/**
+	 * Groups {@code textLines} (already sorted by {@code Line}) into the maximal runs of consecutive text
+	 * lines with no active order line strictly between two consecutive members -- the same "block folding"
+	 * rule the order-checkup SQL's {@code text_runs} CTE applies, computed once per order rather than
+	 * independently (and redundantly) per text line.
+	 */
+	private static List<ImmutableList<DocTextLine>> groupIntoBlocks(
+			@NonNull final List<DocTextLine> textLines,
+			@NonNull final List<BigDecimal> allOrderLineLines)
+	{
+		final ImmutableList.Builder<ImmutableList<DocTextLine>> blocks = ImmutableList.builder();
+		List<DocTextLine> currentBlock = null;
+		BigDecimal nextArticleLineAfterCurrentBlock = null;
+		for (final DocTextLine textLine : textLines)
+		{
+			final boolean continuesCurrentBlock = currentBlock != null
+					&& (nextArticleLineAfterCurrentBlock == null
+							|| textLine.getLine().compareTo(nextArticleLineAfterCurrentBlock) <= 0);
+			if (continuesCurrentBlock)
+			{
+				currentBlock.add(textLine);
+			}
+			else
+			{
+				if (currentBlock != null)
+				{
+					blocks.add(ImmutableList.copyOf(currentBlock));
+				}
+				currentBlock = new ArrayList<>();
+				currentBlock.add(textLine);
+			}
+			nextArticleLineAfterCurrentBlock = nextArticleLineAtOrAfter(textLine.getLine(), allOrderLineLines);
+		}
+		if (currentBlock != null)
+		{
+			blocks.add(ImmutableList.copyOf(currentBlock));
+		}
+		return blocks.build();
+	}
+
+	// the next article line AT OR AFTER fromLine, anywhere in the order. Inclusive (>=): a text line tied
+	// with an article at the same position still caps its own block at that article, per the order-side
+	// tie-break (text ranks before article on a tie, so the tied article is the boundary, not a later one).
+	private static BigDecimal nextArticleLineAtOrAfter(@NonNull final BigDecimal fromLine, @NonNull final List<BigDecimal> allOrderLineLines)
+	{
+		return allOrderLineLines.stream()
+				.filter(line -> line.compareTo(fromLine) >= 0)
+				.min(Comparator.naturalOrder())
+				.orElse(null);
+	}
+
+	private void copyOneBlock(
+			@NonNull final ImmutableList<DocTextLine> block,
+			@Nullable final BigDecimal nextBlockStartLine,
 			@NonNull final ImmutableMap<Integer, Integer> orderLineIdToOrderLine,
 			@NonNull final ImmutableList<I_M_InOutLine> shipmentLinesOfOrder,
 			@NonNull final InOutId shipmentId,
 			@NonNull final ImmutableSet<InOutLineId> collidedShipmentLineIds)
 	{
-		final BigDecimal tlLine = textLine.getLine();
-
-		// the next article line AT OR AFTER tlLine, anywhere in the order -- bounds the maximal run of
-		// consecutive text lines starting at (or containing) tlLine. Inclusive (>=): a text line tied with an
-		// article at the same position still caps its own block at that article, per the order-side tie-break
-		// (text ranks before article on a tie, so the tied article is the boundary, not a later one).
-		final BigDecimal nextArticleLine = allOrderLineLines.stream()
-				.filter(line -> line.compareTo(tlLine) >= 0)
-				.min(Comparator.naturalOrder())
-				.orElse(null);
-
-		// the last line of that block of consecutive text lines (tlLine itself always qualifies, so this
-		// stream is never actually empty). Inclusive upper bound (<=): a text line tied with nextArticleLine
-		// still belongs to this block.
-		final BigDecimal blockEndLine = allTextLineLines.stream()
-				.filter(line -> line.compareTo(tlLine) >= 0)
-				.filter(line -> nextArticleLine == null || line.compareTo(nextArticleLine) <= 0)
-				.max(Comparator.naturalOrder())
-				.orElse(tlLine);
-
-		// the next text line strictly after the block -- open end of the run if there is none.
-		final BigDecimal nextBlockStartLine = allTextLineLines.stream()
-				.filter(line -> line.compareTo(blockEndLine) > 0)
-				.min(Comparator.naturalOrder())
-				.orElse(null);
+		final BigDecimal blockEndLine = block.get(block.size() - 1).getLine(); // the block's last member, by construction
 
 		// this shipment's own lines whose ORDER line falls inside the run [blockEndLine, nextBlockStartLine).
 		// Inclusive lower bound (>=): an article line tied with blockEndLine belongs to this run (it is
@@ -255,26 +311,55 @@ class TextLineShipmentCopier
 				})
 				.collect(ImmutableList.toImmutableList());
 
-		// membership (AC: "prints if at least one article line of its run is on that shipment"): counts a
-		// collided run member as present -- it IS on the shipment, its Line is merely not a usable position
-		// signal. A "belongs with the following lines" line is carried only when its run is non-empty; a
-		// "whole document" line is always carried (falls through below).
+		// membership: counts a collided run member as present -- it IS on the shipment, its Line is merely not
+		// a usable position signal. A "belongs with the following lines" line is carried only when its run is
+		// non-empty; a "whole document" line is always carried (falls through below).
 		final boolean runPresentOnShipment = !runShipmentLines.isEmpty();
-		if (textLine.getScope() == TextLineScope.Following && !runPresentOnShipment)
+
+		// position reference: the SMALLEST Line among the run's members that did NOT collide. A single
+		// collided member does not poison the whole run when another, usable member is present -- only when
+		// EVERY run member present collided is this absent, same as an absent run (see anchorTiedPosition).
+		final Optional<Integer> usableAnchorLine = runShipmentLines.stream()
+				.filter(shipmentLine -> !collidedShipmentLineIds.contains(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID())))
+				.map(I_M_InOutLine::getLine)
+				.min(Comparator.naturalOrder());
+
+		final int blockSize = block.size();
+		for (int rank = 0; rank < blockSize; rank++)
 		{
-			return;
+			final DocTextLine textLine = block.get(rank);
+			if (textLine.getScope() == TextLineScope.Following && !runPresentOnShipment)
+			{
+				continue;
+			}
+
+			final int rankInBlock = rank;
+			final BigDecimal position = usableAnchorLine
+					.map(anchorLine -> anchorTiedPosition(anchorLine, blockSize, rankInBlock))
+					// run absent, or every member present collided -> print at the head, at this line's own
+					// original position (preserves relative order among several such head lines)
+					.orElseGet(() -> textLine.getLine().subtract(HEAD_OFFSET));
+
+			docTextLineRepository.copyToDocument(DocTextLineDocumentRef.ofInOutId(shipmentId), textLine, position);
 		}
+	}
 
-		// position: a run member usable as a signal exists only if at least one of them was NOT part of a
-		// Line-number collision. A single collided member does not poison the whole run when other, usable
-		// members are present -- only when EVERY run member collided does this fall back to the head offset.
-		final boolean usableRunMemberExists = runShipmentLines.stream()
-				.anyMatch(shipmentLine -> !collidedShipmentLineIds.contains(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID())));
-
-		final BigDecimal position = usableRunMemberExists
-				? tlLine // the text line's own position -- see the class javadoc for why this, not an anchor's Line
-				: tlLine.subtract(HEAD_OFFSET); // run absent, or every member present collided -> print at the head
-
-		docTextLineRepository.copyToDocument(DocTextLineDocumentRef.ofInOutId(shipmentId), textLine, position);
+	/**
+	 * Position for the {@code rank}-th (0-based, in ascending original order) of {@code blockSize} text lines
+	 * that share one run whose usable anchor is {@code anchorLine}: the LAST member of the block (highest
+	 * rank) ties exactly with the anchor -- see the class javadoc for why a tie, rather than the text line's
+	 * own original position, is what "immediately before the run" requires once several orders can share a
+	 * shipment. Earlier members of the same block are placed at successive {@link #BLOCK_MEMBER_STEP} steps
+	 * below the anchor, in their original relative order.
+	 * <p>
+	 * <b>Bound:</b> this assumes a block never holds more than {@code 1 / }{@value #BLOCK_MEMBER_STEP} (10000)
+	 * text lines -- an absurd number in practice; beyond it, the earliest members would step more than one
+	 * whole unit below the anchor and could collide with whatever real (whole-number) {@code Line} sits just
+	 * below it.
+	 */
+	private static BigDecimal anchorTiedPosition(final int anchorLine, final int blockSize, final int rank)
+	{
+		final int stepsBelowAnchor = blockSize - 1 - rank;
+		return BigDecimal.valueOf(anchorLine).subtract(BLOCK_MEMBER_STEP.multiply(BigDecimal.valueOf(stepsBelowAnchor)));
 	}
 }

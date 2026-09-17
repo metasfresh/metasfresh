@@ -457,6 +457,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		}
 
 		optimisticallySetLineNo(shipmentLine);
+		// captured now, before the save below: on a real database, saving a shipment line whose Line is still
+		// 0 (no order line link) rewrites it to a synthetic end-of-document value, which is never a genuine
+		// Line-number collision and must not be registered as one.
+		final int lineNoBeforeSave = shipmentLine.getLine();
 
 		//
 		// Qty Entered and UOM
@@ -533,7 +537,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		try (final MDCCloseable shipmentLineMDC = TableRecordMDC.putTableRecordReference(shipmentLine))
 		{
-			shipmentLineNoInfo.put(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()), shipmentLine.getLine());
+			shipmentLineNoInfo.put(InOutLineId.ofRepoId(shipmentLine.getM_InOutLine_ID()), lineNoBeforeSave);
 
 			//
 			// Notify candidates that we have a shipment line

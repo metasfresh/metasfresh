@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @Repository
 public class DocTextLineRepository
 {
+	/** Four decimals, and inserts are midpoints: a gap survives ~13 successive inserts at the same spot before {@link #computeInsertAbovePosition} refuses it. */
 	private static final int LINE_SCALE = 4;
 
 	/** Position given to the first text line ever inserted into an otherwise empty document. */
@@ -109,27 +110,11 @@ public class DocTextLineRepository
 	}
 
 	/**
-	 * The scope-driving predicate {@link InsertAboveRequest#isArticleLineExistsBeforeReferencePosition()} needs:
-	 * whether any article line's position is strictly less than {@code referencePosition} -- equivalently,
-	 * whether an article line precedes the row about to be inserted, in the merged article/text-line order.
-	 * <p>
-	 * Pulled out as its own method, taking plain positions rather than reaching into article lines itself (this
-	 * repository's Cluster boundary forbids that -- see {@link InsertAboveRequest}'s javadoc), so that every
-	 * caller who has already resolved the merged order -- the WebUI's in-memory row list
-	 * ({@code DocTextLinesRows#computeInsertAbovePositions}) and any other caller that queries article lines
-	 * directly -- shares this one implementation instead of each re-deriving the same comparison.
-	 * <p>
-	 * Comparing by position rather than by merged-order index is safe because the only input where the two
-	 * would disagree is a tie between an article's position and {@code referencePosition}, and that tie is
-	 * unreachable: it would force the immediately preceding row's position to tie too, which {@link #insertAbove}'s
-	 * midpoint arithmetic refuses (a gap-exhausted {@link AdempiereException}) before this predicate's answer is
-	 * ever acted upon.
+	 * Whether any article line sits before {@code referencePosition} — the predicate that decides a new
+	 * text line's default scope.
 	 *
-	 * @param articleLinePositions any set of article-line positions that includes every position strictly less
-	 *        than {@code referencePosition}; additional positions at or after it are harmless. Both callers rely
-	 *        on this: the WebUI passes only the rows before the reference index, the cucumber step passes all of
-	 *        them. Order does not matter.
-	 * @param referencePosition the row about to be inserted above.
+	 * @param articleLinePositions must contain every article-line position strictly less than
+	 *        {@code referencePosition}; further positions are harmless, and order does not matter.
 	 */
 	public static boolean articleLineExistsBefore(
 			@NonNull final Collection<BigDecimal> articleLinePositions,
