@@ -232,6 +232,7 @@ new Boolean (false)]]></printWhenExpression>
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[!"Y".equals($F{istextline})]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="81" y="0" width="140" height="12" isRemoveLineWhenBlank="true" uuid="6d2a516e-9c01-4de0-b18e-10093e0455f6">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>

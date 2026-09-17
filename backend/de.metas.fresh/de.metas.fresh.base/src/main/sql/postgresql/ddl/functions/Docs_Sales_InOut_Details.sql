@@ -7,14 +7,9 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(IN p
                                                                             IN p_AD_Language Character Varying(6))
     RETURNS TABLE
             (
-                -- scale 4 must match C_Doc_TextLine.Line and DocTextLineRepository.LINE_SCALE: the text
-                -- branch below emits that column verbatim, so this is the real domain of the merged
-                -- column even though the article branch only ever fills it with whole numbers.
-                -- DOCUMENTATION, not a rounding guard -- measured: PostgreSQL does not enforce a
-                -- RETURNS TABLE typmod for a LANGUAGE sql function, so a fractional text position
-                -- (19.9999) comes through unrounded under either declaration. Stated so nobody later
-                -- "simplifies" this back to (10,0) believing the engine would still protect the scale,
-                -- and so nobody reads the declaration as the thing that makes interleaving work.
+                -- scale 4 must match C_Doc_TextLine.Line and DocTextLineRepository.LINE_SCALE. It is
+                -- documentation, not a rounding guard: PostgreSQL does not enforce a RETURNS TABLE
+                -- typmod, so a fractional position survives either declaration (measured).
                 Line                   Numeric(10, 4),
                 Name                   Character Varying,
                 Attributes             Text,
@@ -211,24 +206,14 @@ SELECT iol.line,
 
 UNION ALL
 
--- Free-text lines interleaved with the shipment's article lines (C_Doc_TextLine). The rows selected
--- here are the shipment's OWN copies, written by TextLineShipmentCopier when the shipment was
--- generated -- the carry rule ("does this text line's run reach this shipment?") was already applied
--- there, so this branch only reads what that step decided; it must not re-apply any of it.
--- This branch does NOT reuse the article branch's WHERE clauses above: the packing-material exclusion
--- and "QtyEntered != 0" are both conditions about an ARTICLE line (a packing product, a delivered
--- quantity) that a text line has no equivalent of -- copying them would silently filter every text
--- line out.
--- Column shape: document-level descriptors are carried through, not NULLed. inout_description and
--- docstatus come from the shipment itself; isDiscountPrinted and IsShipmentPricePrinted both come
--- from the shipment's business partner; catchweight and weight_uom are the DOCUMENT's summed weight
--- (Docs_Sales_InOut_Sum_Weight takes p_Record_ID, not a line) and are read by the templates' summary
--- bands off whichever record happens to be last -- so a text row must report them exactly as an
--- article row on the same document does, or a trailing text line would erase the document's weight
--- total. Only genuinely ARTICLE-level columns (product, HU, quantity, price, discount, attributes,
--- best-before/lot, the ordered qty and its UOM, and QtyPattern -- derived from a line's UOM
--- precision) are NULL. TextLine is nullable and an empty text line is legal (prints as a blank line)
--- -- it is passed straight through with no NULLIF/COALESCE that could coerce an empty value away.
+-- Free-text lines (C_Doc_TextLine): the shipment's OWN copies, written by TextLineShipmentCopier when
+-- the shipment was generated. The carry rule -- does this text line's run reach this shipment? -- was
+-- decided there, so this branch only reads the result and must not re-apply any of it.
+-- Deliberately NOT sharing the article branch's WHERE clauses: the packing-material exclusion and
+-- "QtyEntered != 0" describe an ARTICLE line, so applying them here would filter out every text line.
+-- Column shape: document-level values carried through, article-level values NULL. catchweight and
+-- weight_uom are the DOCUMENT's summed weight and the summary bands read them off whichever record is
+-- last -- NULL them and a trailing text line erases the document's weight total (measured).
 SELECT tl.line,
        NULL::character varying     AS Name,
        NULL::text                  AS Attributes,
