@@ -1,24 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 
-const LAST_KNOWN_LOCATION_KEY = 'lastKnownLocation';
-
 export const useLocationChange = (onChange) => {
   const currentRoute = useRouteMatch();
   const history = useHistory();
 
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
-
-  // Per-instance, and seeded once: sessionStorage is shared by every consumer of this hook, so
-  // comparing against it directly lets whichever consumer runs first swallow the change for all
-  // the others. The stored value is only the seed, which is what keeps a consumer mounting
-  // mid-session (or after a page reload) from re-announcing a location that is already current.
-  const lastSeenLocationRef = useRef(undefined);
-  if (lastSeenLocationRef.current === undefined) {
-    lastSeenLocationRef.current = sessionStorage.getItem(LAST_KNOWN_LOCATION_KEY);
-  }
-
   // Stale by one navigation for a caller that never remounts: our listener runs before Router
   // propagates the new RouteContext. Derive the route from currentLocation if you need it exact.
   const currentRouteRef = useRef(currentRoute);
@@ -26,11 +14,10 @@ export const useLocationChange = (onChange) => {
 
   const trackLocation = () => {
     const currentLocation = window.location.href;
-    const lastKnownLocation = lastSeenLocationRef.current;
+    const lastKnownLocation = sessionStorage.getItem('lastKnownLocation');
 
     if (currentLocation !== lastKnownLocation) {
-      lastSeenLocationRef.current = currentLocation;
-      sessionStorage.setItem(LAST_KNOWN_LOCATION_KEY, currentLocation);
+      sessionStorage.setItem('lastKnownLocation', currentLocation);
       onChangeRef.current({
         currentLocation,
         currentRoute: currentRouteRef.current,
