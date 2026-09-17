@@ -205,7 +205,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
 
 		// A by-product receipt books ZERO regardless of the by-product's own M_Cost, mirroring its
-		// post-calculation zeroing in PPOrderCosts - so a stray current cost cannot drive the pool negative.
+		// post-calculation zeroing in PPOrderCosts - so a stray current cost cannot drive the total inbound costs negative.
 		final boolean isByProductReceipt = isCoOrByProductReceipt
 				&& orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
 						.map(PPOrderCost::isByProduct)

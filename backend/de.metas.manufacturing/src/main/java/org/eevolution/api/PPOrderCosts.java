@@ -262,7 +262,7 @@ public final class PPOrderCosts
 				.collect(ImmutableList.toImmutableList());
 
 		//
-		// Guard: the co-products' cost distribution percent must sum to at most 100% (the whole input pool).
+		// Guard: the co-products' cost distribution percent must sum to at most 100% (the whole of the total inbound costs).
 		// Checked in percent-space before any amount is carved, naming the offending co-product(s) and the sum.
 		final Percent totalCoProductDistributionPercent = computeTotalCoProductDistributionPercent(coProductCosts);
 		if (totalCoProductDistributionPercent.isOverOneHundred())
@@ -290,7 +290,7 @@ public final class PPOrderCosts
 
 		//
 		// Value each co-product through computeBlankCoProductAmount: its cost distribution percent times the
-		// input pool (CP_i = p_i × Σ inbound cost).
+		// total inbound costs (CP_i = p_i × Σ inbound cost).
 		coProductCosts.forEach(coProductCost ->
 				coProductCost.setPostCalculationAmount(computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision)));
 		final CostAmount totalCoProductsCostAmount = coProductCosts.stream()
@@ -355,7 +355,7 @@ public final class PPOrderCosts
 
 	/**
 	 * The amount a co-product receipt must capitalize to inventory: the co-product's share of the order's
-	 * inbound cost pool (cost-distribution percent) for its cost element - the IDENTICAL amount
+	 * total inbound costs (cost-distribution percent) for its cost element - the IDENTICAL amount
 	 * {@link #updatePostCalculationAmountsForCostElement} books as the co-product's post-calculation relief
 	 * (leg A). A costing-method handler values the co-product receipt (leg B) at this amount so both legs book
 	 * the same value, cost is conserved and the order's WIP clears.
@@ -375,7 +375,7 @@ public final class PPOrderCosts
 	 * current M_Cost - symmetric to the by-product's central post-calculation zeroing (leg A, above:
 	 * {@code costs.stream().filter(PPOrderCost::isByProduct).forEach(PPOrderCost::setPostCalculationAmountAsZero)}).
 	 * A costing-method handler values the by-product receipt (leg B) at this amount so a stray current cost on
-	 * the by-product's own product cannot drive the AvgPO/MAI pool negative. Keyed on {@link PPOrderCost#isByProduct()}
+	 * the by-product's own product cannot drive the AvgPO/MAI total inbound costs negative. Keyed on {@link PPOrderCost#isByProduct()}
 	 * alone - not on any cost-distribution percent - unlike the co-product share in {@link #getBlankCoProductReceiptAmount}.
 	 */
 	public CostAmount getByProductReceiptAmount(@NonNull final CostSegmentAndElement costSegmentAndElement)
@@ -402,7 +402,7 @@ public final class PPOrderCosts
 	}
 
 	/**
-	 * The co-product's cost-distribution share of the order's inbound cost pool:
+	 * The co-product's cost-distribution share of the order's total inbound costs:
 	 * {@code totalInbound × coProductCostDistributionPercent}. The distribution percent is nullable (the DAO
 	 * leaves it unset, especially under Moving Average Invoice), so a null / non-positive percent yields a zero
 	 * share - nothing to capitalise - rather than an NPE.
