@@ -23,7 +23,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order;
 
 import java.util.List;
 
@@ -162,8 +161,7 @@ public class Fact_Acct_StepDef
 			@NonNull final String ppOrderIdentifier,
 			@NonNull final DataTable table) throws Throwable
 	{
-		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
-		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final PPOrderId ppOrderId = ppOrderTable.getId(ppOrderIdentifier);
 
 		final ImmutableSet<TableRecordReference> recordRefs = costCollectorBL.getByOrderId(ppOrderId)
 				.stream()
