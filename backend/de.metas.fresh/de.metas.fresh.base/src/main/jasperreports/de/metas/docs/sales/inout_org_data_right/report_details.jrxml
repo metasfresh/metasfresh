@@ -30,6 +30,7 @@
 	<field name="p_value" class="java.lang.String"/>
 	<field name="p_description" class="java.lang.String"/>
 	<field name="inout_description" class="java.lang.String"/>
+	<field name="istextline" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -139,6 +140,7 @@ new Boolean (false)]]></printWhenExpression>
 	<detail>
 		<band height="18" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[!"Y".equals($F{istextline})]]></printWhenExpression>
 			<textField isBlankWhenNull="true">
 				<reportElement x="36" y="6" width="45" height="12" uuid="ef540692-3078-4ed3-9dfb-47ebd575dbaa">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
@@ -240,6 +242,25 @@ new Boolean (false)]]></printWhenExpression>
 					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_description}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA["Y".equals($F{istextline})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-textline" mode="Transparent" x="81" y="0" width="369" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b1c2d3e4-3333-4a22-9b33-0c44d5e6f703">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

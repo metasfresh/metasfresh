@@ -136,6 +136,10 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<property name="com.jaspersoft.studio.field.name" value="qtypattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
+	<field name="istextline" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="istextline"/>
+		<property name="com.jaspersoft.studio.field.label" value="istextline"/>
+	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -286,7 +290,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 	<detail>
 		<band height="12" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!"Y".equals($F{istextline}) && $F{qtyentered} != null && $F{qtyentered}.floatValue() != 0]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-34" mode="Transparent" x="502" y="0" width="43" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
 					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
@@ -441,7 +445,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!"Y".equals($F{istextline}) && $F{qtyentered} != null && $F{qtyentered}.floatValue() != 0]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="192" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="3c441f61-5352-4a06-a218-39e0aee3678d"/>
 				<box rightPadding="3">
@@ -474,7 +478,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean ( $F{qtyentered}.floatValue() != 0 ) && $F{description} != null]]></printWhenExpression>
+			<printWhenExpression><![CDATA[!"Y".equals($F{istextline}) && $F{qtyentered} != null && $F{qtyentered}.floatValue() != 0 && $F{description} != null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="316" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="105a6bab-3742-4710-abee-4a6655280e72"/>
 				<box rightPadding="3">
@@ -490,10 +494,10 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 		</band>
 		<band height="12">
-			<printWhenExpression><![CDATA[$F{iscampaignprice}.equals("Y")]]></printWhenExpression>
+			<printWhenExpression><![CDATA["Y".equals($F{iscampaignprice})]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="290" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="69474800-fbf6-497a-961d-0fc2c2d9c59c">
-					<printWhenExpression><![CDATA[$F{iscampaignprice}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA["Y".equals($F{iscampaignprice})]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -505,6 +509,25 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ActionPrice}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA["Y".equals($F{istextline})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-textline" mode="Transparent" x="59" y="0" width="316" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="b1c2d3e4-1111-4a22-9b33-0c44d5e6f701">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
