@@ -30,22 +30,25 @@ Feature: Co-product valuation via cost-distribution percent
     And documents are accounted immediately
     And load and update C_AcctSchema:
       | C_AcctSchema_ID | Name                  | CostingMethod |
-      | acctSchema      | metas fresh UN/34 CHF | A             |
-    And cost elements for material costing methods AveragePO are active
+      | acctSchema      | metas fresh UN/34 CHF | M             |
+    And cost elements for material costing methods MovingAverageInvoice are active
 
     And metasfresh contains M_Products:
       | Identifier | X12DE355 |
       | mainProd   | PCE      |
-      | inputProd  | PCE      |
+      | rawProduct | PCE      |
       | coProd     | PCE      |
 
-    # Seed the input component with a 15 CHF/PCE AveragePO current cost and create its stock HU (30 PCE).
+    # Seed the raw component with a 15 CHF/PCE current cost and create its stock HU (30 PCE).
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
-      | inputInventory | inputInventoryLine | 2024-03-20   | 540008         | inputProd    | 0       | 30       | PCE          | 15        | inputHU |
+      | inputInventory | inputInventoryLine | 2024-03-20   | 540008         | rawProduct   | 0       | 30       | PCE          | 15        | inputHU |
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | rawProduct   | 15 CHF           |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | inputProd    | AveragePO        | 15 CHF           | 30 PCE     |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | rawProduct   | MovingAverageInvoice | 15 CHF           | 30 PCE     |
 
     # Packing instructions shared by the main-product and co-product manufacturing receipts.
     And metasfresh contains M_HU_PI:
@@ -73,7 +76,7 @@ Feature: Co-product valuation via cost-distribution percent
       | bom        | mainProd                | 2021-01-02 | bomVersion                           |
     And metasfresh contains PP_Product_BOMLines
       | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch | ComponentType |
-      | inputLine  | bom                          | inputProd               | 2021-01-02 | 5        | CO            |
+      | inputLine  | bom                          | rawProduct              | 2021-01-02 | 5        | CO            |
       | coProdLine | bom                          | coProd                  | 2021-01-02 | -1       | CP            |
     And the PP_Product_BOM identified by bom is completed
 
@@ -89,121 +92,12 @@ Feature: Co-product valuation via cost-distribution percent
       | testResource             | 540011        |
 
   @from:cucumber
-  @Id:S29488_TC1
-  Scenario: Average PO - the co-product's own current cost overvalues its carve share, write-down at close
-    # Randstuecke (coProd) is given a manual cost-distribution percent p = 10.666667% (~10.67%), so its
-    # carve share of the 450 CHF input pool is p x 450 = 48 CHF (8 CHF/PCE) - the customer's real case.
-    # The percent carries 6 decimals so the carve lands on an exact 48.0000 (no rounding noise to chase).
-    And update M_Product:
-      | M_Product_ID.Identifier | CoProductCostDistributionPercent |
-      | coProd                  | 10.666667                        |
-
-    # Randstuecke ALREADY has its own current cost of 9.9 CHF/PCE (from a prior receipt/valuation run,
-    # unrelated to this order's carve) - higher than the 8 CHF/PCE carve. Its own receipt below books at
-    # THIS price (current-cost x received-qty), not at the carve - so the two diverge and the CC-170
-    # true-up at order close has to write the co-product's inventory DOWN.
-    And update current costs
-      | M_Product_ID | CurrentCostPrice |
-      | coProd       | 9.9 CHF          |
-
-    And create PP_Order:
-      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
-      | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
-    And after not more than 60s, PP_Order_BomLines are found
-      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
-      | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
-
-    # Issue the whole 30-PCE input HU to the component BOM line: totalInbound = 30 x 15 = 450 CHF.
-    And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
-
-    # Receive the main product (24 PCE) - no BOM-line reference -> main-product receipt.
-    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 24          | mainProdItem                       |
-
-    # Receive the co-product (6 PCE) - BOM-line reference -> co/by-product receipt (receivingByOrCoProduct).
-    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder     | coProdBomLine       | coHU               | N               | 0     | N               | 1     | N               | 6           | coProdItem                         |
-
-    # Process the planning HUs of both receipts into completed, posted receipt cost collectors.
-    When complete planning for PP_Order:
-      | PP_Order_ID.Identifier |
-      | ppOrder                |
-
-    # Wait for the co-product receipt cost collector to be created and posted before reading the costs it
-    # drives (its posting runs the production post-calculation).
-    And after not more than 60s, PP_Cost_Collector are found:
-      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
-      | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
-    And Wait until documents coReceiptCostCollector are posted
-
-    # Cost conservation via the production post-calculation (leg A): the co-product is relieved at its
-    # carve (p x 450 = 48), the main product by the remainder (450 - 48 = 402), Sum = 450 = total input.
-    And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | CurrentCostPrice | PostCalculationAmt |
-      | ppOrder                | inputProd               | AveragePO        | MI                    | 15 CHF           | 450                |
-      | ppOrder                | coProd                  | AveragePO        | CO                    | 9.9 CHF          | 48                 |
-      | ppOrder                | mainProd                | AveragePO        | MR                    | 0 CHF            | 402                |
-
-    # Leg B (the co-product's own receipt) books at ITS OWN current cost x received qty (9.9 x 6 = 59.4),
-    # NOT at the 48 carve - the two legs diverge by design (this is the customer case under test).
-    And Fact_Acct records are matching
-      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 59.4      | 0         | 6 PCE  |
-      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 59.4      | -6 PCE |
-
-    # After its own receipt, the co-product's current cost is unchanged (it had no prior stock, so the
-    # weighted average of 0 and 9.9 x 6 stays 9.9) and its qty is now 6.
-    And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | coProd       | AveragePO        | 9.9 CHF          | 6 PCE      |
-
-    # Distribute the order (CC-170 true-up): the main product's residual (402, all in stock) capitalizes
-    # out of WIP as usual. The co-product's OWN residual (carve 48 - booked 59.4 = -11.4) is ALSO
-    # discharged here, on the SAME distribution collector, against the co-product's OWN accounts - and
-    # because the co-product was overvalued at receipt (9.9/PCE booked vs. 8/PCE carve), the true-up is a
-    # WRITE-DOWN: Cr P_Asset / Dr P_WIP (the opposite sign from the main product's write-UP above).
-    And the manufacturing order identified by ppOrder is distributed
-    And after not more than 60s, PP_Cost_Collector are found:
-      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
-      | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
-    And Wait until documents distributionCostCollector are posted
-
-    # Do NOT settle for the whole-order balance alone (below) - it would pass even if the co-product's own
-    # leg were silently dropped. Assert the co-product's OWN P_Asset/P_WIP legs, with the write-down sign:
-    # Cr P_Asset 11.4 (credit - inventory written down) / Dr P_WIP 11.4 (debit - the excess returns to WIP).
-    And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 11.4      | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 11.4      | 0         | 0 PCE |
-
-    # The whole manufacturing order now balances: Sum(AmtAcctDr) = Sum(AmtAcctCr) across all cost
-    # collectors, WIP nets to 0 (input pool fully relieved into the outputs' inventory, including the
-    # co-product's write-down), and P_Asset nets to 0 too.
-    And Fact_Acct records balances over the whole PP_Order ppOrder are matching
-      | AccountConceptualName | AcctBalance |
-      | P_WIP_Acct            | 0           |
-      | P_Asset_Acct          | 0           |
-
-  @from:cucumber
   @Id:S29488_TC2
-  Scenario: Moving Average Invoice - the same carve and write-down hold on the go-forward method
-    And cost elements for material costing methods MovingAverageInvoice are active
-    And update C_AcctSchema:
-      | C_AcctSchema_ID | CostingMethod |
-      | acctSchema      | M             |
-    # The input's cost under the go-forward method (never received under it yet).
-    And update current costs
-      | M_Product_ID | CurrentCostPrice |
-      | inputProd    | 15 CHF           |
+  Scenario: The co-product's own current cost overvalues its carve share, written down at order close
     And update M_Product:
       | M_Product_ID.Identifier | CoProductCostDistributionPercent |
       | coProd                  | 10.666667                        |
-    # Randstuecke's own current cost under the go-forward method - same overvaluation vs. its carve.
+    # Randstuecke's own current cost - overvalued vs. its carve.
     And update current costs
       | M_Product_ID | CurrentCostPrice |
       | coProd       | 9.9 CHF          |
@@ -213,7 +107,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
       | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
@@ -232,14 +126,14 @@ Feature: Co-product valuation via cost-distribution percent
       | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
     And Wait until documents coReceiptCostCollector are posted
 
-    # Same carve as Average PO: co-product p x 450 = 48, main the remainder 402, conserved to 450.
+    # Co-product carve p x 450 = 48, main the remainder 402, conserved to 450.
     And PP_Order_Cost are found:
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | CurrentCostPrice | PostCalculationAmt |
-      | ppOrder                | inputProd               | MovingAverageInvoice | MI                    | 15 CHF           | 450                |
+      | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 15 CHF           | 450                |
       | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 9.9 CHF          | 48                 |
       | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 0 CHF            | 402                |
 
-    # Same divergence as Average PO: leg B books the co-product's OWN current cost x qty (9.9 x 6 = 59.4).
+    # Divergence by design: leg B books the co-product's OWN current cost x qty (9.9 x 6 = 59.4).
     And Fact_Acct records are matching
       | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
       | coReceiptCostCollector | P_Asset_Acct          | coProd       | 59.4      | 0         | 6 PCE  |
@@ -248,14 +142,14 @@ Feature: Co-product valuation via cost-distribution percent
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | coProd       | MovingAverageInvoice | 9.9 CHF          | 6 PCE      |
 
-    # Distribute the order so the main product's residual capitalizes out of WIP (same as Average PO).
+    # Distribute the order so the main product's residual capitalizes out of WIP.
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
 
-    # Same write-down as Average PO on the co-product's OWN legs (Cr P_Asset / Dr P_WIP 11.4), asserted
+    # Write-down on the co-product's OWN legs (Cr P_Asset / Dr P_WIP 11.4), asserted
     # explicitly - not just the whole-order balance below, which would pass even if this leg were dropped.
     And Fact_Acct records are matching
       | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
@@ -264,7 +158,7 @@ Feature: Co-product valuation via cost-distribution percent
       | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 11.4      | 0 PCE |
       | distributionCostCollector | P_WIP_Acct            | coProd       | 11.4      | 0         | 0 PCE |
 
-    # The whole manufacturing order balances and WIP nets to 0 on the go-forward method too.
+    # The whole manufacturing order balances and WIP nets to 0.
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
       | AccountConceptualName | AcctBalance |
       | P_WIP_Acct            | 0           |
@@ -281,7 +175,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
       | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
@@ -305,10 +199,10 @@ Feature: Co-product valuation via cost-distribution percent
     # No carve at all: the co-product's post-calculation amount is zero and the finished good absorbs the
     # whole 450 CHF pool - no throw, no NPE.
     And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder                | inputProd               | AveragePO        | MI                    | 450                |
-      | ppOrder                | coProd                  | AveragePO        | CO                    | 0                  |
-      | ppOrder                | mainProd                | AveragePO        | MR                    | 450                |
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 0                  |
+      | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 450                |
 
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
@@ -344,7 +238,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
       | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
@@ -366,10 +260,10 @@ Feature: Co-product valuation via cost-distribution percent
     And Wait until documents coReceiptCostCollector are posted
 
     And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder                | inputProd               | AveragePO        | MI                    | 450                |
-      | ppOrder                | coProd                  | AveragePO        | CO                    | 0                  |
-      | ppOrder                | mainProd                | AveragePO        | MR                    | 450                |
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 0                  |
+      | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 450                |
 
     And Fact_Acct records are matching
       | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
@@ -413,7 +307,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
       | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
@@ -435,10 +329,10 @@ Feature: Co-product valuation via cost-distribution percent
     And Wait until documents coReceiptCostCollector are posted
 
     And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder                | inputProd               | AveragePO        | MI                    | 450                |
-      | ppOrder                | coProd                  | AveragePO        | CO                    | 0                  |
-      | ppOrder                | mainProd                | AveragePO        | MR                    | 450                |
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 0                  |
+      | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 450                |
 
     And Fact_Acct records are matching
       | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
@@ -475,18 +369,18 @@ Feature: Co-product valuation via cost-distribution percent
     # products and the sum, before any amount is carved from the pool - so no negative finished-good
     # amount is ever persisted.
     And metasfresh contains M_Products:
-      | Identifier | X12DE355 |
-      | mainProd4  | PCE      |
-      | inputProd4 | PCE      |
-      | coProdA4   | PCE      |
-      | coProdB4   | PCE      |
+      | Identifier  | X12DE355 |
+      | mainProd4   | PCE      |
+      | rawProduct4 | PCE      |
+      | coProdA4    | PCE      |
+      | coProdB4    | PCE      |
 
     And metasfresh contains single line completed inventories
       | M_Inventory_ID  | M_InventoryLine_ID  | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID  |
-      | inputInventory4 | inputInventoryLine4 | 2024-03-20   | 540008         | inputProd4   | 0       | 30       | PCE          | 15        | inputHU4 |
+      | inputInventory4 | inputInventoryLine4 | 2024-03-20   | 540008         | rawProduct4  | 0       | 30       | PCE          | 15        | inputHU4 |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | inputProd4   | AveragePO        | 15 CHF           | 30 PCE     |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | rawProduct4  | MovingAverageInvoice | 15 CHF           | 30 PCE     |
 
     And update M_Product:
       | M_Product_ID.Identifier | CoProductCostDistributionPercent |
@@ -504,7 +398,7 @@ Feature: Co-product valuation via cost-distribution percent
       | bom4       | mainProd4               | 2021-01-02 | bomVersion4                          |
     And metasfresh contains PP_Product_BOMLines
       | Identifier   | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch | ComponentType |
-      | inputLine4   | bom4                         | inputProd4              | 2021-01-02 | 5        | CO            |
+      | inputLine4   | bom4                         | rawProduct4             | 2021-01-02 | 5        | CO            |
       | coProdALine4 | bom4                         | coProdA4                | 2021-01-02 | -1       | CP            |
       | coProdBLine4 | bom4                         | coProdB4                | 2021-01-02 | -1       | CP            |
     And the PP_Product_BOM identified by bom4 is completed
@@ -518,7 +412,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder4               | MOP         | mainProd4               | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan4                             |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine4                  | ppOrder4               | inputProd4              | 30           | false           | PCE               | CO            |
+      | inputBomLine4                  | ppOrder4               | rawProduct4             | 30           | false           | PCE               | CO            |
       | coProdABomLine4                | ppOrder4               | coProdA4                | -6           | false           | PCE               | CP            |
       | coProdBBomLine4                | ppOrder4               | coProdB4                | -6           | false           | PCE               | CP            |
 
@@ -557,8 +451,8 @@ Feature: Co-product valuation via cost-distribution percent
     # No negative finished-good amount was persisted - the guard rejects in PERCENT-space before any
     # amount is carved, so the finished good's post-calculation amount is untouched (still its initial 0).
     And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder4               | mainProd4               | AveragePO        | MR                    | 0                  |
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder4               | mainProd4               | MovingAverageInvoice | MR                    | 0                  |
 
   @from:cucumber
   @Id:S29488_TC9
@@ -575,7 +469,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
       | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
@@ -598,10 +492,10 @@ Feature: Co-product valuation via cost-distribution percent
 
     # Total carve 135 = 30% x 450, regardless of the 8-vs-2 qty imbalance; finished good keeps 315 (>= 0).
     And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder                | inputProd               | AveragePO        | MI                    | 450                |
-      | ppOrder                | coProd                  | AveragePO        | CO                    | 135                |
-      | ppOrder                | mainProd                | AveragePO        | MR                    | 315                |
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 135                |
+      | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 315                |
 
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
@@ -643,7 +537,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
       | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
@@ -671,10 +565,10 @@ Feature: Co-product valuation via cost-distribution percent
     And Wait until documents mainReceiptCostCollector are posted
 
     And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder                | inputProd               | AveragePO        | MI                    | 450                |
-      | ppOrder                | coProd                  | AveragePO        | CO                    | 48                 |
-      | ppOrder                | mainProd                | AveragePO        | MR                    | 402                |
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 48                 |
+      | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 402                |
 
     # A single true-up writes the accumulated 59.4 DOWN to the 48 CHF carve once - the old (N-1) x share
     # over-relief (a phantom 48 CHF WIP credit) does not occur. The write-down below is EXACTLY 11.4
@@ -718,7 +612,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
       | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
@@ -803,19 +697,19 @@ Feature: Co-product valuation via cost-distribution percent
     # A richer BOM: two priced co-products (Randstuecke-style rework outputs, each its own percent) plus one
     # genuine by-product (animal-feed protein) that carries NO percent at all and always books zero.
     And metasfresh contains M_Products:
-      | Identifier | X12DE355 |
-      | mainProd5  | PCE      |
-      | inputProd5 | PCE      |
-      | coProdA5   | PCE      |
-      | coProdB5   | PCE      |
-      | byProd5    | PCE      |
+      | Identifier  | X12DE355 |
+      | mainProd5   | PCE      |
+      | rawProduct5 | PCE      |
+      | coProdA5    | PCE      |
+      | coProdB5    | PCE      |
+      | byProd5     | PCE      |
 
     And metasfresh contains single line completed inventories
       | M_Inventory_ID  | M_InventoryLine_ID  | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID  |
-      | inputInventory5 | inputInventoryLine5 | 2024-03-20   | 540008         | inputProd5   | 0       | 30       | PCE          | 15        | inputHU5 |
+      | inputInventory5 | inputInventoryLine5 | 2024-03-20   | 540008         | rawProduct5  | 0       | 30       | PCE          | 15        | inputHU5 |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | inputProd5   | AveragePO        | 15 CHF           | 30 PCE     |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | rawProduct5  | MovingAverageInvoice | 15 CHF           | 30 PCE     |
 
     And update M_Product:
       | M_Product_ID.Identifier | CoProductCostDistributionPercent |
@@ -834,7 +728,7 @@ Feature: Co-product valuation via cost-distribution percent
       | bom5       | mainProd5               | 2021-01-02 | bomVersion5                          |
     And metasfresh contains PP_Product_BOMLines
       | Identifier   | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch | ComponentType |
-      | inputLine5   | bom5                         | inputProd5              | 2021-01-02 | 5        | CO            |
+      | inputLine5   | bom5                         | rawProduct5             | 2021-01-02 | 5        | CO            |
       | coProdALine5 | bom5                         | coProdA5                | 2021-01-02 | -1       | CP            |
       | coProdBLine5 | bom5                         | coProdB5                | 2021-01-02 | -1       | CP            |
       | byProdLine5  | bom5                         | byProd5                 | 2021-01-02 | -1       | BY            |
@@ -849,7 +743,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder5               | MOP         | mainProd5               | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan5                             |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine5                  | ppOrder5               | inputProd5              | 30           | false           | PCE               | CO            |
+      | inputBomLine5                  | ppOrder5               | rawProduct5             | 30           | false           | PCE               | CO            |
       | coProdABomLine5                | ppOrder5               | coProdA5                | -6           | false           | PCE               | CP            |
       | coProdBBomLine5                | ppOrder5               | coProdB5                | -6           | false           | PCE               | CP            |
       | byProdBomLine5                 | ppOrder5               | byProd5                 | -6           | false           | PCE               | BY            |
@@ -882,12 +776,12 @@ Feature: Co-product valuation via cost-distribution percent
     # Each co-product keeps its own carve (20% and 15% of the 450 CHF pool); the by-product stays at zero;
     # the finished good absorbs the remainder (65% = 292.5).
     And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder5               | inputProd5              | AveragePO        | MI                    | 450                |
-      | ppOrder5               | coProdA5                | AveragePO        | CO                    | 90                 |
-      | ppOrder5               | coProdB5                | AveragePO        | CO                    | 67.5               |
-      | ppOrder5               | byProd5                 | AveragePO        | BY                    | 0                  |
-      | ppOrder5               | mainProd5               | AveragePO        | MR                    | 292.5              |
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder5               | rawProduct5             | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder5               | coProdA5                | MovingAverageInvoice | CO                    | 90                 |
+      | ppOrder5               | coProdB5                | MovingAverageInvoice | CO                    | 67.5               |
+      | ppOrder5               | byProd5                 | MovingAverageInvoice | BY                    | 0                  |
+      | ppOrder5               | mainProd5               | MovingAverageInvoice | MR                    | 292.5              |
 
     And the manufacturing order identified by ppOrder5 is distributed
     And after not more than 60s, PP_Cost_Collector are found:
@@ -917,20 +811,20 @@ Feature: Co-product valuation via cost-distribution percent
     # carve 90). Order 1 has only A; order 2 also carries a second co-product B (15%, carve 67.5). A's own
     # carve must be identical across both orders - only the finished good shrinks, by exactly B's carve.
     And metasfresh contains M_Products:
-      | Identifier | X12DE355 |
-      | mainProd7a | PCE      |
-      | mainProd7b | PCE      |
-      | inputProd7 | PCE      |
-      | coProdA7   | PCE      |
-      | coProdB7   | PCE      |
+      | Identifier  | X12DE355 |
+      | mainProd7a  | PCE      |
+      | mainProd7b  | PCE      |
+      | rawProduct7 | PCE      |
+      | coProdA7    | PCE      |
+      | coProdB7    | PCE      |
 
     And metasfresh contains single line completed inventories
       | M_Inventory_ID   | M_InventoryLine_ID   | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID   |
-      | inputInventory7a | inputInventoryLine7a | 2024-03-20   | 540008         | inputProd7   | 0       | 30       | PCE          | 15        | inputHU7a |
-      | inputInventory7b | inputInventoryLine7b | 2024-03-20   | 540008         | inputProd7   | 0       | 30       | PCE          | 15        | inputHU7b |
+      | inputInventory7a | inputInventoryLine7a | 2024-03-20   | 540008         | rawProduct7  | 0       | 30       | PCE          | 15        | inputHU7a |
+      | inputInventory7b | inputInventoryLine7b | 2024-03-20   | 540008         | rawProduct7  | 0       | 30       | PCE          | 15        | inputHU7b |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | inputProd7   | AveragePO        | 15 CHF           | 60 PCE     |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | rawProduct7  | MovingAverageInvoice | 15 CHF           | 60 PCE     |
 
     And update M_Product:
       | M_Product_ID.Identifier | CoProductCostDistributionPercent |
@@ -950,9 +844,9 @@ Feature: Co-product valuation via cost-distribution percent
       | bom7b      | mainProd7b              | 2021-01-02 | bomVersion7b                         |
     And metasfresh contains PP_Product_BOMLines
       | Identifier    | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch | ComponentType |
-      | inputLine7a   | bom7a                        | inputProd7              | 2021-01-02 | 5        | CO            |
+      | inputLine7a   | bom7a                        | rawProduct7             | 2021-01-02 | 5        | CO            |
       | coProdALine7a | bom7a                        | coProdA7                | 2021-01-02 | -1       | CP            |
-      | inputLine7b   | bom7b                        | inputProd7              | 2021-01-02 | 5        | CO            |
+      | inputLine7b   | bom7b                        | rawProduct7             | 2021-01-02 | 5        | CO            |
       | coProdALine7b | bom7b                        | coProdA7                | 2021-01-02 | -1       | CP            |
       | coProdBLine7b | bom7b                        | coProdB7                | 2021-01-02 | -1       | CP            |
     And the PP_Product_BOM identified by bom7a is completed
@@ -969,7 +863,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder7a              | MOP         | mainProd7a              | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan7a                            |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine7a                 | ppOrder7a              | inputProd7              | 30           | false           | PCE               | CO            |
+      | inputBomLine7a                 | ppOrder7a              | rawProduct7             | 30           | false           | PCE               | CO            |
       | coProdABomLine7a               | ppOrder7a              | coProdA7                | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU7a is issued whole to PP_Order_BOMLine inputBomLine7a
@@ -991,10 +885,10 @@ Feature: Co-product valuation via cost-distribution percent
     And Wait until documents coReceiptCostCollector7a are posted
 
     And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder7a              | inputProd7              | AveragePO        | MI                    | 450                |
-      | ppOrder7a              | coProdA7                | AveragePO        | CO                    | 90                 |
-      | ppOrder7a              | mainProd7a              | AveragePO        | MR                    | 360                |
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder7a              | rawProduct7             | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder7a              | coProdA7                | MovingAverageInvoice | CO                    | 90                 |
+      | ppOrder7a              | mainProd7a              | MovingAverageInvoice | MR                    | 360                |
 
     And the manufacturing order identified by ppOrder7a is distributed
     And after not more than 60s, PP_Cost_Collector are found:
@@ -1020,7 +914,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder7b              | MOP         | mainProd7b              | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan7b                            |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine7b                 | ppOrder7b              | inputProd7              | 30           | false           | PCE               | CO            |
+      | inputBomLine7b                 | ppOrder7b              | rawProduct7             | 30           | false           | PCE               | CO            |
       | coProdABomLine7b               | ppOrder7b              | coProdA7                | -6           | false           | PCE               | CP            |
       | coProdBBomLine7b               | ppOrder7b              | coProdB7                | -6           | false           | PCE               | CP            |
 
@@ -1049,11 +943,11 @@ Feature: Co-product valuation via cost-distribution percent
     # Co-product A's carve is STILL 90 - unchanged by adding B; the finished good drops from 360 to 292.5,
     # exactly B's own carve (67.5).
     And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder7b              | inputProd7              | AveragePO        | MI                    | 450                |
-      | ppOrder7b              | coProdA7                | AveragePO        | CO                    | 90                 |
-      | ppOrder7b              | coProdB7                | AveragePO        | CO                    | 67.5               |
-      | ppOrder7b              | mainProd7b              | AveragePO        | MR                    | 292.5              |
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder7b              | rawProduct7             | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder7b              | coProdA7                | MovingAverageInvoice | CO                    | 90                 |
+      | ppOrder7b              | coProdB7                | MovingAverageInvoice | CO                    | 67.5               |
+      | ppOrder7b              | mainProd7b              | MovingAverageInvoice | MR                    | 292.5              |
 
     # Order 1's own CC-170 already wrote coProdA7's current cost up to 15 CHF/PCE (90 / 6 PCE) - so here,
     # in order 2, coProdA7's OWN receipt (6 PCE at ITS OWN now-15-CHF/PCE cost) capitalizes the SAME 90 CHF
@@ -1084,98 +978,16 @@ Feature: Co-product valuation via cost-distribution percent
       | P_Asset_Acct          | 0           |
 
   @from:cucumber
-  @Id:S29488_TC8
-  Scenario: A BOM without a participating co-product books exactly as before, under Average PO
-    # Regression guard: a plain single-output BOM (no CP/BY line at all) must book byte-for-byte as it did
-    # before the percent-distribution engine existed - no co-product carve, no extra CC-170 co-product leg.
-    And metasfresh contains M_Products:
-      | Identifier | X12DE355 |
-      | mainProd8  | PCE      |
-      | inputProd8 | PCE      |
-
-    And metasfresh contains single line completed inventories
-      | M_Inventory_ID  | M_InventoryLine_ID  | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID  |
-      | inputInventory8 | inputInventoryLine8 | 2024-03-20   | 540008         | inputProd8   | 0       | 30       | PCE          | 15        | inputHU8 |
-    And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | inputProd8   | AveragePO        | 15 CHF           | 30 PCE     |
-
-    And metasfresh contains M_HU_PI_Item_Product:
-      | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | mainProd8Item                      | packTUItem                 | mainProd8               | 100 | 2022-01-01 |
-
-    And metasfresh contains PP_Product_BOM
-      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | bom8       | mainProd8               | 2021-01-02 | bomVersion8                          |
-    And metasfresh contains PP_Product_BOMLines
-      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch | ComponentType |
-      | inputLine8 | bom8                         | inputProd8              | 2021-01-02 | 5        | CO            |
-    And the PP_Product_BOM identified by bom8 is completed
-
-    And metasfresh contains PP_Product_Plannings
-      | Identifier | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | prodPlan8  | mobileWorkflow                | mainProd8               | bomVersion8                              | false        |
-
-    And create PP_Order:
-      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
-      | ppOrder8               | MOP         | mainProd8               | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan8                             |
-    And after not more than 60s, PP_Order_BomLines are found
-      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine8                  | ppOrder8               | inputProd8              | 30           | false           | PCE               | CO            |
-
-    And the handling unit identified by inputHU8 is issued whole to PP_Order_BOMLine inputBomLine8
-
-    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
-      | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
-      | ppOrder8    | mainHU8            | N               | 0     | N               | 1     | N               | 24          | mainProd8Item                      |
-
-    When complete planning for PP_Order:
-      | PP_Order_ID.Identifier |
-      | ppOrder8               |
-
-    And after not more than 60s, PP_Cost_Collector are found:
-      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
-      | mainReceiptCostCollector8       | ppOrder8               | mainProd8               | 24          | CO        | MaterialReceipt   |
-    And Wait until documents mainReceiptCostCollector8 are posted
-
-    And PP_Order_Cost are found:
-      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder8               | inputProd8              | AveragePO        | MI                    | 450                |
-      | ppOrder8               | mainProd8               | AveragePO        | MR                    | 450                |
-
-    And the manufacturing order identified by ppOrder8 is distributed
-    And after not more than 60s, PP_Cost_Collector are found:
-      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
-      | distributionCostCollector8      | ppOrder8               | mainProd8               | 0           | CO        | CostDifferenceDistribution |
-    And Wait until documents distributionCostCollector8 are posted
-
-    # Only the finished good's own leg is posted - no co-product leg is emitted at all, because none exists.
-    And Fact_Acct records are matching
-      | Record_ID                  | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector8 | P_Asset_Acct          | mainProd8    | 450       | 0         | 0 PCE |
-      | distributionCostCollector8 | P_WIP_Acct            | mainProd8    | 0         | 450       | 0 PCE |
-
-    And Fact_Acct records balances over the whole PP_Order ppOrder8 are matching
-      | AccountConceptualName | AcctBalance |
-      | P_WIP_Acct            | 0           |
-      | P_Asset_Acct          | 0           |
-
-  @from:cucumber
   @Id:S29488_TC8b
-  Scenario: A BOM without a participating co-product books exactly as before, under Moving Average Invoice
-    And cost elements for material costing methods MovingAverageInvoice are active
-    And update C_AcctSchema:
-      | C_AcctSchema_ID | CostingMethod |
-      | acctSchema      | M             |
-
+  Scenario: A BOM without a participating co-product books exactly as before
     And metasfresh contains M_Products:
-      | Identifier  | X12DE355 |
-      | mainProd8b  | PCE      |
-      | inputProd8b | PCE      |
+      | Identifier   | X12DE355 |
+      | mainProd8b   | PCE      |
+      | rawProduct8b | PCE      |
 
     And update current costs
       | M_Product_ID | CurrentCostPrice |
-      | inputProd8b  | 15 CHF           |
+      | rawProduct8b | 15 CHF           |
 
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
@@ -1183,14 +995,14 @@ Feature: Co-product valuation via cost-distribution percent
 
     And metasfresh contains single line completed inventories
       | M_Inventory_ID   | M_InventoryLine_ID   | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID   |
-      | inputInventory8b | inputInventoryLine8b | 2024-03-20   | 540008         | inputProd8b  | 0       | 30       | PCE          | 15        | inputHU8b |
+      | inputInventory8b | inputInventoryLine8b | 2024-03-20   | 540008         | rawProduct8b | 0       | 30       | PCE          | 15        | inputHU8b |
 
     And metasfresh contains PP_Product_BOM
       | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
       | bom8b      | mainProd8b              | 2021-01-02 | bomVersion8b                         |
     And metasfresh contains PP_Product_BOMLines
       | Identifier  | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch | ComponentType |
-      | inputLine8b | bom8b                        | inputProd8b             | 2021-01-02 | 5        | CO            |
+      | inputLine8b | bom8b                        | rawProduct8b            | 2021-01-02 | 5        | CO            |
     And the PP_Product_BOM identified by bom8b is completed
 
     And metasfresh contains PP_Product_Plannings
@@ -1202,7 +1014,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder8b              | MOP         | mainProd8b              | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan8b                            |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine8b                 | ppOrder8b              | inputProd8b             | 30           | false           | PCE               | CO            |
+      | inputBomLine8b                 | ppOrder8b              | rawProduct8b            | 30           | false           | PCE               | CO            |
 
     And the handling unit identified by inputHU8b is issued whole to PP_Order_BOMLine inputBomLine8b
 
@@ -1221,7 +1033,7 @@ Feature: Co-product valuation via cost-distribution percent
 
     And PP_Order_Cost are found:
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
-      | ppOrder8b              | inputProd8b             | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder8b              | rawProduct8b            | MovingAverageInvoice | MI                    | 450                |
       | ppOrder8b              | mainProd8b              | MovingAverageInvoice | MR                    | 450                |
 
     And the manufacturing order identified by ppOrder8b is distributed
@@ -1260,7 +1072,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
       | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
@@ -1335,7 +1147,7 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
     And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
-      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
       | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
 
     And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
@@ -1394,3 +1206,226 @@ Feature: Co-product valuation via cost-distribution percent
       | AccountConceptualName | AcctBalance |
       | P_Asset_Acct          | 0           |
       | P_WIP_Acct            | 0           |
+
+  @from:cucumber
+  @Id:S29488_TC16
+  Scenario: Co-product received at exactly its carve needs no post-calculation adjustment
+    # Randstuecke (coProd) carries the same 10.666667% percent as the write-down case, so its carve of the
+    # 450 CHF input pool is p x 450 = 48 CHF (8 CHF/PCE x 6 PCE). Its OWN current cost is set to exactly
+    # 8 CHF/PCE, so its receipt books 8 x 6 = 48 - identical to its carve. The residual is 48 - 48 = 0, so
+    # NO co-product CC-170 leg is emitted at all; only the finished good's own 402 residual is discharged.
+    And update M_Product:
+      | M_Product_ID.Identifier | CoProductCostDistributionPercent |
+      | coProd                  | 10.666667                        |
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | coProd       | 8 CHF            |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
+      | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
+
+    And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
+
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 24          | mainProdItem                       |
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | coProdBomLine       | coHU               | N               | 0     | N               | 1     | N               | 6           | coProdItem                         |
+
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
+    And Wait until documents coReceiptCostCollector are posted
+
+    # Cost conservation: the co-product is relieved at its carve (48), the main product by the remainder
+    # (402), summing to the whole 450 input pool.
+    And PP_Order_Cost are found:
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 48                 |
+      | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 402                |
+
+    # The co-product's own receipt books exactly its carve (8 CHF/PCE x 6 = 48) - Dr P_Asset / Cr P_WIP.
+    And Fact_Acct records are matching
+      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 48        | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 48        | -6 PCE |
+
+    And the manufacturing order identified by ppOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # The co-product's residual is zero, so it draws NO CC-170 leg at all - only the finished good's own
+    # 402 residual capitalizes here (mirrors TC7 order 2, where a co-product already received at its carve
+    # draws no distribution leg). The exact-match assertion below fails if any co-product leg is emitted.
+    And Fact_Acct records are matching
+      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
+
+    And Fact_Acct records balances over the whole PP_Order ppOrder are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | 0           |
+      | P_Asset_Acct          | 0           |
+
+  @from:cucumber
+  @Id:S29488_TC17
+  Scenario: Co-product receipt over-relieves the input pool, driving order WIP negative until the post-calculation correction
+    # Randstuecke carries the 10.666667% percent (carve 48), but its OWN current cost is a high 100 CHF/PCE,
+    # so its 6-PCE receipt books 100 x 6 = 600 - MORE than the whole 450 CHF input pool. That over-relieves
+    # WIP: after the receipts the order's WIP balance is NEGATIVE (450 issued in, 600 relieved out = -150).
+    # The CC-170 post-calculation then writes the co-product back DOWN to its 48 carve (a 552 write-down),
+    # which corrects the order's WIP back to 0.
+    And update M_Product:
+      | M_Product_ID.Identifier | CoProductCostDistributionPercent |
+      | coProd                  | 10.666667                        |
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | coProd       | 100 CHF          |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
+      | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
+
+    And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
+
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 24          | mainProdItem                       |
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | coProdBomLine       | coHU               | N               | 0     | N               | 1     | N               | 6           | coProdItem                         |
+
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
+    And Wait until documents coReceiptCostCollector are posted
+
+    # The co-product's receipt books its full own value (100 x 6 = 600) into inventory - Dr P_Asset / Cr P_WIP.
+    And Fact_Acct records are matching
+      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 600       | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 600       | -6 PCE |
+
+    # After the receipts the whole order's WIP is NEGATIVE: 450 was issued into WIP, 600 was relieved out of
+    # it by the co-product receipt, netting -150 - the over-relief the post-calculation still has to correct.
+    And Fact_Acct records balances over the whole PP_Order ppOrder are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | -150        |
+
+    # Cost conservation is unaffected: the co-product's carve is still 48, the main product's still 402.
+    And PP_Order_Cost are found:
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 48                 |
+      | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 402                |
+
+    And the manufacturing order identified by ppOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # The CC-170 true-up writes the co-product down from 600 to its 48 carve (a 552 write-down: Cr P_Asset /
+    # Dr P_WIP) and capitalizes the main product's 402 - together bringing the order's WIP back from -150 to 0.
+    And Fact_Acct records are matching
+      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 552       | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | 552       | 0         | 0 PCE |
+
+    And Fact_Acct records balances over the whole PP_Order ppOrder are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | 0           |
+      | P_Asset_Acct          | 0           |
+
+  @from:cucumber
+  @Id:S29488_TC18
+  Scenario: Co-product with zero current cost books nothing at receipt and takes its full carve at post-calculation
+    # Randstuecke carries the 10.666667% percent (carve 48) but has NO own current cost at receive time - a
+    # genuinely never-priced co-product (M_Cost = 0), distinct from a blank percent (which carves nothing at
+    # all). Its MixVariance receipt therefore books ZERO, and the whole 48 CHF carve is applied at the CC-170
+    # post-calculation instead, as a write-UP from 0 to 48.
+    And update M_Product:
+      | M_Product_ID.Identifier | CoProductCostDistributionPercent |
+      | coProd                  | 10.666667                        |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | inputBomLine                   | ppOrder                | rawProduct              | 30           | false           | PCE               | CO            |
+      | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
+
+    And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
+
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 24          | mainProdItem                       |
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | coProdBomLine       | coHU               | N               | 0     | N               | 1     | N               | 6           | coProdItem                         |
+
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
+    And Wait until documents coReceiptCostCollector are posted
+
+    # The zero-cost receipt relieves NOTHING from WIP: after the receipts the order's WIP is still the full
+    # 450 issued in (contrast the write-down case, where the 59.4 receipt leaves 390.6) - proof it booked 0.
+    And Fact_Acct records balances over the whole PP_Order ppOrder are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | 450         |
+
+    # Cost conservation still carves the co-product at 48 and the main product at 402.
+    And PP_Order_Cost are found:
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
+      | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
+      | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 48                 |
+      | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 402                |
+
+    And the manufacturing order identified by ppOrder is distributed
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
+      | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
+    And Wait until documents distributionCostCollector are posted
+
+    # Because the receipt booked 0, the co-product's FULL 48 carve is discharged here as a write-UP
+    # (Dr P_Asset / Cr P_WIP) - the same leg shape as the main product's own 402 residual.
+    And Fact_Acct records are matching
+      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | 48        | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | 0         | 48        | 0 PCE |
+
+    And Fact_Acct records balances over the whole PP_Order ppOrder are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | 0           |
+      | P_Asset_Acct          | 0           |
