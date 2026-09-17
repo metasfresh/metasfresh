@@ -27,6 +27,8 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.workflow.WFNodeId;
+import de.metas.workflow.WorkflowId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
@@ -38,6 +40,7 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_S_Resource;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,8 +59,22 @@ public class AD_WF_Node_StepDef
 	private final AD_Workflow_StepDefData workflowTable;
 	private final S_Resource_StepDefData resourceTable;
 
-	/** Every {@code AD_WF_Node} this step-def created, deactivated afterwards -- see {@code AD_Workflow_StepDef}'s own cleanup of the same shape, for the workflow that owns these nodes. */
-	private final Set<Integer> createdNodeIds = new HashSet<>();
+	/**
+	 * Every {@code AD_WF_Node} this step-def created, deactivated afterwards -- see {@code AD_Workflow_StepDef}'s
+	 * own cleanup of the same shape, for the workflow that owns these nodes. Uses the same {@code WFNodeId} type
+	 * that class's own javadoc claims to mirror {@code PP_Product_Planning_StepDef}'s {@code ProductPlanningId}
+	 * with.
+	 */
+	private final Set<WFNodeId> createdNodeIds = new HashSet<>();
+
+	/**
+	 * The {@code AD_Workflow_ID} each created node was created under (the row's own {@code
+	 * AD_Workflow_ID.Identifier}, resolved at creation time in {@link #create_AD_WF_Node}). {@link
+	 * #deactivateCreatedNodes()} uses this to scope its first-node-pointer clearing to that one specific owning
+	 * workflow -- and only when {@code AD_Workflow_StepDefData} confirms the fixture itself created it -- rather
+	 * than an unscoped query for any {@code AD_Workflow} row that happens to point at the node.
+	 */
+	private final Map<WFNodeId, WorkflowId> owningWorkflowIdAtCreation = new HashMap<>();
 
 	public AD_WF_Node_StepDef(
 			@NonNull final AD_WF_Node_StepDefData workflowNodeTable,
@@ -114,7 +131,9 @@ public class AD_WF_Node_StepDef
 			wfNode.setS_Resource_ID(resourceID);
 
 			InterfaceWrapperHelper.saveRecord(wfNode);
-			createdNodeIds.add(wfNode.getAD_WF_Node_ID());
+			final WFNodeId wfNodeId = WFNodeId.ofRepoId(wfNode.getAD_WF_Node_ID());
+			createdNodeIds.add(wfNodeId);
+			owningWorkflowIdAtCreation.put(wfNodeId, WorkflowId.ofRepoId(workflow.getAD_Workflow_ID()));
 
 			final String wfNodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID + "." + TABLECOLUMN_IDENTIFIER);
 			workflowNodeTable.put(wfNodeIdentifier, wfNode);
@@ -125,25 +144,35 @@ public class AD_WF_Node_StepDef
 	 * Deactivates every {@code AD_WF_Node} this scenario created (tracked in {@link #createdNodeIds}). Runs on
 	 * scenario pass AND failure.
 	 * <p>
-	 * First clears any {@code AD_Workflow.AD_WF_Node_ID} still pointing at the node: a production guard refuses
-	 * to deactivate a workflow's own first step ("Der erste Arbeitsschritt eines Arbeitsablaufs kann nicht
-	 * deaktiviert werden"), and {@code AD_Workflow_StepDef}'s own teardown deactivates the owning workflow in
-	 * this same phase without a defined ordering between the two -- clearing the reference here makes this
-	 * method's own deactivation self-sufficient regardless of which teardown runs first.
+	 * First clears the node's owning {@code AD_Workflow.AD_WF_Node_ID} pointer, if that workflow still points at
+	 * it: the first-node guard ({@code AD_WF_Node.preventDeactivateFirstNode} / {@code
+	 * PPRoutingRepository.isFirstNodeOfWorkflow}) refuses to deactivate a workflow's own configured start node,
+	 * and does so regardless of the workflow's own {@code IsActive} -- {@code AD_Workflow.validateFirstNode}
+	 * explicitly permits a cleared pointer ({@code AD_WF_Node_ID <= 0}), so clearing it here is the only way
+	 * past the guard, not a workaround for hook ordering. Doing it in THIS method (rather than relying on {@code
+	 * AD_Workflow_StepDef}'s own teardown to clear it first) keeps this method self-sufficient regardless of
+	 * which of the two classes' {@code @After} hooks happens to run first.
+	 * <p>
+	 * Scoped to the one workflow each node was created under ({@link #owningWorkflowIdAtCreation}), and only
+	 * when {@code AD_Workflow_StepDefData} confirms the fixture itself created that workflow -- a workflow this
+	 * scenario merely obtained via {@code load AD_Workflow:} (masterdata) is left untouched even if a node was
+	 * created against it, so this teardown can never blank a loaded routing's start node.
 	 */
 	@After
 	public void deactivateCreatedNodes()
 	{
-		for (final Integer nodeId : createdNodeIds)
+		for (final WFNodeId nodeId : createdNodeIds)
 		{
-			queryBL.createQueryBuilder(I_AD_Workflow.class)
-					.addEqualsFilter(I_AD_Workflow.COLUMNNAME_AD_WF_Node_ID, nodeId)
-					.create()
-					.list()
-					.forEach(workflow -> {
-						workflow.setAD_WF_Node_ID(0);
-						InterfaceWrapperHelper.saveRecord(workflow);
-					});
+			final WorkflowId owningWorkflowId = owningWorkflowIdAtCreation.get(nodeId);
+			if (owningWorkflowId != null && workflowTable.isCreated(owningWorkflowId))
+			{
+				final I_AD_Workflow owningWorkflow = InterfaceWrapperHelper.load(owningWorkflowId, I_AD_Workflow.class);
+				if (owningWorkflow.getAD_WF_Node_ID() == nodeId.getRepoId())
+				{
+					owningWorkflow.setAD_WF_Node_ID(0);
+					InterfaceWrapperHelper.saveRecord(owningWorkflow);
+				}
+			}
 
 			final I_AD_WF_Node record = InterfaceWrapperHelper.load(nodeId, I_AD_WF_Node.class);
 			if (record.isActive())

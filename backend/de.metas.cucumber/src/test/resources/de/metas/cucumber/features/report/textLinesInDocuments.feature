@@ -525,6 +525,12 @@ Feature: Free text lines print at their position on a sales order confirmation
     # established coverage of this invariant) -- pinned here because this scenario is the one whose head-offset
     # assertions depend on it still being 'D' after crossing every article
     Then the text line identified by "topBlock" has TextLineScope "Document"
+    # pins the position that makes the head-offset load-bearing (see the comment above): topBlock's Line must
+    # sit AFTER line40's (40) for the "tl_line - 1000000" branch to be exercised rather than merely present. A
+    # later fixture edit (e.g. changing the article count) could silently move this back below every article --
+    # every assertion below would still pass, carrying the line by the ordinary path instead. Same shape as
+    # TC13's own pin of "trailing"'s Line further up this file.
+    And the text line identified by "topBlock" has Line "41"
 
     # midNote (Following-scoped, above line20) has a run bounded by routingNote -- article lines 20 and 30
     # only. Neither is on the Warehouse record (only line40 is), so its run is genuinely absent there and,

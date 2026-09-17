@@ -29,6 +29,8 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.workflow.WFNodeId;
+import de.metas.workflow.WorkflowId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.en.And;
@@ -80,12 +82,26 @@ public class AD_Workflow_StepDef
 	private final AD_User_StepDefData userTable;
 
 	/**
-	 * Every {@code AD_Workflow} this step-def created, so {@link #deactivateCreatedWorkflows()} can deactivate
-	 * them afterwards -- unlike the {@code Name} collision (fixed by uniquifying it), a created-but-never-
-	 * deactivated workflow does not break anything by itself, but it accumulates forever on a persistent local
-	 * DB, one row per run. Mirrors {@code PP_Product_Planning_StepDef}'s own cleanup of the same shape.
+	 * Every {@code AD_Workflow} this step-def created -- directly ({@link #createWorkflow(Map)}) or via {@link
+	 * #cloneWorkflow(Map)} -- so {@link #deactivateCreatedWorkflows()} can deactivate them afterwards -- unlike
+	 * the {@code Name} collision (fixed by uniquifying it), a created-but-never-deactivated workflow does not
+	 * break anything by itself, but it accumulates forever on a persistent local DB, one row per run. Mirrors
+	 * {@code PP_Product_Planning_StepDef}'s own cleanup of the same shape, using the same {@code WorkflowId} type
+	 * that class uses ({@code ProductPlanningId}).
+	 * <p>
+	 * Also mirrored into {@code workflowTable} (via {@link AD_Workflow_StepDefData#markCreated}) so {@code
+	 * AD_WF_Node_StepDef} can tell a workflow this step-def created apart from one it only registered via
+	 * {@code load AD_Workflow:} (masterdata) -- see that class's own teardown.
 	 */
-	private final Set<Integer> createdWorkflowIds = new HashSet<>();
+	private final Set<WorkflowId> createdWorkflowIds = new HashSet<>();
+
+	/**
+	 * Every {@code AD_WF_Node} that {@link #cloneWorkflow(Map)} produced as a side effect of cloning a workflow
+	 * (via {@link CopyRecordService}), which never goes through {@code AD_WF_Node_StepDef.create_AD_WF_Node} and
+	 * so is invisible to that class's own {@code createdNodeIds} tracking. Deactivated by {@link
+	 * #deactivateCreatedWorkflows()} alongside the cloned workflows themselves.
+	 */
+	private final Set<WFNodeId> createdViaCloneNodeIds = new HashSet<>();
 
 	public AD_Workflow_StepDef(
 			@NonNull final AD_Workflow_StepDefData workflowTable,
@@ -249,19 +265,50 @@ public class AD_Workflow_StepDef
 				.ifPresent(user -> workflowRecord.setAD_User_InCharge_ID(user.getAD_User_ID()));
 
 		saveRecord(workflowRecord);
-		createdWorkflowIds.add(workflowRecord.getAD_Workflow_ID());
+		final WorkflowId workflowId = WorkflowId.ofRepoId(workflowRecord.getAD_Workflow_ID());
+		createdWorkflowIds.add(workflowId);
+		workflowTable.markCreated(workflowId);
 
 		workflowTable.putOrReplace(workflowIdentifier, workflowRecord);
 	}
 
 	/**
-	 * Deactivates every {@code AD_Workflow} this scenario created (tracked in {@link #createdWorkflowIds}) --
-	 * see that field's own Javadoc. Runs on scenario pass AND failure.
+	 * Deactivates every {@code AD_Workflow} this scenario created or cloned (tracked in {@link
+	 * #createdWorkflowIds}), and every {@code AD_WF_Node} a clone produced as a side effect (tracked in {@link
+	 * #createdViaCloneNodeIds}) -- see those fields' own Javadoc. Runs on scenario pass AND failure.
+	 * <p>
+	 * Clears each created workflow's own {@code AD_WF_Node_ID} pointer first, unconditionally: {@code
+	 * AD_Workflow.validateFirstNode} explicitly permits a cleared pointer, but {@code
+	 * PPRoutingRepository.isFirstNodeOfWorkflow} ignores {@code IsActive} when guarding a node's own
+	 * deactivation, so a still-set pointer blocks that node from ever being deactivated -- by this method (for a
+	 * cloned node, below) or by {@code AD_WF_Node_StepDef}'s own teardown (for a node created via {@code create
+	 * AD_WF_Node:}), regardless of which {@code @After} hook happens to run first. Scoped to {@link
+	 * #createdWorkflowIds} only, so a workflow this scenario merely loaded (masterdata) is never touched.
 	 */
 	@After
 	public void deactivateCreatedWorkflows()
 	{
-		for (final Integer workflowId : createdWorkflowIds)
+		for (final WorkflowId workflowId : createdWorkflowIds)
+		{
+			final I_AD_Workflow record = InterfaceWrapperHelper.load(workflowId, I_AD_Workflow.class);
+			if (record.getAD_WF_Node_ID() > 0)
+			{
+				record.setAD_WF_Node_ID(0);
+				InterfaceWrapperHelper.saveRecord(record);
+			}
+		}
+
+		for (final WFNodeId nodeId : createdViaCloneNodeIds)
+		{
+			final I_AD_WF_Node record = InterfaceWrapperHelper.load(nodeId, I_AD_WF_Node.class);
+			if (record.isActive())
+			{
+				record.setIsActive(false);
+				InterfaceWrapperHelper.saveRecord(record);
+			}
+		}
+
+		for (final WorkflowId workflowId : createdWorkflowIds)
 		{
 			final I_AD_Workflow record = InterfaceWrapperHelper.load(workflowId, I_AD_Workflow.class);
 			if (record.isActive())
@@ -272,6 +319,14 @@ public class AD_Workflow_StepDef
 		}
 	}
 
+	/**
+	 * Clones an {@code AD_Workflow} via {@link CopyRecordService}, which also clones every one of its {@code
+	 * AD_WF_Node} rows and remaps the clone's own {@code AD_WF_Node_ID} pointer to its own copied node (not the
+	 * original's). Both the cloned workflow and its cloned nodes are tracked here (never through {@code
+	 * AD_WF_Node_StepDef}, which only ever sees nodes created via its own {@code create AD_WF_Node:} step) so
+	 * {@link #deactivateCreatedWorkflows()} deactivates them afterwards instead of leaving them behind on every
+	 * run.
+	 */
 	private void cloneWorkflow(@NonNull final Map<String, String> row)
 	{
 		final String workflowIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -287,6 +342,16 @@ public class AD_Workflow_StepDef
 		final String clonedWorkflowIdentifier = DataTableUtil.extractStringForColumnName(row, "ClonedWorkflow." + COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_AD_Workflow clonedWorkflowRecord = load(po.get_ID(), I_AD_Workflow.class);
 		workflowTable.putOrReplace(clonedWorkflowIdentifier, clonedWorkflowRecord);
+
+		final WorkflowId clonedWorkflowId = WorkflowId.ofRepoId(clonedWorkflowRecord.getAD_Workflow_ID());
+		createdWorkflowIds.add(clonedWorkflowId);
+		workflowTable.markCreated(clonedWorkflowId);
+
+		queryBL.createQueryBuilder(I_AD_WF_Node.class)
+				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, clonedWorkflowRecord.getAD_Workflow_ID())
+				.create()
+				.list()
+				.forEach(clonedNode -> createdViaCloneNodeIds.add(WFNodeId.ofRepoId(clonedNode.getAD_WF_Node_ID())));
 	}
 
 	private void validateWorkflow(@NonNull final Map<String, String> row)
