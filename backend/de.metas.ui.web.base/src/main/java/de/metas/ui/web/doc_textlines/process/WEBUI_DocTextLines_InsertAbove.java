@@ -65,7 +65,7 @@ public class WEBUI_DocTextLines_InsertAbove extends ViewBasedProcessTemplate imp
 	{
 		if (selectedRowIds.isMoreThanOneDocumentId())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only one row can be selected");
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
 		if (selectedRowIds.isEmpty() && view.size() > 0)

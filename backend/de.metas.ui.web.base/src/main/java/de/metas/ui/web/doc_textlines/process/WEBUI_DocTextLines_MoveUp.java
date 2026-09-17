@@ -64,7 +64,7 @@ public class WEBUI_DocTextLines_MoveUp extends ViewBasedProcessTemplate implemen
 	{
 		if (selectedRowIds.isMoreThanOneDocumentId())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("only one row can be selected");
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
 		if (selectedRowIds.isEmpty())

@@ -61,7 +61,7 @@ public class WEBUI_Order_DocTextLines_Launcher extends JavaProcess implements IP
 	{
 		if (!context.isSingleSelection())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("one and only one order shall be selected");
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
 		if (context.isExistingDocument().isFalse())
