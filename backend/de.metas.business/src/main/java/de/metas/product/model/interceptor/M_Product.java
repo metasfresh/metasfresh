@@ -33,6 +33,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,6 +68,9 @@ public class M_Product
 
 	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
 
+	private static final BigDecimal COPRODUCT_COST_DISTRIBUTION_PERCENT_MIN = BigDecimal.ZERO;
+	private static final BigDecimal COPRODUCT_COST_DISTRIBUTION_PERCENT_MAX = BigDecimal.valueOf(100);
+
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -89,6 +93,28 @@ public class M_Product
 	{
 		ProductDAO.extractIssuingToleranceSpec(product); // validate
 		normalizeProductCodeFields(product);
+		validateCoProductCostDistributionPercent(product);
+	}
+
+	/**
+	 * Per-product data-entry range guard (AC17): {@code CoProductCostDistributionPercent} only accepts
+	 * {@code [0, 100]}; blank/NULL stays legal. Distinct from the per-order {@code Σp ≤ 100%} guard
+	 * (enforced elsewhere, at cost-calculation time), which bounds the sum across an order.
+	 */
+	private void validateCoProductCostDistributionPercent(@NonNull final I_M_Product product)
+	{
+		final BigDecimal percent = product.getCoProductCostDistributionPercent();
+		if (percent == null)
+		{
+			return; // blank stays legal
+		}
+
+		if (percent.compareTo(COPRODUCT_COST_DISTRIBUTION_PERCENT_MIN) < 0
+				|| percent.compareTo(COPRODUCT_COST_DISTRIBUTION_PERCENT_MAX) > 0)
+		{
+			throw new AdempiereException("CoProductCostDistributionPercent must be between 0 and 100, but was: " + percent)
+					.markAsUserValidationError();
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
