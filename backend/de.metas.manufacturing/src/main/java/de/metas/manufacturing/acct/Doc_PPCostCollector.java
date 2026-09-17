@@ -386,6 +386,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			// nothing to net back. Happens when the original carve was zero: a co-product with a blank/0% cost
 			// distribution percent, or any by-product (always valued at zero). No CostDetail was ever created, so we
 			// log why and post nothing rather than throwing.
+			// Concrete example: an order issues 450 CHF of input and yields a by-product (booked at 0 CHF, since
+			// AvgPO/MAI value every by-product receipt at zero) plus a co-product whose 0% distribution percent
+			// carved 0 CHF of that 450. Reversing either receipt has nothing to net back: the original receipt wrote
+			// no CostDetail (0 CHF), so the reversal produces no counter-posting.
 			logger.info("Co/by-product reversal line has nothing to reverse: {}", createCostsResult.getExplanationAsString());
 			return null;
 		}
