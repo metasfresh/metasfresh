@@ -271,15 +271,14 @@ public final class PPOrderCosts
 				.reduce(Percent.ZERO, Percent::add);
 		if (totalCoProductDistributionPercent.isOverOneHundred())
 		{
-			// Sort ascending by product name so the message is deterministic; `costs`/`coProductCosts` are
-			// backed by a HashMap and otherwise iterate in an unspecified (JVM-dependent) order.
+			// Sort by product id for a deterministic message; the backing map iterates in unspecified order.
 			final List<ProductId> offendingProductIds = coProductCosts.stream()
 					.filter(coProductCost -> {
 						final Percent percent = coProductCost.getCoProductCostDistributionPercent();
 						return percent != null && percent.signum() > 0;
 					})
 					.map(PPOrderCost::getProductId)
-					.sorted(Comparator.comparing(Services.get(IProductBL.class)::getProductName))
+					.sorted(Comparator.comparing(ProductId::getRepoId))
 					.collect(ImmutableList.toImmutableList());
 			throw new AdempiereException("Co-products' cost distribution percent sum of " + totalCoProductDistributionPercent
 					+ " exceeds 100% for product(s): " + describeProducts(offendingProductIds));
