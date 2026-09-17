@@ -137,7 +137,7 @@ public class AtpReconciliationBackupTest
 
 		atpTargetCalculator = AtpTargetCalculator.newInstanceForUnitTesting();
 		atpReconciliationCommand = new AtpReconciliationCommand(
-				atpTargetCalculator, candidateChangeService, candidateRepository, new AtpReconciliationBackupRepositoryImpl());
+				atpTargetCalculator, candidateChangeService, candidateRepository, new DefaultAtpReconciliationBackupRepository());
 	}
 
 	@Test
@@ -207,7 +207,7 @@ public class AtpReconciliationBackupTest
 	 * A STOCK candidate backed up by one reconciliation run can legitimately be backed up again by a LATER
 	 * run whose window still reaches it - {@code MD_ATP_Reconciliation_Backup} has no uniqueness on
 	 * {@code MD_Candidate_ID} (its own migration header: "one row per STOCK candidate a run touched"), so
-	 * that candidate ends up with two rows sharing its id. {@code AtpReconciliationDetailRepo} reuses the
+	 * that candidate ends up with two rows sharing its id. {@code AtpReconciliationDetailRepository} reuses the
 	 * same table for a DIFFERENT purpose - naming the correction candidate's OWN business-case detail - and
 	 * originally looked a candidate up by {@code MD_Candidate_ID} alone, so re-reading a twice-audited STOCK
 	 * candidate hit {@code DBMoreThanOneRecordsFoundException}. This is the normal, expected operational
@@ -286,7 +286,7 @@ public class AtpReconciliationBackupTest
 	/** Really persists the backup (delegating to the real implementation), then throws - see the test above. */
 	private static final class CrashAfterBackupRepository implements AtpReconciliationBackupRepository
 	{
-		private final AtpReconciliationBackupRepository delegate = new AtpReconciliationBackupRepositoryImpl();
+		private final AtpReconciliationBackupRepository delegate = new DefaultAtpReconciliationBackupRepository();
 
 		private boolean backupWasCalled = false;
 		private String capturedRunUuid = null;

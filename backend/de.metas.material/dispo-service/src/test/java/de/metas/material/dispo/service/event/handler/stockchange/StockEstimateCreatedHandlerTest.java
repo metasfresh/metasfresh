@@ -29,7 +29,12 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.impl.WarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -39,6 +44,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.newMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,6 +67,14 @@ public class StockEstimateCreatedHandlerTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(IWarehouseBL.class, new WarehouseBL());
+
+		// Pre-create the WAREHOUSE_ID warehouse so WarehouseBL.isIgnoreInMaterialDispo can load it.
+		{
+			final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+			InterfaceWrapperHelper.setValue(warehouse, I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, WAREHOUSE_ID.getRepoId());
+			InterfaceWrapperHelper.saveRecord(warehouse);
+		}
 
 		candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
 		candidateChangeService = Mockito.mock(CandidateChangeService.class);

@@ -48,7 +48,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DeleteCandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.repohelpers.AtpReconciliationDetailRepo;
+import de.metas.material.dispo.commons.repository.repohelpers.AtpReconciliationDetailRepository;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
@@ -120,12 +120,12 @@ public class CandidateRepositoryWriteService
 	@NonNull private final StockChangeDetailRepo stockChangeDetailRepo;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	@NonNull private final CandidateQtyDetailsRepository candidateQtyDetailsRepository;
-	@NonNull private final AtpReconciliationDetailRepo atpReconciliationDetailRepo;
+	@NonNull private final AtpReconciliationDetailRepository atpReconciliationDetailRepo;
 
 	/**
 	 * Legacy 4-arg shape, kept so the many existing test call sites that construct this class directly don't all
 	 * need touching for one new business-case detail repo - delegates with a bare {@code new}, harmless since
-	 * {@link AtpReconciliationDetailRepo} carries no state of its own (same as {@link StockChangeDetailRepo}).
+	 * {@link AtpReconciliationDetailRepository} carries no state of its own (same as {@link StockChangeDetailRepo}).
 	 */
 	public CandidateRepositoryWriteService(
 			@NonNull final DimensionService dimensionService,
@@ -133,7 +133,7 @@ public class CandidateRepositoryWriteService
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
 			@NonNull final CandidateQtyDetailsRepository candidateQtyDetailsRepository)
 	{
-		this(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, candidateQtyDetailsRepository, new AtpReconciliationDetailRepo());
+		this(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, candidateQtyDetailsRepository, new AtpReconciliationDetailRepository());
 	}
 
 	/**

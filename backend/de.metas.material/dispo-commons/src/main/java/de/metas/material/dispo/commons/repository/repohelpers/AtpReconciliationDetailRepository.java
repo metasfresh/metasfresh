@@ -47,7 +47,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * to stay disjoint from those rows (see migration {@code 5824060} for why that column exists).
  */
 @Service
-public class AtpReconciliationDetailRepo
+public class AtpReconciliationDetailRepository
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
