@@ -30,8 +30,12 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -52,34 +56,47 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * <p>This test does not render anything. It parses the two {@code report.jrxml} files as plain XML and
  * asserts, structurally, that both subreports of that detail-band switch carry a
- * {@code printWhenExpression} referencing {@code details_product_overflow} -- the cheapest check that
- * would have caught the original deletion, and the cheapest one that will catch a repeat.
+ * {@code printWhenExpression} gating on the specific literal ({@code "Y"} or {@code "N"}) that subreport
+ * is meant to render on -- not merely that some condition mentioning the switch key is present. A
+ * condition that is present but rewritten to the wrong literal (e.g. both subreports gated on the same
+ * value by a re-save) would leave a weaker, presence-only check green while leaving either duplicate
+ * printing (both {@code "Y"}) or, under the shipped {@code "N"} default, no product detail at all (both
+ * gated {@code "N"}) -- the second of which is worse than the defect this test exists to prevent.
  */
 class DetailTemplateSwitchGateTest
 {
 	private static final String SWITCH_KEY = "details_product_overflow";
 
+	/** Matches {@code $R{details_product_overflow}.equals( "Y" )} (or {@code "N"}), capturing the literal. */
+	private static final Pattern SWITCH_LITERAL_PATTERN = Pattern.compile(SWITCH_KEY + "\\}\\.equals\\(\\s*\"([YN])\"\\s*\\)");
+
 	@Test
 	void order_report_both_detail_subreports_carry_the_switch_gate() throws Exception
 	{
+		final Map<String, String> expectedLiteralBySubreportExpression = new LinkedHashMap<>();
+		expectedLiteralBySubreportExpression.put("de/metas/docs/sales/order/report_details.jasper", "Y");
+		expectedLiteralBySubreportExpression.put("de/metas/docs/sales/order/report_details_v2.jasper", "N");
+
 		assertBothSubreportsGated(
 				"src/main/jasperreports/de/metas/docs/sales/order/report.jrxml",
-				"de/metas/docs/sales/order/report_details.jasper",
-				"de/metas/docs/sales/order/report_details_v2.jasper");
+				expectedLiteralBySubreportExpression);
 	}
 
 	@Test
 	void invoice_report_both_detail_subreports_carry_the_switch_gate() throws Exception
 	{
+		final Map<String, String> expectedLiteralBySubreportExpression = new LinkedHashMap<>();
+		expectedLiteralBySubreportExpression.put("de/metas/docs/sales/invoice/report_details.jasper", "Y");
+		expectedLiteralBySubreportExpression.put("de/metas/docs/sales/invoice/report_details_v2.jasper", "N");
+
 		assertBothSubreportsGated(
 				"src/main/jasperreports/de/metas/docs/sales/invoice/report.jrxml",
-				"de/metas/docs/sales/invoice/report_details.jasper",
-				"de/metas/docs/sales/invoice/report_details_v2.jasper");
+				expectedLiteralBySubreportExpression);
 	}
 
 	private static void assertBothSubreportsGated(
 			final String jrxmlPathRelativeToModule,
-			final String... expectedSubreportExpressions) throws Exception
+			final Map<String, String> expectedLiteralBySubreportExpression) throws Exception
 	{
 		final File jrxmlFile = new File(jrxmlPathRelativeToModule);
 		assertTrue(jrxmlFile.isFile(),
@@ -103,8 +120,10 @@ class DetailTemplateSwitchGateTest
 				continue;
 			}
 
-			for (final String expected : expectedSubreportExpressions)
+			for (final Map.Entry<String, String> expectedEntry : expectedLiteralBySubreportExpression.entrySet())
 			{
+				final String expected = expectedEntry.getKey();
+				final String expectedLiteral = expectedEntry.getValue();
 				if (!subreportExpression.contains(expected))
 				{
 					continue;
@@ -126,16 +145,19 @@ class DetailTemplateSwitchGateTest
 						() -> "printWhenExpression for " + expected + " in " + jrxmlPathRelativeToModule
 								+ " must reference " + SWITCH_KEY + ", found: " + expressionText);
 
+				final Matcher matcher = SWITCH_LITERAL_PATTERN.matcher(expressionText);
+				assertTrue(matcher.find(),
+						() -> "printWhenExpression for " + expected + " in " + jrxmlPathRelativeToModule
+								+ " must gate on " + SWITCH_KEY + " equalling literal \"Y\" or \"N\", found: " + expressionText);
+				assertEquals(expectedLiteral, matcher.group(1),
+						"<subreport> for " + expected + " in " + jrxmlPathRelativeToModule
+								+ " must be gated on \"" + expectedLiteral + "\", found: " + expressionText);
+
 				gatedSubreportsFound.add(expected);
 			}
 		}
 
-		final Set<String> expected = new LinkedHashSet<>();
-		for (final String e : expectedSubreportExpressions)
-		{
-			expected.add(e);
-		}
-		assertEquals(expected, gatedSubreportsFound,
+		assertEquals(expectedLiteralBySubreportExpression.keySet(), gatedSubreportsFound,
 				"expected to find and gate exactly these subreport elements in " + jrxmlPathRelativeToModule);
 	}
 
