@@ -85,7 +85,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class PPOrderCostDifferenceDistributorCostDetailsTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private IQueryBL queryBL;
 
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ofRepoId(0);
@@ -110,6 +110,7 @@ class PPOrderCostDifferenceDistributorCostDetailsTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+		queryBL = Services.get(IQueryBL.class);
 		Env.setClientId(Env.getCtx(), clientId);
 
 		uomEach = BusinessTestHelper.createUomEach();
