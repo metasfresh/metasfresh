@@ -62,6 +62,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 
 import java.math.BigDecimal;
@@ -304,14 +305,14 @@ public class M_ShipperTransportation_StepDef
 	}
 
 	/**
-	 * Calls {@link InOutToTransportationOrderService#addShipmentsToTransportationOrder} directly for one shipment
-	 * — the same idiom {@link #addOrderToShipperTransportation} already uses for the purchase-order equivalent.
+	 * Calls {@link InOutToTransportationOrderService#addShipmentsToTransportationOrder} directly for one shipment.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
 	 * And M_ShipperTransportation_AddShipments is invoked for shipment ship_1 and transportation order: to_1
 	 * </pre>
+	 * @see #addOrderToShipperTransportation
 	 */
 	@And("^M_ShipperTransportation_AddShipments is invoked for shipment (.*) and transportation order: (.*)$")
 	public void addShipmentToShipperTransportation(@NonNull final String shipmentIdentifier, @NonNull final String transportationOrderIdentifier)
@@ -326,7 +327,7 @@ public class M_ShipperTransportation_StepDef
 	/**
 	 * Locates the {@code M_ShippingPackage} linking the given shipment to the given transportation order and
 	 * deletes it via {@link InterfaceWrapperHelper#delete(Object)}, so the real
-	 * {@code @ModelChange(TYPE_AFTER_DELETE)} interceptor chain runs (including the FK-clear hook this issue adds).
+	 * {@code @ModelChange(TYPE_AFTER_DELETE)} interceptor chain runs.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -352,8 +353,7 @@ public class M_ShipperTransportation_StepDef
 
 	/**
 	 * Deletes the transport order directly via {@link InterfaceWrapperHelper#delete(Object)}. Only succeeds while
-	 * the TO is un-processed; the cascade to its {@code M_ShippingPackage} lines happens inside
-	 * {@code MMShipperTransportation#beforeDelete()}.
+	 * the TO is un-processed.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -516,8 +516,8 @@ public class M_ShipperTransportation_StepDef
 	}
 
 	/**
-	 * Asserts whether the shipment's {@code M_ShipperTransportation_ID} FK is cleared ({@code 0}) or still set,
-	 * after refreshing the record (the FK may have been changed by a DB-level hook, not through this
+	 * Asserts whether the shipment's {@code M_ShipperTransportation_ID} FK is cleared or still set, after
+	 * refreshing the record (the FK may have been changed by a DB-level hook, not through this
 	 * {@code StepDefData}'s cached in-memory instance).
 	 *
 	 * @cucumber.stepdef
@@ -532,24 +532,33 @@ public class M_ShipperTransportation_StepDef
 	{
 		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
 		InterfaceWrapperHelper.refresh(shipment);
-		final de.metas.inout.model.I_M_InOut inOutShipment = InterfaceWrapperHelper.create(shipment, de.metas.inout.model.I_M_InOut.class);
+		final int shipperTransportationRepoId = getShipperTransportationRepoId(shipment);
 
 		if ("null".equals(expectation))
 		{
-			assertThat(inOutShipment.getM_ShipperTransportation_ID()).as(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation).isZero();
+			assertThat(shipperTransportationRepoId).as("M_ShipperTransportation_ID").isZero();
 		}
 		else
 		{
-			assertThat(inOutShipment.getM_ShipperTransportation_ID()).as(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation).isNotZero();
+			assertThat(shipperTransportationRepoId).as("M_ShipperTransportation_ID").isPositive();
 		}
 	}
 
 	/**
+	 * Reads {@code M_ShipperTransportation_ID} through the {@code de.metas.inout} subinterface — the plain
+	 * {@code org.compiere.model.I_M_InOut} imported by this class does not declare that column, and the two
+	 * types share a simple name, so the fully-qualified name is confined to this one helper.
+	 */
+	private static int getShipperTransportationRepoId(@NonNull final I_M_InOut shipment)
+	{
+		final de.metas.inout.model.I_M_InOut inOutShipment = InterfaceWrapperHelper.create(shipment, de.metas.inout.model.I_M_InOut.class);
+		return inOutShipment.getM_ShipperTransportation_ID();
+	}
+
+	/**
 	 * Adds one plain {@code M_InOutLine} (product + quantity, no {@code M_HU_Assignment}) to a shipment header
-	 * created via {@code metasfresh contains M_InOut:}. Needed because that step alone leaves the shipment with
-	 * zero lines, and {@code MInOut#prepareIt()} refuses to complete a lineless document. The resulting line has
-	 * no HU assignment, which is exactly what {@code IHUInOutDAO#retrieveShippedHandlingUnits} treats as "no
-	 * shipped HUs".
+	 * created via {@code metasfresh contains M_InOut:}. The resulting line has no HU assignment, which is exactly
+	 * what {@code IHUInOutDAO#retrieveShippedHandlingUnits} treats as "no shipped HUs".
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -573,12 +582,9 @@ public class M_ShipperTransportation_StepDef
 			line.setM_InOut_ID(shipment.getM_InOut_ID());
 			line.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID())).getRepoId());
 
-			row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_Product_ID)
-					.map(productTable::get)
-					.ifPresent(product -> {
-						line.setM_Product_ID(product.getM_Product_ID());
-						line.setC_UOM_ID(product.getC_UOM_ID());
-					});
+			final I_M_Product product = row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+			line.setM_Product_ID(product.getM_Product_ID());
+			line.setC_UOM_ID(product.getC_UOM_ID());
 
 			final BigDecimal movementQty = row.getAsBigDecimal(I_M_InOutLine.COLUMNNAME_MovementQty);
 			line.setMovementQty(movementQty);

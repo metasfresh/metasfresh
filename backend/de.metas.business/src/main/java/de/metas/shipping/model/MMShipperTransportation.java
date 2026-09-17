@@ -514,16 +514,11 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			// Set lines to 0
 			for (I_M_ShippingPackage line : getLines(false))
 			{
-				final int inOutId = line.getM_InOut_ID();
-				final int shipperTransportationIdForLine = line.getM_ShipperTransportation_ID();
-
 				line.setProcessed(true);
 				line.setIsActive(false);
 				line.setPackageWeight(BigDecimal.ZERO);
 				line.setPackageNetTotal(BigDecimal.ZERO);
 				InterfaceWrapperHelper.save(line);
-
-				de.metas.shipping.model.validator.M_ShippingPackage.unlinkShipmentIfOrphaned(inOutId, shipperTransportationIdForLine);
 			}
 		}
 

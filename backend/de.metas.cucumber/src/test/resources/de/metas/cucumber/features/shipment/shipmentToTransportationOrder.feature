@@ -30,7 +30,7 @@ Feature: shipment to transportation order
       | p_noHu     | to_noPickProduct |
 
   @from:cucumber
-  Scenario: TC1 - adding a shipment with no shipped HUs to a Transport Order creates one package line
+  Scenario: adding a shipment with no shipped HUs to a Transport Order creates one package line
     Given metasfresh contains Transport Order
       | Identifier | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
       | to_1       | shipper_1    | cust_1              | loc_1               | Outgoing           |
@@ -46,7 +46,7 @@ Feature: shipment to transportation order
     And validate M_ShipperTransportation_ID for shipment ship_1 is set
 
   @from:cucumber
-  Scenario: TC2 - adding a shipment with shipped HUs still creates one package per HU (regression guard)
+  Scenario: adding a shipment with shipped HUs still creates one package per HU
     Given metasfresh contains M_Products:
       | Identifier | Name              |
       | p_hu       | to_huProduct_pair |
@@ -108,7 +108,7 @@ Feature: shipment to transportation order
     And validate M_ShipperTransportation_ID for shipment ship_2 is set
 
   @from:cucumber
-  Scenario: TC3a - deleting a Transport Order's package line directly unlinks the shipment
+  Scenario: deleting a Transport Order's package line directly unlinks the shipment
     Given metasfresh contains Transport Order
       | Identifier | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
       | to_3a      | shipper_1    | cust_1              | loc_1               | Outgoing           |
@@ -132,7 +132,7 @@ Feature: shipment to transportation order
     And validate M_ShipperTransportation_ID for shipment ship_3a is set
 
   @from:cucumber
-  Scenario: TC3b - deleting the Transport Order itself cascades to its package line and unlinks the shipment
+  Scenario: deleting the Transport Order itself cascades to its package line and unlinks the shipment
     Given metasfresh contains Transport Order
       | Identifier | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
       | to_3b      | shipper_1    | cust_1              | loc_1               | Outgoing           |
@@ -151,7 +151,7 @@ Feature: shipment to transportation order
     Then validate M_ShipperTransportation_ID for shipment ship_3b is null
 
   @from:cucumber
-  Scenario: TC4 - voiding a Transport Order unlinks its shipments
+  Scenario: voiding a Transport Order unlinks its shipments
     Given metasfresh contains Transport Order
       | Identifier | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
       | to_4       | shipper_1    | cust_1              | loc_1               | Outgoing           |
