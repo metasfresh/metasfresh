@@ -667,6 +667,9 @@ public class M_ShipperTransportation_StepDef
 						.filter(TypedSqlQueryFilter.of(whereClause))
 						.create()
 						.listIds());
+	}
+
+	/**
 	 * Asserts whether the shipment's {@code M_ShipperTransportation_ID} FK is cleared or still set, after
 	 * refreshing the record (the FK may have been changed by a DB-level hook, not through this
 	 * {@code StepDefData}'s cached in-memory instance).
