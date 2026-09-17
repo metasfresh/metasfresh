@@ -586,14 +586,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	@Nullable
 	public Percent getCoProductCostDistributionPercent(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, orderBOMLine);
 
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		return Percent.ofNullable(productDAO.getById(productId).getCoProductCostDistributionPercent());
+		return Percent.of(productDAO.getById(productId).getCoProductCostDistributionPercent());
 	}
 
 	@Override

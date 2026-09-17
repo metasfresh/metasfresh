@@ -73,4 +73,32 @@ public class PPOrderBOMBL_getCoProductCostDistributionPercent_Test
 		// Then: the percent is the one carried by the product, not 1/qty (which would be ~14.29%)
 		assertThat(distributionPercent).isEqualTo(Percent.of(new BigDecimal("30")));
 	}
+
+	@Test
+	public void coProductDistributionPercent_blankOnProduct_isZero()
+	{
+		// Given: a co-product whose M_Product.CoProductCostDistributionPercent is left unset
+		final I_C_UOM uomEa = helper.createUOM("ea", 0);
+		final ProductId finishedGood = helper.createProduct("Finished Good", uomEa);
+		final ProductId coProductId = helper.createProduct("Co-Product", uomEa);
+
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
+		ppOrder.setM_Product_ID(finishedGood.getRepoId());
+		ppOrder.setC_UOM_ID(uomEa.getC_UOM_ID());
+		PPOrderBOMBL_TestUtils.setCommonValues(ppOrder);
+
+		final I_PP_Order_BOMLine coProductBomLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
+		coProductBomLine.setPP_Order(ppOrder);
+		coProductBomLine.setComponentType(BOMComponentType.CoProduct.getCode());
+		coProductBomLine.setM_Product_ID(coProductId.getRepoId());
+		coProductBomLine.setC_UOM_ID(uomEa.getC_UOM_ID());
+		coProductBomLine.setQtyRequiered(new BigDecimal("-7")); // co-products are stored negated
+		PPOrderBOMBL_TestUtils.setCommonValues(coProductBomLine);
+
+		// When
+		final Percent distributionPercent = ppOrderBOMBL.getCoProductCostDistributionPercent(coProductBomLine);
+
+		// Then: an unset percent reads as ZERO, never null
+		assertThat(distributionPercent).isEqualTo(Percent.ZERO);
+	}
 }
