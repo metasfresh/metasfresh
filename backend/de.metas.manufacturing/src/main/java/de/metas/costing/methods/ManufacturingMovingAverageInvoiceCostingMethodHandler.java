@@ -146,8 +146,8 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 	/**
 	 * The costing method the order is actually costed under — the acct schema's method, NOT this handler's
 	 * ({@link #getCostingMethod()}). See the twin method in {@code ManufacturingAveragePOCostingMethodHandler}
-	 * for why they differ (parallel per-cost-element tracking) and why the fixed-price gate must key off the
-	 * order's real (acct-schema) method.
+	 * for why they differ (parallel per-cost-element tracking) and why the co-product cost-distribution gate must
+	 * key off the order's real (acct-schema) method.
 	 */
 	private CostingMethod getAcctSchemaCostingMethod(final CostDetailCreateRequest request)
 	{

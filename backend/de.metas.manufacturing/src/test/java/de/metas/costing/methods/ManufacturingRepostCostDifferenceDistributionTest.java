@@ -384,8 +384,8 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.build();
 
 		// what every costing-method handler does after an issue or a receipt; the seed carries no co-products, so the
-		// costing method only decides the (unreached) co-product fixed-price gate - thread the method under test through
-		// rather than pinning a soon-to-be-deprecated literal, keeping the seed consistent across every @EnumSource leg.
+		// costing method only decides the (unreached) co-product cost-distribution gate - thread the method under test
+		// through so the seed stays consistent across every @EnumSource leg.
 		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2), costingMethod);
 
 		ppOrderCostBL.save(orderCosts);

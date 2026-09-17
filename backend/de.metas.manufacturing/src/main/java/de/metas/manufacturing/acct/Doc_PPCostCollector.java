@@ -344,7 +344,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			// createFactLines puts +qty on the P_Asset debit leg and -qty on the P_WIP credit leg, so the
 			// positive received qty is what reaches P_Asset. Do NOT negate the cost: it is already positive
-			// (a by-product with a blank fixed price yields a zero-cost line — its qty still capitalizes).
+			// (a by-product yields a zero-cost line — its qty still capitalizes).
 			// alsoAddZeroLine=true: post even a zero-value receipt so the received qty always reaches P_Asset.
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyReceived, true);
 			if (fact != null)

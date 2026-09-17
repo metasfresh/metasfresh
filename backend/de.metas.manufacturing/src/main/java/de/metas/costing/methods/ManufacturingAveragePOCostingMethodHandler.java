@@ -185,7 +185,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	 * The costing method the order is actually costed under — the acct schema's method, NOT this handler's
 	 * ({@link #getCostingMethod()}). The two differ because metasfresh tracks every active material cost element
 	 * in parallel, so this AveragePO handler is invoked for the AveragePO cost element even on an order whose
-	 * acct schema is costed under, say, Standard. The co-product fixed-price gate in
+	 * acct schema is costed under, say, Standard. The co-product cost-distribution gate in
 	 * {@link PPOrderCosts#updatePostCalculationAmountsForCostElement} keys off the order's real (acct-schema)
 	 * method so a parallel AveragePO cost element neither triggers a false reject nor masks a genuine one.
 	 */

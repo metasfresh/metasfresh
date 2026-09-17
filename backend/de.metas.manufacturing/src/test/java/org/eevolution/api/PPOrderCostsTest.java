@@ -84,10 +84,9 @@ public class PPOrderCostsTest
 	@Test
 	public void testPostCalculation_SimpleCase()
 	{
-		// The co-product AND by-product lines must reference real M_Product rows: the post-calc reads each co-product's
-		// master live for the fixed-price relief, and each by-product's master live for the by-product fixed-price
-		// reject-guard (both via IProductDAO.getById, fail-loud) — so a fabricated ProductId with no M_Product row would
-		// throw. Blank fixed price -> today's qty-distribution behaviour is exercised.
+		// The co-product AND by-product lines must reference real M_Product rows: the post-calc resolves each
+		// product's master live (via IProductDAO.getById, fail-loud) — so a fabricated ProductId with no
+		// M_Product row would throw.
 		final ProductId coProductId3 = createProduct("coproduct_20pct");
 		final ProductId coProductId4 = createProduct("coproduct_10pct");
 		final ProductId byProductId = createProduct("byproduct");
@@ -139,11 +138,8 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * AC5 seam: a co-product whose product carries a (would-be) manual fixed cost price is STILL valued at
-	 * {@code percent x pool} via {@code computeBlankCoProductAmount}, NOT at {@code fixedPrice x qty} — the
-	 * {@code FixedCostPriceProvider} leg is no longer consulted by the post-calculation at all. Same pool/percent
-	 * as the fixed-price scenario this replaces (450 pool, 20%, Randstücke 6 kg, field set to 8) would previously
-	 * have produced 48 (fixedPrice x qty); the collapsed seam now produces 90 (percent x pool) regardless.
+	 * A co-product carrying a manual cost price on its product is still valued by its cost distribution percent
+	 * times the input pool: 450 pool × 20% = 90 (Randstücke, 6 kg). The manual cost price is not consulted.
 	 */
 	@Test
 	public void testCoProductWithFixedPriceFieldSet_valuedByPercentTimesPool_notFixedPriceTimesQty()
@@ -178,7 +174,7 @@ public class PPOrderCostsTest
 
 		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
 
-		// percent(20%) x pool(450) = 90, NOT fixedPrice(8) x qty(6) = 48
+		// percent(20%) × pool(450) = 90
 		this.assertThatPostCalculationAmt(orderCosts, coProductId).isEqualByComparingTo(new BigDecimal("90"));
 		// main relieved by the remainder 450 - 90 = 360
 		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("360"));
@@ -291,8 +287,8 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * By-products are always zeroed, unconditionally — even when the product carries a (would-be) fixed-price
-	 * field, since the fixed-price leg is no longer consulted. No throw, no by-product-specific guard.
+	 * By-products are always zeroed, unconditionally, regardless of any cost distribution percent or manual cost
+	 * price on the product. No throw, no by-product-specific guard.
 	 */
 	@Test
 	public void testByProduct_alwaysZeroed_regardlessOfFixedPriceField()
@@ -331,8 +327,8 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * AC6 no-regression / formula: a BLANK fixed-price field leaves the qty-distribution formula intact - the
-	 * co-product is valued by {@code coProductCostDistributionPercent x pool} (450 * 20% = 90), main = 360.
+	 * A co-product with no manual cost price is valued by the distribution formula:
+	 * {@code coProductCostDistributionPercent × pool} (450 × 20% = 90), main = 360.
 	 */
 	@Test
 	public void testBlankFixedPriceField_percentDistributionFormulaApplies()
@@ -557,10 +553,9 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * A blank-fixed-price co-product whose {@code coProductCostDistributionPercent} is NULL (the DAO leaves it
-	 * nullable, especially under Moving Average Invoice) must NOT NPE in the post-calculation: a null / non-positive
-	 * percent yields a ZERO co-product share, so the main product keeps the full input pool. Pre-fix this threw an
-	 * NPE at {@code totalInbound.multiply(null, precision)}.
+	 * A co-product whose {@code coProductCostDistributionPercent} is NULL (the DAO leaves it nullable, especially
+	 * under Moving Average Invoice) must not NPE in the post-calculation: a null / non-positive percent yields a
+	 * ZERO co-product share, so the main product keeps the full input pool.
 	 */
 	@Test
 	public void testBlankCoProduct_nullDistributionPercent_noNpe_zeroShare()
@@ -601,9 +596,9 @@ public class PPOrderCostsTest
 	}
 
 	/**
-	 * The blank-fixed-price invariant that makes the order's WIP clear: leg B (the co-product receipt valuation in
-	 * the costing-method handlers, via {@link PPOrderCosts#getBlankCoProductReceiptAmount}) must book the IDENTICAL
-	 * amount as leg A (the co-product's post-calculation relief). Here 450 pool x 1/6 = 75.0002 at precision 4.
+	 * The invariant that makes the order's WIP clear: leg B (the co-product receipt valuation in the
+	 * costing-method handlers, via {@link PPOrderCosts#getBlankCoProductReceiptAmount}) must book the IDENTICAL
+	 * amount as leg A (the co-product's post-calculation relief). Here 450 pool × 1/6 = 75.0002 at precision 4.
 	 */
 	@Test
 	public void getBlankCoProductReceiptAmount_matchesLegAPostCalculation()

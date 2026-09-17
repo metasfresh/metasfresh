@@ -261,10 +261,8 @@ public final class PPOrderCosts
 				.collect(ImmutableList.toImmutableList());
 
 		//
-		// AC6 guard: Sigma p_i <= 100%. The co-products' cost distribution percent must not exceed the whole pool.
-		// This is the single consumption point of the percent (post-calc is one-shot; PP_Order closes afterward),
-		// so it is checked here, in PERCENT-space, BEFORE any amount is carved from the pool - fail loud and name
-		// the offending co-product(s) + the sum, rather than let it surface later as a negative main product.
+		// Guard: the co-products' cost distribution percent must sum to at most 100% (the whole input pool).
+		// Checked in percent-space before any amount is carved, naming the offending co-product(s) and the sum.
 		final Percent totalCoProductDistributionPercent = coProductCosts.stream()
 				.map(PPOrderCost::getCoProductCostDistributionPercent)
 				.filter(percent -> percent != null && percent.signum() > 0)
@@ -293,8 +291,8 @@ public final class PPOrderCosts
 				.orElseThrow(() -> new AdempiereException("No inbound costs found in " + costs));
 
 		//
-		// Update co-product costs and calculate total co-product costs: every co-product is valued through
-		// computeBlankCoProductAmount — the AC5 seam (CP_i = p_i x SigmaInboundCost, realized as pool x percent).
+		// Value each co-product through computeBlankCoProductAmount: its cost distribution percent times the
+		// input pool (CP_i = p_i × Σ inbound cost).
 		coProductCosts.forEach(coProductCost ->
 				coProductCost.setPostCalculationAmount(computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision)));
 		final CostAmount totalCoProductsCostAmount = coProductCosts.stream()
@@ -303,11 +301,9 @@ public final class PPOrderCosts
 				.orElseGet(totalInboundCostAmount::toZero);
 
 		//
-		// Value-space BACKSTOP (kept behind the percent-space AC6 guard above): the co-products must not consume
-		// more than the order's input cost pool, which would drive the main product's value negative. The percent
-		// guard above rejects Sigma p > 100% before any amount is computed, so this only catches whatever that
-		// check does not reach (e.g. rounding at the pool's precision). Reject here, BEFORE persisting the
-		// negative main-product amount below.
+		// Value-space backstop behind the percent guard above: the co-products must not consume more than the
+		// input cost pool, which would drive the main product negative. Catches only what the percent check
+		// misses, e.g. rounding at the pool's precision.
 		final CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
 		if (mainProductAmount.signum() < 0)
 		{
@@ -328,8 +324,8 @@ public final class PPOrderCosts
 	}
 
 	/**
-	 * The amount a blank-fixed-price co-product receipt must capitalize to inventory: the co-product's share of
-	 * the order's inbound cost pool (qty-distribution) for its cost element - the IDENTICAL amount
+	 * The amount a co-product receipt must capitalize to inventory: the co-product's share of the order's
+	 * inbound cost pool (cost-distribution percent) for its cost element - the IDENTICAL amount
 	 * {@link #updatePostCalculationAmountsForCostElement} books as the co-product's post-calculation relief
 	 * (leg A). A costing-method handler values the co-product receipt (leg B) at this amount so both legs book
 	 * the same value, cost is conserved and the order's WIP clears.
@@ -350,7 +346,7 @@ public final class PPOrderCosts
 	 * {@code costs.stream().filter(PPOrderCost::isByProduct).forEach(PPOrderCost::setPostCalculationAmountAsZero)}).
 	 * A costing-method handler values the by-product receipt (leg B) at this amount so a stray current cost on
 	 * the by-product's own product cannot drive the AvgPO/MAI pool negative. Keyed on {@link PPOrderCost#isByProduct()}
-	 * alone - no fixed-price/percent artefact - unlike the co-product share in {@link #getBlankCoProductReceiptAmount}.
+	 * alone - not on any cost-distribution percent - unlike the co-product share in {@link #getBlankCoProductReceiptAmount}.
 	 */
 	public CostAmount getByProductReceiptAmount(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
@@ -376,7 +372,7 @@ public final class PPOrderCosts
 	}
 
 	/**
-	 * The blank-fixed-price co-product's qty-distribution share of the order's inbound cost pool:
+	 * The co-product's cost-distribution share of the order's inbound cost pool:
 	 * {@code totalInbound × coProductCostDistributionPercent}. The distribution percent is nullable (the DAO
 	 * leaves it unset, especially under Moving Average Invoice), so a null / non-positive percent yields a zero
 	 * share - nothing to capitalise - rather than an NPE.
