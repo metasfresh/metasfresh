@@ -382,6 +382,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		if (isReversalLine)
 		{
+			// ELI5: this line undoes a co/by-product receipt, but the original receipt booked no cost - so there is
+			// nothing to net back. Happens when the original carve was zero: a co-product with a blank/0% cost
+			// distribution percent, or any by-product (always valued at zero). No CostDetail was ever created, so we
+			// log why and post nothing rather than throwing.
 			logger.info("Co/by-product reversal line has nothing to reverse: {}", createCostsResult.getExplanationAsString());
 			return null;
 		}
