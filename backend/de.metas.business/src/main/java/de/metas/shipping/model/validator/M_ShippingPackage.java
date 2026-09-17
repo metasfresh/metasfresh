@@ -83,21 +83,13 @@ public class M_ShippingPackage
 		packageRepo.closeMPackage(mPackageId);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
-	public void clearShipperTransportationLinkIfNoRemainingPackages(final I_M_ShippingPackage shippingPackage)
-	{
-		final InOutId inOutId = InOutId.ofRepoIdOrNull(shippingPackage.getM_InOut_ID());
-		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoIdOrNull(shippingPackage.getM_ShipperTransportation_ID());
-		if (inOutId == null || shipperTransportationId == null)
-		{
-			return;
-		}
-
-		unlinkShipmentIfOrphaned(inOutId, shipperTransportationId);
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_ShippingPackage.COLUMNNAME_IsActive)
-	public void clearShipperTransportationLinkIfDeactivatedAndOrphaned(final I_M_ShippingPackage shippingPackage)
+	/**
+	 * Fires on delete (unconditionally — {@code ifColumnsChanged} is only evaluated for a change timing,
+	 * per {@code AnnotatedModelInterceptor#isTimingChange}) and on deactivation, so every path that can
+	 * orphan the shipment&harr;transport-order link is covered by this one pointcut.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_ShippingPackage.COLUMNNAME_IsActive)
+	public void clearShipperTransportationLinkIfOrphaned(final I_M_ShippingPackage shippingPackage)
 	{
 		final InOutId inOutId = InOutId.ofRepoIdOrNull(shippingPackage.getM_InOut_ID());
 		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoIdOrNull(shippingPackage.getM_ShipperTransportation_ID());
