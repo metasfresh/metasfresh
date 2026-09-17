@@ -456,6 +456,25 @@ public final class PPOrderCosts
 		return mainProductCosts.isEmpty() ? null : mainProductCosts.get(0);
 	}
 
+	/**
+	 * @return the main- or co-product cost row for {@code productId}, or {@code null}. Only main/co-product rows
+	 * match, never a component issue that happens to share the finished good's product.
+	 */
+	@Nullable
+	public PPOrderCost getMainOrCoProductCostOrNull(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final ProductId productId)
+	{
+		return costs.values().stream()
+				.filter(cost -> cost.isMainProduct() || cost.isCoProduct())
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.filter(cost -> productId.equals(cost.getProductId()))
+				.findFirst()
+				.orElse(null);
+	}
+
 	private Set<CostElementId> getCostElementIds()
 	{
 		return costs.keySet()

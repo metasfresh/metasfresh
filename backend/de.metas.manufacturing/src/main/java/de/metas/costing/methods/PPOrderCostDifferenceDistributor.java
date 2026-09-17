@@ -41,7 +41,6 @@ import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostElementRepository;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -277,7 +276,7 @@ public class PPOrderCostDifferenceDistributor
 			@NonNull final CostAmount amt)
 	{
 		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		final PPOrderCost targetCost = getCostForProductOrNull(orderCosts, request.getAcctSchemaId(), request.getCostElementId(), request.getProductId());
+		final PPOrderCost targetCost = orderCosts.getMainOrCoProductCostOrNull(request.getAcctSchemaId(), request.getCostElementId(), request.getProductId());
 		if (targetCost == null)
 		{
 			return;
@@ -359,27 +358,6 @@ public class PPOrderCostDifferenceDistributor
 				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
 				.filter(cost -> costElementId.equals(cost.getCostElementId()))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	/**
-	 * @return the main-product OR co-product cost row matching {@code productId}, or {@code null}. Restricted to
-	 * {@code isMainProduct()}/{@code isCoProduct()} rows - never a {@code MaterialIssue}/{@code ResourceUtilization}
-	 * row - so a component that happens to share its product with the finished good is never mistaken for it.
-	 */
-	@Nullable
-	private static PPOrderCost getCostForProductOrNull(
-			@NonNull final PPOrderCosts orderCosts,
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final CostElementId costElementId,
-			@NonNull final ProductId productId)
-	{
-		return orderCosts.toCollection().stream()
-				.filter(cost -> cost.isMainProduct() || cost.isCoProduct())
-				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
-				.filter(cost -> costElementId.equals(cost.getCostElementId()))
-				.filter(cost -> productId.equals(cost.getProductId()))
-				.findFirst()
-				.orElse(null);
 	}
 
 	/** Zero qty delta =&gt; reprices the existing on-hand qty by {@code amt}. */
