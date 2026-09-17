@@ -69,6 +69,8 @@ BEGIN
         RETURN QUERY SELECT p_MD_Candidate_ID,
                             NULL::numeric,
                             NULL::numeric,
+                            NULL::numeric,
+                            NULL::integer,
                             'ERROR: MD_Candidate not found or not active: ' || p_MD_Candidate_ID;
         RETURN;
     END IF;
@@ -96,6 +98,8 @@ BEGIN
         RETURN QUERY SELECT p_MD_Candidate_ID,
                             NULL::numeric,
                             NULL::numeric,
+                            NULL::numeric,
+                            NULL::integer,
                             'ERROR: No STOCK candidate found for this record. Data integrity issue - STOCK candidate should always exist.';
         RETURN;
     END IF;
