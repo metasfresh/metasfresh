@@ -91,6 +91,12 @@ Feature: Co-product valuation via cost-distribution percent
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540011        |
 
+    # Load warehouse 540008 (used by every inventory / receipt / order below) so the inventory-valuation
+    # report can resolve it, and register its default locator so Fact_Acct legs can assert M_Locator_ID.
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        | M_Locator_ID |
+      | mainWarehouse  | StdWarehouse | mainLocator  |
+
   @from:cucumber
   @Id:S29488_TC2
   Scenario: The co-product's own current cost overvalues its carve share, written down at order close
@@ -135,28 +141,34 @@ Feature: Co-product valuation via cost-distribution percent
 
     # Divergence by design: leg B books the co-product's OWN current cost x qty (9.9 x 6 = 59.4).
     And Fact_Acct records are matching
-      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 59.4      | 0         | 6 PCE  |
-      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 59.4      | -6 PCE |
+      | Record_ID              | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 59.4      | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 59.4      | -6 PCE |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | coProd       | MovingAverageInvoice | 9.9 CHF          | 6 PCE      |
 
     # Distribute the order so the main product's residual capitalizes out of WIP.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 59.4                  | 9.9            |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 48                    | 8              |
 
     # Write-down on the co-product's OWN legs (Cr P_Asset / Dr P_WIP 11.4), asserted
     # explicitly - not just the whole-order balance below, which would pass even if this leg were dropped.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 11.4      | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 11.4      | 0         | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 402       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 0         | 11.4      | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 11.4      | 0         | 0 PCE |
 
     # The whole manufacturing order balances and WIP nets to 0.
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
@@ -204,18 +216,24 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 0                  |
       | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 450                |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 0                     | 0              |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 0                     | 0              |
 
     # The co-product's carve is zero, so it draws no CC-170 leg at all - only the finished good's own
     # residual (the whole 450 CHF) is discharged here.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 450       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 450       | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 450       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 450       | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
       | AccountConceptualName | AcctBalance |
@@ -266,24 +284,30 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 450                |
 
     And Fact_Acct records are matching
-      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 59.4      | 0         | 6 PCE  |
-      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 59.4      | -6 PCE |
+      | Record_ID              | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 59.4      | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 59.4      | -6 PCE |
 
     # The zero-carve true-up writes the co-product's own inventory ALL THE WAY DOWN to zero - no NPE from
     # the blank-⇒-0 guard - while the finished good absorbs the full 450 CHF pool.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 59.4                  | 9.9            |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 0                     | 0              |
 
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 450       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 450       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 59.4      | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 59.4      | 0         | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 450       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 450       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 0         | 59.4      | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 59.4      | 0         | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
       | AccountConceptualName | AcctBalance |
@@ -335,22 +359,28 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 450                |
 
     And Fact_Acct records are matching
-      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 59.4      | 0         | 6 PCE  |
-      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 59.4      | -6 PCE |
+      | Record_ID              | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 59.4      | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 59.4      | -6 PCE |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 59.4                  | 9.9            |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 0                     | 0              |
 
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 450       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 450       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 59.4      | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 59.4      | 0         | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 450       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 450       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 0         | 59.4      | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 59.4      | 0         | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
       | AccountConceptualName | AcctBalance |
@@ -497,20 +527,26 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 135                |
       | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 315                |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 8   | 0                     | 0              |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 8   | 135                   | 16.875         |
 
     # The co-product's own leg capitalizes its full 135 CHF total claim (never priced before, all 8 PCE on
     # hand); the finished good's own leg capitalizes the 315 CHF remainder. Neither is negative.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 315       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 315       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 135       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 0         | 135       | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 315       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 315       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 135       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 135       | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
       | AccountConceptualName | AcctBalance |
@@ -575,18 +611,24 @@ Feature: Co-product valuation via cost-distribution percent
     # (48 - 59.4) - had the old full-share-per-receipt bug booked 48 CHF on EACH of the two receipts (96
     # total), the required write-down would instead be -48 (48 - 96), a different number entirely; the
     # 11.4 figure is only reachable if the two partial receipts summed to 59.4, not 96.
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 59.4                  | 9.9            |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 48                    | 8              |
 
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 11.4      | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 11.4      | 0         | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 402       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 0         | 11.4      | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 11.4      | 0         | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
       | AccountConceptualName | AcctBalance |
@@ -634,9 +676,9 @@ Feature: Co-product valuation via cost-distribution percent
     And Wait until documents coReceiptCostCollector are posted
 
     And Fact_Acct records are matching
-      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 59.4      | 0         | 6 PCE  |
-      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 59.4      | -6 PCE |
+      | Record_ID              | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 59.4      | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 59.4      | -6 PCE |
 
     # Sell 2 of the 6 PCE on hand, leaving 4 PCE for the CC-170 adjustment to capitalize into.
     And metasfresh contains M_PricingSystems
@@ -669,21 +711,27 @@ Feature: Co-product valuation via cost-distribution percent
       | shipment1             | sched1                           |
     And Wait until documents shipment1 are posted
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 4   | 39.6                  | 9.9            |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 4   | 32                    | 8              |
 
     # The 11.4 CHF write-down splits by on-hand share (4/6 credits P_Asset 7.6, 2/6 credits P_COGS 3.8) -
     # asserted on the co-product's OWN legs, not just the whole-order balance below.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 7.6       | 0 PCE |
-      | distributionCostCollector | P_COGS_Acct           | coProd       | 0         | 3.8       | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 11.4      | 0         | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 402       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 0         | 7.6       | 0 PCE |
+      | distributionCostCollector | P_COGS_Acct           | coProd       | mainLocator  | 0         | 3.8       | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 11.4      | 0         | 0 PCE |
 
     # The whole order's WIP still nets to 0; P_Asset alone no longer does once part of the write-down is
     # expensed to P_COGS instead - that split is what the per-product legs above already proved correct.
@@ -783,21 +831,29 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder5               | byProd5                 | MovingAverageInvoice | BY                    | 0                  |
       | ppOrder5               | mainProd5               | MovingAverageInvoice | MR                    | 292.5              |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProdA5     | mainWarehouse  | 6   | 0                     | 0              |
+      | 2024-03-26 | coProdB5     | mainWarehouse  | 3   | 0                     | 0              |
     And the manufacturing order identified by ppOrder5 is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector5      | ppOrder5               | mainProd5               | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector5 are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProdA5     | mainWarehouse  | 6   | 90                    | 15             |
+      | 2024-03-26 | coProdB5     | mainWarehouse  | 3   | 67.5                  | 22.5           |
 
     # Each co-product's own leg is asserted independently, by product - not just the whole-order balance.
     And Fact_Acct records are matching
-      | Record_ID                  | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector5 | P_Asset_Acct          | mainProd5    | 292.5     | 0         | 0 PCE |
-      | distributionCostCollector5 | P_WIP_Acct            | mainProd5    | 0         | 292.5     | 0 PCE |
-      | distributionCostCollector5 | P_Asset_Acct          | coProdA5     | 90        | 0         | 0 PCE |
-      | distributionCostCollector5 | P_WIP_Acct            | coProdA5     | 0         | 90        | 0 PCE |
-      | distributionCostCollector5 | P_Asset_Acct          | coProdB5     | 67.5      | 0         | 0 PCE |
-      | distributionCostCollector5 | P_WIP_Acct            | coProdB5     | 0         | 67.5      | 0 PCE |
+      | Record_ID                  | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector5 | P_Asset_Acct          | mainProd5    | mainLocator  | 292.5     | 0         | 0 PCE |
+      | distributionCostCollector5 | P_WIP_Acct            | mainProd5    | mainLocator  | 0         | 292.5     | 0 PCE |
+      | distributionCostCollector5 | P_Asset_Acct          | coProdA5     | mainLocator  | 90        | 0         | 0 PCE |
+      | distributionCostCollector5 | P_WIP_Acct            | coProdA5     | mainLocator  | 0         | 90        | 0 PCE |
+      | distributionCostCollector5 | P_Asset_Acct          | coProdB5     | mainLocator  | 67.5      | 0         | 0 PCE |
+      | distributionCostCollector5 | P_WIP_Acct            | coProdB5     | mainLocator  | 0         | 67.5      | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder5 are matching
       | AccountConceptualName | AcctBalance |
@@ -890,18 +946,24 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder7a              | coProdA7                | MovingAverageInvoice | CO                    | 90                 |
       | ppOrder7a              | mainProd7a              | MovingAverageInvoice | MR                    | 360                |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProdA7     | mainWarehouse  | 6   | 0                     | 0              |
     And the manufacturing order identified by ppOrder7a is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector7a     | ppOrder7a              | mainProd7a              | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector7a are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProdA7     | mainWarehouse  | 6   | 90                    | 15             |
 
     And Fact_Acct records are matching
-      | Record_ID                   | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector7a | P_Asset_Acct          | mainProd7a   | 360       | 0         | 0 PCE |
-      | distributionCostCollector7a | P_WIP_Acct            | mainProd7a   | 0         | 360       | 0 PCE |
-      | distributionCostCollector7a | P_Asset_Acct          | coProdA7     | 90        | 0         | 0 PCE |
-      | distributionCostCollector7a | P_WIP_Acct            | coProdA7     | 0         | 90        | 0 PCE |
+      | Record_ID                   | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector7a | P_Asset_Acct          | mainProd7a   | mainLocator  | 360       | 0         | 0 PCE |
+      | distributionCostCollector7a | P_WIP_Acct            | mainProd7a   | mainLocator  | 0         | 360       | 0 PCE |
+      | distributionCostCollector7a | P_Asset_Acct          | coProdA7     | mainLocator  | 90        | 0         | 0 PCE |
+      | distributionCostCollector7a | P_WIP_Acct            | coProdA7     | mainLocator  | 0         | 90        | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder7a are matching
       | AccountConceptualName | AcctBalance |
@@ -953,24 +1015,32 @@ Feature: Co-product valuation via cost-distribution percent
     # in order 2, coProdA7's OWN receipt (6 PCE at ITS OWN now-15-CHF/PCE cost) capitalizes the SAME 90 CHF
     # directly at receipt, with nothing left to true up: literal proof its carve is unaffected by B.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector7bA | P_Asset_Acct          | coProdA7     | 90        | 0         | 6 PCE  |
-      | coReceiptCostCollector7bA | P_WIP_Acct            | coProdA7     | 0         | 90        | -6 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector7bA | P_Asset_Acct          | coProdA7     | mainLocator  | 90        | 0         | 6 PCE  |
+      | coReceiptCostCollector7bA | P_WIP_Acct            | coProdA7     | mainLocator  | 0         | 90        | -6 PCE |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProdA7     | mainWarehouse  | 12  | 180                   | 15             |
+      | 2024-03-26 | coProdB7     | mainWarehouse  | 3   | 0                     | 0              |
     And the manufacturing order identified by ppOrder7b is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector7b     | ppOrder7b              | mainProd7b              | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector7b are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProdA7     | mainWarehouse  | 12  | 180                   | 15             |
+      | 2024-03-26 | coProdB7     | mainWarehouse  | 3   | 67.5                  | 22.5           |
 
     # Only B's own carve (67.5, never priced before) needs a CC-170 leg - A's residual is already zero
     # (its receipt above already capitalized exactly its 90 CHF carve), so no A leg is posted here.
     And Fact_Acct records are matching
-      | Record_ID                   | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector7b | P_Asset_Acct          | mainProd7b   | 292.5     | 0         | 0 PCE |
-      | distributionCostCollector7b | P_WIP_Acct            | mainProd7b   | 0         | 292.5     | 0 PCE |
-      | distributionCostCollector7b | P_Asset_Acct          | coProdB7     | 67.5      | 0         | 0 PCE |
-      | distributionCostCollector7b | P_WIP_Acct            | coProdB7     | 0         | 67.5      | 0 PCE |
+      | Record_ID                   | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector7b | P_Asset_Acct          | mainProd7b   | mainLocator  | 292.5     | 0         | 0 PCE |
+      | distributionCostCollector7b | P_WIP_Acct            | mainProd7b   | mainLocator  | 0         | 292.5     | 0 PCE |
+      | distributionCostCollector7b | P_Asset_Acct          | coProdB7     | mainLocator  | 67.5      | 0         | 0 PCE |
+      | distributionCostCollector7b | P_WIP_Acct            | coProdB7     | mainLocator  | 0         | 67.5      | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder7b are matching
       | AccountConceptualName | AcctBalance |
@@ -1036,16 +1106,22 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder8b              | rawProduct8b            | MovingAverageInvoice | MI                    | 450                |
       | ppOrder8b              | mainProd8b              | MovingAverageInvoice | MR                    | 450                |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | mainProd8b   | mainWarehouse  | 24  | 0                     | 0              |
     And the manufacturing order identified by ppOrder8b is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector8b     | ppOrder8b              | mainProd8b              | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector8b are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | mainProd8b   | mainWarehouse  | 24  | 450                   | 18.75          |
 
     And Fact_Acct records are matching
-      | Record_ID                   | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector8b | P_Asset_Acct          | mainProd8b   | 450       | 0         | 0 PCE |
-      | distributionCostCollector8b | P_WIP_Acct            | mainProd8b   | 0         | 450       | 0 PCE |
+      | Record_ID                   | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector8b | P_Asset_Acct          | mainProd8b   | mainLocator  | 450       | 0         | 0 PCE |
+      | distributionCostCollector8b | P_WIP_Acct            | mainProd8b   | mainLocator  | 0         | 450       | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder8b are matching
       | AccountConceptualName | AcctBalance |
@@ -1095,28 +1171,34 @@ Feature: Co-product valuation via cost-distribution percent
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
       | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
     And Wait until documents coReceiptCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 59.4                  | 9.9            |
 
     # The co-product's receipt capitalizes to inventory - Dr P_Asset / Cr P_WIP 59.4 (9.9 CHF/PCE x 6 PCE),
     # same booking as TC1's coReceiptCostCollector.
     And Fact_Acct records are matching
-      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 59.4      | 0         | 6 PCE  |
-      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 59.4      | -6 PCE |
+      | Record_ID              | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 59.4      | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 59.4      | -6 PCE |
 
     # Reverse the receipt cost collector via the REAL Reverse-Correct DocAction (the established, already-proven
     # step-def) - this drives the actual DocAction and lets the scenario assert the REAL Fact_Acct, no fabricated
     # reversal state.
     And the PP_Cost_Collector identified by coReceiptCostCollector is reversed as coReversalCostCollector
     And Wait until documents coReversalCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 0   | 0                     | 0              |
 
     # The reversal's own legs are the exact negation of the receipt's legs - same account, same side, the
     # amount and qty negated (this acctSchema has IsAllowNegativePosting=Y, so the reversal posts as a
     # negative entry on the same side rather than swapping Dr/Cr - both are valid metasfresh conventions,
     # and either way the pair below nets the receipt back to zero, asserted explicitly next).
     And Fact_Acct records are matching
-      | Record_ID               | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReversalCostCollector | P_Asset_Acct          | coProd       | -59.4     | 0         | -6 PCE |
-      | coReversalCostCollector | P_WIP_Acct            | coProd       | 0         | -59.4     | 6 PCE  |
+      | Record_ID               | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReversalCostCollector | P_Asset_Acct          | coProd       | mainLocator  | -59.4     | 0         | -6 PCE |
+      | coReversalCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | -59.4     | 6 PCE  |
 
     # The whole receipt+reversal set nets to zero: no stale inventory value or WIP residual remains for the
     # co-product once its receipt has been fully reversed - the capitalized value fully unwinds.
@@ -1167,6 +1249,9 @@ Feature: Co-product valuation via cost-distribution percent
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
       | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
     And Wait until documents coReceiptCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 59.4                  | 9.9            |
 
     # Distribute the order (CC-170 true-up): main product residual 402 capitalizes; the co-product's own
     # residual is written down 11.4 (Cr P_Asset / Dr P_WIP) - both on the SAME distribution collector.
@@ -1175,30 +1260,36 @@ Feature: Co-product valuation via cost-distribution percent
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 48                    | 8              |
 
     # Forward per-product legs (main 402 write-up, co-product 11.4 write-down), asserted per product.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 11.4      | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 11.4      | 0         | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 402       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 0         | 11.4      | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 11.4      | 0         | 0 PCE |
 
     # Reverse the distribution collector via the REAL Reverse-Correct DocAction. Before the fix this posting
     # THROWS (all products' CostDetail rows funnel through the single-segment aggregate); after the fix the
     # reversal emits one negated leg-set PER PRODUCT and posts cleanly.
     And the PP_Cost_Collector identified by distributionCostCollector is reversed as distReversalCostCollector
     And Wait until documents distReversalCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 59.4                  | 9.9            |
 
     # The reversal's own legs are the exact per-product negation of the forward legs (Dr/Cr swapped, amount
     # unchanged): main product 402 the other way, co-product 11.4 the other way - each resolved against its
     # OWN product accounts, not aggregated. Asserted per product, not just via the whole-set balance below.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distReversalCostCollector | P_Asset_Acct          | mainProd     | 0         | 402       | 0 PCE |
-      | distReversalCostCollector | P_WIP_Acct            | mainProd     | 402       | 0         | 0 PCE |
-      | distReversalCostCollector | P_Asset_Acct          | coProd       | 11.4      | 0         | 0 PCE |
-      | distReversalCostCollector | P_WIP_Acct            | coProd       | 0         | 11.4      | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distReversalCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 0         | 402       | 0 PCE |
+      | distReversalCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 402       | 0         | 0 PCE |
+      | distReversalCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 11.4      | 0         | 0 PCE |
+      | distReversalCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 11.4      | 0 PCE |
 
     # The whole distribute+reversal set nets to zero on both accounts, across both products: no stale
     # inventory value or WIP residual remains once the distribution collector is fully reversed.
@@ -1257,23 +1348,29 @@ Feature: Co-product valuation via cost-distribution percent
 
     # The co-product's own receipt books exactly its carve (8 CHF/PCE x 6 = 48) - Dr P_Asset / Cr P_WIP.
     And Fact_Acct records are matching
-      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 48        | 0         | 6 PCE  |
-      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 48        | -6 PCE |
+      | Record_ID              | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 48        | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 48        | -6 PCE |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 48                    | 8              |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 48                    | 8              |
 
     # The co-product's residual is zero, so it draws NO CC-170 leg at all - only the finished good's own
     # 402 residual capitalizes here (mirrors TC7 order 2, where a co-product already received at its carve
     # draws no distribution leg). The exact-match assertion below fails if any co-product leg is emitted.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 402       | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
       | AccountConceptualName | AcctBalance |
@@ -1323,9 +1420,9 @@ Feature: Co-product valuation via cost-distribution percent
 
     # The co-product's receipt books its full own value (100 x 6 = 600) into inventory - Dr P_Asset / Cr P_WIP.
     And Fact_Acct records are matching
-      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
-      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 600       | 0         | 6 PCE  |
-      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 600       | -6 PCE |
+      | Record_ID              | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 600       | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 600       | -6 PCE |
 
     # After the receipts the whole order's WIP is NEGATIVE: 450 was issued into WIP, 600 was relieved out of
     # it by the co-product receipt, netting -150 - the over-relief the post-calculation still has to correct.
@@ -1340,20 +1437,26 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 48                 |
       | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 402                |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 600                   | 100            |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 48                    | 8              |
 
     # The CC-170 true-up writes the co-product down from 600 to its 48 carve (a 552 write-down: Cr P_Asset /
     # Dr P_WIP) and capitalizes the main product's 402 - together bringing the order's WIP back from -150 to 0.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 0         | 552       | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 552       | 0         | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 402       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 0         | 552       | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 552       | 0         | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
       | AccountConceptualName | AcctBalance |
@@ -1410,20 +1513,26 @@ Feature: Co-product valuation via cost-distribution percent
       | ppOrder                | coProd                  | MovingAverageInvoice | CO                    | 48                 |
       | ppOrder                | mainProd                | MovingAverageInvoice | MR                    | 402                |
 
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 0                     | 0              |
     And the manufacturing order identified by ppOrder is distributed
     And after not more than 60s, PP_Cost_Collector are found:
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType          |
       | distributionCostCollector       | ppOrder                | mainProd                | 0           | CO        | CostDifferenceDistribution |
     And Wait until documents distributionCostCollector are posted
+    And expect inventory valuation report
+      | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
+      | 2024-03-26 | coProd       | mainWarehouse  | 6   | 48                    | 8              |
 
     # Because the receipt booked 0, the co-product's FULL 48 carve is discharged here as a write-UP
     # (Dr P_Asset / Cr P_WIP) - the same leg shape as the main product's own 402 residual.
     And Fact_Acct records are matching
-      | Record_ID                 | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty   |
-      | distributionCostCollector | P_Asset_Acct          | mainProd     | 402       | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | mainProd     | 0         | 402       | 0 PCE |
-      | distributionCostCollector | P_Asset_Acct          | coProd       | 48        | 0         | 0 PCE |
-      | distributionCostCollector | P_WIP_Acct            | coProd       | 0         | 48        | 0 PCE |
+      | Record_ID                 | AccountConceptualName | M_Product_ID | M_Locator_ID | AmtAcctDr | AmtAcctCr | Qty   |
+      | distributionCostCollector | P_Asset_Acct          | mainProd     | mainLocator  | 402       | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | mainProd     | mainLocator  | 0         | 402       | 0 PCE |
+      | distributionCostCollector | P_Asset_Acct          | coProd       | mainLocator  | 48        | 0         | 0 PCE |
+      | distributionCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 48        | 0 PCE |
 
     And Fact_Acct records balances over the whole PP_Order ppOrder are matching
       | AccountConceptualName | AcctBalance |
