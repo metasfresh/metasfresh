@@ -8,6 +8,9 @@ import de.metas.doctextline.DocTextLine;
 import de.metas.doctextline.DocTextLineDocumentRef;
 import de.metas.doctextline.DocTextLineRepository;
 import de.metas.doctextline.TextLineScope;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -41,10 +44,10 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -1684,57 +1687,140 @@ class DocTextLinesQuickActionsTest
 		}
 
 		/**
-		 * The serialisation these tests rely on is a row lock on the order's own record, taken for the rest of
-		 * the transaction the write runs in. That is what reaches a second modal being served by a SECOND
-		 * application instance, which no in-process lock can see.
+		 * Every structural write -- insert, move and delete alike -- takes the document's lock before it does
+		 * anything, and a writer that meets it held is REFUSED rather than made to wait. A delete frees a
+		 * position the other two may compute against, so none of the three may run unserialised.
 		 * <p>
-		 * What this test can show is the half that lives in this code: every structural write asks the order's
-		 * DAO to lock the document, and does so BEFORE it re-derives the merged order -- a lock taken after the
-		 * read would leave exactly the window it exists to close. That the lock then makes a concurrent writer
-		 * wait is PostgreSQL's contract for {@code FOR UPDATE}, and this harness has no database to
-		 * demonstrate it against; it rests on reading, and is stated as such rather than mimicked with a mock.
+		 * The unit-test harness wires {@code PlainLockDatabase}, so the lock taken below is the very lock the
+		 * writes take: real lock semantics, not a mock. And refusing rather than blocking is what lets this
+		 * test assert anything at all -- a waiting implementation would simply never return.
 		 */
 		@Test
-		void insertMoveAndDelete_eachLockTheOrderRecord()
+		void insertMoveAndDelete_eachTakeTheDocumentsLock_andAreRefusedWhileAnotherWriterHoldsIt()
 		{
 			final I_C_OrderLine article10 = createArticleLine(10);
 			final I_C_Doc_TextLine text5 = createTextLine(5, TextLineScope.Document);
+			final DocTextLinesView view = loadView();
 
-			final IOrderDAO lockRecordingOrderDAO = Mockito.spy(orderDAO);
-			final DocTextLinesView view = viewOf(loadRowsWith(lockRecordingOrderDAO));
+			final ILock heldByAnotherWriter = lockTheDocumentAsAnotherWriter();
+			try
+			{
+				assertThat(catchThrowable(() -> new WEBUI_DocTextLines_InsertAbove().insertAbove(view, articleRowIdOf(article10))))
+						.as("insert-above is refused while another writer holds the document")
+						.isInstanceOf(AdempiereException.class)
+						.hasMessageContaining("try again in a moment");
+				assertThat(catchThrowable(() -> new WEBUI_DocTextLines_MoveDown().moveDown(view, textRowIdOf(text5))))
+						.as("a move is refused while another writer holds the document")
+						.isInstanceOf(AdempiereException.class)
+						.hasMessageContaining("try again in a moment");
+				assertThat(catchThrowable(() -> new WEBUI_DocTextLines_Delete().delete(view, textRowIdOf(text5))))
+						.as("a delete is refused while another writer holds the document")
+						.isInstanceOf(AdempiereException.class)
+						.hasMessageContaining("try again in a moment");
+			}
+			finally
+			{
+				heldByAnotherWriter.unlockAll();
+			}
 
-			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, articleRowIdOf(article10));
-			new WEBUI_DocTextLines_MoveDown().moveDown(view, textRowIdOf(text5));
-			new WEBUI_DocTextLines_Delete().delete(view, textRowIdOf(text5));
-
-			// insert, move and delete: each is a structural write, and a delete frees a position the others
-			// may compute against, so none of the three may run unserialised
-			Mockito.verify(lockRecordingOrderDAO, Mockito.times(3)).lockByIdForUpdate(orderId);
+			assertThat(storedTextLinePositions())
+					.as("each of the three was refused before it wrote anything")
+					.hasSize(1);
+			assertThat(storedTextLinePositions().get(0)).isEqualByComparingTo("5");
 		}
 
 		/**
-		 * The other half, and the one with an ordering in it: the two writes that re-derive the merged order
-		 * must hold the lock BEFORE they read. A lock taken after the read would leave exactly the window it
-		 * exists to close -- another writer could commit in between, and the position would be computed
-		 * against an order that no longer exists by the time it is stored.
+		 * The half with an ordering in it: the two writes that re-derive the merged order must already HOLD the
+		 * document's lock when they read. A lock taken after the read would leave exactly the window it exists
+		 * to close -- another writer could commit in between, and the position would be computed against an
+		 * order that no longer exists by the time it is stored.
 		 */
 		@Test
-		void insertAndMove_lockTheOrderRecord_beforeTheyReadTheOrderLines()
+		void insertAndMove_holdTheDocumentsLock_whileTheyReadTheOrderLines()
 		{
 			final I_C_OrderLine article10 = createArticleLine(10);
 			final I_C_Doc_TextLine text5 = createTextLine(5, TextLineScope.Document);
 
-			final IOrderDAO lockRecordingOrderDAO = Mockito.spy(orderDAO);
-			final DocTextLinesView view = viewOf(loadRowsWith(lockRecordingOrderDAO));
+			final List<Boolean> documentLockedAtEachRead = new ArrayList<>();
+			final IOrderDAO lockObservingOrderDAO = Mockito.spy(orderDAO);
+			Mockito.doAnswer(invocation -> {
+				documentLockedAtEachRead.add(isDocumentLocked());
+				return invocation.callRealMethod();
+			}).when(lockObservingOrderDAO).retrieveOrderLines(orderId);
+
+			final DocTextLinesView view = viewOf(loadRowsWith(lockObservingOrderDAO));
+			documentLockedAtEachRead.clear(); // building the view is not a structural write and takes no lock
 
 			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, articleRowIdOf(article10));
 			new WEBUI_DocTextLines_MoveDown().moveDown(view, textRowIdOf(text5));
 
-			final InOrder lockThenRead = Mockito.inOrder(lockRecordingOrderDAO);
-			lockThenRead.verify(lockRecordingOrderDAO).lockByIdForUpdate(orderId);
-			lockThenRead.verify(lockRecordingOrderDAO).retrieveOrderLines(orderId);
-			lockThenRead.verify(lockRecordingOrderDAO).lockByIdForUpdate(orderId);
-			lockThenRead.verify(lockRecordingOrderDAO).retrieveOrderLines(orderId);
+			assertThat(documentLockedAtEachRead)
+					.as("both writes re-read the order lines, and the document was locked at each of those reads")
+					.containsExactly(true, true);
+		}
+
+		/**
+		 * The lock is released when the write's transaction ends, so the next writer can have the document.
+		 * Releasing it any EARLIER is the defect this has to be pinned against: {@code T_Lock} rows are written
+		 * outside the caller's transaction, so a release before the commit would hand the document to a writer
+		 * that then reads it as it stood before -- and computes a colliding position from those neighbours.
+		 */
+		@Test
+		void aStructuralWrite_releasesTheDocumentsLock_onceItsTransactionHasEnded()
+		{
+			final I_C_OrderLine article10 = createArticleLine(10);
+			final DocTextLinesView view = loadView();
+
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, articleRowIdOf(article10));
+
+			assertThat(isDocumentLocked())
+					.as("the write's own lock is gone once its transaction has ended")
+					.isFalse();
+
+			new WEBUI_DocTextLines_InsertAbove().insertAbove(view, articleRowIdOf(article10));
+			assertThat(storedTextLinePositions())
+					.as("a later write really can take the document")
+					.hasSize(2);
+		}
+
+		/**
+		 * A write that ends in an exception releases the document too -- the release rides on the transaction
+		 * ending, not on the write succeeding. A leaked lock here would wedge the document for good: every
+		 * later structural write on it would be refused, with nobody left to release what is holding it.
+		 */
+		@Test
+		void aRefusedStructuralWrite_doesNotLeaveTheDocumentLocked()
+		{
+			final I_C_Doc_TextLine text5 = createTextLine(5, TextLineScope.Document);
+			final DocTextLinesView staleModal = loadView();
+			final DocTextLinesView currentModal = loadView();
+
+			new WEBUI_DocTextLines_Delete().delete(currentModal, textRowIdOf(text5));
+
+			// the row the stale modal points at is gone, so its move is refused after it has taken the lock
+			assertThat(catchThrowable(() -> new WEBUI_DocTextLines_MoveDown().moveDown(staleModal, textRowIdOf(text5))))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("select a line again");
+
+			assertThat(isDocumentLocked())
+					.as("the refused write released the document on its way out")
+					.isFalse();
+		}
+
+		/** Takes the document's generic lock the way a writer in another application instance would. */
+		private ILock lockTheDocumentAsAnotherWriter()
+		{
+			return Services.get(ILockManager.class)
+					.lock()
+					.setOwner(LockOwner.newOwner("AnotherWriter"))
+					.setFailIfAlreadyLocked(true)
+					.addRecord(orderId.toRecordRef())
+					.acquire();
+		}
+
+		private boolean isDocumentLocked()
+		{
+			return Services.get(ILockManager.class).isLocked(I_C_Order.class, orderId.getRepoId());
 		}
 
 		private DocTextLinesRows loadRowsWith(final DocTextLineRepository repository)

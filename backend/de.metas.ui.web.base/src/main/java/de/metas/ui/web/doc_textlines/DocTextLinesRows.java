@@ -43,7 +43,7 @@ import java.util.function.Supplier;
  * One holder is one open modal, and there can be several over the same document at once -- in this process or
  * in another one. So every write that touches the ORDER -- {@link #insertRowAbove}, {@link #moveRow} -- first
  * re-derives that order from the database ({@link #refreshMergedOrderFromDatabase}) and computes against what
- * it finds, with all writes of one document serialised on a row lock on the document's own record (see
+ * it finds, with all writes of one document serialised on a lock on the document's own record (see
  * {@link #withDocumentLocked}). A holder's own snapshot is never a safe basis for placing a row: it is taken
  * when the view is built and nothing else refreshes it.
  * <p>
@@ -81,9 +81,9 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 
 	/**
 	 * Serialises the writes that touch the ordering OF THIS HOLDER -- two concurrent requests into one open
-	 * modal must not corrupt {@link #rowIds}' index arithmetic. It is held inside the document's row lock, not
+	 * modal must not corrupt {@link #rowIds}' index arithmetic. It is held inside the document's lock, not
 	 * instead of it: writes coming from a DIFFERENT holder of the same document are a different problem, and
-	 * the row lock {@link #withDocumentLocked} takes is what answers that one.
+	 * the document lock {@link #withDocumentLocked} takes is what answers that one.
 	 */
 	private final Object structuralLock = new Object();
 
@@ -354,28 +354,19 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	/**
 	 * Runs {@code action} as the only structural write of this document anywhere, in one transaction.
 	 * <p>
-	 * The serialising primitive is the <b>database</b> row lock on the document's own record
-	 * ({@link DocTextLinesDocumentAccess#lockDocumentForUpdate}), because the writers to keep apart are not
-	 * only the ones in this JVM: a second webapi instance serving the second browser tab would not see an
-	 * in-process lock at all, and would re-derive the same ordering and persist into it. The lock is taken
-	 * inside {@code callInThreadInheritedTrx} and released when that transaction ends, which is why the
-	 * action's own reads and writes must run in the same transaction -- they do: the quick action's
-	 * {@code doIt} is already wrapped in one by {@code ProcessExecutor}, and this call joins it (or opens one
-	 * for a caller that has none, rather than letting the lock be released the moment it is taken).
+	 * The guarantee comes from the document's generic lock
+	 * ({@link DocTextLinesDocumentAccess#lockDocumentForUpdate}), which reaches the writers an in-process lock
+	 * cannot see: a second webapi instance serving the second browser tab. It is a try-lock, so a writer that
+	 * meets the document held is refused; the action's reads and writes must share the transaction opened
+	 * here, because that is what the lock is released with.
 	 * <p>
-	 * The in-process lock in front of it is NOT part of that guarantee and must not be read as one: everything
-	 * this method's action does -- including publishing into {@link #rowsById}/{@link #rowIds} -- happens
-	 * inside the transaction while the row lock is held, so the row lock alone already serialises two rows
-	 * holders of this JVM exactly as it serialises two application instances. What the in-process lock buys is
-	 * cheaper waiting: a second local writer waits here instead of opening a transaction, taking a pooled
-	 * database connection and then sitting idle in a lock wait inside PostgreSQL. It is also the only
-	 * serialisation available to the unit-test harness, which has no database at all, and so is what makes an
-	 * in-JVM concurrency test of this method mean anything.
+	 * The in-process lock in front of it carries no part of that guarantee. It only lets a second writer IN
+	 * THIS JVM wait on a monitor instead of opening a transaction and being refused, and it is the only
+	 * serialisation the DB-less unit-test harness has.
 	 * <p>
-	 * Lock order is fixed -- in-process lock, then the transaction, then the row lock, then
-	 * {@link #structuralLock} (or, in {@link #deleteRow}, a row monitor and then {@link #structuralLock}) --
-	 * and nothing acquires an outer one while holding an inner one, which is what makes holding several safe
-	 * here.
+	 * Lock order is fixed -- in-process lock, transaction, document lock, then {@link #structuralLock} (or, in
+	 * {@link #deleteRow}, a row monitor and then {@link #structuralLock}) -- and nothing acquires an outer one
+	 * while holding an inner one, which is what makes holding several safe here.
 	 */
 	private <T> T withDocumentLocked(@NonNull final Supplier<T> action)
 	{
@@ -591,7 +582,7 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	 * <p>
 	 * Every position this method reads (the neighbour's, and the row beyond it) is read from
 	 * {@link #rowsById}/{@link #rowIds} after that refresh, never cached across calls -- so each one is a row
-	 * the database returned moments earlier, in this same transaction, with the document's row lock held. The
+	 * the database returned moments earlier, in this same transaction, with the document's lock held. The
 	 * one row that can be missing is the selected row itself, deleted in another window before this one acted;
 	 * that is refused with {@link #rowNoLongerExists}, because the user's reference point is gone and no
 	 * position can stand in for it.

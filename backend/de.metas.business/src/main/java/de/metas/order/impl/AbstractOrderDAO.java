@@ -49,7 +49,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ForUpdate;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -95,27 +94,6 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			throw new AdempiereException("@NotFound@: " + orderId);
 		}
 		return order;
-	}
-
-	@Override
-	public void lockByIdForUpdate(@NonNull final OrderId orderId)
-	{
-		// selects the key column only -- the record itself is not wanted here, the lock the select leaves
-		// behind is.
-		// FOR NO KEY UPDATE rather than FOR UPDATE: callers of this method serialise against each other either
-		// way, but FOR UPDATE additionally conflicts with the FOR KEY SHARE that PostgreSQL takes on this row
-		// whenever a concurrent transaction writes a record referencing it -- an order line, say -- so it would
-		// make ordinary order-line work queue behind an unrelated caller of this method (see ForUpdate's javadoc).
-		final int lockedOrderRepoId = queryBL.createQueryBuilder(I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderId)
-				.create()
-				.setForUpdate(ForUpdate.FOR_NO_KEY_UPDATE)
-				.firstIdOnly();
-
-		if (lockedOrderRepoId <= 0)
-		{
-			throw new AdempiereException("@NotFound@: " + orderId);
-		}
 	}
 
 	private List<I_C_Order> getOrdersByExternalIds(@NonNull final List<ExternalId> externalIds)

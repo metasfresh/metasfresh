@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.doctextline.DocTextLine;
 import de.metas.doctextline.DocTextLineDocumentRef;
 import de.metas.doctextline.DocTextLineRepository;
+import de.metas.doctextline.DocTextLineStructuralWriteLock;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -65,14 +66,15 @@ final class DocTextLinesRowsLoader implements DocTextLinesDocumentAccess
 	}
 
 	/**
-	 * Locks the order's own record for the rest of the current transaction, through the DAO that owns
-	 * {@code C_Order} -- the same DAO this class already reads the article lines from, so the rows holder
-	 * still reaches nothing it does not own.
+	 * Takes the document's generic {@code ILockManager} lock for the rest of the current transaction, or
+	 * refuses -- see {@link DocTextLineStructuralWriteLock}. That class lives in {@code de.metas.business},
+	 * which depends on {@code de.metas.async} where the lock manager lives; {@code de.metas.ui.web.base} does
+	 * not, so the acquisition must not move into this view layer.
 	 */
 	@Override
 	public void lockDocumentForUpdate()
 	{
-		orderDAO.lockByIdForUpdate(orderId);
+		DocTextLineStructuralWriteLock.acquireUntilTransactionEnds(DocTextLineDocumentRef.ofOrderId(orderId));
 	}
 
 	/**

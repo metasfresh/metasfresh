@@ -17,8 +17,11 @@ interface DocTextLinesDocumentAccess
 {
 	/**
 	 * Locks the document's own record until the current transaction ends, so that a writer in another
-	 * application instance -- which an in-process lock cannot see at all -- waits rather than computing a
-	 * position against the same state.
+	 * application instance -- which an in-process lock cannot see at all -- cannot compute a position against
+	 * the same state.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException addressed to the user, if another writer holds the
+	 *         document right now: this is a try-lock, so a collision is refused rather than waited out.
 	 */
 	void lockDocumentForUpdate();
 
