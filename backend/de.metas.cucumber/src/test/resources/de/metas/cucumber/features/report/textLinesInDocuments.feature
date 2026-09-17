@@ -298,10 +298,10 @@ Feature: Free text lines print at their position on a sales order confirmation
       | Value                 | Record_ID |
       | Lieferschein (Jasper) | shipment  |
     Then an AD_Archive exists for the record identified by "shipment"
-    # GUARD FOR LATER WORK, not coverage today: the delivery note has no text-line support yet (its report
-    # SQL function was not touched by this feature), so nothing could make the trailing line appear here
-    # regardless of whether the feature itself is implemented correctly. This assertion becomes load-bearing
-    # the day text-line support lands on the delivery note.
+    # Load-bearing since the delivery note gained text-line support: this trailing line is scoped Following
+    # and has NO article line beneath it, so its run is empty. TextLineShipmentCopier skips a Following line
+    # whose run is not present on the shipment, so it is not carried -- even though this shipment contains
+    # every article line of the order.
     And the PDF archived for the record identified by "shipment" does not contain text "Vielen Dank für Ihren Einkauf"
     And the PDF archived for the record identified by "shipment" has no overlapping text
 
