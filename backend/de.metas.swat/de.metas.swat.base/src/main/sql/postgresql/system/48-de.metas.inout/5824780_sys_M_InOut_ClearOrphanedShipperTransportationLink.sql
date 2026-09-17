@@ -9,9 +9,13 @@ SELECT backup_table('M_InOut', '_orphaned_shipper_transportation_before_5824780'
 -- and the no-HU code path also skips such shipments. The code fix in this branch
 -- prevents new orphans from forming going forward; this migration is the one-time
 -- repair of orphans that existed prior to the fix.
+-- Restricted to completed shipments: only a completed shipment can ever have had this
+-- FK set by the add-shipment-to-Transport-Order flow, so a voided or reverse-corrected
+-- shipment reaching this same state is a separate, legitimate case that must be left alone.
 UPDATE M_InOut mi
 SET M_ShipperTransportation_ID = NULL
 WHERE mi.M_ShipperTransportation_ID IS NOT NULL
+  AND mi.DocStatus = 'CO'
   AND NOT EXISTS (
     SELECT 1
     FROM M_ShippingPackage sp
