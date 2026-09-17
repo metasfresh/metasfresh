@@ -77,7 +77,6 @@ jest.mock('../../../utils/ui_trace', () => ({
 
 // Heavy children are irrelevant to the guard; stub them to trivial nodes.
 jest.mock('../../../containers/ViewHeader', () => ({ ViewHeader: () => null }));
-jest.mock('../../../components/ScreenToaster', () => () => null);
 
 describe('ApplicationLayout: a dead deep-link still redirects home, a just-started job does not', () => {
   beforeEach(() => {
