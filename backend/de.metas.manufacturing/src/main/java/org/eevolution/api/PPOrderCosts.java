@@ -500,6 +500,18 @@ public final class PPOrderCosts
 				.orElse(null);
 	}
 
+	/** @return every co-product cost row for the given schema and cost element (possibly empty). */
+	public List<PPOrderCost> getCoProductCosts(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId)
+	{
+		return costs.values().stream()
+				.filter(PPOrderCost::isCoProduct)
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private Set<CostElementId> getCostElementIds()
 	{
 		return costs.keySet()

@@ -23,7 +23,6 @@
 package de.metas.costing.methods;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -307,7 +306,7 @@ public class PPOrderCostDifferenceDistributor
 	{
 		boolean anyDischarged = false;
 
-		for (final PPOrderCost coProductCost : getCoProductCosts(orderCosts, request.getAcctSchemaId(), request.getCostElementId()))
+		for (final PPOrderCost coProductCost : orderCosts.getCoProductCosts(request.getAcctSchemaId(), request.getCostElementId()))
 		{
 			final CostAmount residual = coProductCost.getResidualCost();
 			if (residual.isZero())
@@ -345,19 +344,6 @@ public class PPOrderCostDifferenceDistributor
 		}
 
 		return anyDischarged;
-	}
-
-	/** @return every co-product cost row for the given schema and cost element (possibly empty). */
-	private static List<PPOrderCost> getCoProductCosts(
-			@NonNull final PPOrderCosts orderCosts,
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final CostElementId costElementId)
-	{
-		return orderCosts.toCollection().stream()
-				.filter(PPOrderCost::isCoProduct)
-				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
-				.filter(cost -> costElementId.equals(cost.getCostElementId()))
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	/** Zero qty delta =&gt; reprices the existing on-hand qty by {@code amt}. */
