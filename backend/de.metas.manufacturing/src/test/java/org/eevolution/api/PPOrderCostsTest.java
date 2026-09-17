@@ -287,6 +287,71 @@ public class PPOrderCostsTest
 	}
 
 	/**
+	 * Backstop absorb-band: with {@code Sigma p} at exactly 100% the percent guard passes, but the two co-product
+	 * carves are rounded to the costing precision INDEPENDENTLY, so their rounded sum can overshoot the total
+	 * inbound costs by up to one currency ulp per co-product - driving the main product a sub-precision amount
+	 * negative. That is rounding noise, not a conservation breach: the backstop must ABSORB it (clamp the main
+	 * product to zero and net the overshoot onto the largest co-product carve) so {@code Sigma(outputs)} equals
+	 * the total inbound costs exactly and the order's WIP still nets to zero - it must NOT throw.
+	 * <p>
+	 * Here total inbound costs = 1, p1 = 50.005% -> carve rounds UP to 0.5001, p2 = 49.995% -> carve 0.5000, so the
+	 * rounded co-products sum to 1.0001 and the raw main product is 1 - 1.0001 = -0.0001 (one ulp at precision 4).
+	 */
+	@Test
+	public void testBackstop_absorbsSubPrecisionRoundingOvershoot_clampsMainAndNetsOntoLargestCoProduct()
+	{
+		final ProductId mainProductId = createProduct("blocks_main");
+		final ProductId issueProductId = createProduct("input_milk");
+		final ProductId coProductLargerId = createProduct("coproduct_50_005pct"); // carve rounds up to 0.5001
+		final ProductId coProductSmallerId = createProduct("coproduct_49_995pct"); // carve 0.5000
+
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(mainProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(issueProductId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(1, currencyId))
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductLargerId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of("50.005"))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.CoProduct)
+						.costSegmentAndElement(costSegmentAndElement(coProductSmallerId))
+						.price(CostPrice.zero(currencyId, uomId))
+						.coProductCostDistributionPercent(Percent.of("49.995"))
+						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
+						.build())
+				.build();
+
+		// Sigma p = 100.000% -> percent guard passes; the raw main product is -0.0001 -> backstop must absorb, not throw.
+		orderCosts.updatePostCalculationAmounts(costingPrecision, CostingMethod.AveragePO);
+
+		// main clamped to zero
+		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(BigDecimal.ZERO);
+		// the overshoot is netted onto the LARGEST carve: 0.5001 - 0.0001 = 0.5000; the smaller carve is untouched
+		this.assertThatPostCalculationAmt(orderCosts, coProductLargerId).isEqualByComparingTo(new BigDecimal("0.5000"));
+		this.assertThatPostCalculationAmt(orderCosts, coProductSmallerId).isEqualByComparingTo(new BigDecimal("0.5000"));
+		// cost conserved: Sigma(outputs) == total inbound costs exactly -> WIP nets to zero
+		final BigDecimal sumOutputs = getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal()
+				.add(getPostCalculationCostAmt(orderCosts, coProductLargerId).toBigDecimal())
+				.add(getPostCalculationCostAmt(orderCosts, coProductSmallerId).toBigDecimal());
+		assertThat(sumOutputs).isEqualByComparingTo(BigDecimal.ONE);
+	}
+
+	/**
 	 * By-products are always zeroed, unconditionally, regardless of any cost distribution percent or manual cost
 	 * price on the product. No throw, no by-product-specific guard.
 	 */

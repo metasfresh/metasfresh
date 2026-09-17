@@ -28,6 +28,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -298,15 +299,39 @@ public final class PPOrderCosts
 				.orElseGet(totalInboundCostAmount::toZero);
 
 		//
-		// Backstop: the co-products valued together must not exceed the input cost pool, else the main product
-		// goes negative. E.g. pool 450, two co-products valued 300 + 200 = 500 > 450 -> main = 450 - 500 = -50.
-		// Catches what the percent guard above misses, e.g. rounding at the pool's precision.
-		final CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
+		// Backstop: the co-products valued together must not exceed the order's total inbound costs, else the
+		// main product would go negative. The percent guard above already caps Sigma p at 100% in percent-space,
+		// so the main product is >= 0 by construction; the ONLY residual way this subtraction turns negative is
+		// sub-precision rounding when Sigma p is at (or just under) 100% - each co-product carve is rounded to the
+		// costing precision independently (computeBlankCoProductAmount), so the rounded carves can overshoot the
+		// total inbound costs by at most one currency ulp per co-product. That rounding noise is ABSORBED (below);
+		// only a materially negative main - which can only come from a percent-guard bypass, a real bug - throws.
+		CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
 		if (mainProductAmount.signum() < 0)
 		{
-			throw new AdempiereException("Co-products' total valuation " + totalCoProductsCostAmount
-					+ " exceeds the production order's input cost pool of " + totalInboundCostAmount
-					+ " and would drive the main product negative");
+			// Widest overshoot explainable by independent rounding: one currency ulp per co-product carve.
+			final BigDecimal roundingTolerance = BigDecimal.ONE.movePointLeft(precision.toInt())
+					.multiply(BigDecimal.valueOf(coProductCosts.size()));
+			if (mainProductAmount.toBigDecimal().negate().compareTo(roundingTolerance) <= 0)
+			{
+				// Rounding noise, not a conservation breach: clamp the main product to zero and net the overshoot
+				// onto the LARGEST co-product carve (largest-remainder), so Sigma(outputs) == total inbound costs
+				// exactly and the order's WIP still nets to zero. No throw.
+				final PPOrderCost largestCoProductCost = coProductCosts.stream()
+						.max(Comparator
+								.comparing((PPOrderCost cost) -> cost.getPostCalculationAmount().toBigDecimal())
+								.thenComparingInt(cost -> cost.getProductId().getRepoId()))
+						.orElseThrow(() -> new AdempiereException("No co-product cost to absorb the rounding overshoot onto in " + costs));
+				// mainProductAmount is negative here, so adding it REDUCES the largest carve by the overshoot.
+				largestCoProductCost.setPostCalculationAmount(largestCoProductCost.getPostCalculationAmount().add(mainProductAmount));
+				mainProductAmount = mainProductAmount.toZero();
+			}
+			else
+			{
+				throw new AdempiereException("Co-products' total valuation " + totalCoProductsCostAmount
+						+ " exceeds the production order's total inbound costs of " + totalInboundCostAmount
+						+ " and would drive the main product negative");
+			}
 		}
 
 		//
