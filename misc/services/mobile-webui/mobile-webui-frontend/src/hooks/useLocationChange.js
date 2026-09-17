@@ -10,10 +10,10 @@ export const useLocationChange = (onChange) => {
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
-  // Per-instance, because sessionStorage is shared by every consumer of this hook: whoever ran
-  // first would store the new location, and the rest then saw no change and never fired. The
-  // stored value is still the seed, so a consumer mounting mid-session (or after a page reload)
-  // does not re-announce a location that is already current.
+  // Per-instance, and seeded once: sessionStorage is shared by every consumer of this hook, so
+  // comparing against it directly lets whichever consumer runs first swallow the change for all
+  // the others. The stored value is only the seed, which is what keeps a consumer mounting
+  // mid-session (or after a page reload) from re-announcing a location that is already current.
   const lastSeenLocationRef = useRef(undefined);
   if (lastSeenLocationRef.current === undefined) {
     lastSeenLocationRef.current = sessionStorage.getItem(LAST_KNOWN_LOCATION_KEY);
