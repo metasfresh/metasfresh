@@ -7,7 +7,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
-import de.metas.costing.CostingMethod;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -27,7 +26,6 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
@@ -230,20 +228,17 @@ public final class PPOrderCosts
 		}
 	}
 
-	public void updatePostCalculationAmounts(
-			final CurrencyPrecision precision,
-			@NonNull final CostingMethod costingMethod)
+	public void updatePostCalculationAmounts(final CurrencyPrecision precision)
 	{
 		for (final CostElementId costElementId : getCostElementIds())
 		{
-			updatePostCalculationAmountsForCostElement(precision, costElementId, costingMethod);
+			updatePostCalculationAmountsForCostElement(precision, costElementId);
 		}
 	}
 
 	public void updatePostCalculationAmountsForCostElement(
 			final CurrencyPrecision precision,
-			final CostElementId costElementId,
-			@NonNull final CostingMethod costingMethod)
+			final CostElementId costElementId)
 	{
 		final List<PPOrderCost> costs = filterAndList(PPOrderCostFilter.builder()
 				.costElementId(costElementId)
@@ -260,25 +255,7 @@ public final class PPOrderCosts
 		final ImmutableList<PPOrderCost> coProductCosts = costs.stream()
 				.filter(PPOrderCost::isCoProduct)
 				.collect(ImmutableList.toImmutableList());
-
-		//
-		// Guard: the co-products' cost distribution percent must sum to at most 100% (the whole of the total inbound costs).
-		// Checked in percent-space before any amount is carved, naming the offending co-product(s) and the sum.
-		final Percent totalCoProductDistributionPercent = computeTotalCoProductDistributionPercent(coProductCosts);
-		if (totalCoProductDistributionPercent.isOverOneHundred())
-		{
-			// Sort by product id for a deterministic message; the backing map iterates in unspecified order.
-			final List<ProductId> offendingProductIds = coProductCosts.stream()
-					.filter(coProductCost -> {
-						final Percent percent = coProductCost.getCoProductCostDistributionPercent();
-						return percent != null && percent.signum() > 0;
-					})
-					.map(PPOrderCost::getProductId)
-					.sorted(Comparator.comparing(ProductId::getRepoId))
-					.collect(ImmutableList.toImmutableList());
-			throw new AdempiereException("Co-products' cost distribution percent sum of " + totalCoProductDistributionPercent
-					+ " exceeds 100% for product(s): " + describeProducts(offendingProductIds));
-		}
+		assertValidTotalCoProductDistributionPercent(coProductCosts);
 
 		//
 		// Update inbound costs and calculate total inbound costs
@@ -345,12 +322,27 @@ public final class PPOrderCosts
 		mainProductCost.setPostCalculationAmount(mainProductAmount);
 	}
 
-	private static Percent computeTotalCoProductDistributionPercent(final Collection<PPOrderCost> coProductCosts)
+	private static void assertValidTotalCoProductDistributionPercent(final Collection<PPOrderCost> coProductCosts)
 	{
-		return coProductCosts.stream()
+		final Percent totalCoProductDistributionPercent = coProductCosts.stream()
 				.map(PPOrderCost::getCoProductCostDistributionPercent)
 				.filter(percent -> percent != null && percent.signum() > 0)
 				.reduce(Percent.ZERO, Percent::add);
+
+		if (totalCoProductDistributionPercent.isOverOneHundred())
+		{
+			// Sort by product id for a deterministic message; the backing map iterates in unspecified order.
+			final List<ProductId> offendingProductIds = coProductCosts.stream()
+					.filter(coProductCost -> {
+						final Percent percent = coProductCost.getCoProductCostDistributionPercent();
+						return percent != null && percent.signum() > 0;
+					})
+					.map(PPOrderCost::getProductId)
+					.sorted(Comparator.comparing(ProductId::getRepoId))
+					.collect(ImmutableList.toImmutableList());
+			throw new AdempiereException("Co-products' cost distribution percent sum of " + totalCoProductDistributionPercent
+					+ " exceeds 100% for product(s): " + describeProducts(offendingProductIds));
+		}
 	}
 
 	/**
@@ -456,7 +448,9 @@ public final class PPOrderCosts
 				.orElse(false);
 	}
 
-	/** @return the single main-product cost row for the given schema and cost element, if any. */
+	/**
+	 * @return the single main-product cost row for the given schema and cost element, if any.
+	 */
 	public Optional<PPOrderCost> getMainProductCost(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId costElementId)
@@ -493,7 +487,9 @@ public final class PPOrderCosts
 				.findFirst();
 	}
 
-	/** @return every co-product cost row for the given schema and cost element (possibly empty). */
+	/**
+	 * @return every co-product cost row for the given schema and cost element (possibly empty).
+	 */
 	public List<PPOrderCost> getCoProductCosts(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId costElementId)
@@ -513,7 +509,9 @@ public final class PPOrderCosts
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	/** @return the given products' names (comma-separated), for the negative-main guard message. */
+	/**
+	 * @return the given products' names (comma-separated), for the negative-main guard message.
+	 */
 	private static String describeProducts(@NonNull final List<ProductId> productIds)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);

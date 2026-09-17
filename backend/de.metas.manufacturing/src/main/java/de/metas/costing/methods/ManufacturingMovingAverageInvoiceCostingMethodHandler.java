@@ -122,7 +122,7 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		//
 		if (orderCosts != null)
 		{
-			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), getAcctSchemaCostingMethod(request));
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
 			ppOrderCostsService.save(orderCosts);
 		}
 
@@ -143,19 +143,6 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 				.getCostingPrecision();
 	}
 
-	/**
-	 * The costing method the order is actually costed under — the acct schema's method, NOT this handler's
-	 * ({@link #getCostingMethod()}). See the twin method in {@code ManufacturingAveragePOCostingMethodHandler}
-	 * for why they differ (parallel per-cost-element tracking) and why the co-product cost-distribution gate must
-	 * key off the order's real (acct-schema) method.
-	 */
-	private CostingMethod getAcctSchemaCostingMethod(final CostDetailCreateRequest request)
-	{
-		return acctSchemasRepo.getById(request.getAcctSchemaId())
-				.getCosting()
-				.getCostingMethod();
-	}
-
 	private CostDetailCreateResult createMainProductOrCoProductReceipt(
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCost,
@@ -168,8 +155,8 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		// post-calculation zeroing in PPOrderCosts - so a stray current cost cannot drive the total inbound costs negative.
 		final boolean isByProductReceipt = isCoOrByProductReceipt
 				&& orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
-						.map(PPOrderCost::isByProduct)
-						.orElse(false);
+				.map(PPOrderCost::isByProduct)
+				.orElse(false);
 
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())

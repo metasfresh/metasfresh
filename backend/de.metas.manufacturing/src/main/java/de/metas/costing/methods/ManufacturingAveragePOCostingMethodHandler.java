@@ -78,7 +78,6 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
-
 	@Override
 	public CostingMethod getCostingMethod()
 	{
@@ -160,7 +159,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		//
 		if (orderCosts != null)
 		{
-			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId(), getAcctSchemaCostingMethod(request));
+			orderCosts.updatePostCalculationAmountsForCostElement(getCostingPrecision(request), request.getCostElementId());
 			ppOrderCostsService.save(orderCosts);
 		}
 
@@ -181,21 +180,6 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 				.getCostingPrecision();
 	}
 
-	/**
-	 * The costing method the order is actually costed under — the acct schema's method, NOT this handler's
-	 * ({@link #getCostingMethod()}). The two differ because metasfresh tracks every active material cost element
-	 * in parallel, so this AveragePO handler is invoked for the AveragePO cost element even on an order whose
-	 * acct schema is costed under, say, Standard. The co-product cost-distribution gate in
-	 * {@link PPOrderCosts#updatePostCalculationAmountsForCostElement} keys off the order's real (acct-schema)
-	 * method so a parallel AveragePO cost element neither triggers a false reject nor masks a genuine one.
-	 */
-	private CostingMethod getAcctSchemaCostingMethod(final CostDetailCreateRequest request)
-	{
-		return acctSchemasRepo.getById(request.getAcctSchemaId())
-				.getCosting()
-				.getCostingMethod();
-	}
-
 	private CostDetailCreateResult createMainProductOrCoProductReceipt(
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCost,
@@ -208,8 +192,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		// post-calculation zeroing in PPOrderCosts - so a stray current cost cannot drive the total inbound costs negative.
 		final boolean isByProductReceipt = isCoOrByProductReceipt
 				&& orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
-						.map(PPOrderCost::isByProduct)
-						.orElse(false);
+				.map(PPOrderCost::isByProduct)
+				.orElse(false);
 
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
