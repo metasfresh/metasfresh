@@ -202,7 +202,8 @@ public class DocTextLineRepository
 
 	public List<DocTextLine> getByDocument(@NonNull final DocTextLineDocumentRef documentRef)
 	{
-		final IQueryBuilder<I_C_Doc_TextLine> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_TextLine.class);
+		final IQueryBuilder<I_C_Doc_TextLine> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_TextLine.class)
+				.addOnlyActiveRecordsFilter();
 		if (documentRef.getOrderId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Doc_TextLine.COLUMNNAME_C_Order_ID, documentRef.getOrderId());

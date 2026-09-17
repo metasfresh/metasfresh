@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -506,9 +507,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 		final ImmutableList<InOutLineId> shipmentLineIdsWithLineNoCollisions = shipmentLineNoInfo.getShipmentLineIdsWithLineNoCollisions();
 		inOutDAO.unsetLineNos(shipmentLineIdsWithLineNoCollisions);
 
-		// must run AFTER unsetLineNos: the copy derives each carried text line's position from its anchor
-		// shipment line's own Line, which is only final once any Line-number collision has been resolved.
-		textLineShipmentCopier.copyTextLinesToShipment(currentShipment);
+		// must run AFTER unsetLineNos: nothing else writes a shipment line's Line between here and document
+		// completion. The collision set itself -- not a shipment line's Line value -- is what the copier uses
+		// to tell a genuinely-usable run member from one a collision has renumbered away from its real
+		// position; see TextLineShipmentCopier's javadoc for why the Line value itself cannot be used for that.
+		textLineShipmentCopier.copyTextLinesToShipment(currentShipment, ImmutableSet.copyOf(shipmentLineIdsWithLineNoCollisions));
 
 		final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = huInOutBL.createHUShipmentPackingMaterialLinesBuilder(currentShipment);
 

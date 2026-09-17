@@ -23,6 +23,7 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -58,6 +59,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.product.ProductId;
@@ -69,7 +71,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -94,20 +95,24 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Covers the shipment producer's copy of an order's text lines onto the shipment it creates:
  * <ul>
  * <li>a partial shipment receives only the text lines whose run it contains ({@link #partialShipment_copiesOnlyTextLinesWhoseRunItContains()})
- * <li>a "belongs with the following lines" / "whole document" text line is positioned immediately before the
- * first shipment line of its run, when that run is on the shipment
- * <li>a "whole document" text line still prints, at the head of the shipment's lines, when none of its run made
- * it onto that particular shipment ({@link #documentScopeLine_printsAtHead_whenRunAbsent_anchored_whenRunPresent()})
+ * <li>a "belongs with the following lines" line is positioned at its own original {@code Line}, which sorts
+ * immediately before its run's first shipment line, when that run is on the shipment
+ * <li>a "whole document" line still prints, at the head of the shipment's lines, when none of its run made it
+ * onto that particular shipment ({@link #documentScopeLine_printsAtHead_whenRunAbsent_ownPosition_whenRunPresent()})
  * <li>the copies are independent of the order's own text lines from the moment they are written
  * ({@link #editingTheOrderAfterwards_doesNotChangeAShipmentThatAlreadyExists()})
- * <li>a Line-number collision on the anchor shipment line refuses rather than silently mispositioning
- * ({@link #collisionZeroedAnchorLine_refusesRatherThanMisposition()})
+ * <li>a Line-number collision on every usable run member falls back to head placement, and a collision on
+ * only SOME run members does not poison the whole run
+ * <li>three carry-rule boundary cases the design states explicitly: block folding of consecutive text lines,
+ * and both inclusive ({@code >=}) ties
+ * <li>an inactive order line or text line is ignored as a run/block boundary
+ * <li>a shipment aggregating two orders resolves each order's text lines independently (the multi-order
+ * decision, documented in {@link TextLineShipmentCopier}'s class javadoc)
  * </ul>
  * <p>
  * Lives beside {@link InOutProducerFromShipmentScheduleWithHUTest} rather than next to
@@ -116,6 +121,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * module, and exercising it faithfully needs the real shipment-producer pipeline (candidate selection, the
  * Line-number-collision guard, the hook point relative to it), none of which {@code de.metas.business} can
  * reach.
+ * <p>
+ * <b>What this harness cannot reach:</b> it saves records through the in-memory {@code POJOLookupMap}, never
+ * through the legacy {@code MInOutLine.beforeSave} that a real database runs, which rewrites a zero
+ * {@code Line} to {@code MAX(Line)+10} before the row is ever written. Because of that, this suite cannot
+ * observe what a collided shipment line's {@code Line} actually becomes on a real database. It does not need
+ * to: {@link TextLineShipmentCopier} is deliberately written to never read a shipment line's {@code Line} to
+ * detect a collision -- it consults the producer's own pre-computed collision set instead (see its javadoc),
+ * and that set is populated by plain in-memory bookkeeping ({@code ShipmentLineNoInfo}) that behaves
+ * identically regardless of which persistence backend later saves the rows. The collision tests below pin
+ * that set-based behaviour directly, which is what the fix actually relies on.
  */
 class DocTextLineCopyTest
 {
@@ -229,6 +244,10 @@ class DocTextLineCopyTest
 	private OrderId order()
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
+		// a non-custom freight cost rule -- ShipmentScheduleBL#isConsolidateVetoedByOrderOfSched vetoes
+		// consolidation for FreightCostRule=FixPrice; an unset value resolves ambiguously (observed to differ
+		// depending on which other tests already ran in the same JVM fork), so it is pinned explicitly here.
+		order.setFreightCostRule(FreightCostRule.Calculated.getCode());
 		saveRecord(order);
 		return OrderId.ofRepoId(order.getC_Order_ID());
 	}
@@ -236,12 +255,18 @@ class DocTextLineCopyTest
 	/** An order line at an explicit {@code Line} -- the collision guard and the run/position arithmetic both depend on real, distinct Lines. */
 	private I_C_OrderLine orderLine(final OrderId orderId, final ProductId productId, final I_C_UOM uom, final int line)
 	{
+		return orderLine(orderId, productId, uom, line, true);
+	}
+
+	private I_C_OrderLine orderLine(final OrderId orderId, final ProductId productId, final I_C_UOM uom, final int line, final boolean active)
+	{
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(orderId.getRepoId());
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
 		orderLine.setQtyOrdered(new BigDecimal("5"));
 		orderLine.setLine(line);
+		orderLine.setIsActive(active);
 		saveRecord(orderLine);
 		return orderLine;
 	}
@@ -271,18 +296,26 @@ class DocTextLineCopyTest
 
 	private DocTextLine textLine(final OrderId orderId, final TextLineScope scope, final int line, final String text)
 	{
+		return textLine(orderId, scope, line, text, true);
+	}
+
+	private DocTextLine textLine(final OrderId orderId, final TextLineScope scope, final int line, final String text, final boolean active)
+	{
 		final I_C_Doc_TextLine record = newInstance(I_C_Doc_TextLine.class);
 		record.setC_Order_ID(orderId.getRepoId());
 		record.setTextLine(text);
 		record.setLine(BigDecimal.valueOf(line));
 		record.setTextLineScope(scope.getCode());
+		record.setIsActive(active);
 		saveRecord(record);
 
-		return docTextLineRepository.getByDocument(DocTextLineDocumentRef.ofOrderId(orderId))
-				.stream()
-				.filter(tl -> tl.getId().getRepoId() == record.getC_Doc_TextLine_ID())
-				.findFirst()
-				.orElseThrow(() -> new IllegalStateException("just-saved text line not found"));
+		return DocTextLine.builder()
+				.id(de.metas.doctextline.DocTextLineId.ofRepoId(record.getC_Doc_TextLine_ID()))
+				.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+				.textLine(text)
+				.line(record.getLine())
+				.scope(scope)
+				.build();
 	}
 
 	private InOutGenerateResult process(final List<ShipmentScheduleWithHU> candidates)
@@ -317,6 +350,14 @@ class DocTextLineCopyTest
 				.getLine();
 	}
 
+	private DocTextLine copiedTextLine(final I_M_InOut shipment, final String text)
+	{
+		return textLinesOnShipment(shipment).stream()
+				.filter(l -> text.equals(l.getTextLine()))
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException("not copied onto the shipment: " + text));
+	}
+
 	@Test
 	void partialShipment_copiesOnlyTextLinesWhoseRunItContains()
 	{
@@ -346,8 +387,12 @@ class DocTextLineCopyTest
 				.as("only the text lines whose run is on this shipment are copied")
 				.containsExactly("before A", "before C");
 
-		assertThat(copied.get(0).getLine()).isEqualByComparingTo(BigDecimal.valueOf(lineOf(shipment, ol10)));
-		assertThat(copied.get(1).getLine()).isEqualByComparingTo(BigDecimal.valueOf(lineOf(shipment, ol30)));
+		// stored at the text line's OWN position -- see TextLineShipmentCopier's javadoc for why -- which
+		// still sorts strictly before the run's shipment line.
+		assertThat(copiedTextLine(shipment, "before A").getLine()).isEqualByComparingTo("5");
+		assertThat(copiedTextLine(shipment, "before A").getLine()).isLessThan(BigDecimal.valueOf(lineOf(shipment, ol10)));
+		assertThat(copiedTextLine(shipment, "before C").getLine()).isEqualByComparingTo("25");
+		assertThat(copiedTextLine(shipment, "before C").getLine()).isLessThan(BigDecimal.valueOf(lineOf(shipment, ol30)));
 
 		// tB's own run (ol20) never shipped -- must not have been copied under any position
 		assertThat(copied).extracting(DocTextLine::getTextLine).doesNotContain("before B");
@@ -359,7 +404,7 @@ class DocTextLineCopyTest
 	}
 
 	@Test
-	void fullShipment_followingScopeLine_positionedAtFirstLineOfItsRun()
+	void fullShipment_followingScopeLine_positionedBeforeItsRun()
 	{
 		final OrderId orderId = order();
 		final ProductId productA = product("A", uom("uom"));
@@ -379,13 +424,16 @@ class DocTextLineCopyTest
 
 		assertThat(copied).hasSize(1);
 		assertThat(copied.get(0).getTextLine()).isEqualTo("intro");
-		// "immediately before the first shipment line of its run" -- same position as the FIRST (lowest-Line)
-		// shipment line of the run, relying on the text-before-article tie-break to place it ahead of that line.
-		assertThat(copied.get(0).getLine()).isEqualByComparingTo(BigDecimal.valueOf(lineOf(shipment, ol10)));
+		// stored at its own original position (5) -- provably still "before the run": the run's own lower
+		// bound is always strictly greater than a carried text line's own Line (see TextLineShipmentCopier's
+		// javadoc), so this holds without needing to know which run member is numerically first.
+		assertThat(copied.get(0).getLine()).isEqualByComparingTo("5");
+		assertThat(copied.get(0).getLine()).isLessThan(BigDecimal.valueOf(lineOf(shipment, ol10)));
+		assertThat(copied.get(0).getLine()).isLessThan(BigDecimal.valueOf(lineOf(shipment, ol20)));
 	}
 
 	@Test
-	void documentScopeLine_printsAtHead_whenRunAbsent_anchored_whenRunPresent()
+	void documentScopeLine_printsAtHead_whenRunAbsent_ownPosition_whenRunPresent()
 	{
 		final OrderId orderId = order();
 		final ProductId productA = product("A", uom("uom"));
@@ -412,16 +460,13 @@ class DocTextLineCopyTest
 				.as("a whole-document line is always carried, run present or not")
 				.containsExactlyInAnyOrder("present", "absent");
 
-		final DocTextLine copiedPresent = copied.stream().filter(l -> "present".equals(l.getTextLine())).findFirst().orElseThrow(IllegalStateException::new);
-		final DocTextLine copiedAbsent = copied.stream().filter(l -> "absent".equals(l.getTextLine())).findFirst().orElseThrow(IllegalStateException::new);
-
-		assertThat(copiedPresent.getLine()).isEqualByComparingTo(BigDecimal.valueOf(lineOf(shipment, ol10)));
+		assertThat(copiedTextLine(shipment, "present").getLine()).isEqualByComparingTo(present.getLine());
 
 		// head case: no run member is on this shipment -- printed strictly before every real shipment line,
 		// at the source line's own position minus the head offset.
-		assertThat(copiedAbsent.getLine()).isEqualByComparingTo(absent.getLine().subtract(BigDecimal.valueOf(1_000_000)));
-		assertThat(copiedAbsent.getLine()).isLessThan(BigDecimal.valueOf(lineOf(shipment, ol10)));
-		assertThat(copiedAbsent.getLine()).isLessThan(BigDecimal.valueOf(lineOf(shipment, ol20)));
+		assertThat(copiedTextLine(shipment, "absent").getLine()).isEqualByComparingTo(absent.getLine().subtract(BigDecimal.valueOf(1_000_000)));
+		assertThat(copiedTextLine(shipment, "absent").getLine()).isLessThan(BigDecimal.valueOf(lineOf(shipment, ol10)));
+		assertThat(copiedTextLine(shipment, "absent").getLine()).isLessThan(BigDecimal.valueOf(lineOf(shipment, ol20)));
 	}
 
 	@Test
@@ -457,7 +502,7 @@ class DocTextLineCopyTest
 	}
 
 	@Test
-	void collisionZeroedAnchorLine_refusesRatherThanMisposition()
+	void collisionOnEveryRunMember_printsAtHead()
 	{
 		final OrderId orderId = order();
 		final ProductId productA = product("A", uom("uom"));
@@ -467,13 +512,213 @@ class DocTextLineCopyTest
 		final I_C_OrderLine ol10a = orderLine(orderId, productA, uom("uom"), 10);
 		final I_C_OrderLine ol10b = orderLine(orderId, productB, uom("uom"), 10);
 
-		// its run is unbounded to the right, so it covers both colliding order lines
-		textLine(orderId, TextLineScope.Following, 5, "intro");
+		// its run is unbounded to the right, so it covers both colliding order lines -- and both are the
+		// run's ONLY members, so with both collided there is no usable run member at all
+		final DocTextLine intro = textLine(orderId, TextLineScope.Following, 5, "intro");
 
-		assertThatThrownBy(() -> process(ImmutableList.of(
+		final InOutGenerateResult result = process(ImmutableList.of(
 				candidate(ol10a, productA),
-				candidate(ol10b, productB))))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Line-number collision");
+				candidate(ol10b, productB)));
+
+		final I_M_InOut shipment = singleShipment(result);
+
+		// carried (the run IS present -- both colliding lines are genuinely on the shipment), but with no
+		// usable position reference it is printed at the head rather than mispositioned at whatever a
+		// collision-renumbered Line happens to be.
+		assertThat(copiedTextLine(shipment, "intro").getLine())
+				.isEqualByComparingTo(intro.getLine().subtract(BigDecimal.valueOf(1_000_000)));
+	}
+
+	@Test
+	void collisionOnSomeRunMembers_stillUsesOwnPosition()
+	{
+		final OrderId orderId = order();
+		final ProductId productA = product("A", uom("uom"));
+		final ProductId productB = product("B", uom("uom"));
+		final ProductId productC = product("C", uom("uom"));
+
+		// ol10a and ol10b collide with each other; ol30 is a third, unrelated, non-colliding run member
+		final I_C_OrderLine ol10a = orderLine(orderId, productA, uom("uom"), 10);
+		final I_C_OrderLine ol10b = orderLine(orderId, productB, uom("uom"), 10);
+		final I_C_OrderLine ol30 = orderLine(orderId, productC, uom("uom"), 30);
+
+		final DocTextLine intro = textLine(orderId, TextLineScope.Following, 5, "intro");
+
+		// all three ship together: ol10a/ol10b collide, ol30 does not -- the run has a usable member
+		final InOutGenerateResult result = process(ImmutableList.of(
+				candidate(ol10a, productA),
+				candidate(ol10b, productB),
+				candidate(ol30, productC)));
+
+		final I_M_InOut shipment = singleShipment(result);
+
+		// a single unusable (collided) run member must not poison the run when another, usable member is
+		// present -- positioned at its own value, not punted to the head.
+		assertThat(copiedTextLine(shipment, "intro").getLine()).isEqualByComparingTo(intro.getLine());
+	}
+
+	@Test
+	void consecutiveTextLines_shareTheRunOfTheLastLineInTheirBlock()
+	{
+		final OrderId orderId = order();
+		final ProductId productA = product("A", uom("uom"));
+		final I_C_OrderLine ol30 = orderLine(orderId, productA, uom("uom"), 30);
+
+		// two adjacent "following" text lines with no article between them -- they fold into one block, and
+		// both share the run of the LAST one (ol30), not just t2's.
+		final DocTextLine t1 = textLine(orderId, TextLineScope.Following, 15, "t1");
+		textLine(orderId, TextLineScope.Following, 20, "t2");
+
+		final InOutGenerateResult result = process(ImmutableList.of(candidate(ol30, productA)));
+		final I_M_InOut shipment = singleShipment(result);
+
+		assertThat(textLinesOnShipment(shipment))
+				.as("t1 shares t2's run via block folding, not just its own (empty) one")
+				.extracting(DocTextLine::getTextLine)
+				.containsExactlyInAnyOrder("t1", "t2");
+		assertThat(copiedTextLine(shipment, "t1").getLine()).isEqualByComparingTo(t1.getLine());
+	}
+
+	@Test
+	void textLineTiedWithTheBoundaryArticle_stillCapsItsOwnBlockAtTheTie()
+	{
+		final OrderId orderId = order();
+		final ProductId productA = product("A", uom("uom"));
+		final I_C_OrderLine ol10 = orderLine(orderId, productA, uom("uom"), 10);
+		final I_C_OrderLine ol20 = orderLine(orderId, productA, uom("uom"), 20);
+
+		// t1 is tied with ol10 -- inclusive (>=) means ol10 caps t1's own block, so t2 (a later text line)
+		// does NOT fold into t1's block and does not inherit ol10 into its own run.
+		final DocTextLine t1 = textLine(orderId, TextLineScope.Following, 10, "t1");
+		textLine(orderId, TextLineScope.Following, 15, "t2");
+
+		// ship only ol10 -- t2's own run is {ol20}, never on this shipment
+		final InOutGenerateResult result = process(ImmutableList.of(candidate(ol10, productA)));
+		final I_M_InOut shipment = singleShipment(result);
+
+		assertThat(textLinesOnShipment(shipment))
+				.as("t1's tie with ol10 caps its own block; t2 is a separate block whose run (ol20) is absent")
+				.extracting(DocTextLine::getTextLine)
+				.containsExactly("t1");
+		assertThat(copiedTextLine(shipment, "t1").getLine()).isEqualByComparingTo(t1.getLine());
+	}
+
+	@Test
+	void articleLineTiedWithTheRunsLowerBound_stillBelongsToTheRun()
+	{
+		final OrderId orderId = order();
+		final ProductId productA = product("A", uom("uom"));
+		final I_C_OrderLine ol10 = orderLine(orderId, productA, uom("uom"), 10);
+		orderLine(orderId, productA, uom("uom"), 20);
+
+		// t's block ends at its own Line (10), tied with ol10 -- inclusive (>=) on the run's OWN lower bound
+		// means ol10 still belongs to t's run despite the tie.
+		final DocTextLine t = textLine(orderId, TextLineScope.Following, 10, "t");
+
+		// ship only ol10 (the tied line) -- if the tie were excluded, t's run would be {ol20} only, absent here
+		final InOutGenerateResult result = process(ImmutableList.of(candidate(ol10, productA)));
+		final I_M_InOut shipment = singleShipment(result);
+
+		assertThat(textLinesOnShipment(shipment))
+				.as("the tied article (ol10) belongs to t's run despite the exact-Line tie")
+				.extracting(DocTextLine::getTextLine)
+				.containsExactly("t");
+		assertThat(copiedTextLine(shipment, "t").getLine()).isEqualByComparingTo(t.getLine());
+	}
+
+	@Test
+	void inactiveTextLine_isIgnoredAsABlockBoundary()
+	{
+		final OrderId orderId = order();
+		final ProductId productA = product("A", uom("uom"));
+		final I_C_OrderLine ol30 = orderLine(orderId, productA, uom("uom"), 30);
+
+		// same shape as the block-folding test, but t2 is INACTIVE: it must not fold with t1, and it must
+		// never itself be copied.
+		final DocTextLine t1 = textLine(orderId, TextLineScope.Following, 15, "t1");
+		textLine(orderId, TextLineScope.Following, 20, "ghost", false);
+
+		final InOutGenerateResult result = process(ImmutableList.of(candidate(ol30, productA)));
+		final I_M_InOut shipment = singleShipment(result);
+
+		assertThat(textLinesOnShipment(shipment))
+				.as("t1's own (unfolded, since the sibling is inactive) run is still {ol30}; the inactive sibling never appears")
+				.extracting(DocTextLine::getTextLine)
+				.containsExactly("t1");
+		assertThat(copiedTextLine(shipment, "t1").getLine()).isEqualByComparingTo(t1.getLine());
+	}
+
+	@Test
+	void inactiveOrderLine_isIgnoredAsANextArticleBoundary()
+	{
+		final OrderId orderId = order();
+		final ProductId productA = product("A", uom("uom"));
+		orderLine(orderId, productA, uom("uom"), 20, false); // inactive -- must not act as a boundary
+		final I_C_OrderLine ol40 = orderLine(orderId, productA, uom("uom"), 40);
+
+		// t1 and t2 fold into one block only if the ACTIVE next-article is ol40 (40), not the inactive line
+		// at 20: with the inactive line wrongly acting as the boundary, t1's block would cap at 20 and t2
+		// would not fold in, leaving t1 with an empty run (since the only active order line, ol40, is at 40).
+		final DocTextLine t1 = textLine(orderId, TextLineScope.Following, 15, "t1");
+		final DocTextLine t2 = textLine(orderId, TextLineScope.Following, 25, "t2");
+
+		final InOutGenerateResult result = process(ImmutableList.of(candidate(ol40, productA)));
+		final I_M_InOut shipment = singleShipment(result);
+
+		assertThat(textLinesOnShipment(shipment))
+				.as("the inactive order line at 20 must not cap t1's block short of the active ol40 at 40")
+				.extracting(DocTextLine::getTextLine)
+				.containsExactlyInAnyOrder("t1", "t2");
+		assertThat(copiedTextLine(shipment, "t1").getLine()).isEqualByComparingTo(t1.getLine());
+		assertThat(copiedTextLine(shipment, "t2").getLine()).isEqualByComparingTo(t2.getLine());
+	}
+
+	/**
+	 * Whether two different orders actually consolidate onto one shipment is a business decision this test
+	 * does not need and must not depend on ({@code ShipmentScheduleBL#isConsolidateVetoedByOrderOfSched} and
+	 * friends decide that, and it is not this class's concern) -- so this test builds the "one shipment
+	 * carrying lines of two orders" state directly (shipment + shipment lines, no schedules/candidates
+	 * involved) and calls {@link TextLineShipmentCopier} on it, exactly as
+	 * {@link InOutProducerFromShipmentScheduleWithHU#processCurrentShipment()} would once such a shipment
+	 * exists, whichever route created it.
+	 */
+	@Test
+	void twoOrdersOnOneShipment_resolveTheirTextLinesIndependently()
+	{
+		final OrderId orderX = order();
+		final I_C_OrderLine olX10 = orderLine(orderX, product("A", uom("uom")), uom("uom"), 10);
+		final DocTextLine tX = textLine(orderX, TextLineScope.Following, 5, "from X");
+
+		final OrderId orderY = order();
+		final I_C_OrderLine olY50 = orderLine(orderY, product("B", uom("uom")), uom("uom"), 50);
+		final DocTextLine tY = textLine(orderY, TextLineScope.Following, 45, "from Y");
+
+		final I_M_InOut shipment = newInstance(I_M_InOut.class);
+		saveRecord(shipment);
+
+		final I_M_InOutLine shipmentLineX = newInstance(I_M_InOutLine.class);
+		shipmentLineX.setM_InOut_ID(shipment.getM_InOut_ID());
+		shipmentLineX.setC_Order_ID(orderX.getRepoId());
+		shipmentLineX.setC_OrderLine_ID(olX10.getC_OrderLine_ID());
+		shipmentLineX.setLine(olX10.getLine());
+		saveRecord(shipmentLineX);
+
+		final I_M_InOutLine shipmentLineY = newInstance(I_M_InOutLine.class);
+		shipmentLineY.setM_InOut_ID(shipment.getM_InOut_ID());
+		shipmentLineY.setC_Order_ID(orderY.getRepoId());
+		shipmentLineY.setC_OrderLine_ID(olY50.getC_OrderLine_ID());
+		shipmentLineY.setLine(olY50.getLine());
+		saveRecord(shipmentLineY);
+
+		// see the multi-order decision in TextLineShipmentCopier's class javadoc: each order's text lines are
+		// resolved against that order's own sequence, independently of the other order sharing the shipment.
+		new TextLineShipmentCopier().copyTextLinesToShipment(shipment, ImmutableSet.of());
+
+		assertThat(textLinesOnShipment(shipment))
+				.as("both orders' text lines are carried, each resolved against its own order")
+				.extracting(DocTextLine::getTextLine)
+				.containsExactlyInAnyOrder("from X", "from Y");
+		assertThat(copiedTextLine(shipment, "from X").getLine()).isEqualByComparingTo(tX.getLine());
+		assertThat(copiedTextLine(shipment, "from Y").getLine()).isEqualByComparingTo(tY.getLine());
 	}
 }
