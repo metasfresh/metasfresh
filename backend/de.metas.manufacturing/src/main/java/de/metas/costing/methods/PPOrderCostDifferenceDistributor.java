@@ -288,18 +288,19 @@ public class PPOrderCostDifferenceDistributor
 	}
 
 	/**
-	 * Discharges each co-product's own WIP residual the same way {@link #createDistributionCostDetails} discharges
-	 * the main product's: {@link #computeSplit} with the co-product's own on-hand qty, its own current cost moved
-	 * by the adjustment leg, and its own {@code CostDetail} rows persisted (own product segment - so a reversal of
-	 * this collector finds and reverses them too, see {@link #accumulateOntoMainProduct}).
+	 * Discharges each co-product's leftover WIP the same way the main product's is discharged: split the residual
+	 * by how much of the made qty is still in stock vs already shipped, capitalize the in-stock share onto the
+	 * product's cost price, expense the shipped share to COGS, and relieve the whole residual from WIP.
 	 * <p>
-	 * These per-co-product results are intentionally NOT folded into the {@link CostDetailCreateResultsList}
-	 * returned by {@link #createDistributionCostDetails}: that list must stay single-cost-segment (one product),
-	 * because {@code CostDetailCreateResultsList.toAggregatedCostAmount} throws on a mixed segment - so
-	 * {@code Doc_PPCostCollector}'s fact-emission mechanics for the main product are reused completely as-is.
+	 * Example: residual 100, made 10 (6 in stock, 4 shipped) => 60 capitalized onto the cost price, 40 to COGS,
+	 * 100 relieved from WIP.
+	 * <p>
+	 * Each co-product's rows are keyed on its own product, so a reversal finds and reverses them (see
+	 * {@link #accumulateOntoMainProduct}). They are not folded into the returned list, which must stay one product
+	 * ({@code CostDetailCreateResultsList.toAggregatedCostAmount} throws on a mixed segment).
 	 *
-	 * @return whether at least one co-product residual was discharged, so the caller knows {@code orderCosts} must
-	 * be persisted even when the main product's own residual is zero.
+	 * @return whether any co-product residual was discharged, so the caller persists {@code orderCosts} even when
+	 * the main product's own residual is zero.
 	 */
 	private boolean distributeCoProductResiduals(
 			@NonNull final PPOrderCosts orderCosts,
