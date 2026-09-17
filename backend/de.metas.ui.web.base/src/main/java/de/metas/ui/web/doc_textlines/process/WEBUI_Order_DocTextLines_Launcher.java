@@ -59,9 +59,10 @@ public class WEBUI_Order_DocTextLines_Launcher extends JavaProcess implements IP
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		if (!context.isSingleSelection())
+		final ProcessPreconditionsResolution singleSelection = context.acceptIfSingleSelection();
+		if (!singleSelection.isAccepted())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return singleSelection;
 		}
 
 		if (context.isExistingDocument().isFalse())

@@ -76,10 +76,17 @@ class WEBUI_Order_DocTextLines_LauncherTest
 		return order.getC_Order_ID();
 	}
 
+	/**
+	 * A context with exactly one order selected. {@code acceptIfSingleSelection()} is a DEFAULT method, and a
+	 * Mockito mock returns null for one unless it is told to run it -- so it is stubbed to call the real
+	 * implementation, which then reads the two selection-shape methods below.
+	 */
 	private static IProcessPreconditionsContext contextSelecting(final int orderId)
 	{
 		final IProcessPreconditionsContext context = mock(IProcessPreconditionsContext.class);
-		when(context.isSingleSelection()).thenReturn(true);
+		when(context.acceptIfSingleSelection()).thenCallRealMethod();
+		when(context.isNoSelection()).thenReturn(false);
+		when(context.isMoreThanOneSelected()).thenReturn(false);
 		when(context.isExistingDocument()).thenReturn(OptionalBoolean.TRUE);
 		when(context.getSingleSelectedRecordId()).thenReturn(orderId);
 		return context;
@@ -117,11 +124,45 @@ class WEBUI_Order_DocTextLines_LauncherTest
 	void rejectsWhenMoreThanOneOrderIsSelected()
 	{
 		final IProcessPreconditionsContext context = mock(IProcessPreconditionsContext.class);
-		when(context.isSingleSelection()).thenReturn(false);
+		when(context.acceptIfSingleSelection()).thenCallRealMethod();
+		when(context.isNoSelection()).thenReturn(false);
+		when(context.isMoreThanOneSelected()).thenReturn(true);
 
 		final ProcessPreconditionsResolution resolution =
 				new WEBUI_Order_DocTextLines_Launcher().checkPreconditionsApplicable(context);
 
 		assertThat(resolution.isAccepted()).isFalse();
+		assertThat(resolution.isInternal())
+				.as("the reason must reach the user, not be swallowed as an internal one")
+				.isFalse();
+	}
+
+	/**
+	 * The two selection shapes must not collapse into one message: "nothing selected" and "more than one
+	 * selected" are different situations and the user is told which one they are in. Asserting the REASONS
+	 * differ is the point -- asserting only {@code isAccepted()} cannot tell the two apart, which is how a
+	 * single generic reason for both went unnoticed.
+	 */
+	@Test
+	void rejectsWhenNoOrderIsSelected_withADifferentReasonThanMoreThanOne()
+	{
+		final IProcessPreconditionsContext noSelection = mock(IProcessPreconditionsContext.class);
+		when(noSelection.acceptIfSingleSelection()).thenCallRealMethod();
+		when(noSelection.isNoSelection()).thenReturn(true);
+
+		final IProcessPreconditionsContext tooMany = mock(IProcessPreconditionsContext.class);
+		when(tooMany.acceptIfSingleSelection()).thenCallRealMethod();
+		when(tooMany.isNoSelection()).thenReturn(false);
+		when(tooMany.isMoreThanOneSelected()).thenReturn(true);
+
+		final ProcessPreconditionsResolution noSelectionResolution =
+				new WEBUI_Order_DocTextLines_Launcher().checkPreconditionsApplicable(noSelection);
+		final ProcessPreconditionsResolution tooManyResolution =
+				new WEBUI_Order_DocTextLines_Launcher().checkPreconditionsApplicable(tooMany);
+
+		assertThat(noSelectionResolution.isAccepted()).isFalse();
+		assertThat(noSelectionResolution.isInternal()).isFalse();
+		assertThat(noSelectionResolution.getRejectReason().getDefaultValue())
+				.isNotEqualTo(tooManyResolution.getRejectReason().getDefaultValue());
 	}
 }
