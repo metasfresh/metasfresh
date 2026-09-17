@@ -67,6 +67,7 @@ public class M_Product
 {
 
 	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
+	private static final AdMessageKey MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE = AdMessageKey.of("de.metas.product.model.interceptor.M_Product.CoProductCostDistributionPercent_OutOfRange");
 
 	private static final BigDecimal COPRODUCT_COST_DISTRIBUTION_PERCENT_MIN = BigDecimal.ZERO;
 	private static final BigDecimal COPRODUCT_COST_DISTRIBUTION_PERCENT_MAX = BigDecimal.valueOf(100);
@@ -97,7 +98,7 @@ public class M_Product
 	}
 
 	/**
-	 * Per-product data-entry range guard (AC17): {@code CoProductCostDistributionPercent} only accepts
+	 * Per-product data-entry range guard: {@code CoProductCostDistributionPercent} only accepts
 	 * {@code [0, 100]}; blank/NULL stays legal. Distinct from the per-order {@code Σp ≤ 100%} guard
 	 * (enforced elsewhere, at cost-calculation time), which bounds the sum across an order.
 	 */
@@ -112,7 +113,7 @@ public class M_Product
 		if (percent.compareTo(COPRODUCT_COST_DISTRIBUTION_PERCENT_MIN) < 0
 				|| percent.compareTo(COPRODUCT_COST_DISTRIBUTION_PERCENT_MAX) > 0)
 		{
-			throw new AdempiereException("CoProductCostDistributionPercent must be between 0 and 100, but was: " + percent)
+			throw new AdempiereException(MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE, percent)
 					.markAsUserValidationError();
 		}
 	}

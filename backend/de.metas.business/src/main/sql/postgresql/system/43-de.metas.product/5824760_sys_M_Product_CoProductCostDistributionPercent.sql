@@ -2,11 +2,13 @@
 -- A manually maintained, overridable percentage share of production cost distribution (nullable)
 -- read live at PP_Order cost creation; a co-product (ComponentType=CP) whose product carries a
 -- non-blank value is relieved by that percentage share of the total cost instead of the
--- qty-distribution. Blank = today's behaviour (opt-in, no seed).
+-- qty-distribution. Blank = zero-cost carve: the co-product is not opted in and receives no cost
+-- at all, the main/finished product absorbs the entire cost pool. There is no fallback to the old
+-- quantity-based distribution — that formula was removed by this change.
 -- Rewrite-in-place of the branch-only, never-applied 5824340_sys_M_Product_CoProductFixedCostPrice.sql
 -- scaffold: discards its fixed-price AD_Element 585459 / AD_Column 593554 and allocates fresh IDs
 -- (see the id-reuse rule in CLAUDE.md "IDs and Sequence Numbers"). Field/UI-element placement on
--- window 344 / tab 700 is defined separately (not part of this script).
+-- window 344 / tab 700 is part of this same script (see Task 4 below).
 --
 -- IDs allocated from idserver.metas.de on 2026-09-16:
 --   AD_Element 585471 (M_Product.CoProductCostDistributionPercent label)
@@ -14,7 +16,7 @@
 
 -- AD_Element (base language = German)
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy)
-VALUES (0,585471 /*From ID Server*/,0,'CoProductCostDistributionPercent',TO_TIMESTAMP('2026-09-16 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Manuell gepflegter, überschreibbarer Prozentsatz für die Kostenverteilung eines Co-Products. Leer = bisherige mengenbasierte Verteilung.','D','Der Wert wird bei der Erstellung der Produktionsauftragskosten live gelesen: Ein Co-Product mit gesetztem Kostenverteilungsanteil wird mit diesem Prozentsatz der Gesamtkosten bewertet, das Hauptprodukt trägt den Rest. Leer lassen, um die mengenbasierte Verteilung beizubehalten.','Y','Co-Product Kostenverteilungsanteil','Co-Product Kostenverteilungsanteil',TO_TIMESTAMP('2026-09-16 10:00:00','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,585471 /*From ID Server*/,0,'CoProductCostDistributionPercent',TO_TIMESTAMP('2026-09-16 10:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Manuell gepflegter, überschreibbarer Prozentsatz für die Kostenverteilung eines Co-Products. Leer = das Co-Product trägt keine Kosten (0%), das Hauptprodukt übernimmt die gesamten Kosten.','D','Der Wert wird bei der Erstellung der Produktionsauftragskosten live gelesen: Ein Co-Product mit gesetztem Kostenverteilungsanteil wird mit diesem Prozentsatz der Gesamtkosten bewertet, das Hauptprodukt trägt den Rest. Leer lassen, wenn das Co-Product keine Kosten tragen soll (0%) — es gibt keinen automatischen mengenbasierten Rückfall.','Y','Co-Product Kostenverteilungsanteil','Co-Product Kostenverteilungsanteil',TO_TIMESTAMP('2026-09-16 10:00:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- Seed AD_Element_Trl for every active system language (copies base German text)
@@ -26,17 +28,12 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 ;
 
 -- English override
-UPDATE AD_Element_Trl SET Name='Co-Product Cost Distribution Percent', PrintName='Co-Product Cost Distribution Percent', Description='Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = today''s quantity-based distribution.', Help='Read live at PP_Order cost creation: a co-product carrying a distribution percent is valued at that percentage share of the total cost, and the main product is relieved by the remainder. Leave blank to keep the quantity-based distribution.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-16 10:00:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Element_Trl SET Name='Co-Product Cost Distribution Percent', PrintName='Co-Product Cost Distribution Percent', Description='Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost; the main product absorbs the entire cost pool.', Help='Read live at PP_Order cost creation: a co-product carrying a distribution percent is valued at that percentage share of the total cost, and the main product is relieved by the remainder. Leave blank if the co-product should carry no cost (0%) — there is no fallback to quantity-based distribution.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-16 10:00:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Element_ID=585471 AND AD_Language='en_US'
 ;
 
--- Mark the German rows as actively translated (text already German from the base)
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-16 10:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Element_ID=585471 AND AD_Language='de_DE'
-;
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-16 10:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Element_ID=585471 AND AD_Language='de_CH'
-;
+-- de_DE/de_CH rows keep IsTranslated='N' as seeded above (convention: only en_US is marked
+-- actively translated when overridden; see sibling migration 5619940_sys_gh12205_add_product_alternatives.sql).
 
 -- AD_Column (reference 22 = Number, the metasfresh convention for a percent value — see e.g.
 -- GL_DistributionLine.Percent; there is no dedicated "Percent" AD_Reference. Nullable, not mandatory.)
@@ -63,7 +60,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 -- Task 4: place the field DIRECTLY on the core Product Costs window 344 / main
 -- M_Product tab 700 — fresh AD_Field / AD_UI_Element / AD_UI_ElementGroup IDs,
 -- discarding the old 784976 / 654744 / 555769. Never placed on window 140 / tab 180
--- (or any other window) — AC2 is satisfied by construction (nothing to remove there).
+-- (or any other window) — nothing to remove there.
 --
 -- Resolved via psql against the local intensive_care_uat stack (2026-09-16):
 --   AD_Window 344 "Produktkosten" -> main tab AD_Tab 700 (M_Product, SeqNo 10, TabLevel 0)

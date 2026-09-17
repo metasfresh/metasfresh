@@ -305,9 +305,10 @@ public class M_Product_StepDef
 	 * Optional columns (only the ones present are written):<br>
 	 *   <b>Value</b>, <b>GTIN</b>, <b>UPC</b>, <b>EAN13_ProductCode</b>, <b>IsStocked</b>, <b>IsActive</b>,
 	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N},
-	 *   <b>CoProductCostDistributionPercent</b> — the co-product's qty-distribution percent read live at
-	 *   production post-calculation (blank = keeps today's qty-distribution formula; the sum across a co-product's
-	 *   siblings must not exceed 100%, see the AC6 guard on {@code PPOrderCosts})
+	 *   <b>CoProductCostDistributionPercent</b> — the co-product's cost distribution percent read live at
+	 *   production post-calculation (blank = the co-product carries zero cost, the main/finished product absorbs
+	 *   the entire cost pool — there is no fallback to a quantity-based distribution; the sum across a co-product's
+	 *   siblings must not exceed 100%, see the guard on {@code PPOrderCosts})
 	 *
 	 * <pre>{@code
 	 * When update M_Product:
@@ -516,7 +517,7 @@ public class M_Product_StepDef
 		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsActive).ifPresent(productRecord::setIsActive);
 		row.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
 				.ifPresent(value -> productRecord.setProductLifeCycleStatus(productLifeCycleStatusOrDefault(value)));
-		// Co-product cost distribution percent (blank = keeps today's qty-distribution formula).
+		// Co-product cost distribution percent (blank = zero cost carve; the main product absorbs the rest).
 		row.getAsOptionalBigDecimal(I_M_Product.COLUMNNAME_CoProductCostDistributionPercent)
 				.ifPresent(productRecord::setCoProductCostDistributionPercent);
 
