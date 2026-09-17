@@ -263,10 +263,7 @@ public final class PPOrderCosts
 		//
 		// Guard: the co-products' cost distribution percent must sum to at most 100% (the whole input pool).
 		// Checked in percent-space before any amount is carved, naming the offending co-product(s) and the sum.
-		final Percent totalCoProductDistributionPercent = coProductCosts.stream()
-				.map(PPOrderCost::getCoProductCostDistributionPercent)
-				.filter(percent -> percent != null && percent.signum() > 0)
-				.reduce(Percent.ZERO, Percent::add);
+		final Percent totalCoProductDistributionPercent = computeTotalCoProductDistributionPercent(coProductCosts);
 		if (totalCoProductDistributionPercent.isOverOneHundred())
 		{
 			// Sort by product id for a deterministic message; the backing map iterates in unspecified order.
@@ -301,9 +298,9 @@ public final class PPOrderCosts
 				.orElseGet(totalInboundCostAmount::toZero);
 
 		//
-		// Value-space backstop behind the percent guard above: the co-products must not consume more than the
-		// input cost pool, which would drive the main product negative. Catches only what the percent check
-		// misses, e.g. rounding at the pool's precision.
+		// Backstop: the co-products valued together must not exceed the input cost pool, else the main product
+		// goes negative. E.g. pool 450, two co-products valued 300 + 200 = 500 > 450 -> main = 450 - 500 = -50.
+		// Catches what the percent guard above misses, e.g. rounding at the pool's precision.
 		final CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
 		if (mainProductAmount.signum() < 0)
 		{
@@ -321,6 +318,14 @@ public final class PPOrderCosts
 		//
 		// Update main product cost
 		mainProductCost.setPostCalculationAmount(mainProductAmount);
+	}
+
+	private static Percent computeTotalCoProductDistributionPercent(final Collection<PPOrderCost> coProductCosts)
+	{
+		return coProductCosts.stream()
+				.map(PPOrderCost::getCoProductCostDistributionPercent)
+				.filter(percent -> percent != null && percent.signum() > 0)
+				.reduce(Percent.ZERO, Percent::add);
 	}
 
 	/**
