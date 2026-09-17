@@ -269,7 +269,7 @@ public final class PPOrderCosts
 				.map(PPOrderCost::getCoProductCostDistributionPercent)
 				.filter(percent -> percent != null && percent.signum() > 0)
 				.reduce(Percent.ZERO, Percent::add);
-		if (totalCoProductDistributionPercent.compareTo(Percent.ONE_HUNDRED) > 0)
+		if (totalCoProductDistributionPercent.isOverOneHundred())
 		{
 			// Sort ascending by product name so the message is deterministic; `costs`/`coProductCosts` are
 			// backed by a HashMap and otherwise iterate in an unspecified (JVM-dependent) order.

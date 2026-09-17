@@ -69,9 +69,6 @@ public class M_Product
 	private static final AdMessageKey MSG_PRODUCT_UOM_CONVERSION_ALREADY_LINKED = AdMessageKey.of("de.metas.order.model.interceptor.M_Product.Product_UOM_Conversion_Already_Linked");
 	public static final AdMessageKey MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE = AdMessageKey.of("de.metas.product.model.interceptor.M_Product.CoProductCostDistributionPercent_OutOfRange");
 
-	private static final Percent COPRODUCT_COST_DISTRIBUTION_PERCENT_MIN = Percent.ZERO;
-	private static final Percent COPRODUCT_COST_DISTRIBUTION_PERCENT_MAX = Percent.ONE_HUNDRED;
-
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -107,8 +104,7 @@ public class M_Product
 	{
 		final Percent percent = Percent.of(product.getCoProductCostDistributionPercent());
 
-		if (percent.compareTo(COPRODUCT_COST_DISTRIBUTION_PERCENT_MIN) < 0
-				|| percent.compareTo(COPRODUCT_COST_DISTRIBUTION_PERCENT_MAX) > 0)
+		if (percent.signum() < 0 || percent.isOverOneHundred())
 		{
 			throw new AdempiereException(MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_OUT_OF_RANGE, percent)
 					.markAsUserValidationError();
