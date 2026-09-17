@@ -16,6 +16,7 @@ import org.eevolution.api.BOMComponentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.eevolution.costing.BOMAssertUtils.assertComponentsCostPrice;
 import static org.eevolution.costing.BOMAssertUtils.assertOwnCostPrice;
@@ -300,6 +301,74 @@ public class BOMTest
 
 		// Sigma p = 120% > 100%, but perOrderRollup=true => the BOM guard is skipped (post-calc guard owns it).
 		bom.rollupCosts();
+	}
+
+	/**
+	 * Boundary: two co-product BOM lines whose {@code CoProductCostDistributionPercent} sum to EXACTLY 100%
+	 * (60% + 40%) on the definitional rollup ({@code perOrderRollup=false}). The guard rejects strictly
+	 * {@code > 100%}, so exactly 100% must be accepted and the rollup must NOT throw -- the finished good simply
+	 * absorbs a zero residual. Complements {@link #test_CoProductDistributionPercentOver100_throws()} on the other
+	 * side of the boundary.
+	 */
+	@Test
+	public void test_CoProductDistributionPercentExactly100_doesNotThrow()
+	{
+		final BOM bom = BOM.builder()
+				.productId(bomProductId)
+				.qty(Quantity.of(1, uom_Each))
+				.costPrice(BOMCostPrice.builder()
+						.productId(bomProductId)
+						.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
+						.build())
+				.line(BOMLine.builder()
+						.componentId(componentId1)
+						.componentType(BOMComponentType.Component)
+						.qty(Quantity.of(5, uom_Each))
+						.costPrice(BOMCostPrice.builder()
+								.productId(componentId1)
+								.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
+								.costElementPrice(BOMCostElementPrice.builder()
+										.costElementId(costElementId1)
+										.costPrice(CostPrice.builder()
+												.ownCostPrice(CostAmount.of(5, currencyId))
+												.componentsCostPrice(CostAmount.of(55, currencyId))
+												.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
+												.build())
+										.build())
+								.build())
+						.build())
+				.line(BOMLine.builder()
+						.componentId(coProductId)
+						.componentType(BOMComponentType.CoProduct)
+						.qty(Quantity.of(-2, uom_Each))
+						.coProductCostDistributionPercent(Percent.of(60))
+						.costPrice(BOMCostPrice.builder()
+								.productId(coProductId)
+								.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
+								.costElementPrice(BOMCostElementPrice.builder()
+										.costElementId(costElementId1)
+										.costPrice(CostPrice.zero(currencyId, UomId.ofRepoId(uom_Each.getC_UOM_ID())))
+										.build())
+								.build())
+						.build())
+				.line(BOMLine.builder()
+						.componentId(coProductId2)
+						.componentType(BOMComponentType.CoProduct)
+						.qty(Quantity.of(-2, uom_Each))
+						.coProductCostDistributionPercent(Percent.of(40))
+						.costPrice(BOMCostPrice.builder()
+								.productId(coProductId2)
+								.uomId(UomId.ofRepoId(uom_Each.getC_UOM_ID()))
+								.costElementPrice(BOMCostElementPrice.builder()
+										.costElementId(costElementId1)
+										.costPrice(CostPrice.zero(currencyId, UomId.ofRepoId(uom_Each.getC_UOM_ID())))
+										.build())
+								.build())
+						.build())
+				.build();
+
+		// Sigma p = 60% + 40% = 100% (exactly at the boundary) => accepted; the guard rejects only strictly > 100%.
+		assertThatCode(bom::rollupCosts).doesNotThrowAnyException();
 	}
 
 }

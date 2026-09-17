@@ -60,7 +60,7 @@ public class CostDetailCreateResultsList
 	 * loads the initial document's {@code CostDetail} rows for the main product AND each co-product (distinct cost
 	 * segments), so {@link #toAggregatedCostAmount()} (which requires a single segment) cannot be applied to the whole
 	 * mixed-product list. The caller narrows to one product first; the co-products' reversal legs are re-emitted per
-	 * product by {@code Doc_PPCostCollector.createCoProductDifferenceFacts}. For a single-product document this returns
+	 * product by {@code Doc_PPCostCollector.appendCoProductDifferenceFacts}. For a single-product document this returns
 	 * the list unchanged.
 	 */
 	public CostDetailCreateResultsList filterByProductId(@NonNull final ProductId productId)

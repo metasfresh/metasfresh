@@ -193,13 +193,16 @@ public class BOM
 	}
 
 	/**
-	 * Guards the co-product cost carve-out: the co-product BOM lines' {@code CoProductCostDistributionPercent}
-	 * must not sum to more than 100%. Above 100% the carve-out in {@link #distributeToCoProductBOMLines} would
-	 * subtract more than the whole BOM cost price and silently drive the main product's Standard cost negative.
+	 * Guards the co-product cost carve-out on the definitional (non-{@code perOrderRollup}) rollup only: the
+	 * co-product BOM lines' {@code CoProductCostDistributionPercent} must not sum to more than 100%, else the
+	 * carve-out in {@link #distributeToCoProductBOMLines} would subtract more than the whole BOM cost price and
+	 * silently drive the main product's Standard cost negative.
 	 * <p>
-	 * Mirrors the analogous PP_Order post-calculation guard
-	 * {@code PPOrderCosts.assertValidTotalCoProductDistributionPercent}: strictly {@code > 100%} is rejected,
-	 * exactly {@code 100.00%} is allowed, and null / non-positive percents are ignored.
+	 * Uses the same arithmetic and AD_Message as the PP_Order post-calculation guard
+	 * {@code PPOrderCosts.assertValidTotalCoProductDistributionPercent} — strictly {@code > 100%} is rejected,
+	 * exactly {@code 100.00%} is allowed, null / non-positive percents are ignored — but is deliberately skipped
+	 * on the per-order path (see {@link #perOrderRollup}), where that post-calculation guard is the single
+	 * rejection point.
 	 */
 	private void assertValidTotalCoProductDistributionPercent()
 	{

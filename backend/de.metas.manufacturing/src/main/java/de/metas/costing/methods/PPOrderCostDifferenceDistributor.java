@@ -223,7 +223,7 @@ public class PPOrderCostDifferenceDistributor
 
 		// Discharge the residual on the main-product line too, so getResidualCost() reads zero and it cannot be
 		// discharged twice. Not done in distribute(): the amounts posted above are recomputed from these rows.
-		orderCosts.dischargeOntoMainProduct(mainProductCost, residual, utils.getQuantityUOMConverter());
+		orderCosts.dischargeOntoCost(mainProductCost, residual, utils.getQuantityUOMConverter());
 		ppOrderCostsService.save(orderCosts);
 
 		return CostDetailCreateResultsList.ofNullable(mainResult.withAmtAndQty(amtAndQty));
@@ -277,7 +277,7 @@ public class PPOrderCostDifferenceDistributor
 		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
 		orderCosts.getMainOrCoProductCost(request.getAcctSchemaId(), request.getCostElementId(), request.getProductId())
 				.ifPresent(targetCost -> {
-					orderCosts.dischargeOntoMainProduct(targetCost, amt, utils.getQuantityUOMConverter());
+					orderCosts.dischargeOntoCost(targetCost, amt, utils.getQuantityUOMConverter());
 					ppOrderCostsService.save(orderCosts);
 				});
 	}
@@ -336,7 +336,7 @@ public class PPOrderCostDifferenceDistributor
 						CostDetailPreviousAmounts.of(currentCost));
 			}
 
-			orderCosts.dischargeOntoMainProduct(coProductCost, residual, utils.getQuantityUOMConverter());
+			orderCosts.dischargeOntoCost(coProductCost, residual, utils.getQuantityUOMConverter());
 			anyDischarged = true;
 		}
 

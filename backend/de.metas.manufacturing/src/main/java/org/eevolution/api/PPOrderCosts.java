@@ -170,7 +170,7 @@ public final class PPOrderCosts
 	 * further movement of goods. Called for the main-product line and, for a co-product residual, for a
 	 * co-product line.
 	 */
-	public void dischargeOntoMainProduct(
+	public void dischargeOntoCost(
 			@NonNull final PPOrderCost targetCost,
 			@NonNull final CostAmount amt,
 			@NonNull final QuantityUOMConverter uomConverter)

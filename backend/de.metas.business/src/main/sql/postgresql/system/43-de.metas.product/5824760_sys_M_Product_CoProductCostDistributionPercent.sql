@@ -3,7 +3,7 @@
 -- read live at PP_Order cost creation; a co-product (ComponentType=CP) whose product carries a
 -- non-blank value is relieved by that percentage share of the total cost instead of the
 -- qty-distribution. Blank = zero-cost carve: the co-product is not opted in and receives no cost
--- at all, the main/finished product absorbs the entire cost pool. There is no fallback to the old
+-- at all, the main/finished product absorbs the total inbound costs. There is no fallback to the old
 -- quantity-based distribution — that formula was removed by this change.
 -- Rewrite-in-place of the branch-only, never-applied 5824340_sys_M_Product_CoProductFixedCostPrice.sql
 -- scaffold: discards its fixed-price AD_Element 585459 / AD_Column 593554 and allocates fresh IDs
@@ -28,7 +28,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 ;
 
 -- English override
-UPDATE AD_Element_Trl SET Name='Co-Product Cost Distribution Percent', PrintName='Co-Product Cost Distribution Percent', Description='Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost; the main product absorbs the entire cost pool.', Help='Read live at PP_Order cost creation: a co-product carrying a distribution percent is valued at that percentage share of the total cost, and the main product is relieved by the remainder. Leave blank if the co-product should carry no cost (0%) — there is no fallback to quantity-based distribution.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-16 10:00:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Element_Trl SET Name='Co-Product Cost Distribution Percent', PrintName='Co-Product Cost Distribution Percent', Description='Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost; the main product absorbs the total inbound costs.', Help='Read live at PP_Order cost creation: a co-product carrying a distribution percent is valued at that percentage share of the total cost, and the main product is relieved by the remainder. Leave blank if the co-product should carry no cost (0%) — there is no fallback to quantity-based distribution.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-16 10:00:12','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Element_ID=585471 AND AD_Language='en_US'
 ;
 

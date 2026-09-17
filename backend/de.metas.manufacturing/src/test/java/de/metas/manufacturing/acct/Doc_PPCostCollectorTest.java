@@ -243,8 +243,8 @@ class Post_CostCollectors_Now_ManualTest
 }
 
 /**
- * Covers review finding #2: {@code createFacts_CoProductReceipt}'s three explicit outcomes for
- * {@code DocLine_CostCollector#getCreateCosts(AcctSchema)} — present (incl. zero-amount, KEEP), empty on a
+ * Covers {@code createFacts_CoProductReceipt}'s three outcomes for
+ * {@code DocLine_CostCollector#getCreateCosts(AcctSchema)} — present (incl. zero-amount, kept), empty on a
  * reversal line (log + continue, no throw), empty on a normal receipt (throw, mirroring
  * {@code createFacts_MaterialReceipt.orElseThrow()}).
  */

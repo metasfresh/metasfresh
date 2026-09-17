@@ -159,7 +159,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 					// main product AND each co-product (distinct cost segments); toAggregatedCostAmount requires a single
 					// segment. Post the MAIN product's residual from its own single-segment aggregate here, exactly as the
 					// forward path does in Doc_PPCostCollector.createFacts_CostDifferenceDistribution; the co-products'
-					// reversal legs are re-emitted per product by createCoProductDifferenceFacts from the persisted
+					// reversal legs are re-emitted per product by appendCoProductDifferenceFacts from the persisted
 					// reversal rows. Every other reversal (receipt, issue, single-product distribution) already carries
 					// exactly one product segment, so this narrowing is a no-op there. Return empty when the main product
 					// itself has no residual to reverse (its forward residual was zero) so the caller skips the main leg,

@@ -122,6 +122,7 @@ class ManufacturingCoProductPartialReceiptTest
 	private CostElementRepository costElementRepo;
 	private CostingMethodHandlerUtils utils;
 	private PPOrderCostDifferenceDistributor distributor;
+	private IPPOrderCostBL ppOrderCostBL;
 
 	// per-test, set up by setupOrderFor(..)
 	private AcctSchemaId acctSchemaId;
@@ -175,6 +176,8 @@ class ManufacturingCoProductPartialReceiptTest
 	{
 		AdempiereTestHelper.get().init();
 		Env.setClientId(Env.getCtx(), clientId);
+
+		ppOrderCostBL = Services.get(IPPOrderCostBL.class);
 
 		uomEach = BusinessTestHelper.createUomEach();
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
@@ -306,7 +309,7 @@ class ManufacturingCoProductPartialReceiptTest
 				.accumulatedQty(Quantity.zero(uomEach))
 				.build();
 
-		Services.get(IPPOrderCostBL.class).save(PPOrderCosts.builder()
+		ppOrderCostBL.save(PPOrderCosts.builder()
 				.orderId(orderId)
 				.costs(ImmutableList.of(materialIssue, mainProduct, coProduct))
 				.build());
@@ -354,7 +357,7 @@ class ManufacturingCoProductPartialReceiptTest
 
 	private PPOrderCost coProductOrderCost()
 	{
-		return Services.get(IPPOrderCostBL.class)
+		return ppOrderCostBL
 				.getByOrderId(orderId)
 				.getByProductAndCostElements(coProductId, ImmutableSet.of(costElement.getId()))
 				.stream()

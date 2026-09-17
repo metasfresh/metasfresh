@@ -356,17 +356,14 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	}
 
 	/**
-	 * Resolves {@link DocLine_CostCollector#getCreateCosts(AcctSchema)}'s result for a co/by-product receipt into
-	 * three explicit outcomes (review finding #2 — a silent {@code .orElse(null)} used to swallow an empty result
-	 * on every kind of line, normal receipts included):
+	 * Resolves {@link DocLine_CostCollector#getCreateCosts(AcctSchema)}'s result for a co/by-product receipt:
 	 * <ul>
-	 * <li>present (including a zero-amount result, e.g. a blank/zero fixed-cost %) — returned as-is, unchanged: a
-	 * zero-value fact still posts so the received qty capitalizes (AC7/AC14).</li>
-	 * <li>empty on a reversal line — legitimately nothing to reverse (e.g. the original receipt posted no cost
-	 * details): logs the {@link ExplainedOptional}'s reason and returns {@code null} so the caller posts nothing,
-	 * without throwing.</li>
-	 * <li>empty on a normal (non-reversal) receipt — exceptional: throws, mirroring
-	 * {@link #createFacts_MaterialReceipt}'s {@code .orElseThrow()}.</li>
+	 * <li>present (including a zero-amount result) — returned as-is: a zero-value fact still posts so the received
+	 * qty capitalizes.</li>
+	 * <li>empty on a reversal line — nothing to reverse: logs the {@link ExplainedOptional}'s reason and returns
+	 * {@code null} so the caller posts nothing, without throwing.</li>
+	 * <li>empty on a normal (non-reversal) receipt — throws, mirroring {@link #createFacts_MaterialReceipt}'s
+	 * {@code .orElseThrow()}.</li>
 	 * </ul>
 	 */
 	@VisibleForTesting
@@ -540,7 +537,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	/**
 	 * The main product's residual: DR Product Asset (capitalized) + DR COGS (shipped remainder) / CR WIP, each
 	 * leg flipped when the residual is negative. Also persists the per-co-product {@code CostDetail} rows that
-	 * {@link #createCoProductDifferenceFacts} reads back (or replays them on reversal), so it must run first.
+	 * {@link #appendCoProductDifferenceFacts} reads back (or replays them on reversal), so it must run first.
 	 */
 	private List<Fact> createMainProductDifferenceFacts(
 			@NonNull final AcctSchema as,

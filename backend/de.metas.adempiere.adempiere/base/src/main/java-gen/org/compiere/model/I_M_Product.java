@@ -280,7 +280,7 @@ public interface I_M_Product
 	/**
 	 * Set Co-Product Cost Distribution Percent.
 	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost;
- the main product absorbs the entire cost pool.
+ the main product absorbs the total inbound costs.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -291,7 +291,7 @@ public interface I_M_Product
 	/**
 	 * Get Co-Product Cost Distribution Percent.
 	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost;
- the main product absorbs the entire cost pool.
+ the main product absorbs the total inbound costs.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
