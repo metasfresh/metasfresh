@@ -1,7 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
-@F1500
 @ghActions:run_on_executor6
 Feature: Co-product valuation via cost-distribution percent
 ## F1500: Costing
@@ -9,7 +8,7 @@ Feature: Co-product valuation via cost-distribution percent
   # A production run turns one input into a premium main product plus a low-value secondary
   # output ("Randstuecke"), modelled as a co-product BOM line. When the co-product's product
   # carries a manual M_Product.CoProductCostDistributionPercent (p), the co-product is relieved
-  # at p x SigmaInput (the co-product's share of the order's whole input cost pool) and the main
+  # at p x SigmaInput (the co-product's share of the order's whole total inbound costs) and the main
   # product is relieved by the remainder. A blank percent leaves the co-product's relief at ZERO
   # (opt-in; no fallback to qty-distribution - this replaces the retired fixed-price feature this
   # file used to test, whose blank case fell back to qty-distribution). The co-product's own
@@ -18,7 +17,7 @@ Feature: Co-product valuation via cost-distribution percent
   # true-up at order close write-DOWNs the co-product's own inventory (Cr P_Asset / Dr P_WIP) -
   # the customer case this feature now asserts. Quantities are in PCE standing in for the
   # customer's kg. The order is planned for 6 finished goods (BOM ratios input 5 / co-product -1,
-  # so the pool is exact at 30 x 15 = 450 and the co-product's own output at 6); the main product's
+  # so the total inbound costs are exact at 30 x 15 = 450 and the co-product's own output at 6); the main product's
   # ACTUAL reported yield (24) is entered at receipt time, independently of the plan - carve and
   # write-down math below never depend on the main product's own qty.
 
@@ -181,7 +180,7 @@ Feature: Co-product valuation via cost-distribution percent
   Scenario: Blank cost-distribution percent leaves the co-product's carve at zero
     # Randstuecke (coProd) never gets a CoProductCostDistributionPercent, nor a prior current cost - a
     # genuinely new, never-priced co-product. Its own receipt therefore capitalizes at ZERO (exactly like
-    # the main product's own receipt), and the whole 450 CHF input pool ends up on the finished good.
+    # the main product's own receipt), and the whole 450 CHF total inbound costs end up on the finished good.
     And create PP_Order:
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
       | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
@@ -209,7 +208,7 @@ Feature: Co-product valuation via cost-distribution percent
     And Wait until documents coReceiptCostCollector are posted
 
     # No carve at all: the co-product's post-calculation amount is zero and the finished good absorbs the
-    # whole 450 CHF pool - no throw, no NPE.
+    # whole 450 CHF total inbound costs - no throw, no NPE.
     And PP_Order_Cost are found:
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
       | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
@@ -289,7 +288,7 @@ Feature: Co-product valuation via cost-distribution percent
       | coReceiptCostCollector | P_WIP_Acct            | coProd       | mainLocator  | 0         | 59.4      | -6 PCE |
 
     # The zero-carve true-up writes the co-product's own inventory ALL THE WAY DOWN to zero - no NPE from
-    # the blank-⇒-0 guard - while the finished good absorbs the full 450 CHF pool.
+    # the blank-⇒-0 guard - while the finished good absorbs the full 450 CHF total inbound costs.
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | InventoryValueAcctAmt | Acct_CostPrice |
       | 2024-03-26 | coProd       | mainWarehouse  | 6   | 59.4                  | 9.9            |
@@ -393,10 +392,10 @@ Feature: Co-product valuation via cost-distribution percent
     # Two co-products (own BOM, own order - the shared Background's single 'coProd' cannot carry two
     # independent percents at once) each get a percent that is legal ON ITS OWN ([0, 100], so the
     # M_Product per-product data-entry guard accepts both individually) but whose SUM (60% + 50% = 110%)
-    # exceeds the whole pool. The order completes and its cost collectors get created normally (the
+    # exceeds the whole total inbound costs. The order completes and its cost collectors get created normally (the
     # per-order Sigma-p guard fires at POST-CALC, which runs when each collector is COSTED/POSTED, not at
     # document completion) - but posting each co-product receipt is rejected loudly, naming the offending
-    # products and the sum, before any amount is carved from the pool - so no negative finished-good
+    # products and the sum, before any amount is carved from the total inbound costs - so no negative finished-good
     # amount is ever persisted.
     And metasfresh contains M_Products:
       | Identifier  | X12DE355 |
@@ -486,10 +485,10 @@ Feature: Co-product valuation via cost-distribution percent
 
   @from:cucumber
   @Id:S29488_TC9
-  Scenario: Co-product over-receipt does not raise its total claim on the input pool
-    # Randstuecke gets a 30% share of the 450 CHF pool (carve 135, finished good 315). The co-product is
+  Scenario: Co-product over-receipt does not raise its total claim on the total inbound costs
+    # Randstuecke gets a 30% share of the 450 CHF total inbound costs (carve 135, finished good 315). The co-product is
     # deliberately received (8 PCE) in a GREATER quantity than the finished good (2 PCE) - the extra units
-    # only dilute the co-product's per-unit value, they never raise its 135 CHF TOTAL claim on the pool.
+    # only dilute the co-product's per-unit value, they never raise its 135 CHF TOTAL claim on the total inbound costs.
     And update M_Product:
       | M_Product_ID.Identifier | CoProductCostDistributionPercent |
       | coProd                  | 30                               |
@@ -821,7 +820,7 @@ Feature: Co-product valuation via cost-distribution percent
       | coReceiptCostCollectorB5        | ppOrder5               | coProdB5                | -3          | CO        | MixVariance       |
     And Wait until documents coReceiptCostCollectorA5, coReceiptCostCollectorB5 are posted
 
-    # Each co-product keeps its own carve (20% and 15% of the 450 CHF pool); the by-product stays at zero;
+    # Each co-product keeps its own carve (20% and 15% of the 450 CHF total inbound costs); the by-product stays at zero;
     # the finished good absorbs the remainder (65% = 292.5).
     And PP_Order_Cost are found:
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
@@ -863,7 +862,7 @@ Feature: Co-product valuation via cost-distribution percent
   @from:cucumber
   @Id:S29488_TC7
   Scenario: Adding a second co-product leaves the first co-product's carve unchanged
-    # Two independent orders off the SAME input pool (450 CHF) and the SAME co-product A (20% share,
+    # Two independent orders off the SAME total inbound costs (450 CHF) and the SAME co-product A (20% share,
     # carve 90). Order 1 has only A; order 2 also carries a second co-product B (15%, carve 67.5). A's own
     # carve must be identical across both orders - only the finished good shrinks, by exactly B's carve.
     And metasfresh contains M_Products:
@@ -1302,7 +1301,7 @@ Feature: Co-product valuation via cost-distribution percent
   @Id:S29488_TC16
   Scenario: Co-product received at exactly its carve needs no post-calculation adjustment
     # Randstuecke (coProd) carries the same 10.666667% percent as the write-down case, so its carve of the
-    # 450 CHF input pool is p x 450 = 48 CHF (8 CHF/PCE x 6 PCE). Its OWN current cost is set to exactly
+    # 450 CHF total inbound costs are p x 450 = 48 CHF (8 CHF/PCE x 6 PCE). Its OWN current cost is set to exactly
     # 8 CHF/PCE, so its receipt books 8 x 6 = 48 - identical to its carve. The residual is 48 - 48 = 0, so
     # NO co-product CC-170 leg is emitted at all; only the finished good's own 402 residual is discharged.
     And update M_Product:
@@ -1339,7 +1338,7 @@ Feature: Co-product valuation via cost-distribution percent
     And Wait until documents coReceiptCostCollector are posted
 
     # Cost conservation: the co-product is relieved at its carve (48), the main product by the remainder
-    # (402), summing to the whole 450 input pool.
+    # (402), summing to the whole 450 total inbound costs.
     And PP_Order_Cost are found:
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID     | PP_Order_Cost_TrxType | PostCalculationAmt |
       | ppOrder                | rawProduct              | MovingAverageInvoice | MI                    | 450                |
@@ -1379,9 +1378,9 @@ Feature: Co-product valuation via cost-distribution percent
 
   @from:cucumber
   @Id:S29488_TC17
-  Scenario: Co-product receipt over-relieves the input pool, driving order WIP negative until the post-calculation correction
+  Scenario: Co-product receipt over-relieves the total inbound costs, driving order WIP negative until the post-calculation correction
     # Randstuecke carries the 10.666667% percent (carve 48), but its OWN current cost is a high 100 CHF/PCE,
-    # so its 6-PCE receipt books 100 x 6 = 600 - MORE than the whole 450 CHF input pool. That over-relieves
+    # so its 6-PCE receipt books 100 x 6 = 600 - MORE than the whole 450 CHF total inbound costs. That over-relieves
     # WIP: after the receipts the order's WIP balance is NEGATIVE (450 issued in, 600 relieved out = -150).
     # The CC-170 post-calculation then writes the co-product back DOWN to its 48 carve (a 552 write-down),
     # which corrects the order's WIP back to 0.
