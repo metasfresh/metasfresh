@@ -5,6 +5,13 @@
 -- IDs allocated from idserver.metas.de on 2026-09-17:
 --   AD_Element 585474 (IsReprintOrderCheckup)
 --   AD_Column  593632 (C_Order.IsReprintOrderCheckup)
+--
+-- EntityType='D': C_Order.AD_Table.EntityType is 'D' (core Dictionary table). A column whose
+-- EntityType differs from its table's own is excluded by org.adempiere.util.GenerateModel
+-- (run with OnlySystemColumns, the default) from the generated org.compiere.model.I_C_Order
+-- interface -- see metasfresh-application-dictionary skill. This column ships to every
+-- customer as a genuine core field (Task 2 places it on core window 143), so 'D' is correct,
+-- not IsForceIncludeInGeneratedModel='Y'.
 
 -- 1) AD_Element (base language = German)
 INSERT INTO AD_Element (
@@ -14,7 +21,7 @@ INSERT INTO AD_Element (
     585474 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-09-17 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-17 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    'de.metas.fresh', 'IsReprintOrderCheckup', 'Bestellkontrolle neu drucken', 'Bestellkontrolle neu drucken',
+    'D', 'IsReprintOrderCheckup', 'Bestellkontrolle neu drucken', 'Bestellkontrolle neu drucken',
     'Legt fest, ob die Bestellkontrolle beim Reaktivieren dieses Auftrags erneut gedruckt wird.',
     'Wenn aktiviert, wird die Bestellkontrolle beim Reaktivieren des Auftrags automatisch erneut gedruckt. Wird das Kontrollkästchen deaktiviert, unterbleibt der erneute Druck.'
 );
@@ -60,7 +67,7 @@ INSERT INTO AD_Column (
     'Legt fest, ob die Bestellkontrolle beim Reaktivieren dieses Auftrags erneut gedruckt wird.',
     'Wenn aktiviert, wird die Bestellkontrolle beim Reaktivieren des Auftrags automatisch erneut gedruckt. Wird das Kontrollkästchen deaktiviert, unterbleibt der erneute Druck.',
     20, 1, 'N', 'N', 'Y', 'Y', 'N',
-    'N', 0, 'N', 'N', 'de.metas.fresh', 0, 'NP',
+    'N', 0, 'N', 'N', 'D', 0, 'NP',
     'Y', 'N'
 );
 

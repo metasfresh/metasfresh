@@ -25,6 +25,7 @@ package de.metas.fresh.ordercheckup;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
@@ -73,7 +74,7 @@ public class Masterdata
 			final I_C_Order_MFGWarehouse_Report report = retrievePlantReport();
 			Assertions.assertNotNull(report, "Plant report exists for " + plant.getName());
 			Assertions.assertEquals(plant.getS_Resource_ID(), report.getPP_Plant_ID(), "Plant");
-			Assertions.assertNull(report.getM_Warehouse(), "Warehouse");
+			Assertions.assertNull(WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()), "Warehouse");
 			Assertions.assertEquals(responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID(), "Responsible");
 			Assertions.assertTrue(report.isProcessed(), "Processed");
 			Assertions.assertTrue(report.isActive(), "Active");

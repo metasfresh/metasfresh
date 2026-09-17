@@ -179,7 +179,7 @@ public class OrderCheckupTestHelper
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_DocumentType, documentType)
-				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_M_Warehouse_ID, warehouseId)
+				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMNNAME_M_Warehouse_ID, warehouseId)
 				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_PP_Plant_ID, plantId)
 				.create()
 				.firstOnly(I_C_Order_MFGWarehouse_Report.class);

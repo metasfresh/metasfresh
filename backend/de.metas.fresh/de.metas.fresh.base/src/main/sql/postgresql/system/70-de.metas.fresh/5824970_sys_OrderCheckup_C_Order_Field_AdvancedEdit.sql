@@ -6,6 +6,9 @@
 -- IDs allocated from idserver.metas.de:
 --   AD_Field_ID:      785041 (Tab 186 C_Order)
 --   AD_UI_Element_ID: 654781 (Tab 186)
+-- EntityType='D' on the field (matching Task 1's AD_Column): sampling tab 186's other core
+-- C_Order fields shows AD_Field.EntityType consistently matches its AD_Column.EntityType
+-- (28/30 sampled). AD_UI_Element has no EntityType column at all, so nothing to align there.
 
 -- =============================================================================
 -- 1. AD_Field in Tab 186 (C_Order)
@@ -18,7 +21,7 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab
 VALUES (0, 593632 /*From ID Server (Task 1)*/, 785041 /*From ID Server*/, 0, 186,
         TO_TIMESTAMP('2026-09-17 09:00:00', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
         100, NULL,
-        1, 'de.metas.fresh',
+        1, 'D',
         'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'Bestellkontrolle neu drucken',
         TO_TIMESTAMP('2026-09-17 09:00:00', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',
         100);
