@@ -1,14 +1,12 @@
 package de.metas.shipping.model.validator;
 
 import de.metas.inout.InOutId;
-import de.metas.inout.model.I_M_InOut;
+import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -93,41 +91,7 @@ public class M_ShippingPackage
 	{
 		final InOutId inOutId = InOutId.ofRepoIdOrNull(shippingPackage.getM_InOut_ID());
 		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoIdOrNull(shippingPackage.getM_ShipperTransportation_ID());
-		if (inOutId == null || shipperTransportationId == null)
-		{
-			return;
-		}
 
-		unlinkShipmentIfOrphaned(inOutId, shipperTransportationId);
-	}
-
-	/**
-	 * The M_InOut to M_ShipperTransportation link is only ever SET, never cleared, anywhere else in the codebase.
-	 * Call this whenever a M_ShippingPackage row that carried the link is removed or deactivated, so a shipment
-	 * does not stay permanently linked to a transport order it no longer has any active package on.
-	 */
-	private void unlinkShipmentIfOrphaned(final InOutId inOutId, final ShipperTransportationId shipperTransportationId)
-	{
-		final boolean stillLinked = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShippingPackage.class)
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, inOutId)
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.anyMatch();
-
-		if (stillLinked)
-		{
-			return;
-		}
-
-		final I_M_InOut shipment = InterfaceWrapperHelper.load(inOutId, I_M_InOut.class);
-		if (shipment.getM_ShipperTransportation_ID() != shipperTransportationId.getRepoId())
-		{
-			// already relinked to something else (or already cleared) meanwhile - don't clobber
-			return;
-		}
-		shipment.setM_ShipperTransportation_ID(-1);
-		InterfaceWrapperHelper.save(shipment);
+		Services.get(IShipperTransportationBL.class).unlinkShipmentIfOrphaned(inOutId, shipperTransportationId);
 	}
 }
