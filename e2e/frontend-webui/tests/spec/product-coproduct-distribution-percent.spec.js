@@ -137,6 +137,18 @@ and carries the correct ${language} label.
         console.log(`[INFO] (${language}) CoProductCostDistributionPercent input is editable`);
       });
 
+      // === STEP 3b: negative control — a pre-existing tab field stays read-only ===
+      // The migration's invariant is two-sided: making tab 700 editable must NOT make its other
+      // fields editable (that is the whole point of "Option C"). Assert that a displayed pre-existing
+      // field (Description) still renders but is disabled, proving CoProductCostDistributionPercent is
+      // the ONLY field that became editable on this otherwise read-only cost-selector tab.
+      await test.step('Assert a pre-existing tab field (Description) stays read-only', async () => {
+        const readonlyInput = WidgetCommon.getFieldContainer('Description').locator('input, textarea').first();
+        await readonlyInput.waitFor({ state: 'visible', timeout: 30000 });
+        await expect(readonlyInput).toBeDisabled();
+        console.log(`[INFO] (${language}) pre-existing Description field is read-only (disabled) as expected`);
+      });
+
       // === STEP 4: enter a percentage value, save (blur) ===
       await test.step(`Set ${FIELD_NAME} = ${TEST_VALUE} and save`, async () => {
         await NumericWidget.setValue(FIELD_NAME, TEST_VALUE);
