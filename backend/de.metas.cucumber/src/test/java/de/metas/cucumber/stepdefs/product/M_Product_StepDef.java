@@ -307,7 +307,7 @@ public class M_Product_StepDef
 	 *   <b>ProductLifeCycleStatus</b> — BBS-Status code {@code O}/{@code A}/{@code G}/{@code N},
 	 *   <b>CoProductCostDistributionPercent</b> — the co-product's cost distribution percent read live at
 	 *   production post-calculation (blank = the co-product carries zero cost, the main/finished product absorbs
-	 *   the entire cost pool — there is no fallback to a quantity-based distribution; the sum across a co-product's
+	 *   the entire total inbound costs — there is no fallback to a quantity-based distribution; the sum across a co-product's
 	 *   siblings must not exceed 100%, see the guard on {@code PPOrderCosts})
 	 *
 	 * <pre>{@code
