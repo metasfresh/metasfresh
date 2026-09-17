@@ -59,10 +59,11 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
             )
 AS
 $$
--- Article lines (C_OrderLine). Line is widened to numeric(10,4) (from numeric(10,0)) so that a
--- C_Doc_TextLine.Line decimal position (e.g. 10.5) is not rounded away by the RETURNS TABLE cast --
--- that decimal precision is what lets the text branch below interleave with these integer article
--- positions without ever renumbering an article line.
+-- Article lines (C_OrderLine). Line is declared numeric(10,4) (widened from numeric(10,0)) to document
+-- that a text line's fractional position -- e.g. 10.5, which is how the text branch below interleaves
+-- without renumbering an article line -- travels through this column. That declaration is documentation,
+-- not a guard: PostgreSQL does not enforce a RETURNS TABLE typmod, so the decimals survive either way
+-- (measured).
 SELECT ol.line                                                AS line,
        COALESCE(pt.Name, p.name)                              AS Name,
        CASE
