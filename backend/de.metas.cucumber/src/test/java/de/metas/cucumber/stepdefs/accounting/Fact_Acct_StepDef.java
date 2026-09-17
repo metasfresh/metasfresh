@@ -19,10 +19,10 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 
 import java.util.List;
@@ -37,8 +37,8 @@ public class Fact_Acct_StepDef
 	@NonNull private final FactAcctMatchersFactory factAcctMatchersFactory;
 	@NonNull private final FactAcctToTabularStringConverter factAcctTabularStringConverter;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	@NonNull private final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 	public Fact_Acct_StepDef(
 			@NonNull final IdentifiersResolver identifiersResolver,
@@ -135,7 +135,7 @@ public class Fact_Acct_StepDef
 	/**
 	 * Asserts the trial balance of an entire manufacturing order across ALL of its cost collectors.
 	 * <p>
-	 * Gathers every {@link I_PP_Cost_Collector} of the given PP_Order (component issue, main-product
+	 * Gathers every {@link org.eevolution.model.I_PP_Cost_Collector} of the given PP_Order (component issue, main-product
 	 * receipt, co/by-product receipts, any cost-difference distribution), waits until each is posted, and:
 	 * <ul>
 	 *   <li>asserts the order balances overall — Σ AmtAcctDr == Σ AmtAcctCr across all its cost collectors;</li>
@@ -163,11 +163,9 @@ public class Fact_Acct_StepDef
 			@NonNull final DataTable table) throws Throwable
 	{
 		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 
-		final ImmutableSet<TableRecordReference> recordRefs = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
-				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
-				.create()
-				.list(I_PP_Cost_Collector.class)
+		final ImmutableSet<TableRecordReference> recordRefs = costCollectorBL.getByOrderId(ppOrderId)
 				.stream()
 				.map(TableRecordReference::of)
 				.collect(ImmutableSet.toImmutableSet());

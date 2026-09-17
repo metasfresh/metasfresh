@@ -193,19 +193,21 @@ public class M_HU_LUTU_Configuration_StepDef
 		{
 			return huPPOrderBL.receivingMainProduct(ppOrderId);
 		}
-
-		final I_PP_Order_BOMLine bomLine = ppOrderBOMLineTable.get(bomLineIdentifier);
-		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
-		if (!componentType.isByOrCoProduct())
+		else
 		{
-			throw new AdempiereException("Cannot receive PP_Order_BOMLine " + bomLineIdentifier
-					+ " (M_Product_ID=" + bomLine.getM_Product_ID() + ") as a co/by-product receipt:"
-					+ " its ComponentType is " + componentType + " (" + bomLine.getComponentType() + "),"
-					+ " which is an issue line, not a receivable output."
-					+ " Only a co-product (CP) or by-product (BY) BOM line can be received via receivingByOrCoProduct.");
-		}
+			final I_PP_Order_BOMLine bomLine = ppOrderBOMLineTable.get(bomLineIdentifier);
+			final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+			if (!componentType.isByOrCoProduct())
+			{
+				throw new AdempiereException("Cannot receive PP_Order_BOMLine " + bomLineIdentifier
+						+ " (M_Product_ID=" + bomLine.getM_Product_ID() + ") as a co/by-product receipt:"
+						+ " its ComponentType is " + componentType + " (" + bomLine.getComponentType() + "),"
+						+ " which is an issue line, not a receivable output."
+						+ " Only a co-product (CP) or by-product (BY) BOM line can be received via receivingByOrCoProduct.");
+			}
 
-		return huPPOrderBL.receivingByOrCoProduct(PPOrderBOMLineId.ofRepoId(bomLine.getPP_Order_BOMLine_ID()));
+			return huPPOrderBL.receivingByOrCoProduct(PPOrderBOMLineId.ofRepoId(bomLine.getPP_Order_BOMLine_ID()));
+		}
 	}
 
 	@And("create M_HU_LUTU_Configuration for M_ReceiptSchedule:")
