@@ -286,6 +286,26 @@ public class PPOrderCostsTest
 	}
 
 	/**
+	 * A co-product-free order (a return / cost-correction) whose net inbound cost is NEGATIVE must set the main
+	 * product's post-calculation amount to that negative value and NOT throw. The negative-main guard is scoped to
+	 * orders that actually carry co-products (where {@code Sigma p <= 100%} makes main {@code >= 0} by construction);
+	 * with no co-products there is nothing to conserve against, so the historical pass-through applies.
+	 */
+	@Test
+	public void testNegativeMainProduct_noCoProducts_passesThroughWithoutThrow()
+	{
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(mainProductCost(productId1, "0", "0", "0"))
+				.cost(materialIssueCost(productId2, "0", "0", "-50"))
+				.build();
+
+		orderCosts.updatePostCalculationAmounts(costingPrecision);
+
+		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("-50"));
+	}
+
+	/**
 	 * Backstop absorb-band: with {@code Sigma p} at exactly 100% the percent guard passes, but the two co-product
 	 * carves are rounded to the costing precision INDEPENDENTLY, so their rounded sum can overshoot the total
 	 * inbound costs by up to one currency ulp per co-product - driving the main product a sub-precision amount

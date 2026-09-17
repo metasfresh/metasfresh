@@ -283,8 +283,12 @@ public final class PPOrderCosts
 		// costing precision independently (computeBlankCoProductAmount), so the rounded carves can overshoot the
 		// total inbound costs by at most one currency ulp per co-product. That rounding noise is ABSORBED (below);
 		// only a materially negative main - which can only come from a percent-guard bypass, a real bug - throws.
+		// The guard applies ONLY to orders that carry co-products: the "main >= 0 by construction" reasoning rests
+		// on the Sigma p <= 100% cap, which has nothing to conserve against when there are no co-products. A
+		// co-product-free order (e.g. a return / cost-correction) may legitimately carry a negative total inbound
+		// cost, which flows straight through to the main product as its (negative) post-calculation amount.
 		CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
-		if (mainProductAmount.signum() < 0)
+		if (!coProductCosts.isEmpty() && mainProductAmount.signum() < 0)
 		{
 			// Widest overshoot explainable by independent rounding: one currency ulp per co-product carve.
 			final BigDecimal roundingTolerance = BigDecimal.ONE.movePointLeft(precision.toInt())
