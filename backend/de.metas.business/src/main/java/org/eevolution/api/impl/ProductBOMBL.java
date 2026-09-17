@@ -211,7 +211,7 @@ public class ProductBOMBL implements IProductBOMBL
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, bomLine);
 
 		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-		return Percent.ofNullable(productDAO.getById(productId).getCoProductCostDistributionPercent());
+		return Percent.of(productDAO.getById(productId).getCoProductCostDistributionPercent());
 	}
 
 	/**
