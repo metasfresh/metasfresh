@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { render, act } from '@testing-library/react';
 import { flushSync } from 'react-dom';
 import { Router } from 'react-router';
@@ -190,12 +190,11 @@ describe('useLocationChange, with more than one consumer mounted', () => {
     expect(onSecond.mock.calls.length).toBe(secondBeforeBack + 1);
   });
 
-  // A consumer's callback can re-render its siblings before their own listener has run: when the
-  // navigation originates outside a React event handler, React 17 does not batch, so a setState in
-  // the first callback flushes before the next listener is called. flushSync reproduces that here,
-  // because act() batches and would otherwise hide it. The seed must therefore be taken once per
-  // instance rather than on every render - re-seeding would hand the sibling the location the first
-  // consumer has just stored, and it would fall silent again.
+  // A consumer's callback can re-render its siblings before their own listener has run: outside a
+  // React event handler React 17 does not batch, so a setState in one callback flushes before the
+  // next listener runs (AbortButton and the 401 handler both navigate from a promise continuation).
+  // flushSync reproduces that here, because act() would otherwise batch it away - skipped for the
+  // mount call, which runs inside a passive effect where React rejects flushSync.
   it('seeds once per instance, even when a sibling re-renders it mid-navigation', () => {
     const history = createBrowserHistory();
     history.replace('/a');
@@ -203,7 +202,15 @@ describe('useLocationChange, with more than one consumer mounted', () => {
 
     const RerendersOnChange = () => {
       const [, bump] = useState(0);
-      useLocationChange(() => flushSync(() => bump((n) => n + 1)));
+      const isMounted = useRef(false);
+      useLocationChange(() => {
+        if (!isMounted.current) {
+          isMounted.current = true;
+          bump((n) => n + 1);
+          return;
+        }
+        flushSync(() => bump((n) => n + 1));
+      });
       return null;
     };
 
