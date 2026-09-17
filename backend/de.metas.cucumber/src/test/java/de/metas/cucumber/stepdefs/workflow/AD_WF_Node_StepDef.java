@@ -40,7 +40,6 @@ import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_S_Resource;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,15 +65,6 @@ public class AD_WF_Node_StepDef
 	 * with.
 	 */
 	private final Set<WFNodeId> createdNodeIds = new HashSet<>();
-
-	/**
-	 * The {@code AD_Workflow_ID} each created node was created under (the row's own {@code
-	 * AD_Workflow_ID.Identifier}, resolved at creation time in {@link #create_AD_WF_Node}). {@link
-	 * #deactivateCreatedNodes()} uses this to scope its first-node-pointer clearing to that one specific owning
-	 * workflow -- and only when {@code AD_Workflow_StepDefData} confirms the fixture itself created it -- rather
-	 * than an unscoped query for any {@code AD_Workflow} row that happens to point at the node.
-	 */
-	private final Map<WFNodeId, WorkflowId> owningWorkflowIdAtCreation = new HashMap<>();
 
 	public AD_WF_Node_StepDef(
 			@NonNull final AD_WF_Node_StepDefData workflowNodeTable,
@@ -133,7 +123,6 @@ public class AD_WF_Node_StepDef
 			InterfaceWrapperHelper.saveRecord(wfNode);
 			final WFNodeId wfNodeId = WFNodeId.ofRepoId(wfNode.getAD_WF_Node_ID());
 			createdNodeIds.add(wfNodeId);
-			owningWorkflowIdAtCreation.put(wfNodeId, WorkflowId.ofRepoId(workflow.getAD_Workflow_ID()));
 
 			final String wfNodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID + "." + TABLECOLUMN_IDENTIFIER);
 			workflowNodeTable.put(wfNodeIdentifier, wfNode);
@@ -153,26 +142,28 @@ public class AD_WF_Node_StepDef
 	 * AD_Workflow_StepDef}'s own teardown to clear it first) keeps this method self-sufficient regardless of
 	 * which of the two classes' {@code @After} hooks happens to run first.
 	 * <p>
-	 * Scoped to the one workflow each node was created under ({@link #owningWorkflowIdAtCreation}), and only
-	 * when {@code AD_Workflow_StepDefData} confirms the fixture itself created that workflow -- a workflow this
-	 * scenario merely obtained via {@code load AD_Workflow:} (masterdata) is left untouched even if a node was
-	 * created against it, so this teardown can never blank a loaded routing's start node.
+	 * Scoped to every {@code AD_Workflow} row currently pointing at the node -- queried fresh here, not tracked
+	 * from creation time, so a second fixture-created workflow later pointed at the same node (e.g. via {@code
+	 * update AD_Workflow:}) is cleared too -- and only for the ones {@code AD_Workflow_StepDefData} confirms the
+	 * fixture itself created; a workflow this scenario merely obtained via {@code load AD_Workflow:} (masterdata)
+	 * is left untouched even if a node was created against it, so this teardown can never blank a loaded
+	 * routing's start node.
 	 */
 	@After
 	public void deactivateCreatedNodes()
 	{
 		for (final WFNodeId nodeId : createdNodeIds)
 		{
-			final WorkflowId owningWorkflowId = owningWorkflowIdAtCreation.get(nodeId);
-			if (owningWorkflowId != null && workflowTable.isCreated(owningWorkflowId))
-			{
-				final I_AD_Workflow owningWorkflow = InterfaceWrapperHelper.load(owningWorkflowId, I_AD_Workflow.class);
-				if (owningWorkflow.getAD_WF_Node_ID() == nodeId.getRepoId())
-				{
-					owningWorkflow.setAD_WF_Node_ID(0);
-					InterfaceWrapperHelper.saveRecord(owningWorkflow);
-				}
-			}
+			queryBL.createQueryBuilder(I_AD_Workflow.class)
+					.addEqualsFilter(I_AD_Workflow.COLUMNNAME_AD_WF_Node_ID, nodeId)
+					.create()
+					.list()
+					.stream()
+					.filter(wf -> workflowTable.isCreated(WorkflowId.ofRepoId(wf.getAD_Workflow_ID())))
+					.forEach(wf -> {
+						wf.setAD_WF_Node_ID(0);
+						InterfaceWrapperHelper.saveRecord(wf);
+					});
 
 			final I_AD_WF_Node record = InterfaceWrapperHelper.load(nodeId, I_AD_WF_Node.class);
 			if (record.isActive())
