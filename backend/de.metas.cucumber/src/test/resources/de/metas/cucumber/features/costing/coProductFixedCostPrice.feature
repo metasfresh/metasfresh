@@ -501,6 +501,14 @@ Feature: Co-product valuation via cost-distribution percent
       | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
     And the PP_Cost_Collector identified by coReceiptCostCollector was rejected at posting with error containing exceeds 100% for product(s)
 
+    # AC6 requires the message to NAME the offending product(s) AND the sum - not just the boilerplate above,
+    # which would still pass even if the interpolated sum or product name broke. Assert both actually appear:
+    # the interpolated sum ("120%", from the 120% CoProductCostDistributionPercent set above) and the
+    # offending product's own name (M_Product_StepDef auto-names an M_Product "<Identifier>_<timestamp>" when
+    # no Name/Value column is given, so "coProd_" is the deterministic, non-timestamp part of that name).
+    And the PP_Cost_Collector identified by coReceiptCostCollector was rejected at posting with error containing sum of 120% exceeds 100%
+    And the PP_Cost_Collector identified by coReceiptCostCollector was rejected at posting with error containing product(s): coProd_
+
     # No negative finished-good amount was persisted - the guard rejects in PERCENT-space before any
     # amount is carved, so the finished good's post-calculation amount is untouched (still its initial 0).
     And PP_Order_Cost are found:
@@ -1186,3 +1194,76 @@ Feature: Co-product valuation via cost-distribution percent
       | AccountConceptualName | AcctBalance |
       | P_WIP_Acct            | 0           |
       | P_Asset_Acct          | 0           |
+
+  @from:cucumber
+  @Id:S29488_TC14
+  Scenario: Co-product receipt reversal nets Fact_Acct to zero
+    # The co-product's receipt now capitalizes to inventory (Dr P_Asset / Cr P_WIP), a changed accounting
+    # treatment - so its reversal must be symmetric. Reversing the receipt cost collector via the REAL
+    # Reverse-Correct DocAction (the established "is reversed as" step-def, not a fabricated state) must net
+    # the co-product's P_Asset and P_WIP legs back to zero - no stale inventory value or WIP residual is left
+    # behind for a receipt that has been fully undone.
+    And update M_Product:
+      | M_Product_ID.Identifier | CoProductCostDistributionPercent |
+      | coProd                  | 10.666667                        |
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | coProd       | 9.9 CHF          |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | mainProd                | 6          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | inputBomLine                   | ppOrder                | inputProd               | 30           | false           | PCE               | CO            |
+      | coProdBomLine                  | ppOrder                | coProd                  | -6           | false           | PCE               | CP            |
+
+    And the handling unit identified by inputHU is issued whole to PP_Order_BOMLine inputBomLine
+
+    # Receive the main product (24 PCE) - no BOM-line reference -> main-product receipt.
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | mainHU             | N               | 0     | N               | 1     | N               | 24          | mainProdItem                       |
+
+    # Receive the co-product (6 PCE) - BOM-line reference -> co/by-product receipt (receivingByOrCoProduct).
+    And receive HUs for PP_Order with M_HU_LUTU_Configuration:
+      | PP_Order_ID | PP_Order_BOMLine_ID | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier |
+      | ppOrder     | coProdBomLine       | coHU               | N               | 0     | N               | 1     | N               | 6           | coProdItem                         |
+
+    And complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
+      | coReceiptCostCollector          | ppOrder                | coProd                  | -6          | CO        | MixVariance       |
+    And Wait until documents coReceiptCostCollector are posted
+
+    # The co-product's receipt capitalizes to inventory - Dr P_Asset / Cr P_WIP 59.4 (9.9 CHF/PCE x 6 PCE),
+    # same booking as TC1's coReceiptCostCollector.
+    And Fact_Acct records are matching
+      | Record_ID              | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReceiptCostCollector | P_Asset_Acct          | coProd       | 59.4      | 0         | 6 PCE  |
+      | coReceiptCostCollector | P_WIP_Acct            | coProd       | 0         | 59.4      | -6 PCE |
+
+    # Reverse the receipt cost collector via the REAL Reverse-Correct DocAction (the established, already-proven
+    # step-def) - this drives the actual DocAction and lets the scenario assert the REAL Fact_Acct, no fabricated
+    # reversal state.
+    And the PP_Cost_Collector identified by coReceiptCostCollector is reversed as coReversalCostCollector
+    And Wait until documents coReversalCostCollector are posted
+
+    # The reversal's own legs are the exact negation of the receipt's legs - same account, same side, the
+    # amount and qty negated (this acctSchema has IsAllowNegativePosting=Y, so the reversal posts as a
+    # negative entry on the same side rather than swapping Dr/Cr - both are valid metasfresh conventions,
+    # and either way the pair below nets the receipt back to zero, asserted explicitly next).
+    And Fact_Acct records are matching
+      | Record_ID               | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr | Qty    |
+      | coReversalCostCollector | P_Asset_Acct          | coProd       | -59.4     | 0         | -6 PCE |
+      | coReversalCostCollector | P_WIP_Acct            | coProd       | 0         | -59.4     | 6 PCE  |
+
+    # The whole receipt+reversal set nets to zero: no stale inventory value or WIP residual remains for the
+    # co-product once its receipt has been fully reversed - the capitalized value fully unwinds.
+    And Fact_Acct records balances for documents coReceiptCostCollector,coReversalCostCollector are matching
+      | AccountConceptualName | AcctBalance |
+      | P_Asset_Acct          | 0           |
+      | P_WIP_Acct            | 0           |
