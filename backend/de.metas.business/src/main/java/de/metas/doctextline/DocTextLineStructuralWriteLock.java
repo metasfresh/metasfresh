@@ -84,7 +84,6 @@ public final class DocTextLineStructuralWriteLock
 
 		return new AdempiereException("This document's text lines are being edited right now."
 				+ " Please try again in a moment.", cause)
-				.appendParametersToMessage()
 				.setParameter("document", documentRecord)
 				.setParameter("existingLocks", existingLocks);
 	}

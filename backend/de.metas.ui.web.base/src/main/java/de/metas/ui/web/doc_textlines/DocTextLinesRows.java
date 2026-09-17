@@ -227,7 +227,6 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	private static AdempiereException rowIsBeingRemoved(@NonNull final DocumentId rowId)
 	{
 		return new AdempiereException("A neighbouring row is being removed right now, so this row cannot be placed safely. Please try again.")
-				.appendParametersToMessage()
 				.setParameter("rowId", rowId);
 	}
 
@@ -240,7 +239,6 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	{
 		return new AdempiereException("The line you selected is not part of this document any more -- it was removed while this window was open."
 				+ " Please close and reopen the window, then select a line again.")
-				.appendParametersToMessage()
 				.setParameter("rowId", rowId);
 	}
 
@@ -254,7 +252,6 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	{
 		return new AdempiereException("This document has gained lines since this window was opened, so there is nothing here to insert above."
 				+ " Please close and reopen the window, then select a line again.")
-				.appendParametersToMessage()
 				.setParameter("rowIds", rowIds);
 	}
 
@@ -267,7 +264,6 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 	private static AdempiereException mergedOrderDisagreesWithRows(@NonNull final DocumentId rowId)
 	{
 		return new AdempiereException("Internal error: the document's line order lists a line that cannot be read, so nothing was changed.")
-				.appendParametersToMessage()
 				.setParameter("rowId", rowId);
 	}
 
@@ -623,8 +619,8 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 			final int neighborIndex = towardStart ? index - 1 : index + 1;
 			if (neighborIndex < 0 || neighborIndex >= rowIds.size())
 			{
-				throw new AdempiereException("No row to move " + (towardStart ? "up" : "down") + " into")
-						.appendParametersToMessage()
+				throw new AdempiereException("This line cannot be moved " + (towardStart ? "up" : "down")
+						+ " any further -- there is no line beyond it in that direction.")
 						.setParameter("rowId", rowId);
 			}
 
@@ -763,8 +759,8 @@ final class DocTextLinesRows implements IEditableRowsData<DocTextLinesRow>
 		final DocTextLinesRow row = getRowOrThrow(rowId);
 		if (!row.isTextLine())
 		{
-			throw new AdempiereException("Article line rows cannot be deleted or moved")
-					.appendParametersToMessage()
+			throw new AdempiereException("Only text lines can be deleted or moved here."
+					+ " An article line belongs to the order itself and is changed on the order's line tab.")
 					.setParameter("rowId", rowId);
 		}
 		return row;

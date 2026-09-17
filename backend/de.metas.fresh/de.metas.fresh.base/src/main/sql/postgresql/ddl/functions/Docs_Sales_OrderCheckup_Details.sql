@@ -186,14 +186,9 @@ UNION ALL
 
 -- Free-text lines (C_Doc_TextLine), filtered by the carry rule: a text line is carried onto THIS record
 -- when at least one order line of its run belongs to this record's own line set (rule 4), unless its own
--- scope overrides that (rule 5: a 'D' -- whole-document -- scoped line is always carried, printing at the
--- head when none of its run is present here). Column shape follows the same document-level vs.
--- article-level split worked out for the sibling sales-order report function (Docs_Sales_Order_Details):
--- report/order/warehouse/plant/partner/date/document-type identity columns are carried through unchanged
--- (true of a text row exactly as of an article row on the same record); every column that describes an
--- ARTICLE (product, attributes, price, capacity, quantities, container, UOM, the order-LINE id, and the
--- report-LINE id + its barcode -- both reached only through C_Order_MFGWarehouse_ReportLine, which a text
--- line has no row in) is NULL.
+-- scope overrides that (rule 5: a 'D' -- whole-document -- line is always carried, printing at the head
+-- when none of its run is present here). Column shape follows the sibling Docs_Sales_Order_Details:
+-- record-level identity columns are carried through, everything article-level is NULL.
 SELECT
 	CASE
 		WHEN tr_run.TextLineScope = 'D' AND NOT EXISTS (

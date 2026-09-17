@@ -174,28 +174,15 @@ WHERE ol.C_Order_ID = p_record_id
 
 UNION ALL
 
--- Free-text lines interleaved with the order's article lines (C_Doc_TextLine). This branch does
--- NOT reuse the article branch's WHERE clauses above: the packing-material exclusion and
--- IsHideWhenPrinting are both conditions about an ARTICLE line (packing, print-status) that a text
--- line has no equivalent of -- copying them would silently filter every text line out. (This
--- function has no QtyEntered!=0 / "quantity not zero" predicate to begin with -- every QtyEntered*
--- reference above is in the SELECT list, not a WHERE clause -- so there is nothing of that kind to
--- exclude here.)
--- Column shape: document-level descriptors are carried through, not NULLed. order_description,
--- cursymbol and iso_code come from the order/currency; PricePattern (the order's price list) and
--- AmountPattern (the currency) are equally document-level, and isDiscountPrinted and isPrintTax both
--- come from the order's business partner (isPrintTax via the partner's BP group) -- none of these
--- describe an article, so they are true of a text row exactly as they are of an article row on the
--- same document. IsNetSumShown / IsTaxRateShown are the same idea one layer deeper: linenetamt and
--- rate themselves ARE article-level and stay NULL, but whether the Amount/Tax columns are shown AT
--- ALL depends only on report.IsHiddenReportElement(o.C_DocTypeTarget_ID, ...) -- a property of the
--- ORDER's document type, not of any article -- so that visibility flag is computed identically in
--- both branches instead of being inferred from a value column that a text row cannot supply. Only
--- genuinely ARTICLE-level columns (product, HU, qty, price, discount amount, the tax rate VALUE,
--- compensation group, weight, QtyPattern -- derived from an order line's UOM precision -- and
--- iscampaignprice, an order-line flag) are NULL. TextLine is nullable and an empty text line is legal
--- (prints as a blank line) -- it is passed straight through with no NULLIF/COALESCE that could coerce
--- an empty value away.
+-- Free-text lines (C_Doc_TextLine), interleaved with the article lines above by their shared Line
+-- ordering. Deliberately NOT sharing the article branch's WHERE clauses: packing-material category and
+-- IsHideWhenPrinting are properties of an ARTICLE line, so applying them here would filter out every
+-- text line.
+-- Column shape: document-level values (order description, currency, price/amount patterns, the
+-- partner's discount- and tax-printing flags, the doc type's column-visibility flags) are carried
+-- through, because they are as true of a text row as of an article row. Everything that describes an
+-- article is NULL. TextLine passes through untouched -- an empty text line is legal and prints as a
+-- blank line.
 SELECT tl.line                                                AS line,
        NULL::character varying                                AS Name,
        NULL::text                                              AS Attributes,

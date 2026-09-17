@@ -176,8 +176,8 @@ public final class DocTextLinesRow implements IViewRow
 	{
 		if (!isTextLine())
 		{
-			throw new AdempiereException("Article line rows are not editable")
-					.appendParametersToMessage()
+			throw new AdempiereException("Article lines cannot be edited here."
+					+ " Only text lines are editable in this window; an article line is changed on the order's line tab.")
 					.setParameter("rowId", getId());
 		}
 
