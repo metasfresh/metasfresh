@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -136,6 +137,8 @@ public class BOM
 			@Nullable final CostAmount bomCostPrice,
 			@NonNull final CostElementId costElementId)
 	{
+		assertValidTotalCoProductDistributionPercent();
+
 		CostAmount bomCostPriceWithoutCoProducts = bomCostPrice;
 
 		for (final BOMLine bomLine : getLines())
@@ -161,6 +164,48 @@ public class BOM
 		}
 
 		return bomCostPriceWithoutCoProducts;
+	}
+
+	/**
+	 * Guards the co-product cost carve-out: the co-product BOM lines' {@code CoProductCostDistributionPercent}
+	 * must not sum to more than 100%. Above 100% the carve-out in {@link #distributeToCoProductBOMLines} would
+	 * subtract more than the whole BOM cost price and silently drive the main product's Standard cost negative.
+	 * <p>
+	 * Mirrors the analogous PP_Order post-calculation guard
+	 * {@code PPOrderCosts.assertValidTotalCoProductDistributionPercent}: strictly {@code > 100%} is rejected,
+	 * exactly {@code 100.00%} is allowed, and null / non-positive percents are ignored.
+	 */
+	private void assertValidTotalCoProductDistributionPercent()
+	{
+		Percent totalCoProductDistributionPercent = Percent.ZERO;
+		for (final BOMLine bomLine : getLines())
+		{
+			if (!bomLine.isCoProduct())
+			{
+				continue;
+			}
+
+			final Percent percent = bomLine.getCoProductCostDistributionPercent();
+			if (percent != null && percent.signum() > 0)
+			{
+				totalCoProductDistributionPercent = totalCoProductDistributionPercent.add(percent);
+			}
+		}
+
+		if (totalCoProductDistributionPercent.isOverOneHundred())
+		{
+			final String offendingCoProductIds = getLines().stream()
+					.filter(BOMLine::isCoProduct)
+					.filter(bomLine -> {
+						final Percent percent = bomLine.getCoProductCostDistributionPercent();
+						return percent != null && percent.signum() > 0;
+					})
+					.map(bomLine -> String.valueOf(bomLine.getComponentId().getRepoId()))
+					.collect(Collectors.joining(", "));
+			throw new AdempiereException("Co-products' cost distribution percent sum of " + totalCoProductDistributionPercent
+					+ " exceeds 100% for BOM of product " + productId
+					+ " (co-product(s): " + offendingCoProductIds + ")");
+		}
 	}
 
 	Stream<BOMCostPrice> streamCostPrices()
