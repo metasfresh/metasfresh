@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
 
     RETURNS TABLE
             (
-                line                         numeric(10, 4),
+                line                         numeric(10, 4), -- scale 4 must match C_Doc_TextLine.Line and DocTextLineRepository.LINE_SCALE
                 Name                         character varying,
                 Attributes                   text,
                 HUQty                        numeric,

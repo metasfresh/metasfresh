@@ -28,7 +28,11 @@ import java.util.Collection;
 @Repository
 public class DocTextLineRepository
 {
-	/** Four decimals, and inserts are midpoints: a gap survives ~13 successive inserts at the same spot before {@link #computeInsertAbovePosition} refuses it. */
+	/**
+	 * Four decimals, and inserts are midpoints: a gap survives ~13 successive inserts at the same spot before {@link #computeInsertAbovePosition} refuses it.
+	 * <p>
+	 * Must stay equal to the scale of {@code C_Doc_TextLine.Line} and of the report function's {@code line} column (Docs_Sales_Order_Details.sql).
+	 */
 	private static final int LINE_SCALE = 4;
 
 	/** Position given to the first text line ever inserted into an otherwise empty document. */
