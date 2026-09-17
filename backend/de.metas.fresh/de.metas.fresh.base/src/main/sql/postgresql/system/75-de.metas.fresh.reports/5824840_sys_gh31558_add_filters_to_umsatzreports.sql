@@ -28,18 +28,24 @@
 --   AD_Process_Para 543329 (540740 Geschäftspartnergruppe)
 --   AD_Process_Para 543330 (540740 Vertriebspartner)
 --
--- SeqNo — derived from source, not assumed. Existing parameters readable from
--- migration scripts in this repo:
---   540558: AD_Org_ID=5, M_AttributeSetInstance_ID=40, ReportFormat=50.
---           Jahr, Periode and Verkaufstransaktion are pre-git seed rows whose
---           SeqNos are not in source; the readable maximum is 50.
---   540740: IsSOTrx=50, C_BPartner_ID=60, C_Activity_ID=70, M_Product_ID=80,
+-- SeqNo — queried, not assumed. Three of 540558's parameters are pre-git seed
+-- rows that no migration script carries, so the full picture was read from a
+-- live flaming_merlin_release database on 2026-09-17:
+--   540558: AD_Org_ID=5, C_Year_ID=10, C_Period_ID=20, IsSOTrx=30,
+--           M_AttributeSetInstance_ID=40, ReportFormat=50.  Maximum 50.
+--   540740: AD_Org_ID=5, Base_Period_Start=10, Base_Period_End=20,
+--           Comp_Period_Start=30, Comp_Period_End=40, IsSOTrx=50,
+--           C_BPartner_ID=60, C_Activity_ID=70, M_Product_ID=80,
 --           M_Product_Category_ID=90, M_AttributeSetInstance_ID=100,
---           ReportFormat=110. Maximum is 110.
+--           ReportFormat=110.  Maximum 110.
 -- New parameters therefore start at 100 on 540558 and at 120 on 540740, which
 -- appends them at the end of both dialogs — the order the customer's
 -- screenshots show — with no tie against an existing parameter. (A tied SeqNo
 -- would leave the rendering order undefined.)
+--
+-- The same query confirmed both IsSOTrx parameters currently have an EMPTY
+-- DefaultValue, which is what section 3 below changes, and is why the guard
+-- there expects exactly two updated rows.
 
 
 -- ========================================================================
