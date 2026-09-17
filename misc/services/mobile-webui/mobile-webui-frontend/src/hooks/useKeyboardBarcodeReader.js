@@ -25,8 +25,13 @@ export const useKeyboardBarcodeReader = ({
   // already computes.
   const scanStartTimeRef = useRef(0);
   const scanMaxGapRef = useRef(0);
+  const scanMaxProcGapRef = useRef(0);
   const scanChunkCountRef = useRef(0);
 
+  // Event-creation time of the last keystroke, with a flag for which clock produced it so a
+  // comparison can never straddle the two epochs.
+  const lastKeyEventTimeRef = useRef(0);
+  const lastKeyHadEventTimeRef = useRef(false);
   // useLayoutEffect (not useEffect) so the window-level keydown listener is attached synchronously
   // in the commit phase, BEFORE the browser paints — not in a post-paint passive effect. A scanner
   // screen renders its offscreen input during commit, but a passive useEffect runs a task later, so
@@ -51,8 +56,11 @@ export const useKeyboardBarcodeReader = ({
     const resetBuffer = () => {
       bufferRef.current = '';
       lastKeyTimeRef.current = 0;
+      lastKeyEventTimeRef.current = 0;
+      lastKeyHadEventTimeRef.current = false;
       scanStartTimeRef.current = 0;
       scanMaxGapRef.current = 0;
+      scanMaxProcGapRef.current = 0;
       scanChunkCountRef.current = 0;
     };
 
@@ -68,6 +76,7 @@ export const useKeyboardBarcodeReader = ({
         scanDurationMs: scanStartTimeRef.current ? lastKeyTimeRef.current - scanStartTimeRef.current : null,
         scanCharCount: code.length,
         scanMaxCharGapMs: Math.round(scanMaxGapRef.current),
+        scanMaxProcessingGapMs: Math.round(scanMaxProcGapRef.current),
         scanChunkCount: scanChunkCountRef.current,
       };
       resetBuffer();
@@ -96,6 +105,7 @@ export const useKeyboardBarcodeReader = ({
             scanDurationMs: null,
             scanCharCount: clipboardText.length,
             scanMaxCharGapMs: null,
+            scanMaxProcessingGapMs: null,
             scanChunkCount: null,
           });
           resetBuffer();
@@ -152,7 +162,17 @@ export const useKeyboardBarcodeReader = ({
         // flushed by the idle-abandon fallback below rather than here. The guarantee here is only
         // that a deliberate re-scan after the gap has exceeded idleAbandonMs — the operator has
         // clearly given up — is never merged.)
-        const gapMs = now - lastKeyTimeRef.current;
+        // Gap from the event's own creation time, not the handler's: a blocked thread processes
+        // queued keystrokes late. Both sides must come from the SAME clock - timeStamp counts from
+        // the time origin, Date.now() from the Unix epoch, so mixing them yields a ~1.7e12 ms gap
+        // that clears even idleAbandonMs. Falling back to wall clocks loses stall-immunity for one
+        // keystroke but stays correct.
+        const hasEventTime = typeof event.timeStamp === 'number' && event.timeStamp > 0;
+        const eventTimeMs = hasEventTime ? event.timeStamp : now;
+        const gapMs =
+          hasEventTime && lastKeyHadEventTimeRef.current
+            ? eventTimeMs - lastKeyEventTimeRef.current
+            : now - lastKeyTimeRef.current;
         const isPartial = checkPartialScannedCode(bufferRef.current) === ScanCompleteness.PARTIAL_SCAN;
         if (bufferRef.current && gapMs >= rateMs && (!isPartial || gapMs >= idleAbandonMs)) {
           // A normal back-to-back scan (non-partial) is length-gated exactly as before; a partial we
@@ -166,6 +186,11 @@ export const useKeyboardBarcodeReader = ({
         // unprotected code. A partial HU QR is exempt until idleAbandonMs, so its count is advisory.
         if (bufferRef.current) {
           if (gapMs > scanMaxGapRef.current) scanMaxGapRef.current = gapMs;
+          // Same gap on the WALL clock. gapMs is stall-immune, so the two differ only by how long
+          // the thread was blocked - which is the one signal that says whether the event-clock fix
+          // is actually saving scans here.
+          const procGapMs = now - lastKeyTimeRef.current;
+          if (procGapMs > scanMaxProcGapRef.current) scanMaxProcGapRef.current = procGapMs;
           if (gapMs >= chunkGapMs) scanChunkCountRef.current += 1;
         } else {
           scanStartTimeRef.current = now;
@@ -179,6 +204,8 @@ export const useKeyboardBarcodeReader = ({
         // (Before the readOnly→inputMode="none" change, readOnly prevented browser insertion.)
         event.preventDefault();
         lastKeyTimeRef.current = now;
+        lastKeyEventTimeRef.current = eventTimeMs;
+        lastKeyHadEventTimeRef.current = hasEventTime;
 
         // Content-based completion: force-complete immediately (no idle wait) once the buffer is a
         // COMPLETE, TERMINAL recognised code. Safe ONLY because COMPLETE_SCAN is invariant-bound to

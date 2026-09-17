@@ -16,6 +16,7 @@ const HU_QR =
   '"code":"2680","name":"Sternflow 11 Raps"},"attributes":[]}';
 
 let now;
+let eventTs;
 
 function mountReader() {
   const onReadDone = jest.fn();
@@ -34,20 +35,27 @@ function mountReader() {
 
 function pressKey(key) {
   act(() => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    // timeStamp is readonly and stamped at construction; override so the test drives it separately
+    // from the mocked wall clock.
+    Object.defineProperty(event, 'timeStamp', { value: eventTs, configurable: true });
+    window.dispatchEvent(event);
   });
 }
 
 // Types `str`, pausing `gapMs` before the character at each index in `gapsAt`.
 function typeString(str, { gapsAt = [], gapMs = 0, stepMs = 1 } = {}) {
   for (let i = 0; i < str.length; i += 1) {
-    now += gapsAt.includes(i) ? gapMs : stepMs;
+    const step = gapsAt.includes(i) ? gapMs : stepMs;
+    now += step;
+    eventTs += step;
     pressKey(str[i]);
   }
 }
 
 function goIdleAndTick() {
   now += RATE_MS * 3;
+  eventTs += RATE_MS * 3;
   act(() => {
     jest.advanceTimersByTime(RATE_MS * 2);
   });
@@ -55,6 +63,7 @@ function goIdleAndTick() {
 
 beforeEach(() => {
   now = 10_000;
+  eventTs = 10_000;
   jest.spyOn(Date, 'now').mockImplementation(() => now);
   jest.useFakeTimers('legacy');
 });
@@ -102,6 +111,27 @@ describe('per-scan delivery stats on the completed scan', () => {
     expect(code).toBe(PLAIN); // not split
     expect(stats.scanMaxCharGapMs).toBe(RATE_MS - 30);
     expect(stats.scanMaxCharGapMs).toBeLessThan(RATE_MS);
+  });
+
+  // gapMs is stall-immune post-fix, so it alone cannot show a blocked thread. The wall-clock
+  // counterpart can: the two diverge by exactly the block, which is what says whether the
+  // event-clock fix is saving scans in the field.
+  it('separates a blocked thread from a real pause', () => {
+    const onReadDone = mountReader();
+    // Characters keep their 1 ms cadence; the WALL clock jumps 1200 ms mid-scan, i.e. the thread
+    // was blocked and the queued keystrokes were processed late.
+    for (let i = 0; i < PLAIN.length; i += 1) {
+      if (i === 6) now += 1200;
+      now += 1;
+      eventTs += 1;
+      pressKey(PLAIN[i]);
+    }
+    goIdleAndTick();
+
+    const [code, stats] = onReadDone.mock.calls[0];
+    expect(code).toBe(PLAIN); // not split - the event clock saw no gap
+    expect(stats.scanMaxCharGapMs).toBeLessThan(10); // hardware cadence was fine
+    expect(stats.scanMaxProcessingGapMs).toBeGreaterThanOrEqual(1200); // the block is visible here
   });
 
   // Boundary: without this, a mutation from >= to > survives.
