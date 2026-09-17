@@ -275,14 +275,11 @@ public class PPOrderCostDifferenceDistributor
 			@NonNull final CostAmount amt)
 	{
 		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		final PPOrderCost targetCost = orderCosts.getMainOrCoProductCostOrNull(request.getAcctSchemaId(), request.getCostElementId(), request.getProductId());
-		if (targetCost == null)
-		{
-			return;
-		}
-
-		orderCosts.dischargeOntoMainProduct(targetCost, amt, utils.getQuantityUOMConverter());
-		ppOrderCostsService.save(orderCosts);
+		orderCosts.getMainOrCoProductCost(request.getAcctSchemaId(), request.getCostElementId(), request.getProductId())
+				.ifPresent(targetCost -> {
+					orderCosts.dischargeOntoMainProduct(targetCost, amt, utils.getQuantityUOMConverter());
+					ppOrderCostsService.save(orderCosts);
+				});
 	}
 
 	/**

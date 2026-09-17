@@ -482,11 +482,10 @@ public final class PPOrderCosts
 	}
 
 	/**
-	 * @return the main- or co-product cost row for {@code productId}, or {@code null}. Only main/co-product rows
+	 * @return the main- or co-product cost row for {@code productId}, if any. Only main/co-product rows
 	 * match, never a component issue that happens to share the finished good's product.
 	 */
-	@Nullable
-	public PPOrderCost getMainOrCoProductCostOrNull(
+	public Optional<PPOrderCost> getMainOrCoProductCost(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId costElementId,
 			@NonNull final ProductId productId)
@@ -496,8 +495,7 @@ public final class PPOrderCosts
 				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
 				.filter(cost -> costElementId.equals(cost.getCostElementId()))
 				.filter(cost -> productId.equals(cost.getProductId()))
-				.findFirst()
-				.orElse(null);
+				.findFirst();
 	}
 
 	/** @return every co-product cost row for the given schema and cost element (possibly empty). */
