@@ -38,6 +38,8 @@ import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -50,6 +52,7 @@ import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorQuantities;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -69,6 +72,8 @@ import java.util.Map;
  */
 public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 {
+	private static final Logger logger = LogManager.getLogger(Doc_PPCostCollector.class);
+
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 	/**
@@ -313,10 +318,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	private List<Fact> createFacts_CoProductReceipt(final AcctSchema as)
 	{
 		final DocLine_CostCollector docLine = getLine();
-		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		final AggregatedCostAmount costResult = resolveCoProductCostResult(docLine.isReversalLine(), docLine.getCreateCosts(as));
 		if (costResult == null)
 		{
-			// No cost details created (e.g. no accountable cost elements) — nothing to post.
+			// Reversal line with legitimately nothing to reverse — already logged in resolveCoProductCostResult().
 			return ImmutableList.of();
 		}
 
@@ -349,6 +354,40 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		return facts;
+	}
+
+	/**
+	 * Resolves {@link DocLine_CostCollector#getCreateCosts(AcctSchema)}'s result for a co/by-product receipt into
+	 * three explicit outcomes (review finding #2 — a silent {@code .orElse(null)} used to swallow an empty result
+	 * on every kind of line, normal receipts included):
+	 * <ul>
+	 * <li>present (including a zero-amount result, e.g. a blank/zero fixed-cost %) — returned as-is, unchanged: a
+	 * zero-value fact still posts so the received qty capitalizes (AC7/AC14).</li>
+	 * <li>empty on a reversal line — legitimately nothing to reverse (e.g. the original receipt posted no cost
+	 * details): logs the {@link ExplainedOptional}'s reason and returns {@code null} so the caller posts nothing,
+	 * without throwing.</li>
+	 * <li>empty on a normal (non-reversal) receipt — exceptional: throws, mirroring
+	 * {@link #createFacts_MaterialReceipt}'s {@code .orElseThrow()}.</li>
+	 * </ul>
+	 */
+	@VisibleForTesting
+	@Nullable
+	static AggregatedCostAmount resolveCoProductCostResult(
+			final boolean isReversalLine,
+			@NonNull final ExplainedOptional<AggregatedCostAmount> createCostsResult)
+	{
+		if (createCostsResult.isPresent())
+		{
+			return createCostsResult.get();
+		}
+
+		if (isReversalLine)
+		{
+			logger.info("Co/by-product reversal line has nothing to reverse: {}", createCostsResult.getExplanationAsString());
+			return null;
+		}
+
+		return createCostsResult.orElseThrow();
 	}
 
 	/**
