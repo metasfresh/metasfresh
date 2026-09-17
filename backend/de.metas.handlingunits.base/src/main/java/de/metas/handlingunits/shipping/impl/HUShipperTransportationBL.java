@@ -427,7 +427,25 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	{
 		if (Check.isEmpty(request.getPackageInfos()))
 		{
-			return huInOutDAO.retrieveShippedHandlingUnits(request.getShipment())
+			final List<I_M_HU> shippedHUs = huInOutDAO.retrieveShippedHandlingUnits(request.getShipment());
+
+			if (shippedHUs.isEmpty())
+			{
+				// shipment without shipped HUs (e.g. generated without picking): create one package for the whole
+				// shipment, so adding such a shipment to a transport order still yields a package line.
+				final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
+						.inOutId(request.getShipmentId())
+						.shipperId(shipperId)
+						.processed(request.isProcessed())
+						.weightInKg(weightCalculator.calculateWeightInKilograms(request.getShipment())
+								.map(weight -> weight.toBigDecimal())
+								.orElse(null))
+						.packageDimensions(PackageDimensions.UNSPECIFIED)
+						.build();
+				return ImmutableList.of(createPackagesRequest);
+			}
+
+			return shippedHUs
 					.stream()
 					.map(hu -> CreatePackagesRequest.builder()
 							.inOutId(request.getShipmentId())
