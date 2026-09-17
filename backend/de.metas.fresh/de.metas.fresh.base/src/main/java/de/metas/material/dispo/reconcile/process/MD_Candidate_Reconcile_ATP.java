@@ -100,7 +100,12 @@ public class MD_Candidate_Reconcile_ATP extends JavaProcess
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_Category_ID, mandatory = false)
 	private int p_M_Product_Category_ID;
 
-	@Param(parameterName = "IsDryRun", mandatory = true)
+	// Hidden from the operator dialog (AD_Process_Para.IsActive='N', migration 5824950) - its preview
+	// functionality is covered by the sibling MD_Candidate_ATP_Divergence_Report process. mandatory=false
+	// because a hidden parameter never gets an AD_PInstance_Para row, so a still-mandatory param would
+	// throw FillMandatoryException on every real invocation; with mandatory=false the field resolves to
+	// its Java default (false), matching the unchanged DefaultValue='N'.
+	@Param(parameterName = "IsDryRun", mandatory = false)
 	private boolean p_IsDryRun;
 
 	@Param(parameterName = "LivenessCutoffDate", mandatory = false)
