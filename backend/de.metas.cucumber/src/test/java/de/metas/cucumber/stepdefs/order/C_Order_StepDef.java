@@ -655,36 +655,12 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Generates the order's {@code C_Order_MFGWarehouse_Report} rows -- the "Bestellkontrolle" -- via the
-	 * {@code C_Order_MFGWarehouse_Report_Generate} AD_Process, the same process a user runs from the order
-	 * window's process menu once the order is completed. Registers the repo-ID of the generated "Plant"
-	 * (document type {@code PL}) row under {@code <orderIdentifier>_checkup}, and, when one was built, the
-	 * "Warehouse" (document type {@code WH}) row under {@code <orderIdentifier>_checkup_WH} -- so either
-	 * record can be referenced from the generic "The jasper process is run" / "AD_Archive exists" / "PDF
-	 * archived" steps exactly like any other document -- see {@link C_Order_MFGWarehouse_Report_StepDefData}.
-	 * <p>
-	 * Unlike the "Plant" row, a "Warehouse" row is not guaranteed: {@code OrderCheckupBL} builds one only
-	 * per order line whose product has a manufacturing {@code PP_Product_Planning} with a routing (silent
-	 * skip otherwise), so an order with no such line produces none -- registration is therefore optional,
-	 * never throwing when absent.
-	 * <p>
-	 * Direct AD_Process invocation (resolved by {@code AD_Process.Value}, never by class reference), and the
-	 * lookup below via {@code IQueryBL}'s generic, table-name-only {@code createQueryBuilder(String)} (never
-	 * the generated model class): {@code de.metas.cucumber} does not, and should not, depend on {@code
-	 * de.metas.fresh.base}, where the process class and the {@code IOrderCheckupBL}/{@code
-	 * I_C_Order_MFGWarehouse_Report} types it works with all live -- the same module-boundary exemption
-	 * already used for the WebUI-only {@code DocTextLineRepository} insert-above step.
-	 * <p>
-	 * The "Plant" row is the one the production {@code OrderCheckupBL.generateReportsIfEligible} builds
-	 * unconditionally from every non-packaging-material order line once the order's warehouse has a
-	 * {@code PP_Plant_ID} -- unlike the per-workflow "Warehouse" rows, it needs no
-	 * {@code PP_Product_Planning} fixture, which is why only the warehouse-plant fixture is needed here.
-	 * <p>
-	 * The role is looked up by the literal name {@code "WebUI"} rather than taken from the current context,
-	 * because the default cucumber ctx's own role (System/client) matches none of the checkup records -- see
-	 * the comment below. That name is not a free parameter: it is the same role this feature's Background
-	 * already authenticates as. A caller in a different feature, under a different role, would need this
-	 * step extended with an optional role-name column rather than assuming {@code "WebUI"} also exists there.
+	 * Runs the {@code C_Order_MFGWarehouse_Report_Generate} AD_Process for the order -- the "Bestellkontrolle"
+	 * -- as a user would from the order window once the order is completed. Registers the generated "Plant"
+	 * ({@code PL}) row under {@code <orderIdentifier>_checkup} and, when one was built, the "Warehouse"
+	 * ({@code WH}) row under {@code <orderIdentifier>_checkup_WH}; a {@code WH} row is not guaranteed, so that
+	 * registration is optional. Runs under the {@code "WebUI"} role this feature's Background authenticates as
+	 * -- the default ctx role matches none of the checkup records.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_Order_MFGWarehouse_Report_StepDefData
@@ -950,12 +926,7 @@ public class C_Order_StepDef
 	 *       creation-time column ({@code metasfresh contains C_Orders:} has no such field): setting
 	 *       {@code C_DocTypeTarget_ID}/{@code C_BPartner_ID} at creation re-derives it from the doc type's
 	 *       {@code DocumentNote} ({@code C_Order} model interceptor {@code updateDescriptionFromDocType}), so
-	 *       a value set at creation time is silently overwritten before the insert. This is only safe when
-	 *       the SAME update row does not also set {@code DocBaseType}/{@code DocSubType} -- doing so resolves
-	 *       a new {@code C_DocTypeTarget_ID} (see below) and re-fires the interceptor's {@code
-	 *       ifColumnsChanged} guard, overwriting {@code DescriptionBottom} again. Put {@code
-	 *       DescriptionBottom} in its own update row, after any row that changes the doc type, matching the
-	 *       real WebUI edit of the order's own field.</li>
+	 *       a value set at creation time is silently overwritten before the insert.</li>
 	 * </ul>
 	 *
 	 * <p>Example:

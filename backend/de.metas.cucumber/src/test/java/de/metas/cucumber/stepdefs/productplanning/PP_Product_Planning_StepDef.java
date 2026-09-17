@@ -80,13 +80,7 @@ public class PP_Product_Planning_StepDef
 
 	/**
 	 * Every {@code PP_Product_Planning} this step-def touched (created OR updated) this scenario, so
-	 * {@link #deactivateTouchedProductPlannings()} can deactivate all of them afterwards. A no-{@code M_Product}
-	 * planning matches ALL products and would otherwise poison every later scenario's material planning; a
-	 * product-specific one is just as dangerous by a different mechanism -- {@code metasfresh contains M_Products}
-	 * upserts by {@code Value}, so a fixture that reuses a literal-{@code Value} product resolves the SAME
-	 * {@code M_Product_ID} on every local run, and a left-active planning for it then makes the NEXT run's
-	 * fixture-removal mutation (e.g. "delete the PP_Product_Plannings row and expect the report to disappear")
-	 * pass for the wrong reason: a leftover row, not the current row, still satisfies the production code.
+	 * {@link #deactivateTouchedProductPlannings()} can deactivate all of them afterwards.
 	 */
 	private final Set<ProductPlanningId> touchedPlanningIds = new HashSet<>();
 
