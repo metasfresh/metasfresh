@@ -56,7 +56,6 @@ import org.eevolution.api.QtyCalculationsBOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -204,7 +203,6 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
-	@Nullable
 	public Percent getCoProductCostDistributionPercent(final I_PP_Product_BOMLine bomLine)
 	{
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
