@@ -100,3 +100,67 @@ Feature: shipment to transportation order
     And M_ShipperTransportation_AddShipments is invoked for shipment ship_2 and transportation order: to_2
     Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: to_2
     And validate M_ShipperTransportation_ID for shipment ship_2 is set
+
+  @from:cucumber
+  Scenario: TC3a - deleting a Transport Order's package line directly unlinks the shipment
+    Given metasfresh contains Transport Order
+      | Identifier | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | to_3a      | shipper_1    | cust_1              | loc_1               | Outgoing           |
+    And metasfresh contains M_InOut:
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
+      | ship_3a               | cust_1                   | loc_1                             | true    | F            | S               | I               | wh_std                    | 2023-06-01   | C-           | 5            | MMS             | MS             |
+    And metasfresh contains M_InOutLine without HU:
+      | M_InOut_ID | M_Product_ID | MovementQty |
+      | ship_3a    | p_noHu       | 1           |
+    When the shipment identified by ship_3a is completed
+    And M_ShipperTransportation_AddShipments is invoked for shipment ship_3a and transportation order: to_3a
+    Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: to_3a
+    And validate M_ShipperTransportation_ID for shipment ship_3a is set
+
+    When delete the M_ShippingPackage for shipment ship_3a and transportation order: to_3a
+    Then validate M_ShipperTransportation_ID for shipment ship_3a is null
+
+    # the shipment is a candidate for the add-flow again
+    When M_ShipperTransportation_AddShipments is invoked for shipment ship_3a and transportation order: to_3a
+    Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: to_3a
+    And validate M_ShipperTransportation_ID for shipment ship_3a is set
+
+  @from:cucumber
+  Scenario: TC3b - deleting the Transport Order itself cascades to its package line and unlinks the shipment
+    Given metasfresh contains Transport Order
+      | Identifier | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | to_3b      | shipper_1    | cust_1              | loc_1               | Outgoing           |
+    And metasfresh contains M_InOut:
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
+      | ship_3b               | cust_1                   | loc_1                             | true    | F            | S               | I               | wh_std                    | 2023-06-01   | C-           | 5            | MMS             | MS             |
+    And metasfresh contains M_InOutLine without HU:
+      | M_InOut_ID | M_Product_ID | MovementQty |
+      | ship_3b    | p_noHu       | 1           |
+    When the shipment identified by ship_3b is completed
+    And M_ShipperTransportation_AddShipments is invoked for shipment ship_3b and transportation order: to_3b
+    Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: to_3b
+    And validate M_ShipperTransportation_ID for shipment ship_3b is set
+
+    When delete Transport Order identified by to_3b
+    Then validate M_ShipperTransportation_ID for shipment ship_3b is null
+
+  @from:cucumber
+  Scenario: TC4 - voiding a Transport Order unlinks its shipments
+    Given metasfresh contains Transport Order
+      | Identifier | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID | TransportDirection |
+      | to_4       | shipper_1    | cust_1              | loc_1               | Outgoing           |
+    And metasfresh contains M_InOut:
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
+      | ship_4                | cust_1                   | loc_1                             | true    | F            | S               | I               | wh_std                    | 2023-06-01   | C-           | 5            | MMS             | MS             |
+    And metasfresh contains M_InOutLine without HU:
+      | M_InOut_ID | M_Product_ID | MovementQty |
+      | ship_4     | p_noHu       | 1           |
+    When the shipment identified by ship_4 is completed
+    And M_ShipperTransportation_AddShipments is invoked for shipment ship_4 and transportation order: to_4
+    Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: to_4
+    And validate M_ShipperTransportation_ID for shipment ship_4 is set
+
+    # to_4 is voided while still Drafted (NOT completed first) - MMShipperTransportation.voidIt()'s
+    # line-deactivation branch only runs for Drafted/Invalid/InProgress/Approved/NotApproved, not Completed.
+    When the M_ShipperTransportation identified by to_4 is voided
+    Then validate M_ShipperTransportation_ID for shipment ship_4 is null

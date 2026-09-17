@@ -1,9 +1,12 @@
 package de.metas.shipping.model.validator;
 
+import de.metas.inout.model.I_M_InOut;
 import de.metas.shipping.mpackage.PackageId;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Component;
 import de.metas.cache.CacheMgt;
 import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -75,5 +79,46 @@ public class M_ShippingPackage
 
 		final PackageId mPackageId = PackageId.ofRepoId(shippingPackage.getM_Package_ID());
 		packageRepo.closeMPackage(mPackageId);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
+	public void clearShipperTransportationLinkIfNoRemainingPackages(final I_M_ShippingPackage shippingPackage)
+	{
+		unlinkShipmentIfOrphaned(shippingPackage.getM_InOut_ID(), shippingPackage.getM_ShipperTransportation_ID());
+	}
+
+	/**
+	 * The M_InOut to M_ShipperTransportation link is only ever SET, never cleared, anywhere else in the codebase.
+	 * Call this whenever a M_ShippingPackage row that carried the link is removed or deactivated, so a shipment
+	 * does not stay permanently linked to a transport order it no longer has any active package on.
+	 */
+	public static void unlinkShipmentIfOrphaned(final int inOutId, final int shipperTransportationId)
+	{
+		if (inOutId <= 0 || shipperTransportationId <= 0)
+		{
+			return;
+		}
+
+		final boolean stillLinked = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, inOutId)
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+
+		if (stillLinked)
+		{
+			return;
+		}
+
+		final I_M_InOut shipment = InterfaceWrapperHelper.load(inOutId, I_M_InOut.class);
+		if (shipment.getM_ShipperTransportation_ID() != shipperTransportationId)
+		{
+			// already relinked to something else (or already cleared) meanwhile - don't clobber
+			return;
+		}
+		shipment.setM_ShipperTransportation_ID(0);
+		InterfaceWrapperHelper.save(shipment);
 	}
 }

@@ -323,6 +323,51 @@ public class M_ShipperTransportation_StepDef
 		inOutToTransportationOrderService.addShipmentsToTransportationOrder(shipperTransportationId, ImmutableList.of(inOutId));
 	}
 
+	/**
+	 * Locates the {@code M_ShippingPackage} linking the given shipment to the given transportation order and
+	 * deletes it via {@link InterfaceWrapperHelper#delete(Object)}, so the real
+	 * {@code @ModelChange(TYPE_AFTER_DELETE)} interceptor chain runs (including the FK-clear hook this issue adds).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And delete the M_ShippingPackage for shipment ship_3a and transportation order: to_3a
+	 * </pre>
+	 */
+	@And("^delete the M_ShippingPackage for shipment (.*) and transportation order: (.*)$")
+	public void deleteShippingPackageForShipmentAndTransportationOrder(@NonNull final String shipmentIdentifier, @NonNull final String transportationOrderIdentifier)
+	{
+		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		final int shipperTransportationId = deliveryInstructionTable.get(transportationOrderIdentifier).getM_ShipperTransportation_ID();
+
+		final I_M_ShippingPackage shippingPackage = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID())
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
+				.create()
+				.firstOnlyNotNull(I_M_ShippingPackage.class);
+
+		InterfaceWrapperHelper.delete(shippingPackage);
+	}
+
+	/**
+	 * Deletes the transport order directly via {@link InterfaceWrapperHelper#delete(Object)}. Only succeeds while
+	 * the TO is un-processed; the cascade to its {@code M_ShippingPackage} lines happens inside
+	 * {@code MMShipperTransportation#beforeDelete()}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And delete Transport Order identified by to_3b
+	 * </pre>
+	 */
+	@And("^delete Transport Order identified by (.*)$")
+	public void deleteTransportOrder(@NonNull final String transportationOrderIdentifier)
+	{
+		final I_M_ShipperTransportation transportOrder = deliveryInstructionTable.get(transportationOrderIdentifier);
+		InterfaceWrapperHelper.delete(transportOrder);
+	}
+
 	@And("^metasfresh contains exactly (.*) M_ShippingPackages for transportation order: (.*)$")
 	public void validateShippingPackagesForTransportationOrder(final int expectedShippingPackages, @NonNull final String transportationOrderIdentifier)
 	{
