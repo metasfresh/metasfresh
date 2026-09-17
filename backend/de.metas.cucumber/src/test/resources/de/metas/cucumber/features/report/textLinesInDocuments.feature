@@ -598,3 +598,457 @@ Feature: Free text lines print at their position on a sales order confirmation
     And in the PDF archived for the record identified by "order_checkup_WH", exactly 0 lines appear between text "Kühlkette" and text "Expresslieferung"
     And in the PDF archived for the record identified by "order_checkup_WH", exactly 0 lines appear between text "Expresslieferung" and text "DeltaItem"
     And the PDF archived for the record identified by "order_checkup_WH" has no overlapping text
+
+  @Id:S27486_TC2
+  Scenario: A partial delivery carries the whole-document block at the head and only the heading of the group it ships
+    # a fifth article, in a third group of its own -- the Background's four products span two groups only.
+    # Added scenario-locally rather than to the Background, so every scenario already in this file keeps
+    # exactly the fixture it was written against.
+    Given metasfresh contains M_Products:
+      | Identifier | Value      | Name        |
+      | productE   | EPSILON-NR | EpsilonItem |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | ppE        | plv                    | productE     | 10.0     | PCE      |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    # three groups: {line10,line20}, {line30,line40}, {line50}
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | line10     | order      | productA     | 1          |
+      | line20     | order      | productB     | 1          |
+      | line30     | order      | productC     | 1          |
+      | line40     | order      | productD     | 1          |
+      | line50     | order      | productE     | 1          |
+
+    When a text line "topBlock" is inserted above the order line identified by "line10" with text:
+      """
+      Für die Truhe:
+      Bitte saubere Schalen mit ordentlichem beklebten Deckel
+
+      Kartons bitte mit "Truhe" beschriften
+      """
+    And a text line "groupHeading" is inserted above the order line identified by "line30" with text:
+      """
+
+      Sortimentsware
+      """
+    And a text line "freshHeading" is inserted above the order line identified by "line50" with text:
+      """
+      Frischware
+      """
+
+    # every scope below is derived from the insert position, never chosen by hand -- and each one is what
+    # decides that line's fate on the partial shipment asserted further down
+    Then the text line identified by "topBlock" has TextLineScope "Document"
+    And the text line identified by "groupHeading" has TextLineScope "Following"
+    And the text line identified by "freshHeading" has TextLineScope "Following"
+
+    When the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss10       | line10         | N             |
+      | ss20       | line20         | N             |
+      | ss30       | line30         | N             |
+      | ss40       | line40         | N             |
+      | ss50       | line50         | N             |
+    # the partial delivery: ONLY the second group ships
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss30                  |
+      | ss40                  |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss30                  | shipment   | CO        |
+    And The jasper process is run
+      | Value                 | Record_ID |
+      | Lieferschein (Jasper) | shipment  |
+    Then an AD_Archive exists for the record identified by "shipment"
+
+    # the shipment really is partial -- without this, every "does not print" assertion below could be
+    # satisfied by a document that simply carries nothing
+    And the PDF archived for the record identified by "shipment" contains text "GammaItem"
+    And the PDF archived for the record identified by "shipment" contains text "DeltaItem"
+    And the PDF archived for the record identified by "shipment" does not contain text "AlphaItem"
+    And the PDF archived for the record identified by "shipment" does not contain text "BetaItem"
+    And the PDF archived for the record identified by "shipment" does not contain text "EpsilonItem"
+
+    # the whole-document block prints although NONE of its own run (line10, line20) is on this shipment --
+    # and it prints at the head: the next text on the page after its last line is the group heading, which
+    # in turn sits directly above the first shipped article. Nothing of the block is separated from them.
+    And in the PDF archived for the record identified by "shipment", exactly 0 lines appear between text "Für die Truhe:" and text "Bitte saubere Schalen mit ordentlichem beklebten Deckel"
+    And in the PDF archived for the record identified by "shipment", exactly 0 lines appear between text "Kartons bitte mit \"Truhe\" beschriften" and text "Sortimentsware"
+    # the heading prints immediately above the first shipped article of its own group
+    And in the PDF archived for the record identified by "shipment", exactly 0 lines appear between text "Sortimentsware" and text "GammaItem"
+    # ...and the group it introduces is intact behind it: article-to-article adjacency is untouched
+    And in the PDF archived for the record identified by "shipment", exactly 0 lines appear between text "GAMMA-NR" and text "DeltaItem"
+
+    # the third group's heading has no article of its run on this shipment and is not whole-document scoped:
+    # it must not print at all. This is the assertion the whole carry rule exists for.
+    And the PDF archived for the record identified by "shipment" does not contain text "Frischware"
+
+    # each carried text row carries its own text and nothing else -- no article number, name, quantity, unit
+    # or price glued onto the same visual line
+    And the visual line containing text "Für die Truhe:" in the PDF archived for the record identified by "shipment" is exactly "Für die Truhe:"
+    And the visual line containing text "Kartons bitte mit \"Truhe\" beschriften" in the PDF archived for the record identified by "shipment" is exactly "Kartons bitte mit \"Truhe\" beschriften"
+    And the visual line containing text "Sortimentsware" in the PDF archived for the record identified by "shipment" is exactly "Sortimentsware"
+
+    # the block's own embedded blank line occupies exactly one full line here too: the span across it covers
+    # exactly twice the height of a single ordinary line within the very same block. A line-count assertion
+    # cannot see this -- a blank line emits no glyphs at all.
+    And in the PDF archived for the record identified by "shipment", the vertical distance from text "Bitte saubere Schalen mit ordentlichem beklebten Deckel" to text "Kartons bitte mit \"Truhe\" beschriften" is 2 times the distance from text "Für die Truhe:" to text "Bitte saubere Schalen mit ordentlichem beklebten Deckel"
+
+    And the PDF archived for the record identified by "shipment" has no overlapping text
+
+  @Id:S27486_TC3
+  Scenario: Overriding the derived scope by hand keeps the block off a delivery note that carries none of its run
+    # the TC2 fixture, unchanged: three groups, the same three text lines, the same partial delivery. The ONE
+    # difference is the scope field of the top block, set by hand below -- so anything that differs in the
+    # printed result is attributable to that field and to nothing else.
+    Given metasfresh contains M_Products:
+      | Identifier | Value      | Name        |
+      | productE   | EPSILON-NR | EpsilonItem |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | ppE        | plv                    | productE     | 10.0     | PCE      |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | line10     | order      | productA     | 1          |
+      | line20     | order      | productB     | 1          |
+      | line30     | order      | productC     | 1          |
+      | line40     | order      | productD     | 1          |
+      | line50     | order      | productE     | 1          |
+
+    When a text line "topBlock" is inserted above the order line identified by "line10" with text:
+      """
+      Für die Truhe:
+      Bitte saubere Schalen mit ordentlichem beklebten Deckel
+
+      Kartons bitte mit "Truhe" beschriften
+      """
+    And a text line "groupHeading" is inserted above the order line identified by "line30" with text:
+      """
+
+      Sortimentsware
+      """
+    And a text line "freshHeading" is inserted above the order line identified by "line50" with text:
+      """
+      Frischware
+      """
+
+    # derived first, exactly as in TC2 -- the override below has to be visible as a CHANGE, not as a value
+    # that happened to be there all along
+    Then the text line identified by "topBlock" has TextLineScope "Document"
+    When the text line identified by "topBlock" has its TextLineScope set to "Following"
+    Then the text line identified by "topBlock" has TextLineScope "Following"
+    # the edit touched the scope field only: the text is still the one that was typed
+    And the text line identified by "topBlock" has 4 lines
+    And the text line identified by "topBlock" has a blank line at position 3
+
+    When the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss10       | line10         | N             |
+      | ss20       | line20         | N             |
+      | ss30       | line30         | N             |
+      | ss40       | line40         | N             |
+      | ss50       | line50         | N             |
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss30                  |
+      | ss40                  |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss30                  | shipment   | CO        |
+    And The jasper process is run
+      | Value                 | Record_ID |
+      | Lieferschein (Jasper) | shipment  |
+    Then an AD_Archive exists for the record identified by "shipment"
+
+    # the same partial shipment as TC2
+    And the PDF archived for the record identified by "shipment" contains text "GammaItem"
+    And the PDF archived for the record identified by "shipment" contains text "DeltaItem"
+
+    # the override's whole point: none of the top block's run (line10, line20) is on this shipment, and it is
+    # no longer whole-document scoped, so nothing carries it any more. In TC2, on the identical fixture, every
+    # one of these four lines printed.
+    And the PDF archived for the record identified by "shipment" does not contain text "Für die Truhe:"
+    And the PDF archived for the record identified by "shipment" does not contain text "Bitte saubere Schalen mit ordentlichem beklebten Deckel"
+    And the PDF archived for the record identified by "shipment" does not contain text "Kartons bitte mit \"Truhe\" beschriften"
+
+    # unchanged by the override, both of them: the heading of the shipped group still prints in position, and
+    # the absent group's heading still does not. Without this pair, "does not print" above would also be
+    # satisfied by a document that had lost its text lines altogether.
+    And the PDF archived for the record identified by "shipment" contains text "Sortimentsware"
+    And in the PDF archived for the record identified by "shipment", exactly 0 lines appear between text "Sortimentsware" and text "GammaItem"
+    And the PDF archived for the record identified by "shipment" does not contain text "Frischware"
+
+    And the PDF archived for the record identified by "shipment" has no overlapping text
+
+  @Id:S27486_TC4
+  Scenario: A group split across two deliveries prints its heading on both, above that document's own first line of the group
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | line10     | order      | productA     | 1          |
+      | line20     | order      | productB     | 1          |
+      | line30     | order      | productC     | 1          |
+      | line40     | order      | productD     | 1          |
+
+    When a text line "topBlock" is inserted above the order line identified by "line10" with text:
+      """
+      Für die Truhe:
+      Bitte saubere Schalen mit ordentlichem beklebten Deckel
+
+      Kartons bitte mit "Truhe" beschriften
+      """
+    # the second group's heading: its run is line30 and line40, the two lines the two shipments below split
+    And a text line "groupHeading" is inserted above the order line identified by "line30" with text:
+      """
+
+      Sortimentsware
+      """
+    Then the text line identified by "groupHeading" has TextLineScope "Following"
+
+    When the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss10       | line10         | N             |
+      | ss20       | line20         | N             |
+      | ss30       | line30         | N             |
+      | ss40       | line40         | N             |
+
+    # first delivery: one article of the second group
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss30                  |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  | DocStatus |
+      | ss30                  | shipmentOne | CO        |
+    # second delivery: the rest of that same group
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss40                  |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  | DocStatus |
+      | ss40                  | shipmentTwo | CO        |
+
+    And The jasper process is run
+      | Value                 | Record_ID   |
+      | Lieferschein (Jasper) | shipmentOne |
+    Then an AD_Archive exists for the record identified by "shipmentOne"
+    And The jasper process is run
+      | Value                 | Record_ID   |
+      | Lieferschein (Jasper) | shipmentTwo |
+    Then an AD_Archive exists for the record identified by "shipmentTwo"
+
+    # the split is real: each document carries exactly one of the group's two articles
+    And the PDF archived for the record identified by "shipmentOne" contains text "GammaItem"
+    And the PDF archived for the record identified by "shipmentOne" does not contain text "DeltaItem"
+    And the PDF archived for the record identified by "shipmentTwo" contains text "DeltaItem"
+    And the PDF archived for the record identified by "shipmentTwo" does not contain text "GammaItem"
+
+    # the heading prints on BOTH, each time directly above that document's OWN first line of the group --
+    # a different article line on each. This is what a copy tied to one fixed order line could not do.
+    And in the PDF archived for the record identified by "shipmentOne", exactly 0 lines appear between text "Sortimentsware" and text "GammaItem"
+    And in the PDF archived for the record identified by "shipmentTwo", exactly 0 lines appear between text "Sortimentsware" and text "DeltaItem"
+
+    # on each document the heading is the row immediately after the whole-document block, whose own run
+    # (line10, line20) reaches neither shipment: it prints at the head of both, ahead of the heading
+    And in the PDF archived for the record identified by "shipmentOne", exactly 0 lines appear between text "Kartons bitte mit \"Truhe\" beschriften" and text "Sortimentsware"
+    And in the PDF archived for the record identified by "shipmentTwo", exactly 0 lines appear between text "Kartons bitte mit \"Truhe\" beschriften" and text "Sortimentsware"
+
+    And the visual line containing text "Sortimentsware" in the PDF archived for the record identified by "shipmentOne" is exactly "Sortimentsware"
+    And the visual line containing text "Sortimentsware" in the PDF archived for the record identified by "shipmentTwo" is exactly "Sortimentsware"
+    And the PDF archived for the record identified by "shipmentOne" has no overlapping text
+    And the PDF archived for the record identified by "shipmentTwo" has no overlapping text
+
+  @Id:S27486_TC7
+  Scenario: Deleting an article line re-anchors the text lines above it onto whatever line now follows
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | line10     | order      | productA     | 1          |
+      | line20     | order      | productB     | 1          |
+      | line30     | order      | productC     | 1          |
+      | line40     | order      | productD     | 1          |
+
+    When a text line "topBlock" is inserted above the order line identified by "line10" with text:
+      """
+      Für die Truhe:
+      Bitte saubere Schalen mit ordentlichem beklebten Deckel
+
+      Kartons bitte mit "Truhe" beschriften
+      """
+    And a text line "groupHeading" is inserted above the order line identified by "line30" with text:
+      """
+
+      Sortimentsware
+      """
+
+    # the first article of each group is deleted. The first deletion is the requirement's own case; the
+    # second is what makes the re-anchoring OBSERVABLE at all. "topBlock" is whole-document scoped, so it
+    # would print on a derived document whether it re-anchored or not -- only "groupHeading", which prints
+    # solely when an article of its run is present, can fail if the run stayed pinned to the deleted line.
+    And delete C_OrderLine identified by line10, but keep its id into identifierIds table
+    And delete C_OrderLine identified by line30, but keep its id into identifierIds table
+
+    # deleting an article line leaves the text lines themselves untouched -- text and scope both
+    Then the text line identified by "topBlock" has TextLineScope "Document"
+    And the text line identified by "topBlock" has 4 lines
+    And the text line identified by "topBlock" has a blank line at position 3
+    And the text line identified by "groupHeading" has TextLineScope "Following"
+    And the text line identified by "groupHeading" has text:
+      """
+
+      Sortimentsware
+      """
+    # the surviving article lines keep their own Line values: deleting never renumbers
+    And the order line identified by "line20" still has Line 20
+    And the order line identified by "line40" still has Line 40
+
+    When the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss20       | line20         | N             |
+      | ss40       | line40         | N             |
+
+    # the remaining article of the first group
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss20                  |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  | DocStatus |
+      | ss20                  | shipmentOne | CO        |
+    # and the remaining article of the second group
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss40                  |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  | DocStatus |
+      | ss40                  | shipmentTwo | CO        |
+
+    And The jasper process is run
+      | Value                 | Record_ID   |
+      | Lieferschein (Jasper) | shipmentOne |
+    Then an AD_Archive exists for the record identified by "shipmentOne"
+    And The jasper process is run
+      | Value                 | Record_ID   |
+      | Lieferschein (Jasper) | shipmentTwo |
+    Then an AD_Archive exists for the record identified by "shipmentTwo"
+
+    # first delivery note: the top block still prints, above the article line that followed the deleted one
+    And the PDF archived for the record identified by "shipmentOne" contains text "BetaItem"
+    And in the PDF archived for the record identified by "shipmentOne", exactly 0 lines appear between text "Kartons bitte mit \"Truhe\" beschriften" and text "BetaItem"
+    # the second group's heading has no article of its (re-anchored) run here, so it must not print -- the
+    # contrast proving the rule is still discriminating on this very document
+    And the PDF archived for the record identified by "shipmentOne" does not contain text "Sortimentsware"
+    And the PDF archived for the record identified by "shipmentOne" has no overlapping text
+
+    # second delivery note: the heading prints above line40, although the line it was inserted above is gone.
+    # Nothing but the re-anchoring can produce this: had its run stayed the deleted line30, the run would be
+    # empty here and a Following-scoped line with an empty run reaches no derived document at all (TC8).
+    And the PDF archived for the record identified by "shipmentTwo" contains text "DeltaItem"
+    And in the PDF archived for the record identified by "shipmentTwo", exactly 0 lines appear between text "Sortimentsware" and text "DeltaItem"
+    # and the whole-document block is still ahead of it, its own run (line20) being absent from this one
+    And in the PDF archived for the record identified by "shipmentTwo", exactly 0 lines appear between text "Kartons bitte mit \"Truhe\" beschriften" and text "Sortimentsware"
+    And the PDF archived for the record identified by "shipmentTwo" has no overlapping text
+
+  @Id:S27486_TC9
+  Scenario: A delivery note's text lines are its own copies and do not follow a later edit of the order
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_PricingSystem_ID |
+      | order      | true    | customer      | 2025-04-01  | wh             | ps                 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | line10     | order      | productA     | 1          |
+      | line20     | order      | productB     | 1          |
+      | line30     | order      | productC     | 1          |
+      | line40     | order      | productD     | 1          |
+
+    When a text line "topBlock" is inserted above the order line identified by "line10" with text:
+      """
+      Für die Truhe:
+      Bitte saubere Schalen mit ordentlichem beklebten Deckel
+
+      Kartons bitte mit "Truhe" beschriften
+      """
+    And a text line "groupHeading" is inserted above the order line identified by "line30" with text:
+      """
+
+      Sortimentsware
+      """
+
+    When the order identified by order is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss10       | line10         | N             |
+      | ss20       | line20         | N             |
+      | ss30       | line30         | N             |
+      | ss40       | line40         | N             |
+
+    # the first delivery note takes one article out of each group, so the heading's run reaches it
+    And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss10                  |
+      | ss30                  |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  | DocStatus |
+      | ss10                  | shipmentOne | CO        |
+
+    # NOW the order's own text line is corrected. The wording is changed outright rather than extended, so
+    # that "the old wording is gone" and "the new wording is here" are two independent assertions on each
+    # document -- a new value containing the old one as a substring could not tell them apart.
+    When the text line identified by "groupHeading" is changed to text:
+      """
+
+      Trockensortiment
+      """
+    Then the text line identified by "groupHeading" has text:
+      """
+
+      Trockensortiment
+      """
+    # the edit changed the text field only
+    And the text line identified by "groupHeading" has TextLineScope "Following"
+
+    # the second delivery note is created AFTER the edit, from the same order
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss20                  |
+      | ss40                  |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID  | DocStatus |
+      | ss20                  | shipmentTwo | CO        |
+
+    # both are printed only now, after the edit: the first one's print therefore cannot be a stale rendering
+    # taken before the change -- it reads the copies that were written when it was created
+    And The jasper process is run
+      | Value                 | Record_ID   |
+      | Lieferschein (Jasper) | shipmentOne |
+    Then an AD_Archive exists for the record identified by "shipmentOne"
+    And The jasper process is run
+      | Value                 | Record_ID   |
+      | Lieferschein (Jasper) | shipmentTwo |
+    Then an AD_Archive exists for the record identified by "shipmentTwo"
+
+    # the delivery note that already existed still shows the original wording, in position
+    And the PDF archived for the record identified by "shipmentOne" contains text "Sortimentsware"
+    And the PDF archived for the record identified by "shipmentOne" does not contain text "Trockensortiment"
+    And in the PDF archived for the record identified by "shipmentOne", exactly 0 lines appear between text "Sortimentsware" and text "GammaItem"
+
+    # the one created afterwards shows the new wording, equally in position
+    And the PDF archived for the record identified by "shipmentTwo" contains text "Trockensortiment"
+    And the PDF archived for the record identified by "shipmentTwo" does not contain text "Sortimentsware"
+    And in the PDF archived for the record identified by "shipmentTwo", exactly 0 lines appear between text "Trockensortiment" and text "DeltaItem"
+
+    And the PDF archived for the record identified by "shipmentOne" has no overlapping text
+    And the PDF archived for the record identified by "shipmentTwo" has no overlapping text

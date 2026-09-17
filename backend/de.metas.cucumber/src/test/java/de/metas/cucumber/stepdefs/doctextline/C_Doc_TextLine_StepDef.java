@@ -259,6 +259,73 @@ public class C_Doc_TextLine_StepDef
 	}
 
 	/**
+	 * Sets a text line's {@code TextLineScope} by hand, leaving its text alone -- the user overriding the
+	 * value the repository derived from the insert position, by editing the scope field in the "Freitextzeilen"
+	 * modal.
+	 *
+	 * <p><b>Direct-repository invocation (documented exemption),</b> the same one
+	 * {@link #insertTextLineAboveOrderLine} carries: the modal's inline editor ({@code DocTextLinesRows#patchRow},
+	 * {@code de.metas.ui.web.base}) is not on this module's classpath. What that method does with a one-field
+	 * patch is reproduced exactly here -- it merges the patch into the row and hands BOTH values to
+	 * {@link DocTextLineRepository#updateTextAndScope}, so the untouched field is written back with its current
+	 * value rather than cleared. This step therefore calls the identical persistence method with the record's
+	 * own current text and the new scope.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the text line identified by "topBlock" has its TextLineScope set to "Following"
+	 * </pre>
+	 */
+	@When("the text line identified by {string} has its TextLineScope set to {string}")
+	public void setTextLineScope(
+			@NonNull final String textLineIdentifier,
+			@NonNull final String newScope)
+	{
+		final I_C_Doc_TextLine record = textLineTable.get(textLineIdentifier);
+		InterfaceWrapperHelper.refresh(record);
+
+		docTextLineRepository.updateTextAndScope(
+				DocTextLineId.ofRepoId(record.getC_Doc_TextLine_ID()),
+				record.getTextLine(),
+				TextLineScope.valueOf(newScope));
+
+		InterfaceWrapperHelper.refresh(record);
+		textLineTable.putOrReplace(textLineIdentifier, record);
+	}
+
+	/**
+	 * Rewrites a text line's text, leaving its scope alone -- the user correcting the wording in the
+	 * "Freitextzeilen" modal. Same direct-repository exemption, and the same both-values call, as
+	 * {@link #setTextLineScope}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the text line identified by "groupHeading" is changed to text:
+	 *   """
+	 *   Trockensortiment
+	 *   """
+	 * </pre>
+	 */
+	@When("the text line identified by {string} is changed to text:")
+	public void changeTextLineText(
+			@NonNull final String textLineIdentifier,
+			@NonNull final String newText)
+	{
+		final I_C_Doc_TextLine record = textLineTable.get(textLineIdentifier);
+		InterfaceWrapperHelper.refresh(record);
+
+		docTextLineRepository.updateTextAndScope(
+				DocTextLineId.ofRepoId(record.getC_Doc_TextLine_ID()),
+				newText,
+				TextLineScope.ofCode(record.getTextLineScope()));
+
+		InterfaceWrapperHelper.refresh(record);
+		textLineTable.putOrReplace(textLineIdentifier, record);
+	}
+
+	/**
 	 * Asserts the {@code TextLineScope} the repository derived and persisted for a text line -- never a value
 	 * this suite sets itself.
 	 *
