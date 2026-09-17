@@ -135,6 +135,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final IAggregationKeyBuilder<ShipmentScheduleWithHU> huShipmentScheduleKeyBuilder;
 
 	private final ShipmentLineNoInfo shipmentLineNoInfo = new ShipmentLineNoInfo();
+	private final TextLineShipmentCopier textLineShipmentCopier = new TextLineShipmentCopier();
 
 	private ITrxItemProcessorContext processorCtx;
 	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
@@ -504,6 +505,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 	{
 		final ImmutableList<InOutLineId> shipmentLineIdsWithLineNoCollisions = shipmentLineNoInfo.getShipmentLineIdsWithLineNoCollisions();
 		inOutDAO.unsetLineNos(shipmentLineIdsWithLineNoCollisions);
+
+		// must run AFTER unsetLineNos: the copy derives each carried text line's position from its anchor
+		// shipment line's own Line, which is only final once any Line-number collision has been resolved.
+		textLineShipmentCopier.copyTextLinesToShipment(currentShipment);
 
 		final HUShipmentPackingMaterialLinesBuilder packingMaterialLinesBuilder = huInOutBL.createHUShipmentPackingMaterialLinesBuilder(currentShipment);
 

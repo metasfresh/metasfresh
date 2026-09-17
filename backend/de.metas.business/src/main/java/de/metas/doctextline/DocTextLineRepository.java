@@ -178,6 +178,28 @@ public class DocTextLineRepository
 		InterfaceWrapperHelper.save(record2);
 	}
 
+	/**
+	 * Persists an independent COPY of {@code source} onto a different document, at an explicit
+	 * {@code position} and with the source's own text and scope carried over verbatim (never rederived here --
+	 * the caller owns that decision). Used when a document's text lines are carried onto a document derived
+	 * from it (e.g. a shipment created from an order). The new row is independent from the moment it is
+	 * written: it has no link back to {@code source}, so an edit to {@code source} afterwards never touches it.
+	 */
+	public DocTextLine copyToDocument(
+			@NonNull final DocTextLineDocumentRef targetDocumentRef,
+			@NonNull final DocTextLine source,
+			@NonNull final BigDecimal position)
+	{
+		final I_C_Doc_TextLine record = InterfaceWrapperHelper.newInstance(I_C_Doc_TextLine.class);
+		setDocumentRef(record, targetDocumentRef);
+		record.setTextLine(source.getTextLine());
+		record.setLine(position);
+		record.setTextLineScope(source.getScope().getCode());
+		InterfaceWrapperHelper.save(record);
+
+		return ofRecord(record);
+	}
+
 	public List<DocTextLine> getByDocument(@NonNull final DocTextLineDocumentRef documentRef)
 	{
 		final IQueryBuilder<I_C_Doc_TextLine> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_TextLine.class);
