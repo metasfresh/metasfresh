@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -54,6 +55,15 @@ import java.util.stream.Stream;
 @Value
 public class BOM
 {
+	/**
+	 * Σ(co-product distribution percents) &gt; 100% guard message. Shared with the PP_Order post-calculation
+	 * guard ({@code PPOrderCosts.assertValidTotalCoProductDistributionPercent}); localized via AD_Message so a
+	 * German user gets a German message. Params: {0} = the offending sum, {1} = the offending product(s).
+	 * Backing migration: {@code 5825070_sys_AD_Message_CoProductCostDistributionPercentSum_ExceedsMax.sql}.
+	 */
+	static final AdMessageKey MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_SUM_EXCEEDS_MAX =
+			AdMessageKey.of("de.metas.manufacturing.CoProductCostDistributionPercentSum_ExceedsMax");
+
 	@NonNull
 	ProductId productId;
 
@@ -70,6 +80,17 @@ public class BOM
 	@Getter(AccessLevel.PACKAGE)
 	BOMCostPrice costPrice;
 
+	/**
+	 * True when this BOM is the per-order Average/MAI cost rollup ({@code OrderBOMCostCalculatorRepository});
+	 * false for the Standard-cost definitional rollup ({@code BatchProcessBOMCostCalculatorRepository}) and for
+	 * a directly-built BOM. The Σp ≤ 100% guard is enforced during the rollup ONLY when this is false: on the
+	 * per-order path the single rejection point is the PP_Order post-calculation guard
+	 * ({@code PPOrderCosts.assertValidTotalCoProductDistributionPercent}, fired when each cost collector is
+	 * costed), so enforcing here too would pre-empt it at the wrong point (order-cost creation) with the wrong
+	 * message.
+	 */
+	boolean perOrderRollup;
+
 	CurrencyPrecision precision = CurrencyPrecision.ofInt(4); // FIXME: hardcoded precision
 
 	@Builder
@@ -78,7 +99,8 @@ public class BOM
 			@Nullable final AttributeSetInstanceId asiId,
 			@NonNull final Quantity qty,
 			@Singular @NonNull final ImmutableList<BOMLine> lines,
-			@NonNull final BOMCostPrice costPrice)
+			@NonNull final BOMCostPrice costPrice,
+			final boolean perOrderRollup)
 	{
 		if (!UomId.equals(qty.getUomId(), costPrice.getUomId()))
 		{
@@ -94,6 +116,7 @@ public class BOM
 		this.qty = qty;
 		this.lines = lines;
 		this.costPrice = costPrice;
+		this.perOrderRollup = perOrderRollup;
 	}
 
 	public void rollupCosts()
@@ -137,7 +160,10 @@ public class BOM
 			@Nullable final CostAmount bomCostPrice,
 			@NonNull final CostElementId costElementId)
 	{
-		assertValidTotalCoProductDistributionPercent();
+		if (!perOrderRollup)
+		{
+			assertValidTotalCoProductDistributionPercent();
+		}
 
 		CostAmount bomCostPriceWithoutCoProducts = bomCostPrice;
 
@@ -202,9 +228,8 @@ public class BOM
 					})
 					.map(bomLine -> String.valueOf(bomLine.getComponentId().getRepoId()))
 					.collect(Collectors.joining(", "));
-			throw new AdempiereException("Co-products' cost distribution percent sum of " + totalCoProductDistributionPercent
-					+ " exceeds 100% for BOM of product " + productId
-					+ " (co-product(s): " + offendingCoProductIds + ")");
+			throw new AdempiereException(MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_SUM_EXCEEDS_MAX,
+					totalCoProductDistributionPercent, offendingCoProductIds);
 		}
 	}
 

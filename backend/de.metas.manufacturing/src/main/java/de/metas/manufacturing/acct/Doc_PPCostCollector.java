@@ -528,10 +528,13 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	{
 		final DocLine_CostCollector docLine = getLine();
 
-		final ArrayList<Fact> facts = new ArrayList<>();
-		facts.addAll(createMainProductDifferenceFacts(as, docLine));
-		facts.addAll(createCoProductDifferenceFacts(as, docLine));
-		return facts;
+		// ORDER-CRITICAL: createMainProductDifferenceFacts calls docLine.getCreateCosts(), which PERSISTS the
+		// per-co-product CostDetail rows that appendCoProductDifferenceFacts then reads back. Passing the main
+		// facts INTO the co-product step makes this a compile-time requirement — the co-product facts cannot be
+		// built before the main facts (and hence before the rows they read are persisted). Reordering would
+		// otherwise silently drop every co-product's Asset/WIP posting.
+		final List<Fact> mainProductFacts = createMainProductDifferenceFacts(as, docLine);
+		return appendCoProductDifferenceFacts(as, docLine, mainProductFacts);
 	}
 
 	/**
@@ -564,13 +567,20 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	}
 
 	/**
-	 * One additional, self-balanced Fact per co-product that carries a residual, resolved against the co-product's
-	 * OWN product accounts. Reads the collector's persisted {@code CostDetail} rows grouped by product; the
-	 * main-product rows are excluded because that leg is already posted above.
+	 * Appends one additional, self-balanced Fact per co-product that carries a residual, resolved against the
+	 * co-product's OWN product accounts, to {@code mainProductFacts}. Reads the collector's persisted
+	 * {@code CostDetail} rows grouped by product; the main-product rows are excluded because that leg is already
+	 * in {@code mainProductFacts}.
+	 * <p>
+	 * {@code mainProductFacts} is required (not merely for the returned list): building it is what persisted the
+	 * per-co-product {@code CostDetail} rows this method reads back via
+	 * {@code getCostDetailAmountsToPostByProduct}. Taking it as input enforces that ordering at compile time —
+	 * the co-product facts cannot be produced before the main facts.
 	 */
-	private List<Fact> createCoProductDifferenceFacts(
+	private List<Fact> appendCoProductDifferenceFacts(
 			@NonNull final AcctSchema as,
-			@NonNull final DocLine_CostCollector docLine)
+			@NonNull final DocLine_CostCollector docLine,
+			@NonNull final List<Fact> mainProductFacts)
 	{
 		final CostingDocumentRef documentRef = CostingDocumentRef.ofCostCollectorId(docLine.get_ID());
 		final ImmutableMap<ProductId, CostAmountDetailed> amountsByProduct = getServices().getCostDetailAmountsToPostByProduct(documentRef, as);
@@ -578,10 +588,10 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ImmutableList<CoProductDistributionLegs> coProductLegs = coProductDistributionLegs(amountsByProduct, docLine.getProductId());
 		if (coProductLegs.isEmpty())
 		{
-			return ImmutableList.of();
+			return mainProductFacts;
 		}
 
-		final ArrayList<Fact> facts = new ArrayList<>();
+		final ArrayList<Fact> facts = new ArrayList<>(mainProductFacts);
 		for (final CoProductDistributionLegs coProduct : coProductLegs)
 		{
 			final Fact fact = new Fact(this, as, PostingType.Actual);

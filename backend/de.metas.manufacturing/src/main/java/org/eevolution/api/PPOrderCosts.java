@@ -8,6 +8,8 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -16,6 +18,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import org.slf4j.Logger;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -63,6 +66,17 @@ import java.util.stream.Collectors;
 @EqualsAndHashCode
 public final class PPOrderCosts
 {
+	private static final Logger logger = LogManager.getLogger(PPOrderCosts.class);
+
+	/**
+	 * Σ(co-product distribution percents) &gt; 100% guard message. Shared with the BOM-rollup guard
+	 * ({@code BOM.assertValidTotalCoProductDistributionPercent}); localized via AD_Message so a German user
+	 * gets a German message. Params: {0} = the offending sum, {1} = the offending product(s).
+	 * Backing migration: {@code 5825070_sys_AD_Message_CoProductCostDistributionPercentSum_ExceedsMax.sql}.
+	 */
+	private static final AdMessageKey MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_SUM_EXCEEDS_MAX =
+			AdMessageKey.of("de.metas.manufacturing.CoProductCostDistributionPercentSum_ExceedsMax");
+
 	@Getter
 	private final PPOrderId orderId;
 	private final HashMap<CostSegmentAndElement, PPOrderCost> costs;
@@ -305,6 +319,10 @@ public final class PPOrderCosts
 								.thenComparingInt(cost -> cost.getProductId().getRepoId()))
 						.orElseThrow(() -> new AdempiereException("No co-product cost to absorb the rounding overshoot onto in " + costs));
 				// mainProductAmount is negative here, so adding it REDUCES the largest carve by the overshoot.
+				logger.debug("Co-product carve rounding overshoot of {} (<= {} tolerance for {} co-product(s)) absorbed onto"
+								+ " largest co-product {} for cost element {}; main product clamped to zero",
+						mainProductAmount, roundingTolerance, coProductCosts.size(),
+						largestCoProductCost.getProductId(), costElementId);
 				largestCoProductCost.setPostCalculationAmount(largestCoProductCost.getPostCalculationAmount().add(mainProductAmount));
 				mainProductAmount = mainProductAmount.toZero();
 			}
@@ -345,8 +363,8 @@ public final class PPOrderCosts
 					.map(PPOrderCost::getProductId)
 					.sorted(Comparator.comparing(ProductId::getRepoId))
 					.collect(ImmutableList.toImmutableList());
-			throw new AdempiereException("Co-products' cost distribution percent sum of " + totalCoProductDistributionPercent
-					+ " exceeds 100% for product(s): " + describeProducts(offendingProductIds));
+			throw new AdempiereException(MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_SUM_EXCEEDS_MAX,
+					totalCoProductDistributionPercent, describeProducts(offendingProductIds));
 		}
 	}
 

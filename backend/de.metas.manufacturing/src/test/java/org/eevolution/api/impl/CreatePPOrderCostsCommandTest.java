@@ -263,4 +263,52 @@ public class CreatePPOrderCostsCommandTest
 				.isEqualTo(Percent.of(new BigDecimal("30")));
 	}
 
+	/**
+	 * The co-product distribution percent must be carried onto a PP_Order_Cost row ONLY for the cost elements
+	 * whose method does the BOM rollup (AveragePO / AverageInvoice / MovingAverageInvoice) — the only methods
+	 * that consume it. A LastPOPrice cost element must keep the co-product row's percent NULL, so LastPO stays
+	 * exactly as it was before this feature (co-product distribution is out of scope for LastPO). The co-product
+	 * here has NO current cost, so its rows are created through the zero-cost path
+	 * ({@code createZeroPPOrderCost}) — the path that previously carried the percent onto every cost element.
+	 */
+	@Test
+	public void coProductDistributionPercent_notCarriedToNonRollupMethod_LastPO()
+	{
+		final CostElement maiCostElement = helper.costElementRepo.getOrCreateMaterialCostElement(helper.clientId, CostingMethod.MovingAverageInvoice);
+		final CostElement lastPOCostElement = helper.costElementRepo.getOrCreateMaterialCostElement(helper.clientId, CostingMethod.LastPOPrice);
+
+		final ProductId finishedGoodsProductId = BusinessTestHelper.createProductId("finished goods", helper.uomBag);
+		final ProductId componentId = BusinessTestHelper.createProductId("component", helper.uomBag);
+		final ProductId coProductId = helper.createCoProductId("co-product", helper.uomBag, "30");
+
+		helper.currentCost().productId(componentId).currentCostPrice("1").uom(helper.uomBag).build();
+		// IMPORTANT: no current cost for the co-product -> its rows go through the zero-cost path.
+
+		final I_PP_Order ppOrder = helper.order()
+				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("100").finishedGoodsUOM(helper.uomEach)
+				.componentId(componentId).componentQtyRequired("100").componentUOM(helper.uomBag)
+				.build();
+
+		helper.orderBOMLine()
+				.ppOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
+				.productId(coProductId)
+				.qtyRequired("-50")
+				.uom(helper.uomBag)
+				.componentType(BOMComponentType.CoProduct)
+				.build();
+
+		final PPOrderCosts ppOrderCosts = new CreatePPOrderCostsCommand(ppOrder).execute();
+
+		// MovingAverageInvoice IS a BOM-rollup method -> the co-product row carries the percent.
+		final List<PPOrderCost> maiCoProductCosts = ppOrderCosts.getByProductAndCostElements(coProductId, ImmutableSet.of(maiCostElement.getId()));
+		assertThat(maiCoProductCosts).hasSize(1);
+		assertThat(maiCoProductCosts.get(0).getCoProductCostDistributionPercent())
+				.isEqualTo(Percent.of(new BigDecimal("30")));
+
+		// LastPOPrice is NOT a BOM-rollup method -> the co-product row must keep a NULL percent (pre-feature behaviour).
+		final List<PPOrderCost> lastPOCoProductCosts = ppOrderCosts.getByProductAndCostElements(coProductId, ImmutableSet.of(lastPOCostElement.getId()));
+		assertThat(lastPOCoProductCosts).hasSize(1);
+		assertThat(lastPOCoProductCosts.get(0).getCoProductCostDistributionPercent()).isNull();
+	}
+
 }

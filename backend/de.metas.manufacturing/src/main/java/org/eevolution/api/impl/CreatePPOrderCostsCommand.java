@@ -362,7 +362,13 @@ final class CreatePPOrderCostsCommand
 	{
 		final PPOrderCostTrxType trxType = candidate.getTrxType();
 		final CostSegmentAndElement costSegmentAndElement = candidate.getCostSegment().withCostElementId(costElementId);
-		final Percent coProductCostDistributionPercent = candidate.getCoProductCostDistributionPercent();
+		// Carry the co-product distribution percent onto the PP_Order_Cost row ONLY for the cost elements
+		// whose costing method does the BOM rollup (AveragePO / AverageInvoice / MovingAverageInvoice) — the
+		// only methods that consume the percent. For any other method (e.g. LastPOPrice, Standard) the co-product
+		// row keeps a null percent, so those methods stay unaffected by this feature.
+		final Percent coProductCostDistributionPercent = getBOMRollupCostElementIds().contains(costElementId)
+				? candidate.getCoProductCostDistributionPercent()
+				: null;
 		final I_C_UOM uom = uomDAO.getById(candidate.getUomId());
 
 		return PPOrderCost.builder()
@@ -380,6 +386,23 @@ final class CreatePPOrderCostsCommand
 				CostingMethod.AverageInvoice,
 				CostingMethod.AveragePO,
 				CostingMethod.MovingAverageInvoice);
+	}
+
+	/** The active cost element ids whose costing method does the BOM rollup — the only methods that consume the
+	 * co-product distribution percent. Memoized; queried once per command. */
+	private ImmutableSet<CostElementId> bomRollupCostElementIds = null;
+
+	private ImmutableSet<CostElementId> getBOMRollupCostElementIds()
+	{
+		ImmutableSet<CostElementId> result = bomRollupCostElementIds;
+		if (result == null)
+		{
+			result = getCostingMethodsWhichRequiredBOMRollup().stream()
+					.flatMap(method -> costElementsRepo.getIdsByCostingMethod(method).stream())
+					.collect(ImmutableSet.toImmutableSet());
+			bomRollupCostElementIds = result;
+		}
+		return result;
 	}
 
 	@Value

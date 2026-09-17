@@ -500,16 +500,18 @@ Feature: Co-product valuation via cost-distribution percent
       | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus | CostCollectorType |
       | coReceiptCostCollectorA4        | ppOrder4               | coProdA4                | -6          | CO        | MixVariance       |
       | coReceiptCostCollectorB4        | ppOrder4               | coProdB4                | -6          | CO        | MixVariance       |
-    And the PP_Cost_Collector identified by coReceiptCostCollectorA4 was rejected at posting with error containing exceeds 100% for product(s)
-    And the PP_Cost_Collector identified by coReceiptCostCollectorB4 was rejected at posting with error containing exceeds 100% for product(s)
+    And the PP_Cost_Collector identified by coReceiptCostCollectorA4 was rejected at posting with error containing überschreitet 100 % für Produkt(e)
+    And the PP_Cost_Collector identified by coReceiptCostCollectorB4 was rejected at posting with error containing überschreitet 100 % für Produkt(e)
 
-    # The guard must NAME the offending products AND the sum - not just the boilerplate above, which would
-    # still pass even if the interpolated sum or product names broke. Assert both actually appear: the
-    # interpolated sum (110%, from 60% + 50% set above) and BOTH offending products' own names
+    # The guard throws a localized AD_Message; the standard test client runs in German (de_DE, the seed base
+    # language), so the message text is German - assert its German boilerplate above. The guard must ALSO NAME
+    # the offending products AND the sum - not just the boilerplate, which would still pass even if the
+    # interpolated sum or product names broke. Assert both actually appear (both language-independent params):
+    # the interpolated sum (110%, from 60% + 50% set above) and BOTH offending products' own names
     # (M_Product_StepDef auto-names an M_Product "<Identifier>_<timestamp>" when no Name/Value column is
     # given, so "coProdA4_" / "coProdB4_" are the deterministic, non-timestamp parts of those names).
-    And the PP_Cost_Collector identified by coReceiptCostCollectorA4 was rejected at posting with error containing sum of 110% exceeds 100%
-    And the PP_Cost_Collector identified by coReceiptCostCollectorA4 was rejected at posting with error containing product(s): coProdA4_
+    And the PP_Cost_Collector identified by coReceiptCostCollectorA4 was rejected at posting with error containing von 110% überschreitet 100 %
+    And the PP_Cost_Collector identified by coReceiptCostCollectorA4 was rejected at posting with error containing Produkt(e): coProdA4_
     And the PP_Cost_Collector identified by coReceiptCostCollectorA4 was rejected at posting with error containing coProdB4_
 
     # No negative finished-good amount was persisted - the guard rejects in PERCENT-space before any
