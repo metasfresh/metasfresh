@@ -29,6 +29,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -270,12 +271,15 @@ public final class PPOrderCosts
 				.reduce(Percent.ZERO, Percent::add);
 		if (totalCoProductDistributionPercent.compareTo(Percent.ONE_HUNDRED) > 0)
 		{
+			// Sort ascending by product name so the message is deterministic; `costs`/`coProductCosts` are
+			// backed by a HashMap and otherwise iterate in an unspecified (JVM-dependent) order.
 			final List<ProductId> offendingProductIds = coProductCosts.stream()
 					.filter(coProductCost -> {
 						final Percent percent = coProductCost.getCoProductCostDistributionPercent();
 						return percent != null && percent.signum() > 0;
 					})
 					.map(PPOrderCost::getProductId)
+					.sorted(Comparator.comparing(Services.get(IProductBL.class)::getProductName))
 					.collect(ImmutableList.toImmutableList());
 			throw new AdempiereException("Co-products' cost distribution percent sum of " + totalCoProductDistributionPercent
 					+ " exceeds 100% for product(s): " + describeProducts(offendingProductIds));
