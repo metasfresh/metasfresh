@@ -433,13 +433,9 @@ public final class PPOrderCosts
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId costElementId)
 	{
-		final PPOrderCost mainProductCost = getMainProductCostOrNull(acctSchemaId, costElementId);
-		if (mainProductCost == null)
-		{
-			return null;
-		}
-
-		return mainProductCost.getResidualCost();
+		return getMainProductCost(acctSchemaId, costElementId)
+				.map(PPOrderCost::getResidualCost)
+				.orElse(null);
 	}
 
 	/**
@@ -460,9 +456,8 @@ public final class PPOrderCosts
 				.orElse(false);
 	}
 
-	/** @return the single main-product cost row for the given schema and cost element, or {@code null}. */
-	@Nullable
-	public PPOrderCost getMainProductCostOrNull(
+	/** @return the single main-product cost row for the given schema and cost element, if any. */
+	public Optional<PPOrderCost> getMainProductCost(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId costElementId)
 	{
@@ -478,7 +473,7 @@ public final class PPOrderCosts
 					+ ", costElement=" + costElementId + " in " + this);
 		}
 
-		return mainProductCosts.isEmpty() ? null : mainProductCosts.get(0);
+		return mainProductCosts.stream().findFirst();
 	}
 
 	/**

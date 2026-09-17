@@ -170,7 +170,7 @@ public class PPOrderCostDifferenceDistributor
 			@NonNull final PPOrderId orderId)
 	{
 		final PPOrderCosts orderCosts = ppOrderCostsService.getByOrderId(orderId);
-		final PPOrderCost mainProductCost = orderCosts.getMainProductCostOrNull(request.getAcctSchemaId(), request.getCostElementId());
+		final PPOrderCost mainProductCost = orderCosts.getMainProductCost(request.getAcctSchemaId(), request.getCostElementId()).orElse(null);
 		if (mainProductCost == null)
 		{
 			// The costing engine explodes the client's material cost elements against the schema being posted, so a
@@ -378,11 +378,11 @@ public class PPOrderCostDifferenceDistributor
 	@VisibleForTesting
 	static CostAmountDetailed computeSplit(
 			@NonNull final CostAmount residual,
-			@NonNull final PPOrderCost mainProductCost,
+			@NonNull final PPOrderCost productCost,
 			@NonNull final CurrentCost currentCost)
 	{
 		final CurrencyId currencyId = currentCost.getCurrencyId();
-		final Quantity manufacturedQty = mainProductCost.getAccumulatedQty();
+		final Quantity manufacturedQty = productCost.getAccumulatedQty();
 		// Negative on-hand cannot capitalize into stock, so the whole residual is period cost (COGS).
 		final Quantity qtyInStock = currentCost.getCurrentQty().toZeroIfNegative().min(manufacturedQty);
 
