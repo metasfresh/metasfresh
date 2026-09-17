@@ -35,7 +35,6 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.methods.CostAmountDetailed;
-import de.metas.costing.methods.PPOrderCostDifferenceDistributor;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocBaseType;
 import de.metas.i18n.ExplainedOptional;
@@ -513,42 +512,47 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	}
 
 	/**
-	 * Posts the WIP residual: DR Product Asset (capitalized) + DR COGS (shipped remainder) / CR WIP, each leg
-	 * flipped when the residual is negative.
-	 * <p>
-	 * The main product's residual is posted from the single-cost-segment {@link AggregatedCostAmount} the collector
-	 * line returns (unchanged). Each co-product's residual is posted as its OWN additional, self-balanced Fact,
-	 * resolved against the co-product's own product accounts (AC8): {@link PPOrderCostDifferenceDistributor}
-	 * persists a {@code CostDetail} row per co-product but deliberately keeps them OUT of that single-segment list
-	 * (mixing segments would break {@code toAggregatedCostAmount}), so they are read back here per product instead.
-	 * The co-product path runs even when the main product's own residual is zero - that case returns no main
-	 * {@code AggregatedCostAmount}, and the co-product legs would otherwise be silently dropped.
+	 * Posts the WIP residual: the main product's residual from the collector line's single-segment
+	 * {@link AggregatedCostAmount}, plus one self-balanced Fact per co-product resolved against its own product
+	 * accounts (AC8).
 	 */
 	private List<Fact> createFacts_CostDifferenceDistribution(final AcctSchema as)
 	{
 		final DocLine_CostCollector docLine = getLine();
-		// Also persists the per-co-product CostDetail rows this method reads back below (or replays them on reversal).
-		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
 
 		final ArrayList<Fact> facts = new ArrayList<>();
+		facts.addAll(createMainProductDifferenceFacts(as, docLine));
+		facts.addAll(createCoProductDifferenceFacts(as, docLine));
+		return facts;
+	}
 
-		if (costResult != null)
+	/**
+	 * The main product's residual: DR Product Asset (capitalized) + DR COGS (shipped remainder) / CR WIP, each
+	 * leg flipped when the residual is negative. Also persists the per-co-product {@code CostDetail} rows that
+	 * {@link #createCoProductDifferenceFacts} reads back (or replays them on reversal), so it must run first.
+	 */
+	private List<Fact> createMainProductDifferenceFacts(
+			@NonNull final AcctSchema as,
+			@NonNull final DocLine_CostCollector docLine)
+	{
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		if (costResult == null)
 		{
-			final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(costResult.getTotalAmountToPost(as));
-			if (!legs.isEmpty())
-			{
-				final Fact fact = new Fact(this, as, PostingType.Actual);
-				for (final CostDifferenceDistributionLeg leg : legs)
-				{
-					addCostDifferenceFactLine(fact, docLine, docLine.getAccount(leg.getAcctType(), as), leg, null);
-				}
-				facts.add(fact);
-			}
+			return ImmutableList.of();
 		}
 
-		facts.addAll(createCoProductDifferenceFacts(as, docLine));
+		final ImmutableList<CostDifferenceDistributionLeg> legs = costDifferenceDistributionLegs(costResult.getTotalAmountToPost(as));
+		if (legs.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
-		return facts;
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		for (final CostDifferenceDistributionLeg leg : legs)
+		{
+			addCostDifferenceFactLine(fact, docLine, docLine.getAccount(leg.getAcctType(), as), leg, null);
+		}
+		return ImmutableList.of(fact);
 	}
 
 	/**
