@@ -52,6 +52,11 @@ function pressKey(key, opts = {}) {
       cancelable: true,
       ...opts,
     });
+    // A real KeyboardEvent is stamped by the browser when it is CREATED. Synthetic events get the
+    // real clock, which ignores this suite's mocked Date.now() - so without this every event would
+    // look as though it arrived in the same instant, and the deliberate inter-scan gaps below
+    // (which model an operator pausing between two scans) would be invisible.
+    Object.defineProperty(event, 'timeStamp', { value: now, configurable: true });
     window.dispatchEvent(event);
   });
 }
