@@ -659,57 +659,6 @@ public class PPOrderCostsTest
 		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(new BigDecimal("450"));
 	}
 
-	/**
-	 * Exercises {@link PPOrderCosts#getBlankCoProductReceiptAmount} as a SUPERSEDED reference formula — it is NOT
-	 * how the shipped handlers value a co-product receipt (they book current-cost × received-qty per receipt and
-	 * let the CC-170 distributor apply the carve once at close; this helper has no production callers). The test
-	 * only pins the formula itself: the helper returns the same amount leg A relieves on post-calculation, i.e.
-	 * the co-product's cost-distribution share of the 450 total inbound costs (450 × 1/6 = 75.0002 at precision 4).
-	 */
-	@Test
-	public void getBlankCoProductReceiptAmount_matchesLegAPostCalculation()
-	{
-		final ProductId mainProductId = createProduct("blocks_main");
-		final ProductId issueProductId = createProduct("input_milk");
-		final ProductId coProductId = createProduct("Randstuecke"); // BLANK distribution percent
-
-		final CostSegmentAndElement coProductSegment = costSegmentAndElement(coProductId);
-		final PPOrderCosts orderCosts = PPOrderCosts.builder()
-				.orderId(ppOrderId)
-				.cost(PPOrderCost.builder()
-						.trxType(PPOrderCostTrxType.MainProduct)
-						.costSegmentAndElement(costSegmentAndElement(mainProductId))
-						.price(CostPrice.zero(currencyId, uomId))
-						.accumulatedQty(Quantity.zero(uom))
-						.build())
-				.cost(PPOrderCost.builder()
-						.trxType(PPOrderCostTrxType.MaterialIssue)
-						.costSegmentAndElement(costSegmentAndElement(issueProductId))
-						.price(CostPrice.zero(currencyId, uomId))
-						.accumulatedAmount(CostAmount.of(450, currencyId))
-						.accumulatedQty(Quantity.zero(uom))
-						.build())
-				.cost(PPOrderCost.builder()
-						.trxType(PPOrderCostTrxType.CoProduct)
-						.costSegmentAndElement(coProductSegment)
-						.price(CostPrice.zero(currencyId, uomId))
-						// the real 1/qty distribution the BOM assigns (Percent.of(1, coQty=6, precision 4))
-						.coProductCostDistributionPercent(Percent.of(BigDecimal.ONE, new BigDecimal("6"), 4))
-						.accumulatedQty(Quantity.of(new BigDecimal("6"), uom))
-						.build())
-				.build();
-
-		orderCosts.updatePostCalculationAmounts(costingPrecision);
-
-		final CostAmount legA_postCalculationAmount = getPostCalculationCostAmt(orderCosts, coProductId);
-		final CostAmount legB_receiptAmount = orderCosts.getBlankCoProductReceiptAmount(coProductSegment, costingPrecision);
-
-		// leg B books exactly what leg A relieved -> co-product residual is 0 -> the order's WIP clears
-		assertThat(legB_receiptAmount).isEqualTo(legA_postCalculationAmount);
-		// and it is the 1/qty share of the 450 total inbound costs (450 x 1/6 = 75.0002 at precision 4)
-		assertThat(legB_receiptAmount.toBigDecimal()).isEqualByComparingTo(new BigDecimal("75.0002"));
-	}
-
 	@Test
 	public void updatePriceForCostSegmentAndElement_setsPrice()
 	{

@@ -85,7 +85,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * AC8/AC9 (D-MULTIRECEIPT landmine): a co-product received across TWO partial receipts must book
  * {@code current-cost x received-qty} on EACH receipt (proportional, mirroring the finished-good receipt path) -
  * NOT the full qty-independent carve share ({@code ShareInbound x percent}) on every single receipt. The old
- * {@code PPOrderCosts#getBlankCoProductReceiptAmount} full-share path over-relieved WIP by
+ * full-share carve path over-relieved WIP by
  * {@code (N - 1) x (ShareInbound x p)} across N partial receipts; the single CC-170 true-up (the cost-difference
  * distributor, covered elsewhere) now carries the carve instead.
  */
