@@ -21,8 +21,8 @@ export const useKeyboardBarcodeReader = ({
   // Use refs so values persist across rerenders but don't trigger state updates
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
-  // Per-scan delivery stats for the barcodeScanned event; all derived from values the flush check
-  // already computes.
+  // Per-scan delivery stats for the barcodeScanned event. Mostly reuse of the flush check's gapMs;
+  // scanMaxProcGapRef is its wall-clock sibling, needed because gapMs is stall-immune.
   const scanStartTimeRef = useRef(0);
   const scanMaxGapRef = useRef(0);
   const scanMaxProcGapRef = useRef(0);
