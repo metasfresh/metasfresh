@@ -151,20 +151,21 @@ public final class PPOrderCosts
 	}
 
 	/**
-	 * Discharges {@code amt} onto the main-product line: the accumulated amount moves by {@code +amt} while
+	 * Discharges {@code amt} onto the given cost line: the accumulated amount moves by {@code +amt} while
 	 * the accumulated qty is left untouched, so the line records value leaving the order without recording a
-	 * further movement of goods.
+	 * further movement of goods. Called for the main-product line and, for a co-product residual, for a
+	 * co-product line.
 	 */
 	public void dischargeOntoMainProduct(
-			@NonNull final PPOrderCost mainProductCost,
+			@NonNull final PPOrderCost targetCost,
 			@NonNull final CostAmount amt,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		// accumulateOutboundCostAmount negates again, so passing -amt moves the accumulated amount by +amt.
 		accumulateOutboundCostAmount(
-				mainProductCost.getCostSegmentAndElement(),
+				targetCost.getCostSegmentAndElement(),
 				amt.negate(),
-				mainProductCost.getAccumulatedQty().toZero(),
+				targetCost.getAccumulatedQty().toZero(),
 				uomConverter);
 	}
 

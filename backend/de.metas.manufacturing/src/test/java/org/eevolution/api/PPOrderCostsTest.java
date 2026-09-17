@@ -141,7 +141,7 @@ public class PPOrderCostsTest
 	 * times the total inbound costs: 450 total inbound costs × 20% = 90 (Randstücke, 6 kg). The manual cost price is not consulted.
 	 */
 	@Test
-	public void testCoProductWithFixedPriceFieldSet_valuedByPercentTimesTotalInboundCosts_notFixedPriceTimesQty()
+	public void testCoProductWithDistributionPercentSet_valuedByPercentTimesTotalInboundCosts_notManualCostPriceTimesQty()
 	{
 		final ProductId mainProductId = createProduct("blocks_main");
 		final ProductId issueProductId = createProduct("input_milk");
@@ -375,7 +375,7 @@ public class PPOrderCostsTest
 	 * price on the product. No throw, no by-product-specific guard.
 	 */
 	@Test
-	public void testByProduct_alwaysZeroed_regardlessOfFixedPriceField()
+	public void testByProduct_alwaysZeroed_regardlessOfDistributionPercent()
 	{
 		final ProductId mainProductId = createProduct("blocks_main");
 		final ProductId issueProductId = createProduct("input_milk");
@@ -415,11 +415,11 @@ public class PPOrderCostsTest
 	 * {@code coProductCostDistributionPercent × total inbound costs} (450 × 20% = 90), main = 360.
 	 */
 	@Test
-	public void testBlankFixedPriceField_percentDistributionFormulaApplies()
+	public void testCoProductWithoutManualCostPrice_percentDistributionFormulaApplies()
 	{
 		final ProductId mainProductId = createProduct("blocks_main");
 		final ProductId issueProductId = createProduct("input_milk");
-		final ProductId coProductId = createProduct("Randstuecke"); // BLANK distribution percent field
+		final ProductId coProductId = createProduct("Randstuecke"); // distribution percent set (20%); no manual cost price
 
 		final PPOrderCosts orderCosts = PPOrderCosts.builder()
 				.orderId(ppOrderId)
