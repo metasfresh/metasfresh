@@ -460,3 +460,153 @@ Feature: EDI_cctop_invoic_v export format
       | EDI_Exp_Desadv_ID.Identifier | OPT.UnderTag  | TagName         | OPT.Value     |
       | e_dA_150                     | C_BPartner_ID | EdiRecipientGLN | 1234567890123 |
       | e_dB_150                     | C_BPartner_ID | EdiRecipientGLN | 1234567890123 |
+
+  # ###############################################################################################################################################
+  # ###############################################################################################################################################
+  # ###############################################################################################################################################
+  # ###############################################################################################################################################
+  # ###############################################################################################################################################
+  # ###############################################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  @Id:S31978_TC1
+  Scenario: S31978_TC1 — Attribute-less ASI on the product-identifier record and on the order line still resolves the buyer's CU identifiers
+  ## Regression for the ASI wildcard-matching bug: an M_Product_ASI_Data record whose own ASI carries
+  ## an attribute (Lot-Nummer) with no value, matched against an order line whose ASI also carries
+  ## that same attribute with no value, must still be treated as a match (both ASI keys resolve to
+  ## NONE). The product itself has no GTIN/UPC, so a lost match ships the DESADV line with empty
+  ## CU identifiers instead of the buyer's ProductNo/GTIN_CU/EAN_CU.
+    Given metasfresh contains M_PricingSystems
+      | Identifier    |
+      | pricingSystem |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | priceList  | pricingSystem      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier       | M_PriceList_ID |
+      | priceListVersion | priceList      |
+
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | priceListVersion       | product      | 10.0     | PCE      | Normal           |
+
+    And metasfresh contains C_BPartners:
+      | Identifier | IsCustomer | M_PricingSystem_ID | GLN           |
+      | buyer      | Y          | pricingSystem      | 1234567890123 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID | DeliveryRule |
+      | buyer         | F            |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier |
+      | buyer         | true                 | 1234567890123         | ediSetting |
+
+    And load EXP_Processor_Type
+      | EXP_Processor_Type_ID.Identifier | Value    |
+      | expProcessorType                 | RabbitMQ |
+    And metasfresh contains Exp_Processor
+      | EXP_Processor_ID.Identifier | Name                      | EXP_Processor_Type_ID.Identifier |
+      | expProcessor                | ediExportAttributelessASI | expProcessorType                 |
+    And metasfresh contains AD_Replication_Strategy
+      | AD_ReplicationStrategy_ID.Identifier | Name                     | EntityType | EXP_Processor_ID.Identifier |
+      | replicationStrategy                  | rabbitMQAttributelessASI | U          | expProcessor                |
+    And update AD_Client
+      | AD_Client_ID.Identifier | AD_ReplicationStrategy_ID.Identifier |
+      | 1000000                 | replicationStrategy                  |
+    And update EXP_ProcessorParameter for the following EXP_Processor
+      | EXP_Processor_ID.Identifier | Value          | ParameterValue            |
+      | expProcessor                | exchangeName   | ediExportAttributelessASI |
+      | expProcessor                | routingKey     | ediExportAttributelessASI |
+      | expProcessor                | isDurableQueue | true                      |
+
+    And metasfresh contains M_AttributeSetInstance with identifier "asiOnProductData":
+    """
+    {
+      "attributeInstances":[
+        { "attributeCode":"Lot-Nummer" }
+      ]
+    }
+    """
+    And metasfresh contains M_AttributeSetInstance with identifier "asiOnOrderLine":
+    """
+    {
+      "attributeInstances":[
+        { "attributeCode":"Lot-Nummer" }
+      ]
+    }
+    """
+
+    # The buyer's identifiers for this product, keyed to an attribute-less ASI (production's shape).
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier     | M_Product_ID.Identifier | C_BPartner_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier | SeqNo | ProductNo  | GTIN          | EAN_CU        |
+      | productAsiData | product                 | buyer                    | asiOnProductData                         | 10    | BUYER-9001 | 4012345678901 | 4012345678902 |
+
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPi       |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | huPiVersion        | huPi       | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType |
+      | huPiItem        | huPiVersion        | 0   | PM       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty |
+      | huPiItemProduct         | huPiItem        | product      | 10  |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | order      | true    | buyer                    | 2021-04-17  | PO_S31978_TC1   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
+      | orderLine  | order                 | product                 | 10         | huPiItemProduct                        | asiOnOrderLine                           |
+
+    When the order identified by order is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule                 | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | shipmentSchedule                 | shipment              |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | desadv                   | buyer                    | order                 |
+
+    And EDI_Desadv is enqueued for export
+      | EDI_Desadv_ID.Identifier |
+      | desadv                   |
+
+    # Wait for U (Enqueued) — matches the sibling "As a user I want to export EDI_Exp_Desadv"
+    # scenario above. Under this Background's default (One-DESADV-Per-ORDERS), the DESADV header's
+    # own status is DERIVED from its linked shipment's status once the shipment reaches D
+    # (DesadvBL.recomputeDesadvStatusFromInOuts falls through to Pending for a not-yet-Sent shipment),
+    # so waiting for the header to reach D here is unsafe — U is the reliable signal.
+    And after not more than 60s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
+      | desadv                   | U                |
+
+    And RabbitMQ receives a EDI_Exp_Desadv
+      | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
+      | expDesadv                    | expProcessor                | routingKey                   |
+
+    # ─── CORE ASSERTION ───────────────────────────────────────────────────────
+    # The buyer's ProductNo/GTIN_CU/EAN_CU must resolve even though both the M_Product_ASI_Data
+    # record's own ASI and the order line's ASI are attribute-less; the product carries no GTIN/UPC
+    # of its own, so a lost match ships these identifiers empty.
+    And the following EDI_Exp_Desadv XML carries the expected elements:
+      | EDI_Exp_Desadv_ID.Identifier | TagName   | OPT.Value     |
+      | expDesadv                    | ProductNo | BUYER-9001    |
+      | expDesadv                    | GTIN_CU   | 4012345678901 |
+      | expDesadv                    | EAN_CU    | 4012345678902 |
