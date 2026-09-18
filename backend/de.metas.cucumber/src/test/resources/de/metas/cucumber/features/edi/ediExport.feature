@@ -620,3 +620,312 @@ Feature: EDI_cctop_invoic_v export format
       | expDesadv                    | ProductNo | BUYER-9001    |
       | expDesadv                    | GTIN_CU   | 4012345678901 |
       | expDesadv                    | EAN_CU    | 4012345678902 |
+
+  # ─── S31978_TC2 — a true wildcard outranks an attribute-less-conditional record ────────────────
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @allure.label.feature:F00353_EDI_DESADV
+  @Id:S31978_TC2
+  Scenario: S31978_TC2 — A wildcard M_Product_ASI_Data record at the lower SeqNo still wins over an attribute-less-conditional record
+  ## Regression for the ASI wildcard-matching fix: a TRUE wildcard (no M_AttributeSetInstance_ID at
+  ## all) and an attribute-less-conditional record (an ASI reference whose ASI carries no attribute
+  ## value) both match any order line, but only the wildcard's own match is unconditional. Placing
+  ## the wildcard at the lower SeqNo must still pick the wildcard, unchanged from before the fix —
+  ## proving the fix did not disturb existing wildcard precedence.
+  ## Overrides the Background's default chain: production runs OneDesadvPerShipment='N', which is
+  ## the EXP_Format 540405 (EDI_Exp_Desadv) chain — the same one S31978_TC1 uses.
+    Given metasfresh is configured for One-DESADV-Per-Shipment
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | pricingSystem |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | priceList  | pricingSystem      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier       | M_PriceList_ID |
+      | priceListVersion | priceList      |
+
+    # No explicit Value/Name: unlike TC1, this scenario never needs to distinguish the product
+    # master's own identifiers from M_Product_ASI_Data — only the two ASI-data records compete.
+    # GTIN/UPC stay empty on purpose — no fallback identifier available.
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | priceListVersion       | product      | 10.0     | PCE      | Normal           |
+
+    And metasfresh contains C_BPartners:
+      | Identifier | IsCustomer | M_PricingSystem_ID | GLN           |
+      | buyer      | Y          | pricingSystem      | 1234567890123 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID | DeliveryRule |
+      | buyer         | F            |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier |
+      | buyer         | true                 | 1234567890123         | ediSetting |
+
+    And load EXP_Processor_Type
+      | EXP_Processor_Type_ID.Identifier | Value    |
+      | expProcessorType                 | RabbitMQ |
+    And metasfresh contains Exp_Processor
+      | EXP_Processor_ID.Identifier | Name                        | EXP_Processor_Type_ID.Identifier |
+      | expProcessor                | ediExportWildcardPrecedence | expProcessorType                 |
+    And metasfresh contains AD_Replication_Strategy
+      | AD_ReplicationStrategy_ID.Identifier | Name                       | EntityType | EXP_Processor_ID.Identifier |
+      | replicationStrategy                  | rabbitMQWildcardPrecedence | U          | expProcessor                |
+    And update AD_Client
+      | AD_Client_ID.Identifier | AD_ReplicationStrategy_ID.Identifier |
+      | 1000000                 | replicationStrategy                  |
+    And update EXP_ProcessorParameter for the following EXP_Processor
+      | EXP_Processor_ID.Identifier | Value          | ParameterValue              |
+      | expProcessor                | exchangeName   | ediExportWildcardPrecedence |
+      | expProcessor                | routingKey     | ediExportWildcardPrecedence |
+      | expProcessor                | isDurableQueue | true                        |
+
+    # The conditional record's own ASI carries an attribute with no value (attribute-less) — a
+    # wildcard match only once matched against an order line, per the fix.
+    And metasfresh contains M_AttributeSetInstance with identifier "asiOnProductData":
+    """
+    {
+      "attributeInstances":[
+        { "attributeCode":"Lot-Nummer" }
+      ]
+    }
+    """
+
+    # wildcardAsiData has NO M_AttributeSetInstance_ID at all (a true wildcard) and the lower SeqNo;
+    # conditionalAsiData references the attribute-less ASI above and sits at the higher SeqNo.
+    # Distinct SeqNos + distinct identifier values so the assertion below can only pass if the
+    # wildcard (not the conditional record, not arbitrary DB order) is the one that won.
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier         | M_Product_ID.Identifier | C_BPartner_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier | SeqNo | ProductNo    | GTIN          | EAN_CU        |
+      | wildcardAsiData    | product                 | buyer                    |                                          | 10    | WILDCARD-001 | 4000000000010 | 4000000000011 |
+      | conditionalAsiData | product                 | buyer                    | asiOnProductData                         | 20    | COND-002     | 4000000000020 | 4000000000021 |
+
+    # A real DESADV describes PACKED goods: a TU packing item wrapped by an LU, so the shipment's
+    # line is picked up by the pack export source rather than falling through to the unpacked view.
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPiLU     |
+      | huPiTU     |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | huPiVersionLU      | huPiLU     | LU          | Y         |
+      | huPiVersionTU      | huPiTU     | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | OPT.Included_HU_PI_ID |
+      | huPiItemLU      | huPiVersionLU      | 1   | HU       | huPiTU                |
+      | huPiItemTU      | huPiVersionTU      | 0   | PM       |                       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty |
+      | huPiItemProduct         | huPiItemTU      | product      | 10  |
+
+    # The order line carries no ASI at all — a real, common case, and the one that lets the
+    # wildcard's unconditional match settle this scenario regardless of the fix.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | order      | true    | buyer                    | 2021-04-17  | PO_S31978_TC2   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | orderLine  | order                 | product                 | 10         | huPiItemProduct                        |
+
+    When the order identified by order is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule                 | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | shipmentSchedule                 | shipment              |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | desadv                   | buyer                    | order                 |
+
+    And EDI_Desadv is enqueued for export
+      | EDI_Desadv_ID.Identifier |
+      | desadv                   |
+
+    # Wait for D (SendingStarted) — same reasoning as S31978_TC1: this scenario's own Given
+    # overrides the Background to OneDesadvPerShipment='N', so recomputeDesadvStatusFromInOuts is
+    # skipped and D is both reachable and stable, and it is the point at which the RabbitMQ queue
+    # is declared (Spring AMQP declares it on the first publish, in sendAMQPMessage()).
+    And after not more than 60s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
+      | desadv                   | D                |
+
+    And RabbitMQ receives a EDI_Exp_Desadv
+      | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
+      | expDesadv                    | expProcessor                | routingKey                   |
+
+    # ─── CORE ASSERTION ───────────────────────────────────────────────────────
+    # The wildcard's identifiers must win because it sits at the lower SeqNo — regardless of the
+    # fix, since a true wildcard (no M_AttributeSetInstance_ID) has always matched unconditionally.
+    And the following EDI_Exp_Desadv XML carries the expected elements:
+      | EDI_Exp_Desadv_ID.Identifier | TagName   | OPT.Value     |
+      | expDesadv                    | ProductNo | WILDCARD-001  |
+      | expDesadv                    | GTIN_CU   | 4000000000010 |
+      | expDesadv                    | EAN_CU    | 4000000000011 |
+
+  # ─── S31978_TC9 — an attribute-less-conditional record at the lower SeqNo displaces the wildcard ─
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @allure.label.feature:F00353_EDI_DESADV
+  @Id:S31978_TC9
+  Scenario: S31978_TC9 — An attribute-less-conditional M_Product_ASI_Data record at the lower SeqNo displaces the wildcard
+  ## Regression for the ASI wildcard-matching fix: before the fix, an attribute-less-conditional
+  ## record (an ASI reference whose ASI carries no attribute value) never matched an order line with
+  ## NO ASI at all, because the old code checked "line has no ASI" before checking "candidate is
+  ## attribute-less". So the wildcard (which always matches) won regardless of SeqNo. After the fix,
+  ## the attribute-less-conditional record is recognised as a wildcard match too, and — sitting at
+  ## the lower SeqNo — it now correctly displaces the true wildcard.
+  ## The order line carries NO attribute values: with real values on the line the conditional record
+  ## already matched before the fix too (proving nothing) — see ProductASIDataRepository.matchesASI.
+  ## Overrides the Background's default chain: production runs OneDesadvPerShipment='N', which is
+  ## the EXP_Format 540405 (EDI_Exp_Desadv) chain — the same one S31978_TC1 uses.
+    Given metasfresh is configured for One-DESADV-Per-Shipment
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | pricingSystem |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | priceList  | pricingSystem      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier       | M_PriceList_ID |
+      | priceListVersion | priceList      |
+
+    # No explicit Value/Name — only the two ASI-data records compete in this scenario.
+    # GTIN/UPC stay empty on purpose — no fallback identifier available.
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product    |
+
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | priceListVersion       | product      | 10.0     | PCE      | Normal           |
+
+    And metasfresh contains C_BPartners:
+      | Identifier | IsCustomer | M_PricingSystem_ID | GLN           |
+      | buyer      | Y          | pricingSystem      | 1234567890123 |
+    And the following c_bpartner is changed
+      | C_BPartner_ID | DeliveryRule |
+      | buyer         | F            |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier |
+      | buyer         | true                 | 1234567890123         | ediSetting |
+
+    And load EXP_Processor_Type
+      | EXP_Processor_Type_ID.Identifier | Value    |
+      | expProcessorType                 | RabbitMQ |
+    And metasfresh contains Exp_Processor
+      | EXP_Processor_ID.Identifier | Name                             | EXP_Processor_Type_ID.Identifier |
+      | expProcessor                | ediExportConditionalDisplacement | expProcessorType                 |
+    And metasfresh contains AD_Replication_Strategy
+      | AD_ReplicationStrategy_ID.Identifier | Name                            | EntityType | EXP_Processor_ID.Identifier |
+      | replicationStrategy                  | rabbitMQConditionalDisplacement | U          | expProcessor                |
+    And update AD_Client
+      | AD_Client_ID.Identifier | AD_ReplicationStrategy_ID.Identifier |
+      | 1000000                 | replicationStrategy                  |
+    And update EXP_ProcessorParameter for the following EXP_Processor
+      | EXP_Processor_ID.Identifier | Value          | ParameterValue                   |
+      | expProcessor                | exchangeName   | ediExportConditionalDisplacement |
+      | expProcessor                | routingKey     | ediExportConditionalDisplacement |
+      | expProcessor                | isDurableQueue | true                             |
+
+    # The conditional record's own ASI carries an attribute with no value (attribute-less).
+    And metasfresh contains M_AttributeSetInstance with identifier "asiOnProductData":
+    """
+    {
+      "attributeInstances":[
+        { "attributeCode":"Lot-Nummer" }
+      ]
+    }
+    """
+
+    # conditionalAsiData references the attribute-less ASI above and sits at the LOWER SeqNo;
+    # wildcardAsiData has NO M_AttributeSetInstance_ID at all (a true wildcard) and the higher
+    # SeqNo. Distinct SeqNos + distinct identifier values so the assertion below can only pass if
+    # the conditional record (not the wildcard, not arbitrary DB order) is the one that won.
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier         | M_Product_ID.Identifier | C_BPartner_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier | SeqNo | ProductNo | GTIN          | EAN_CU        |
+      | conditionalAsiData | product                 | buyer                    | asiOnProductData                         | 10    | COND-101  | 4000000000101 | 4000000000102 |
+      | wildcardAsiData    | product                 | buyer                    |                                          | 20    | WILD-201  | 4000000000201 | 4000000000202 |
+
+    # A real DESADV describes PACKED goods: a TU packing item wrapped by an LU, so the shipment's
+    # line is picked up by the pack export source rather than falling through to the unpacked view.
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID |
+      | huPiLU     |
+      | huPiTU     |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | huPiVersionLU      | huPiLU     | LU          | Y         |
+      | huPiVersionTU      | huPiTU     | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | OPT.Included_HU_PI_ID |
+      | huPiItemLU      | huPiVersionLU      | 1   | HU       | huPiTU                |
+      | huPiItemTU      | huPiVersionTU      | 0   | PM       |                       |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty |
+      | huPiItemProduct         | huPiItemTU      | product      | 10  |
+
+    # The order line carries no ASI at all — no attribute values — which is what forces the
+    # pre-fix code down the "line has no ASI → mismatch" branch for the conditional record.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
+      | order      | true    | buyer                    | 2021-04-17  | PO_S31978_TC9   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | orderLine  | order                 | product                 | 10         | huPiItemProduct                        |
+
+    When the order identified by order is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | orderLine                 | N             |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule                 | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | shipmentSchedule                 | shipment              |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier |
+      | desadv                   | buyer                    | order                 |
+
+    And EDI_Desadv is enqueued for export
+      | EDI_Desadv_ID.Identifier |
+      | desadv                   |
+
+    # Wait for D (SendingStarted) — same reasoning as S31978_TC1: this scenario's own Given
+    # overrides the Background to OneDesadvPerShipment='N', so recomputeDesadvStatusFromInOuts is
+    # skipped and D is both reachable and stable, and it is the point at which the RabbitMQ queue
+    # is declared (Spring AMQP declares it on the first publish, in sendAMQPMessage()).
+    And after not more than 60s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
+      | desadv                   | D                |
+
+    And RabbitMQ receives a EDI_Exp_Desadv
+      | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
+      | expDesadv                    | expProcessor                | routingKey                   |
+
+    # ─── CORE ASSERTION ───────────────────────────────────────────────────────
+    # The conditional record's identifiers must win: it sits at the lower SeqNo, and the fix makes
+    # its attribute-less ASI match the order line's ASI-less line unconditionally.
+    And the following EDI_Exp_Desadv XML carries the expected elements:
+      | EDI_Exp_Desadv_ID.Identifier | TagName   | OPT.Value     |
+      | expDesadv                    | ProductNo | COND-101      |
+      | expDesadv                    | GTIN_CU   | 4000000000101 |
+      | expDesadv                    | EAN_CU    | 4000000000102 |
