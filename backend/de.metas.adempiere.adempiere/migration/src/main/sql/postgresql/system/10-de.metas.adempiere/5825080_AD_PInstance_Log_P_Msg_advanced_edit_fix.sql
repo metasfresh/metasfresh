@@ -24,7 +24,18 @@
 -- opens Advanced Edit - unlike the view/grid controller). Fix, matching the established metasfresh
 -- convention for exactly this split (see e.g. AD_UI_Element 553993/553995, both for
 -- AD_Field_ID=569540 on AD_Tab_ID=540474 - grid-only + advanced-only siblings of the same field):
---   1. Revert 547987 to its pre-5824940 state (grid-only, as it always was).
+--   1. Revert 547987 to its pre-5824940 state ON THIS BRANCH LINE (grid-only, IsDisplayed='N') -
+--      confirmed against modus_operandi_hotfix's own DB state immediately before 5824940 applied.
+--      NOTE for whoever forward-ports this to new_dawn_uat / release / uat lines: those lines ALSO
+--      carry 5803990_sys_gh29216_Process_Revision_Window_Update.sql (backend/de.metas.fresh/
+--      de.metas.fresh.base/.../70-de.metas.fresh/, commit 89c9ddad6fc, not an ancestor of
+--      modus_operandi_hotfix), which separately set 547987.IsDisplayed='Y' - i.e. on those branches
+--      P_Msg was ALSO visible in the plain (non-advanced) single-row form before 5824940, not just
+--      the grid. This fix's revert-to-'N' is correct and self-consistent for modus_operandi_hotfix
+--      (which never had 5803990); forward-porting it changes new_dawn_uat/etc.'s P_Msg single-row
+--      visibility from "always visible" to "Advanced-Edit-only" - a real UX change beyond this
+--      fix's modus_operandi-only scope, flagged for an explicit decision at forward-port time
+--      rather than a silent pass-through.
 --   2. Insert a NEW AD_UI_Element row for the SAME AD_Field_ID=10521 (P_Msg), in the tab's only
 --      AD_UI_ElementGroup (541065), advanced-only. WidgetSize='XXL' + IsMultiLine='N' matches the
 --      only other P_Msg AD_UI_Element in the system (578392, window 541040 "Externes System Log")
