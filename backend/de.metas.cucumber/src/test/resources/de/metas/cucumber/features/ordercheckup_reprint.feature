@@ -350,3 +350,46 @@ Feature: Bestellkontrolle reprint after reactivate
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
       | WH           | warehouse      | plant       | false    |
       | PL           |                | plant       | false    |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC9
+  Scenario: Reprint not set - a line that only becomes plannable after the reactivate gets its own Bestellkontrolle
+    Given metasfresh contains M_Products:
+      | Identifier       |
+      | unplannedProduct |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID     | PriceStd | C_UOM_ID |
+      | priceListVersion       | unplannedProduct | 10.0     | PCE      |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID     | QtyEntered |
+      | orderLine  | order      | unplannedProduct | 5          |
+    And the order identified by order is completed
+
+    # The product has no manufacturing planning, so its line yields no warehouse report -- the plant report
+    # is built anyway, and its existence is what used to stop the warehouse report from ever being built.
+    And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | PP_Plant_ID | IsActive | Processed |
+      | PL           | plant       | true     | true      |
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 1                |
+
+    When the order identified by order is reactivated
+    And metasfresh contains PP_Product_Plannings
+      | M_Product_ID     | M_Warehouse_ID | S_Resource_ID |
+      | unplannedProduct | warehouse      | plant         |
+    And the order identified by order is completed
+
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | Processed |
+      | PL           |                | plant       | true     | true      |
+      | WH           | warehouse      | plant       | true     | true      |
+    # Exactly one more work package: the warehouse report is new and enqueues, the plant report only came back.
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 2                |

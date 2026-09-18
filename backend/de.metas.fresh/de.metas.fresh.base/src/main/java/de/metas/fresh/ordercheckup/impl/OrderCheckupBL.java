@@ -61,7 +61,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -109,9 +109,20 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		// Void all previous reports, because we will generate them again.
 		voidReports(order);
 
+		createReportBuilders(order).values().forEach(OrderCheckupBuilder::build);
+	}
+
+	/**
+	 * The reports the order's current lines call for, ready to be built. Nothing is written yet, so a caller may
+	 * build only the ones it wants.
+	 */
+	private Map<OrderCheckupReportIdentity, OrderCheckupBuilder> createReportBuilders(@NonNull final I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final Map<OrderCheckupReportIdentity, OrderCheckupBuilder> reportBuilders = new LinkedHashMap<>();
+
 		//
 		// Iterate all order lines and add those lines to corresponding "per workflow" reports.
-		final Map<OrderCheckupReportIdentity, OrderCheckupBuilder> reportBuilders = new HashMap<>();
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
@@ -142,7 +153,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			{
 				final UserId responsibleUserId = routing != null ? routing.getUserInChargeId() : null;
 				final OrderCheckupReportIdentity reportIdentity = OrderCheckupReportIdentity.of(
-						OrderId.ofRepoId(order.getC_Order_ID()),
+						orderId,
 						OrderCheckupDocumentType.Warehouse,
 						responsibleUserId);
 				OrderCheckupBuilder reportBuilder = reportBuilders.get(reportIdentity);
@@ -159,12 +170,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 				}
 				reportBuilder.addOrderLine(orderLine);
 			}
-		}
-		//
-		// Iterate all created report builders and actually build them
-		for (final OrderCheckupBuilder reportBuilder : reportBuilders.values())
-		{
-			reportBuilder.build();
 		}
 
 		//
@@ -208,9 +213,13 @@ public class OrderCheckupBL implements IOrderCheckupBL
 					}
 					reportBuilder.addOrderLine(orderLine);
 				}
-				reportBuilder.build();
+				reportBuilders.put(
+						OrderCheckupReportIdentity.of(orderId, OrderCheckupDocumentType.Plant, responsibleUserId),
+						reportBuilder);
 			}
 		}
+
+		return reportBuilders;
 	}
 
 	private Optional<ProductPlanning> getMfgProductPlanning(final I_C_OrderLine orderLine)
@@ -285,26 +294,35 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@Override
 	public void generateReportsOnCompleteIfNeeded(@NonNull final I_C_Order order)
 	{
-		if (!order.isReprintOrderCheckup())
+		if (order.isReprintOrderCheckup())
 		{
-			final List<I_C_Order_MFGWarehouse_Report> reportsToReactivate = orderCheckupDAO.retrieveNewestReportPerIdentity(order);
-			if (!reportsToReactivate.isEmpty())
+			generateReportsIfEligible(order);
+			return;
+		}
+
+		if (!isEligibleForReporting(order))
+		{
+			return;
+		}
+
+		final Map<OrderCheckupReportIdentity, I_C_Order_MFGWarehouse_Report> existingReports = orderCheckupDAO.retrieveNewestReportPerIdentity(order);
+
+		createReportBuilders(order).forEach((reportIdentity, reportBuilder) -> {
+			final I_C_Order_MFGWarehouse_Report existingReport = existingReports.get(reportIdentity);
+			if (existingReport == null)
+			{
+				reportBuilder.build();
+			}
+			else
 			{
 				// Reactivating leaves Processed alone, and the doc-outbound print trigger fires on Processed flipping
 				// false->true -- which is why the sheets already in the users' hands stay valid and nothing is printed.
-				for (final I_C_Order_MFGWarehouse_Report report : reportsToReactivate)
-				{
-					report.setIsActive(true);
-					orderCheckupDAO.save(report);
-				}
-
-				logger.debug("C_Order_ID {} has IsReprintOrderCheckup='N'; reactivated {} report(s) instead of generating.",
-						order.getC_Order_ID(), reportsToReactivate.size());
-				return;
+				existingReport.setIsActive(true);
+				orderCheckupDAO.save(existingReport);
 			}
-		}
+		});
 
-		generateReportsIfEligible(order);
+		// Reports whose identity the order no longer calls for stay inactive.
 	}
 
 	@Override

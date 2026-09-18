@@ -28,6 +28,7 @@ import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IOrderCheckupDAO extends ISingletonService
 {
@@ -42,16 +43,16 @@ public interface IOrderCheckupDAO extends ISingletonService
 	List<I_C_Order_MFGWarehouse_ReportLine> retrieveAllReportLines(I_C_Order_MFGWarehouse_Report report);
 
 	/**
-	 * Retrieves the report (active or not) with the highest {@code C_Order_MFGWarehouse_Report_ID} per
-	 * {@link OrderCheckupReportIdentity}. The reports of one generation run are written together, so that is the
-	 * record the latest run produced for that identity.
+	 * The order's reports (active or not), keyed by {@link OrderCheckupReportIdentity}, keeping the one with the
+	 * highest {@code C_Order_MFGWarehouse_Report_ID} per identity. The reports of one generation run are written
+	 * together, so that is the record the latest run produced for that identity.
 	 * <p>
-	 * Limitation: when a later run produced fewer identities than an earlier one -- which takes the set of users in
-	 * charge changing between two generations -- the earlier run's now-orphaned identity is returned alongside the
-	 * later run's records, so reactivating this set brings a stale report back. Telling the two runs apart would
-	 * take recording which records were written together.
+	 * Limitation: an identity the latest run no longer produced -- which takes the set of users in charge changing
+	 * between two generations -- is still in the result, carrying the older run's record. A caller reactivating
+	 * everything it finds here therefore brings a stale report back. Telling the two runs apart would take
+	 * recording which records were written together.
 	 */
-	List<I_C_Order_MFGWarehouse_Report> retrieveNewestReportPerIdentity(I_C_Order order);
+	Map<OrderCheckupReportIdentity, I_C_Order_MFGWarehouse_Report> retrieveNewestReportPerIdentity(I_C_Order order);
 
 	void save(I_C_Order_MFGWarehouse_Report report);
 }
