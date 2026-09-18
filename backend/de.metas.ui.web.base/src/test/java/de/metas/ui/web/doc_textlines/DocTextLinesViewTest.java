@@ -670,4 +670,48 @@ class DocTextLinesViewTest
 					.hasMessageContaining(DocTextLinesRow.FIELD_TextLine);
 		}
 	}
+
+	@Nested
+	class lineDisplay
+	{
+		/**
+		 * A text row's real position is internal arithmetic -- a midpoint such as 15 or 10.5, or a large
+		 * negative head offset for a whole-document line whose run is absent from the document. It must not
+		 * be shown to the user, while {@link DocTextLinesRow#getLine()} must keep carrying it, because the
+		 * move/insert arithmetic, the midpoint computation and the reload de-duplication all read it.
+		 */
+		@Test
+		void textRow_showsNoPosition_butKeepsItForTheArithmetic()
+		{
+			createTextLine("10.5", TextLineScope.Following, "some text");
+
+			final DocTextLinesRow row = rowsOf(loadView()).stream()
+					.filter(r -> !r.isArticleLine())
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("expected a text row"));
+
+			assertThat(row.getLineDisplay())
+					.as("a text row's position is internal and must not be rendered")
+					.isNull();
+			assertThat(row.getLine())
+					.as("...while the real position is still carried, because the arithmetic reads it")
+					.isEqualByComparingTo(new BigDecimal("10.5"));
+		}
+
+		@Test
+		void articleRow_showsItsOwnLineNumber()
+		{
+			createArticleLine(20);
+
+			final DocTextLinesRow row = rowsOf(loadView()).stream()
+					.filter(DocTextLinesRow::isArticleLine)
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("expected an article row"));
+
+			assertThat(row.getLineDisplay())
+					.as("an article row shows its own line number, which is what the column is for")
+					.isEqualByComparingTo(row.getLine());
+		}
+	}
+
 }
