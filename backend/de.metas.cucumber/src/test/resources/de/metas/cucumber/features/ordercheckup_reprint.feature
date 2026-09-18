@@ -262,3 +262,152 @@ Feature: Bestellkontrolle reprint after reactivate
     And C_Order_MFGWarehouse_Report doc-outbound work package count is:
       | C_Order_ID | WorkPackageCount |
       | order      | 4                |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC4
+  Scenario: Flag not set - repeated reactivate/complete cycles keep the whole original record set active
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+    And the order identified by order is completed
+
+    When the order identified by order is reactivated
+    And the order identified by order is completed
+
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
+
+    When the order identified by order is reactivated
+    And the order identified by order is completed
+
+    # Two reactivate/complete cycles, flag never set: the same original generation keeps coming back whole
+    # (a warehouse AND a plant record, both active) -- a naive "exactly one active record" assertion would
+    # wrongly pass a state missing one of the two.
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC5
+  Scenario: Flag not set - voiding the order still deactivates the Bestellkontrolle
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+    And the order identified by order is completed
+    And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
+
+    When the order identified by order is voided
+
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | false    |
+      | PL           |                | plant       | false    |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC6
+  Scenario: Flag not set - restoring a previous Bestellkontrolle enqueues no new print
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+    And the order identified by order is completed
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 2                |
+
+    When the order identified by order is reactivated
+    And the order identified by order is completed
+
+    # Same generation restored, not rebuilt -- the work package count is unchanged from the first
+    # completion, proving nothing was (re-)enqueued for the restored records.
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 2                |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC7
+  Scenario: Flag not set - the manual regeneration process still generates and prints a fresh Bestellkontrolle
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+    And the order identified by order is completed
+    And the order identified by order is reactivated
+    And the order identified by order is completed
+    And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
+      | WH           | warehouse      | plant       | 1                      | true     |
+      | PL           |                | plant       | 1                      | true     |
+
+    # The manual regeneration process (AC11): runs the unconditional rebuild regardless of the flag, unlike
+    # the completion path which restored the existing generation above instead of rebuilding.
+    When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run for the record identified by 'order'
+
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
+      | WH           | warehouse      | plant       | 1                      | false    |
+      | PL           |                | plant       | 1                      | false    |
+      | WH           | warehouse      | plant       | 2                      | true     |
+      | PL           |                | plant       | 2                      | true     |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | freshWhRpt | order      | WH           | warehouse      | plant       | true     |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive |
+      | freshPlRpt | order      | PL           | plant       | true     |
+    And C_Order_MFGWarehouse_Report doc-outbound enqueue status is:
+      | C_Order_MFGWarehouse_Report_ID | IsEnqueued |
+      | freshWhRpt                     | true       |
+      | freshPlRpt                     | true       |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC8
+  Scenario: Flag not set - reverse-correcting the order still deactivates the Bestellkontrolle
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+    And the order identified by order is completed
+    And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
+
+    When the order identified by order is reversed
+
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | false    |
+      | PL           |                | plant       | false    |

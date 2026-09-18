@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.process;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -115,10 +116,43 @@ public class AD_Process_Run_StepDef
 		runProcess(processValue, tableName, tableName + "_ID IN (" + recordIdsCSV + ")");
 	}
 
+	/**
+	 * Runs the {@code AD_Process} identified by its {@code Value} over exactly one record, the way a window's
+	 * single-record process action does it -- i.e. {@code JavaProcess#getRecord(Class)} resolves the given record
+	 * directly, unlike {@link #run_ad_process_on_selection}'s where-clause selection (which a process reading its
+	 * target via {@code getRecord(...)} cannot see: it would fail with {@code @NoSelection@}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run for the record identified by 'order'
+	 * </pre>
+	 *
+	 * @param processValue the {@code AD_Process.Value}
+	 * @param identifier identifier of the single record the process runs against
+	 */
+	@When("the AD_Process with value {string} is run for the record identified by {string}")
+	public void run_ad_process_on_record(
+			@NonNull final String processValue,
+			@NonNull final String identifier)
+	{
+		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(identifier));
+		runProcess(processValue, null, null, recordRef);
+	}
+
 	private void runProcess(
 			@NonNull final String processValue,
 			@Nullable final String tableName,
 			@Nullable final String whereClause)
+	{
+		runProcess(processValue, tableName, whereClause, null);
+	}
+
+	private void runProcess(
+			@NonNull final String processValue,
+			@Nullable final String tableName,
+			@Nullable final String whereClause,
+			@Nullable final TableRecordReference recordRef)
 	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(processValue);
 		assertThat(processId).as("AD_Process with Value=%s must exist", processValue).isNotNull();
@@ -143,6 +177,11 @@ public class AD_Process_Run_StepDef
 		if (tableName != null)
 		{
 			processInfo.setTableName(tableName).setWhereClause(whereClause);
+		}
+
+		if (recordRef != null)
+		{
+			processInfo.setRecord(recordRef);
 		}
 
 		processInfo.buildAndPrepareExecution()
