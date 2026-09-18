@@ -31,6 +31,7 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_Doc_TextLine;
 
 import java.util.List;
 
@@ -55,6 +56,10 @@ public class DocTextLinesViewFactory implements IViewFactory
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final DocTextLineRepository docTextLineRepository;
 	private final LookupDataSource productsLookup;
+	/** Backs the scope column's dropdown -- see {@link DocTextLinesView#getFieldDropdown}. Built here, once per
+	 * factory, for the same reason {@link #productsLookup} is: a {@link LookupDataSource} is cached per
+	 * descriptor and is not something a view should resolve per request. */
+	private final LookupDataSource textLineScopeLookup;
 
 	public DocTextLinesViewFactory(
 			@NonNull final DocTextLineRepository docTextLineRepository,
@@ -62,6 +67,7 @@ public class DocTextLinesViewFactory implements IViewFactory
 	{
 		this.docTextLineRepository = docTextLineRepository;
 		this.productsLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
+		this.textLineScopeLookup = lookupDataSourceFactory.listByAD_Reference_Value_ID(X_C_Doc_TextLine.TEXTLINESCOPE_AD_Reference_ID);
 	}
 
 	/** Called by {@link WEBUI_Order_DocTextLines_Launcher} to build its {@link CreateViewRequest} from the order's {@link TableRecordReference}. */
@@ -109,6 +115,7 @@ public class DocTextLinesViewFactory implements IViewFactory
 				.viewId(viewId)
 				.rows(rows)
 				.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+				.textLineScopeLookup(textLineScopeLookup)
 				.processes(getRelatedProcessDescriptors())
 				.build();
 	}

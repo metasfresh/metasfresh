@@ -9,9 +9,13 @@ import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Evaluatees;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -21,7 +25,9 @@ import java.util.List;
  * orientation/positioning only; text rows are inline-editable via {@link IEditableView}. Implementing
  * {@link IEditableView} is required here because {@code ViewRowEditRestController} casts the view via
  * {@link IEditableView#asEditableView}, even though {@code patchViewRow} is already implemented concretely on
- * {@link AbstractCustomView}. Quick actions (insert-above/delete/move) are wired on top of this separately.
+ * {@link AbstractCustomView}; {@link #getFieldDropdown} has no such concrete implementation and must be
+ * provided here, because the scope column is a list widget whose values the frontend asks this view for.
+ * Quick actions (insert-above/delete/move) are wired on top of this separately.
  */
 public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> implements IEditableView
 {
@@ -36,17 +42,46 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 
 	private final ImmutableList<RelatedProcessDescriptor> processes;
 
+	/** The {@code TextLineScope} reference list, built once by {@link DocTextLinesViewFactory} -- see {@link #getFieldDropdown}. */
+	@NonNull
+	private final LookupDataSource textLineScopeLookup;
+
 	@Builder
 	private DocTextLinesView(
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
 			@NonNull final DocTextLinesRows rows,
 			@NonNull final DocTextLineDocumentRef documentRef,
+			@NonNull final LookupDataSource textLineScopeLookup,
 			@Nullable final List<RelatedProcessDescriptor> processes)
 	{
 		super(viewId, description, rows, NullDocumentFilterDescriptorsProvider.instance);
 		this.documentRef = documentRef;
+		this.textLineScopeLookup = textLineScopeLookup;
 		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
+	}
+
+	/**
+	 * Supplies the values the frontend offers when the user opens a text row's scope cell.
+	 * <p>
+	 * The list is short and fixed (it is a reference list, not a searchable table), so it is returned whole,
+	 * the same way {@code PricingConditionsRowLookups} serves its own list-backed columns. The row is not
+	 * consulted: which values exist does not depend on which row is being edited -- an article row never
+	 * reaches here, since its scope cell is rendered {@link de.metas.ui.web.window.descriptor.ViewEditorRenderMode#NEVER}.
+	 * <p>
+	 * There is deliberately no {@code getFieldTypeahead} counterpart: a {@code List} widget only ever requests
+	 * {@code /dropdown} ({@code frontend/src/components/widget/List/List.js}); {@code /typeahead} is requested
+	 * by the {@code Lookup} widget ({@code RawLookup.js}), which this view has no editable column of.
+	 */
+	@Override
+	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
+	{
+		if (!DocTextLinesRow.FIELD_TextLineScope.equals(fieldName))
+		{
+			throw new AdempiereException("Field " + fieldName + " does not exist or it's not a lookup field");
+		}
+
+		return textLineScopeLookup.findEntities(Evaluatees.empty()).getValues();
 	}
 
 	@Override
