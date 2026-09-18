@@ -25,6 +25,7 @@ package de.metas.shipping.api;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
+import de.metas.inout.InOutId;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -71,4 +72,17 @@ public interface IShipperTransportationDAO extends ISingletonService
 	Collection<I_M_ShipperTransportation> getByQuery(@NonNull ShipperTransportationQuery query);
 
 	boolean anyMatch(@NonNull ShipperTransportationQuery query);
+
+	/**
+	 * @return {@code true} if there is at least one active {@link I_M_ShippingPackage} still linking
+	 * 		given {@code inOutId} to given {@code shipperTransportationId}.
+	 */
+	boolean hasActiveShippingPackage(@NonNull InOutId inOutId, @NonNull ShipperTransportationId shipperTransportationId);
+
+	/**
+	 * Clears the {@code M_ShipperTransportation_ID} of the given shipment, but only if it still points to
+	 * {@code expectedCurrentValue} — i.e. it was not concurrently relinked to (or already cleared from)
+	 * something else in the meantime. No-op otherwise.
+	 */
+	void clearShipperTransportationIdIfMatches(@NonNull InOutId inOutId, @NonNull ShipperTransportationId expectedCurrentValue);
 }
