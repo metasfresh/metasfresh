@@ -293,9 +293,9 @@ Feature: Bestellkontrolle reprint after reactivate
 
     # Flag stays unset throughout: the completion restores generation 2 (the most recent) rather than
     # generation 1 or a fresh rebuild. Pinning OrderCheckupGeneration here is what actually
-    # distinguishes "restore the most recent generation" from "restore everything" / "restore
-    # generation 1" / "restore max(ID)" / "restore max(Created)" -- generation 1 must stay
-    # deactivated while generation 2 comes back active.
+    # distinguishes "restore the most recent generation" from "restore everything" and from
+    # "restore generation 1" -- generation 1 must stay deactivated while generation 2 comes back
+    # active.
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
       | WH           | warehouse      | plant       | 1                      | false    |
