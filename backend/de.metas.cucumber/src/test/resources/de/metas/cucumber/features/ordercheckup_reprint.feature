@@ -159,3 +159,44 @@ Feature: Bestellkontrolle reprint after reactivate
       | newWhRpt   | orderLineB     |
       | newPlRpt   | orderLine      |
       | newPlRpt   | orderLineB     |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  # Generation-mechanics scenario, not one of the REQUIREMENTS TC1-TC10 table entries -- next free TC number.
+  @Id:S30709_TC11
+  Scenario: Two successive completions stamp consecutive generation numbers on every report
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+
+    When the order identified by order is completed
+
+    Then C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | whGen1     | order      | WH           | warehouse      | plant       | true     | 1                      |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | plGen1     | order      | PL           | plant       | true     | 1                      |
+
+    When the order identified by order is reactivated
+    And the order identified by order is completed
+
+    Then C_Order_MFGWarehouse_Report active and inactive counts are:
+      | C_Order_ID | ActiveCount | InactiveCount |
+      | order      | 2           | 2             |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | whGen2     | order      | WH           | warehouse      | plant       | true     | 2                      |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | plGen2     | order      | PL           | plant       | true     | 2                      |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | whGen1Void | order      | WH           | warehouse      | plant       | false    | 1                      |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | plGen1Void | order      | PL           | plant       | false    | 1                      |

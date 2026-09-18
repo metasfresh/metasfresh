@@ -59,6 +59,7 @@ public class OrderCheckupBuilder
 	private WarehouseId _warehouseId;
 	private ResourceId _plantId;
 	private UserId _reponsibleUserId;
+	private Integer _generationNo;
 	private final List<I_C_OrderLine> _orderLines = new ArrayList<>();
 
 	private OrderCheckupBuilder()
@@ -93,6 +94,7 @@ public class OrderCheckupBuilder
 		report.setM_Warehouse_ID(WarehouseId.toRepoId(getWarehouseId()));
 		report.setPP_Plant_ID(ResourceId.toRepoId(getPlantId()));
 		report.setAD_User_Responsible_ID(UserId.toRepoId(getReponsibleUserId()));
+		report.setOrderCheckupGeneration(getGenerationNo());
 		report.setProcessed(false); // we will set it to true when we are done with the lines
 		InterfaceWrapperHelper.save(report);
 
@@ -199,5 +201,22 @@ public class OrderCheckupBuilder
 	{
 		Check.assumeNotEmpty(_documentType, "documentType not empty");
 		return _documentType;
+	}
+
+	/**
+	 * Sets the generation number to stamp on the report built by this builder. Computed once per
+	 * {@code generateReportsIfEligible} run (see {@code OrderCheckupBL}) and passed unchanged into every builder of
+	 * that run, so all reports of one run -- warehouse and plant alike -- share the same generation.
+	 */
+	public OrderCheckupBuilder setGenerationNo(final int generationNo)
+	{
+		this._generationNo = generationNo;
+		return this;
+	}
+
+	private int getGenerationNo()
+	{
+		Check.assumeNotNull(_generationNo, "_generationNo not null");
+		return _generationNo;
 	}
 }

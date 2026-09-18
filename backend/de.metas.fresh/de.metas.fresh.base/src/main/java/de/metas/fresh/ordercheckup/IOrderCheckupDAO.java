@@ -24,6 +24,7 @@ package de.metas.fresh.ordercheckup;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
+import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 
@@ -40,4 +41,12 @@ public interface IOrderCheckupDAO extends ISingletonService
 	 * Retrieves all (active or not) report lines for given report.
 	 */
 	List<I_C_Order_MFGWarehouse_ReportLine> retrieveAllReportLines(I_C_Order_MFGWarehouse_Report report);
+
+	/**
+	 * Computes the generation number to stamp on every {@code C_Order_MFGWarehouse_Report} created by the next
+	 * {@code generateReportsIfEligible} run for the given order: one past the highest generation ever stamped on
+	 * any report of that order (active or not). Reports that predate the {@code OrderCheckupGeneration} column
+	 * have no generation (SQL {@code NULL}) and are ignored, so the first run after this change starts at 1.
+	 */
+	int retrieveNextGenerationNo(OrderId orderId);
 }

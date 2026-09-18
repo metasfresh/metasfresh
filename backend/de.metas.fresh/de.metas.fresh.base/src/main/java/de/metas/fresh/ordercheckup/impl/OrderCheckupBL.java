@@ -40,6 +40,7 @@ import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ProductId;
@@ -110,6 +111,14 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		voidReports(order);
 
 		//
+		// Compute, once for this whole run, the generation number to stamp on every report it creates -- warehouse
+		// and plant alike -- so the reports of one generation form an explicit, deterministic set. "max(Created)"
+		// would not do: Created is stamped from wall-clock per record, and the plant report is created after the
+		// warehouse reports, so it would restore only the plant report of the most recent generation.
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final int generationNo = orderCheckupDAO.retrieveNextGenerationNo(orderId);
+
+		//
 		// Iterate all order lines and add those lines to corresponding "per workflow" reports.
 		final Map<ArrayKey, OrderCheckupBuilder> reportBuilders = new HashMap<>();
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
@@ -152,7 +161,8 @@ public class OrderCheckupBL implements IOrderCheckupBL
 							.setDocumentType(documentType)
 							.setWarehouseId(warehouseId)
 							.setPlantId(plantId)
-							.setReponsibleUserId(responsibleUserId);
+							.setReponsibleUserId(responsibleUserId)
+							.setGenerationNo(generationNo);
 					reportBuilders.put(reportBuilderKey, reportBuilder);
 				}
 				reportBuilder.addOrderLine(orderLine);
@@ -196,7 +206,8 @@ public class OrderCheckupBL implements IOrderCheckupBL
 						.setDocumentType(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant)
 						.setWarehouseId(null) // no warehouse because we are aggregating on plant level
 						.setPlantId(plantId)
-						.setReponsibleUserId(responsibleUserId);
+						.setReponsibleUserId(responsibleUserId)
+						.setGenerationNo(generationNo);
 				for (final I_C_OrderLine orderLine : orderLines)
 				{
 					// Don't add the packing materials

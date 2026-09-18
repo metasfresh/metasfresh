@@ -25,9 +25,12 @@ package de.metas.fresh.ordercheckup.impl;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.IQuery;
 
 import java.util.List;
 
@@ -63,4 +66,21 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 				.list(I_C_Order_MFGWarehouse_ReportLine.class);
 	}
 
+	/**
+	 * Relies on the caller reading and writing within the document action's own transaction (as
+	 * {@code generateReportsIfEligible} does) to avoid two concurrent completions of the same order computing the
+	 * same "next" generation; not safe to call outside that context.
+	 */
+	@Override
+	public int retrieveNextGenerationNo(final OrderId orderId)
+	{
+		final Integer maxGeneration = queryBL
+				.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class)
+				// no addOnlyActiveRecordsFilter() -- the generation is a running counter over all reports of the order, active or not
+				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_C_Order_ID, orderId)
+				.create()
+				.aggregate(I_C_Order_MFGWarehouse_Report.COLUMNNAME_OrderCheckupGeneration, IQuery.Aggregate.MAX, Integer.class);
+
+		return CoalesceUtil.coalesce(maxGeneration, 0) + 1;
+	}
 }
