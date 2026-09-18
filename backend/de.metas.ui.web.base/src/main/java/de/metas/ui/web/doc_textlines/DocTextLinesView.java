@@ -62,12 +62,7 @@ public final class DocTextLinesView extends AbstractCustomView<DocTextLinesRow> 
 	}
 
 	/**
-	 * Supplies the values the frontend offers when the user opens a text row's scope cell. The scope column is
-	 * declared {@code editor = ViewEditorRenderMode.ALWAYS}, so {@code List/List.js} issues a
-	 * {@code .../edit/textLineScope/dropdown} GET the moment that cell is opened, and
-	 * {@code ViewRowEditRestController} routes it here -- without this override the column is not editable at
-	 * all, because {@link IEditableView}'s default answers every such request with
-	 * {@link UnsupportedOperationException} (HTTP 500).
+	 * Supplies the values the frontend offers when the user opens a text row's scope cell.
 	 * <p>
 	 * The list is short and fixed (it is a reference list, not a searchable table), so it is returned whole,
 	 * the same way {@code PricingConditionsRowLookups} serves its own list-backed columns. The row is not
