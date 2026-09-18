@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.9487171000000079"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\hotfix.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -25,6 +25,8 @@
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal"/>
+	<parameter name="C_BPartner_SalesRep_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT * FROM report.umsatzliste_bpartner_report(
 	$P{Base_Period_Start},
@@ -38,32 +40,115 @@
 	$P{M_Product_Category_ID},
 	$P{M_AttributeSetInstance_ID},
 	$P{AD_Org_ID},
-	$P{ad_language}
+	$P{ad_language},
+	$P{C_BP_Group_ID},
+	$P{C_BPartner_SalesRep_ID}
 )]]>
 	</queryString>
-	<field name="bp_name" class="java.lang.String"/>
-	<field name="pc_name" class="java.lang.String"/>
-	<field name="p_name" class="java.lang.String"/>
-	<field name="sameperiodsum" class="java.math.BigDecimal"/>
-	<field name="compperiodsum" class="java.math.BigDecimal"/>
-	<field name="sameperiodqtysum" class="java.math.BigDecimal"/>
-	<field name="compperiodqtysum" class="java.math.BigDecimal"/>
-	<field name="perioddifference" class="java.math.BigDecimal"/>
-	<field name="periodqtydifference" class="java.math.BigDecimal"/>
-	<field name="perioddiffpercentage" class="java.math.BigDecimal"/>
-	<field name="periodqtydiffpercentage" class="java.math.BigDecimal"/>
-	<field name="base_period_start" class="java.lang.String"/>
-	<field name="base_period_end" class="java.lang.String"/>
-	<field name="comp_period_start" class="java.lang.String"/>
-	<field name="comp_period_end" class="java.lang.String"/>
-	<field name="param_bp" class="java.lang.String"/>
-	<field name="param_activity" class="java.lang.String"/>
-	<field name="param_product" class="java.lang.String"/>
-	<field name="param_product_category" class="java.lang.String"/>
-	<field name="param_attributes" class="java.lang.String"/>
-	<field name="currency" class="java.lang.String"/>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="unionorder" class="java.lang.Integer"/>
+	<field name="bp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bp_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+	</field>
+	<field name="pc_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="pc_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="pc_name"/>
+	</field>
+	<field name="p_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="p_name"/>
+	</field>
+	<field name="sameperiodsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sameperiodsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="sameperiodsum"/>
+	</field>
+	<field name="compperiodsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="compperiodsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="compperiodsum"/>
+	</field>
+	<field name="sameperiodqtysum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sameperiodqtysum"/>
+		<property name="com.jaspersoft.studio.field.label" value="sameperiodqtysum"/>
+	</field>
+	<field name="compperiodqtysum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="compperiodqtysum"/>
+		<property name="com.jaspersoft.studio.field.label" value="compperiodqtysum"/>
+	</field>
+	<field name="perioddifference" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="perioddifference"/>
+		<property name="com.jaspersoft.studio.field.label" value="perioddifference"/>
+	</field>
+	<field name="periodqtydifference" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="periodqtydifference"/>
+		<property name="com.jaspersoft.studio.field.label" value="periodqtydifference"/>
+	</field>
+	<field name="perioddiffpercentage" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="perioddiffpercentage"/>
+		<property name="com.jaspersoft.studio.field.label" value="perioddiffpercentage"/>
+	</field>
+	<field name="periodqtydiffpercentage" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="periodqtydiffpercentage"/>
+		<property name="com.jaspersoft.studio.field.label" value="periodqtydiffpercentage"/>
+	</field>
+	<field name="base_period_start" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="base_period_start"/>
+		<property name="com.jaspersoft.studio.field.label" value="base_period_start"/>
+	</field>
+	<field name="base_period_end" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="base_period_end"/>
+		<property name="com.jaspersoft.studio.field.label" value="base_period_end"/>
+	</field>
+	<field name="comp_period_start" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="comp_period_start"/>
+		<property name="com.jaspersoft.studio.field.label" value="comp_period_start"/>
+	</field>
+	<field name="comp_period_end" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="comp_period_end"/>
+		<property name="com.jaspersoft.studio.field.label" value="comp_period_end"/>
+	</field>
+	<field name="param_bp" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_bp"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_bp"/>
+	</field>
+	<field name="param_activity" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_activity"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_activity"/>
+	</field>
+	<field name="param_product" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_product"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_product"/>
+	</field>
+	<field name="param_product_category" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_product_category"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_product_category"/>
+	</field>
+	<field name="param_attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_attributes"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_attributes"/>
+	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="currency"/>
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="delivery_bp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="delivery_bp_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="delivery_bp_name"/>
+	</field>
+	<field name="param_bp_group" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_bp_group"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_bp_group"/>
+	</field>
+	<field name="param_salesrep" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_salesrep"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_salesrep"/>
+	</field>
+	<field name="unionorder" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="unionorder"/>
+		<property name="com.jaspersoft.studio.field.label" value="unionorder"/>
+	</field>
 	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -75,7 +160,7 @@
 	<group name="BPartner" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{bp_name}]]></groupExpression>
 		<groupHeader>
-			<band height="129">
+			<band height="147">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1)]]></printWhenExpression>
 				<textField>
 					<reportElement x="37" y="20" width="198" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -213,39 +298,71 @@
 					<textFieldExpression><![CDATA[$R{attribute}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="37" y="105" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="37" y="123" width="192" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement>
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{article}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="228" y="105" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="228" y="123" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="317" y="105" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="317" y="123" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="406" y="105" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="406" y="123" width="90" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{difference}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="495" y="105" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="495" y="123" width="70" height="12" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
 						<font size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA["%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="387" y="94" width="70" height="12" uuid="4e5b9a57-c70d-4026-95e6-5bfbae66d2d2"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{bpgroup_name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="457" y="94" width="130" height="12" uuid="07211e6e-3b9f-4184-97c9-f342fe39204b"/>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_bp_group} != null ? $F{param_bp_group} : $R{all}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="94" width="90" height="12" uuid="e4487d09-d62b-4711-9f10-bc48ad2b1dde">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{salesRep}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="126" y="94" width="258" height="12" uuid="99833e02-9ba8-415e-9ab7-780b03c61aa3">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
+					<textElement>
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_salesrep}!=null ?$F{param_salesrep} : $R{all}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="32">
