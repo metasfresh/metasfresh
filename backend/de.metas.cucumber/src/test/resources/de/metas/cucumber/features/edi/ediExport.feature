@@ -473,7 +473,10 @@ Feature: EDI_cctop_invoic_v export format
   ## that same attribute with no value, must still be treated as a match (both ASI keys resolve to
   ## NONE). The product itself has no GTIN/UPC, so a lost match ships the DESADV line with empty
   ## CU identifiers instead of the buyer's ProductNo/GTIN_CU/EAN_CU.
-    Given metasfresh contains M_PricingSystems
+  ## Overrides the Background's default chain: production runs OneDesadvPerShipment='N',
+  ## which is the EXP_Format 540405 (EDI_Exp_Desadv) chain — the same one S29231_150 uses.
+    Given metasfresh is configured for One-DESADV-Per-Shipment
+    And metasfresh contains M_PricingSystems
       | Identifier    |
       | pricingSystem |
     And metasfresh contains M_PriceLists
