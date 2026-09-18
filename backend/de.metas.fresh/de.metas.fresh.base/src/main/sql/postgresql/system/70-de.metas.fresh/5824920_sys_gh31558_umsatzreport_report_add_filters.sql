@@ -1,3 +1,22 @@
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Umsatzliste_Report.sql
+
+-- gh31558: add the Geschaeftspartner, Geschaeftspartnergruppe and Vertriebspartner filters
+-- to report.Umsatzreport_Report_Sub / report.umsatzreport_report.
+--
+-- Three new optional arguments are appended to both functions:
+--   $5 C_BPartner_ID          - restrict to one business partner
+--   $6 C_BP_Group_ID          - restrict to one business partner group
+--   $7 C_BPartner_SalesRep_ID - restrict to the sales partner recorded on the
+--                               invoice DOCUMENT (C_Invoice.C_BPartner_SalesRep_ID),
+--                               NOT the one on the partner master record. An invoice
+--                               carrying no sales partner is excluded once the filter is set.
+-- Each one is a no-op when NULL, so with all three unset the reports return exactly
+-- what they return today.
+--
+-- Three new columns are returned so the templates can echo the selected filters in the
+-- printed filter summary: param_bp, param_bp_group, param_salesrep. Because the returned
+-- column set changes, both SETOF pseudo-tables are dropped and recreated as well.
+
 DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric);
 DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric);
 DROP FUNCTION IF EXISTS report.umsatzreport_report (IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric, IN C_BPartner_ID numeric, IN C_BP_Group_ID numeric, IN C_BPartner_SalesRep_ID numeric);
