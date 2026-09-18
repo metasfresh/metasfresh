@@ -530,12 +530,6 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
-			case reverseAccrued:
-				// MOrder#reverseAccrualIt() always returns false ("Reverse Accrual - none"), so this action
-				// can never succeed for a C_Order -- only reachable via order_action_not_possible below.
-				order.setDocAction(IDocument.ACTION_Complete);
-				documentBL.processEx(order, IDocument.ACTION_Reverse_Accrual, IDocument.STATUS_Reversed);
-				break;
 			default:
 				throw new AdempiereException("Unhandled C_Order action")
 						.appendParametersToMessage()
@@ -543,7 +537,7 @@ public class C_Order_StepDef
 		}
 	}
 
-	@And("^the order identified by (.*) cannot be (reactivated|completed|closed|voided|reversed|reverseAccrued)$")
+	@And("^the order identified by (.*) cannot be (reactivated|completed|closed|voided|reversed)$")
 	public void order_action_not_possible(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		Exception expectedException = null;

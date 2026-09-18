@@ -307,8 +307,8 @@ Feature: Bestellkontrolle reprint after reactivate
       | PL           |                | plant       | true     |
 
     # The process calls the same generation the completion path calls, and it rebuilds although the flag
-    # is unset -- pinning that the flag is decided before that generation, not inside it. The process is
-    # opt-in per instance (EnableProcessGear sysconfig, off by default).
+    # is unset -- pinning that the flag is decided before that generation, not inside it. (EnableProcessGear
+    # governs only whether the gear menu offers the process, not whether it runs, which is why this can run it.)
     When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run on the records identified by 'order'
 
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports

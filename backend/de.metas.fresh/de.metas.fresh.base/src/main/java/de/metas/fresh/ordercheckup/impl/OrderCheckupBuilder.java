@@ -69,9 +69,10 @@ public class OrderCheckupBuilder
 	/**
 	 * Builds the {@link I_C_Order_MFGWarehouse_Report}.
 	 *
-	 * If there were no {@link I_C_OrderLine}s added, no report will be created.
+	 * @return the report, or {@code null} if there were no {@link I_C_OrderLine}s to put on it
 	 */
-	public void build()
+	@Nullable
+	public I_C_Order_MFGWarehouse_Report build()
 	{
 		markAsBuild();
 
@@ -79,7 +80,7 @@ public class OrderCheckupBuilder
 		final List<I_C_OrderLine> orderLines = getOrderLines();
 		if (orderLines.isEmpty())
 		{
-			return;
+			return null;
 		}
 
 		final I_C_Order order = getC_Order();
@@ -115,6 +116,8 @@ public class OrderCheckupBuilder
 		// NOTE we do this only at the end because this is the moment where doc outbound shall react and create/print the PDF report.
 		report.setProcessed(true);
 		InterfaceWrapperHelper.save(report);
+
+		return report;
 	}
 
 	private final void assertNotBuilt()

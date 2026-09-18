@@ -109,7 +109,17 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		// Void all previous reports, because we will generate them again.
 		voidReports(order);
 
-		createReportBuilders(order).values().forEach(OrderCheckupBuilder::build);
+		int builtCount = 0;
+		for (final OrderCheckupBuilder reportBuilder : createReportBuilders(order).values())
+		{
+			if (reportBuilder.build() != null)
+			{
+				builtCount++;
+			}
+		}
+
+		logger.debug("C_Order_ID {}: deactivated the previous reports and built {} new one(s), which prints them.",
+				order.getC_Order_ID(), builtCount);
 	}
 
 	/**
@@ -297,6 +307,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	{
 		if (order.isReprintOrderCheckup())
 		{
+			logger.debug("C_Order_ID {} has IsReprintOrderCheckup='Y': rebuilding and reprinting its reports.", order.getC_Order_ID());
 			generateReportsIfEligible(order);
 			return;
 		}
@@ -310,20 +321,24 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		final Map<OrderCheckupReportIdentity, OrderCheckupBuilder> requiredReports = createReportBuilders(order);
 
 		int reactivatedCount = 0;
+		int builtCount = 0;
 		for (final Map.Entry<OrderCheckupReportIdentity, OrderCheckupBuilder> requiredReport : requiredReports.entrySet())
 		{
 			final I_C_Order_MFGWarehouse_Report existingReport = existingReports.get(requiredReport.getKey());
 			if (existingReport == null)
 			{
-				requiredReport.getValue().build();
+				if (requiredReport.getValue().build() != null)
+				{
+					builtCount++;
+				}
 			}
 			else
 			{
 				// Reactivating leaves Processed alone, and the doc-outbound print trigger fires on Processed flipping
 				// false->true -- which is why the sheets already in the users' hands stay valid and nothing is printed.
 				// The flip side: the report keeps the content it was built from, and no later completion refreshes it.
-				// The way back to a current set is C_Order_MFGWarehouse_Report_Generate, which an instance has to
-				// enable first (EnableProcessGear sysconfig, off by default).
+				// The way to a current set is to set IsReprintOrderCheckup and complete again, which rebuilds and
+				// reprints, or to run C_Order_MFGWarehouse_Report_Generate where the gear menu offers it.
 				existingReport.setIsActive(true);
 				orderCheckupDAO.save(existingReport);
 				reactivatedCount++;
@@ -331,12 +346,11 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		}
 
 		// Reports whose identity the order no longer calls for stay inactive.
-		logger.debug("C_Order_ID {} has IsReprintOrderCheckup='N': of the {} report(s) it needs, {} were reactivated unchanged"
-						+ " and {} were newly built and printed; {} existing report(s) are not needed any more and stay inactive.",
+		logger.debug("C_Order_ID {} has IsReprintOrderCheckup='N': reactivated {} report(s) unchanged, built and printed {} new one(s),"
+						+ " left {} existing report(s) inactive because nothing on the order calls for them any more.",
 				order.getC_Order_ID(),
-				requiredReports.size(),
 				reactivatedCount,
-				requiredReports.size() - reactivatedCount,
+				builtCount,
 				existingReports.size() - reactivatedCount);
 	}
 
