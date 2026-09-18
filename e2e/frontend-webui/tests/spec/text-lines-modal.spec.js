@@ -410,9 +410,12 @@ Drives the text-lines modal end to end from the sales order line tab:
       ]);
       expect(rows[0].scope).toBe(SCOPE.wholeDocument);
 
-      // article rows are shown read-only, for orientation only -- their positional/quantitative
-      // columns are never in edit mode, unlike a text row's own text/scope cells
-      for (const cy of ['cell-line', 'cell-product', 'cell-qty']) {
+      // article rows are shown read-only, for orientation only. EVERY column must be checked, not just
+      // the positional/quantitative ones: text/scope were once editable on article rows because the
+      // layout declared `editor = ALWAYS` and the frontend ORs the layout mode with the per-row one
+      // (`isCellEditable`, frontend/src/utils/tableHelpers.js), so the per-row NEVER could never win.
+      // This loop previously covered three of the five columns and skipped the two that were broken.
+      for (const cy of ['cell-line', 'cell-product', 'cell-qty', 'cell-textLine', 'cell-textLineScope']) {
         const cellClass = await page
           .getByTestId(`table-row-A${orderLine2Id}`)
           .locator(`[data-cy="${cy}"]`)
