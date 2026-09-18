@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.process;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -83,9 +82,12 @@ public class AD_Process_Run_StepDef
 	}
 
 	/**
-	 * Runs the {@code AD_Process} identified by its {@code Value} over the given records as its user selection,
-	 * handed over as the process's where clause the way a WebUI view quick action does it. All identifiers must
-	 * resolve to the same table.
+	 * Runs the {@code AD_Process} identified by its {@code Value} over the given records, resolving a single
+	 * identifier to a directly-addressed record ({@code setRecord}) and two or more to a where-clause selection
+	 * ({@code setTableName}/{@code setWhereClause}) -- because a process reading its target via {@code
+	 * JavaProcess#getRecord(Class)} (a window's single-record action) cannot see a where-clause selection and
+	 * would fail with {@code @NoSelection@}, while a process expecting a user selection (a WebUI view quick
+	 * action) needs the where clause. All identifiers must resolve to the same table.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -94,7 +96,7 @@ public class AD_Process_Run_StepDef
 	 * </pre>
 	 *
 	 * @param processValue the {@code AD_Process.Value}
-	 * @param commaSeparatedIdentifiers identifiers of the records forming the selection
+	 * @param commaSeparatedIdentifiers identifiers of the records the process runs against
 	 */
 	@When("the AD_Process with value {string} is run on the records identified by {string}")
 	public void run_ad_process_on_selection(
@@ -107,44 +109,25 @@ public class AD_Process_Run_StepDef
 		final ImmutableSet<String> tableNames = recordRefs.stream().map(TableRecordReference::getTableName).collect(ImmutableSet.toImmutableSet());
 		assertThat(tableNames).as("all records of one selection must belong to the same table").hasSize(1);
 
-		final String tableName = tableNames.iterator().next();
-		final String recordIdsCSV = recordRefs.stream()
-				.map(recordRef -> String.valueOf(recordRef.getRecord_ID()))
-				.collect(Collectors.joining(","));
-
-		final ProcessInfo.ProcessInfoBuilder processInfo = newProcessInfoBuilder(processValue)
-				.setTableName(tableName)
-				.setWhereClause(tableName + "_ID IN (" + recordIdsCSV + ")");
+		final ProcessInfo.ProcessInfoBuilder processInfo = newProcessInfoBuilder(processValue);
+		if (recordRefs.size() == 1)
+		{
+			processInfo.setRecord(recordRefs.iterator().next());
+		}
+		else
+		{
+			final String tableName = tableNames.iterator().next();
+			final String recordIdsCSV = recordRefs.stream()
+					.map(recordRef -> String.valueOf(recordRef.getRecord_ID()))
+					.collect(Collectors.joining(","));
+			processInfo.setTableName(tableName)
+					.setWhereClause(tableName + "_ID IN (" + recordIdsCSV + ")");
+		}
 		executeProcess(processInfo);
 	}
 
 	/**
-	 * Runs the {@code AD_Process} identified by its {@code Value} over exactly one record, the way a window's
-	 * single-record process action does it -- i.e. {@code JavaProcess#getRecord(Class)} resolves the given record
-	 * directly, unlike {@link #run_ad_process_on_selection}'s where-clause selection (which a process reading its
-	 * target via {@code getRecord(...)} cannot see: it would fail with {@code @NoSelection@}).
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
-	 * When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run for the record identified by 'order'
-	 * </pre>
-	 *
-	 * @param processValue the {@code AD_Process.Value}
-	 * @param identifier identifier of the single record the process runs against
-	 */
-	@When("the AD_Process with value {string} is run for the record identified by {string}")
-	public void run_ad_process_on_record(
-			@NonNull final String processValue,
-			@NonNull final String identifier)
-	{
-		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(identifier));
-		final ProcessInfo.ProcessInfoBuilder processInfo = newProcessInfoBuilder(processValue).setRecord(recordRef);
-		executeProcess(processInfo);
-	}
-
-	/**
-	 * Builds the {@code ProcessInfo} common to all three run-modes above: the {@code AD_Process} resolved by
+	 * Builds the {@code ProcessInfo} common to both run-modes above: the {@code AD_Process} resolved by
 	 * {@code Value}, executed under the test's client context and the {@code WebUI} role. Callers add whichever
 	 * target the process needs -- nothing (no-selection), {@code setTableName}/{@code setWhereClause} (a
 	 * where-clause selection), or {@code setRecord} (a single directly-addressed record) -- and then hand the

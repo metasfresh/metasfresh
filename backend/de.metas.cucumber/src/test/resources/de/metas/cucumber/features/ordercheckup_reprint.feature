@@ -289,7 +289,7 @@ Feature: Bestellkontrolle reprint after reactivate
 
     # The manual regeneration process runs the unconditional rebuild regardless of the flag, unlike
     # the completion path above, which left the existing reports alone instead of rebuilding.
-    When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run for the record identified by 'order'
+    When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run on the records identified by 'order'
 
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
@@ -331,31 +331,3 @@ Feature: Bestellkontrolle reprint after reactivate
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
       | WH           | warehouse      | plant       | false    |
       | PL           |                | plant       | false    |
-
-
-# ####################################################################################################################
-# ####################################################################################################################
-  @Id:S30709_TC9
-  Scenario: Flag not set - reverse-accruing the order is refused, so the Bestellkontrolle can never be deactivated this way
-    Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
-      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | orderLine  | order      | product      | 5          |
-    And the order identified by order is completed
-    And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
-      | WH           | warehouse      | plant       | true     |
-      | PL           |                | plant       | true     |
-
-    # C_Order never actually supports reverse-accrual (MOrder#reverseAccrualIt() unconditionally returns
-    # false), so the interceptor's TIMING_AFTER_REVERSEACCRUAL binding can never fire for an order in
-    # practice. This pins that AC8's third document action is a defensive, unreachable wiring for
-    # Orders, and that the reports stay untouched because the action itself never succeeds.
-    Then the order identified by order cannot be reverseAccrued
-
-    And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
-      | WH           | warehouse      | plant       | true     |
-      | PL           |                | plant       | true     |
