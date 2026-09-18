@@ -291,7 +291,7 @@ Feature: Bestellkontrolle reprint after reactivate
 # ####################################################################################################################
 # ####################################################################################################################
   @Id:S30709_TC7
-  Scenario: Flag not set - the manual regeneration process still generates and prints a fresh Bestellkontrolle
+  Scenario: Flag not set - the manual regeneration process still rebuilds and prints a fresh Bestellkontrolle
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
       | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
@@ -306,8 +306,9 @@ Feature: Bestellkontrolle reprint after reactivate
       | WH           | warehouse      | plant       | true     |
       | PL           |                | plant       | true     |
 
-    # The manual regeneration process runs the unconditional rebuild regardless of the flag, unlike
-    # the completion path above, which brought the existing reports back instead of rebuilding.
+    # The process calls the same generation the completion path calls, and it rebuilds although the flag
+    # is unset -- pinning that the flag is decided before that generation, not inside it. The process is
+    # opt-in per instance (EnableProcessGear sysconfig, off by default).
     When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run on the records identified by 'order'
 
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports

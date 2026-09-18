@@ -321,6 +321,9 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			{
 				// Reactivating leaves Processed alone, and the doc-outbound print trigger fires on Processed flipping
 				// false->true -- which is why the sheets already in the users' hands stay valid and nothing is printed.
+				// The flip side: the report keeps the content it was built from, and no later completion refreshes it.
+				// The way back to a current set is C_Order_MFGWarehouse_Report_Generate, which an instance has to
+				// enable first (EnableProcessGear sysconfig, off by default).
 				existingReport.setIsActive(true);
 				orderCheckupDAO.save(existingReport);
 				reactivatedCount++;
