@@ -287,7 +287,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		for (final I_C_Order_MFGWarehouse_Report report : reports)
 		{
 			report.setIsActive(false);
-			InterfaceWrapperHelper.save(report);
+			orderCheckupDAO.save(report);
 		}
 	}
 
@@ -300,7 +300,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		for (final I_C_Order_MFGWarehouse_Report report : reportsToRestore)
 		{
 			report.setIsActive(true);
-			InterfaceWrapperHelper.save(report);
+			orderCheckupDAO.save(report);
 		}
 
 		return !reportsToRestore.isEmpty();

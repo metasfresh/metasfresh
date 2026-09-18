@@ -29,7 +29,9 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import com.google.common.collect.ImmutableList;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.IQuery;
 
@@ -109,5 +111,11 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMNNAME_OrderCheckupGeneration, maxGeneration)
 				.create()
 				.list(I_C_Order_MFGWarehouse_Report.class);
+	}
+
+	@Override
+	public void save(@NonNull final I_C_Order_MFGWarehouse_Report report)
+	{
+		InterfaceWrapperHelper.save(report);
 	}
 }

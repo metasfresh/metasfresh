@@ -63,4 +63,6 @@ public interface IOrderCheckupDAO extends ISingletonService
 	 * from a real generation {@code 0}.
 	 */
 	List<I_C_Order_MFGWarehouse_Report> retrieveReportsOfMostRecentGeneration(OrderId orderId);
+
+	void save(I_C_Order_MFGWarehouse_Report report);
 }
