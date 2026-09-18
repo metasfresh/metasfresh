@@ -42,6 +42,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -62,6 +63,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * sales order, asserting the complete set of reports an order holds, which order lines a report's lines
  * reference, and whether a doc-outbound work package was enqueued for it.
  */
+@RequiredArgsConstructor
 public class C_Order_MFGWarehouse_Report_StepDef
 {
 	/** Seeded {@code C_Queue_PackageProcessor.InternalName} for the report-printing enqueue path (see {@code AbstractDocOutboundProducer#createDocOutbound}). */
@@ -75,20 +77,6 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final S_Resource_StepDefData plantTable;
-
-	public C_Order_MFGWarehouse_Report_StepDef(
-			@NonNull final C_Order_MFGWarehouse_Report_StepDefData reportTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_OrderLine_StepDefData orderLineTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final S_Resource_StepDefData plantTable)
-	{
-		this.reportTable = reportTable;
-		this.orderTable = orderTable;
-		this.orderLineTable = orderLineTable;
-		this.warehouseTable = warehouseTable;
-		this.plantTable = plantTable;
-	}
 
 	/**
 	 * Asserts the COMPLETE set of {@code C_Order_MFGWarehouse_Report} records the given order currently holds:
