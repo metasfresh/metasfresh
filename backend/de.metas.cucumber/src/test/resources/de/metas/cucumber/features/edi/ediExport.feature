@@ -483,9 +483,13 @@ Feature: EDI_cctop_invoic_v export format
       | Identifier       | M_PriceList_ID |
       | priceListVersion | priceList      |
 
+    # Explicit, distinct Value/Name (not auto-generated) so the CORE ASSERTION below can tell
+    # which source the exported ProductNo actually came from: EDI_DesadvLine.ProductNo,
+    # M_Product.Value, M_Product.Name and EDI_DesadvLine.ProductDescription must each render
+    # as a different string. GTIN/UPC stay empty on purpose — no fallback identifier available.
     And metasfresh contains M_Products:
-      | Identifier |
-      | product    |
+      | Identifier | Value            | Name            |
+      | product    | PRODVALUE-S31978 | PRODNAME-S31978 |
 
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
@@ -541,18 +545,23 @@ Feature: EDI_cctop_invoic_v export format
       | Identifier     | M_Product_ID.Identifier | C_BPartner_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier | SeqNo | ProductNo  | GTIN          | EAN_CU        |
       | productAsiData | product                 | buyer                    | asiOnProductData                         | 10    | BUYER-9001 | 4012345678901 | 4012345678902 |
 
+    # A real DESADV describes PACKED goods: a TU packing item wrapped by an LU, so the shipment's
+    # line is picked up by the pack export source rather than falling through to the unpacked view.
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID |
-      | huPi       |
+      | huPiLU     |
+      | huPiTU     |
     And metasfresh contains M_HU_PI_Version:
       | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
-      | huPiVersion        | huPi       | TU          | Y         |
+      | huPiVersionLU      | huPiLU     | LU          | Y         |
+      | huPiVersionTU      | huPiTU     | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
-      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType |
-      | huPiItem        | huPiVersion        | 0   | PM       |
+      | M_HU_PI_Item_ID | M_HU_PI_Version_ID | Qty | ItemType | OPT.Included_HU_PI_ID |
+      | huPiItemLU      | huPiVersionLU      | 1   | HU       | huPiTU                |
+      | huPiItemTU      | huPiVersionTU      | 0   | PM       |                       |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID | Qty |
-      | huPiItemProduct         | huPiItem        | product      | 10  |
+      | huPiItemProduct         | huPiItemTU      | product      | 10  |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
