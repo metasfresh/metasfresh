@@ -63,7 +63,8 @@ Feature: MD_Candidate_Remove_From_ATP process
 
     # A second work package revalidates the shipment schedule and re-writes the demand candidate with
     # the SAME Qty/ATP, so the MD_Candidate poll below cannot tell the two writes apart. Without this
-    # barrier the removal can run between them and be silently overwritten.
+    # barrier the removal can run between them and be silently overwritten. IsToRecompute='N' becomes
+    # true only once that revalidation has committed, which is what makes it the barrier.
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipsched_atp_001 | sol_atp_001               | N             |
