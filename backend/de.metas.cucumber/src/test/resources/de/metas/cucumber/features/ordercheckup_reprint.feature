@@ -84,9 +84,9 @@ Feature: Bestellkontrolle reprint after reactivate
 
     When the order identified by order is reactivated
 
-    # AC6/AC5 evidence: reactivate deactivates the records but never touches Processed -- Processed staying
-    # true is direct evidence these are the SAME records that were enqueued at the first completion, not a
-    # placeholder state pending a rebuild.
+    # Reactivate deactivates the records but never touches Processed -- Processed staying true is direct
+    # evidence these are the SAME records that were enqueued at the first completion, not a placeholder
+    # state pending a rebuild.
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | Processed |
       | WH           | warehouse      | plant       | false    | true      |
@@ -101,12 +101,16 @@ Feature: Bestellkontrolle reprint after reactivate
       | orderLineB | order      | product      | 3          |
     And the order identified by order is completed
 
-    # AC2/AC5/AC6: the very same 2 records came back active, still Processed -- no new record was built and
-    # nothing was (re-)enqueued, because the print trigger keys on Processed changing, and it never did.
+    # The very same 2 records came back active, still Processed -- no new record was built. The work
+    # package count below is unchanged from the first completion, proving nothing was (re-)enqueued:
+    # the print trigger keys on Processed changing, and it never did.
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | Processed |
       | WH           | warehouse      | plant       | true     | true      |
       | PL           |                | plant       | true     | true      |
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 2                |
     And C_Order_MFGWarehouse_Report is located:
       | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
       | restoredWhRpt | order      | WH           | warehouse      | plant       | true     |
@@ -202,18 +206,6 @@ Feature: Bestellkontrolle reprint after reactivate
       | PL           |                | plant       | 1                      | false    |
       | WH           | warehouse      | plant       | 2                      | true     |
       | PL           |                | plant       | 2                      | true     |
-    And C_Order_MFGWarehouse_Report is located:
-      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | whGen2     | order      | WH           | warehouse      | plant       | true     | 2                      |
-    And C_Order_MFGWarehouse_Report is located:
-      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | plGen2     | order      | PL           | plant       | true     | 2                      |
-    And C_Order_MFGWarehouse_Report is located:
-      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | whGen1Void | order      | WH           | warehouse      | plant       | false    | 1                      |
-    And C_Order_MFGWarehouse_Report is located:
-      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | plGen1Void | order      | PL           | plant       | false    | 1                      |
 
 
 # ####################################################################################################################
@@ -265,18 +257,6 @@ Feature: Bestellkontrolle reprint after reactivate
       | PL           |                | plant       | 1                      | false    |
       | WH           | warehouse      | plant       | 2                      | true     |
       | PL           |                | plant       | 2                      | true     |
-    And C_Order_MFGWarehouse_Report is located:
-      | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | restoredWhRpt | order      | WH           | warehouse      | plant       | true     | 2                      |
-    And C_Order_MFGWarehouse_Report is located:
-      | Identifier    | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | restoredPlRpt | order      | PL           | plant       | true     | 2                      |
-    And C_Order_MFGWarehouse_Report is located:
-      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | oldWhRpt   | order      | WH           | warehouse      | plant       | false    | 1                      |
-    And C_Order_MFGWarehouse_Report is located:
-      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | oldPlRpt   | order      | PL           | plant       | false    | 1                      |
     # The restore only reactivated headers -- it did not build anything new, so the work package count from
     # before the void/restore cycle (4, asserted above) is unchanged: no work package was (re-)enqueued.
     And C_Order_MFGWarehouse_Report doc-outbound work package count is:

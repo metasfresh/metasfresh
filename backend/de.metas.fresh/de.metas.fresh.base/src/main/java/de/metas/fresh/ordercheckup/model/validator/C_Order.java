@@ -32,12 +32,15 @@ import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.fresh.ordercheckup.printing.spi.impl.OrderCheckupPrintingQueueHandler;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order.class)
 @Component
 public class C_Order
 {
+	@NonNull private final IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
+
 	public C_Order()
 	{
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance); // task 09028
@@ -46,8 +49,6 @@ public class C_Order
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void generateReports(final I_C_Order order)
 	{
-		final IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
-
 		// Allow automatically reports generation only if this was configured
 		if (!orderCheckupBL.isGenerateReportsOnOrderComplete(order))
 		{
@@ -56,20 +57,19 @@ public class C_Order
 
 		if (order.isReprintOrderCheckup())
 		{
-			regenerateReports(order, orderCheckupBL);
+			regenerateReports(order);
 		}
 		else
 		{
-			restoreOrRegenerateReports(order, orderCheckupBL);
+			restoreOrRegenerateReports(order);
 		}
 	}
 
 	/**
-	 * Generates a fresh report run for the order. This is the unconditional behaviour from before this feature
-	 * existed, kept for {@code IsReprintOrderCheckup='Y'} (the default) and reused as the fallback of
-	 * {@link #restoreOrRegenerateReports}.
+	 * Generates a fresh report run for the order — the behaviour applied when {@code IsReprintOrderCheckup} is
+	 * set, and the fallback of {@link #restoreOrRegenerateReports}.
 	 */
-	private void regenerateReports(final I_C_Order order, final IOrderCheckupBL orderCheckupBL)
+	private void regenerateReports(final I_C_Order order)
 	{
 		orderCheckupBL.generateReportsIfEligible(order);
 	}
@@ -80,21 +80,17 @@ public class C_Order
 	 * reprint. Falls back to {@link #regenerateReports} when there is nothing to restore -- the order's first
 	 * completion, or a generation that predates the {@code IsReprintOrderCheckup} column.
 	 */
-	private void restoreOrRegenerateReports(final I_C_Order order, final IOrderCheckupBL orderCheckupBL)
+	private void restoreOrRegenerateReports(final I_C_Order order)
 	{
-		final boolean restoredMostRecentGeneration = orderCheckupBL.restoreMostRecentGeneration(order);
-		if (restoredMostRecentGeneration)
+		if (!orderCheckupBL.restoreMostRecentGeneration(order))
 		{
-			return;
+			regenerateReports(order);
 		}
-
-		regenerateReports(order, orderCheckupBL);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void voidReports(final I_C_Order order)
 	{
-		final IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
 		orderCheckupBL.voidReports(order);
 	}
 }

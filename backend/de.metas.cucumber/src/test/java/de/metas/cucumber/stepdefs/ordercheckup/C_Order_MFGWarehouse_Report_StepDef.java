@@ -45,10 +45,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-
-import org.assertj.core.api.SoftAssertions;
 
 import java.util.HashSet;
 import java.util.List;
@@ -61,9 +60,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for {@code C_Order_MFGWarehouse_Report} ("Bestellkontrolle") records — locating a report for a
- * sales order, asserting how many are currently active and inactive, asserting a report's
- * {@code OrderCheckupGeneration}, which order lines its report lines reference, and whether a doc-outbound work
- * package was enqueued for it.
+ * sales order, asserting the complete set of reports an order holds, which order lines a report's lines
+ * reference, and whether a doc-outbound work package was enqueued for it.
  */
 public class C_Order_MFGWarehouse_Report_StepDef
 {
@@ -111,11 +109,8 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	 *   <b>PP_Plant_ID</b> — (optional, identifier-ref) plant report discriminator — part of the match<br>
 	 *   <b>OrderCheckupGeneration</b> — (optional) generation number — part of the match when given<br>
 	 *   <b>IsActive</b> — (optional) expected {@code IsActive}, asserted on the matched record<br>
-	 *   <b>Processed</b> — (optional) expected {@code Processed}, asserted on the matched record — {@code true}
-	 *       once the record's own doc-outbound enqueue has fired for it (once ever, never reset by a later
-	 *       restore); this is the field the print trigger ({@code DocOutboundProducerValidator#isJustProcessed})
-	 *       actually keys on, so asserting it directly is stronger evidence of "restored, not rebuilt" than any
-	 *       enqueue count<br>
+	 *   <b>Processed</b> — (optional) expected {@code Processed}, asserted on the matched record — set once and
+	 *       never reset, so it survives a restore<br>
 	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Warehouse_StepDefData, S_Resource_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -153,17 +148,19 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 		final List<I_C_Order_MFGWarehouse_Report> matching = reports.stream()
 				.filter(report -> !claimedIds.contains(report.getC_Order_MFGWarehouse_Report_ID()))
-				.filter(report -> documentType.map(expected -> expected.equals(report.getDocumentType())).orElse(true))
+				.filter(report -> documentType.map(expected -> Objects.equals(expected, report.getDocumentType())).orElse(true))
 				.filter(report -> warehouseId.map(expected -> Objects.equals(expected, WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()))).orElse(true))
 				.filter(report -> plantId.map(expected -> Objects.equals(expected, ResourceId.ofRepoIdOrNull(report.getPP_Plant_ID()))).orElse(true))
-				.filter(report -> generation.map(expected -> expected == report.getOrderCheckupGeneration()).orElse(true))
+				.filter(report -> generation.map(expected -> Objects.equals(expected, report.getOrderCheckupGeneration())).orElse(true))
 				.collect(Collectors.toList());
 
 		if (matching.size() != 1)
 		{
-			final List<Integer> unclaimedIds = reports.stream()
-					.map(I_C_Order_MFGWarehouse_Report::getC_Order_MFGWarehouse_Report_ID)
-					.filter(id -> !claimedIds.contains(id))
+			final List<String> unclaimedDescriptions = reports.stream()
+					.filter(report -> !claimedIds.contains(report.getC_Order_MFGWarehouse_Report_ID()))
+					.map(report -> String.format(
+							"C_Order_MFGWarehouse_Report_ID=%s/DocumentType=%s/M_Warehouse_ID=%s/PP_Plant_ID=%s/OrderCheckupGeneration=%s",
+							report.getC_Order_MFGWarehouse_Report_ID(), report.getDocumentType(), report.getM_Warehouse_ID(), report.getPP_Plant_ID(), report.getOrderCheckupGeneration()))
 					.collect(Collectors.toList());
 
 			throw new AdempiereException("Expected exactly one unclaimed C_Order_MFGWarehouse_Report matching this row")
@@ -174,7 +171,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 					.setParameter("PP_Plant_ID", plantId.orElse(null))
 					.setParameter("OrderCheckupGeneration", generation.orElse(null))
 					.setParameter("MatchCount", matching.size())
-					.setParameter("UnclaimedC_Order_MFGWarehouse_Report_IDs", unclaimedIds);
+					.setParameter("UnclaimedC_Order_MFGWarehouse_Reports", unclaimedDescriptions);
 		}
 
 		final I_C_Order_MFGWarehouse_Report report = matching.get(0);
