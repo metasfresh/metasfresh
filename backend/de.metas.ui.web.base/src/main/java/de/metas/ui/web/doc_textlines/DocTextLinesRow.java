@@ -53,10 +53,27 @@ public final class DocTextLinesRow implements IViewRow
 	private static final String ROWID_PREFIX_ARTICLE = "A";
 	private static final String ROWID_PREFIX_TEXT = "T";
 
-	public static final String FIELD_Line = "line";
-	@ViewColumn(seqNo = 10, fieldName = FIELD_Line, captionKey = "Line", widgetType = DocumentFieldWidgetType.Number, widgetSize = WidgetSize.Small)
+	/**
+	 * The row's real position. Load-bearing: the move/insert arithmetic, the midpoint computation and the
+	 * reload de-duplication all read it. It is deliberately NOT rendered -- see {@link #FIELD_LineDisplay}.
+	 */
 	@Getter
 	private final BigDecimal line;
+
+	/**
+	 * What the user sees in the "Zeile Nr." column: the article line's own number, and NOTHING for a text row.
+	 * A text row's real position is a midpoint (e.g. {@code 15}, {@code 10.5}) or, for a whole-document line
+	 * with no run on the document, a large negative head offset -- none of which means anything to the user,
+	 * and all of which looked like noise beside the article numbers. {@link #line} keeps the real value for
+	 * the arithmetic; only the rendering is suppressed.
+	 */
+	public static final String FIELD_LineDisplay = "line";
+	@ViewColumn(seqNo = 10, fieldName = FIELD_LineDisplay, captionKey = "Line", widgetType = DocumentFieldWidgetType.Number, widgetSize = WidgetSize.Small)
+	@Getter
+	private final BigDecimal lineDisplay;
+
+	/** Kept so existing references to the rendered column's name keep working. */
+	public static final String FIELD_Line = FIELD_LineDisplay;
 
 	public static final String FIELD_Product = "product";
 	@ViewColumn(seqNo = 20, fieldName = FIELD_Product, captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup)
@@ -69,13 +86,18 @@ public final class DocTextLinesRow implements IViewRow
 	private final BigDecimal qty;
 
 	public static final String FIELD_TextLine = "textLine";
-	@ViewColumn(seqNo = 40, fieldName = FIELD_TextLine, captionKey = "TextLine", widgetType = DocumentFieldWidgetType.LongText, editor = ViewEditorRenderMode.ALWAYS)
+	// NO layout-level `editor = ALWAYS` here on purpose: the frontend ORs the layout mode with the per-row one
+	// (`isCellEditable` in frontend/src/utils/tableHelpers.js), so a layout-level ALWAYS makes every row editable
+	// and the per-row NEVER for ARTICLE rows can never win. Editability comes solely from
+	// #buildEditorRenderModeByFieldName, which is per-row. ExtraLarge so the text gets the width it needs.
+	@ViewColumn(seqNo = 40, fieldName = FIELD_TextLine, captionKey = "TextLine", widgetType = DocumentFieldWidgetType.LongText, widgetSize = WidgetSize.ExtraLarge)
 	@Getter
 	private final String textLine;
 
 	public static final String FIELD_TextLineScope = "textLineScope";
+	// Same as FIELD_TextLine above: no layout-level `editor = ALWAYS`, so the per-row NEVER holds on ARTICLE rows.
 	@ViewColumn(seqNo = 50, fieldName = FIELD_TextLineScope, captionKey = "TextLineScope", widgetType = DocumentFieldWidgetType.List,
-			listReferenceId = X_C_Doc_TextLine.TEXTLINESCOPE_AD_Reference_ID, widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
+			listReferenceId = X_C_Doc_TextLine.TEXTLINESCOPE_AD_Reference_ID, widgetSize = WidgetSize.Small)
 	@Getter
 	private final TextLineScope textLineScope;
 
@@ -113,6 +135,7 @@ public final class DocTextLinesRow implements IViewRow
 	{
 		this.rowType = rowType;
 		this.line = line;
+		this.lineDisplay = rowType == RowType.ARTICLE ? line : null;
 		this.orderLineId = orderLineId;
 		this.product = product;
 		this.qty = qty;
