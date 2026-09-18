@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
+import de.metas.fresh.ordercheckup.OrderCheckupDocumentType;
 import de.metas.product.ResourceId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
@@ -109,7 +110,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	 *   <b>PP_Plant_ID</b> — (optional, identifier-ref) plant report discriminator — part of the match<br>
 	 *   <b>IsActive</b> — (optional) expected {@code IsActive} — part of the match<br>
 	 *   <b>Processed</b> — (optional) expected {@code Processed}, asserted on the matched record — set once and
-	 *       never reset, so it stays true for a report that survived a reactivate<br>
+	 *       never reset, so it stays true across a reactivate<br>
 	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Warehouse_StepDefData, S_Resource_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -138,7 +139,8 @@ public class C_Order_MFGWarehouse_Report_StepDef
 			@NonNull final Set<Integer> claimedIds,
 			@NonNull final String orderIdentifier)
 	{
-		final Optional<String> documentType = row.getAsOptionalString(I_C_Order_MFGWarehouse_Report.COLUMNNAME_DocumentType);
+		final Optional<OrderCheckupDocumentType> documentType = row.getAsOptionalString(I_C_Order_MFGWarehouse_Report.COLUMNNAME_DocumentType)
+				.map(OrderCheckupDocumentType::ofCode);
 		final Optional<WarehouseId> warehouseId = row.getAsOptionalIdentifier(I_C_Order_MFGWarehouse_Report.COLUMNNAME_M_Warehouse_ID)
 				.map(identifier -> identifier.lookupIdIn(warehouseTable));
 		final Optional<ResourceId> plantId = row.getAsOptionalIdentifier(I_C_Order_MFGWarehouse_Report.COLUMNNAME_PP_Plant_ID)
@@ -147,7 +149,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 		final List<I_C_Order_MFGWarehouse_Report> matching = reports.stream()
 				.filter(report -> !claimedIds.contains(report.getC_Order_MFGWarehouse_Report_ID()))
-				.filter(report -> documentType.map(expected -> Objects.equals(expected, report.getDocumentType())).orElse(true))
+				.filter(report -> documentType.map(expected -> expected == OrderCheckupDocumentType.ofCode(report.getDocumentType())).orElse(true))
 				.filter(report -> warehouseId.map(expected -> Objects.equals(expected, WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()))).orElse(true))
 				.filter(report -> plantId.map(expected -> Objects.equals(expected, ResourceId.ofRepoIdOrNull(report.getPP_Plant_ID()))).orElse(true))
 				.filter(report -> isActive.map(expected -> expected == report.isActive()).orElse(true))
@@ -212,13 +214,13 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	private void locate_report(@NonNull final DataTableRow row)
 	{
 		final I_C_Order order = row.getAsIdentifier("C_Order_ID").lookupNotNullIn(orderTable);
-		final String documentType = row.getAsString("DocumentType");
+		final OrderCheckupDocumentType documentType = OrderCheckupDocumentType.ofCode(row.getAsString("DocumentType"));
 		final WarehouseId warehouseId = row.getAsOptionalIdentifier("M_Warehouse_ID").map(id -> id.lookupIdIn(warehouseTable)).orElse(null);
 		final ResourceId plantId = row.getAsOptionalIdentifier("PP_Plant_ID").map(id -> id.lookupIdIn(plantTable)).orElse(null);
 		final boolean expectedIsActive = row.getAsOptionalBoolean("IsActive").orElse(true);
 
 		final List<I_C_Order_MFGWarehouse_Report> matches = orderCheckupDAO.retrieveAllReports(order).stream()
-				.filter(report -> documentType.equals(report.getDocumentType()))
+				.filter(report -> documentType == OrderCheckupDocumentType.ofCode(report.getDocumentType()))
 				.filter(report -> Objects.equals(WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()), warehouseId))
 				.filter(report -> Objects.equals(ResourceId.ofRepoIdOrNull(report.getPP_Plant_ID()), plantId))
 				.filter(report -> report.isActive() == expectedIsActive)
@@ -341,9 +343,9 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	 * C_Order_MFGWarehouse_Report} records (active or not) of the given order. Because the underlying {@code
 	 * C_Queue_Element} is never deleted once created (see {@link #countDocOutboundWorkPackagesFor}), this count can
 	 * only grow when a *new* report is built (its {@code Processed} flag flipping false-&gt;true for the first
-	 * time) -- a reactivate that leaves the existing reports alone never touches {@code Processed} and so never
-	 * changes it. Asserting the same count before and after such an action is how a scenario proves no work
-	 * package was (re-)enqueued by it.
+	 * time) -- deactivating a report and activating it again never touches {@code Processed} and so never changes
+	 * it. Asserting the same count before and after such an action is how a scenario proves no work package was
+	 * (re-)enqueued by it.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

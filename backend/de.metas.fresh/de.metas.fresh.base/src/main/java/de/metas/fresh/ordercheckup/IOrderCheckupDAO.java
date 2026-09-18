@@ -24,7 +24,6 @@ package de.metas.fresh.ordercheckup;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
-import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 
@@ -43,11 +42,16 @@ public interface IOrderCheckupDAO extends ISingletonService
 	List<I_C_Order_MFGWarehouse_ReportLine> retrieveAllReportLines(I_C_Order_MFGWarehouse_Report report);
 
 	/**
-	 * @return {@code true} if the given order currently has at least one ACTIVE {@code C_Order_MFGWarehouse_Report}.
-	 *         Active reports are exactly the ones that survived the last document action, so this answers "are the
-	 *         order's reports still the ones that were printed?" -- see {@code IOrderCheckupBL#generateReportsOnCompleteIfNeeded}.
+	 * Retrieves the report (active or not) with the highest {@code C_Order_MFGWarehouse_Report_ID} per
+	 * {@link OrderCheckupReportIdentity}. The reports of one generation run are written together, so that is the
+	 * record the latest run produced for that identity.
+	 * <p>
+	 * Limitation: when a later run produced fewer identities than an earlier one -- which takes the set of users in
+	 * charge changing between two generations -- the earlier run's now-orphaned identity is returned alongside the
+	 * later run's records, so reactivating this set brings a stale report back. Telling the two runs apart would
+	 * take recording which records were written together.
 	 */
-	boolean hasActiveReports(OrderId orderId);
+	List<I_C_Order_MFGWarehouse_Report> retrieveNewestReportPerIdentity(I_C_Order order);
 
 	void save(I_C_Order_MFGWarehouse_Report report);
 }

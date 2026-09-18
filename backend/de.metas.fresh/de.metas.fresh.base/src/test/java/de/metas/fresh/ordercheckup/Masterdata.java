@@ -24,7 +24,6 @@ package de.metas.fresh.ordercheckup;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
-import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_OrderLine;
@@ -66,7 +65,7 @@ public class Masterdata
 
 		public I_C_Order_MFGWarehouse_Report retrievePlantReport()
 		{
-			return helper.retrieveReport(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant, null, plant);
+			return helper.retrieveReport(OrderCheckupDocumentType.Plant, null, plant);
 		}
 
 		public void assertPlantReportOrderLines(final I_C_OrderLine... expectedOrderLines)
@@ -104,7 +103,7 @@ public class Masterdata
 
 			public I_C_Order_MFGWarehouse_Report retrieveWarehouseReport()
 			{
-				return helper.retrieveReport(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse, warehouse, plant);
+				return helper.retrieveReport(OrderCheckupDocumentType.Warehouse, warehouse, plant);
 			}
 
 			public void assertWarehouseReportOrderLines(final I_C_OrderLine... expectedOrderLines)

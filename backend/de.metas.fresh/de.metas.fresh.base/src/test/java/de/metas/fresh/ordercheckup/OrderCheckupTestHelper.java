@@ -171,7 +171,7 @@ public class OrderCheckupTestHelper
 		return orderLine;
 	}
 
-	public I_C_Order_MFGWarehouse_Report retrieveReport(final String documentType, final I_M_Warehouse warehouse, final I_S_Resource plant)
+	public I_C_Order_MFGWarehouse_Report retrieveReport(final OrderCheckupDocumentType documentType, final I_M_Warehouse warehouse, final I_S_Resource plant)
 	{
 		final Integer warehouseId = warehouse == null ? null : warehouse.getM_Warehouse_ID();
 		final Integer plantId = plant == null ? null : plant.getS_Resource_ID();

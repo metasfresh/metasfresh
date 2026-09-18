@@ -57,24 +57,7 @@ public class C_Order
 		orderCheckupBL.generateReportsOnCompleteIfNeeded(order);
 	}
 
-	/**
-	 * Deactivates the order's reports on reactivate only when {@code order.IsReprintOrderCheckup} is set, so that the
-	 * following completion rebuilds and reprints them. With the flag unset the reports are deliberately left
-	 * untouched: they stay active and stay {@code Processed}, which is what keeps the following completion from
-	 * enqueueing another printout.
-	 */
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
-	public void deactivateReportsOnReactivate(final I_C_Order order)
-	{
-		if (!order.isReprintOrderCheckup())
-		{
-			return;
-		}
-
-		orderCheckupBL.voidReports(order);
-	}
-
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void voidReports(final I_C_Order order)
 	{
 		orderCheckupBL.voidReports(order);

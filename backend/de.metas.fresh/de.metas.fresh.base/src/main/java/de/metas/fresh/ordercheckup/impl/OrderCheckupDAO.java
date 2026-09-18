@@ -22,17 +22,20 @@ package de.metas.fresh.ordercheckup.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
-import de.metas.order.OrderId;
+import de.metas.fresh.ordercheckup.OrderCheckupReportIdentity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class OrderCheckupDAO implements IOrderCheckupDAO
 {
@@ -67,14 +70,18 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 	}
 
 	@Override
-	public boolean hasActiveReports(@NonNull final OrderId orderId)
+	public List<I_C_Order_MFGWarehouse_Report> retrieveNewestReportPerIdentity(@NonNull final I_C_Order order)
 	{
-		return queryBL
-				.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_C_Order_ID, orderId)
-				.create()
-				.anyMatch();
+		final Map<OrderCheckupReportIdentity, I_C_Order_MFGWarehouse_Report> newestPerIdentity = new LinkedHashMap<>();
+		for (final I_C_Order_MFGWarehouse_Report report : retrieveAllReports(order))
+		{
+			newestPerIdentity.merge(
+					OrderCheckupReportIdentity.ofReport(report),
+					report,
+					(current, candidate) -> candidate.getC_Order_MFGWarehouse_Report_ID() > current.getC_Order_MFGWarehouse_Report_ID() ? candidate : current);
+		}
+
+		return ImmutableList.copyOf(newestPerIdentity.values());
 	}
 
 	@Override

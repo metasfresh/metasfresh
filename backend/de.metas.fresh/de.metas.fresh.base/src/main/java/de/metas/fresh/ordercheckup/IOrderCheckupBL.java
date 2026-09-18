@@ -31,7 +31,11 @@ public interface IOrderCheckupBL extends ISingletonService
 	/** Void all generated {@link I_C_Order_MFGWarehouse_Report}s for given order */
 	void voidReports(I_C_Order order);
 
-	/** Generates, unless {@code order.IsReprintOrderCheckup} is unset and the order still has active reports. */
+	/**
+	 * Generates and prints the reports. With {@code order.IsReprintOrderCheckup} unset, an order that already has
+	 * reports keeps them instead: the newest per report identity are reactivated, undoing the deactivation the
+	 * reactivate did.
+	 */
 	void generateReportsOnCompleteIfNeeded(I_C_Order order);
 
 	/**
