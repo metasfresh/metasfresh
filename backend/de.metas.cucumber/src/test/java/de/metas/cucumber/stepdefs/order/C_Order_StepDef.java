@@ -80,7 +80,11 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -94,6 +98,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
@@ -180,6 +185,7 @@ public class C_Order_StepDef
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -192,6 +198,7 @@ public class C_Order_StepDef
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData checkupReportTable;
 	@NonNull private final C_OrderLine_StepDef orderLineStepDef;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	@NonNull private final AD_User_StepDefData userTable;
@@ -648,6 +655,91 @@ public class C_Order_StepDef
 	}
 
 	/**
+	 * Runs the {@code C_Order_MFGWarehouse_Report_Generate} AD_Process for the order -- the "Bestellkontrolle"
+	 * -- as a user would from the order window once the order is completed. Registers the generated "Plant"
+	 * ({@code PL}) row under {@code <orderIdentifier>_checkup} and, when one was built, the "Warehouse"
+	 * ({@code WH}) row under {@code <orderIdentifier>_checkup_WH}; a {@code WH} row is not guaranteed, so that
+	 * registration is optional. Runs under the {@code "WebUI"} role this feature's Background authenticates as
+	 * -- the default ctx role matches none of the checkup records.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_Order_MFGWarehouse_Report_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the order-checkup reports are generated for the order identified by "order"
+	 * </pre>
+	 */
+	@And("the order-checkup reports are generated for the order identified by {string}")
+	public void generateOrderCheckupReports(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue("C_Order_MFGWarehouse_Report_Generate");
+
+		// run with the order's client ctx + WebUI role; the default cucumber ctx (System client/role) would match no records
+		final ClientId orderClientId = ClientId.ofRepoId(order.getAD_Client_ID());
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final RoleId roleId = roleDAO.getUserRoles(loggedUserId)
+				.stream()
+				.filter(r -> "WebUI".equals(r.getName()))
+				.map(Role::getId)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
+
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.setClientId(orderClientId)
+				.setRoleId(roleId)
+				.setCreateTemporaryCtx()
+				.setRecord(I_C_Order.Table_Name, order.getC_Order_ID())
+				.buildAndPrepareExecution()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult()
+				.propagateErrorIfAny();
+
+		// DocumentType='PL' (X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant): one row per order, built
+		// outside the per-line loop -- see OrderCheckupBL.generateReportsIfEligible. firstIdOnly() also pins
+		// that invariant: it throws if more than one ACTIVE 'PL' row exists for this order. The active-only
+		// filter is required, not cosmetic: voidReports() deactivates the previous row rather than deleting
+		// it, so a regenerate (this step called twice for the same order) would otherwise leave two rows and
+		// firstIdOnly() would throw "more than one" even though only one is current.
+		final int checkupReportId = queryBL.createQueryBuilder(C_Order_MFGWarehouse_Report_StepDefData.TABLE_NAME)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.addEqualsFilter("DocumentType", "PL")
+				.create()
+				.firstIdOnly();
+		if (checkupReportId <= 0)
+		{
+			throw new AdempiereException("No 'Plant' C_Order_MFGWarehouse_Report row was generated for order "
+					+ orderIdentifier + " (C_Order_ID=" + order.getC_Order_ID() + "). "
+					+ "Check that the order's M_Warehouse has a PP_Plant_ID and that its lines are not all packaging material.");
+		}
+		checkupReportTable.put(StepDefDataIdentifier.ofString(orderIdentifier + "_checkup"), checkupReportId);
+
+		// DocumentType='WH' (X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse): one row per (order,
+		// responsible-user) grouping, built only for lines whose product has a manufacturing PP_Product_Planning
+		// with a routing -- see OrderCheckupBL.generateReportsIfEligible. UNLIKE 'PL', "at most one active row"
+		// is NOT a production invariant here: the builder keys 'WH' rows by Util.mkKey(order, "WH",
+		// responsibleUserId), so an order whose routed lines run through workflows with DIFFERENT users-in-charge
+		// legitimately produces several. firstIdOnly() below throws DBException("QueryMoreThanOneRecordsFound")
+		// in that shape -- this step registers the 'WH' row only for an order whose routed lines share ONE
+		// user-in-charge (or have none); a multi-user order needs an explicit selector column, not added here.
+		// A missing row (no routed line at all) is not an error -- it is simply not registered.
+		final int checkupReportIdWH = queryBL.createQueryBuilder(C_Order_MFGWarehouse_Report_StepDefData.TABLE_NAME)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.addEqualsFilter("DocumentType", "WH")
+				.create()
+				.firstIdOnly();
+		if (checkupReportIdWH > 0)
+		{
+			checkupReportTable.put(StepDefDataIdentifier.ofString(orderIdentifier + "_checkup_WH"), checkupReportIdWH);
+		}
+	}
+
+	/**
 	 * Asserts that purchase order(s) are created.
 	 *
 	 * <p><strong>Columns:</strong>
@@ -830,6 +922,11 @@ public class C_Order_StepDef
 	 *   <li>{@code POReference} – the customer's purchase-order reference; a {@code @Date@} placeholder
 	 *       in the value is resolved to the current timestamp, so a scenario can keep it unique across
 	 *       repeated local runs</li>
+	 *   <li>{@code DescriptionBottom} – text printed at the end of the order document. Deliberately NOT a
+	 *       creation-time column ({@code metasfresh contains C_Orders:} has no such field): setting
+	 *       {@code C_DocTypeTarget_ID}/{@code C_BPartner_ID} at creation re-derives it from the doc type's
+	 *       {@code DocumentNote} ({@code C_Order} model interceptor {@code updateDescriptionFromDocType}), so
+	 *       a value set at creation time is silently overwritten before the insert.</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -877,6 +974,8 @@ public class C_Order_StepDef
 		// getAsOptionalName (not ...String) so that a @Date@ placeholder in the value is resolved
 		tableRow.getAsOptionalName(COLUMNNAME_POReference)
 				.ifPresent(order::setPOReference);
+		tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DescriptionBottom)
+				.ifPresent(order::setDescriptionBottom);
 		saveRecord(order);
 
 		orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
