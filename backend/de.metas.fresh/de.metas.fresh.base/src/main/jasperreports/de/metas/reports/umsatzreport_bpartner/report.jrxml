@@ -25,8 +25,6 @@
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal"/>
-	<parameter name="C_BPartner_SalesRep_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT * FROM report.umsatzliste_bpartner_report(
 	$P{Base_Period_Start},
@@ -41,8 +39,8 @@
 	$P{M_AttributeSetInstance_ID},
 	$P{AD_Org_ID},
 	$P{ad_language},
-	$P{C_BP_Group_ID},
-	$P{C_BPartner_SalesRep_ID}
+	null,
+	null
 )]]>
 	</queryString>
 	<field name="bp_name" class="java.lang.String">
