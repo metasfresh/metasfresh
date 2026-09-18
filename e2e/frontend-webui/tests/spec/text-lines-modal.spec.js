@@ -183,6 +183,29 @@ function scopeCellOf(page, rowId) {
 }
 
 /**
+ * The scope caption a row is currently SHOWING, read from whichever of the cell's two
+ * representations is on screen. Out of edit mode the grid paints the caption as the cell's text;
+ * while the inline editor is still open the same caption lives in the editor's readonly `<input>`
+ * instead -- and an input's value is not text content, so reading the cell's text there returns an
+ * empty string even though the user is plainly looking at the value. Both are the rendered value,
+ * so both count; which one is present just depends on whether the cell has been left yet.
+ */
+async function readRenderedScope(page, rowId) {
+  const cell = scopeCellOf(page, rowId);
+  const editorInput = cell.locator('input.input-field');
+  try {
+    if ((await editorInput.count()) > 0) {
+      return (await editorInput.inputValue()).trim();
+    }
+    return (await cell.innerText()).trim();
+  } catch (cellReRenderedMidRead) {
+    // the cell swaps between its editor and its painted text as edit mode ends, so a read can land
+    // on an element that is being replaced -- report "nothing yet" and let the caller's poll retry
+    return '';
+  }
+}
+
+/**
  * Opens a text row's scope cell for editing and returns the dropdown's options as a
  * `{ <reference-list code>: <rendered caption> }` map, read from the list the browser actually
  * painted. Leaves the dropdown open so the caller can pick one of the options it just read.
@@ -526,13 +549,17 @@ Drives the text-lines modal end to end from the sales order line tab:
       const expectedCaption = options[SCOPE.followingLines];
       await selectOpenScopeOption(page, { viewId, scopeKey: SCOPE.followingLines });
 
-      await expect(scopeCellOf(page, textLineOnEmptyOrderId)).toHaveText(expectedCaption);
+      await expect
+        .poll(() => readRenderedScope(page, textLineOnEmptyOrderId), { timeout: SLOW_ACTION_TIMEOUT })
+        .toBe(expectedCaption);
 
       // reopen the modal and read the cell again -- the picked value has to come back from the
       // database, not from the view instance that the click itself updated
       await closeTextLinesModal(page);
       viewId = await openTextLinesModal(page, orderId);
-      await expect(scopeCellOf(page, textLineOnEmptyOrderId)).toHaveText(expectedCaption);
+      await expect
+        .poll(() => readRenderedScope(page, textLineOnEmptyOrderId), { timeout: SLOW_ACTION_TIMEOUT })
+        .toBe(expectedCaption);
     });
 
     await closeTextLinesModal(page);
