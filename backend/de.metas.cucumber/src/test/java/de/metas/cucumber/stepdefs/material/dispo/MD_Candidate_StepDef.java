@@ -447,17 +447,11 @@ public class MD_Candidate_StepDef
 	 * Drains the {@code de.metas.material} RabbitMQ queue before validating, rather than leaving that as a
 	 * standalone feature-file step (see {@code de.metas.cucumber/CLAUDE.md} rule 7).
 	 * <p>
-	 * <b>That drain is NOT a settle barrier, and this poll is not one either.</b> Emptying the queue only
-	 * consumes the events that have already been <em>produced</em>; it says nothing about an event a still
-	 * running work package has yet to post. A sales order, for instance, has its shipment schedule created by
-	 * one {@code M_ShipmentScheduleQueue} work package and then revalidated by a second one, and that second
-	 * one's {@code ShipmentScheduleUpdatedEvent} re-writes the demand candidate with the <em>same</em> Qty and
-	 * ATP. Because both writes look identical to {@link #tryAndWaitForCandidate}, matching here proves only
-	 * that <em>a</em> matching row exists - never that it is the last write. A scenario whose next step
-	 * <em>mutates</em> that candidate (e.g. the {@code MD_Candidate_Remove_From_ATP} process) must therefore
-	 * wait for the producing pipeline itself first, in the feature file, at the producing point - which is
-	 * rule 7's own carve-out and is what {@code md_candidate_remove_from_atp.feature} now does after every
-	 * sales-order completion, via {@code M_ShipmentSchedules are found} with {@code IsToRecompute = N}.
+	 * <b>Neither the drain nor this poll is a settle barrier.</b> The drain consumes only events already
+	 * produced, and a matching row proves only that <em>a</em> write landed - never that it was the last one
+	 * (a re-write carrying identical values is indistinguishable here). So a scenario whose next step
+	 * <em>mutates</em> the candidate must first wait at the producing point, in the feature file - rule 7's
+	 * own carve-out.
 	 * <p>
 	 * DataTable columns (one row per expected candidate):
 	 * <ul>
@@ -849,11 +843,10 @@ public class MD_Candidate_StepDef
 	 * Runs the {@code MD_Candidate_RemoveFromATP} process for a raw {@code MD_Candidate_ID} - one the
 	 * scenario does not have to own - and asserts that it FAILS, carrying the given text.
 	 * <p>
-	 * This guards the process's error contract. Its SQL function checks three preconditions (candidate
-	 * missing or inactive, candidate is itself a STOCK candidate, no STOCK sibling) before it writes
-	 * anything, and raises on each. Were it to report those as an ordinary result instead, the process
-	 * would come back successful having changed nothing, and the operator would be left with an
-	 * unchanged record and no reason - which is exactly what this step exists to prevent regressing.
+	 * Guards the process's error contract: its SQL function raises on each of its three preconditions
+	 * (candidate missing or inactive, candidate is itself a STOCK candidate, no STOCK sibling) before it
+	 * writes anything. Reporting those as an ordinary result would make the process succeed having changed
+	 * nothing.
 	 * <p>
 	 * Gherkin:
 	 * <pre>

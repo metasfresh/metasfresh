@@ -61,11 +61,9 @@ Feature: MD_Candidate_Remove_From_ATP process
 
     And the order identified by so_atp_001 is completed
 
-    # The order's shipment schedule is created by one async work package and then REVALIDATED by a
-    # second one, whose ShipmentScheduleUpdatedEvent re-writes the demand candidate with the SAME
-    # Qty/ATP values. The MD_Candidate poll below cannot tell those two writes apart, so without
-    # this barrier the MD_Candidate_Remove_From_ATP process can run between them and have its
-    # result silently overwritten. IsToRecompute='N' is true only once that revalidation has run.
+    # A second work package revalidates the shipment schedule and re-writes the demand candidate with
+    # the SAME Qty/ATP, so the MD_Candidate poll below cannot tell the two writes apart. Without this
+    # barrier the removal can run between them and be silently overwritten.
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipsched_atp_001 | sol_atp_001               | N             |
@@ -147,7 +145,6 @@ Feature: MD_Candidate_Remove_From_ATP process
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # Barrier: wait for the shipment-schedule revalidation (see the note in the first scenario).
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipsched_atp_003 | sol_atp_003               | N             |
@@ -210,7 +207,6 @@ Feature: MD_Candidate_Remove_From_ATP process
     And the order identified by so_004_1 is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # Barrier: wait for the shipment-schedule revalidation (see the note in the first scenario).
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipsched_004_1 | sol_004_1                 | N             |
@@ -235,7 +231,6 @@ Feature: MD_Candidate_Remove_From_ATP process
     And the order identified by so_004_2 is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # Barrier: wait for the shipment-schedule revalidation (see the note in the first scenario).
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipsched_004_2 | sol_004_2                 | N             |
@@ -259,7 +254,6 @@ Feature: MD_Candidate_Remove_From_ATP process
       | sol_004_3  | so_004_3   | product_atp  | 35         |
     And the order identified by so_004_3 is completed
 
-    # Barrier: wait for the shipment-schedule revalidation (see the note in the first scenario).
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipsched_004_3 | sol_004_3                 | N             |
