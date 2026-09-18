@@ -544,10 +544,13 @@ public class MD_Candidate_StepDef
 	 * asserts it against the given DataTable row.
 	 * <p>
 	 * Drains the {@code de.metas.material} RabbitMQ queue before validating, rather than leaving that as a
-	 * standalone feature-file step (see {@code de.metas.cucumber/CLAUDE.md} rule 7). This consumer's
-	 * {@link #tryAndWaitForCandidate} already matches a <em>complete</em> candidate row (type, business case,
-	 * product, date, qty, ATP) that no later event revises, so draining first only adds a settled read on top
-	 * of that poll - it never masks a real failure.
+	 * standalone feature-file step (see {@code de.metas.cucumber/CLAUDE.md} rule 7).
+	 * <p>
+	 * <b>Neither the drain nor this poll is a settle barrier.</b> The drain consumes only events already
+	 * produced, and a matching row proves only that <em>a</em> write landed - never that it was the last one
+	 * (a re-write carrying identical values is indistinguishable here). So a scenario whose next step
+	 * <em>mutates</em> the candidate must first wait at the producing point, in the feature file - rule 7's
+	 * own carve-out.
 	 * <p>
 	 * DataTable columns (one row per expected candidate):
 	 * <ul>
@@ -933,6 +936,65 @@ public class MD_Candidate_StepDef
 				.getResult();
 		assertThat(result).isNotNull();
 		assertThat(result.isError()).isFalse();
+	}
+
+	/**
+	 * Runs the {@code MD_Candidate_RemoveFromATP} process for a raw {@code MD_Candidate_ID} - one the
+	 * scenario does not have to own - and asserts that it FAILS, carrying the given text.
+	 * <p>
+	 * Guards the process's error contract: its SQL function raises on each of its three preconditions
+	 * (candidate missing or inactive, candidate is itself a STOCK candidate, no STOCK sibling) before it
+	 * writes anything. Reporting those as an ordinary result would make the process succeed having changed
+	 * nothing.
+	 * <p>
+	 * Gherkin:
+	 * <pre>
+	 * {@code
+	 * Then the MD_Candidate_Remove_From_ATP process is run for MD_Candidate_ID 999999999 and fails with 'not found or not active'
+	 * }
+	 * </pre>
+	 */
+	@And("^the MD_Candidate_Remove_From_ATP process is run for MD_Candidate_ID (.*) and fails with '(.*)'$")
+	public void run_md_candidate_remove_from_atp_process_expecting_failure(
+			final int mdCandidateId,
+			@NonNull final String expectedMessagePart)
+	{
+		final AdProcessId processId = processDAO.retrieveProcessIdByValue("MD_Candidate_RemoveFromATP");
+		assertThat(processId).isNotNull();
+
+		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setCtx(Env.getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.Unknown)
+				.setAD_Process_ID(processId)
+				.setAD_PInstance(pInstanceDAO.createAD_PInstance(processId))
+				.setReportLanguage(Language.getBaseLanguage())
+				.setRecord(TableRecordReference.of("MD_Candidate", mdCandidateId))
+				.build();
+
+		pInstanceDAO.saveProcessInfoOnly(processInfo);
+
+		String actualMessage;
+		try
+		{
+			final ProcessExecutionResult result = ProcessExecutor.builder(processInfo)
+					.executeSync()
+					.getResult();
+			assertThat(result).isNotNull();
+			assertThat(result.isError())
+					.as("MD_Candidate_RemoveFromATP for MD_Candidate_ID=%s must report an error; summary was: %s",
+						mdCandidateId, result.getSummary())
+					.isTrue();
+			actualMessage = result.getSummary();
+		}
+		catch (final RuntimeException e)
+		{
+			// an outright throw is an equally loud failure - keep its message for the text assertion below
+			actualMessage = e.getMessage();
+		}
+
+		assertThat(actualMessage)
+				.as("error reported by MD_Candidate_RemoveFromATP for MD_Candidate_ID=%s", mdCandidateId)
+				.contains(expectedMessagePart);
 	}
 
 	/**
