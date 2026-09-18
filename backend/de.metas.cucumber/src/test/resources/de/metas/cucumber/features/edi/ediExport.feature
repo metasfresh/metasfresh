@@ -595,14 +595,17 @@ Feature: EDI_cctop_invoic_v export format
       | EDI_Desadv_ID.Identifier |
       | desadv                   |
 
-    # Wait for U (Enqueued) — matches the sibling "As a user I want to export EDI_Exp_Desadv"
-    # scenario above. Under this Background's default (One-DESADV-Per-ORDERS), the DESADV header's
-    # own status is DERIVED from its linked shipment's status once the shipment reaches D
-    # (DesadvBL.recomputeDesadvStatusFromInOuts falls through to Pending for a not-yet-Sent shipment),
-    # so waiting for the header to reach D here is unsafe — U is the reliable signal.
+    # Wait for D (SendingStarted) — this scenario's own Given overrides the Background to
+    # OneDesadvPerShipment='N' (the 540405/EDI_Exp_Desadv pipeline, same as S29231_150 below), so
+    # DesadvBL.isOneDesadvPerShipment(desadv) is false and recomputeDesadvStatusFromInOuts is
+    # SKIPPED for this DESADV — the header status is never overwritten to Pending. D is therefore
+    # both reachable and stable, and it is the point at which the RabbitMQ queue is actually
+    # declared (Spring AMQP declares it on the first publish, in sendAMQPMessage()); U only means
+    # "enqueued, not yet sent" and the next step polls that queue, so waiting for D avoids the same
+    # queue-not-yet-declared race documented at S29231_150 below.
     And after not more than 60s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
-      | desadv                   | U                |
+      | desadv                   | D                |
 
     And RabbitMQ receives a EDI_Exp_Desadv
       | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |
