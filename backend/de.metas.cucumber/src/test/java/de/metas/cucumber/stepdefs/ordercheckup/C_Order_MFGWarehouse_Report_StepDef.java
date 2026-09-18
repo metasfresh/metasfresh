@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
+import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
@@ -68,6 +69,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
+	private final IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
 
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData reportTable;
 	@NonNull private final C_Order_StepDefData orderTable;
@@ -232,6 +234,18 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 	private boolean isDocOutboundWorkPackageEnqueuedFor(@NonNull final I_C_Order_MFGWarehouse_Report report)
 	{
+		return countDocOutboundWorkPackagesFor(report) > 0;
+	}
+
+	/**
+	 * Counts the doc-outbound work packages ever enqueued for one {@code C_Order_MFGWarehouse_Report}. One such
+	 * work package is created the moment the report's {@code Processed} flag first flips to {@code true} (see
+	 * {@code AbstractDocOutboundProducer#createDocOutbound}); the underlying {@code C_Queue_Element} is never
+	 * deleted afterward, so this count only ever grows -- it is the way to prove that a later action (e.g.
+	 * reactivating the report) did NOT enqueue an additional one.
+	 */
+	private long countDocOutboundWorkPackagesFor(@NonNull final I_C_Order_MFGWarehouse_Report report)
+	{
 		final TableRecordReference reportReference = TableRecordReference.of(report);
 
 		return queryBL.createQueryBuilder(I_C_Queue_Element.class)
@@ -241,7 +255,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 				.andCollect(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID, I_C_Queue_PackageProcessor.class)
 				.addEqualsFilter(I_C_Queue_PackageProcessor.COLUMNNAME_InternalName, DOC_OUTBOUND_PACKAGE_PROCESSOR_INTERNAL_NAME)
 				.create()
-				.anyMatch();
+				.count();
 	}
 
 	/**
@@ -280,5 +294,81 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 			assertThat(actualOrderLineIds).as("Order lines referenced by %s", report).isEqualTo(expectedOrderLineIds);
 		});
+	}
+
+	/**
+	 * Asserts the total number of doc-outbound work packages ever enqueued across ALL {@code
+	 * C_Order_MFGWarehouse_Report} records (active or not) of the given order. Because the underlying {@code
+	 * C_Queue_Element} is never deleted once created (see {@link #countDocOutboundWorkPackagesFor}), this count can
+	 * only grow when a *new* report is built (its {@code Processed} flag flipping false-&gt;true for the first
+	 * time) -- reactivating an existing report's header (as {@code restoreMostRecentGeneration} does) never
+	 * touches {@code Processed} and so never changes it. Asserting the same count before and after such an action
+	 * is how a scenario proves no work package was (re-)enqueued by it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID</b> — (required, identifier-ref) the sales order whose reports' work packages are counted<br>
+	 *   <b>WorkPackageCount</b> — (required) expected total count<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Order_MFGWarehouse_Report doc-outbound work package count is:
+	 *   | C_Order_ID | WorkPackageCount |
+	 *   | order      | 4                 |
+	 * </pre>
+	 */
+	@Then("C_Order_MFGWarehouse_Report doc-outbound work package count is:")
+	public void assert_doc_outbound_work_package_count(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Order order = row.getAsIdentifier("C_Order_ID").lookupNotNullIn(orderTable);
+			final int expectedCount = row.getAsInt("WorkPackageCount");
+
+			final long actualCount = orderCheckupDAO.retrieveAllReports(order).stream()
+					.mapToLong(this::countDocOutboundWorkPackagesFor)
+					.sum();
+
+			assertThat(actualCount).as("Doc-outbound work package count for order %s", order).isEqualTo(expectedCount);
+		});
+	}
+
+	/**
+	 * Voids (deactivates) every {@code C_Order_MFGWarehouse_Report} header currently held for the given order --
+	 * i.e. calls {@code IOrderCheckupBL#voidReports}, the same production method
+	 * {@code generateReportsIfEligible} runs before rebuilding a fresh set of reports. Used to bring an order into
+	 * the "several deactivated generations" starting state a restore scenario needs, without going through a full
+	 * completion cycle.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the Bestellkontrolle reports for the order identified by order are voided
+	 * </pre>
+	 */
+	@And("^the Bestellkontrolle reports for the order identified by (.*) are voided$")
+	public void void_reports(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		orderCheckupBL.voidReports(order);
+	}
+
+	/**
+	 * Calls {@code IOrderCheckupBL#restoreMostRecentGeneration} for the given order -- reactivates the
+	 * {@code C_Order_MFGWarehouse_Report} headers of its highest {@code OrderCheckupGeneration}, leaving any older
+	 * generation as-is.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the most recent Bestellkontrolle generation for the order identified by order is restored
+	 * </pre>
+	 */
+	@And("^the most recent Bestellkontrolle generation for the order identified by (.*) is restored$")
+	public void restore_most_recent_generation(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		orderCheckupBL.restoreMostRecentGeneration(order);
 	}
 }

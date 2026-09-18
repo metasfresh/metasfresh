@@ -200,3 +200,62 @@ Feature: Bestellkontrolle reprint after reactivate
     And C_Order_MFGWarehouse_Report is located:
       | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
       | plGen1Void | order      | PL           | plant       | false    | 1                      |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  # Restore mechanics scenario, not one of the REQUIREMENTS TC1-TC10 table entries -- next free TC number.
+  @Id:S30709_TC12
+  Scenario: Restoring the most recent generation reactivates only the higher-generation reports
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | Y                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+    And the order identified by order is completed
+
+    When the order identified by order is reactivated
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | orderLine                 | 2              |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLineB | order      | product      | 3          |
+    And the order identified by order is completed
+
+    Then C_Order_MFGWarehouse_Report active and inactive counts are:
+      | C_Order_ID | ActiveCount | InactiveCount |
+      | order      | 2           | 2             |
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 4                |
+
+    When the Bestellkontrolle reports for the order identified by order are voided
+
+    Then C_Order_MFGWarehouse_Report active and inactive counts are:
+      | C_Order_ID | ActiveCount | InactiveCount |
+      | order      | 0           | 4             |
+
+    When the most recent Bestellkontrolle generation for the order identified by order is restored
+
+    Then C_Order_MFGWarehouse_Report active and inactive counts are:
+      | C_Order_ID | ActiveCount | InactiveCount |
+      | order      | 2           | 2             |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | restoredWhRpt | order      | WH           | warehouse      | plant       | true     | 2                      |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier    | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | restoredPlRpt | order      | PL           | plant       | true     | 2                      |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | oldWhRpt   | order      | WH           | warehouse      | plant       | false    | 1                      |
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
+      | oldPlRpt   | order      | PL           | plant       | false    | 1                      |
+    # The restore only reactivated headers -- it did not build anything new, so the work package count from
+    # before the void/restore cycle (4, asserted above) is unchanged: no work package was (re-)enqueued.
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 4                |

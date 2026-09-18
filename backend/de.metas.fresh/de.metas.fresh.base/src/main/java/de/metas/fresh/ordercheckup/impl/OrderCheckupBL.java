@@ -292,6 +292,21 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
+	public boolean restoreMostRecentGeneration(@NonNull final I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final List<I_C_Order_MFGWarehouse_Report> reportsToRestore = orderCheckupDAO.retrieveReportsOfMostRecentGeneration(orderId);
+
+		for (final I_C_Order_MFGWarehouse_Report report : reportsToRestore)
+		{
+			report.setIsActive(true);
+			InterfaceWrapperHelper.save(report);
+		}
+
+		return !reportsToRestore.isEmpty();
+	}
+
+	@Override
 	public int getNumberOfCopies(@NonNull final I_C_Printing_Queue queueItem, @NonNull final I_AD_Archive printOut)
 	{
 		final I_C_Order_MFGWarehouse_Report report = getReportOrNull(printOut);

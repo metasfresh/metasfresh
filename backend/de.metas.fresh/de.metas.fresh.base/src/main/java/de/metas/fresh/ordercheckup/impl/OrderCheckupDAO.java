@@ -28,6 +28,7 @@ import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
+import com.google.common.collect.ImmutableList;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.IQuery;
@@ -82,5 +83,31 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 				.aggregate(I_C_Order_MFGWarehouse_Report.COLUMNNAME_OrderCheckupGeneration, IQuery.Aggregate.MAX, Integer.class);
 
 		return CoalesceUtil.coalesce(maxGeneration, 0) + 1;
+	}
+
+	@Override
+	public List<I_C_Order_MFGWarehouse_Report> retrieveReportsOfMostRecentGeneration(final OrderId orderId)
+	{
+		final Integer maxGeneration = queryBL
+				.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class)
+				// no addOnlyActiveRecordsFilter() -- generations before this one may already be inactive; we still
+				// need to know the highest generation number that was ever stamped
+				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_C_Order_ID, orderId)
+				.create()
+				.aggregate(I_C_Order_MFGWarehouse_Report.COLUMNNAME_OrderCheckupGeneration, IQuery.Aggregate.MAX, Integer.class);
+
+		if (maxGeneration == null)
+		{
+			// either no reports at all for this order, or every report predates the OrderCheckupGeneration column
+			// (legacy data, all-NULL) -- nothing to selectively restore in either case.
+			return ImmutableList.of();
+		}
+
+		return queryBL
+				.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class)
+				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMNNAME_OrderCheckupGeneration, maxGeneration)
+				.create()
+				.list(I_C_Order_MFGWarehouse_Report.class);
 	}
 }
