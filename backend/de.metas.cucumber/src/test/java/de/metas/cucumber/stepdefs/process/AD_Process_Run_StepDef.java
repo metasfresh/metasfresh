@@ -41,7 +41,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,7 +79,7 @@ public class AD_Process_Run_StepDef
 	@When("the AD_Process with value {string} is run")
 	public void run_ad_process_by_value(@NonNull final String processValue)
 	{
-		runProcess(processValue, null, null);
+		executeProcess(newProcessInfoBuilder(processValue));
 	}
 
 	/**
@@ -113,7 +112,10 @@ public class AD_Process_Run_StepDef
 				.map(recordRef -> String.valueOf(recordRef.getRecord_ID()))
 				.collect(Collectors.joining(","));
 
-		runProcess(processValue, tableName, tableName + "_ID IN (" + recordIdsCSV + ")");
+		final ProcessInfo.ProcessInfoBuilder processInfo = newProcessInfoBuilder(processValue)
+				.setTableName(tableName)
+				.setWhereClause(tableName + "_ID IN (" + recordIdsCSV + ")");
+		executeProcess(processInfo);
 	}
 
 	/**
@@ -137,22 +139,18 @@ public class AD_Process_Run_StepDef
 			@NonNull final String identifier)
 	{
 		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(identifier));
-		runProcess(processValue, null, null, recordRef);
+		final ProcessInfo.ProcessInfoBuilder processInfo = newProcessInfoBuilder(processValue).setRecord(recordRef);
+		executeProcess(processInfo);
 	}
 
-	private void runProcess(
-			@NonNull final String processValue,
-			@Nullable final String tableName,
-			@Nullable final String whereClause)
-	{
-		runProcess(processValue, tableName, whereClause, null);
-	}
-
-	private void runProcess(
-			@NonNull final String processValue,
-			@Nullable final String tableName,
-			@Nullable final String whereClause,
-			@Nullable final TableRecordReference recordRef)
+	/**
+	 * Builds the {@code ProcessInfo} common to all three run-modes above: the {@code AD_Process} resolved by
+	 * {@code Value}, executed under the test's client context and the {@code WebUI} role. Callers add whichever
+	 * target the process needs -- nothing (no-selection), {@code setTableName}/{@code setWhereClause} (a
+	 * where-clause selection), or {@code setRecord} (a single directly-addressed record) -- and then hand the
+	 * result to {@link #executeProcess(ProcessInfo.ProcessInfoBuilder)}.
+	 */
+	private ProcessInfo.ProcessInfoBuilder newProcessInfoBuilder(@NonNull final String processValue)
 	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByValue(processValue);
 		assertThat(processId).as("AD_Process with Value=%s must exist", processValue).isNotNull();
@@ -166,24 +164,15 @@ public class AD_Process_Run_StepDef
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("WebUI role not found for user " + loggedUserId));
 
-		final ProcessInfo.ProcessInfoBuilder processInfo = ProcessInfo.builder()
+		return ProcessInfo.builder()
 				.setAD_Process_ID(processId.getRepoId())
 				.setClientId(clientId)
 				.setRoleId(roleId)
 				.setCreateTemporaryCtx();
+	}
 
-		// setTableName(null) is NOT the same as never calling it: it pins AD_Table_ID to -1 and kills the
-		// AD_PInstance fallback the no-selection path relies on.
-		if (tableName != null)
-		{
-			processInfo.setTableName(tableName).setWhereClause(whereClause);
-		}
-
-		if (recordRef != null)
-		{
-			processInfo.setRecord(recordRef);
-		}
-
+	private void executeProcess(@NonNull final ProcessInfo.ProcessInfoBuilder processInfo)
+	{
 		processInfo.buildAndPrepareExecution()
 				.switchContextWhenRunning()
 				.executeSync()

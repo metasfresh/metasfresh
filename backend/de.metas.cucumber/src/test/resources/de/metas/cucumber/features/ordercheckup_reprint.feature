@@ -117,7 +117,7 @@ Feature: Bestellkontrolle reprint after reactivate
     And C_Order_MFGWarehouse_Report is located:
       | Identifier    | C_Order_ID | DocumentType | PP_Plant_ID | IsActive |
       | restoredPlRpt | order      | PL           | plant       | true     |
-    # Known limitation (REQUIREMENTS §3): the restored record still points at the original order line only.
+    # Known limitation: the restored record still points at the original order line only.
     And C_Order_MFGWarehouse_Report references order lines:
       | Identifier    | C_OrderLine_ID |
       | restoredWhRpt | orderLine      |
@@ -178,7 +178,7 @@ Feature: Bestellkontrolle reprint after reactivate
 
 # ####################################################################################################################
 # ####################################################################################################################
-  # Generation-mechanics scenario, not one of the REQUIREMENTS TC1-TC10 table entries -- next free TC number.
+  # Generation-mechanics scenario -- next free TC number.
   @Id:S30709_TC11
   Scenario: Two successive completions stamp consecutive generation numbers on every report
     Given metasfresh contains C_Orders:
@@ -210,7 +210,7 @@ Feature: Bestellkontrolle reprint after reactivate
 
 # ####################################################################################################################
 # ####################################################################################################################
-  # Restore mechanics scenario, not one of the REQUIREMENTS TC1-TC10 table entries -- next free TC number.
+  # Restore mechanics scenario -- next free TC number.
   @Id:S30709_TC12
   Scenario: Restoring the most recent generation reactivates only the higher-generation reports
     Given metasfresh contains C_Orders:
@@ -267,7 +267,7 @@ Feature: Bestellkontrolle reprint after reactivate
 # ####################################################################################################################
 # ####################################################################################################################
   @Id:S30709_TC4
-  Scenario: Flag not set - repeated reactivate/complete cycles keep the whole original record set active
+  Scenario: Flag not set - reactivating and completing after a second generation exists restores only the most recent one, and stays stable across repeated cycles
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
       | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
@@ -276,24 +276,44 @@ Feature: Bestellkontrolle reprint after reactivate
       | orderLine  | order      | product      | 5          |
     And the order identified by order is completed
 
+    # The manual regeneration process ignores the flag and always rebuilds (mechanics pinned by TC7)
+    # -- used here only to get a genuine second generation on the books, without ever setting the
+    # flag, before the flag-off restore path below is exercised.
+    When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run for the record identified by 'order'
+
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
+      | WH           | warehouse      | plant       | 1                      | false    |
+      | PL           |                | plant       | 1                      | false    |
+      | WH           | warehouse      | plant       | 2                      | true     |
+      | PL           |                | plant       | 2                      | true     |
+
     When the order identified by order is reactivated
     And the order identified by order is completed
 
+    # Flag stays unset throughout: the completion restores generation 2 (the most recent) rather than
+    # generation 1 or a fresh rebuild. Pinning OrderCheckupGeneration here is what actually
+    # distinguishes "restore the most recent generation" from "restore everything" / "restore
+    # generation 1" / "restore max(ID)" / "restore max(Created)" -- generation 1 must stay
+    # deactivated while generation 2 comes back active.
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
-      | WH           | warehouse      | plant       | true     |
-      | PL           |                | plant       | true     |
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
+      | WH           | warehouse      | plant       | 1                      | false    |
+      | PL           |                | plant       | 1                      | false    |
+      | WH           | warehouse      | plant       | 2                      | true     |
+      | PL           |                | plant       | 2                      | true     |
 
     When the order identified by order is reactivated
     And the order identified by order is completed
 
-    # Two reactivate/complete cycles, flag never set: the same original generation keeps coming back whole
-    # (a warehouse AND a plant record, both active) -- a naive "exactly one active record" assertion would
-    # wrongly pass a state missing one of the two.
+    # Second flag-off cycle: still generation 2, still exactly the same 4 records -- the restore is
+    # idempotent and never accumulates a third generation across repeated reactivate/complete cycles.
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
-      | WH           | warehouse      | plant       | true     |
-      | PL           |                | plant       | true     |
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
+      | WH           | warehouse      | plant       | 1                      | false    |
+      | PL           |                | plant       | 1                      | false    |
+      | WH           | warehouse      | plant       | 2                      | true     |
+      | PL           |                | plant       | 2                      | true     |
 
 
 # ####################################################################################################################
@@ -367,7 +387,7 @@ Feature: Bestellkontrolle reprint after reactivate
       | WH           | warehouse      | plant       | 1                      | true     |
       | PL           |                | plant       | 1                      | true     |
 
-    # The manual regeneration process (AC11): runs the unconditional rebuild regardless of the flag, unlike
+    # The manual regeneration process runs the unconditional rebuild regardless of the flag, unlike
     # the completion path which restored the existing generation above instead of rebuilding.
     When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run for the record identified by 'order'
 
