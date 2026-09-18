@@ -14,7 +14,27 @@ import org.compiere.SpringContextHolder;
 
 public class QueueProcessorFactory implements IQueueProcessorFactory
 {
-	private final QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+	// gh Spring bootstrap: this class is instantiated eagerly (via Services.get(IQueueProcessorFactory.class))
+	// from other beans' field initializers, i.e. potentially *during* Spring's own container refresh, before
+	// SpringContextHolder is set (see org.compiere.SpringContextHolder / de.metas.StartupListener). Resolving
+	// QueueProcessorDescriptorIndex.getInstance() eagerly here throws "SpringApplicationContext not configured
+	// yet" whenever this happens to sit on the bean-graph traversal that constructs it. Deferred with the
+	// lazy-init pattern (docs/coding-rules/service-injection.md) -- see WorkPackageQueueFactory for the same fix
+	// and why plain field-init deferral is used instead of SpringContextHolder.lazyBean(...).
+	@javax.annotation.Nullable
+	private QueueProcessorDescriptorIndex _queueProcessorDescriptorIndex;
+
+	@NonNull
+	private QueueProcessorDescriptorIndex queueProcessorDescriptorIndex()
+	{
+		QueueProcessorDescriptorIndex result = _queueProcessorDescriptorIndex;
+		if (result == null)
+		{
+			result = _queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
+		}
+		return result;
+	}
+
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 	private IWorkpackageLogsRepository getLogsRepository()
@@ -40,7 +60,7 @@ public class QueueProcessorFactory implements IQueueProcessorFactory
 	@Override
 	public IQueueProcessor createAsynchronousQueueProcessor(@NonNull final QueuePackageProcessorId packageProcessorId)
 	{
-		final I_C_Queue_Processor queueProcessorConfig = queueProcessorDescriptorIndex.getQueueProcessor(packageProcessorId);
+		final I_C_Queue_Processor queueProcessorConfig = queueProcessorDescriptorIndex().getQueueProcessor(packageProcessorId);
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorConfig);
 
