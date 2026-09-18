@@ -105,6 +105,15 @@ export const PRODUCT_WINDOW_ID = 140;
 export const CURRENCY_RATE_WINDOW_ID = 116;
 
 /**
+ * Product Costs window (Produktkosten)
+ * Table: M_Product (main tab AD_Tab_ID=700, TabLevel 0)
+ * Window ID: 344
+ * Description: Core product-costing master-data window. Carries the co-product
+ * cost-distribution field CoProductCostDistributionPercent (AD_Field 784982, on tab 700).
+ */
+export const PRODUCT_COST_WINDOW_ID = 344;
+
+/**
  * Resource window (Ressource)
  * Table: S_Resource
  * Window ID: 236 (main tab AD_Tab_ID=414 "Ressource")

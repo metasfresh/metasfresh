@@ -144,6 +144,9 @@ public class OrderBOMCostCalculatorRepository implements BOMCostCalculatorReposi
 				.qty(mainProductQty)
 				.lines(bomLines)
 				.costPrice(getProductCostPrice(mainProductId, orderCosts, mainProductQty.getUOM()))
+				// Per-order Average/MAI rollup: defer the Σp ≤ 100% guard to the PP_Order post-calculation
+				// guard (the single rejection point); do not pre-empt it here at order-cost creation.
+				.perOrderRollup(true)
 				.build();
 	}
 

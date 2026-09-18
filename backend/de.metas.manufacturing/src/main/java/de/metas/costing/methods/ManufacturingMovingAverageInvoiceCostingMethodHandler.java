@@ -30,6 +30,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -78,16 +79,13 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
 			currentCost = utils.getCurrentCostForUpdate(request);
-			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
+			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts, false);
 		}
 		else if (costCollectorType.isCoOrByProductReceipt())
 		{
-			// CO/BY product quantities are negative, so we are negating them here to get a positive "received" qty
-			final CostDetailCreateRequest requestEffective = request.withQty(request.getQty().negate());
-			
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
-			currentCost = utils.getCurrentCostForUpdate(requestEffective);
-			result = createMainProductOrCoProductReceipt(requestEffective, currentCost, orderCosts);
+			currentCost = utils.getCurrentCostForUpdate(request);
+			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts, true);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
@@ -148,24 +146,40 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 	private CostDetailCreateResult createMainProductOrCoProductReceipt(
 			@NonNull final CostDetailCreateRequest request,
 			@NonNull final CurrentCost currentCost,
-			@NonNull final PPOrderCosts orderCosts)
+			@NonNull final PPOrderCosts orderCosts,
+			final boolean isCoOrByProductReceipt)
 	{
 		final CostSegmentAndElement costSegmentAndElement = utils.extractCostSegmentAndElement(request);
+
+		// A by-product receipt books ZERO regardless of the by-product's own M_Cost, mirroring its
+		// post-calculation zeroing in PPOrderCosts - so a stray current cost cannot drive the total inbound costs negative.
+		final boolean isByProductReceipt = isCoOrByProductReceipt
+				&& orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
+				.map(PPOrderCost::isByProduct)
+				.orElse(false);
 
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
 		{
-			// Value the receipt at the product's CURRENT M_Cost, not the frozen BOM-rollup price.
-			// Any make-vs-average delta is intentionally left in WIP (not forced to zero).
+			// Value the receipt at the product's CURRENT M_Cost, not the frozen BOM-rollup price. Any
+			// make-vs-average delta is intentionally left in WIP (not forced to zero).
 			final CostPrice price = currentCost.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
-			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
+			final CostAmount amt;
+			if (isByProductReceipt)
+			{
+				amt = orderCosts.getByProductReceiptAmount(costSegmentAndElement);
+			}
+			else
+			{
+				// A co-product books current-cost x received-qty per receipt, like the finished good. The
+				// per-product percent carve is applied once at order close by the CC-170 cost-difference
+				// distributor, not per receipt.
+				amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
+			}
 			requestEffective = request.withAmountAndQty(amt, qty);
-			// Persisted only on this non-reversal path. A reversal leaves the persisted price unchanged,
-			// which is harmless: nothing reads PP_Order_Cost.price between a reversal and the next receipt
-			// (updatePostCalculationAmountsForCostElement reads only accumulatedAmount/postCalculationAmount,
-			// and Doc_PPCostCollector posts from M_CostDetail, never from PP_Order_Cost.price); the next
-			// non-reversal receipt overwrites it.
+			// Snapshot the price on non-reversal receipts only. A reversal leaves the old snapshot in place
+			// harmlessly: nothing reads PP_Order_Cost.price before the next receipt overwrites it.
 			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price);
 		}
 		else

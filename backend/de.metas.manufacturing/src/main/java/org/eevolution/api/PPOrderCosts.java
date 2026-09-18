@@ -8,11 +8,17 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import org.slf4j.Logger;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,14 +29,16 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-
+import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -58,6 +66,17 @@ import java.util.function.UnaryOperator;
 @EqualsAndHashCode
 public final class PPOrderCosts
 {
+	private static final Logger logger = LogManager.getLogger(PPOrderCosts.class);
+
+	/**
+	 * Σ(co-product distribution percents) &gt; 100% guard message. Shared with the BOM-rollup guard
+	 * ({@code BOM.assertValidTotalCoProductDistributionPercent}); localized via AD_Message so a German user
+	 * gets a German message. Params: {0} = the offending sum, {1} = the offending product(s).
+	 * Backing migration: {@code 5825070_sys_AD_Message_CoProductCostDistributionPercentSum_ExceedsMax.sql}.
+	 */
+	private static final AdMessageKey MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_SUM_EXCEEDS_MAX =
+			AdMessageKey.of("de.metas.manufacturing.CoProductCostDistributionPercentSum_ExceedsMax");
+
 	@Getter
 	private final PPOrderId orderId;
 	private final HashMap<CostSegmentAndElement, PPOrderCost> costs;
@@ -146,20 +165,21 @@ public final class PPOrderCosts
 	}
 
 	/**
-	 * Discharges {@code amt} onto the main-product line: the accumulated amount moves by {@code +amt} while
+	 * Discharges {@code amt} onto the given cost line: the accumulated amount moves by {@code +amt} while
 	 * the accumulated qty is left untouched, so the line records value leaving the order without recording a
-	 * further movement of goods.
+	 * further movement of goods. Called for the main-product line and, for a co-product residual, for a
+	 * co-product line.
 	 */
-	public void dischargeOntoMainProduct(
-			@NonNull final PPOrderCost mainProductCost,
+	public void dischargeOntoCost(
+			@NonNull final PPOrderCost targetCost,
 			@NonNull final CostAmount amt,
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		// accumulateOutboundCostAmount negates again, so passing -amt moves the accumulated amount by +amt.
 		accumulateOutboundCostAmount(
-				mainProductCost.getCostSegmentAndElement(),
+				targetCost.getCostSegmentAndElement(),
 				amt.negate(),
-				mainProductCost.getAccumulatedQty().toZero(),
+				targetCost.getAccumulatedQty().toZero(),
 				uomConverter);
 	}
 
@@ -250,6 +270,7 @@ public final class PPOrderCosts
 		final ImmutableList<PPOrderCost> coProductCosts = costs.stream()
 				.filter(PPOrderCost::isCoProduct)
 				.collect(ImmutableList.toImmutableList());
+		assertValidTotalCoProductDistributionPercent(coProductCosts);
 
 		//
 		// Update inbound costs and calculate total inbound costs
@@ -260,22 +281,130 @@ public final class PPOrderCosts
 				.orElseThrow(() -> new AdempiereException("No inbound costs found in " + costs));
 
 		//
-		// Update co-product costs and calculate total co-product costs
-		coProductCosts.forEach(cost -> cost.setPostCalculationAmount(totalInboundCostAmount.multiply(cost.getCoProductCostDistributionPercent(), precision)));
+		// Value each co-product through computeBlankCoProductAmount: its cost distribution percent times the
+		// total inbound costs (CP_i = p_i × Σ inbound cost).
+		coProductCosts.forEach(coProductCost ->
+				coProductCost.setPostCalculationAmount(computeBlankCoProductAmount(totalInboundCostAmount, coProductCost, precision)));
 		final CostAmount totalCoProductsCostAmount = coProductCosts.stream()
 				.map(PPOrderCost::getPostCalculationAmount)
 				.reduce(CostAmount::add)
 				.orElseGet(totalInboundCostAmount::toZero);
 
 		//
-		// Update main product cost
-		mainProductCost.setPostCalculationAmount(totalInboundCostAmount.subtract(totalCoProductsCostAmount));
+		// Backstop: the co-products valued together must not exceed the order's total inbound costs, else the
+		// main product would go negative. The percent guard above already caps Sigma p at 100% in percent-space,
+		// so the main product is >= 0 by construction; the ONLY residual way this subtraction turns negative is
+		// sub-precision rounding when Sigma p is at (or just under) 100% - each co-product carve is rounded to the
+		// costing precision independently (computeBlankCoProductAmount), so the rounded carves can overshoot the
+		// total inbound costs by at most one currency ulp per co-product. That rounding noise is ABSORBED (below);
+		// only a materially negative main - which can only come from a percent-guard bypass, a real bug - throws.
+		// The guard applies ONLY to orders that carry co-products: the "main >= 0 by construction" reasoning rests
+		// on the Sigma p <= 100% cap, which has nothing to conserve against when there are no co-products. A
+		// co-product-free order (e.g. a return / cost-correction) may legitimately carry a negative total inbound
+		// cost, which flows straight through to the main product as its (negative) post-calculation amount.
+		CostAmount mainProductAmount = totalInboundCostAmount.subtract(totalCoProductsCostAmount);
+		if (!coProductCosts.isEmpty() && mainProductAmount.signum() < 0)
+		{
+			// Widest overshoot explainable by independent rounding: one currency ulp per co-product carve.
+			final BigDecimal roundingTolerance = BigDecimal.ONE.movePointLeft(precision.toInt())
+					.multiply(BigDecimal.valueOf(coProductCosts.size()));
+			if (mainProductAmount.toBigDecimal().negate().compareTo(roundingTolerance) <= 0)
+			{
+				// Rounding noise, not a conservation breach: clamp the main product to zero and net the overshoot
+				// onto the LARGEST co-product carve (largest-remainder), so Sigma(outputs) == total inbound costs
+				// exactly and the order's WIP still nets to zero. No throw.
+				final PPOrderCost largestCoProductCost = coProductCosts.stream()
+						.max(Comparator
+								.comparing((PPOrderCost cost) -> cost.getPostCalculationAmount().toBigDecimal())
+								.thenComparingInt(cost -> cost.getProductId().getRepoId()))
+						.orElseThrow(() -> new AdempiereException("No co-product cost to absorb the rounding overshoot onto in " + costs));
+				// mainProductAmount is negative here, so adding it REDUCES the largest carve by the overshoot.
+				logger.debug("Co-product carve rounding overshoot of {} (<= {} tolerance for {} co-product(s)) absorbed onto"
+								+ " largest co-product {} for cost element {}; main product clamped to zero",
+						mainProductAmount, roundingTolerance, coProductCosts.size(),
+						largestCoProductCost.getProductId(), costElementId);
+				largestCoProductCost.setPostCalculationAmount(largestCoProductCost.getPostCalculationAmount().add(mainProductAmount));
+				mainProductAmount = mainProductAmount.toZero();
+			}
+			else
+			{
+				throw new AdempiereException("Co-products' total valuation " + totalCoProductsCostAmount
+						+ " exceeds the production order's total inbound costs of " + totalInboundCostAmount
+						+ " and would drive the main product negative");
+			}
+		}
 
 		//
-		// Clear by-product costs
+		// Clear by-product costs.
 		costs.stream()
 				.filter(PPOrderCost::isByProduct)
 				.forEach(PPOrderCost::setPostCalculationAmountAsZero);
+
+		//
+		// Update main product cost
+		mainProductCost.setPostCalculationAmount(mainProductAmount);
+	}
+
+	private static void assertValidTotalCoProductDistributionPercent(final Collection<PPOrderCost> coProductCosts)
+	{
+		final Percent totalCoProductDistributionPercent = coProductCosts.stream()
+				.map(PPOrderCost::getCoProductCostDistributionPercent)
+				.filter(percent -> percent != null && percent.signum() > 0)
+				.reduce(Percent.ZERO, Percent::add);
+
+		if (totalCoProductDistributionPercent.isOverOneHundred())
+		{
+			// Sort by product id for a deterministic message; the backing map iterates in unspecified order.
+			final List<ProductId> offendingProductIds = coProductCosts.stream()
+					.filter(coProductCost -> {
+						final Percent percent = coProductCost.getCoProductCostDistributionPercent();
+						return percent != null && percent.signum() > 0;
+					})
+					.map(PPOrderCost::getProductId)
+					.sorted(Comparator.comparing(ProductId::getRepoId))
+					.collect(ImmutableList.toImmutableList());
+			throw new AdempiereException(MSG_COPRODUCT_COST_DISTRIBUTION_PERCENT_SUM_EXCEEDS_MAX,
+					totalCoProductDistributionPercent, describeProducts(offendingProductIds));
+		}
+	}
+
+	/**
+	 * The amount a by-product receipt must capitalize to inventory: ZERO, regardless of the by-product's own
+	 * current M_Cost - symmetric to the by-product's central post-calculation zeroing (leg A, above:
+	 * {@code costs.stream().filter(PPOrderCost::isByProduct).forEach(PPOrderCost::setPostCalculationAmountAsZero)}).
+	 * A costing-method handler values the by-product receipt (leg B) at this amount so a stray current cost on
+	 * the by-product's own product cannot drive the AvgPO/MAI total inbound costs negative. Keyed on {@link PPOrderCost#isByProduct()}
+	 * alone - not on any cost-distribution percent - unlike the co-product's cost-distribution share
+	 * ({@code computeBlankCoProductAmount}).
+	 */
+	public CostAmount getByProductReceiptAmount(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	{
+		final PPOrderCost byProductCost = getByCostSegmentAndElement(costSegmentAndElement)
+				.orElseThrow(() -> new AdempiereException("No by-product cost row found for " + costSegmentAndElement));
+		if (!byProductCost.isByProduct())
+		{
+			throw new AdempiereException("Not a by-product cost row: " + byProductCost);
+		}
+		return byProductCost.getAccumulatedAmount().toZero();
+	}
+
+	/**
+	 * The co-product's cost-distribution share of the order's total inbound costs:
+	 * {@code totalInbound × coProductCostDistributionPercent}. The distribution percent is nullable (the DAO
+	 * leaves it unset, especially under Moving Average Invoice), so a null / non-positive percent yields a zero
+	 * share - nothing to capitalise - rather than an NPE.
+	 */
+	private static CostAmount computeBlankCoProductAmount(
+			@NonNull final CostAmount totalInboundCostAmount,
+			@NonNull final PPOrderCost coProductCost,
+			@NonNull final CurrencyPrecision precision)
+	{
+		final Percent distributionPercent = coProductCost.getCoProductCostDistributionPercent();
+		if (distributionPercent == null || distributionPercent.signum() <= 0)
+		{
+			return totalInboundCostAmount.toZero();
+		}
+		return totalInboundCostAmount.multiply(distributionPercent, precision);
 	}
 
 	/**
@@ -291,13 +420,9 @@ public final class PPOrderCosts
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId costElementId)
 	{
-		final PPOrderCost mainProductCost = getMainProductCostOrNull(acctSchemaId, costElementId);
-		if (mainProductCost == null)
-		{
-			return null;
-		}
-
-		return mainProductCost.getResidualCost();
+		return getMainProductCost(acctSchemaId, costElementId)
+				.map(PPOrderCost::getResidualCost)
+				.orElse(null);
 	}
 
 	/**
@@ -318,9 +443,10 @@ public final class PPOrderCosts
 				.orElse(false);
 	}
 
-	/** @return the single main-product cost row for the given schema and cost element, or {@code null}. */
-	@Nullable
-	public PPOrderCost getMainProductCostOrNull(
+	/**
+	 * @return the single main-product cost row for the given schema and cost element, if any.
+	 */
+	public Optional<PPOrderCost> getMainProductCost(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId costElementId)
 	{
@@ -336,7 +462,38 @@ public final class PPOrderCosts
 					+ ", costElement=" + costElementId + " in " + this);
 		}
 
-		return mainProductCosts.isEmpty() ? null : mainProductCosts.get(0);
+		return mainProductCosts.stream().findFirst();
+	}
+
+	/**
+	 * @return the main- or co-product cost row for {@code productId}, if any. Only main/co-product rows
+	 * match, never a component issue that happens to share the finished good's product.
+	 */
+	public Optional<PPOrderCost> getMainOrCoProductCost(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final ProductId productId)
+	{
+		return costs.values().stream()
+				.filter(cost -> cost.isMainProduct() || cost.isCoProduct())
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.filter(cost -> productId.equals(cost.getProductId()))
+				.findFirst();
+	}
+
+	/**
+	 * @return every co-product cost row for the given schema and cost element (possibly empty).
+	 */
+	public List<PPOrderCost> getCoProductCosts(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId)
+	{
+		return costs.values().stream()
+				.filter(PPOrderCost::isCoProduct)
+				.filter(cost -> acctSchemaId.equals(cost.getAcctSchemaId()))
+				.filter(cost -> costElementId.equals(cost.getCostElementId()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private Set<CostElementId> getCostElementIds()
@@ -345,6 +502,17 @@ public final class PPOrderCosts
 				.stream()
 				.map(CostSegmentAndElement::getCostElementId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * @return the given products' names (comma-separated), for the negative-main guard message.
+	 */
+	private static String describeProducts(@NonNull final List<ProductId> productIds)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		return productIds.stream()
+				.map(productBL::getProductName)
+				.collect(Collectors.joining(", "));
 	}
 
 }
