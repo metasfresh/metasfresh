@@ -3,9 +3,10 @@
 -- 'P Msg' with IsTranslated='N', so a German session falls back to the English caption. This is
 -- not a mistranslation to correct - it is a missing translation to supply.
 --
--- It became visible in two places instead of one after 5825180_AD_PInstance_Log_P_Msg_always_visible.sql
--- made AD_PInstance_Log.P_Msg render in BOTH the grid and the single-row form of window 332
--- ("Prozess-Revision") tab 665 ("Protokoll").
+-- It matters now because 5825180_AD_PInstance_Log_P_Msg_always_visible.sql restored
+-- AD_PInstance_Log.P_Msg to a populated column of the "Protokoll" grid in window 332
+-- ("Prozess-Revision") tab 665 - a grid-only tab (AD_Tab.IsSingleRow='N') - so German users now
+-- read an English caption on a column that actually carries data.
 --
 -- Impact analysis - every usage of AD_Element_ID=2068 (all mean the same thing, "the message a
 -- process wrote into its log"), so the shared element is mutated rather than forked:
@@ -32,7 +33,7 @@
 UPDATE AD_Element_Trl SET Name='Prozessmeldung', PrintName='Prozessmeldung', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-18 14:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=2068 AND AD_Language='de_DE'
 ;
 
--- 2. de_CH - same text as de_DE (no 'ss'/'ß' divergence in this term)
+-- 2. de_CH - same text as de_DE (the term carries no sharp-s, so no Swiss spelling divergence)
 UPDATE AD_Element_Trl SET Name='Prozessmeldung', PrintName='Prozessmeldung', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-18 14:00:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=2068 AND AD_Language='de_CH'
 ;
 
