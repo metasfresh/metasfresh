@@ -21,6 +21,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
@@ -101,7 +103,20 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 			@NonNull final ProductAcctType acctType,
 			@NonNull final AcctSchema as)
 	{
-		final ProductId productId = getProductId();
+		return getAccount(acctType, as, getProductId());
+	}
+
+	/**
+	 * Resolves the product account for an EXPLICIT product rather than this line's own (main) product. Used to post
+	 * a co-product's own CostDifferenceDistribution residual against the co-product's product accounts (AC8), while
+	 * every other caller keeps resolving against the line's product via {@link #getAccount(ProductAcctType, AcctSchema)}.
+	 */
+	@NonNull
+	public Account getAccount(
+			@NonNull final ProductAcctType acctType,
+			@NonNull final AcctSchema as,
+			@Nullable final ProductId productId)
+	{
 		if (productId == null)
 		{
 			return super.getAccount(acctType, as);
@@ -132,6 +147,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 		if (isReversalLine())
 		{
+			final ProductId mainProductId = getProductId();
 			return services.createReversalCostDetailsOrEmpty(
 							CostDetailReverseRequest.builder()
 									.acctSchemaId(acctSchemaId)
@@ -139,7 +155,19 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 									.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
 									.date(getDateAcctAsInstant())
 									.build())
-					.map(CostDetailCreateResultsList::toAggregatedCostAmount);
+					// A CC-170 CostDifferenceDistribution reversal loads the initial document's CostDetail rows for the
+					// main product AND each co-product (distinct cost segments); toAggregatedCostAmount requires a single
+					// segment. Post the MAIN product's residual from its own single-segment aggregate here, exactly as the
+					// forward path does in Doc_PPCostCollector.createFacts_CostDifferenceDistribution; the co-products'
+					// reversal legs are re-emitted per product by appendCoProductDifferenceFacts from the persisted
+					// reversal rows. Every other reversal (receipt, issue, single-product distribution) already carries
+					// exactly one product segment, so this narrowing is a no-op there. Return empty when the main product
+					// itself has no residual to reverse (its forward residual was zero) so the caller skips the main leg,
+					// mirroring the forward path's null-costResult handling.
+					.map(results -> {
+						final CostDetailCreateResultsList mainProductResults = results.filterByProductId(mainProductId);
+						return mainProductResults.isEmpty() ? null : mainProductResults.toAggregatedCostAmount();
+					});
 		}
 		else
 		{

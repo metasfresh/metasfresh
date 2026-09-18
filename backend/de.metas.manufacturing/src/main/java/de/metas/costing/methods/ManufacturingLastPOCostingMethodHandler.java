@@ -74,7 +74,6 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 	@NonNull private final CostingMethodHandlerUtils utils;
 	@NonNull private final PPOrderCostDifferenceDistributor costDifferenceDistributor;
 
-
 	@Override
 	public CostingMethod getCostingMethod()
 	{

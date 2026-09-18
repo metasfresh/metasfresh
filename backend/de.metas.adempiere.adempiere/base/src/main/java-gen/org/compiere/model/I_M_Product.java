@@ -278,6 +278,31 @@ public interface I_M_Product
 	String COLUMNNAME_Content = "Content";
 
 	/**
+	 * Set Co-Product Cost Distribution Percent.
+	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost;
+ the main product absorbs the total inbound costs.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCoProductCostDistributionPercent (@Nullable BigDecimal CoProductCostDistributionPercent);
+
+	/**
+	 * Get Co-Product Cost Distribution Percent.
+	 * Manually maintained, overridable percentage share of cost distribution for a co-product. Blank = the co-product receives zero cost;
+ the main product absorbs the total inbound costs.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCoProductCostDistributionPercent();
+
+	ModelColumn<I_M_Product, Object> COLUMN_CoProductCostDistributionPercent = new ModelColumn<>(I_M_Product.class, "CoProductCostDistributionPercent", null);
+	String COLUMNNAME_CoProductCostDistributionPercent = "CoProductCostDistributionPercent";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -1810,6 +1835,29 @@ public interface I_M_Product
 	String COLUMNNAME_M_CustomsTariff_ID = "M_CustomsTariff_ID";
 
 	/**
+	 * Set Medical device type.
+	 * Medical device type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMedicalDeviceType (@Nullable java.lang.String MedicalDeviceType);
+
+	/**
+	 * Get Medical device type.
+	 * Medical device type
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMedicalDeviceType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_MedicalDeviceType = new ModelColumn<>(I_M_Product.class, "MedicalDeviceType", null);
+	String COLUMNNAME_MedicalDeviceType = "MedicalDeviceType";
+
+	/**
 	 * Set Freight Category.
 	 * Category of the Freight
 	 *
@@ -2123,6 +2171,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_PostControl = new ModelColumn<>(I_M_Product.class, "PostControl", null);
 	String COLUMNNAME_PostControl = "PostControl";
+
+	/**
+	 * Set Preferential origin.
+	 * Preferential origin
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPreferentialOrigin (@Nullable java.lang.String PreferentialOrigin);
+
+	/**
+	 * Get Preferential origin.
+	 * Preferential origin
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPreferentialOrigin();
+
+	ModelColumn<I_M_Product, Object> COLUMN_PreferentialOrigin = new ModelColumn<>(I_M_Product.class, "PreferentialOrigin", null);
+	String COLUMNNAME_PreferentialOrigin = "PreferentialOrigin";
 
 	/**
 	 * Set Preparation.

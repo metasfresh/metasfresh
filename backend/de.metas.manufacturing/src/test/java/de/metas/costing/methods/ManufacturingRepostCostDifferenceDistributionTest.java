@@ -134,6 +134,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 	private ICurrentCostsRepository currentCostsRepo;
 	private CostingMethodHandlerUtils utils;
 	private PPOrderCostDifferenceDistributor distributor;
+	private IPPOrderCostBL ppOrderCostBL;
 
 	// per-test, set up by setupOrderFor(..)
 	private AcctSchemaId acctSchemaId;
@@ -210,6 +211,7 @@ class ManufacturingRepostCostDifferenceDistributionTest
 		costDetailService = new CostDetailService(new CostDetailRepository(), costElementRepo);
 		utils = new CostingMethodHandlerUtils(new CurrencyRepository(), currentCostsRepo, costDetailService);
 		distributor = new PPOrderCostDifferenceDistributor(costElementRepo, utils);
+		ppOrderCostBL = Services.get(IPPOrderCostBL.class);
 	}
 
 	@ParameterizedTest
@@ -381,10 +383,11 @@ class ManufacturingRepostCostDifferenceDistributionTest
 				.costs(ImmutableList.of(materialIssue, mainProduct))
 				.build();
 
-		// what every costing-method handler does after an issue or a receipt
+		// what every costing-method handler does after an issue or a receipt; the seed carries no co-products, so the
+		// post-calculation only reflects the main-product residual.
 		orderCosts.updatePostCalculationAmounts(CurrencyPrecision.ofInt(2));
 
-		Services.get(IPPOrderCostBL.class).save(orderCosts);
+		ppOrderCostBL.save(orderCosts);
 	}
 
 	private void saveMainProductCurrentCost()

@@ -1,5 +1,6 @@
 package de.metas.acct.doc;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.GLCategoryRepository;
@@ -39,6 +40,7 @@ import de.metas.cost.classification.CostClassificationRepository;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailReverseRequest;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
@@ -49,6 +51,7 @@ import de.metas.costing.ICostingService;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costing.methods.CostAmountDetailed;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
@@ -369,6 +372,13 @@ public class AcctDocRequiredServicesFacade
 	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
 	{
 		return costingService.moveCosts(request);
+	}
+
+	public ImmutableMap<ProductId, CostAmountDetailed> getCostDetailAmountsToPostByProduct(
+			@NonNull final CostingDocumentRef documentRef,
+			@NonNull final AcctSchema as)
+	{
+		return costingService.getCostDetailAmountsToPostByProduct(documentRef, as);
 	}
 
 	public CostDetailCreateResultsList createReversalCostDetails(@NonNull final CostDetailReverseRequest request)
