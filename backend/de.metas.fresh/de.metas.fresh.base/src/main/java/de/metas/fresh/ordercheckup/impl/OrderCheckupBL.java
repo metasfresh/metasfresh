@@ -24,9 +24,10 @@ package de.metas.fresh.ordercheckup.impl;
 
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
-import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
+import de.metas.fresh.ordercheckup.OrderCheckupDocumentType;
+import de.metas.fresh.ordercheckup.OrderCheckupReportIdentity;
 import de.metas.fresh.ordercheckup.model.I_C_BPartner;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.i18n.AdMessageKey;
@@ -40,6 +41,7 @@ import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ProductId;
@@ -57,11 +59,9 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -75,21 +75,21 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	private static final Logger logger = LogManager.getLogger(OrderCheckupBL.class);
 	public static final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
-	final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
-	final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
+	@NonNull final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull final IOrderBL orderBL = Services.get(IOrderBL.class);
 
-	final IMsgBL msgBL = Services.get(IMsgBL.class);
-	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	@NonNull final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
-	// used for document type X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant
+	// used for document type OrderCheckupDocumentType.Plant
 	private static final String SYSCONFIG_ORDERCHECKUP_COPIES = "de.metas.fresh.ordercheckup.Copies";
 
-	// used for document type X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse
+	// used for document type OrderCheckupDocumentType.Warehouse
 	private static final String SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES = "de.metas.fresh.ordercheckup_barcode.Copies";
 
 	private static final String SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant";
@@ -109,9 +109,31 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		// Void all previous reports, because we will generate them again.
 		voidReports(order);
 
+		int builtCount = 0;
+		for (final OrderCheckupBuilder reportBuilder : createReportBuilders(order).values())
+		{
+			if (reportBuilder.build() != null)
+			{
+				builtCount++;
+			}
+		}
+
+		logger.debug("C_Order_ID {}: deactivated the previous reports and built {} new one(s), which prints them.",
+				order.getC_Order_ID(), builtCount);
+	}
+
+	/**
+	 * The reports the order's current lines call for, ready to be built. Nothing is written yet, so a caller may
+	 * build only the ones it wants.
+	 */
+	private Map<OrderCheckupReportIdentity, OrderCheckupBuilder> createReportBuilders(@NonNull final I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		// Insertion-ordered: the plant report goes in last and is meant to be built, and so printed, last.
+		final Map<OrderCheckupReportIdentity, OrderCheckupBuilder> reportBuilders = new LinkedHashMap<>();
+
 		//
 		// Iterate all order lines and add those lines to corresponding "per workflow" reports.
-		final Map<ArrayKey, OrderCheckupBuilder> reportBuilders = new HashMap<>();
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
@@ -140,29 +162,25 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			//
 			// Add order line to per Manufacturing warehouse report
 			{
-				final String documentType = X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse;
 				final UserId responsibleUserId = routing != null ? routing.getUserInChargeId() : null;
-				final ArrayKey reportBuilderKey = Util.mkKey(order.getC_Order_ID(), documentType, responsibleUserId);
-				OrderCheckupBuilder reportBuilder = reportBuilders.get(reportBuilderKey);
+				final OrderCheckupReportIdentity reportIdentity = OrderCheckupReportIdentity.of(
+						orderId,
+						OrderCheckupDocumentType.Warehouse,
+						responsibleUserId);
+				OrderCheckupBuilder reportBuilder = reportBuilders.get(reportIdentity);
 				if (reportBuilder == null)
 				{
 					final WarehouseId warehouseId = mfgProductPlanning.getWarehouseId();
 					reportBuilder = OrderCheckupBuilder.newBuilder()
 							.setC_Order(order)
-							.setDocumentType(documentType)
+							.setDocumentType(OrderCheckupDocumentType.Warehouse)
 							.setWarehouseId(warehouseId)
 							.setPlantId(plantId)
 							.setReponsibleUserId(responsibleUserId);
-					reportBuilders.put(reportBuilderKey, reportBuilder);
+					reportBuilders.put(reportIdentity, reportBuilder);
 				}
 				reportBuilder.addOrderLine(orderLine);
 			}
-		}
-		//
-		// Iterate all created report builders and actually build them
-		for (final OrderCheckupBuilder reportBuilder : reportBuilders.values())
-		{
-			reportBuilder.build();
 		}
 
 		//
@@ -193,7 +211,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 				final OrderCheckupBuilder reportBuilder = OrderCheckupBuilder.newBuilder()
 						.setC_Order(order)
-						.setDocumentType(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant)
+						.setDocumentType(OrderCheckupDocumentType.Plant)
 						.setWarehouseId(null) // no warehouse because we are aggregating on plant level
 						.setPlantId(plantId)
 						.setReponsibleUserId(responsibleUserId);
@@ -206,9 +224,13 @@ public class OrderCheckupBL implements IOrderCheckupBL
 					}
 					reportBuilder.addOrderLine(orderLine);
 				}
-				reportBuilder.build();
+				reportBuilders.put(
+						OrderCheckupReportIdentity.of(orderId, OrderCheckupDocumentType.Plant, responsibleUserId),
+						reportBuilder);
 			}
 		}
+
+		return reportBuilders;
 	}
 
 	private Optional<ProductPlanning> getMfgProductPlanning(final I_C_OrderLine orderLine)
@@ -276,8 +298,60 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		for (final I_C_Order_MFGWarehouse_Report report : reports)
 		{
 			report.setIsActive(false);
-			InterfaceWrapperHelper.save(report);
+			orderCheckupDAO.save(report);
 		}
+	}
+
+	@Override
+	public void generateReportsOnCompleteIfNeeded(@NonNull final I_C_Order order)
+	{
+		if (order.isReprintOrderCheckup())
+		{
+			logger.debug("C_Order_ID {} has IsReprintOrderCheckup='Y': rebuilding and reprinting its reports.", order.getC_Order_ID());
+			generateReportsIfEligible(order);
+			return;
+		}
+
+		if (!isEligibleForReporting(order))
+		{
+			return;
+		}
+
+		final Map<OrderCheckupReportIdentity, I_C_Order_MFGWarehouse_Report> existingReports = orderCheckupDAO.retrieveNewestReportPerIdentity(order);
+		final Map<OrderCheckupReportIdentity, OrderCheckupBuilder> requiredReports = createReportBuilders(order);
+
+		int reactivatedCount = 0;
+		int builtCount = 0;
+		for (final Map.Entry<OrderCheckupReportIdentity, OrderCheckupBuilder> requiredReport : requiredReports.entrySet())
+		{
+			final I_C_Order_MFGWarehouse_Report existingReport = existingReports.get(requiredReport.getKey());
+			if (existingReport == null)
+			{
+				if (requiredReport.getValue().build() != null)
+				{
+					builtCount++;
+				}
+			}
+			else
+			{
+				// Reactivating leaves Processed alone, and the doc-outbound print trigger fires on Processed flipping
+				// false->true -- which is why the sheets already in the users' hands stay valid and nothing is printed.
+				// The flip side: the report keeps the content it was built from, and no later completion refreshes it.
+				// The way to a current set is to set IsReprintOrderCheckup and complete again, which rebuilds and
+				// reprints, or to run C_Order_MFGWarehouse_Report_Generate where the gear menu offers it.
+				existingReport.setIsActive(true);
+				orderCheckupDAO.save(existingReport);
+				reactivatedCount++;
+			}
+		}
+
+		// Reports whose identity the order no longer calls for stay inactive.
+		logger.debug("C_Order_ID {} has IsReprintOrderCheckup='N': reactivated {} report(s) unchanged, built and printed {} new one(s),"
+						+ " left {} existing report(s) inactive because nothing on the order calls for them any more.",
+				order.getC_Order_ID(),
+				reactivatedCount,
+				builtCount,
+				existingReports.size() - reactivatedCount);
 	}
 
 	@Override
@@ -285,12 +359,12 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	{
 		final I_C_Order_MFGWarehouse_Report report = getReportOrNull(printOut);
 
-		if (report != null && report.getDocumentType().equals(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse))
+		if (report != null && OrderCheckupDocumentType.ofCode(report.getDocumentType()).isWarehouse())
 		{
-			return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+			return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		}
 
-		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+		return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 	}
 
 	@Override
