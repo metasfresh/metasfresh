@@ -249,12 +249,6 @@
             <version>${metasfresh.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>de.metas.fresh</groupId>
-            <artifactId>de.metas.fresh.base</artifactId>
-            <version>${metasfresh.version}</version>
-            <scope>test</scope>
-        </dependency>
 
     </dependencies>
 
