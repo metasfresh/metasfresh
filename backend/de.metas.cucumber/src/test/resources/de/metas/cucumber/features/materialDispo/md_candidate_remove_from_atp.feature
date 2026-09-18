@@ -61,6 +61,15 @@ Feature: MD_Candidate_Remove_From_ATP process
 
     And the order identified by so_atp_001 is completed
 
+    # The order's shipment schedule is created by one async work package and then REVALIDATED by a
+    # second one, whose ShipmentScheduleUpdatedEvent re-writes the demand candidate with the SAME
+    # Qty/ATP values. The MD_Candidate poll below cannot tell those two writes apart, so without
+    # this barrier the MD_Candidate_Remove_From_ATP process can run between them and have its
+    # result silently overwritten. IsToRecompute='N' is true only once that revalidation has run.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_atp_001 | sol_atp_001               | N             |
+
     # Verify demand candidate was created
     And after not more than 60s, MD_Candidates are found
       | Identifier     | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP  | M_Warehouse_ID |
@@ -138,6 +147,11 @@ Feature: MD_Candidate_Remove_From_ATP process
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
+    # Barrier: wait for the shipment-schedule revalidation (see the note in the first scenario).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_atp_003 | sol_atp_003               | N             |
+
     And metasfresh has date and time 2024-09-20T10:00:00+01:00[Europe/Berlin]
     # Create purchase order (supply at T+3)
     And metasfresh contains C_Orders:
@@ -196,6 +210,11 @@ Feature: MD_Candidate_Remove_From_ATP process
     And the order identified by so_004_1 is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
+    # Barrier: wait for the shipment-schedule revalidation (see the note in the first scenario).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_004_1 | sol_004_1                 | N             |
+
     # Create purchase order 1 (supply_1_004 at T+2)
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised         | M_Warehouse_ID |
@@ -216,6 +235,11 @@ Feature: MD_Candidate_Remove_From_ATP process
     And the order identified by so_004_2 is completed
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
+    # Barrier: wait for the shipment-schedule revalidation (see the note in the first scenario).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_004_2 | sol_004_2                 | N             |
+
     # Create purchase order 2 (supply_2_004 at T+4)
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised         | M_Warehouse_ID |
@@ -234,6 +258,11 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_004_3  | so_004_3   | product_atp  | 35         |
     And the order identified by so_004_3 is completed
+
+    # Barrier: wait for the shipment-schedule revalidation (see the note in the first scenario).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipsched_004_3 | sol_004_3                 | N             |
 
     # Verify all candidates are present with correct ATP chain
     And after not more than 10s, MD_Candidates are found
