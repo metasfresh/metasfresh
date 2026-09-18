@@ -27,10 +27,12 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
@@ -43,10 +45,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,7 +58,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Step definitions for {@code C_Order_MFGWarehouse_Report} ("Bestellkontrolle") records — locating a report for a
  * sales order, asserting how many are currently active and inactive, asserting a report's
- * {@code OrderCheckupGeneration}, and asserting whether a doc-outbound work package was enqueued for it.
+ * {@code OrderCheckupGeneration}, which order lines its report lines reference, and whether a doc-outbound work
+ * package was enqueued for it.
  */
 public class C_Order_MFGWarehouse_Report_StepDef
 {
@@ -66,17 +71,20 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData reportTable;
 	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final S_Resource_StepDefData plantTable;
 
 	public C_Order_MFGWarehouse_Report_StepDef(
 			@NonNull final C_Order_MFGWarehouse_Report_StepDefData reportTable,
 			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final S_Resource_StepDefData plantTable)
 	{
 		this.reportTable = reportTable;
 		this.orderTable = orderTable;
+		this.orderLineTable = orderLineTable;
 		this.warehouseTable = warehouseTable;
 		this.plantTable = plantTable;
 	}
@@ -234,5 +242,43 @@ public class C_Order_MFGWarehouse_Report_StepDef
 				.addEqualsFilter(I_C_Queue_PackageProcessor.COLUMNNAME_InternalName, DOC_OUTBOUND_PACKAGE_PROCESSOR_INTERNAL_NAME)
 				.create()
 				.anyMatch();
+	}
+
+	/**
+	 * Asserts exactly which {@code C_OrderLine}s a previously-located {@code C_Order_MFGWarehouse_Report}'s report
+	 * lines reference — one row per (report, order line) pair; several rows may share the same {@code Identifier}
+	 * when a report has several lines. Used to pin that a restored report still references the order line it was
+	 * originally built from, even after that order line's quantity was changed by a later correction.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required, identifier-ref) a report located via
+	 *       "C_Order_MFGWarehouse_Report is located:"<br>
+	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) an order line the report's lines must reference<br>
+	 * @cucumber.depends StepDefData: C_Order_MFGWarehouse_Report_StepDefData, C_OrderLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Order_MFGWarehouse_Report references order lines:
+	 *   | Identifier   | C_OrderLine_ID |
+	 *   | warehouseRpt | orderLine      |
+	 * </pre>
+	 */
+	@Then("C_Order_MFGWarehouse_Report references order lines:")
+	public void assert_report_references_order_lines(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).groupBy("Identifier").forEach((identifier, rows) -> {
+			final I_C_Order_MFGWarehouse_Report report = reportTable.get(identifier);
+			assertThat(report).as("C_Order_MFGWarehouse_Report for Identifier=%s", identifier).isNotNull();
+
+			final Set<Integer> actualOrderLineIds = orderCheckupDAO.retrieveAllReportLines(report).stream()
+					.map(I_C_Order_MFGWarehouse_ReportLine::getC_OrderLine_ID)
+					.collect(Collectors.toSet());
+
+			final Set<Integer> expectedOrderLineIds = rows.stream()
+					.map(row -> row.getAsIdentifier("C_OrderLine_ID").lookupNotNullIn(orderLineTable).getC_OrderLine_ID())
+					.collect(Collectors.toSet());
+
+			assertThat(actualOrderLineIds).as("Order lines referenced by %s", report).isEqualTo(expectedOrderLineIds);
+		});
 	}
 }

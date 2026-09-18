@@ -240,6 +240,8 @@ public class C_Order_StepDef
 	 *   <li>{@code HandOver_Location_ID} (optional) — identifier referencing the delivery/hand-over {@code C_BPartner_Location} (also sets {@code IsUseHandOver_Location})</li>
 	 *   <li>{@code PriorityRule} (optional) — priority rule code (1=Urgent, 3=High, 5=Medium, 7=Low, 9=Minor);
 	 *       defaults to the AD column default (5, Medium) when omitted</li>
+	 *   <li>{@code IsReprintOrderCheckup} (optional) — whether a reactivate+complete cycle reprints the
+	 *       Bestellkontrolle ({@code de.metas.fresh.ordercheckup}); defaults to the AD column default ({@code Y}) when omitted</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_Orders:")
@@ -285,6 +287,9 @@ public class C_Order_StepDef
 
 		// dropship
 		order.setIsDropShip(tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsDropShip).orElse(false));
+
+		// whether a reactivate+complete cycle reprints the Bestellkontrolle (de.metas.fresh.ordercheckup)
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsReprintOrderCheckup).ifPresent(order::setIsReprintOrderCheckup);
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
 				.map(bpartnerTable::getId)
 				.ifPresent(id -> order.setDropShip_BPartner_ID(id.getRepoId()));
