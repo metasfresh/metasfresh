@@ -150,7 +150,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 				.filter(report -> documentType.map(expected -> Objects.equals(expected, report.getDocumentType())).orElse(true))
 				.filter(report -> warehouseId.map(expected -> Objects.equals(expected, WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()))).orElse(true))
 				.filter(report -> plantId.map(expected -> Objects.equals(expected, ResourceId.ofRepoIdOrNull(report.getPP_Plant_ID()))).orElse(true))
-				.filter(report -> isActive.map(expected -> expected == report.isActive()).orElse(Boolean.TRUE))
+				.filter(report -> isActive.map(expected -> expected == report.isActive()).orElse(true))
 				.collect(Collectors.toList());
 
 		if (matching.size() != 1)

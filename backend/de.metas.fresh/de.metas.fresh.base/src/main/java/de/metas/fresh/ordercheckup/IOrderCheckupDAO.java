@@ -45,7 +45,7 @@ public interface IOrderCheckupDAO extends ISingletonService
 	/**
 	 * @return {@code true} if the given order currently has at least one ACTIVE {@code C_Order_MFGWarehouse_Report}.
 	 *         Active reports are exactly the ones that survived the last document action, so this answers "are the
-	 *         order's reports still the ones that were printed?" -- see {@code IOrderCheckupBL#generateReportsOnOrderComplete}.
+	 *         order's reports still the ones that were printed?" -- see {@code IOrderCheckupBL#generateReportsOnCompleteIfNeeded}.
 	 */
 	boolean hasActiveReports(OrderId orderId);
 

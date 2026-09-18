@@ -290,6 +290,12 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			// The reports of the previous completion are still active and still Processed -- a reactivate leaves them
 			// alone when the flag is unset. Rebuilding them would flip Processed false->true again and thereby enqueue
 			// another printout, which is exactly what an unset flag asks us not to do.
+			//
+			// Deliberately "is ANY report still active", not "is the report set still intact": a partially
+			// deactivated set (only conceivable from a manual intervention -- no document action deactivates a
+			// subset) is therefore left as it is rather than repaired here. Repairing it would mean rebuilding,
+			// i.e. reprinting, which an unset flag forbids; the manual regeneration process is the way to get a
+			// complete set back.
 			logger.debug("C_Order_ID {} has IsReprintOrderCheckup='N' and still has active reports; nothing to do.", order.getC_Order_ID());
 			return;
 		}
