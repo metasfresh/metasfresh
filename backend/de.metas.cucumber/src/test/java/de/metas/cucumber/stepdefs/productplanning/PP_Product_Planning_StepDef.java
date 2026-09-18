@@ -78,8 +78,11 @@ public class PP_Product_Planning_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-	/** Plannings created/updated with no M_Product — they match ALL products, so they must be deactivated after the scenario to avoid leaking into the next one (see {@link #deactivateGenericProductPlannings()}). */
-	private final Set<ProductPlanningId> genericPlanningIds = new HashSet<>();
+	/**
+	 * Every {@code PP_Product_Planning} this step-def touched (created OR updated) this scenario, so
+	 * {@link #deactivateTouchedProductPlannings()} can deactivate all of them afterwards.
+	 */
+	private final Set<ProductPlanningId> touchedPlanningIds = new HashSet<>();
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
@@ -226,13 +229,7 @@ public class PP_Product_Planning_StepDef
 				.ifPresent(aggregationId -> builder.manufacturingAggregationId(aggregationId.getRepoId()));
 
 		final ProductPlanning productPlanning = productPlanningDAO.save(builder.build());
-
-		// A no-product planning matches ALL products; remember it so @After can deactivate it and it can't
-		// leak into the next scenario of the same shared-DB profile run.
-		if (productPlanning.getProductId() == null)
-		{
-			genericPlanningIds.add(productPlanning.getIdNotNull());
-		}
+		touchedPlanningIds.add(productPlanning.getIdNotNull());
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> productPlanningTable.putOrReplace(identifier, productPlanning));
 	}
@@ -294,15 +291,14 @@ public class PP_Product_Planning_StepDef
 	}
 
 	/**
-	 * Deactivates the no-product plannings this scenario created (tracked in {@link #genericPlanningIds}).
-	 * A generic (no-{@code M_Product}) planning applies to ALL products, so one left active leaks into the next
-	 * scenario of the same shared-DB profile run — its products become "purchased" and spawn spurious
-	 * SUPPLY/PURCHASE MD_Candidates. Runs on scenario pass AND failure.
+	 * Deactivates every planning this scenario touched (tracked in {@link #touchedPlanningIds}) — see that
+	 * field's own Javadoc for why both the generic (no-{@code M_Product}) and the product-specific case need
+	 * it. Runs on scenario pass AND failure.
 	 */
 	@After
-	public void deactivateGenericProductPlannings()
+	public void deactivateTouchedProductPlannings()
 	{
-		for (final ProductPlanningId planningId : genericPlanningIds)
+		for (final ProductPlanningId planningId : touchedPlanningIds)
 		{
 			final I_PP_Product_Planning record = InterfaceWrapperHelper.load(planningId, I_PP_Product_Planning.class);
 			if (record.isActive())
