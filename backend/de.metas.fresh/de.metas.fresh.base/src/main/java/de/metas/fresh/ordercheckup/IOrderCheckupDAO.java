@@ -43,26 +43,11 @@ public interface IOrderCheckupDAO extends ISingletonService
 	List<I_C_Order_MFGWarehouse_ReportLine> retrieveAllReportLines(I_C_Order_MFGWarehouse_Report report);
 
 	/**
-	 * Computes the generation number to stamp on every {@code C_Order_MFGWarehouse_Report} created by the next
-	 * {@code generateReportsIfEligible} run for the given order: one past the highest generation ever stamped on
-	 * any report of that order (active or not). Reports that predate the {@code OrderCheckupGeneration} column
-	 * have no generation (SQL {@code NULL}) and are ignored, so the first run after this change starts at 1.
+	 * @return {@code true} if the given order currently has at least one ACTIVE {@code C_Order_MFGWarehouse_Report}.
+	 *         Active reports are exactly the ones that survived the last document action, so this answers "are the
+	 *         order's reports still the ones that were printed?" -- see {@code IOrderCheckupBL#generateReportsOnOrderComplete}.
 	 */
-	int retrieveNextGenerationNo(OrderId orderId);
-
-	/**
-	 * Retrieves the {@code C_Order_MFGWarehouse_Report}s (active or not) whose {@code OrderCheckupGeneration}
-	 * equals the highest generation ever stamped for the given order.
-	 * <p>
-	 * Returns an empty list both when the order has no reports at all, and when the highest generation predates
-	 * the {@code OrderCheckupGeneration} column (SQL {@code NULL}) -- legacy data that has no generation to
-	 * selectively restore, so the caller falls back to a full rebuild. The NULL check happens in SQL (via the
-	 * {@code MAX} aggregate, which itself ignores {@code NULL} rows and is only {@code NULL} when every row is
-	 * {@code NULL}); it must never be approximated as {@code getOrderCheckupGeneration() == 0} in Java, because the
-	 * generated accessor is a primitive {@code int} and reads a SQL {@code NULL} back as {@code 0}, indistinguishable
-	 * from a real generation {@code 0}.
-	 */
-	List<I_C_Order_MFGWarehouse_Report> retrieveReportsOfMostRecentGeneration(OrderId orderId);
+	boolean hasActiveReports(OrderId orderId);
 
 	void save(I_C_Order_MFGWarehouse_Report report);
 }

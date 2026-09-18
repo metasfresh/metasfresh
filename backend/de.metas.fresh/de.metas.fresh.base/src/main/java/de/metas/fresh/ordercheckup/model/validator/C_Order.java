@@ -54,31 +54,27 @@ public class C_Order
 			return;
 		}
 
-		if (order.isReprintOrderCheckup())
-		{
-			orderCheckupBL.generateReportsIfEligible(order);
-		}
-		else
-		{
-			restoreOrRegenerateReports(order);
-		}
+		orderCheckupBL.generateReportsOnCompleteIfNeeded(order);
 	}
 
 	/**
-	 * {@code order.IsReprintOrderCheckup} is unset: prefer reactivating the headers of the order's most recent
-	 * report generation over printing a new one, so that completing a reactivated order does not trigger a
-	 * reprint. Falls back to a fresh report run when there is nothing to restore -- the order's first
-	 * completion, or a generation that predates the {@code IsReprintOrderCheckup} column.
+	 * Deactivates the order's reports on reactivate only when {@code order.IsReprintOrderCheckup} is set, so that the
+	 * following completion rebuilds and reprints them. With the flag unset the reports are deliberately left
+	 * untouched: they stay active and stay {@code Processed}, which is what keeps the following completion from
+	 * enqueueing another printout.
 	 */
-	private void restoreOrRegenerateReports(final I_C_Order order)
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
+	public void deactivateReportsOnReactivate(final I_C_Order order)
 	{
-		if (!orderCheckupBL.restoreMostRecentGeneration(order))
+		if (!order.isReprintOrderCheckup())
 		{
-			orderCheckupBL.generateReportsIfEligible(order);
+			return;
 		}
+
+		orderCheckupBL.voidReports(order);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void voidReports(final I_C_Order order)
 	{
 		orderCheckupBL.voidReports(order);

@@ -35,6 +35,7 @@ import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.product.ResourceId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -44,7 +45,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Order;
 
 import java.util.HashSet;
@@ -94,20 +94,22 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	 * the given rows and nothing else — a record count, and each row's {@code IsActive}/{@code Processed}.
 	 * <p>
 	 * Each expected row is paired to the record carrying THAT row's {@code DocumentType}/{@code M_Warehouse_ID}/
-	 * {@code PP_Plant_ID} (and {@code OrderCheckupGeneration}, when given, to disambiguate several generations
-	 * sharing the same document type/warehouse/plant), never to the record at the same position — so the order
-	 * the rows are written in carries no meaning. A record already claimed by an earlier row cannot satisfy a
-	 * second one.
+	 * {@code PP_Plant_ID}/{@code IsActive}, never to the record at the same position — so the order the rows are
+	 * written in carries no meaning. A record already claimed by an earlier row cannot satisfy a second one.
+	 * <p>
+	 * {@code IsActive} is part of the match (rather than only asserted afterwards) because a rebuild leaves the
+	 * deactivated predecessor behind: two records can share document type, warehouse and plant, and only their
+	 * active state tells them apart. It is asserted just as strictly this way — a record in the wrong active state
+	 * leaves its expected row with no match, which fails the step.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>DocumentType</b> — (optional) {@code C_Order_MFGWarehouse_Report.DocumentType} — part of the match<br>
 	 *   <b>M_Warehouse_ID</b> — (optional, identifier-ref) warehouse report discriminator — part of the match<br>
 	 *   <b>PP_Plant_ID</b> — (optional, identifier-ref) plant report discriminator — part of the match<br>
-	 *   <b>OrderCheckupGeneration</b> — (optional) generation number — part of the match when given<br>
-	 *   <b>IsActive</b> — (optional) expected {@code IsActive}, asserted on the matched record<br>
+	 *   <b>IsActive</b> — (optional) expected {@code IsActive} — part of the match<br>
 	 *   <b>Processed</b> — (optional) expected {@code Processed}, asserted on the matched record — set once and
-	 *       never reset, so it survives a restore<br>
+	 *       never reset, so it stays true for a report that survived a reactivate<br>
 	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Warehouse_StepDefData, S_Resource_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -141,14 +143,14 @@ public class C_Order_MFGWarehouse_Report_StepDef
 				.map(identifier -> identifier.lookupIdIn(warehouseTable));
 		final Optional<ResourceId> plantId = row.getAsOptionalIdentifier(I_C_Order_MFGWarehouse_Report.COLUMNNAME_PP_Plant_ID)
 				.map(identifier -> identifier.lookupIdIn(plantTable));
-		final Optional<Integer> generation = row.getAsOptionalInt(I_C_Order_MFGWarehouse_Report.COLUMNNAME_OrderCheckupGeneration);
+		final OptionalBoolean isActive = row.getAsOptionalBoolean(I_C_Order_MFGWarehouse_Report.COLUMNNAME_IsActive);
 
 		final List<I_C_Order_MFGWarehouse_Report> matching = reports.stream()
 				.filter(report -> !claimedIds.contains(report.getC_Order_MFGWarehouse_Report_ID()))
 				.filter(report -> documentType.map(expected -> Objects.equals(expected, report.getDocumentType())).orElse(true))
 				.filter(report -> warehouseId.map(expected -> Objects.equals(expected, WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()))).orElse(true))
 				.filter(report -> plantId.map(expected -> Objects.equals(expected, ResourceId.ofRepoIdOrNull(report.getPP_Plant_ID()))).orElse(true))
-				.filter(report -> generation.map(expected -> Objects.equals(expected, report.getOrderCheckupGeneration())).orElse(true))
+				.filter(report -> isActive.map(expected -> expected == report.isActive()).orElse(Boolean.TRUE))
 				.collect(Collectors.toList());
 
 		if (matching.size() != 1)
@@ -156,8 +158,8 @@ public class C_Order_MFGWarehouse_Report_StepDef
 			final List<String> unclaimedDescriptions = reports.stream()
 					.filter(report -> !claimedIds.contains(report.getC_Order_MFGWarehouse_Report_ID()))
 					.map(report -> String.format(
-							"C_Order_MFGWarehouse_Report_ID=%s/DocumentType=%s/M_Warehouse_ID=%s/PP_Plant_ID=%s/OrderCheckupGeneration=%s",
-							report.getC_Order_MFGWarehouse_Report_ID(), report.getDocumentType(), report.getM_Warehouse_ID(), report.getPP_Plant_ID(), report.getOrderCheckupGeneration()))
+							"C_Order_MFGWarehouse_Report_ID=%s/DocumentType=%s/M_Warehouse_ID=%s/PP_Plant_ID=%s/IsActive=%s",
+							report.getC_Order_MFGWarehouse_Report_ID(), report.getDocumentType(), report.getM_Warehouse_ID(), report.getPP_Plant_ID(), report.isActive()))
 					.collect(Collectors.toList());
 
 			throw new AdempiereException("Expected exactly one unclaimed C_Order_MFGWarehouse_Report matching this row")
@@ -166,7 +168,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 					.setParameter("DocumentType", documentType.orElse(null))
 					.setParameter("M_Warehouse_ID", warehouseId.orElse(null))
 					.setParameter("PP_Plant_ID", plantId.orElse(null))
-					.setParameter("OrderCheckupGeneration", generation.orElse(null))
+					.setParameter("IsActive", isActive.toBooleanOrNull())
 					.setParameter("MatchCount", matching.size())
 					.setParameter("UnclaimedC_Order_MFGWarehouse_Reports", unclaimedDescriptions);
 		}
@@ -174,20 +176,14 @@ public class C_Order_MFGWarehouse_Report_StepDef
 		final I_C_Order_MFGWarehouse_Report report = matching.get(0);
 		claimedIds.add(report.getC_Order_MFGWarehouse_Report_ID());
 
-		final SoftAssertions softly = new SoftAssertions();
-		row.getAsOptionalBoolean(I_C_Order_MFGWarehouse_Report.COLUMNNAME_IsActive)
-				.ifPresent(expected -> softly.assertThat(report.isActive()).as("%s of %s", I_C_Order_MFGWarehouse_Report.COLUMNNAME_IsActive, report).isEqualTo(expected));
 		row.getAsOptionalBoolean(I_C_Order_MFGWarehouse_Report.COLUMNNAME_Processed)
-				.ifPresent(expected -> softly.assertThat(report.isProcessed()).as("%s of %s", I_C_Order_MFGWarehouse_Report.COLUMNNAME_Processed, report).isEqualTo(expected));
-		softly.assertAll();
+				.ifPresent(expected -> assertThat(report.isProcessed()).as("%s of %s", I_C_Order_MFGWarehouse_Report.COLUMNNAME_Processed, report).isEqualTo(expected));
 	}
 
 	/**
 	 * Locates one {@code C_Order_MFGWarehouse_Report} for the given order, discriminated by document type,
-	 * warehouse and/or plant (the same discriminators {@code OrderCheckupBL} uses to build the report set), active
-	 * state, and — optionally — its {@code OrderCheckupGeneration}. The generation is needed as a filter, not only
-	 * a post-hoc assertion: several *inactive* generations can share the same document type/warehouse/plant (e.g.
-	 * after several reactivate-and-complete cycles), so only the generation number can pick a specific one of them.
+	 * warehouse and/or plant (the same discriminators {@code OrderCheckupBL} uses to build the report set) plus its
+	 * active state — which is what separates a freshly rebuilt report from the deactivated predecessor it replaced.
 	 * The located record is stored under {@code Identifier} for later reference (e.g. asserting its doc-outbound
 	 * enqueue status).
 	 *
@@ -199,15 +195,12 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	 *   <b>M_Warehouse_ID</b> — (optional, identifier-ref) warehouse report discriminator<br>
 	 *   <b>PP_Plant_ID</b> — (optional, identifier-ref) plant report discriminator<br>
 	 *   <b>IsActive</b> — (optional, default {@code true}) whether the located record must be active<br>
-	 *   <b>OrderCheckupGeneration</b> — (optional) when given, filters on this exact generation number
-	 *       (disambiguates among several inactive generations); the located record's generation is re-confirmed
-	 *       against it regardless<br>
 	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Warehouse_StepDefData, S_Resource_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And C_Order_MFGWarehouse_Report is located:
-	 *   | Identifier   | C_Order_ID | DocumentType | M_Warehouse_ID | OrderCheckupGeneration |
-	 *   | warehouseRpt | order      | S            | warehouse      | 2                      |
+	 *   | Identifier   | C_Order_ID | DocumentType | M_Warehouse_ID | IsActive |
+	 *   | warehouseRpt | order      | WH           | warehouse      | true     |
 	 * </pre>
 	 */
 	@And("C_Order_MFGWarehouse_Report is located:")
@@ -223,14 +216,12 @@ public class C_Order_MFGWarehouse_Report_StepDef
 		final WarehouseId warehouseId = row.getAsOptionalIdentifier("M_Warehouse_ID").map(id -> id.lookupIdIn(warehouseTable)).orElse(null);
 		final ResourceId plantId = row.getAsOptionalIdentifier("PP_Plant_ID").map(id -> id.lookupIdIn(plantTable)).orElse(null);
 		final boolean expectedIsActive = row.getAsOptionalBoolean("IsActive").orElse(true);
-		final Optional<Integer> expectedGeneration = row.getAsOptionalInt("OrderCheckupGeneration");
 
 		final List<I_C_Order_MFGWarehouse_Report> matches = orderCheckupDAO.retrieveAllReports(order).stream()
 				.filter(report -> documentType.equals(report.getDocumentType()))
 				.filter(report -> Objects.equals(WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()), warehouseId))
 				.filter(report -> Objects.equals(ResourceId.ofRepoIdOrNull(report.getPP_Plant_ID()), plantId))
 				.filter(report -> report.isActive() == expectedIsActive)
-				.filter(report -> expectedGeneration.map(generation -> report.getOrderCheckupGeneration() == generation).orElse(true))
 				.collect(Collectors.toList());
 
 		if (matches.size() != 1)
@@ -242,19 +233,10 @@ public class C_Order_MFGWarehouse_Report_StepDef
 					.setParameter("M_Warehouse_ID", warehouseId)
 					.setParameter("PP_Plant_ID", plantId)
 					.setParameter("IsActive", expectedIsActive)
-					.setParameter("OrderCheckupGeneration", expectedGeneration.orElse(null))
 					.setParameter("MatchCount", matches.size());
 		}
 
-		final I_C_Order_MFGWarehouse_Report report = matches.get(0);
-
-		// re-confirm the generation even when it was already used as a filter — a no-op in that case, but a real
-		// assertion whenever the generation was not part of the filter criteria above.
-		expectedGeneration.ifPresent(generation -> assertThat(report.getOrderCheckupGeneration())
-				.as("OrderCheckupGeneration of %s", report)
-				.isEqualTo(generation));
-
-		row.getAsIdentifier().putOrReplace(reportTable, report);
+		row.getAsIdentifier().putOrReplace(reportTable, matches.get(0));
 	}
 
 	/**
@@ -359,9 +341,9 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	 * C_Order_MFGWarehouse_Report} records (active or not) of the given order. Because the underlying {@code
 	 * C_Queue_Element} is never deleted once created (see {@link #countDocOutboundWorkPackagesFor}), this count can
 	 * only grow when a *new* report is built (its {@code Processed} flag flipping false-&gt;true for the first
-	 * time) -- reactivating an existing report's header (as {@code restoreMostRecentGeneration} does) never
-	 * touches {@code Processed} and so never changes it. Asserting the same count before and after such an action
-	 * is how a scenario proves no work package was (re-)enqueued by it.
+	 * time) -- a reactivate that leaves the existing reports alone never touches {@code Processed} and so never
+	 * changes it. Asserting the same count before and after such an action is how a scenario proves no work
+	 * package was (re-)enqueued by it.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

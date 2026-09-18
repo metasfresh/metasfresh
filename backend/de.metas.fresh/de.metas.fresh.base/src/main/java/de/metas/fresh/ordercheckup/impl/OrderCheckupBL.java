@@ -111,14 +111,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		voidReports(order);
 
 		//
-		// Compute, once for this whole run, the generation number to stamp on every report it creates -- warehouse
-		// and plant alike -- so the reports of one generation form an explicit, deterministic set. "max(Created)"
-		// would not do: Created is stamped from wall-clock per record, and the plant report is created after the
-		// warehouse reports, so it would restore only the plant report of the most recent generation.
-		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-		final int generationNo = orderCheckupDAO.retrieveNextGenerationNo(orderId);
-
-		//
 		// Iterate all order lines and add those lines to corresponding "per workflow" reports.
 		final Map<ArrayKey, OrderCheckupBuilder> reportBuilders = new HashMap<>();
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
@@ -161,8 +153,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 							.setDocumentType(documentType)
 							.setWarehouseId(warehouseId)
 							.setPlantId(plantId)
-							.setReponsibleUserId(responsibleUserId)
-							.setGenerationNo(generationNo);
+							.setReponsibleUserId(responsibleUserId);
 					reportBuilders.put(reportBuilderKey, reportBuilder);
 				}
 				reportBuilder.addOrderLine(orderLine);
@@ -206,8 +197,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 						.setDocumentType(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant)
 						.setWarehouseId(null) // no warehouse because we are aggregating on plant level
 						.setPlantId(plantId)
-						.setReponsibleUserId(responsibleUserId)
-						.setGenerationNo(generationNo);
+						.setReponsibleUserId(responsibleUserId);
 				for (final I_C_OrderLine orderLine : orderLines)
 				{
 					// Don't add the packing materials
@@ -292,18 +282,19 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	}
 
 	@Override
-	public boolean restoreMostRecentGeneration(@NonNull final I_C_Order order)
+	public void generateReportsOnCompleteIfNeeded(@NonNull final I_C_Order order)
 	{
-		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-		final List<I_C_Order_MFGWarehouse_Report> reportsToRestore = orderCheckupDAO.retrieveReportsOfMostRecentGeneration(orderId);
-
-		for (final I_C_Order_MFGWarehouse_Report report : reportsToRestore)
+		if (!order.isReprintOrderCheckup()
+				&& orderCheckupDAO.hasActiveReports(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
-			report.setIsActive(true);
-			orderCheckupDAO.save(report);
+			// The reports of the previous completion are still active and still Processed -- a reactivate leaves them
+			// alone when the flag is unset. Rebuilding them would flip Processed false->true again and thereby enqueue
+			// another printout, which is exactly what an unset flag asks us not to do.
+			logger.debug("C_Order_ID {} has IsReprintOrderCheckup='N' and still has active reports; nothing to do.", order.getC_Order_ID());
+			return;
 		}
 
-		return !reportsToRestore.isEmpty();
+		generateReportsIfEligible(order);
 	}
 
 	@Override

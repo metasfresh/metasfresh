@@ -32,18 +32,15 @@ public interface IOrderCheckupBL extends ISingletonService
 	void voidReports(I_C_Order order);
 
 	/**
-	 * Reactivates the {@link I_C_Order_MFGWarehouse_Report} headers of the most recent generation for the given
-	 * order, leaving any older (previously voided) generation untouched. Report lines are never deactivated by
-	 * {@link #voidReports}, so restoring the header alone is sufficient.
+	 * Generates the {@link I_C_Order_MFGWarehouse_Report}s for an order that has just been completed.
 	 * <p>
-	 * Does nothing for an order with no reports at all, or whose most recent generation predates the
-	 * {@code OrderCheckupGeneration} column (legacy data) -- see
-	 * {@code IOrderCheckupDAO#retrieveReportsOfMostRecentGeneration}. Leaves {@code Processed} untouched, so it
-	 * does not trigger a doc-outbound re-enqueue.
-	 *
-	 * @return {@code true} if at least one report header was restored
+	 * When {@code order.IsReprintOrderCheckup} is set, this always rebuilds (and therefore reprints), exactly like
+	 * {@link #generateReportsIfEligible(I_C_Order)}. When it is unset, the reports left behind by a previous
+	 * completion are still active -- a reactivate does not touch them -- so there is nothing to rebuild and nothing
+	 * to reprint. Only when no active report is left (the order's first completion, or the reports were deactivated
+	 * by a void or a reversal) does an unset flag still generate.
 	 */
-	boolean restoreMostRecentGeneration(I_C_Order order);
+	void generateReportsOnCompleteIfNeeded(I_C_Order order);
 
 	/**
 	 * Return the number of copies (2 will result in two printouts in sum) that shall be set to the given <code>C_Printing_Queue</code>.

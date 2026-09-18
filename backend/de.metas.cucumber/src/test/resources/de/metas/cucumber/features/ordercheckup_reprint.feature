@@ -84,13 +84,12 @@ Feature: Bestellkontrolle reprint after reactivate
 
     When the order identified by order is reactivated
 
-    # Reactivate deactivates the records but never touches Processed -- Processed staying true is direct
-    # evidence these are the SAME records that were enqueued at the first completion, not a placeholder
-    # state pending a rebuild.
+    # With the flag unset the reactivate leaves the records completely alone -- they stay active and stay
+    # Processed. Processed staying true is what proves no reprint: the print trigger keys on it changing.
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | Processed |
-      | WH           | warehouse      | plant       | false    | true      |
-      | PL           |                | plant       | false    | true      |
+      | WH           | warehouse      | plant       | true     | true      |
+      | PL           |                | plant       | true     | true      |
 
     # Split the line into two, total quantity per product unchanged - the customer's own correction pattern
     And update C_OrderLine:
@@ -101,9 +100,8 @@ Feature: Bestellkontrolle reprint after reactivate
       | orderLineB | order      | product      | 3          |
     And the order identified by order is completed
 
-    # The very same 2 records came back active, still Processed -- no new record was built. The work
-    # package count below is unchanged from the first completion, proving nothing was (re-)enqueued:
-    # the print trigger keys on Processed changing, and it never did.
+    # Still exactly the same 2 records, still active, still Processed -- nothing was built. The work
+    # package count is unchanged from the first completion, proving nothing was (re-)enqueued.
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | Processed |
       | WH           | warehouse      | plant       | true     | true      |
@@ -112,16 +110,16 @@ Feature: Bestellkontrolle reprint after reactivate
       | C_Order_ID | WorkPackageCount |
       | order      | 2                |
     And C_Order_MFGWarehouse_Report is located:
-      | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
-      | restoredWhRpt | order      | WH           | warehouse      | plant       | true     |
+      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | keptWhRpt  | order      | WH           | warehouse      | plant       | true     |
     And C_Order_MFGWarehouse_Report is located:
-      | Identifier    | C_Order_ID | DocumentType | PP_Plant_ID | IsActive |
-      | restoredPlRpt | order      | PL           | plant       | true     |
-    # Known limitation: the restored record still points at the original order line only.
+      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive |
+      | keptPlRpt  | order      | PL           | plant       | true     |
+    # Known limitation: the kept record still points at the original order line only.
     And C_Order_MFGWarehouse_Report references order lines:
-      | Identifier    | C_OrderLine_ID |
-      | restoredWhRpt | orderLine      |
-      | restoredPlRpt | orderLine      |
+      | Identifier | C_OrderLine_ID |
+      | keptWhRpt  | orderLine      |
+      | keptPlRpt  | orderLine      |
 
 
 # ####################################################################################################################
@@ -153,11 +151,11 @@ Feature: Bestellkontrolle reprint after reactivate
     And the order identified by order is completed
 
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | false    |
-      | PL           |                | plant       | 1                      | false    |
-      | WH           | warehouse      | plant       | 2                      | true     |
-      | PL           |                | plant       | 2                      | true     |
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | false    |
+      | PL           |                | plant       | false    |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
     And C_Order_MFGWarehouse_Report is located:
       | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
       | newWhRpt   | order      | WH           | warehouse      | plant       | true     |
@@ -178,98 +176,41 @@ Feature: Bestellkontrolle reprint after reactivate
 
 # ####################################################################################################################
 # ####################################################################################################################
-  # Generation-mechanics scenario -- next free TC number.
-  @Id:S30709_TC11
-  Scenario: Two successive completions stamp consecutive generation numbers on every report
+  @Id:S30709_TC4
+  Scenario: Flag switched off after the reactivate already deactivated the Bestellkontrolle - completing generates a fresh one
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
       | order      | true    | bpartner      | 2026-01-12  | warehouse      | Y                     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | orderLine  | order      | product      | 5          |
-
-    When the order identified by order is completed
-
-    Then C_Order_MFGWarehouse_Report is located:
-      | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | whGen1     | order      | WH           | warehouse      | plant       | true     | 1                      |
-    And C_Order_MFGWarehouse_Report is located:
-      | Identifier | C_Order_ID | DocumentType | PP_Plant_ID | IsActive | OrderCheckupGeneration |
-      | plGen1     | order      | PL           | plant       | true     | 1                      |
-
-    When the order identified by order is reactivated
     And the order identified by order is completed
-
-    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | false    |
-      | PL           |                | plant       | 1                      | false    |
-      | WH           | warehouse      | plant       | 2                      | true     |
-      | PL           |                | plant       | 2                      | true     |
-
-
-
-# ####################################################################################################################
-# ####################################################################################################################
-  @Id:S30709_TC4
-  Scenario: Flag not set - reactivating and completing after a second generation exists restores only the most recent one, and stays stable across repeated cycles
-    Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
-      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | orderLine  | order      | product      | 5          |
-    And the order identified by order is completed
-
-    # The manual regeneration process ignores the flag and always rebuilds (mechanics pinned by TC7)
-    # -- used here only to get a genuine second generation on the books, without ever setting the
-    # flag, before the flag-off restore path below is exercised.
-    When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run for the record identified by 'order'
-
-    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | false    |
-      | PL           |                | plant       | 1                      | false    |
-      | WH           | warehouse      | plant       | 2                      | true     |
-      | PL           |                | plant       | 2                      | true     |
-    # Baseline for the work-package-count checks below: 2 generations x 2 reports each = 4.
     And C_Order_MFGWarehouse_Report doc-outbound work package count is:
       | C_Order_ID | WorkPackageCount |
-      | order      | 4                |
+      | order      | 2                |
 
+    # Flag still set at reactivate time, so the reports ARE deactivated here.
     When the order identified by order is reactivated
+
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | false    |
+      | PL           |                | plant       | false    |
+
+    # The clerk switches the flag off before completing again. There is no active report left to keep,
+    # so the completion still generates -- the same fall-back that gives an order its first printout.
+    When update order
+      | C_Order_ID | IsReprintOrderCheckup |
+      | order      | N                     |
     And the order identified by order is completed
 
-    # Flag stays unset throughout: the completion restores generation 2 (the most recent) rather than
-    # generation 1 or a fresh rebuild. Pinning OrderCheckupGeneration here is what actually
-    # distinguishes "restore the most recent generation" from "restore everything" and from
-    # "restore generation 1" -- generation 1 must stay deactivated while generation 2 comes back
-    # active.
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | false    |
-      | PL           |                | plant       | 1                      | false    |
-      | WH           | warehouse      | plant       | 2                      | true     |
-      | PL           |                | plant       | 2                      | true     |
-    # The restore only reactivated generation 2's headers -- nothing new was built, so the work
-    # package count from before this reactivate/complete cycle (4, asserted above) is unchanged.
-    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
-      | C_Order_ID | WorkPackageCount |
-      | order      | 4                |
-
-    When the order identified by order is reactivated
-    And the order identified by order is completed
-
-    # Second flag-off cycle: still generation 2, still exactly the same 4 records -- the restore is
-    # idempotent and never accumulates a third generation across repeated reactivate/complete cycles.
-    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | false    |
-      | PL           |                | plant       | 1                      | false    |
-      | WH           | warehouse      | plant       | 2                      | true     |
-      | PL           |                | plant       | 2                      | true     |
-    # Still unchanged after a second repeated cycle -- confirms the restore never (re-)enqueues, even
-    # across repeated reactivate/complete cycles, not just once.
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | false    |
+      | PL           |                | plant       | false    |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
+    # 2 more work packages than before the cycle -- the fresh reports were enqueued and printed.
     And C_Order_MFGWarehouse_Report doc-outbound work package count is:
       | C_Order_ID | WorkPackageCount |
       | order      | 4                |
@@ -302,7 +243,7 @@ Feature: Bestellkontrolle reprint after reactivate
 # ####################################################################################################################
 # ####################################################################################################################
   @Id:S30709_TC6
-  Scenario: Flag not set - restoring a previous Bestellkontrolle enqueues no new print
+  Scenario: Flag not set - reactivating and completing again enqueues no new print
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
       | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
@@ -317,8 +258,8 @@ Feature: Bestellkontrolle reprint after reactivate
     When the order identified by order is reactivated
     And the order identified by order is completed
 
-    # Same generation restored, not rebuilt -- the work package count is unchanged from the first
-    # completion, proving nothing was (re-)enqueued for the restored records.
+    # The reports were never touched, let alone rebuilt -- the work package count is unchanged from the
+    # first completion, proving nothing was (re-)enqueued.
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
       | WH           | warehouse      | plant       | true     |
@@ -342,20 +283,20 @@ Feature: Bestellkontrolle reprint after reactivate
     And the order identified by order is reactivated
     And the order identified by order is completed
     And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | true     |
-      | PL           |                | plant       | 1                      | true     |
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
 
     # The manual regeneration process runs the unconditional rebuild regardless of the flag, unlike
-    # the completion path which restored the existing generation above instead of rebuilding.
+    # the completion path above, which left the existing reports alone instead of rebuilding.
     When the AD_Process with value 'C_Order_MFGWarehouse_Report_Generate' is run for the record identified by 'order'
 
     Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | false    |
-      | PL           |                | plant       | 1                      | false    |
-      | WH           | warehouse      | plant       | 2                      | true     |
-      | PL           |                | plant       | 2                      | true     |
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | false    |
+      | PL           |                | plant       | false    |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
     And C_Order_MFGWarehouse_Report is located:
       | Identifier | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
       | freshWhRpt | order      | WH           | warehouse      | plant       | true     |
