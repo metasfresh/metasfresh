@@ -38,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Env;
 
 import java.util.stream.Collectors;
@@ -103,22 +104,22 @@ public class AD_Process_Run_StepDef
 			@NonNull final String processValue,
 			@NonNull final String commaSeparatedIdentifiers)
 	{
-		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
-		assertThat(recordRefs).as("records identified by `%s`", commaSeparatedIdentifiers).isNotEmpty();
+		final TableRecordReferenceSet recordRefSet = identifiersResolver.getTableRecordReferenceSetOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		assertThat(recordRefSet).as("records identified by `%s`", commaSeparatedIdentifiers).isNotEmpty();
 
-		final ImmutableSet<String> tableNames = recordRefs.stream().map(TableRecordReference::getTableName).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<String> tableNames = recordRefSet.stream().map(TableRecordReference::getTableName).collect(ImmutableSet.toImmutableSet());
 		assertThat(tableNames).as("all records of one selection must belong to the same table").hasSize(1);
 
 		final ProcessInfo.ProcessInfoBuilder processInfo = newProcessInfoBuilder(processValue);
-		if (recordRefs.size() == 1)
+		if (recordRefSet.size() == 1)
 		{
-			processInfo.setRecord(recordRefs.iterator().next());
+			processInfo.setRecord(recordRefSet.iterator().next());
 		}
 		else
 		{
-			final String tableName = tableNames.iterator().next();
-			final String recordIdsCSV = recordRefs.stream()
-					.map(recordRef -> String.valueOf(recordRef.getRecord_ID()))
+			final String tableName = recordRefSet.getSingleTableName();
+			final String recordIdsCSV = recordRefSet.toIntSet().stream()
+					.map(String::valueOf)
 					.collect(Collectors.joining(","));
 			processInfo.setTableName(tableName)
 					.setWhereClause(tableName + "_ID IN (" + recordIdsCSV + ")");

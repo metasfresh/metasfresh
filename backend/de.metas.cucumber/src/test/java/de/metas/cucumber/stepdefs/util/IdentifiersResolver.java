@@ -96,6 +96,12 @@ public class IdentifiersResolver
 	}
 
 	@NonNull
+	public TableRecordReferenceSet getTableRecordReferenceSetOfCommaSeparatedIdentifiers(@Nullable final String commaSeparatedIdentifiers)
+	{
+		return TableRecordReferenceSet.of(getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers));
+	}
+
+	@NonNull
 	public ImmutableSet<TableRecordReference> getTableRecordReferences(@NonNull final List<StepDefDataIdentifier> identifiers)
 	{
 		return identifiers.stream()
