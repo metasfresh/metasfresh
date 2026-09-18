@@ -34,45 +34,21 @@ import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import javax.annotation.Nullable;
 import java.util.Properties;
 
 public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-
-	// gh Spring bootstrap: this class is instantiated eagerly (via Services.get(IWorkPackageQueueFactory.class))
-	// from other beans' field initializers, i.e. potentially *during* Spring's own container refresh, before
-	// SpringContextHolder is set (see org.compiere.SpringContextHolder / de.metas.StartupListener). Resolving
-	// QueueProcessorDescriptorIndex.getInstance() eagerly here throws "SpringApplicationContext not configured
-	// yet" whenever this happens to sit on the bean-graph traversal that constructs it (e.g. AsyncBatchService
-	// -> AsyncBatchBL -> WorkPackageQueueFactory during ServerBoot startup). Deferred with the lazy-init pattern
-	// (docs/coding-rules/service-injection.md) instead of SpringContextHolder.lazyBean(...) because
-	// QueueProcessorDescriptorIndex.getInstance() itself still needs to branch on Adempiere.isUnitTestMode()
-	// (unit tests bypass Spring entirely) -- see the many de.metas.async unit tests exercising this factory.
-	@Nullable
-	private QueueProcessorDescriptorIndex _queueProcessorDescriptorIndex;
-
-	@NonNull
-	private QueueProcessorDescriptorIndex queueProcessorDescriptorIndex()
-	{
-		QueueProcessorDescriptorIndex result = _queueProcessorDescriptorIndex;
-		if (result == null)
-		{
-			result = _queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
-		}
-		return result;
-	}
+	private final QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
 
 	@Override
 	public IWorkPackageQueue getQueueForPackageProcessing(final I_C_Queue_Processor processor)
 	{
 		final QueueProcessorId queueProcessorId = QueueProcessorId.ofRepoId(processor.getC_Queue_Processor_ID());
 
-		final ImmutableSet<QueuePackageProcessorId> packageProcessorIds = queueProcessorDescriptorIndex().getPackageProcessorIdsForProcessor(queueProcessorId);
+		final ImmutableSet<QueuePackageProcessorId> packageProcessorIds = queueProcessorDescriptorIndex.getPackageProcessorIdsForProcessor(queueProcessorId);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(processor);
 		final String priorityFrom = processor.getPriority();
@@ -108,7 +84,7 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 
 		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(packageProcessor.getC_Queue_PackageProcessor_ID());
 
-		final QueueProcessorId queueProcessorId = queueProcessorDescriptorIndex().getQueueProcessorForPackageProcessor(packageProcessorId);
+		final QueueProcessorId queueProcessorId = queueProcessorDescriptorIndex.getQueueProcessorForPackageProcessor(packageProcessorId);
 
 		return WorkPackageQueue.createForEnqueuing(
 				ctx,

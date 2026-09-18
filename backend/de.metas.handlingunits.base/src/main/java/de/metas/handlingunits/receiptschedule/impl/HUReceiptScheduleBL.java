@@ -139,12 +139,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 {
 	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
 	private final static AdMessageKey MSG_PackageNumberNotMatching = AdMessageKey.of("de.metas.handlingunits.HUReceiptSchedule.PackageNumberNotMatching");
-	// gh Spring bootstrap: this class is instantiated eagerly (legacy Services.get(...) lookup) from other
-	// beans' field initializers, potentially *during* Spring's own container refresh, before SpringContextHolder
-	// is set (org.compiere.SpringContextHolder / de.metas.StartupListener). Resolving this bean eagerly threw
-	// "SpringApplicationContext not configured yet" when this class sat on such a bean-graph traversal at
-	// ServerBoot startup. Deferred with SpringContextHolder.lazyBean(...), same pattern as HUPPOrderBL.
-	private final SpringContextHolder.Lazy<PurchaseOrderToShipperTransportationRepository> purchaseOrderToShipperTransportationRepository = SpringContextHolder.lazyBean(PurchaseOrderToShipperTransportationRepository.class);
+	private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationRepository.class);
 
 	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
 	private final IDocumentLUTUConfigurationHandler<List<I_M_ReceiptSchedule>> lutuConfigurationListHandler = CompositeDocumentLUTUConfigurationHandler.of(lutuConfigurationHandler);
@@ -544,7 +539,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				.map(I_M_ReceiptSchedule::getC_OrderLine_ID)
 				.map(OrderLineId::ofRepoIdOrNull)
 				.collect(Collectors.toSet());
-		return purchaseOrderToShipperTransportationRepository.get().getPackagesBy(ShippingPackageQuery.builder().orderLineIds(orderLines).build());
+		return purchaseOrderToShipperTransportationRepository.getPackagesBy(ShippingPackageQuery.builder().orderLineIds(orderLines).build());
 	}
 
 	private void validateHuIds(@NonNull final Set<HuId> huIds, final ImmutableMap<HuId, I_M_HU> husByIdMap)
