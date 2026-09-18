@@ -356,7 +356,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	 * <pre>
 	 * Then C_Order_MFGWarehouse_Report doc-outbound work package count is:
 	 *   | C_Order_ID | WorkPackageCount |
-	 *   | order      | 4                 |
+	 *   | order      | 4                |
 	 * </pre>
 	 */
 	@Then("C_Order_MFGWarehouse_Report doc-outbound work package count is:")

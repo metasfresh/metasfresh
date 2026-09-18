@@ -62,8 +62,8 @@ public class OrderCheckupReportIdentity
 
 	/**
 	 * {@code AD_User_Responsible_ID} is null in the database for every user id below 1, so a report built for
-	 * {@link UserId#SYSTEM} and one built for nobody are the same record. Both factories go through here so they
-	 * cannot disagree about which of the two they are looking at.
+	 * {@link UserId#SYSTEM} and one built for nobody are the same record. Normalizing here is what lets an
+	 * identity built from a report-to-be be compared with one read back off the saved record.
 	 */
 	@Nullable
 	private static UserId persistableUserIdOrNull(final int userRepoId)

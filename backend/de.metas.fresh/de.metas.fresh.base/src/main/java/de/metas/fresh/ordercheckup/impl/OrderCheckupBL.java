@@ -75,14 +75,14 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	private static final Logger logger = LogManager.getLogger(OrderCheckupBL.class);
 	public static final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
-	final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
-	final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
-	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
+	@NonNull final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull final IOrderBL orderBL = Services.get(IOrderBL.class);
 
-	final IMsgBL msgBL = Services.get(IMsgBL.class);
-	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	@NonNull final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
@@ -314,10 +314,10 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 		if (report != null && OrderCheckupDocumentType.ofCode(report.getDocumentType()).isWarehouse())
 		{
-			return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+			return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_BARCOE_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 		}
 
-		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+		return sysConfigBL.getIntValue(SYSCONFIG_ORDERCHECKUP_COPIES, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 	}
 
 	@Override
