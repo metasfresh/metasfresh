@@ -15,7 +15,6 @@ jobs:
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
-      base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
       branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
       skip-publish-reports: ${{ steps.skip-checks.outputs.skip-publish-reports }}
     steps:
@@ -58,18 +57,6 @@ jobs:
           GIT_ID: ${{ github.sha }}
         run: |
           echo "content=git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$(git show -s --format=%s $GIT_ID)" >> $GITHUB_OUTPUT
-      - name: set-base-version-matrix
-        id: base-version-matrix
-        env:
-          MF_PROJECT: ${{ fromJson(vars.PROJECT_MAP)[github.ref_name] }}
-          BASE_VERSION_MATRIX: |
-            ${{
-              fromJson(vars.PROJECT_MAP)[github.ref_name] != ''
-              && format('{{ "include": [{{ "project": "{0}", "branch": "{1}" }}] }}', fromJson(vars.PROJECT_MAP)[github.ref_name], github.ref_name)
-              || ''
-            }}
-        run: |
-          echo "matrix=$BASE_VERSION_MATRIX" >> $GITHUB_OUTPUT
       - name: print-vars
         run: env
       - name: print-info
@@ -1621,13 +1608,41 @@ jobs:
         run: rm -rf ~/.ssh/reports_key
 
 
-  update-base-version:
-    if: needs.init.outputs.base-version-matrix != ''
-    runs-on: ${{ vars.RUNNER_HEAVY }}
-    needs: [init, compatibility-images]
-    strategy:
-      matrix: ${{fromJSON(needs.init.outputs.base-version-matrix)}}
+  cicd-dispatch:
+    if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    # new_dawn_uat additionally waits on `compatibility-images-db`; that job does
+    # not exist on this branch, so this waits on exactly what the legacy
+    # `update-base-version` job waited on.
+    needs: [ init, compatibility-images ]
     steps:
-      - name: dispatching-redeploy
+      - name: dispatch-workflow
+        env:
+          CICD_RUN_ID: ${{ github.run_id }}
+          TAG_FIXED: ${{ needs.init.outputs.tag-fixed }}
+          SOURCE_BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ secrets.CICD_TRIGGER_DISPATCH }}
+          CICD_DISPATCH_REPO: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).repo }}
+          CICD_DISPATCH_WORKFLOW_FILE: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).workflow_file }}
         run: |
-          curl -X "POST" -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.MF15_KUBERNETES_PAT }}" -d '{"event_type":"update_base_version","client_payload":{"version":"${{ needs.init.outputs.tag-fixed }}"}}' https://api.github.com/repos/metasfresh/${{ matrix.project }}/dispatches
+          # Run the downstream workflow ON the target branch (via --ref) when
+          # that branch exists in private-extensions, otherwise fall back to
+          # running it on the PE default branch so its `check-branch` step can
+          # take the "branch doesn't exist -> dispatch directly to me03" path.
+          #
+          # Without --ref when the branch DOES exist, the workflow starts on
+          # new_dawn_uat, does an in-process `git checkout ${SOURCE_BRANCH}`,
+          # and `EndBug/add-and-commit` sends the commit object to origin but
+          # the branch ref update is silently dropped - resulting in an orphan
+          # commit.
+          #
+          # With --ref when the branch DOES NOT exist, `gh workflow run` fails
+          # with "could not find a reference" and the workflow never runs,
+          # breaking the fallback-to-default dispatch path.
+          REF_ARGS=()
+          if gh api "repos/${CICD_DISPATCH_REPO}/branches/${SOURCE_BRANCH}" --jq .name >/dev/null 2>&1; then
+            REF_ARGS+=(--ref "${SOURCE_BRANCH}")
+          else
+            echo "Branch '${SOURCE_BRANCH}' not found in ${CICD_DISPATCH_REPO}; running workflow on default branch so its fallback path activates."
+          fi
+          gh workflow run "${CICD_DISPATCH_WORKFLOW_FILE}" --repo "${CICD_DISPATCH_REPO}" "${REF_ARGS[@]}" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" -f "source_branch=${SOURCE_BRANCH}"
