@@ -465,7 +465,7 @@ Feature: EDI_cctop_invoic_v export format
   @from:cucumber
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00350_EDI
-  @allure.label.feature:F00353_EDI
+  @allure.label.feature:F00353_EDI_DESADV
   @Id:S31978_TC1
   Scenario: S31978_TC1 — Attribute-less ASI on the product-identifier record and on the order line still resolves the buyer's CU identifiers
   ## Regression for the ASI wildcard-matching bug: an M_Product_ASI_Data record whose own ASI carries
