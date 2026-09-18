@@ -68,7 +68,11 @@ public final class DocTextLinesRow implements IViewRow
 	 * the arithmetic; only the rendering is suppressed.
 	 */
 	public static final String FIELD_LineDisplay = "line";
-	@ViewColumn(seqNo = 10, fieldName = FIELD_LineDisplay, captionKey = "Line", widgetType = DocumentFieldWidgetType.Number, widgetSize = WidgetSize.Small)
+	// sorting=false: the rows are a merged, document-ordered list, and this column no longer carries the
+	// real position (it is null on text rows), so a header-click sort would order by the DISPLAYED value and
+	// clump the text rows together instead of preserving document order. There is nothing meaningful to sort
+	// this view by other than the order it is already in.
+	@ViewColumn(seqNo = 10, fieldName = FIELD_LineDisplay, captionKey = "Line", widgetType = DocumentFieldWidgetType.Number, widgetSize = WidgetSize.Small, sorting = false)
 	@Getter
 	private final BigDecimal lineDisplay;
 
