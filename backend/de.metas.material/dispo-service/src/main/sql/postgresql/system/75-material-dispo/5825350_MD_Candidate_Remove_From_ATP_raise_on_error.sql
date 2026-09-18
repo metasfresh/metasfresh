@@ -1,25 +1,16 @@
--- Function: de_metas_material.MD_Candidate_Remove_From_ATP
--- Purpose: Remove an MD_Candidate record from ATP (Available to Promise) calculations
+-- Source DDL: backend/de.metas.material/dispo-service/src/main/sql/postgresql/ddl/de_metas_material/MD_Candidate_Remove_From_ATP.sql
+-- Re-creates de_metas_material.MD_Candidate_Remove_From_ATP so that its three precondition failures
+-- RAISE instead of returning a row whose message column starts with 'ERROR:'.
 --
--- This function:
--- 1. Calculates the candidate's stock impact based on type, business case, qty, and qtyFulfilled
--- 2. Negates this impact to remove it from ATP
--- 3. Sets the candidate's Qty to 0
--- 4. Updates the associated STOCK candidate's ATP value
--- 5. Propagates changes through the entire MD_Candidate_QtyDetails chain chronologically
--- 6. Creates QtyDetails if they don't exist (looking up previous STOCK record)
+-- The only caller is AD_Process MD_Candidate_RemoveFromATP, which runs the function through
+-- ExecuteUpdateSQL and discards the result set, so the returned message was read by nobody: the
+-- process reported success while the candidate had not been touched, and the next assertion in a
+-- caller (or the operator) saw an unchanged record with no reason given. Raising restores a loud,
+-- readable failure carrying the actual cause.
 --
--- Error contract: the three precondition failures below (candidate missing/inactive, candidate is a
--- STOCK candidate, no STOCK sibling) RAISE. They are checked before any write, so raising leaves no
--- partial change behind, and the caller -- AD_Process MD_Candidate_RemoveFromATP, which runs this via
--- ExecuteUpdateSQL and discards the result set -- surfaces the reason to the operator instead of
--- reporting success while doing nothing.
---
--- Stock Impact Formula (uses helper function MD_Candidate_Get_Stock_Impact):
--- - DEMAND, STOCK_UP, INVENTORY_DOWN (STOCK_CHANGE): -qty
--- - SUPPLY, INVENTORY_UP (STOCK_CHANGE): qty
--- - UNEXPECTED_DECREASE, INVENTORY_DOWN, ATTRIBUTES_CHANGED_FROM: -qtyFulfilled
--- - UNEXPECTED_INCREASE, INVENTORY_UP, ATTRIBUTES_CHANGED_TO: qtyFulfilled
+-- All three branches are evaluated before the function writes anything, so raising cannot leave a
+-- partial change behind. The redundant 'ERROR: ' prefix is dropped from the texts because PostgreSQL
+-- already prefixes the severity; the substantive wording is unchanged.
 
 DROP FUNCTION IF EXISTS de_metas_material.MD_Candidate_Remove_From_ATP(numeric)
 ;
