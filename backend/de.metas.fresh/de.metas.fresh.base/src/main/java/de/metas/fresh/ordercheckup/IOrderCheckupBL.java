@@ -32,8 +32,6 @@ public interface IOrderCheckupBL extends ISingletonService
 	void voidReports(I_C_Order order);
 
 	/**
-	 * Generates the {@link I_C_Order_MFGWarehouse_Report}s for an order that has just been completed.
-	 * <p>
 	 * When {@code order.IsReprintOrderCheckup} is set, this always rebuilds (and therefore reprints), exactly like
 	 * {@link #generateReportsIfEligible(I_C_Order)}. When it is unset, the reports left behind by a previous
 	 * completion are still active -- a reactivate does not touch them -- so there is nothing to rebuild and nothing
