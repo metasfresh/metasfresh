@@ -19,12 +19,17 @@ import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
  * localized caption), grid rows by the row id the view assigns (`table-row-<id>`, where an
  * article row's id is `A<C_OrderLine_ID>` and a text row's is `T<C_Doc_TextLine_ID>`), quick
  * actions by their AD_Process internal name (`quick-action-<internalName>`), and a text line's
- * scope by the reference-list code prefixing its cell text (`D` = whole document, `F` = belongs
- * with the following lines) rather than the localized caption that follows it.
+ * scope by its reference-list code (`D` = whole document, `F` = belongs with the following lines),
+ * which the view reports as the field's `key` and the scope dropdown carries as `option-<code>`.
+ * The grid cell itself paints only the localized caption, so where a rendered scope is asserted the
+ * expected caption is taken from the very option that was clicked, never hardcoded.
  *
- * Every assertion below reads the row back through the view's own REST endpoint after the UI
+ * Most assertions below read the row back through the view's own REST endpoint after the UI
  * action that produced it -- never the widget the click just touched -- so a change that renders
- * in the grid but never reaches the server would fail these tests.
+ * in the grid but never reaches the server would fail these tests. The scope step is the deliberate
+ * exception: what it is pinning is that the dropdown the user opens is *populated at all* and that
+ * picking a value paints it, which only the rendered grid can answer, so it asserts against the DOM
+ * and proves persistence by reopening the modal rather than by querying the endpoint.
  */
 
 const ORDER_LINE_TAB_ID = 'AD_Tab-187';
@@ -172,6 +177,65 @@ async function invokeQuickAction(page, viewId, internalName) {
   await waitForViewRefresh(page, viewId, () => page.getByTestId(`quick-action-${internalName}`).click());
 }
 
+/** A text row's scope cell, as painted in the grid. */
+function scopeCellOf(page, rowId) {
+  return page.getByTestId(`table-row-${rowId}`).locator('[data-cy="cell-textLineScope"]');
+}
+
+/**
+ * Opens a text row's scope cell for editing and returns the dropdown's options as a
+ * `{ <reference-list code>: <rendered caption> }` map, read from the list the browser actually
+ * painted. Leaves the dropdown open so the caller can pick one of the options it just read.
+ *
+ * The options come from a `.../edit/textLineScope/dropdown` GET the view has to answer itself; a
+ * view that cannot answer it yields an empty list here rather than an error the user would see, so
+ * the caller asserting on this map is what makes that failure visible.
+ */
+async function openScopeDropdown(page, rowId) {
+  const scopeCell = scopeCellOf(page, rowId);
+  await scopeCell.dblclick();
+
+  // the list renders in a portal pinned to the window, not inside the cell, so it is located on the
+  // page; the toggle that opens it IS inside the cell
+  const dropdownList = page.locator('.input-dropdown-list');
+  try {
+    // entering edit mode focuses the widget, which requests and opens the list by itself
+    await dropdownList.waitFor({ state: 'visible', timeout: 2000 });
+  } catch (notOpenedOnFocus) {
+    await scopeCell.locator('.input-dropdown-container').click();
+    await dropdownList.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  }
+
+  return dropdownList.locator('[data-testid^="option-"]').evaluateAll((elements) =>
+    Object.fromEntries(
+      elements.map((element) => [
+        element.getAttribute('data-testid').replace('option-', ''),
+        element.textContent.trim(),
+      ])
+    )
+  );
+}
+
+/**
+ * Picks one option out of the scope dropdown left open by {@link openScopeDropdown}, waits for the
+ * edit to reach the server, and takes the cell back out of edit mode so its painted value can be
+ * read -- clicking the modal's own title, never Escape, which would cancel the whole modal.
+ */
+async function selectOpenScopeOption(page, { viewId, scopeKey }) {
+  await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().includes(`/documentView/${DOC_TEXT_LINES_WINDOW_ID}/${viewId}/`) &&
+        response.url().endsWith('/edit') &&
+        response.request().method() === 'PATCH',
+      { timeout: SLOW_ACTION_TIMEOUT }
+    ),
+    page.locator(`.input-dropdown-list [data-testid="option-${scopeKey}"]`).click(),
+  ]);
+
+  await page.locator('.panel-modal-header-title').click();
+}
+
 /**
  * Types into a text row's own text cell by opening its inline editor (a double-click on the cell)
  * and typing real keystrokes into it -- replacing whatever the cell already held.
@@ -215,7 +279,7 @@ test.describe('Sales order text lines modal', () => {
     allure.epic('E0100: Sales');
     allure.tag('F00144: Free Text Above Order Lines');
     allure.tag('F00144');
-    allure.story('Text lines modal: insert, move, edit, delete');
+    allure.story('Text lines modal: insert, move, edit, change scope, delete');
     allure.severity('critical');
 
     allure.description(`
@@ -234,6 +298,8 @@ Drives the text-lines modal end to end from the sales order line tab:
    move-down (but not insert-above/delete/move-up) stop being offered on it.
 6. Editing a text line's content, then deleting it, leaves every article line and every other text
    line unchanged.
+7. Opening the surviving line's scope dropdown offers both scopes, and picking the other one paints
+   it in the grid and survives a reopen of the modal.
     `);
 
     test.setTimeout(180000);
@@ -431,6 +497,33 @@ Drives the text-lines modal end to end from the sales order line tab:
       expect(rows.find((r) => r.id === textLineOnEmptyOrderId).scope).toBe(SCOPE.wholeDocument);
       expect(rows.find((r) => r.id === `A${orderLine1Id}`).line).toBe(10);
       expect(rows.find((r) => r.id === `A${orderLine2Id}`).line).toBe(20);
+    });
+
+    await test.step('Open the surviving line\'s scope dropdown and pick the other scope', async () => {
+      // the row left standing by the delete above still carries the scope it was created with
+      expect((await getTextLinesRows(page, viewId)).find((r) => r.id === textLineOnEmptyOrderId).scope).toBe(
+        SCOPE.wholeDocument
+      );
+
+      const options = await openScopeDropdown(page, textLineOnEmptyOrderId);
+      // the whole point of this step: the dropdown the user just opened has to be populated by the
+      // view itself. A view that cannot answer for this field leaves the list empty, and the scope
+      // column is then not editable at all -- which no assertion that reads the endpoint would notice,
+      // because the stored value is perfectly fine either way.
+      expect(Object.keys(options).sort()).toEqual([SCOPE.followingLines, SCOPE.wholeDocument].sort());
+
+      // capture the caption off the option that is about to be clicked, so the expected cell text is
+      // whatever this instance's reference list is translated to rather than a hardcoded string
+      const expectedCaption = options[SCOPE.followingLines];
+      await selectOpenScopeOption(page, { viewId, scopeKey: SCOPE.followingLines });
+
+      await expect(scopeCellOf(page, textLineOnEmptyOrderId)).toHaveText(expectedCaption);
+
+      // reopen the modal and read the cell again -- the picked value has to come back from the
+      // database, not from the view instance that the click itself updated
+      await closeTextLinesModal(page);
+      viewId = await openTextLinesModal(page, orderId);
+      await expect(scopeCellOf(page, textLineOnEmptyOrderId)).toHaveText(expectedCaption);
     });
 
     await closeTextLinesModal(page);
