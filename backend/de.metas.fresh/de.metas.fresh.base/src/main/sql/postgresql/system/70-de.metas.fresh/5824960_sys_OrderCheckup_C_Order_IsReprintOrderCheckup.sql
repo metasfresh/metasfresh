@@ -1,6 +1,6 @@
--- Order Checkup: new flag on C_Order controlling whether reactivating the order
--- forces the "Bestellkontrolle" (order checkup) print to be re-triggered.
--- Default 'Y' preserves today's behaviour (checkup is reprinted on reactivate).
+-- Order Checkup: new flag on C_Order controlling what completing a reactivated order does
+-- with the "Bestellkontrolle" (order checkup): rebuild and reprint it, or keep the existing one.
+-- Default 'Y' preserves today's behaviour (the checkup is rebuilt and reprinted).
 --
 -- IDs allocated from idserver.metas.de on 2026-09-17:
 --   AD_Element 585474 (IsReprintOrderCheckup)
@@ -22,8 +22,8 @@ INSERT INTO AD_Element (
     TO_TIMESTAMP('2026-09-17 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-17 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     'D', 'IsReprintOrderCheckup', 'Bestellkontrolle neu drucken', 'Bestellkontrolle neu drucken',
-    'Legt fest, ob die Bestellkontrolle beim Reaktivieren dieses Auftrags erneut gedruckt wird.',
-    'Wenn aktiviert, wird die Bestellkontrolle beim Reaktivieren des Auftrags automatisch erneut gedruckt. Wird das Kontrollkästchen deaktiviert, unterbleibt der erneute Druck.'
+    'Legt fest, ob beim Abschließen eines reaktivierten Auftrags eine neue Bestellkontrolle erstellt wird oder die vorhandene erhalten bleibt.',
+    'Wenn aktiviert, wird die Bestellkontrolle beim Abschließen eines reaktivierten Auftrags neu erstellt und erneut gedruckt. Wenn deaktiviert, bleibt die vorhandene Bestellkontrolle erhalten und wird nicht erneut gedruckt; für Arbeiten, für die noch keine Bestellkontrolle vorliegt, wird weiterhin eine gedruckt.'
 );
 
 -- 2) AD_Element_Trl skeleton rows for every active system language (de_DE, de_CH, en_US, fr_CH)
@@ -37,8 +37,8 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Element_ID = 585474
 UPDATE AD_Element_Trl
    SET Name = 'Reprint Order Checkup',
        PrintName = 'Reprint Order Checkup',
-       Description = 'Controls whether the order checkup is reprinted when this order is reactivated.',
-       Help = 'When enabled, the order checkup is automatically reprinted when the order is reactivated. Disable this checkbox to skip the reprint.',
+       Description = 'Controls whether completing a reactivated order produces a new order checkup, or keeps the existing one.',
+       Help = 'When enabled, completing a reactivated order rebuilds the order checkup and prints it again. When disabled, the existing order checkup is kept and is not reprinted; a checkup is still printed for work that does not have one yet.',
        IsTranslated = 'Y',
        Updated = TO_TIMESTAMP('2026-09-17 10:00:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
  WHERE AD_Language = 'en_US' AND AD_Element_ID = 585474;
@@ -64,8 +64,8 @@ INSERT INTO AD_Column (
     TO_TIMESTAMP('2026-09-17 10:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-17 10:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     259, 585474, 'IsReprintOrderCheckup', 'Bestellkontrolle neu drucken',
-    'Legt fest, ob die Bestellkontrolle beim Reaktivieren dieses Auftrags erneut gedruckt wird.',
-    'Wenn aktiviert, wird die Bestellkontrolle beim Reaktivieren des Auftrags automatisch erneut gedruckt. Wird das Kontrollkästchen deaktiviert, unterbleibt der erneute Druck.',
+    'Legt fest, ob beim Abschließen eines reaktivierten Auftrags eine neue Bestellkontrolle erstellt wird oder die vorhandene erhalten bleibt.',
+    'Wenn aktiviert, wird die Bestellkontrolle beim Abschließen eines reaktivierten Auftrags neu erstellt und erneut gedruckt. Wenn deaktiviert, bleibt die vorhandene Bestellkontrolle erhalten und wird nicht erneut gedruckt; für Arbeiten, für die noch keine Bestellkontrolle vorliegt, wird weiterhin eine gedruckt.',
     20, 1, 'N', 'N', 'Y', 'Y', 'N',
     'N', 0, 'N', 'N', 'D', 0, 'NP',
     'Y', 'N'

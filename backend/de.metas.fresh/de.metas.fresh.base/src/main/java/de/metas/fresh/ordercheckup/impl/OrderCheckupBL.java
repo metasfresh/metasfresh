@@ -119,6 +119,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	private Map<OrderCheckupReportIdentity, OrderCheckupBuilder> createReportBuilders(@NonNull final I_C_Order order)
 	{
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		// Insertion-ordered: the plant report goes in last and is meant to be built, and so printed, last.
 		final Map<OrderCheckupReportIdentity, OrderCheckupBuilder> reportBuilders = new LinkedHashMap<>();
 
 		//
@@ -306,12 +307,15 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		}
 
 		final Map<OrderCheckupReportIdentity, I_C_Order_MFGWarehouse_Report> existingReports = orderCheckupDAO.retrieveNewestReportPerIdentity(order);
+		final Map<OrderCheckupReportIdentity, OrderCheckupBuilder> requiredReports = createReportBuilders(order);
 
-		createReportBuilders(order).forEach((reportIdentity, reportBuilder) -> {
-			final I_C_Order_MFGWarehouse_Report existingReport = existingReports.get(reportIdentity);
+		int reactivatedCount = 0;
+		for (final Map.Entry<OrderCheckupReportIdentity, OrderCheckupBuilder> requiredReport : requiredReports.entrySet())
+		{
+			final I_C_Order_MFGWarehouse_Report existingReport = existingReports.get(requiredReport.getKey());
 			if (existingReport == null)
 			{
-				reportBuilder.build();
+				requiredReport.getValue().build();
 			}
 			else
 			{
@@ -319,10 +323,18 @@ public class OrderCheckupBL implements IOrderCheckupBL
 				// false->true -- which is why the sheets already in the users' hands stay valid and nothing is printed.
 				existingReport.setIsActive(true);
 				orderCheckupDAO.save(existingReport);
+				reactivatedCount++;
 			}
-		});
+		}
 
 		// Reports whose identity the order no longer calls for stay inactive.
+		logger.debug("C_Order_ID {} has IsReprintOrderCheckup='N': of the {} report(s) it needs, {} were reactivated unchanged"
+						+ " and {} were newly built and printed; {} existing report(s) are not needed any more and stay inactive.",
+				order.getC_Order_ID(),
+				requiredReports.size(),
+				reactivatedCount,
+				requiredReports.size() - reactivatedCount,
+				existingReports.size() - reactivatedCount);
 	}
 
 	@Override

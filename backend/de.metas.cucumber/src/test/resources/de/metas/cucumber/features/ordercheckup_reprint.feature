@@ -354,7 +354,7 @@ Feature: Bestellkontrolle reprint after reactivate
 
 # ####################################################################################################################
 # ####################################################################################################################
-  @Id:S30709_TC9
+  @Id:S30709_TC11
   Scenario: Reprint not set - a line that only becomes plannable after the reactivate gets its own Bestellkontrolle
     Given metasfresh contains M_Products:
       | Identifier       |
@@ -393,3 +393,74 @@ Feature: Bestellkontrolle reprint after reactivate
     And C_Order_MFGWarehouse_Report doc-outbound work package count is:
       | C_Order_ID | WorkPackageCount |
       | order      | 2                |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC12
+  Scenario: Reprint not set - a Bestellkontrolle whose work left the order stays inactive
+    Given metasfresh contains M_Products:
+      | Identifier       |
+      | unplannedProduct |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID     | PriceStd | C_UOM_ID |
+      | priceListVersion       | unplannedProduct | 10.0     | PCE      |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID     | QtyEntered |
+      | plannedLine   | order      | product          | 5          |
+      | unplannedLine | order      | unplannedProduct | 5          |
+    And the order identified by order is completed
+    And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | Processed |
+      | WH           | warehouse      | plant       | true     | true      |
+      | PL           |                | plant       | true     | true      |
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 2                |
+
+    When the order identified by order is reactivated
+    # The only line the warehouse report was built from leaves the order
+    And delete C_OrderLine identified by plannedLine, but keep its id into identifierIds table
+    And the order identified by order is completed
+
+    # Nothing on the order calls for the warehouse report any more, so it stays down; the plant report
+    # is still called for and comes back. Nothing was built, so nothing was enqueued.
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive | Processed |
+      | WH           | warehouse      | plant       | false    | true      |
+      | PL           |                | plant       | true     | true      |
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 2                |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC13
+  Scenario: Order checkups not enabled - completing generates nothing, whatever the reprint flag says
+    # Back to the value a stock installation has: order checkups are opt-in, and the Background above is
+    # what makes every other scenario in this file a customer that opted in.
+    Given set sys config boolean value false for sys config de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete
+    # The reprint flag at its column default, so this shows it changes nothing rather than sidestepping it
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | Y                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+
+    When the order identified by order is completed
+
+    # Nothing at all -- not even the plant report, which an order whose lines cannot be planned still gets.
+    # The reprint flag is never reached: an installation that has not enabled order checkups keeps none.
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 0                |
+
+    # The sys config is system-wide and nothing undoes it, so leave it as every other scenario here expects it
+    And set sys config boolean value true for sys config de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete
