@@ -54,7 +54,41 @@ public class C_Order
 			return;
 		}
 
+		if (order.isReprintOrderCheckup())
+		{
+			regenerateReports(order, orderCheckupBL);
+		}
+		else
+		{
+			restoreOrRegenerateReports(order, orderCheckupBL);
+		}
+	}
+
+	/**
+	 * Generates a fresh report run for the order. This is the unconditional behaviour from before this feature
+	 * existed, kept for {@code IsReprintOrderCheckup='Y'} (the default) and reused as the fallback of
+	 * {@link #restoreOrRegenerateReports}.
+	 */
+	private void regenerateReports(final I_C_Order order, final IOrderCheckupBL orderCheckupBL)
+	{
 		orderCheckupBL.generateReportsIfEligible(order);
+	}
+
+	/**
+	 * {@code order.IsReprintOrderCheckup} is unset: prefer reactivating the headers of the order's most recent
+	 * report generation over printing a new one, so that completing a reactivated order does not trigger a
+	 * reprint. Falls back to {@link #regenerateReports} when there is nothing to restore -- the order's first
+	 * completion, or a generation that predates the {@code IsReprintOrderCheckup} column.
+	 */
+	private void restoreOrRegenerateReports(final I_C_Order order, final IOrderCheckupBL orderCheckupBL)
+	{
+		final boolean restoredMostRecentGeneration = orderCheckupBL.restoreMostRecentGeneration(order);
+		if (restoredMostRecentGeneration)
+		{
+			return;
+		}
+
+		regenerateReports(order, orderCheckupBL);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
