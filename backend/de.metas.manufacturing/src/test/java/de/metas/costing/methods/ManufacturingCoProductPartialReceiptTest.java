@@ -23,6 +23,7 @@
 package de.metas.costing.methods;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.ad_reference.ADReferenceService;
@@ -35,7 +36,6 @@ import de.metas.costing.CostPrice;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
-import de.metas.costing.CurrentCost;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
@@ -52,6 +52,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -81,38 +82,32 @@ import java.time.Instant;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Reposting a {@code PP_Cost_Collector} shall be idempotent: the second posting of the very same collector
- * must reuse the {@code M_CostDetail} records the first posting created, and must NOT mutate {@code M_Cost}
- * a second time.
- * <p>
- * The guarantee is implemented by the {@code getExistingCostDetails} short-circuit at the top of every
- * {@code CostingMethodHandler#createOrUpdateCost}; this test pins it for all three manufacturing handlers,
- * on both cost-collector branches that touch a current cost.
+ * AC8/AC9 (D-MULTIRECEIPT landmine): a co-product received across TWO partial receipts must book
+ * {@code current-cost x received-qty} on EACH receipt (proportional, mirroring the finished-good receipt path) -
+ * NOT the full qty-independent carve share ({@code ShareInbound x percent}) on every single receipt. The old
+ * full-share carve path over-relieved WIP by
+ * {@code (N - 1) x (ShareInbound x p)} across N partial receipts; the single CC-170 true-up (the cost-difference
+ * distributor, covered elsewhere) now carries the carve instead.
  */
 @ExtendWith(AdempiereTestWatcher.class)
-class ManufacturingRepostCostCollectorTest
+class ManufacturingCoProductPartialReceiptTest
 {
-	private static final Instant DATE = Instant.parse("2026-08-29T00:00:00Z");
+	private static final Instant DATE = Instant.parse("2026-09-16T00:00:00Z");
 
-	/** the component's current cost, i.e. the price an issue is valued at */
-	private static final String COMPONENT_COST_PRICE = "10";
-	private static final String COMPONENT_CURRENT_QTY = "100";
-	/** a component issue is booked like a sales transaction, so the issued qty reaches the handler negative */
-	private static final BigDecimal ISSUED_QTY = new BigDecimal("-10");
-	/** {@link #COMPONENT_CURRENT_QTY} + {@link #ISSUED_QTY}, i.e. the current qty after exactly ONE issue */
-	private static final String COMPONENT_CURRENT_QTY_AFTER_ONE_ISSUE = "90";
+	/** the co-product's current cost, i.e. the price EACH partial receipt must be valued at */
+	private static final String COPRODUCT_COST_PRICE = "10";
+	private static final String COPRODUCT_CURRENT_QTY = "0";
 
-	/** the main product's current cost, i.e. the price a receipt is valued at */
-	private static final String MAIN_PRODUCT_COST_PRICE = "20";
-	private static final String MAIN_PRODUCT_CURRENT_QTY = "100";
-	private static final BigDecimal RECEIVED_QTY = new BigDecimal("5");
-	/** {@link #MAIN_PRODUCT_CURRENT_QTY} + {@link #RECEIVED_QTY}, i.e. the current qty after exactly ONE receipt */
-	private static final String MAIN_PRODUCT_CURRENT_QTY_AFTER_ONE_RECEIPT = "105";
+	/** the order's total inbound costs (e.g. a material issue already booked) - qty-independent, stays fixed across both receipts */
+	private static final String TOTAL_INBOUND_COSTS_AMOUNT = "450";
 
-	/** the by-product's own current cost - a STRAY non-zero value the AC15 zeroing must ignore */
-	private static final String BYPRODUCT_COST_PRICE = "15";
-	private static final String BYPRODUCT_CURRENT_QTY = "50";
-	private static final BigDecimal BYPRODUCT_RECEIVED_QTY = new BigDecimal("3");
+	private static final BigDecimal FIRST_RECEIPT_QTY = new BigDecimal("3");
+	private static final BigDecimal SECOND_RECEIPT_QTY = new BigDecimal("3");
+
+	/** current-cost(10) x qty(3): what EACH partial receipt must book under the fix */
+	private static final BigDecimal EXPECTED_AMOUNT_PER_RECEIPT = new BigDecimal("30");
+	/** current-cost(10) x total received qty(6): what the two receipts must sum to */
+	private static final BigDecimal EXPECTED_TOTAL_AMOUNT = new BigDecimal("60");
 
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ANY;
@@ -121,22 +116,22 @@ class ManufacturingRepostCostCollectorTest
 	private CurrencyId currencyId;
 	private I_C_UOM uomEach;
 	private ProductId mainProductId;
-	private ProductId componentProductId;
-	private ProductId byProductId;
+	private ProductId issueProductId;
+	private ProductId coProductId;
 
 	private CostElementRepository costElementRepo;
 	private CostingMethodHandlerUtils utils;
 	private PPOrderCostDifferenceDistributor distributor;
+	private IPPOrderCostBL ppOrderCostBL;
 
 	// per-test, set up by setupOrderFor(..)
 	private AcctSchemaId acctSchemaId;
 	private CostElement costElement;
 	private CostingMethodHandler handler;
-	private PPCostCollectorId issueCollectorId;
-	private PPCostCollectorId receiptCollectorId;
-	private PPCostCollectorId byProductReceiptCollectorId;
+	private PPCostCollectorId firstReceiptCollectorId;
+	private PPCostCollectorId secondReceiptCollectorId;
 
-	/** The three manufacturing handlers; each one has to short-circuit a repost. */
+	/** the two in-scope handlers per Task 10; the LastPO handler is explicitly out of scope. */
 	private enum ManufacturingHandlerUnderTest
 	{
 		AveragePO(CostingMethod.AveragePO)
@@ -151,14 +146,6 @@ class ManufacturingRepostCostCollectorTest
 										utils,
 										MatchInvoiceService.newInstanceForUnitTesting(),
 										OrderCostService.newInstanceForUnitTesting()));
-					}
-				},
-		LastPO(CostingMethod.LastPOPrice)
-				{
-					@Override
-					CostingMethodHandler createHandler(final CostingMethodHandlerUtils utils, final PPOrderCostDifferenceDistributor distributor)
-					{
-						return new ManufacturingLastPOCostingMethodHandler(utils, distributor);
 					}
 				},
 		MovingAverageInvoice(CostingMethod.MovingAverageInvoice)
@@ -190,11 +177,13 @@ class ManufacturingRepostCostCollectorTest
 		AdempiereTestHelper.get().init();
 		Env.setClientId(Env.getCtx(), clientId);
 
+		ppOrderCostBL = Services.get(IPPOrderCostBL.class);
+
 		uomEach = BusinessTestHelper.createUomEach();
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		mainProductId = BusinessTestHelper.createProductId("main product", uomEach);
-		componentProductId = BusinessTestHelper.createProductId("component", uomEach);
-		byProductId = BusinessTestHelper.createProductId("by-product", uomEach);
+		issueProductId = BusinessTestHelper.createProductId("input material", uomEach);
+		coProductId = BusinessTestHelper.createProductId("co-product", uomEach);
 
 		// the costing level is what the cost segment is built from; the costing method is only asked for products
 		Services.registerService(IProductCostingBL.class, new MockedProductCostingBL(CostingLevel.Client, CostingMethod.AveragePO));
@@ -209,55 +198,25 @@ class ManufacturingRepostCostCollectorTest
 
 	@ParameterizedTest
 	@EnumSource(ManufacturingHandlerUnderTest.class)
-	void componentIssue_repostedTwice_createsOneCostDetailAndMovesCurrentCostOnce(final ManufacturingHandlerUnderTest handlerUnderTest)
+	void twoPartialReceipts_eachBooksCurrentCostTimesReceivedQty_notTheFullShare(final ManufacturingHandlerUnderTest handlerUnderTest)
 	{
 		setupOrderFor(handlerUnderTest);
 
-		final CostDetailCreateRequest request = issueRequest();
-		handler.createOrUpdateCost(request);
-		handler.createOrUpdateCost(request); // the repost
+		final CostDetailCreateResultsList firstResult = handler.createOrUpdateCost(firstReceiptRequest());
+		final BigDecimal firstAmount = firstResult.getSingleResult().getAmt().getAmt(CostAmountType.MAIN).toBigDecimal();
 
-		assertThat(utils.getExistingCostDetails(request)).hasSize(1);
+		final CostDetailCreateResultsList secondResult = handler.createOrUpdateCost(secondReceiptRequest());
+		final BigDecimal secondAmount = secondResult.getSingleResult().getAmt().getAmt(CostAmountType.MAIN).toBigDecimal();
 
-		final CurrentCost componentCost = utils.getCurrentCostForUpdate(request);
-		assertThat(componentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo(COMPONENT_CURRENT_QTY_AFTER_ONE_ISSUE);
-		assertThat(componentCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo(ISSUED_QTY);
-	}
+		// EACH receipt books current-cost x its OWN received qty (3 x 10 = 30) - NOT the full, qty-independent
+		// ShareInbound x percent carve share, which pre-fix is booked again in full on every receipt.
+		assertThat(firstAmount).isEqualByComparingTo(EXPECTED_AMOUNT_PER_RECEIPT);
+		assertThat(secondAmount).isEqualByComparingTo(EXPECTED_AMOUNT_PER_RECEIPT);
+		assertThat(firstAmount.add(secondAmount)).isEqualByComparingTo(EXPECTED_TOTAL_AMOUNT);
 
-	@ParameterizedTest
-	@EnumSource(ManufacturingHandlerUnderTest.class)
-	void mainProductReceipt_repostedTwice_createsOneCostDetailAndMovesCurrentCostOnce(final ManufacturingHandlerUnderTest handlerUnderTest)
-	{
-		setupOrderFor(handlerUnderTest);
-
-		final CostDetailCreateRequest request = receiptRequest();
-		handler.createOrUpdateCost(request);
-		handler.createOrUpdateCost(request); // the repost
-
-		assertThat(utils.getExistingCostDetails(request)).hasSize(1);
-
-		final CurrentCost mainProductCost = utils.getCurrentCostForUpdate(request);
-		assertThat(mainProductCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo(MAIN_PRODUCT_CURRENT_QTY_AFTER_ONE_RECEIPT);
-		assertThat(mainProductCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo(RECEIVED_QTY);
-	}
-
-	/**
-	 * AC15: a by-product receipt is booked at ZERO cost, regardless of the by-product's own current M_Cost - the
-	 * receipt-side (leg B) counterpart to the by-product's central post-calculation zeroing in
-	 * {@code PPOrderCosts.updatePostCalculationAmountsForCostElement} (leg A). LastPO is deliberately excluded -
-	 * it is out of scope and still books a by-product at price x qty (non-zero).
-	 */
-	@ParameterizedTest
-	@EnumSource(value = ManufacturingHandlerUnderTest.class, names = { "AveragePO", "MovingAverageInvoice" })
-	void byProductReceipt_bookedAtZero_regardlessOfProductsCurrentCost(final ManufacturingHandlerUnderTest handlerUnderTest)
-	{
-		setupOrderFor(handlerUnderTest);
-
-		final CostDetailCreateRequest request = byProductReceiptRequest();
-		final CostDetailCreateResultsList result = handler.createOrUpdateCost(request);
-
-		assertThat(result.getSingleResult().getAmt().getAmt(CostAmountType.MAIN).toBigDecimal())
-				.isEqualByComparingTo(BigDecimal.ZERO);
+		// and the co-product's PP_Order_Cost row accumulates exactly that sum - not (N x full share)
+		final PPOrderCost coProductCost = coProductOrderCost();
+		assertThat(coProductCost.getAccumulatedAmount().toBigDecimal()).isEqualByComparingTo(EXPECTED_TOTAL_AMOUNT);
 	}
 
 	//
@@ -276,13 +235,10 @@ class ManufacturingRepostCostCollectorTest
 		costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, handlerUnderTest.costingMethod);
 		handler = handlerUnderTest.createHandler(utils, distributor);
 
-		issueCollectorId = createCostCollector(CostCollectorType.ComponentIssue, ISSUED_QTY.negate());
-		receiptCollectorId = createCostCollector(CostCollectorType.MaterialReceipt, RECEIVED_QTY);
-		byProductReceiptCollectorId = createCostCollector(CostCollectorType.MixVariance, BYPRODUCT_RECEIVED_QTY);
+		firstReceiptCollectorId = createCostCollector(CostCollectorType.MixVariance, FIRST_RECEIPT_QTY);
+		secondReceiptCollectorId = createCostCollector(CostCollectorType.MixVariance, SECOND_RECEIPT_QTY);
 
-		saveCurrentCost(componentProductId, COMPONENT_COST_PRICE, COMPONENT_CURRENT_QTY);
-		saveCurrentCost(mainProductId, MAIN_PRODUCT_COST_PRICE, MAIN_PRODUCT_CURRENT_QTY);
-		saveCurrentCost(byProductId, BYPRODUCT_COST_PRICE, BYPRODUCT_CURRENT_QTY);
+		saveCurrentCost(coProductId, COPRODUCT_COST_PRICE, COPRODUCT_CURRENT_QTY);
 		createOrderCosts();
 	}
 
@@ -317,38 +273,45 @@ class ManufacturingRepostCostCollectorTest
 	}
 
 	/**
-	 * The rows {@code CreatePPOrderCostsCommand} leaves behind for a freshly created order. The main-product row is
-	 * mandatory: post-calculation, which every handler runs after each collector, requires exactly one per cost element.
+	 * The rows {@code CreatePPOrderCostsCommand} leaves behind for a freshly created order: a main-product row
+	 * (mandatory - post-calculation requires exactly one per cost element), total inbound costs from a material issue (fixed,
+	 * qty-independent - the very thing the old full-share path multiplied by a percent on every single receipt),
+	 * and the co-product row itself, carrying the BOM's qty-distribution percent (1/6, as the co-product is
+	 * eventually received across the two 3kg receipts below).
 	 */
 	private void createOrderCosts()
 	{
 		final PPOrderCost materialIssue = PPOrderCost.builder()
 				.trxType(PPOrderCostTrxType.MaterialIssue)
-				.costSegmentAndElement(utils.extractCostSegmentAndElement(issueRequest()))
-				.price(costPrice(COMPONENT_COST_PRICE))
-				.accumulatedAmount(CostAmount.zero(currencyId))
+				.costSegmentAndElement(utils.extractCostSegmentAndElement(firstReceiptRequest().withProductId(issueProductId)))
+				.price(costPrice("0"))
+				.accumulatedAmount(CostAmount.of(new BigDecimal(TOTAL_INBOUND_COSTS_AMOUNT), currencyId))
 				.accumulatedQty(Quantity.zero(uomEach))
 				.build();
 
 		final PPOrderCost mainProduct = PPOrderCost.builder()
 				.trxType(PPOrderCostTrxType.MainProduct)
-				.costSegmentAndElement(utils.extractCostSegmentAndElement(receiptRequest()))
+				.costSegmentAndElement(utils.extractCostSegmentAndElement(firstReceiptRequest().withProductId(mainProductId)))
 				.price(costPrice("0"))
 				.accumulatedAmount(CostAmount.zero(currencyId))
 				.accumulatedQty(Quantity.zero(uomEach))
 				.build();
 
-		final PPOrderCost byProduct = PPOrderCost.builder()
-				.trxType(PPOrderCostTrxType.ByProduct)
-				.costSegmentAndElement(utils.extractCostSegmentAndElement(byProductReceiptRequest()))
+		final PPOrderCost coProduct = PPOrderCost.builder()
+				.trxType(PPOrderCostTrxType.CoProduct)
+				.costSegmentAndElement(utils.extractCostSegmentAndElement(firstReceiptRequest()))
 				.price(costPrice("0"))
+				// the BOM's real 1/qty distribution share (Percent.of(1, totalCoQty=6, precision 4)) - irrelevant
+				// under the fix (the blank-share path is no longer called), kept to mirror the real fixture and to
+				// make the RED failure obvious: pre-fix, EVERY receipt books 450 x 1/6 = 75.0002, not 30.
+				.coProductCostDistributionPercent(Percent.of(BigDecimal.ONE, new BigDecimal("6"), 4))
 				.accumulatedAmount(CostAmount.zero(currencyId))
 				.accumulatedQty(Quantity.zero(uomEach))
 				.build();
 
-		Services.get(IPPOrderCostBL.class).save(PPOrderCosts.builder()
+		ppOrderCostBL.save(PPOrderCosts.builder()
 				.orderId(orderId)
-				.costs(ImmutableList.of(materialIssue, mainProduct, byProduct))
+				.costs(ImmutableList.of(materialIssue, mainProduct, coProduct))
 				.build());
 	}
 
@@ -361,22 +324,16 @@ class ManufacturingRepostCostCollectorTest
 				.build();
 	}
 
-	/** what {@code DocLine_CostCollector} hands the handler for a ComponentIssue collector: a qty, and no amount */
-	private CostDetailCreateRequest issueRequest()
+	/** what {@code DocLine_CostCollector} hands the handler for the FIRST 3kg MixVariance co-product receipt collector */
+	private CostDetailCreateRequest firstReceiptRequest()
 	{
-		return requestBuilder(componentProductId, issueCollectorId, ISSUED_QTY);
+		return requestBuilder(coProductId, firstReceiptCollectorId, FIRST_RECEIPT_QTY);
 	}
 
-	/** what {@code DocLine_CostCollector} hands the handler for a MaterialReceipt collector: a qty, and no amount */
-	private CostDetailCreateRequest receiptRequest()
+	/** what {@code DocLine_CostCollector} hands the handler for the SECOND 3kg MixVariance co-product receipt collector */
+	private CostDetailCreateRequest secondReceiptRequest()
 	{
-		return requestBuilder(mainProductId, receiptCollectorId, RECEIVED_QTY);
-	}
-
-	/** what {@code DocLine_CostCollector} hands the handler for a MixVariance by-product receipt collector: a qty, and no amount */
-	private CostDetailCreateRequest byProductReceiptRequest()
-	{
-		return requestBuilder(byProductId, byProductReceiptCollectorId, BYPRODUCT_RECEIVED_QTY);
+		return requestBuilder(coProductId, secondReceiptCollectorId, SECOND_RECEIPT_QTY);
 	}
 
 	private CostDetailCreateRequest requestBuilder(
@@ -393,8 +350,19 @@ class ManufacturingRepostCostCollectorTest
 				.costElement(costElement)
 				.documentRef(CostingDocumentRef.ofCostCollectorId(costCollectorId))
 				.qty(Quantity.of(qty, uomEach))
-				.amt(CostAmount.zero(currencyId)) // N/A - the handler values the movement at the product's current cost
+				.amt(CostAmount.zero(currencyId)) // N/A - the handler values the receipt at the co-product's current cost
 				.date(DATE)
 				.build();
+	}
+
+	private PPOrderCost coProductOrderCost()
+	{
+		return ppOrderCostBL
+				.getByOrderId(orderId)
+				.getByProductAndCostElements(coProductId, ImmutableSet.of(costElement.getId()))
+				.stream()
+				.filter(PPOrderCost::isCoProduct)
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException("No co-product PP_Order_Cost row found"));
 	}
 }

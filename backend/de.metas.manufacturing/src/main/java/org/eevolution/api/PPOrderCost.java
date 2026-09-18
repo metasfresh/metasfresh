@@ -97,12 +97,9 @@ public class PPOrderCost
 
 		if (trxType.isCoProduct())
 		{
+			// A blank / NULL / non-positive percent is allowed: the post-calculation values such a co-product at
+			// zero share (nothing to capitalise), so no positivity check is enforced here.
 			this.coProductCostDistributionPercent = coProductCostDistributionPercent;
-			if (coProductCostDistributionPercent == null || coProductCostDistributionPercent.signum() <= 0)
-			{
-				// TODO : FIXME see https://github.com/metasfresh/metasfresh/issues/4947
-				// throw new AdempiereException("coProductCostDistributionPercent shall be positive but it was " + coProductCostDistributionPercent);
-			}
 		}
 		else
 		{
