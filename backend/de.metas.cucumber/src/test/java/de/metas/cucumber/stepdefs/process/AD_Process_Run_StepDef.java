@@ -149,6 +149,11 @@ public class AD_Process_Run_StepDef
 	 * target the process needs -- nothing (no-selection), {@code setTableName}/{@code setWhereClause} (a
 	 * where-clause selection), or {@code setRecord} (a single directly-addressed record) -- and then hand the
 	 * result to {@link #executeProcess(ProcessInfo.ProcessInfoBuilder)}.
+	 * <p>
+	 * Gotcha: never call {@code setTableName(null)} on the returned builder for the no-selection case -- that is
+	 * NOT the same as never calling it: it pins {@code AD_Table_ID} to {@code -1} and kills the {@code
+	 * AD_PInstance} fallback the no-selection path relies on. Leave {@code setTableName}/{@code setWhereClause}
+	 * uncalled entirely when the process needs no target.
 	 */
 	private ProcessInfo.ProcessInfoBuilder newProcessInfoBuilder(@NonNull final String processValue)
 	{

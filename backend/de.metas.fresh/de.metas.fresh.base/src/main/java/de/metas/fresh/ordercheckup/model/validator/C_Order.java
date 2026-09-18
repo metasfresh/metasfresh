@@ -23,7 +23,6 @@ package de.metas.fresh.ordercheckup.model.validator;
  */
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
@@ -57,7 +56,7 @@ public class C_Order
 
 		if (order.isReprintOrderCheckup())
 		{
-			regenerateReports(order);
+			orderCheckupBL.generateReportsIfEligible(order);
 		}
 		else
 		{
@@ -66,25 +65,16 @@ public class C_Order
 	}
 
 	/**
-	 * Generates a fresh report run for the order — the behaviour applied when {@code IsReprintOrderCheckup} is
-	 * set, and the fallback of {@link #restoreOrRegenerateReports}.
-	 */
-	private void regenerateReports(final I_C_Order order)
-	{
-		orderCheckupBL.generateReportsIfEligible(order);
-	}
-
-	/**
 	 * {@code order.IsReprintOrderCheckup} is unset: prefer reactivating the headers of the order's most recent
 	 * report generation over printing a new one, so that completing a reactivated order does not trigger a
-	 * reprint. Falls back to {@link #regenerateReports} when there is nothing to restore -- the order's first
+	 * reprint. Falls back to a fresh report run when there is nothing to restore -- the order's first
 	 * completion, or a generation that predates the {@code IsReprintOrderCheckup} column.
 	 */
 	private void restoreOrRegenerateReports(final I_C_Order order)
 	{
 		if (!orderCheckupBL.restoreMostRecentGeneration(order))
 		{
-			regenerateReports(order);
+			orderCheckupBL.generateReportsIfEligible(order);
 		}
 	}
 

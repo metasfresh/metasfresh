@@ -33,7 +33,6 @@ import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
-import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
@@ -47,7 +46,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 
 import java.util.HashSet;
 import java.util.List;
@@ -70,7 +68,6 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
-	private final IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
 
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData reportTable;
 	@NonNull private final C_Order_StepDefData orderTable;
@@ -391,45 +388,5 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 			assertThat(actualCount).as("Doc-outbound work package count for order %s", order).isEqualTo(expectedCount);
 		});
-	}
-
-	/**
-	 * Voids (deactivates) every {@code C_Order_MFGWarehouse_Report} header currently held for the given order --
-	 * i.e. calls {@code IOrderCheckupBL#voidReports}, the same production method
-	 * {@code generateReportsIfEligible} runs before rebuilding a fresh set of reports. Used to bring an order into
-	 * the "several deactivated generations" starting state a restore scenario needs, without going through a full
-	 * completion cycle.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.depends StepDefData: C_Order_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * When the Bestellkontrolle reports for the order identified by order are voided
-	 * </pre>
-	 */
-	@And("^the Bestellkontrolle reports for the order identified by (.*) are voided$")
-	public void void_reports(@NonNull final String orderIdentifier)
-	{
-		final I_C_Order order = orderTable.get(orderIdentifier);
-		orderCheckupBL.voidReports(order);
-	}
-
-	/**
-	 * Calls {@code IOrderCheckupBL#restoreMostRecentGeneration} for the given order -- reactivates the
-	 * {@code C_Order_MFGWarehouse_Report} headers of its highest {@code OrderCheckupGeneration}, leaving any older
-	 * generation as-is.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.depends StepDefData: C_Order_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * When the most recent Bestellkontrolle generation for the order identified by order is restored
-	 * </pre>
-	 */
-	@And("^the most recent Bestellkontrolle generation for the order identified by (.*) is restored$")
-	public void restore_most_recent_generation(@NonNull final String orderIdentifier)
-	{
-		final I_C_Order order = orderTable.get(orderIdentifier);
-		orderCheckupBL.restoreMostRecentGeneration(order);
 	}
 }

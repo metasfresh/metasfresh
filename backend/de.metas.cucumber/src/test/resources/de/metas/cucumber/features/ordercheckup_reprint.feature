@@ -208,61 +208,6 @@ Feature: Bestellkontrolle reprint after reactivate
       | PL           |                | plant       | 2                      | true     |
 
 
-# ####################################################################################################################
-# ####################################################################################################################
-  # Restore mechanics scenario -- next free TC number.
-  @Id:S30709_TC12
-  Scenario: Restoring the most recent generation reactivates only the higher-generation reports
-    Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
-      | order      | true    | bpartner      | 2026-01-12  | warehouse      | Y                     |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | orderLine  | order      | product      | 5          |
-    And the order identified by order is completed
-
-    When the order identified by order is reactivated
-    And update C_OrderLine:
-      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
-      | orderLine                 | 2              |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | orderLineB | order      | product      | 3          |
-    And the order identified by order is completed
-
-    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | false    |
-      | PL           |                | plant       | 1                      | false    |
-      | WH           | warehouse      | plant       | 2                      | true     |
-      | PL           |                | plant       | 2                      | true     |
-    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
-      | C_Order_ID | WorkPackageCount |
-      | order      | 4                |
-
-    When the Bestellkontrolle reports for the order identified by order are voided
-
-    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | false    |
-      | PL           |                | plant       | 1                      | false    |
-      | WH           | warehouse      | plant       | 2                      | false    |
-      | PL           |                | plant       | 2                      | false    |
-
-    When the most recent Bestellkontrolle generation for the order identified by order is restored
-
-    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
-      | DocumentType | M_Warehouse_ID | PP_Plant_ID | OrderCheckupGeneration | IsActive |
-      | WH           | warehouse      | plant       | 1                      | false    |
-      | PL           |                | plant       | 1                      | false    |
-      | WH           | warehouse      | plant       | 2                      | true     |
-      | PL           |                | plant       | 2                      | true     |
-    # The restore only reactivated headers -- it did not build anything new, so the work package count from
-    # before the void/restore cycle (4, asserted above) is unchanged: no work package was (re-)enqueued.
-    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
-      | C_Order_ID | WorkPackageCount |
-      | order      | 4                |
-
 
 # ####################################################################################################################
 # ####################################################################################################################
@@ -287,6 +232,10 @@ Feature: Bestellkontrolle reprint after reactivate
       | PL           |                | plant       | 1                      | false    |
       | WH           | warehouse      | plant       | 2                      | true     |
       | PL           |                | plant       | 2                      | true     |
+    # Baseline for the work-package-count checks below: 2 generations x 2 reports each = 4.
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 4                |
 
     When the order identified by order is reactivated
     And the order identified by order is completed
@@ -302,6 +251,11 @@ Feature: Bestellkontrolle reprint after reactivate
       | PL           |                | plant       | 1                      | false    |
       | WH           | warehouse      | plant       | 2                      | true     |
       | PL           |                | plant       | 2                      | true     |
+    # The restore only reactivated generation 2's headers -- nothing new was built, so the work
+    # package count from before this reactivate/complete cycle (4, asserted above) is unchanged.
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 4                |
 
     When the order identified by order is reactivated
     And the order identified by order is completed
@@ -314,6 +268,11 @@ Feature: Bestellkontrolle reprint after reactivate
       | PL           |                | plant       | 1                      | false    |
       | WH           | warehouse      | plant       | 2                      | true     |
       | PL           |                | plant       | 2                      | true     |
+    # Still unchanged after a second repeated cycle -- confirms the restore never (re-)enqueues, even
+    # across repeated reactivate/complete cycles, not just once.
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 4                |
 
 
 # ####################################################################################################################
@@ -431,3 +390,31 @@ Feature: Bestellkontrolle reprint after reactivate
       | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
       | WH           | warehouse      | plant       | false    |
       | PL           |                | plant       | false    |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC9
+  Scenario: Flag not set - reverse-accruing the order is refused, so the Bestellkontrolle can never be deactivated this way
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 5          |
+    And the order identified by order is completed
+    And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
+
+    # C_Order never actually supports reverse-accrual (MOrder#reverseAccrualIt() unconditionally returns
+    # false), so the interceptor's TIMING_AFTER_REVERSEACCRUAL binding can never fire for an order in
+    # practice. This pins that AC8's third document action is a defensive, unreachable wiring for
+    # Orders, and that the reports stay untouched because the action itself never succeeds.
+    Then the order identified by order cannot be reverseAccrued
+
+    And the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |

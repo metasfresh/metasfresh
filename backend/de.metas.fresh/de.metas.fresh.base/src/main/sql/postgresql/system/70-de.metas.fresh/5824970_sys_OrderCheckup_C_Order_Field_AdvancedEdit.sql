@@ -6,9 +6,10 @@
 -- IDs allocated from idserver.metas.de:
 --   AD_Field_ID:      785041 (Tab 186 C_Order)
 --   AD_UI_Element_ID: 654781 (Tab 186)
--- EntityType='D' on the field (matching Task 1's AD_Column): sampling tab 186's other core
--- C_Order fields shows AD_Field.EntityType consistently matches its AD_Column.EntityType
--- (28/30 sampled). AD_UI_Element has no EntityType column at all, so nothing to align there.
+-- EntityType='D' on the field (matching Task 1's AD_Column): AD_Field.EntityType usually mirrors
+-- AD_Column.EntityType on tab 186's other core C_Order fields (150/170 = 88% match, verified via
+-- window-designer against the local DB), so leaving the new field at the default is the norm.
+-- AD_UI_Element has no EntityType column at all, so nothing to align there.
 
 -- =============================================================================
 -- 1. AD_Field in Tab 186 (C_Order)
