@@ -143,6 +143,7 @@ class DocTextLinesQuickActionsTest
 				.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 				.rows(rows)
 				.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+				.textLineScopeLookup(MockedTextLineScopeLookup.instance())
 				.build();
 	}
 
@@ -387,6 +388,7 @@ class DocTextLinesQuickActionsTest
 					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 					.rows(rows)
 					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+					.textLineScopeLookup(MockedTextLineScopeLookup.instance())
 					.build();
 
 			assertThatThrownBy(() -> new WEBUI_DocTextLines_Delete().delete(view, rowId))
@@ -1050,6 +1052,7 @@ class DocTextLinesQuickActionsTest
 					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 					.rows(rows)
 					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+					.textLineScopeLookup(MockedTextLineScopeLookup.instance())
 					.build();
 
 			final AtomicReference<Throwable> threadAFailure = new AtomicReference<>();
@@ -1156,6 +1159,7 @@ class DocTextLinesQuickActionsTest
 					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 					.rows(rows)
 					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+					.textLineScopeLookup(MockedTextLineScopeLookup.instance())
 					.build();
 
 			final AtomicReference<Throwable> deleteFailure = new AtomicReference<>();
