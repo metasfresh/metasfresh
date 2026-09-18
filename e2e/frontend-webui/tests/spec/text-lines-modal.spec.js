@@ -190,6 +190,13 @@ function scopeCellOf(page, rowId) {
  * The options come from a `.../edit/textLineScope/dropdown` GET the view has to answer itself; a
  * view that cannot answer it yields an empty list here rather than an error the user would see, so
  * the caller asserting on this map is what makes that failure visible.
+ *
+ * Only the entries the BACKEND supplied are returned. `RawList` appends one entry of its own to
+ * every non-mandatory list widget -- the "clear value" row, which carries `key: null` and therefore
+ * renders as `option-null` -- and that entry is a property of the widget, not of the reference list,
+ * so counting it would make this map describe the frontend rather than the view's answer. It cannot
+ * mask an unanswered dropdown either: `RawList` only builds the list (clear row included) once the
+ * backend list is non-empty, so a view that cannot answer yields no options at all.
  */
 async function openScopeDropdown(page, rowId) {
   const scopeCell = scopeCellOf(page, rowId);
@@ -208,10 +215,12 @@ async function openScopeDropdown(page, rowId) {
 
   return dropdownList.locator('[data-testid^="option-"]').evaluateAll((elements) =>
     Object.fromEntries(
-      elements.map((element) => [
-        element.getAttribute('data-testid').replace('option-', ''),
-        element.textContent.trim(),
-      ])
+      elements
+        .map((element) => [
+          element.getAttribute('data-testid').replace('option-', ''),
+          element.textContent.trim(),
+        ])
+        .filter(([key]) => key !== 'null')
     )
   );
 }
