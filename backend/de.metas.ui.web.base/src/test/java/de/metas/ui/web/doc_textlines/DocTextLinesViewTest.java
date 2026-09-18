@@ -14,10 +14,12 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.shipment_candidates_editor.MockedLookupDataSource;
+import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -121,6 +123,7 @@ class DocTextLinesViewTest
 				.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 				.rows(rows)
 				.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+				.textLineScopeLookup(MockedTextLineScopeLookup.instance())
 				.build();
 	}
 
@@ -460,6 +463,7 @@ class DocTextLinesViewTest
 					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 					.rows(rows)
 					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+					.textLineScopeLookup(MockedTextLineScopeLookup.instance())
 					.build();
 
 			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
@@ -533,6 +537,7 @@ class DocTextLinesViewTest
 					.viewId(ViewId.random(DocTextLinesViewFactory.WINDOW_ID))
 					.rows(rows)
 					.documentRef(DocTextLineDocumentRef.ofOrderId(orderId))
+					.textLineScopeLookup(MockedTextLineScopeLookup.instance())
 					.build();
 
 			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
@@ -604,6 +609,65 @@ class DocTextLinesViewTest
 			final DocTextLinesRow persistedRow = rowsOf(loadView()).get(0);
 			assertThat(persistedRow.getTextLine()).isEqualTo("text from A");
 			assertThat(persistedRow.getTextLineScope()).isEqualTo(TextLineScope.Document);
+		}
+	}
+
+	/**
+	 * The scope column is rendered with {@code editor = ViewEditorRenderMode.ALWAYS}, so the frontend asks the
+	 * view for that list's values as soon as the user opens the cell's dropdown -- {@code List/List.js} issues
+	 * a {@code .../edit/textLineScope/dropdown} GET, which lands on {@link DocTextLinesView#getFieldDropdown}.
+	 * A view that inherits {@link IEditableView}'s default there answers every such request with
+	 * {@link UnsupportedOperationException} (HTTP 500), which makes the column un-editable in practice.
+	 * <p>
+	 * The dropdown's actual contents -- the real {@code TextLineScope} reference list -- are pinned by the
+	 * browser spec {@code text-lines-modal.spec.js}, which opens the cell and picks a value for real; a plain
+	 * unit test has no database and therefore no reference list to read. What is pinned here is what that spec
+	 * cannot reach: that the field is answered from the view's own scope lookup at all, and that an unknown
+	 * field name is refused rather than silently answered with the scope list.
+	 */
+	@Nested
+	class fieldDropdown
+	{
+		private RowEditingContext editingContext(final DocTextLinesView view, final DocumentId rowId)
+		{
+			return RowEditingContext.builder()
+					.viewId(view.getViewId())
+					.rowId(rowId)
+					.documentsCollection(mock(DocumentCollection.class))
+					.userRolePermissions(mock(IUserRolePermissions.class))
+					.build();
+		}
+
+		@Test
+		void textLineScope_isAnsweredFromTheScopeLookup()
+		{
+			final I_C_Doc_TextLine textLine = createTextLine("10", TextLineScope.Following, "some text");
+
+			final DocTextLinesView view = loadView();
+			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
+
+			final LookupValuesList dropdown = view.getFieldDropdown(
+					editingContext(view, rowId),
+					DocTextLinesRow.FIELD_TextLineScope);
+
+			assertThat(dropdown.getKeysAsString())
+					.containsExactlyInAnyOrder(TextLineScope.Following.getCode(), TextLineScope.Document.getCode());
+		}
+
+		@Test
+		void unknownFieldName_isRejected()
+		{
+			final I_C_Doc_TextLine textLine = createTextLine("10", TextLineScope.Following, "some text");
+
+			final DocTextLinesView view = loadView();
+			final DocumentId rowId = DocTextLinesRow.textRowId(DocTextLineId.ofRepoId(textLine.getC_Doc_TextLine_ID()));
+			final RowEditingContext ctx = editingContext(view, rowId);
+
+			// the plain text column is a LongText widget -- it has no dropdown at all, so asking for one is a
+			// programming error, not an empty list
+			assertThatThrownBy(() -> view.getFieldDropdown(ctx, DocTextLinesRow.FIELD_TextLine))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining(DocTextLinesRow.FIELD_TextLine);
 		}
 	}
 }
