@@ -1,54 +1,72 @@
 package de.metas.fresh.model;
 
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Order_MFGWarehouse_Report
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_Order_MFGWarehouse_Report 
 {
 
-	String Table_Name = "C_Order_MFGWarehouse_Report";
+    /** TableName=C_Order_MFGWarehouse_Report */
+    public static final String Table_Name = "C_Order_MFGWarehouse_Report";
 
-//	/** AD_Table_ID=540683 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540683 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_Client>(I_C_Order_MFGWarehouse_Report.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_Org>(I_C_Order_MFGWarehouse_Report.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Verantwortlicher Benutzer.
@@ -57,7 +75,7 @@ public interface I_C_Order_MFGWarehouse_Report
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_User_Responsible_ID (int AD_User_Responsible_ID);
+	public void setAD_User_Responsible_ID (int AD_User_Responsible_ID);
 
 	/**
 	 * Get Verantwortlicher Benutzer.
@@ -66,56 +84,74 @@ public interface I_C_Order_MFGWarehouse_Report
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_User_Responsible_ID();
+	public int getAD_User_Responsible_ID();
 
-	String COLUMNNAME_AD_User_Responsible_ID = "AD_User_Responsible_ID";
+	public org.compiere.model.I_AD_User getAD_User_Responsible();
+
+	public void setAD_User_Responsible(org.compiere.model.I_AD_User AD_User_Responsible);
+
+    /** Column definition for AD_User_Responsible_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_User> COLUMN_AD_User_Responsible_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_User>(I_C_Order_MFGWarehouse_Report.class, "AD_User_Responsible_ID", org.compiere.model.I_AD_User.class);
+    /** Column name AD_User_Responsible_ID */
+    public static final String COLUMNNAME_AD_User_Responsible_ID = "AD_User_Responsible_ID";
 
 	/**
-	 * Set Business Partner.
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Business Partner.
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_ID();
+	public int getC_BPartner_ID();
 
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_C_BPartner>(I_C_Order_MFGWarehouse_Report.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Sales order.
-	 * Order
+	 * Set Auftrag.
+	 * Auftrag
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Order_ID (int C_Order_ID);
+	public void setC_Order_ID (int C_Order_ID);
 
 	/**
-	 * Get Sales order.
-	 * Order
+	 * Get Auftrag.
+	 * Auftrag
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Order_ID();
+	public int getC_Order_ID();
 
-	org.compiere.model.I_C_Order getC_Order();
+	public org.compiere.model.I_C_Order getC_Order();
 
-	void setC_Order(org.compiere.model.I_C_Order C_Order);
+	public void setC_Order(org.compiere.model.I_C_Order C_Order);
 
-	ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
-	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+    /** Column definition for C_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_C_Order>(I_C_Order_MFGWarehouse_Report.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_Order_ID */
+    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Order / MFG Warehouse report.
@@ -124,7 +160,7 @@ public interface I_C_Order_MFGWarehouse_Report
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Order_MFGWarehouse_Report_ID (int C_Order_MFGWarehouse_Report_ID);
+	public void setC_Order_MFGWarehouse_Report_ID (int C_Order_MFGWarehouse_Report_ID);
 
 	/**
 	 * Get Order / MFG Warehouse report.
@@ -133,195 +169,201 @@ public interface I_C_Order_MFGWarehouse_Report
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Order_MFGWarehouse_Report_ID();
+	public int getC_Order_MFGWarehouse_Report_ID();
 
-	ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_C_Order_MFGWarehouse_Report_ID = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "C_Order_MFGWarehouse_Report_ID", null);
-	String COLUMNNAME_C_Order_MFGWarehouse_Report_ID = "C_Order_MFGWarehouse_Report_ID";
+    /** Column definition for C_Order_MFGWarehouse_Report_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_C_Order_MFGWarehouse_Report_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object>(I_C_Order_MFGWarehouse_Report.class, "C_Order_MFGWarehouse_Report_ID", null);
+    /** Column name C_Order_MFGWarehouse_Report_ID */
+    public static final String COLUMNNAME_C_Order_MFGWarehouse_Report_ID = "C_Order_MFGWarehouse_Report_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_Created = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object>(I_C_Order_MFGWarehouse_Report.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_User>(I_C_Order_MFGWarehouse_Report.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Document Type.
-	 * Document Type
+	 * Set Belegart.
+	 * Belegart
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentType (java.lang.String DocumentType);
+	public void setDocumentType (java.lang.String DocumentType);
 
 	/**
-	 * Get Document Type.
-	 * Document Type
+	 * Get Belegart.
+	 * Belegart
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocumentType();
+	public java.lang.String getDocumentType();
 
-	ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_DocumentType = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "DocumentType", null);
-	String COLUMNNAME_DocumentType = "DocumentType";
+    /** Column definition for DocumentType */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_DocumentType = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object>(I_C_Order_MFGWarehouse_Report.class, "DocumentType", null);
+    /** Column name DocumentType */
+    public static final String COLUMNNAME_DocumentType = "DocumentType";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object>(I_C_Order_MFGWarehouse_Report.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Warehouse_ID();
+	public int getM_Warehouse_ID();
 
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+	public org.compiere.model.I_M_Warehouse getM_Warehouse();
 
-	/**
-	 * Set Order Checkup Generation.
-	 * Internal discriminator for the order checkup print generation.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOrderCheckupGeneration (int OrderCheckupGeneration);
+	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
+
+    /** Column definition for M_Warehouse_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_M_Warehouse>(I_C_Order_MFGWarehouse_Report.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Get Order Checkup Generation.
-	 * Internal discriminator for the order checkup print generation.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getOrderCheckupGeneration();
-
-	ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_OrderCheckupGeneration = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "OrderCheckupGeneration", null);
-	String COLUMNNAME_OrderCheckupGeneration = "OrderCheckupGeneration";
-
-	/**
-	 * Set Plant.
+	 * Set Produktionsstätte.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPP_Plant_ID (int PP_Plant_ID);
+	public void setPP_Plant_ID (int PP_Plant_ID);
 
 	/**
-	 * Get Plant.
+	 * Get Produktionsstätte.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getPP_Plant_ID();
+	public int getPP_Plant_ID();
 
-	@Nullable org.compiere.model.I_S_Resource getPP_Plant();
+	public org.compiere.model.I_S_Resource getPP_Plant();
 
-	void setPP_Plant(@Nullable org.compiere.model.I_S_Resource PP_Plant);
+	public void setPP_Plant(org.compiere.model.I_S_Resource PP_Plant);
 
-	ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_ID = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "PP_Plant_ID", org.compiere.model.I_S_Resource.class);
-	String COLUMNNAME_PP_Plant_ID = "PP_Plant_ID";
+    /** Column definition for PP_Plant_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_ID = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_S_Resource>(I_C_Order_MFGWarehouse_Report.class, "PP_Plant_ID", org.compiere.model.I_S_Resource.class);
+    /** Column name PP_Plant_ID */
+    public static final String COLUMNNAME_PP_Plant_ID = "PP_Plant_ID";
 
 	/**
-	 * Set Processed.
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProcessed (boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Processed.
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessed();
+	public boolean isProcessed();
 
-	ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_Processed = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "Processed", null);
-	String COLUMNNAME_Processed = "Processed";
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object>(I_C_Order_MFGWarehouse_Report.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_Updated = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, Object>(I_C_Order_MFGWarehouse_Report.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Order_MFGWarehouse_Report, org.compiere.model.I_AD_User>(I_C_Order_MFGWarehouse_Report.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }
