@@ -39,18 +39,23 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
 import de.metas.material.event.supplyrequired.SupplyRequiredDecreasedEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.PlanningUsage;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDataFactory;
-import de.metas.material.planning.ddordercandidate.DDOrderCandidateDemandMatcher;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.material.planning.event.SupplyRequiredAdvisor;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,27 +64,71 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DDOrderCandidateAdvisedEventCreator implements SupplyRequiredAdvisor
 {
-	@NonNull private final DDOrderCandidateDemandMatcher demandMatcher;
 	@NonNull private final DDOrderCandidateDataFactory ddOrderCandidateDataFactory;
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
 	@NonNull private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	public List<DDOrderCandidateAdvisedEvent> createAdvisedEvents(
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final MaterialPlanningContext context)
+	@NonNull
+	@Override
+	public PlanningUsage getPlanningUsage()
 	{
-		if (!demandMatcher.matches(context))
-		{
-			return ImmutableList.of();
-		}
+		return PlanningUsage.DISTRIBUTION;
+	}
 
+	@NonNull
+	@Override
+	public SupplyAdvice createAdvisedEvents(
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity remainingQty)
+	{
 		final ProductPlanning productPlanningData = context.getProductPlanning();
 
-		return ddOrderCandidateDataFactory.create(supplyRequiredDescriptor, context)
-				.stream()
+		// The factory now clips each candidate's qty by the source warehouse's ATP
+		// (via SourceWarehouseAvailableQtyProvider). What it returns is what DD can actually
+		// deliver; anything short of remainingQty is the leftover that the next advisor
+		// (manufacturing / purchasing) needs to cover. See me03#28877.
+		final ImmutableList<DDOrderCandidateData> candidates = ImmutableList.copyOf(
+				ddOrderCandidateDataFactory.create(supplyRequiredDescriptor, context, remainingQty));
+
+		final ImmutableList<DDOrderCandidateAdvisedEvent> events = candidates.stream()
 				.map(ddOrderCandidate -> toDDOrderCandidateAdvisedEvent(ddOrderCandidate, supplyRequiredDescriptor, productPlanningData))
 				.collect(ImmutableList.toImmutableList());
+
+		final Quantity consumedQty = sumCandidateQtysInStockUOM(candidates, context.getProductId(), remainingQty);
+		return SupplyAdvice.of(events, consumedQty);
+	}
+
+	/**
+	 * @return the sum of {@code candidates[*].qty} (each candidate stores qty in product stock UOM).
+	 * Result is expressed in the {@code remainingQty} UOM, and defensively capped at
+	 * {@code remainingQty} in case the factory overshoots due to transferPercent rounding.
+	 * When the list is empty, returns zero in the {@code remainingQty} UOM.
+	 */
+	@NonNull
+	private Quantity sumCandidateQtysInStockUOM(
+			@NonNull final ImmutableList<DDOrderCandidateData> candidates,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity remainingQty)
+	{
+		if (candidates.isEmpty())
+		{
+			return remainingQty.toZero();
+		}
+		BigDecimal sumBD = BigDecimal.ZERO;
+		for (final DDOrderCandidateData candidate : candidates)
+		{
+			sumBD = sumBD.add(candidate.getQty());
+		}
+		// Candidate qty is already in product stock UOM (DDOrderCandidateDataFactory calls
+		// uomConversionBL.convertToProductUOM(...) before setting it). Wrap + convert to the
+		// advisor-contract UOM (remainingQty's UOM, which also is product stock UOM today but
+		// we go through the conversion BL to be safe against future divergence).
+		final Quantity sumInStockUOM = Quantitys.of(sumBD, productId);
+		final Quantity sumInRemainingUOM = uomConversionBL.convertQuantityTo(sumInStockUOM, productId, remainingQty.getUomId());
+		return sumInRemainingUOM.min(remainingQty);
 	}
 
 	private static DDOrderCandidateAdvisedEvent toDDOrderCandidateAdvisedEvent(
