@@ -10,6 +10,11 @@ Feature: Bestellkontrolle reprint after reactivate
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2026-01-12T08:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete
+    # The doc-outbound processor has to RUN: it is what turns the enqueued work package into an AD_Archive and
+    # from there a C_Doc_Outbound_Log -- i.e. the actual print this feature is about. Skipping it would stop the
+    # flow one step short of the printout. The Jasper itself is mocked, so no report server is needed.
+    And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And create S_Resource:
       | Identifier | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
       | plant      | 1000000           | Y                       | PT                        | 999             |
@@ -19,9 +24,12 @@ Feature: Bestellkontrolle reprint after reactivate
     And metasfresh contains M_Products:
       | Identifier |
       | product    |
+    # OrderCheckupBL reaches the planning via retrieveManufacturingOrTradingPlanning, which matches
+    # IsManufactured='Y' OR IsTraded='Y'. Spelled out rather than left to the step-def default, because which of
+    # the two is set is the difference between a manufacturing installation and a trading one (TC14).
     And metasfresh contains PP_Product_Plannings
-      | M_Product_ID | M_Warehouse_ID | S_Resource_ID |
-      | product      | warehouse      | plant         |
+      | M_Product_ID | M_Warehouse_ID | S_Resource_ID | IsManufactured | IsTraded |
+      | product      | warehouse      | plant         | true           | false    |
     And metasfresh contains M_PricingSystems
       | Identifier    |
       | pricingSystem |
@@ -443,7 +451,8 @@ Feature: Bestellkontrolle reprint after reactivate
   @Id:S30709_TC13
   Scenario: Order checkups not enabled - completing generates nothing, whatever the reprint flag says
     # Back to the value a stock installation has: order checkups are opt-in, and the Background above is
-    # what makes every other scenario in this file a customer that opted in.
+    # what makes every other scenario in this file a customer that opted in. Deliberately not restored
+    # afterwards -- the Background re-enables it per scenario, so the feature leaves the stock default behind.
     Given set sys config boolean value false for sys config de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete
     # The reprint flag at its column default, so this shows it changes nothing rather than sidestepping it
     And metasfresh contains C_Orders:
@@ -463,5 +472,48 @@ Feature: Bestellkontrolle reprint after reactivate
       | C_Order_ID | WorkPackageCount |
       | order      | 0                |
 
-    # The sys config is system-wide and nothing undoes it, so leave it as every other scenario here expects it
-    And set sys config boolean value true for sys config de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S30709_TC14
+  Scenario: Traded instead of manufactured - the Bestellkontrolle behaves the same, reprint flag included
+    # This customer trades its products rather than manufacturing them, so its plannings carry IsTraded='Y' and
+    # IsManufactured='N' -- the other half of retrieveManufacturingOrTradingPlanning's OR. Every other scenario here
+    # runs the manufactured half, so without this one the configuration actually in use is never exercised.
+    Given metasfresh contains M_Products:
+      | Identifier    |
+      | tradedProduct |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID |
+      | priceListVersion       | tradedProduct | 10.0     | PCE      |
+    And metasfresh contains PP_Product_Plannings
+      | M_Product_ID  | M_Warehouse_ID | S_Resource_ID | IsManufactured | IsTraded |
+      | tradedProduct | warehouse      | plant         | false          | true     |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | IsReprintOrderCheckup |
+      | order      | true    | bpartner      | 2026-01-12  | warehouse      | N                     |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID  | QtyEntered |
+      | orderLine  | order      | tradedProduct | 5          |
+    And the order identified by order is completed
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 2                |
+
+    When the order identified by order is reactivated
+    And the order identified by order is completed
+
+    Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
+      | DocumentType | M_Warehouse_ID | PP_Plant_ID | IsActive |
+      | WH           | warehouse      | plant       | true     |
+      | PL           |                | plant       | true     |
+    And C_Order_MFGWarehouse_Report doc-outbound work package count is:
+      | C_Order_ID | WorkPackageCount |
+      | order      | 2                |
+
+# ####################################################################################################################
+# ####################################################################################################################
+  Scenario: reset settings to default
+    # A separate scenario rather than a trailing step: a step only runs when every assertion above it passed, so it
+    # would be skipped exactly when a scenario failed. Most features expect the doc-outbound processor skipped.
+    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
+import de.metas.fresh.ordercheckup.OrderCheckupReportId;
 import de.metas.fresh.ordercheckup.OrderCheckupReportIdentity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -61,7 +62,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 		return queryBL
 				.createQueryBuilder(I_C_Order_MFGWarehouse_ReportLine.class, report)
 				// .addOnlyActiveRecordsFilter() // return all of them
-				.addEqualsFilter(I_C_Order_MFGWarehouse_ReportLine.COLUMN_C_Order_MFGWarehouse_Report_ID, report.getC_Order_MFGWarehouse_Report_ID())
+				.addEqualsFilter(I_C_Order_MFGWarehouse_ReportLine.COLUMN_C_Order_MFGWarehouse_Report_ID, OrderCheckupReportId.ofReport(report))
 				.orderBy()
 				.addColumn(I_C_Order_MFGWarehouse_ReportLine.COLUMN_C_Order_MFGWarehouse_ReportLine_ID)
 				.endOrderBy()

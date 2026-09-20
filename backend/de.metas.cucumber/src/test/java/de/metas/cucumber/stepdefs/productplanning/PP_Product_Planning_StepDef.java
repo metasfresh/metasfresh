@@ -163,6 +163,8 @@ public class PP_Product_Planning_StepDef
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsDocComplete).ifPresent(builder::isDocComplete);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant).ifPresent(builder::isAttributeDependant);
 		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufacturedLot4Lot).ifPresent(builder::isManufacturedLot4Lot);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsManufactured).ifPresent(builder::isManufactured);
+		row.getAsOptionalBoolean(I_PP_Product_Planning.COLUMNNAME_IsTraded).ifPresent(builder::isTraded);
 
 		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.map(productBomVersionsTable::getId)

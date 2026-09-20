@@ -22,7 +22,7 @@ INSERT INTO AD_Element (
     TO_TIMESTAMP('2026-09-17 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-17 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     'D', 'IsReprintOrderCheckup', 'Bestellkontrolle neu drucken', 'Bestellkontrolle neu drucken',
-    'Legt fest, ob beim Abschließen eines reaktivierten Auftrags eine neue Bestellkontrolle erstellt wird oder die vorhandene erhalten bleibt.',
+    'Legt fest, ob beim Abschließen eines reaktivierten Auftrags eine neue Bestellkontrolle erstellt wird oder die vorhandene erhalten bleibt. Für Arbeiten, für die noch keine Bestellkontrolle vorliegt, wird weiterhin eine gedruckt.',
     'Wenn aktiviert, wird die Bestellkontrolle beim Abschließen eines reaktivierten Auftrags neu erstellt und erneut gedruckt. Wenn deaktiviert, bleibt die vorhandene Bestellkontrolle erhalten und wird nicht erneut gedruckt; für Arbeiten, für die noch keine Bestellkontrolle vorliegt, wird weiterhin eine gedruckt.'
 );
 
@@ -37,7 +37,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Element_ID = 585474
 UPDATE AD_Element_Trl
    SET Name = 'Reprint Order Checkup',
        PrintName = 'Reprint Order Checkup',
-       Description = 'Controls whether completing a reactivated order produces a new order checkup, or keeps the existing one.',
+       Description = 'Controls whether completing a reactivated order produces a new order checkup, or keeps the existing one. Work that has no order checkup yet still gets one printed.',
        Help = 'When enabled, completing a reactivated order rebuilds the order checkup and prints it again. When disabled, the existing order checkup is kept and is not reprinted; a checkup is still printed for work that does not have one yet.',
        IsTranslated = 'Y',
        Updated = TO_TIMESTAMP('2026-09-17 10:00:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
@@ -64,7 +64,7 @@ INSERT INTO AD_Column (
     TO_TIMESTAMP('2026-09-17 10:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-17 10:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     259, 585474, 'IsReprintOrderCheckup', 'Bestellkontrolle neu drucken',
-    'Legt fest, ob beim Abschließen eines reaktivierten Auftrags eine neue Bestellkontrolle erstellt wird oder die vorhandene erhalten bleibt.',
+    'Legt fest, ob beim Abschließen eines reaktivierten Auftrags eine neue Bestellkontrolle erstellt wird oder die vorhandene erhalten bleibt. Für Arbeiten, für die noch keine Bestellkontrolle vorliegt, wird weiterhin eine gedruckt.',
     'Wenn aktiviert, wird die Bestellkontrolle beim Abschließen eines reaktivierten Auftrags neu erstellt und erneut gedruckt. Wenn deaktiviert, bleibt die vorhandene Bestellkontrolle erhalten und wird nicht erneut gedruckt; für Arbeiten, für die noch keine Bestellkontrolle vorliegt, wird weiterhin eine gedruckt.',
     20, 1, 'N', 'N', 'Y', 'Y', 'N',
     'N', 0, 'N', 'N', 'D', 0, 'NP',

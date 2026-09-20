@@ -35,6 +35,8 @@ import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.fresh.ordercheckup.OrderCheckupDocumentType;
+import de.metas.fresh.ordercheckup.OrderCheckupReportId;
+import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
@@ -118,12 +120,12 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 		assertThat(reports).as("C_Order_MFGWarehouse_Report records of order %s", orderIdentifier).hasSize(rows.size());
 
-		final Map<Integer, OrderCheckupDocumentType> documentTypesByReportId = reports.stream()
-				.collect(Collectors.toMap(I_C_Order_MFGWarehouse_Report::getC_Order_MFGWarehouse_Report_ID,
+		final Map<OrderCheckupReportId, OrderCheckupDocumentType> documentTypesByReportId = reports.stream()
+				.collect(Collectors.toMap(OrderCheckupReportId::ofReport,
 						report -> OrderCheckupDocumentType.ofCode(report.getDocumentType())));
 
 		final SoftAssertions softly = new SoftAssertions();
-		final Set<Integer> claimedIds = new HashSet<>();
+		final Set<OrderCheckupReportId> claimedIds = new HashSet<>();
 		rows.forEach(row -> assert_report_of_expected_row(row, reports, documentTypesByReportId, claimedIds, orderIdentifier, softly));
 		softly.assertAll();
 	}
@@ -131,8 +133,8 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	private void assert_report_of_expected_row(
 			@NonNull final DataTableRow row,
 			@NonNull final List<I_C_Order_MFGWarehouse_Report> reports,
-			@NonNull final Map<Integer, OrderCheckupDocumentType> documentTypesByReportId,
-			@NonNull final Set<Integer> claimedIds,
+			@NonNull final Map<OrderCheckupReportId, OrderCheckupDocumentType> documentTypesByReportId,
+			@NonNull final Set<OrderCheckupReportId> claimedIds,
 			@NonNull final String orderIdentifier,
 			@NonNull final SoftAssertions softly)
 	{
@@ -145,15 +147,15 @@ public class C_Order_MFGWarehouse_Report_StepDef
 		final OptionalBoolean isActive = row.getAsOptionalBoolean(I_C_Order_MFGWarehouse_Report.COLUMNNAME_IsActive);
 
 		final List<I_C_Order_MFGWarehouse_Report> matching = reports.stream()
-				.filter(report -> !claimedIds.contains(report.getC_Order_MFGWarehouse_Report_ID()))
-				.filter(report -> documentType.map(expected -> expected == documentTypesByReportId.get(report.getC_Order_MFGWarehouse_Report_ID())).orElse(true))
+				.filter(report -> !claimedIds.contains(OrderCheckupReportId.ofReport(report)))
+				.filter(report -> documentType.map(expected -> expected == documentTypesByReportId.get(OrderCheckupReportId.ofReport(report))).orElse(true))
 				.filter(report -> warehouseId.map(expected -> WarehouseId.equals(expected, WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()))).orElse(true))
 				.filter(report -> plantId.map(expected -> ResourceId.equals(expected, ResourceId.ofRepoIdOrNull(report.getPP_Plant_ID()))).orElse(true))
 				.filter(report -> isActive.map(expected -> expected == report.isActive()).orElse(true))
 				.collect(Collectors.toList());
 
 		final List<String> unclaimedDescriptions = reports.stream()
-				.filter(report -> !claimedIds.contains(report.getC_Order_MFGWarehouse_Report_ID()))
+				.filter(report -> !claimedIds.contains(OrderCheckupReportId.ofReport(report)))
 				.map(report -> String.format(
 						"C_Order_MFGWarehouse_Report_ID=%s/DocumentType=%s/M_Warehouse_ID=%s/PP_Plant_ID=%s/IsActive=%s",
 						report.getC_Order_MFGWarehouse_Report_ID(), report.getDocumentType(), report.getM_Warehouse_ID(), report.getPP_Plant_ID(), report.isActive()))
@@ -169,7 +171,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 		}
 
 		final I_C_Order_MFGWarehouse_Report report = matching.get(0);
-		claimedIds.add(report.getC_Order_MFGWarehouse_Report_ID());
+		claimedIds.add(OrderCheckupReportId.ofReport(report));
 
 		row.getAsOptionalBoolean(I_C_Order_MFGWarehouse_Report.COLUMNNAME_Processed)
 				.ifPresent(expected -> softly.assertThat(report.isProcessed()).as("%s of %s", I_C_Order_MFGWarehouse_Report.COLUMNNAME_Processed, report).isEqualTo(expected));
@@ -319,12 +321,12 @@ public class C_Order_MFGWarehouse_Report_StepDef
 			final I_C_Order_MFGWarehouse_Report report = reportTable.get(identifier);
 			assertThat(report).as("C_Order_MFGWarehouse_Report for Identifier=%s", identifier).isNotNull();
 
-			final Set<Integer> actualOrderLineIds = orderCheckupDAO.retrieveAllReportLines(report).stream()
-					.map(I_C_Order_MFGWarehouse_ReportLine::getC_OrderLine_ID)
+			final Set<OrderLineId> actualOrderLineIds = orderCheckupDAO.retrieveAllReportLines(report).stream()
+					.map(reportLine -> OrderLineId.ofRepoId(reportLine.getC_OrderLine_ID()))
 					.collect(Collectors.toSet());
 
-			final Set<Integer> expectedOrderLineIds = rows.stream()
-					.map(row -> row.getAsIdentifier("C_OrderLine_ID").lookupNotNullIn(orderLineTable).getC_OrderLine_ID())
+			final Set<OrderLineId> expectedOrderLineIds = rows.stream()
+					.map(row -> OrderLineId.ofRepoId(row.getAsIdentifier("C_OrderLine_ID").lookupNotNullIn(orderLineTable).getC_OrderLine_ID()))
 					.collect(Collectors.toSet());
 
 			assertThat(actualOrderLineIds).as("Order lines referenced by %s", report).isEqualTo(expectedOrderLineIds);
