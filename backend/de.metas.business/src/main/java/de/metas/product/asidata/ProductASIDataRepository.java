@@ -142,7 +142,7 @@ public class ProductASIDataRepository
 
 		if (candidateKey.isNone())
 		{
-			// Candidate references an ASI record, but that ASI has no (storage-relevant) attributes → treat as wildcard.
+			// Candidate references an ASI record, but that ASI has no attributes → treat as wildcard.
 			// Consistent with the SQL-side behaviour of IsASIAttributesKeySubset (UnnestAttributesKey('-1002') returns 0 rows → NOT EXISTS is vacuously true).
 			return true;
 		}
