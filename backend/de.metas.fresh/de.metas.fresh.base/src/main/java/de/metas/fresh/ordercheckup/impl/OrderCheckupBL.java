@@ -334,8 +334,10 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			}
 			else
 			{
-				// Reactivating leaves Processed alone (the print trigger only fires false->true, so printed sheets stay valid) and the report's content unchanged.
-				// A current set needs the order reactivated, IsReprintOrderCheckup set, and completed again -- or C_Order_MFGWarehouse_Report_Generate from the gear menu.
+				// Reactivating leaves Processed alone (the print trigger only fires false->true, so printed sheets
+				// stay valid) and the report's content unchanged.
+				// A current set needs the order reactivated, IsReprintOrderCheckup set, and completed again -- or
+				// C_Order_MFGWarehouse_Report_Generate from the gear menu.
 				existingReport.setIsActive(true);
 				orderCheckupDAO.save(existingReport);
 				reactivatedCount++;

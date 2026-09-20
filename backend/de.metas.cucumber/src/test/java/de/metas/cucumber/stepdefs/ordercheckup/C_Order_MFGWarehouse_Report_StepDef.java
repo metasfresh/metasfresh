@@ -152,9 +152,16 @@ public class C_Order_MFGWarehouse_Report_StepDef
 				.filter(report -> isActive.map(expected -> expected == report.isActive()).orElse(true))
 				.collect(Collectors.toList());
 
+		final List<String> unclaimedDescriptions = reports.stream()
+				.filter(report -> !claimedIds.contains(report.getC_Order_MFGWarehouse_Report_ID()))
+				.map(report -> String.format(
+						"C_Order_MFGWarehouse_Report_ID=%s/DocumentType=%s/M_Warehouse_ID=%s/PP_Plant_ID=%s/IsActive=%s",
+						report.getC_Order_MFGWarehouse_Report_ID(), report.getDocumentType(), report.getM_Warehouse_ID(), report.getPP_Plant_ID(), report.isActive()))
+				.collect(Collectors.toList());
+
 		softly.assertThat(matching)
-				.as("unclaimed C_Order_MFGWarehouse_Report matching DocumentType=%s/M_Warehouse_ID=%s/PP_Plant_ID=%s/IsActive=%s of order %s",
-						documentType.orElse(null), warehouseId.orElse(null), plantId.orElse(null), isActive.toBooleanOrNull(), orderIdentifier)
+				.as("unclaimed C_Order_MFGWarehouse_Report matching DocumentType=%s/M_Warehouse_ID=%s/PP_Plant_ID=%s/IsActive=%s of order %s; unclaimed candidates: %s",
+						documentType.orElse(null), warehouseId.orElse(null), plantId.orElse(null), isActive.toBooleanOrNull(), orderIdentifier, unclaimedDescriptions)
 				.hasSize(1);
 		if (matching.size() != 1)
 		{
@@ -205,13 +212,8 @@ public class C_Order_MFGWarehouse_Report_StepDef
 		final ResourceId plantId = row.getAsOptionalIdentifier("PP_Plant_ID").map(id -> id.lookupIdIn(plantTable)).orElse(null);
 		final boolean expectedIsActive = row.getAsOptionalBoolean("IsActive").orElse(true);
 
-		final List<I_C_Order_MFGWarehouse_Report> reports = orderCheckupDAO.retrieveAllReports(order);
-		final Map<Integer, OrderCheckupDocumentType> documentTypesByReportId = reports.stream()
-				.collect(Collectors.toMap(I_C_Order_MFGWarehouse_Report::getC_Order_MFGWarehouse_Report_ID,
-						report -> OrderCheckupDocumentType.ofCode(report.getDocumentType())));
-
-		final List<I_C_Order_MFGWarehouse_Report> matches = reports.stream()
-				.filter(report -> documentType == documentTypesByReportId.get(report.getC_Order_MFGWarehouse_Report_ID()))
+		final List<I_C_Order_MFGWarehouse_Report> matches = orderCheckupDAO.retrieveAllReports(order).stream()
+				.filter(report -> documentType == OrderCheckupDocumentType.ofCode(report.getDocumentType()))
 				.filter(report -> WarehouseId.equals(WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()), warehouseId))
 				.filter(report -> ResourceId.equals(ResourceId.ofRepoIdOrNull(report.getPP_Plant_ID()), plantId))
 				.filter(report -> report.isActive() == expectedIsActive)
