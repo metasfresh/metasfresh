@@ -2,20 +2,24 @@
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F19000_Material_Dispo
 @ghActions:run_on_executor6
-Feature: MD_Candidate_Remove_From_ATP reports its errors instead of raising
+Feature: MD_Candidate_Remove_From_ATP fails loudly on a precondition it cannot satisfy
 
-  Guard: MD_Candidate_Remove_From_ATP declares a 6-column result row (removed candidate id, stock
-  candidate id, current ATP qty, qty adjustment, impacted-candidates count, message). Before the fix,
-  the "candidate not found or not active" branch returned only 4 values, so the message text landed in
-  a numeric column and PostgreSQL raised "structure of query does not match function result type"
-  instead of returning a row an operator/caller can read. This feature proves the process now completes
-  successfully for an argument that never resolves to an active candidate.
+  Guard: MD_Candidate_Remove_From_ATP checks three preconditions before it writes anything - the
+  candidate must exist and be active, it must not itself be a STOCK candidate, and it must have a
+  STOCK sibling. None of them can be satisfied by doing the work anyway, so each one raises.
 
-  The sibling branch (an existing, active, non-STOCK candidate whose STOCK sibling cannot be found) is
-  not reachable through a live business scenario: every code path that creates a demand/supply candidate
-  also creates its STOCK sibling in the same operation, and no operator action removes only the sibling
-  while leaving the candidate active. That branch is verified instead by a direct SQL probe against the
-  fixed function, run before and after the fix to confirm the discrimination.
+  The process that exposes the function to an operator runs it through ExecuteUpdateSQL, which
+  discards the result set. A precondition reported as an ordinary returned row would therefore be
+  read by nobody: the process would come back successful, the candidate would be untouched, and the
+  operator would see an unchanged record with no reason given - and a caller asserting the removal
+  would fail later, somewhere else, with no trace of the real cause. These scenarios pin the loud
+  failure so that cannot come back.
+
+  The third branch (an active non-STOCK candidate whose STOCK sibling cannot be found) is not
+  reachable through a live business scenario: every code path that creates a demand/supply candidate
+  creates its STOCK sibling in the same operation, and no operator action removes only the sibling
+  while leaving the candidate active. It is covered by a direct SQL probe against the function
+  instead.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -23,16 +27,6 @@ Feature: MD_Candidate_Remove_From_ATP reports its errors instead of raising
 
   @Id:ATPRFA_001
   @from:cucumber
-  Scenario: removing a candidate ID that resolves to no active MD_Candidate reports a well-formed error, not a raised exception
+  Scenario: removing a candidate ID that resolves to no active MD_Candidate fails with that reason
 
-    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/processes/MD_Candidate_RemoveFromATP/invoke' and fulfills with '200' status code
-    """
-{
-  "processParameters": [
-    {
-      "name": "MD_Candidate_ID",
-      "value": "999999999"
-    }
-  ]
-}
-    """
+    Then the MD_Candidate_Remove_From_ATP process is run for MD_Candidate_ID 999999999 and fails with 'MD_Candidate not found or not active'
