@@ -1093,14 +1093,9 @@ Feature: EDI_cctop_invoic_v export format
   ## Regression guard proving the fix has NOT become "always match": the conditional record's own ASI
   ## carries a real attribute value, and the order line's ASI carries a DIFFERENT value for that same
   ## attribute — the content-based subset check (AttributesKeys.contains()) must FAIL, so the record
-  ## must NOT be used. Unlike S31978_TC1/TC3 (where the product carries no GTIN/UPC on purpose), the
-  ## product HERE carries its own real GTIN, so a genuine non-match is provable: DesadvBL falls back
-  ## to the product's own GTIN/UPC (CoalesceUtil.firstNotBlank), a value distinct from the non-matching
-  ## record's — so seeing the product's own value (not the record's) on the exported line proves the
-  ## record's identifiers were correctly rejected, not silently accepted. GTIN and UPC are given the
-  ## SAME value on purpose: the M_Product interceptor (normalizeProductCodeFields, sysconfig
-  ## SyncEANAndGTIN default true) re-syncs UPC to whatever GTIN is saved, so a distinct UPC could never
-  ## survive the save — this is standard product-master behaviour, not something this test controls.
+  ## must NOT be used. Like S31978_TC1/TC3, the product carries no GTIN/UPC of its own, so a rejected
+  ## match has no fallback identifier to fall back to — the CORE ASSERTION below proves ProductNo,
+  ## GTIN_CU and EAN_CU are all ABSENT from the exported line, never the rejected record's values.
   ## Overrides the Background's default chain: production runs OneDesadvPerShipment='N', which is
   ## the EXP_Format 540405 (EDI_Exp_Desadv) chain — the same one S31978_TC1 uses.
     Given metasfresh is configured for One-DESADV-Per-Shipment
@@ -1114,15 +1109,11 @@ Feature: EDI_cctop_invoic_v export format
       | Identifier       | M_PriceList_ID |
       | priceListVersion | priceList      |
 
-    # Explicit, distinct Value/Name, and (unlike TC1/TC3) the product's OWN GTIN — the fallback
-    # identifier that must show up on the exported line once the conditional record is rejected.
-    # UPC is set to the SAME value: the M_Product interceptor re-syncs UPC to GTIN on save anyway.
+    # Explicit, distinct Value/Name. No GTIN/UPC on the product (same shape as TC1/TC3, and the
+    # customer's own masterdata) — a rejected match must leave the CU identifiers with no fallback.
     And metasfresh contains M_Products:
       | Identifier | Value                | Name                |
       | product    | PRODVALUE-S31978-TC4 | PRODNAME-S31978-TC4 |
-    And update M_Product:
-      | M_Product_ID.Identifier | GTIN          | UPC           |
-      | product                 | 4013000000401 | 4013000000401 |
 
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
@@ -1176,7 +1167,7 @@ Feature: EDI_cctop_invoic_v export format
     """
 
     # This record's identifiers must NOT appear on the exported line — the CORE ASSERTION below
-    # proves the product's own GTIN/UPC (not these) end up on the DESADV line.
+    # proves ProductNo/GTIN_CU/EAN_CU are absent from the DESADV line, not these rejected values.
     And metasfresh contains M_Product_ASI_Data:
       | Identifier     | M_Product_ID.Identifier | C_BPartner_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier | SeqNo | ProductNo  | GTIN          | EAN_CU        |
       | productAsiData | product                 | buyer                    | asiOnProductData                         | 10    | BUYER-9401 | 4013000000411 | 4013000000412 |
@@ -1240,13 +1231,11 @@ Feature: EDI_cctop_invoic_v export format
       | expDesadv                    | expProcessor                | routingKey                   |
 
     # ─── CORE ASSERTION ───────────────────────────────────────────────────────
-    # No match: GTIN_CU/EAN_CU fall back to the PRODUCT's own GTIN/UPC (both 4013000000401, since the
-    # M_Product interceptor syncs UPC to GTIN), never the non-matching record's (4013000000411/…412).
-    # ProductNo has no such fallback in DesadvBL, so on a genuine non-match its element is absent from
-    # the XML rather than merely empty — this step requires presence, so ProductNo is intentionally
-    # not asserted here (see class Javadoc on EDI_Desadv_StepDef.validate_EDI_Exp_Desadv_elements for
-    # why presence is required).
-    And the following EDI_Exp_Desadv XML carries the expected elements:
-      | EDI_Exp_Desadv_ID.Identifier | TagName | OPT.Value     |
-      | expDesadv                    | GTIN_CU | 4013000000401 |
-      | expDesadv                    | EAN_CU  | 4013000000401 |
+    # No match, and the product carries no GTIN/UPC of its own — so ProductNo, GTIN_CU and EAN_CU
+    # have no fallback identifier and must be genuinely ABSENT from the XML (not merely empty), never
+    # the rejected record's values (BUYER-9401 / 4013000000411 / 4013000000412).
+    And the following EDI_Exp_Desadv XML does not carry the elements:
+      | EDI_Exp_Desadv_ID.Identifier | TagName   |
+      | expDesadv                    | ProductNo |
+      | expDesadv                    | GTIN_CU   |
+      | expDesadv                    | EAN_CU    |
