@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -187,23 +188,20 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 		return streamIds(tableName, idMapper).collect(ImmutableSet.toImmutableSet());
 	}
 
-	public String getSingleTableName()
+	/**
+	 * @return the distinct table names of all {@link TableRecordReference}s in this set (0, 1 or more)
+	 */
+	@NonNull
+	public ImmutableSet<String> getTableNames()
 	{
-		final ImmutableSet<String> tableNames = recordRefs.stream()
+		return recordRefs.stream()
 				.map(TableRecordReference::getTableName)
 				.collect(ImmutableSet.toImmutableSet());
-		if (tableNames.isEmpty())
-		{
-			throw new AdempiereException("No tablename");
-		}
-		else if (tableNames.size() == 1)
-		{
-			return tableNames.iterator().next();
-		}
-		else
-		{
-			throw new AdempiereException("More than one tablename found: " + tableNames);
-		}
+	}
+
+	public String getSingleTableName()
+	{
+		return CollectionUtils.singleElement(getTableNames());
 	}
 
 	public Set<TableRecordReference> toSet() {return recordRefs;}
@@ -244,16 +242,7 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 
 	public void assertSingleTableName()
 	{
-		final ImmutableSet<AdTableId> tableIds = getTableIds();
-
-		if (tableIds.isEmpty())
-		{
-			throw new AdempiereException("No AD_Table_ID");
-		}
-		else if (tableIds.size() != 1)
-		{
-			throw new AdempiereException("More than one AD_Table_ID found: " + tableIds);
-		}
+		CollectionUtils.singleElement(getTableIds());
 	}
 
 	public Stream<TableRecordReference> streamReferences()

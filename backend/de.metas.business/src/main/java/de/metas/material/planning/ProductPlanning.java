@@ -93,6 +93,10 @@ public class ProductPlanning
 	boolean isPickDirectlyIfFeasible;
 
 	//
+	// Trading
+	boolean isTraded;
+
+	//
 	// Purchasing
 	boolean isPurchased;
 	@Nullable OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse;
@@ -137,6 +141,7 @@ public class ProductPlanning
 						   final int manufacturingAggregationId,
 						   final boolean isPickingOrder,
 						   final boolean isPickDirectlyIfFeasible,
+						   final boolean isTraded,
 						   final boolean isPurchased,
 						   @Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
 						   @Nullable final DistributionNetworkId distributionNetworkId,
@@ -180,6 +185,7 @@ public class ProductPlanning
 		this.maturingConfigLineId = maturingConfigLineId;
 		this.isPickingOrder = isPickingOrder;
 		this.isPickDirectlyIfFeasible = isPickDirectlyIfFeasible;
+		this.isTraded = isTraded;
 		this.isPurchased = isPurchased;
 		this.onMaterialReceiptWithDestWarehouse = onMaterialReceiptWithDestWarehouse;
 		this.distributionNetworkId = distributionNetworkId;

@@ -35,6 +35,7 @@ import org.compiere.model.I_C_OrderLine;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
+import de.metas.fresh.ordercheckup.OrderCheckupDocumentType;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -54,7 +55,7 @@ public class OrderCheckupBuilder
 	}
 
 	private boolean _built = false;
-	private String _documentType = null;
+	private OrderCheckupDocumentType _documentType = null;
 	private I_C_Order _order;
 	private WarehouseId _warehouseId;
 	private ResourceId _plantId;
@@ -68,9 +69,10 @@ public class OrderCheckupBuilder
 	/**
 	 * Builds the {@link I_C_Order_MFGWarehouse_Report}.
 	 *
-	 * If there were no {@link I_C_OrderLine}s added, no report will be created.
+	 * @return the report, or {@code null} if there were no {@link I_C_OrderLine}s to put on it
 	 */
-	public void build()
+	@Nullable
+	public I_C_Order_MFGWarehouse_Report build()
 	{
 		markAsBuild();
 
@@ -78,7 +80,7 @@ public class OrderCheckupBuilder
 		final List<I_C_OrderLine> orderLines = getOrderLines();
 		if (orderLines.isEmpty())
 		{
-			return;
+			return null;
 		}
 
 		final I_C_Order order = getC_Order();
@@ -87,7 +89,7 @@ public class OrderCheckupBuilder
 		// Create report header
 		final I_C_Order_MFGWarehouse_Report report = InterfaceWrapperHelper.newInstance(I_C_Order_MFGWarehouse_Report.class, order);
 		report.setAD_Org_ID(order.getAD_Org_ID());
-		report.setDocumentType(getDocumentType());
+		report.setDocumentType(getDocumentType().getCode());
 		report.setC_Order(order);
 		report.setC_BPartner_ID(order.getC_BPartner_ID());
 		report.setM_Warehouse_ID(WarehouseId.toRepoId(getWarehouseId()));
@@ -114,6 +116,8 @@ public class OrderCheckupBuilder
 		// NOTE we do this only at the end because this is the moment where doc outbound shall react and create/print the PDF report.
 		report.setProcessed(true);
 		InterfaceWrapperHelper.save(report);
+
+		return report;
 	}
 
 	private final void assertNotBuilt()
@@ -189,15 +193,14 @@ public class OrderCheckupBuilder
 		return _reponsibleUserId;
 	}
 
-	public OrderCheckupBuilder setDocumentType(String documentType)
+	public OrderCheckupBuilder setDocumentType(final OrderCheckupDocumentType documentType)
 	{
 		this._documentType = documentType;
 		return this;
 	}
 
-	private String getDocumentType()
+	private OrderCheckupDocumentType getDocumentType()
 	{
-		Check.assumeNotEmpty(_documentType, "documentType not empty");
-		return _documentType;
+		return Check.assumeNotNull(_documentType, "documentType not null");
 	}
 }
