@@ -334,18 +334,14 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			}
 			else
 			{
-				// Reactivating leaves Processed alone, and the doc-outbound print trigger fires on Processed flipping
-				// false->true -- which is why the sheets already in the users' hands stay valid and nothing is printed.
-				// The flip side: the report keeps the content it was built from, and no later completion refreshes it.
-				// The way to a current set is to set IsReprintOrderCheckup and complete again, which rebuilds and
-				// reprints, or to run C_Order_MFGWarehouse_Report_Generate where the gear menu offers it.
+				// Reactivating leaves Processed alone (the print trigger only fires false->true, so printed sheets stay valid) and the report's content unchanged.
+				// A current set needs the order reactivated, IsReprintOrderCheckup set, and completed again -- or C_Order_MFGWarehouse_Report_Generate from the gear menu.
 				existingReport.setIsActive(true);
 				orderCheckupDAO.save(existingReport);
 				reactivatedCount++;
 			}
 		}
 
-		// Reports whose identity the order no longer calls for stay inactive.
 		logger.debug("C_Order_ID {} has IsReprintOrderCheckup='N': reactivated {} report(s) unchanged, built and printed {} new one(s),"
 						+ " left {} existing report(s) inactive because nothing on the order calls for them any more.",
 				order.getC_Order_ID(),

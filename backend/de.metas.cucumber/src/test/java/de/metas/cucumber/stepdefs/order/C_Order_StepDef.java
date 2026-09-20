@@ -288,7 +288,6 @@ public class C_Order_StepDef
 		// dropship
 		order.setIsDropShip(tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsDropShip).orElse(false));
 
-		// whether a reactivate+complete cycle reprints the Bestellkontrolle (de.metas.fresh.ordercheckup)
 		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsReprintOrderCheckup).ifPresent(order::setIsReprintOrderCheckup);
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_BPartner_ID)
 				.map(bpartnerTable::getId)

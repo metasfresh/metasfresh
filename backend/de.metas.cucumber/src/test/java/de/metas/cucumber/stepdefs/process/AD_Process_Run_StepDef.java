@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.process;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -37,11 +36,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -106,9 +103,7 @@ public class AD_Process_Run_StepDef
 	{
 		final TableRecordReferenceSet recordRefSet = identifiersResolver.getTableRecordReferenceSetOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
 		assertThat(recordRefSet).as("records identified by `%s`", commaSeparatedIdentifiers).isNotEmpty();
-
-		final ImmutableSet<String> tableNames = recordRefSet.stream().map(TableRecordReference::getTableName).collect(ImmutableSet.toImmutableSet());
-		assertThat(tableNames).as("all records of one selection must belong to the same table").hasSize(1);
+		assertThat(recordRefSet.getTableNames()).as("all records of one selection must belong to the same table").hasSize(1);
 
 		final ProcessInfo.ProcessInfoBuilder processInfo = newProcessInfoBuilder(processValue);
 		if (recordRefSet.size() == 1)
@@ -118,11 +113,8 @@ public class AD_Process_Run_StepDef
 		else
 		{
 			final String tableName = recordRefSet.getSingleTableName();
-			final String recordIdsCSV = recordRefSet.toIntSet().stream()
-					.map(String::valueOf)
-					.collect(Collectors.joining(","));
 			processInfo.setTableName(tableName)
-					.setWhereClause(tableName + "_ID IN (" + recordIdsCSV + ")");
+					.setWhereClause(DB.buildSqlList(tableName + "_ID", recordRefSet.toIntSet()));
 		}
 		executeProcess(processInfo);
 	}

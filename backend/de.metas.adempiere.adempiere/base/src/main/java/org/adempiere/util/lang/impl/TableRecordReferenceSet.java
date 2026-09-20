@@ -187,11 +187,20 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 		return streamIds(tableName, idMapper).collect(ImmutableSet.toImmutableSet());
 	}
 
-	public String getSingleTableName()
+	/**
+	 * @return the distinct table names of all {@link TableRecordReference}s in this set (0, 1 or more)
+	 */
+	@NonNull
+	public ImmutableSet<String> getTableNames()
 	{
-		final ImmutableSet<String> tableNames = recordRefs.stream()
+		return recordRefs.stream()
 				.map(TableRecordReference::getTableName)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public String getSingleTableName()
+	{
+		final ImmutableSet<String> tableNames = getTableNames();
 		if (tableNames.isEmpty())
 		{
 			throw new AdempiereException("No tablename");
