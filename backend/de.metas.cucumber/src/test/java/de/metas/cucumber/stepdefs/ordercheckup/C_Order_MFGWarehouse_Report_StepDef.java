@@ -121,7 +121,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 		assertThat(reports).as("C_Order_MFGWarehouse_Report records of order %s", orderIdentifier).hasSize(rows.size());
 
 		final Map<OrderCheckupReportId, OrderCheckupDocumentType> documentTypesByReportId = reports.stream()
-				.collect(Collectors.toMap(OrderCheckupReportId::ofReport,
+				.collect(Collectors.toMap(report -> OrderCheckupReportId.ofRepoId(report.getC_Order_MFGWarehouse_Report_ID()),
 						report -> OrderCheckupDocumentType.ofCode(report.getDocumentType())));
 
 		final SoftAssertions softly = new SoftAssertions();
@@ -147,15 +147,15 @@ public class C_Order_MFGWarehouse_Report_StepDef
 		final OptionalBoolean isActive = row.getAsOptionalBoolean(I_C_Order_MFGWarehouse_Report.COLUMNNAME_IsActive);
 
 		final List<I_C_Order_MFGWarehouse_Report> matching = reports.stream()
-				.filter(report -> !claimedIds.contains(OrderCheckupReportId.ofReport(report)))
-				.filter(report -> documentType.map(expected -> expected == documentTypesByReportId.get(OrderCheckupReportId.ofReport(report))).orElse(true))
+				.filter(report -> !claimedIds.contains(OrderCheckupReportId.ofRepoId(report.getC_Order_MFGWarehouse_Report_ID())))
+				.filter(report -> documentType.map(expected -> expected == documentTypesByReportId.get(OrderCheckupReportId.ofRepoId(report.getC_Order_MFGWarehouse_Report_ID()))).orElse(true))
 				.filter(report -> warehouseId.map(expected -> WarehouseId.equals(expected, WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()))).orElse(true))
 				.filter(report -> plantId.map(expected -> ResourceId.equals(expected, ResourceId.ofRepoIdOrNull(report.getPP_Plant_ID()))).orElse(true))
 				.filter(report -> isActive.map(expected -> expected == report.isActive()).orElse(true))
 				.collect(Collectors.toList());
 
 		final List<String> unclaimedDescriptions = reports.stream()
-				.filter(report -> !claimedIds.contains(OrderCheckupReportId.ofReport(report)))
+				.filter(report -> !claimedIds.contains(OrderCheckupReportId.ofRepoId(report.getC_Order_MFGWarehouse_Report_ID())))
 				.map(report -> String.format(
 						"C_Order_MFGWarehouse_Report_ID=%s/DocumentType=%s/M_Warehouse_ID=%s/PP_Plant_ID=%s/IsActive=%s",
 						report.getC_Order_MFGWarehouse_Report_ID(), report.getDocumentType(), report.getM_Warehouse_ID(), report.getPP_Plant_ID(), report.isActive()))
@@ -171,7 +171,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 		}
 
 		final I_C_Order_MFGWarehouse_Report report = matching.get(0);
-		claimedIds.add(OrderCheckupReportId.ofReport(report));
+		claimedIds.add(OrderCheckupReportId.ofRepoId(report.getC_Order_MFGWarehouse_Report_ID()));
 
 		row.getAsOptionalBoolean(I_C_Order_MFGWarehouse_Report.COLUMNNAME_Processed)
 				.ifPresent(expected -> softly.assertThat(report.isProcessed()).as("%s of %s", I_C_Order_MFGWarehouse_Report.COLUMNNAME_Processed, report).isEqualTo(expected));

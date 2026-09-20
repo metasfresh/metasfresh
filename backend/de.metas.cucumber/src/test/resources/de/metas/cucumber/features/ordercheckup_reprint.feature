@@ -515,5 +515,9 @@ Feature: Bestellkontrolle reprint after reactivate
 # ####################################################################################################################
   Scenario: reset settings to default
     # A separate scenario rather than a trailing step: a step only runs when every assertion above it passed, so it
-    # would be skipped exactly when a scenario failed. Most features expect the doc-outbound processor skipped.
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    # would be skipped exactly when a scenario failed. No scenario in this feature may leave the shared stack in a
+    # state the next feature does not expect: order checkups go back to their shipped 'N', and the doc-outbound
+    # processor back to skipped, which is what the rest of the cucumber suite runs with. The Jasper mock is left on
+    # deliberately -- mocking is the direction for the suite, and no feature relies on real report rendering.
+    Given set sys config boolean value false for sys config de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -48,11 +47,6 @@ public class OrderCheckupReportId implements RepoIdAware
 	public static OrderCheckupReportId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new OrderCheckupReportId(repoId) : null;
-	}
-
-	public static OrderCheckupReportId ofReport(@NonNull final I_C_Order_MFGWarehouse_Report report)
-	{
-		return ofRepoId(report.getC_Order_MFGWarehouse_Report_ID());
 	}
 
 	public static boolean equals(@Nullable final OrderCheckupReportId o1, @Nullable final OrderCheckupReportId o2)

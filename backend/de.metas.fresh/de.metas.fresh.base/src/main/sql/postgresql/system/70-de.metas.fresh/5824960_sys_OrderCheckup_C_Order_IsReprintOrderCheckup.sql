@@ -84,11 +84,5 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585474);
 
 -- 8) Physical column DDL — new column, so ALTER TABLE ADD COLUMN (t_alter_column only works on
 -- pre-existing columns), with the same Y/N check constraint style as C_Order.IsActive.
--- Backup first: C_Order is a business table and this script UPDATEs its rows to backfill the
--- new NOT NULL column before the constraint is applied.
-SELECT backup_table('c_order', '_gh30709_IsReprintOrderCheckup');
-
-ALTER TABLE C_Order ADD COLUMN IF NOT EXISTS IsReprintOrderCheckup CHAR(1) DEFAULT 'Y';
-UPDATE C_Order SET IsReprintOrderCheckup = 'Y' WHERE IsReprintOrderCheckup IS NULL;
-ALTER TABLE C_Order ALTER COLUMN IsReprintOrderCheckup SET NOT NULL;
+ALTER TABLE C_Order ADD COLUMN IF NOT EXISTS IsReprintOrderCheckup CHAR(1) NOT NULL DEFAULT 'Y';
 ALTER TABLE C_Order ADD CONSTRAINT c_order_isreprintordercheckup_check CHECK (IsReprintOrderCheckup IN ('Y', 'N'));

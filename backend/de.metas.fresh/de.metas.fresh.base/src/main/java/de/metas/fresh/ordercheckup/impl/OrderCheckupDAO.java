@@ -62,7 +62,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 		return queryBL
 				.createQueryBuilder(I_C_Order_MFGWarehouse_ReportLine.class, report)
 				// .addOnlyActiveRecordsFilter() // return all of them
-				.addEqualsFilter(I_C_Order_MFGWarehouse_ReportLine.COLUMN_C_Order_MFGWarehouse_Report_ID, OrderCheckupReportId.ofReport(report))
+				.addEqualsFilter(I_C_Order_MFGWarehouse_ReportLine.COLUMN_C_Order_MFGWarehouse_Report_ID, OrderCheckupReportId.ofRepoId(report.getC_Order_MFGWarehouse_Report_ID()))
 				.orderBy()
 				.addColumn(I_C_Order_MFGWarehouse_ReportLine.COLUMN_C_Order_MFGWarehouse_ReportLine_ID)
 				.endOrderBy()
