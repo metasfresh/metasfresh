@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzreport/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.948717100000002"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -20,30 +20,100 @@
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal"/>
+	<parameter name="C_BPartner_SalesRep_ID" class="java.math.BigDecimal"/>
 	<queryString>
 		<![CDATA[SELECT * FROM report.umsatzreport_report(
 	$P{C_Period_ID},
 	$P{IsSOTrx},
 	$P{M_AttributeSetInstance_ID},
-	$P{AD_Org_ID}
+	$P{AD_Org_ID},
+	$P{C_BPartner_ID},
+	$P{C_BP_Group_ID},
+	$P{C_BPartner_SalesRep_ID}
 )]]>
 	</queryString>
-	<field name="name" class="java.lang.String"/>
-	<field name="periodend" class="java.sql.Date"/>
-	<field name="lastyearperiodend" class="java.sql.Date"/>
-	<field name="year" class="java.lang.String"/>
-	<field name="lastyear" class="java.lang.String"/>
-	<field name="sameperiodsum" class="java.math.BigDecimal"/>
-	<field name="sameperiodlastyearsum" class="java.math.BigDecimal"/>
-	<field name="perioddifference" class="java.math.BigDecimal"/>
-	<field name="perioddiffpercentage" class="java.math.BigDecimal"/>
-	<field name="sameyearsum" class="java.math.BigDecimal"/>
-	<field name="lastyearsum" class="java.math.BigDecimal"/>
-	<field name="yeardifference" class="java.math.BigDecimal"/>
-	<field name="yeardiffpercentage" class="java.math.BigDecimal"/>
-	<field name="attributesetinstance" class="java.lang.String"/>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="unionorder" class="java.lang.Integer"/>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="periodend" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="periodend"/>
+		<property name="com.jaspersoft.studio.field.label" value="periodend"/>
+	</field>
+	<field name="lastyearperiodend" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="lastyearperiodend"/>
+		<property name="com.jaspersoft.studio.field.label" value="lastyearperiodend"/>
+	</field>
+	<field name="year" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="year"/>
+		<property name="com.jaspersoft.studio.field.label" value="year"/>
+	</field>
+	<field name="lastyear" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="lastyear"/>
+		<property name="com.jaspersoft.studio.field.label" value="lastyear"/>
+	</field>
+	<field name="sameperiodsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sameperiodsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="sameperiodsum"/>
+	</field>
+	<field name="sameperiodlastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sameperiodlastyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="sameperiodlastyearsum"/>
+	</field>
+	<field name="perioddifference" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="perioddifference"/>
+		<property name="com.jaspersoft.studio.field.label" value="perioddifference"/>
+	</field>
+	<field name="perioddiffpercentage" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="perioddiffpercentage"/>
+		<property name="com.jaspersoft.studio.field.label" value="perioddiffpercentage"/>
+	</field>
+	<field name="sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="sameyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="sameyearsum"/>
+	</field>
+	<field name="lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="lastyearsum"/>
+		<property name="com.jaspersoft.studio.field.label" value="lastyearsum"/>
+	</field>
+	<field name="yeardifference" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="yeardifference"/>
+		<property name="com.jaspersoft.studio.field.label" value="yeardifference"/>
+	</field>
+	<field name="yeardiffpercentage" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="yeardiffpercentage"/>
+		<property name="com.jaspersoft.studio.field.label" value="yeardiffpercentage"/>
+	</field>
+	<field name="attributesetinstance" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="attributesetinstance"/>
+		<property name="com.jaspersoft.studio.field.label" value="attributesetinstance"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="delivery_bp_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="delivery_bp_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="delivery_bp_name"/>
+	</field>
+	<field name="param_bp" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_bp"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_bp"/>
+	</field>
+	<field name="param_bp_group" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_bp_group"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_bp_group"/>
+	</field>
+	<field name="param_salesrep" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="param_salesrep"/>
+		<property name="com.jaspersoft.studio.field.label" value="param_salesrep"/>
+	</field>
+	<field name="unionorder" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="unionorder"/>
+		<property name="com.jaspersoft.studio.field.label" value="unionorder"/>
+	</field>
 	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -114,14 +184,14 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true" pattern="MM.yyyy">
+			<textField pattern="MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="206" y="53" width="40" height="10" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement textAlignment="Right">
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{periodend}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true" pattern="MM.yyyy">
+			<textField pattern="MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="247" y="53" width="40" height="10" uuid="612fe2cb-dddc-4eb7-8d4c-22f677db79c7"/>
 				<textElement textAlignment="Right">
 					<font size="7" isBold="false"/>

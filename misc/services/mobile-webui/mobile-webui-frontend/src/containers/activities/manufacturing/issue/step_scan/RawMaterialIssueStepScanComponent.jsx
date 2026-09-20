@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
 import { toastError } from '../../../../../utils/toast';
@@ -8,6 +8,8 @@ import { createIssueScheduleOnTheFly } from '../../../../../api/manufacturing';
 
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../../../utils/qrCode/hu';
+import { computeIssueRequest } from './computeIssueRequest';
+import { computeEmptyingConfirmationPrompt } from './computeEmptyingConfirmationPrompt';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
@@ -28,6 +30,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
 
   const activity = useSelector((state) => getActivityById(state, wfProcessId, activityId));
+  const isConfirmEmptyingHU = activity?.dataStored?.isConfirmEmptyingHU;
 
   const store = useStore();
   const dispatch = useDispatch();
@@ -137,30 +140,24 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     };
   };
 
+  // "Empty (auto. inventory)" write-off: on `isConfirmEmptyingHU`, confirm before booking, naming the
+  // quantity that will actually be written off. Declining leaves the operator on this dialog and posts
+  // nothing. See computeEmptyingConfirmationPrompt.js for why that quantity is NOT the dialog's own
+  // `qtyRejected`.
+  const getEmptyingConfirmationPrompt = useCallback(
+    (qtyInput, { qtyRejected, rejectedReason, resolvedBarcodeData } = {}) =>
+      computeEmptyingConfirmationPrompt({ qty: qtyInput, qtyRejected, rejectedReason, resolvedBarcodeData }),
+    []
+  );
   const onResult = ({ qty = 0, qtyRejected = 0, reason = null, resolvedBarcodeData }) => {
     console.log('onResult', { qty, qtyRejected, reason, resolvedBarcodeData });
-
-    const stepId = resolvedBarcodeData.stepId;
-    const isWeightable = !!resolvedBarcodeData.isWeightable;
-    const isIssueWholeHU = qty >= resolvedBarcodeData.qtyHUCapacity;
-    // The quantity doubles as the HU's weight only while the step asks for kg, which is the case when
-    // part of an HU is issued: the HU survives and its qty and weight are reduced. A step denominated
-    // in the HU's own stocking UOM consumes the HU whole and destroys it, so there is no weight to
-    // correct - and sending the piece count as one makes the server inventory the HU's whole content
-    // in kg, which fails on the mismatched UOMs.
-    const isQtyEnteredAsWeight = resolvedBarcodeData.uom === 'kg';
-    const huWeightGrossBeforeIssue = isWeightable && isIssueWholeHU && isQtyEnteredAsWeight ? qty : null;
 
     return dispatch(
       postManufacturingIssueEventThunk({
         wfProcessId,
         activityId,
         lineId,
-        stepId,
-        huWeightGrossBeforeIssue,
-        qtyIssued: qty,
-        qtyRejected: isIssueWholeHU ? qtyRejected : 0,
-        qtyRejectedReasonCode: isIssueWholeHU ? reason : null,
+        ...computeIssueRequest({ qty, qtyRejected, reason, resolvedBarcodeData }),
       })
     )
       .then(() => history.goBack())
@@ -181,6 +178,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       // scaleDevice={scaleDevice}
       //
       // Callbacks:
+      getConfirmationPromptForQty={isConfirmEmptyingHU ? getEmptyingConfirmationPrompt : undefined}
       onResult={onResult}
     />
   );

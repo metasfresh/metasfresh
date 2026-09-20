@@ -22,6 +22,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageRequest;
+import de.metas.frontend_testing.masterdata.hu_package.JsonPackageResponse;
+import de.metas.frontend_testing.masterdata.hu_package.PackageCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.GenerateHUQRCodeCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
@@ -80,6 +83,7 @@ import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogRequest;
 import de.metas.frontend_testing.masterdata.vatid.JsonVATaxIDCheckLogResponse;
 import de.metas.frontend_testing.masterdata.vatid.VATaxIDCheckLogCreateCommand;
 import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseReplenishmentCommand;
+import de.metas.frontend_testing.masterdata.warehouse.ConfigureWarehouseEmptiesCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
@@ -147,7 +151,11 @@ public class CreateMasterdataCommand
 		// (the DD_NetworkDistributionLine requires one). Keep it before the sales orders, whose picking-job
 		// schedules trigger the replenishment.
 		configureWarehouseReplenishment();
+
+		// Post-pass: needs every warehouse AND the shippers (a DD_NetworkDistributionLine requires one).
+		configureWarehouseEmpties();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
+		final ImmutableMap<String, JsonPackageResponse> packages = createPackages();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		registerOrderIdsInContext(salesOrders);
@@ -186,6 +194,7 @@ public class CreateMasterdataCommand
 				.packingInstructions(packingInstructions)
 				.shippers(shippers)
 				.handlingUnits(hus)
+				.packages(packages)
 				.generatedHUQRCodes(generatedHUQRCodes)
 				.salesOrders(salesOrders)
 				.purchaseOrders(purchaseOrders)
@@ -431,6 +440,25 @@ public class CreateMasterdataCommand
 				.build().execute();
 	}
 
+	/**
+	 * Post-pass: needs every warehouse (the empties target is named by identifier) and the shippers
+	 * (the DD_NetworkDistributionLine requires one).
+	 */
+	private void configureWarehouseEmpties()
+	{
+		if (request.getWarehouses() == null)
+		{
+			return;
+		}
+
+		ConfigureWarehouseEmptiesCommand.builder()
+				.distributionNetworkRepository(services.distributionNetworkRepository)
+				.context(context)
+				.requests(request.getWarehouses())
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonWorkplaceResponse> createWorkplaces()
 	{
 		if (request.getWorkplaces() == null) {return ImmutableMap.of();}
@@ -505,6 +533,22 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPackageResponse> createPackages()
+	{
+		return process(request.getPackages(), this::createPackage);
+	}
+
+	private JsonPackageResponse createPackage(final String identifier, final JsonPackageRequest request)
+	{
+		return PackageCommand.builder()
+				.inOutPackageRepository(services.inOutPackageRepository)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}

@@ -1,5 +1,8 @@
 package de.metas.shipping.model.validator;
 
+import de.metas.inout.InOutId;
+import de.metas.shipping.api.IShipperTransportationBL;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Component;
 import de.metas.cache.CacheMgt;
 import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -39,6 +43,7 @@ import de.metas.shipping.model.I_M_ShippingPackage;
 public class M_ShippingPackage
 {
 	final MPackageRepository packageRepo = SpringContextHolder.instance.getBean(MPackageRepository.class);
+	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 
 	@Init
 	public void setupCaching()
@@ -75,5 +80,19 @@ public class M_ShippingPackage
 
 		final PackageId mPackageId = PackageId.ofRepoId(shippingPackage.getM_Package_ID());
 		packageRepo.closeMPackage(mPackageId);
+	}
+
+	/**
+	 * Fires on delete (unconditionally — {@code ifColumnsChanged} is only evaluated for a change timing,
+	 * per {@code AnnotatedModelInterceptor#isTimingChange}) and on deactivation, so every path that can
+	 * orphan the shipment&harr;transport-order link is covered by this one pointcut.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_ShippingPackage.COLUMNNAME_IsActive)
+	public void clearShipperTransportationLinkIfOrphaned(final I_M_ShippingPackage shippingPackage)
+	{
+		final InOutId inOutId = InOutId.ofRepoIdOrNull(shippingPackage.getM_InOut_ID());
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoIdOrNull(shippingPackage.getM_ShipperTransportation_ID());
+
+		shipperTransportationBL.unlinkShipmentIfOrphaned(inOutId, shipperTransportationId);
 	}
 }

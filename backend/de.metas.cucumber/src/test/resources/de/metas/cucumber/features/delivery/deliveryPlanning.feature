@@ -181,7 +181,7 @@ Feature: Order to delivery instructions
       | shippingPackageSO_1             | packageLineSO_1         | deliveryInstructionSO_1               |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageSO_1             | packageLineSO_1         | deliveryInstructionSO_1               | customerLocation                  | 2             | customer                     | product                     | orderLine_1                   |
+      | shippingPackageSO_1             | packageLineSO_1         | deliveryInstructionSO_1               | customerLocation                  | 0             | customer                     | product                     | orderLine_1                   |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID   | IsComplete |
@@ -201,7 +201,7 @@ Feature: Order to delivery instructions
       | shippingPackageSO_2             | packageLineSO_2         | deliveryInstructionSO_2               |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageSO_2             | packageLineSO_2         | deliveryInstructionSO_2               | customerLocation                  | 2             | customer                     | product                     | orderLine_2                   |
+      | shippingPackageSO_2             | packageLineSO_2         | deliveryInstructionSO_2               | customerLocation                  | 0             | customer                     | product                     | orderLine_2                   |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID   | IsComplete |
@@ -404,7 +404,7 @@ Feature: Order to delivery instructions
       | shippingPackageSO_7.1           | packageLineSO_7.1       | deliveryInstructionSO_7.1             |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageSO_7.1           | packageLineSO_7.1       | deliveryInstructionSO_7.1             | customerLocation                  | 2             | customer                     | product_7                   | orderLine_7.1                 |
+      | shippingPackageSO_7.1           | packageLineSO_7.1       | deliveryInstructionSO_7.1             | customerLocation                  | 0             | customer                     | product_7                   | orderLine_7.1                 |
 
     When generate M_ShipperTransportation for M_Delivery_Planning:
       | M_ShipperTransportation_ID | M_Delivery_Planning_ID | IsComplete |
@@ -424,7 +424,7 @@ Feature: Order to delivery instructions
       | shippingPackageSO_7.2           | packageLineSO_7.2       | deliveryInstructionSO_7.2             |
     And validate M_Shipping_Package:
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
-      | shippingPackageSO_7.2           | packageLineSO_7.2       | deliveryInstructionSO_7.2             | customerLocation                  | 4             | customer                     | product_7                   | orderLine_7.2                 |
+      | shippingPackageSO_7.2           | packageLineSO_7.2       | deliveryInstructionSO_7.2             | customerLocation                  | 0             | customer                     | product_7                   | orderLine_7.2                 |
     And update M_Delivery_Planning:
       | M_Delivery_Planning_ID | M_Shipper_ID |
       | deliveryPlanningPO_7.1 | shipper_DHL  |

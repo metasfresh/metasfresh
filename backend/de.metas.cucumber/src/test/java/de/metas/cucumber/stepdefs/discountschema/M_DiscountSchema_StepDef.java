@@ -62,6 +62,29 @@ public class M_DiscountSchema_StepDef
 		this.discountSchemaBreakTable = discountSchemaBreakTable;
 	}
 
+	/**
+	 * Creates {@code M_DiscountSchema} rows. No look-up / upsert is performed — re-running against an
+	 * existing row is not supported.
+	 * <p>
+	 * Required DataTable columns:
+	 * <ul>
+	 * <li>{@code Identifier} — stored in {@link M_DiscountSchema_StepDefData} for later reference</li>
+	 * <li>{@code DiscountType}</li>
+	 * <li>{@code Name}</li>
+	 * <li>{@code ValidFrom}</li>
+	 * </ul>
+	 * Optional columns:
+	 * <ul>
+	 * <li>{@code ValidTo} — end of the validity window (inclusive); when absent or blank, the schema
+	 * is valid indefinitely from {@code ValidFrom} onward (identical to current/pre-existing behavior)</li>
+	 * </ul>
+	 * Example usage:
+	 * <pre>{@code
+	 * Given metasfresh contains M_DiscountSchemas:
+	 *   | Identifier | DiscountType | Name         | ValidFrom  | ValidTo    |
+	 *   | ds_1       | B            | ValidTo test | 2026-09-07 | 2026-09-11 |
+	 * }</pre>
+	 */
 	@Given("metasfresh contains M_DiscountSchemas:")
 	public void create_discount_schema(@NonNull final DataTable dataTable)
 	{
@@ -145,12 +168,14 @@ public class M_DiscountSchema_StepDef
 		final String discountType = DataTableUtil.extractStringForColumnName(tableRow, I_M_DiscountSchema.COLUMNNAME_DiscountType);
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_M_DiscountSchema.COLUMNNAME_Name);
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(tableRow, I_M_DiscountSchema.COLUMNNAME_ValidFrom);
+		final Timestamp validTo = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, I_M_DiscountSchema.COLUMNNAME_ValidTo);
 
 		final I_M_DiscountSchema discountSchemaRecord = InterfaceWrapperHelper.newInstance(I_M_DiscountSchema.class);
 
 		discountSchemaRecord.setDiscountType(discountType);
 		discountSchemaRecord.setName(name);
 		discountSchemaRecord.setValidFrom(validFrom);
+		discountSchemaRecord.setValidTo(validTo);
 
 		saveRecord(discountSchemaRecord);
 

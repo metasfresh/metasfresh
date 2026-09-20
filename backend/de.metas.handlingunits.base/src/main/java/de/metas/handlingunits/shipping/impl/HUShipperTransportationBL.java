@@ -427,18 +427,11 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	{
 		if (Check.isEmpty(request.getPackageInfos()))
 		{
-			return huInOutDAO.retrieveShippedHandlingUnits(request.getShipment())
-					.stream()
-					.map(hu -> CreatePackagesRequest.builder()
-							.inOutId(request.getShipmentId())
-							.shipperId(shipperId)
-							.processed(request.isProcessed())
-							.weightInKg(weightCalculator.calculateWeightInKg(hu)
-									.map(weight -> weight.toBigDecimal())
-									.orElse(null))
-							.packageDimensions(extractPackageDimensions(hu))
-							.build())
-					.collect(Collectors.toList());
+			final List<I_M_HU> shippedHUs = huInOutDAO.retrieveShippedHandlingUnits(request.getShipment());
+
+			return shippedHUs.isEmpty()
+					? buildWholeShipmentPackageRequest(shipperId, request, weightCalculator)
+					: buildPerShippedHUPackageRequests(shippedHUs, shipperId, request, weightCalculator);
 		}
 		else
 		{
@@ -457,6 +450,47 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 					)
 					.collect(ImmutableList.toImmutableList());
 		}
+	}
+
+	@NonNull
+	private List<CreatePackagesRequest> buildWholeShipmentPackageRequest(
+			@NonNull final ShipperId shipperId,
+			@NonNull final CreatePackagesForInOutRequest request,
+			@NonNull final ShippingWeightCalculator weightCalculator)
+	{
+		// shipment without shipped HUs (e.g. generated without picking): create one package for the whole
+		// shipment, so adding such a shipment to a transport order still yields a package line.
+		final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
+				.inOutId(request.getShipmentId())
+				.shipperId(shipperId)
+				.processed(request.isProcessed())
+				.weightInKg(weightCalculator.calculateWeightInKilograms(request.getShipment())
+						.map(weight -> weight.toBigDecimal())
+						.orElse(null))
+				.packageDimensions(PackageDimensions.UNSPECIFIED)
+				.build();
+		return ImmutableList.of(createPackagesRequest);
+	}
+
+	@NonNull
+	private List<CreatePackagesRequest> buildPerShippedHUPackageRequests(
+			@NonNull final List<I_M_HU> shippedHUs,
+			@NonNull final ShipperId shipperId,
+			@NonNull final CreatePackagesForInOutRequest request,
+			@NonNull final ShippingWeightCalculator weightCalculator)
+	{
+		return shippedHUs
+				.stream()
+				.map(hu -> CreatePackagesRequest.builder()
+						.inOutId(request.getShipmentId())
+						.shipperId(shipperId)
+						.processed(request.isProcessed())
+						.weightInKg(weightCalculator.calculateWeightInKg(hu)
+								.map(weight -> weight.toBigDecimal())
+								.orElse(null))
+						.packageDimensions(extractPackageDimensions(hu))
+						.build())
+				.collect(Collectors.toList());
 	}
 
 	private PackageDimensions extractPackageDimensions(final I_M_HU hu)

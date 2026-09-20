@@ -110,6 +110,13 @@ public class JsonPackingInstructionsRequest
 	 */
 	@Nullable List<AttributeCode> cuAttributes;
 
+	/**
+	 * Packing material (e.g. a crate/pallet product) to attach to the TU's PI version, as an
+	 * {@code M_HU_PI_Item} of {@code ItemType = PackingMaterial}. When set, every HU created from
+	 * this TU PI carries an {@code M_HU_PackingMaterial}. Not applicable when {@link #cu} is set.
+	 */
+	@Nullable Identifier tuPackingMaterial;
+
 	public Identifier getTuNotNull() {return Check.assumeNotNull(tu, "tu must be set");}
 
 	public Identifier getProductNotNull() {return Check.assumeNotNull(product, "product must be set");}

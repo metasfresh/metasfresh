@@ -168,6 +168,7 @@ import java.util.Set;
 				.setLookupDescriptorProvider(productLookupDescriptor)
 				.setCaption(caption)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setWidgetSize(QuickInputConstants.getProductFieldWidgetSize())
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.TRUE)

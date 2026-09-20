@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implements I_DD_OrderLine_HU_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1826377088L;
+	private static final long serialVersionUID = 1601960949L;
 
     /** Standard Constructor */
     public X_DD_OrderLine_HU_Candidate (final Properties ctx, final int DD_OrderLine_HU_Candidate_ID, @Nullable final String trxName)
@@ -78,33 +78,6 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_DD_Order_MoveSchedule getDD_Order_MoveSchedule()
-	{
-		return get_ValueAsPO(COLUMNNAME_DD_Order_MoveSchedule_ID, de.metas.handlingunits.model.I_DD_Order_MoveSchedule.class);
-	}
-
-	@Override
-	public void setDD_Order_MoveSchedule(final de.metas.handlingunits.model.I_DD_Order_MoveSchedule DD_Order_MoveSchedule)
-	{
-		set_ValueFromPO(COLUMNNAME_DD_Order_MoveSchedule_ID, de.metas.handlingunits.model.I_DD_Order_MoveSchedule.class, DD_Order_MoveSchedule);
-	}
-
-	@Override
-	public void setDD_Order_MoveSchedule_ID (final int DD_Order_MoveSchedule_ID)
-	{
-		if (DD_Order_MoveSchedule_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_DD_Order_MoveSchedule_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_DD_Order_MoveSchedule_ID, DD_Order_MoveSchedule_ID);
-	}
-
-	@Override
-	public int getDD_Order_MoveSchedule_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_DD_Order_MoveSchedule_ID);
-	}
-
-	@Override
 	public void setDD_OrderLine_HU_Candidate_ID (final int DD_OrderLine_HU_Candidate_ID)
 	{
 		if (DD_OrderLine_HU_Candidate_ID < 1) 
@@ -144,6 +117,33 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	public int getDD_OrderLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DD_OrderLine_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_DD_Order_MoveSchedule getDD_Order_MoveSchedule()
+	{
+		return get_ValueAsPO(COLUMNNAME_DD_Order_MoveSchedule_ID, de.metas.handlingunits.model.I_DD_Order_MoveSchedule.class);
+	}
+
+	@Override
+	public void setDD_Order_MoveSchedule(final de.metas.handlingunits.model.I_DD_Order_MoveSchedule DD_Order_MoveSchedule)
+	{
+		set_ValueFromPO(COLUMNNAME_DD_Order_MoveSchedule_ID, de.metas.handlingunits.model.I_DD_Order_MoveSchedule.class, DD_Order_MoveSchedule);
+	}
+
+	@Override
+	public void setDD_Order_MoveSchedule_ID (final int DD_Order_MoveSchedule_ID)
+	{
+		if (DD_Order_MoveSchedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_DD_Order_MoveSchedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_DD_Order_MoveSchedule_ID, DD_Order_MoveSchedule_ID);
+	}
+
+	@Override
+	public int getDD_Order_MoveSchedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DD_Order_MoveSchedule_ID);
 	}
 
 	@Override
@@ -460,6 +460,8 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	public static final String REJECTREASON_NotFound = "N";
 	/** Damaged = D */
 	public static final String REJECTREASON_Damaged = "D";
+	/** Emptied = E */
+	public static final String REJECTREASON_Emptied = "E";
 	@Override
 	public void setRejectReason (final @Nullable java.lang.String RejectReason)
 	{

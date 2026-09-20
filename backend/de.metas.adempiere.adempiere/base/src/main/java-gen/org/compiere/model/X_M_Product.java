@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1798749400L;
+	private static final long serialVersionUID = -786884977L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -189,6 +189,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getContent() 
 	{
 		return get_ValueAsString(COLUMNNAME_Content);
+	}
+
+	@Override
+	public void setCoProductCostDistributionPercent (final @Nullable BigDecimal CoProductCostDistributionPercent)
+	{
+		set_Value (COLUMNNAME_CoProductCostDistributionPercent, CoProductCostDistributionPercent);
+	}
+
+	@Override
+	public BigDecimal getCoProductCostDistributionPercent() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CoProductCostDistributionPercent);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1173,6 +1186,29 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsInt(COLUMNNAME_M_CustomsTariff_ID);
 	}
 
+	/** 
+	 * MedicalDeviceType AD_Reference_ID=542113
+	 * Reference name: Medizinprodukt-Typ
+	 */
+	public static final int MEDICALDEVICETYPE_AD_Reference_ID=542113;
+	/** MD = MD */
+	public static final String MEDICALDEVICETYPE_MD = "MD";
+	/** Z = Z */
+	public static final String MEDICALDEVICETYPE_Z = "Z";
+	/** N = N */
+	public static final String MEDICALDEVICETYPE_N = "N";
+	@Override
+	public void setMedicalDeviceType (final @Nullable java.lang.String MedicalDeviceType)
+	{
+		set_Value (COLUMNNAME_MedicalDeviceType, MedicalDeviceType);
+	}
+
+	@Override
+	public java.lang.String getMedicalDeviceType() 
+	{
+		return get_ValueAsString(COLUMNNAME_MedicalDeviceType);
+	}
+
 	@Override
 	public org.compiere.model.I_M_FreightCategory getM_FreightCategory()
 	{
@@ -1393,6 +1429,27 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getPostControl() 
 	{
 		return get_ValueAsString(COLUMNNAME_PostControl);
+	}
+
+	/** 
+	 * PreferentialOrigin AD_Reference_ID=542112
+	 * Reference name: PreferentialOrigin
+	 */
+	public static final int PREFERENTIALORIGIN_AD_Reference_ID=542112;
+	/** DL = DL */
+	public static final String PREFERENTIALORIGIN_DL = "DL";
+	/** EU = EU */
+	public static final String PREFERENTIALORIGIN_EU = "EU";
+	@Override
+	public void setPreferentialOrigin (final @Nullable java.lang.String PreferentialOrigin)
+	{
+		set_Value (COLUMNNAME_PreferentialOrigin, PreferentialOrigin);
+	}
+
+	@Override
+	public java.lang.String getPreferentialOrigin() 
+	{
+		return get_ValueAsString(COLUMNNAME_PreferentialOrigin);
 	}
 
 	@Override

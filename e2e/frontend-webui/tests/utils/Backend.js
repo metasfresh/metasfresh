@@ -81,6 +81,63 @@ export const Backend = {
     }),
 
   /**
+   * Set sysconfigs directly via /frontendTesting/setSysconfigs, independent of
+   * masterdata creation. Unlike createMasterdata's `sysconfigs` option (which only
+   * runs once, before login), this can be called at ANY point in a test — including
+   * post-login cleanup (test.afterEach) — because the frontendTesting endpoint is
+   * exempted from auth (see FrontendTestingRestController#postConstruct:
+   * doNotAuthenticatePathsContaining(ENDPOINT)).
+   *
+   * Note: SysconfigCommand (the handler behind this endpoint) also resets the
+   * barcode-scanner sysconfigs to their defaults as a side effect on every call —
+   * harmless here since tests using this for cleanup don't touch those.
+   *
+   * Does NOT reset the AD_SysConfig cache on the webapi node — call
+   * resetWebApiCaches() afterwards if a webapi-node-cached view depends on the
+   * new value (see resetWebApiCaches doc below).
+   */
+  setSysconfigs: async (sysconfigs) =>
+    await test.step('Backend: set sysconfigs', async () => {
+      const page = getPage();
+      const backendBaseUrl = await getBackendBaseUrl();
+      const response = await page.request.post(
+        `${backendBaseUrl}/frontendTesting/setSysconfigs`,
+        {
+          data: sysconfigs,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+      if (!response.ok()) {
+        throw new Error(
+          `Failed to set sysconfigs: HTTP ${response.status()} ${response.statusText()}`
+        );
+      }
+    }),
+
+  /**
+   * Force the webapi node (8080) to drop ALL caches (global cacheMgt.reset()).
+   *
+   * Needed after a runtime sysconfig change that feeds a cache NOT registered for
+   * AD_SysConfig invalidation — notably the order-line quick-input descriptor
+   * (QuickInputDescriptorFactoryService "QuickInputDescriptors" CCache, built once
+   * per window/tab with no table-reset). resetByTable(AD_SysConfig) refreshes the
+   * sysconfig VALUE but leaves that cached descriptor carrying the pre-change
+   * widgetSize/field-set, so the quick-input layout ignores the new value. In
+   * production the sysconfig is set by migration before any descriptor is built, so
+   * this only matters for tests that flip such a sysconfig at runtime.
+   */
+  resetWebApiCaches: async () =>
+    await test.step('Backend: reset ALL webapi caches', async () => {
+      const page = getPage();
+      const response = await page.request.get(`${WEBAPI_BASE_URL}/cache/reset`);
+      if (!response.ok()) {
+        throw new Error(
+          `Failed to reset webapi caches: HTTP ${response.status()} ${response.statusText()}`
+        );
+      }
+    }),
+
+  /**
    * Validate expectations against created master data.
    * @param {Object} expectations - Expected state to validate
    * @returns {Promise<Object>} Response body with validation results

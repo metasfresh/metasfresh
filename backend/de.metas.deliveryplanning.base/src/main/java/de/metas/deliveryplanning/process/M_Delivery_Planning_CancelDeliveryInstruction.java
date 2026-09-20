@@ -99,6 +99,12 @@ public class M_Delivery_Planning_CancelDeliveryInstruction extends JavaProcess i
 			addLog(msgBL.getMsg(getCtx(), DeliveryPlanningService.MSG_M_Delivery_Planning_Closed, new Object[] { skippedId.getRepoId() }));
 		}
 
+		// per-row report: still cancelled, but its planned figures were committed cargo and were left as they were
+		for (final DeliveryPlanningId skippedId : result.getSkippedAllocatedIds())
+		{
+			addLog(msgBL.getMsg(getCtx(), DeliveryPlanningService.MSG_M_Delivery_Planning_CancelAllocated, new Object[] { skippedId.getRepoId() }));
+		}
+
 		return MSG_OK;
 	}
 }

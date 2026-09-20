@@ -117,6 +117,10 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 */
 	Quantity getQtyRequiredToReceive(I_PP_Order_BOMLine orderBOMLine);
 
+	/**
+	 * @return {@code M_Product.CoProductCostDistributionPercent} of the co-product carried by this order BOM line,
+	 * read live from the product; {@link Percent#ZERO} when unset.
+	 */
 	Percent getCoProductCostDistributionPercent(I_PP_Order_BOMLine orderBOMLine);
 
 	void addQty(OrderBOMLineQtyChangeRequest request);
