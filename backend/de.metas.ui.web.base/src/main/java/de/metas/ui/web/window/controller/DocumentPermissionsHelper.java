@@ -56,7 +56,11 @@ public class DocumentPermissionsHelper
 
 	private static final Logger logger = LogManager.getLogger(DocumentPermissionsHelper.class);
 
+	/** Generic refusal, carrying no explanation. Used where the window or the tab forbids creation. */
 	public static final AdMessageKey MSG_CREATE_NOT_ALLOWED = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed");
+
+	/** Refusal by the role's per-table create permission. {0} is the role name. */
+	public static final AdMessageKey MSG_ROLE_CREATE_NOT_ALLOWED = AdMessageKey.of("ERR_Role_CreateNewRecordsNotAllowed");
 
 	public static ElementPermission checkWindowAccess(@NonNull final DocumentEntityDescriptor entityDescriptor, final IUserRolePermissions permissions)
 	{
@@ -265,12 +269,23 @@ public class DocumentPermissionsHelper
 		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), IExpressionEvaluator.OnVariableNotFound.ReturnNoResult);
 		if (!allow.isTrue()) {return BooleanWithReason.FALSE;}
 
+		return checkRoleCanCreateNewRecords(entityDescriptor, permissions);
+	}
+
+	/**
+	 * The role's per-table create permission alone, with the refusal reason naming the role.
+	 * This is the single place the role-level answer is turned into a user-facing reason.
+	 */
+	public static BooleanWithReason checkRoleCanCreateNewRecords(
+			@NonNull final DocumentEntityDescriptor entityDescriptor,
+			@NonNull final IUserRolePermissions permissions)
+	{
 		final int adTableId = getAdTableId(entityDescriptor);
 		if (adTableId <= 0) {return BooleanWithReason.TRUE;}
 
 		return permissions.isCanCreateNewRecords(adTableId)
 				? BooleanWithReason.TRUE
-				: BooleanWithReason.falseBecause(MSG_CREATE_NOT_ALLOWED);
+				: BooleanWithReason.falseBecause(MSG_ROLE_CREATE_NOT_ALLOWED, permissions.getName());
 	}
 
 }

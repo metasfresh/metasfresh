@@ -124,7 +124,7 @@ public final class JSONDocument extends JSONDocumentBase
 
 		//
 		// Available standard actions
-		jsonDocument.setStandardActions(options.getDocumentPermissions().getStandardActions(document));
+		jsonDocument.setStandardActions(options.getDocumentPermissions().getStandardActions(document, options.getAdLanguage()));
 
 		//
 		// Set debugging info
@@ -328,6 +328,14 @@ public final class JSONDocument extends JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Set<DocumentStandardAction> standardActions;
 
+	/**
+	 * The actions from {@link #standardActions} which shall be rendered disabled, each with its reason.
+	 * Absent when nothing is disabled, so every other action keeps working off the plain string list above.
+	 */
+	@JsonProperty("disabledStandardActions")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private List<JSONDisabledStandardAction> disabledStandardActions;
+
 	@JsonProperty("websocketEndpoint")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String websocketEndpoint;
@@ -387,8 +395,9 @@ public final class JSONDocument extends JSONDocumentBase
 		return includedTabsInfo.values();
 	}
 
-	private void setStandardActions(final Set<DocumentStandardAction> standardActions)
+	private void setStandardActions(@NonNull final JSONStandardActions standardActions)
 	{
-		this.standardActions = standardActions;
+		this.standardActions = standardActions.getActions();
+		this.disabledStandardActions = standardActions.getDisabledActions();
 	}
 }

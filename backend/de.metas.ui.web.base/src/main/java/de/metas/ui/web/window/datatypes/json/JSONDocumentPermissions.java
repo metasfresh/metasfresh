@@ -1,6 +1,8 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -15,7 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /*
  * #%L
@@ -101,9 +102,10 @@ public class JSONDocumentPermissions
 		return logicExpressionRevaluator;
 	}
 
-	public Set<DocumentStandardAction> getStandardActions(@NonNull final Document document)
+	public JSONStandardActions getStandardActions(@NonNull final Document document, @NonNull final String adLanguage)
 	{
 		final HashSet<DocumentStandardAction> standardActions = new HashSet<>(document.getStandardActions());
+		final ImmutableList.Builder<JSONDisabledStandardAction> disabledActions = ImmutableList.builder();
 
 		Boolean allowWindowEdit = null;
 		Boolean allowDocumentEdit = null;
@@ -146,7 +148,23 @@ public class JSONDocumentPermissions
 			}
 		}
 
-		return ImmutableSet.copyOf(standardActions);
+		//
+		// The role may be forbidden to create new records in this table. Unlike the removals above, that
+		// refusal is explained to the user, so the action stays in the list and is transmitted as disabled.
+		if (standardActions.contains(DocumentStandardAction.New))
+		{
+			final BooleanWithReason roleCanCreate = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(document.getEntityDescriptor(), permissions);
+			if (roleCanCreate.isFalse())
+			{
+				disabledActions.add(JSONDisabledStandardAction.builder()
+						.action(DocumentStandardAction.New)
+						.reason(roleCanCreate.getReason().translate(adLanguage))
+						.reasonKey(DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message())
+						.build());
+			}
+		}
+
+		return new JSONStandardActions(ImmutableSet.copyOf(standardActions), disabledActions.build());
 	}
 
 }

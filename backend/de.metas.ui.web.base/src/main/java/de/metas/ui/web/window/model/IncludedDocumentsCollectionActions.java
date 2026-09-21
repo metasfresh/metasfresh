@@ -48,7 +48,7 @@ public final class IncludedDocumentsCollectionActions
 	private static final LogicExpressionResult DISALLOW_ParentDocumentInvalid = LogicExpressionResult.namedConstant("ParentDocumentInvalid", false);
 	private static final LogicExpressionResult DISALLOW_AnotherNewDocumentAlreadyExists = LogicExpressionResult.namedConstant("A new document already exists", false);
 	private static final LogicExpressionResult DISALLOW_UnsavedRowFound = LogicExpressionResult.namedConstant("Unsaved row found", false);
-	private static final LogicExpressionResult DISALLOW_RoleCannotCreateNewRecords = LogicExpressionResult.namedConstant(DocumentPermissionsHelper.MSG_CREATE_NOT_ALLOWED.toAD_Message(), false);
+	private static final LogicExpressionResult DISALLOW_RoleCannotCreateNewRecords = LogicExpressionResult.namedConstant(DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message(), false);
 
 	private final DetailId detailId;
 	private final ILogicExpression allowCreateNewLogic;
