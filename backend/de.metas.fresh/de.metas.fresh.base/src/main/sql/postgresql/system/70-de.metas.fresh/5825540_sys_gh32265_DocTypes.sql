@@ -15,7 +15,7 @@
 
 -- Produktion C_DocType (on base type BKP)
 INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive,Name,PrintName,DocBaseType,IsSOTrx,DocSubType,HasProforma,IsDocNoControlled,GL_Category_ID,HasCharges,DocumentNote,IsDefault,DocumentCopies,IsDefaultCounterDoc,IsShipConfirm,IsPickQAConfirm,IsInTransit,IsSplitWhenDifference,IsCreateCounter,IsIndexed,IsOverwriteSeqOnComplete,IsOverwriteDateOnComplete,IsExcludeFromCommision,CopyDescriptionAndDocumentNote,EntityType)
-SELECT 0,0,541177 /*From ID Server*/,TO_TIMESTAMP('2026-09-21 13:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-09-21 13:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Bestellkontrolle Produktion','Bestellkontrolle Produktion','BKP','Y',NULL,'N','N',1000005,'N',NULL,'N',1,'N','N','N','N','N','Y','Y','N','N','N','CD','de.metas.fresh'
+SELECT 1000000,0,541177 /*From ID Server*/,TO_TIMESTAMP('2026-09-21 13:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-09-21 13:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Bestellkontrolle Produktion','Bestellkontrolle Produktion','BKP','Y',NULL,'N','N',1000005,'N',NULL,'N',1,'N','N','N','N','N','Y','Y','N','N','N','CD','de.metas.fresh'
 WHERE NOT EXISTS (SELECT 1 FROM C_DocType x WHERE x.C_DocType_ID=541177)
 ;
 
@@ -30,7 +30,7 @@ AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language=l.AD_Languag
 
 -- Büro C_DocType (on base type BKB)
 INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive,Name,PrintName,DocBaseType,IsSOTrx,DocSubType,HasProforma,IsDocNoControlled,GL_Category_ID,HasCharges,DocumentNote,IsDefault,DocumentCopies,IsDefaultCounterDoc,IsShipConfirm,IsPickQAConfirm,IsInTransit,IsSplitWhenDifference,IsCreateCounter,IsIndexed,IsOverwriteSeqOnComplete,IsOverwriteDateOnComplete,IsExcludeFromCommision,CopyDescriptionAndDocumentNote,EntityType)
-SELECT 0,0,541178 /*From ID Server*/,TO_TIMESTAMP('2026-09-21 13:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-09-21 13:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Bestellkontrolle Büro','Bestellkontrolle Büro','BKB','Y',NULL,'N','N',1000005,'N',NULL,'N',1,'N','N','N','N','N','Y','Y','N','N','N','CD','de.metas.fresh'
+SELECT 1000000,0,541178 /*From ID Server*/,TO_TIMESTAMP('2026-09-21 13:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-09-21 13:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Bestellkontrolle Büro','Bestellkontrolle Büro','BKB','Y',NULL,'N','N',1000005,'N',NULL,'N',1,'N','N','N','N','N','Y','Y','N','N','N','CD','de.metas.fresh'
 WHERE NOT EXISTS (SELECT 1 FROM C_DocType x WHERE x.C_DocType_ID=541178)
 ;
 
