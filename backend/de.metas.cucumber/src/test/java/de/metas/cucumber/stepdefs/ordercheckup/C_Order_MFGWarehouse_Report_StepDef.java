@@ -33,6 +33,9 @@ import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocTypeId;
+import de.metas.document.archive.config.DocOutboundConfig;
+import de.metas.document.archive.config.DocOutboundConfigService;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
@@ -52,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 
 import java.util.HashSet;
@@ -76,6 +80,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
+	private final DocOutboundConfigService docOutboundConfigService = SpringContextHolder.instance.getBean(DocOutboundConfigService.class);
 
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData reportTable;
 	@NonNull private final C_Order_StepDefData orderTable;
@@ -378,6 +383,49 @@ public class C_Order_MFGWarehouse_Report_StepDef
 					.sum();
 
 			assertThat(actualCount).as("Doc-outbound work package count for order %s", order).isEqualTo(expectedCount);
+		});
+	}
+
+	/**
+	 * Asserts which {@code C_Doc_Outbound_Config} a previously-located {@code C_Order_MFGWarehouse_Report} resolves
+	 * to via {@link DocOutboundConfigService#retrieveConfigForModel}, the same call the real outbound pipeline
+	 * makes to decide which report/printer configuration applies to this record. Proves the resolution is
+	 * per-kind: a Warehouse-kind record must resolve a different configuration than a Plant-kind record, and
+	 * neither may resolve the generic table-wide fallback -- that silent fallback is the exact failure this
+	 * feature exists to prevent.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_MFGWarehouse_Report_ID</b> — (required, identifier-ref) a report located via
+	 *       "C_Order_MFGWarehouse_Report is located:"<br>
+	 *   <b>C_Doc_Outbound_Config_ID</b> — (required) expected resolved {@code C_Doc_Outbound_Config_ID}<br>
+	 *   <b>AD_PrintFormat_ID</b> — (optional) expected resolved {@code AD_PrintFormat_ID} of that configuration<br>
+	 * @cucumber.depends StepDefData: C_Order_MFGWarehouse_Report_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Order_MFGWarehouse_Report resolves C_Doc_Outbound_Config:
+	 *   | C_Order_MFGWarehouse_Report_ID | C_Doc_Outbound_Config_ID |
+	 *   | warehouseRpt                   | 540022                   |
+	 * </pre>
+	 */
+	@Then("C_Order_MFGWarehouse_Report resolves C_Doc_Outbound_Config:")
+	public void assert_resolves_doc_outbound_config(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Order_MFGWarehouse_Report report = row.getAsIdentifier("C_Order_MFGWarehouse_Report_ID").lookupNotNullIn(reportTable);
+			final int expectedConfigId = row.getAsInt(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID);
+
+			final DocOutboundConfig config = docOutboundConfigService.retrieveConfigForModel(report);
+
+			assertThat(config).as("Resolved C_Doc_Outbound_Config for %s", report).isNotNull();
+			assertThat(config.getId().getRepoId())
+					.as("Resolved %s for %s", I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID, report)
+					.isEqualTo(expectedConfigId);
+
+			row.getAsOptionalInt(I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID)
+					.ifPresent(expectedPrintFormatId -> assertThat(config.getPrintFormatId().getRepoId())
+							.as("Resolved %s for %s", I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID, report)
+							.isEqualTo(expectedPrintFormatId));
 		});
 	}
 }

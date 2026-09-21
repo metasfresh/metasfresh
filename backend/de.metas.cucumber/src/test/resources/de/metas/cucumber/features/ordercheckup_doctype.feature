@@ -69,6 +69,46 @@ Feature: Bestellkontrolle document type
 
 # ####################################################################################################################
 # ####################################################################################################################
+  @Id:S32265_TC2
+  Scenario: Each kind resolves its own outbound configuration, never the generic fallback
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order2     | true    | bpartner      | 2026-01-12  | warehouse      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine2 | order2     | product      | 5          |
+
+    When the order identified by order2 is completed
+
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier   | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID |
+      | warehouseRpt | order2     | WH           | warehouse      | plant       |
+      | plantRpt     | order2     | PL           |                | plant       |
+
+    # Crux assertion: each kind resolves ITS OWN C_Doc_Outbound_Config (540022 / 540023) -- never the generic
+    # fallback (540002). Resolving the fallback is the exact silent failure this feature exists to prevent.
+    Then C_Order_MFGWarehouse_Report resolves C_Doc_Outbound_Config:
+      | C_Order_MFGWarehouse_Report_ID | C_Doc_Outbound_Config_ID |
+      | warehouseRpt                   | 540022                   |
+      | plantRpt                       | 540023                   |
+
+    # Both configurations ship pointing at the same print format by design. Repointing just one of them proves
+    # the customer's pending decision (splitting the two reports) is a single field edit, nothing more.
+    When update C_Doc_Outbound_Config print format:
+      | C_Doc_Outbound_Config_ID | AD_PrintFormat_ID |
+      | 540022                   | 540097            |
+
+    Then C_Order_MFGWarehouse_Report resolves C_Doc_Outbound_Config:
+      | C_Order_MFGWarehouse_Report_ID | C_Doc_Outbound_Config_ID | AD_PrintFormat_ID |
+      | warehouseRpt                   | 540022                   | 540097            |
+      | plantRpt                       | 540023                   | 540068            |
+
+    # The shipped configuration is restored by an @After hook (C_Doc_Outbound_Config_StepDef), not a trailing
+    # step here -- Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the restore.
+
+
+# ####################################################################################################################
+# ####################################################################################################################
   Scenario: reset settings to default
     # A separate scenario rather than a trailing step, so it still runs if an assertion above failed -- see
     # ordercheckup_reprint.feature for the same pattern and its rationale.

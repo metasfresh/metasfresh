@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -41,7 +42,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_AD_Table;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static de.metas.document.archive.model.I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,6 +56,13 @@ public class C_Doc_Outbound_Config_StepDef
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	@NonNull private final C_Doc_Outbound_Config_StepDefData docOutboundConfigTable;
+
+	/**
+	 * Configs this scenario repointed via {@link #update_doc_outbound_config_print_format}, mapped to their
+	 * {@code AD_PrintFormat_ID} from BEFORE the repoint. Restored by
+	 * {@link #restoreRepointedPrintFormatsAfterScenario()}.
+	 */
+	private final Map<Integer, Integer> priorPrintFormatIdByConfigId = new LinkedHashMap<>();
 
 	@Given("metasfresh contains C_Doc_Outbound_Config:")
 	public void metasfresh_contains_C_Doc_Outbound_Config(@NonNull final DataTable dataTable)
@@ -137,5 +147,68 @@ public class C_Doc_Outbound_Config_StepDef
 			}
 			CacheMgt.get().reset(I_C_Doc_Outbound_Config.Table_Name);
 		});
+	}
+
+	/**
+	 * Repoints an existing {@code C_Doc_Outbound_Config}'s {@code AD_PrintFormat_ID} -- the same field edit the
+	 * customer would make in the window once they decide the two Bestellkontrolle kinds should print different
+	 * reports. Resets the outbound-config cache so the change is visible to the next resolution.
+	 * <p>
+	 * The prior value is captured before the overwrite and restored by
+	 * {@link #restoreRepointedPrintFormatsAfterScenario()}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Doc_Outbound_Config_ID</b> — (required) the existing configuration to update<br>
+	 *   <b>AD_PrintFormat_ID</b> — (required) the print format to point it at<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Doc_Outbound_Config print format:
+	 *   | C_Doc_Outbound_Config_ID | AD_PrintFormat_ID |
+	 *   | 540022                   | 540097            |
+	 * </pre>
+	 */
+	@And("update C_Doc_Outbound_Config print format:")
+	public void update_doc_outbound_config_print_format(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final int configId = row.getAsInt(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID);
+			final int printFormatId = row.getAsInt(I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID);
+
+			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.load(configId, I_C_Doc_Outbound_Config.class);
+
+			// captured once per config per scenario: a second repoint in the same scenario must not overwrite
+			// the ALREADY-captured original with this scenario's own first write
+			priorPrintFormatIdByConfigId.putIfAbsent(configId, config.getAD_PrintFormat_ID());
+
+			config.setAD_PrintFormat_ID(printFormatId);
+			InterfaceWrapperHelper.save(config);
+		});
+
+		CacheMgt.get().reset(I_C_Doc_Outbound_Config.Table_Name);
+	}
+
+	/**
+	 * Guaranteed-execution cleanup for {@link #update_doc_outbound_config_print_format} -- an {@code @After} hook
+	 * rather than a trailing Gherkin step, since Cucumber skips remaining steps once one fails, i.e. on exactly
+	 * the runs that need the restore. A no-op for every scenario that never called that step.
+	 */
+	@After
+	public void restoreRepointedPrintFormatsAfterScenario()
+	{
+		if (priorPrintFormatIdByConfigId.isEmpty())
+		{
+			return;
+		}
+
+		for (final Map.Entry<Integer, Integer> entry : priorPrintFormatIdByConfigId.entrySet())
+		{
+			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.load(entry.getKey(), I_C_Doc_Outbound_Config.class);
+			config.setAD_PrintFormat_ID(entry.getValue());
+			InterfaceWrapperHelper.save(config);
+		}
+
+		priorPrintFormatIdByConfigId.clear();
+		CacheMgt.get().reset(I_C_Doc_Outbound_Config.Table_Name);
 	}
 }
