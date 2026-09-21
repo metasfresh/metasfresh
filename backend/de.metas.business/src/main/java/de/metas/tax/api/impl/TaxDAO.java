@@ -452,6 +452,13 @@ public class TaxDAO implements ITaxDAO
 		loggable.addLog("BPartner has fiscal Representation = {}", hasFiscalRepresentation);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, StringUtils.ofBoolean(hasFiscalRepresentation), null);
 
+		final Percent rate = taxQuery.getRate();
+		if (rate != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_Rate, rate.toBigDecimal());
+			loggable.addLog("Rate={}", rate);
+		}
+
 		queryBuilder.orderBy(I_C_Tax.COLUMNNAME_SeqNo);
 		return queryBuilder;
 	}
