@@ -18,6 +18,20 @@
 -- none returned a non-zero count, 14 were unreachable. So the narrowing has nothing to collide
 -- with. Should an unchecked instance turn out to hold two rows for one role and table, ADD PRIMARY
 -- KEY below rejects them by itself - loudly, and without writing anything.
+--
+-- SCOPE OF THE FK SWEEP (accepted residual risk)
+-- Steps 3/3b/4 clear the 7 tables that hold a foreign key to AD_Column or AD_Field ahead of the
+-- AD_Column_ID=10009 delete: AD_Field_Trl, AD_Field_ContextMenu, AD_UserDef_Field,
+-- AD_User_SortPref_Line, AD_Element_Link, AD_Column_Access and AD_Column_Trl. The live schema
+-- carries roughly 40 tables with such a FK; the remaining ~33 are not swept. That is judged
+-- acceptable, not overlooked: the dropped column is a System-Administrator-only security
+-- rule-type column with no business or reporting relevance, so a row in one of the unswept
+-- tables (e.g. ad_find, ad_printformatitem, ad_reportview_col, ad_searchdefinition) pointing at
+-- it would require deliberate technical configuration, not ordinary use. Should that assumption
+-- ever be wrong on some instance, the failure is loud and atomic, not silent: the migration tool
+-- runs this script with ON_ERROR_STOP=1 inside a single transaction, so the DROP COLUMN in step 7
+-- aborts on the FK violation with a plain error and the whole script rolls back - the instance is
+-- left exactly as it was, never half-migrated.
 
 -- 1. Backups. AD_Table_Access holds operator-configured permission data and is about to lose a
 --    column; AD_DefaultValue loses a row's IsActive. Both are cheap insurance against an instance

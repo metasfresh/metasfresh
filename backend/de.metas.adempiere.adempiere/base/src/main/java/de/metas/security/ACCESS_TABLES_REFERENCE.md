@@ -13,7 +13,7 @@ This document provides detailed documentation of all `*_Access` tables in metasf
 | `AD_Form_Access` | Special Forms | `AD_Form_ID`, `IsReadWrite` |
 | `AD_Workflow_Access` | Workflows | `AD_Workflow_ID`, `IsReadWrite` |
 | `AD_Task_Access` | OS Tasks | `AD_Task_ID`, `IsReadWrite` |
-| `AD_Table_Access` | Database Tables | `AD_Table_ID`, `IsExclude`, `IsReadOnly`, `IsCanReport`, `IsCanExport` |
+| `AD_Table_Access` | Database Tables | `AD_Table_ID`, `IsExclude`, `IsReadOnly`, `IsCanReport`, `IsCanExport`, `IsCanCreateNewRecords` |
 | `AD_Column_Access` | Table Columns | `AD_Column_ID`, `IsExclude`, `IsReadOnly` |
 | `AD_Document_Action_Access` | Document Actions (Complete, Void, etc.) | `C_DocType_ID`, `AD_Ref_List_ID` |
 | `AD_Role_OrgAccess` | Organizations (per role) | `AD_Org_ID`, `IsReadOnly` |
@@ -149,22 +149,24 @@ These tables control access to database tables, columns, and records.
 
 ### AD_Table_Access
 
-**Purpose:** Controls table-level data access rules (include/exclude patterns).
+**Purpose:** Controls table-level data access rules. One row per role and table (`AD_Role_ID`, `AD_Table_ID` is the primary key), carrying five independent three-state permission flags.
 
 | Column | Type | Description |
 |--------|------|-------------|
-| `AD_Role_ID` | FK | The role |
-| `AD_Table_ID` | FK | The table (AD_Table) |
-| `AccessTypeRule` | char | `I` = Include, `E` = Exclude |
-| `IsReadOnly` | Y/N | `Y` = read-only access |
-| `IsCanReport` | Y/N | `Y` = can generate reports from this table |
-| `IsCanExport` | Y/N | `Y` = can export data from this table |
-| `IsExclude` | Y/N | `Y` = exclude this table from access |
+| `AD_Role_ID` | FK | The role — part of the primary key |
+| `AD_Table_ID` | FK | The table (AD_Table) — part of the primary key |
+| `IsExclude` | Y/N/unset | `Y` = exclude this table from access |
+| `IsReadOnly` | Y/N/unset | `Y` = read-only access |
+| `IsCanReport` | Y/N/unset | `Y` = can generate reports from this table |
+| `IsCanExport` | Y/N/unset | `Y` = can export data from this table |
+| `IsCanCreateNewRecords` | Y/N/unset | `Y` = can create new records in this table |
+
+Each flag is a nullable `CHAR(1)` (List reference over `_YesNo`): `Y`/`N` is an explicit opinion, unset means the role expresses no opinion on that aspect.
 
 **metasfresh Usage:**
 - Fine-tune table access beyond window-level permissions
 - Use `IsExclude=Y` to blacklist specific tables
-- Control reporting and export capabilities per table
+- Control reporting, export and record-creation capabilities per table
 
 **Java API:**
 ```java
