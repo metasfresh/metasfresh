@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0159_Manufacturing_Planning
-@allure.label.feature:F8008_Order_Checkup_Report
+@allure.label.feature:F8005_Order_Checkup
 @ghActions:run_on_executor2
 Feature: Bestellkontrolle reprint after reactivate
 ## F8008: Order Checkup Report
