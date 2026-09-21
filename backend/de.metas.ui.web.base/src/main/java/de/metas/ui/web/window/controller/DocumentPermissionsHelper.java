@@ -2,6 +2,8 @@ package de.metas.ui.web.window.controller;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
@@ -285,7 +287,16 @@ public class DocumentPermissionsHelper
 
 		return permissions.isCanCreateNewRecords(adTableId)
 				? BooleanWithReason.TRUE
-				: BooleanWithReason.falseBecause(MSG_ROLE_CREATE_NOT_ALLOWED, permissions.getName());
+				: BooleanWithReason.falseBecause(roleCreateNotAllowedReason(permissions));
+	}
+
+	/**
+	 * States the role's create refusal in words, naming the role; it does not decide it.
+	 * Every payload which transmits the refusal takes its text from here, so all of them read alike.
+	 */
+	public static ITranslatableString roleCreateNotAllowedReason(@NonNull final IUserRolePermissions permissions)
+	{
+		return TranslatableStrings.adMessage(MSG_ROLE_CREATE_NOT_ALLOWED, permissions.getName());
 	}
 
 }

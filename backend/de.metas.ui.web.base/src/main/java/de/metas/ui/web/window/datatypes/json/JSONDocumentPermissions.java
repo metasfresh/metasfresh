@@ -12,6 +12,7 @@ import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator
 import de.metas.ui.web.window.model.DocumentStandardAction;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -87,6 +88,31 @@ public class JSONDocumentPermissions
 		// TODO: implement... but it's not so critical atm
 	}
 
+	/**
+	 * Transmits an included tab's create-permission result.
+	 * <p>
+	 * The role's refusal reaches us as the bare AD_Message key, because the constant carrying it is shared by
+	 * all sessions and so cannot name the session's role; here the role is known, so the key becomes the
+	 * translated text plus the key itself. Every other refusal is transmitted as the technical name it has
+	 * always been.
+	 */
+	public void setAllowCreateNew(
+			@NonNull final JSONIncludedTabInfo jsonIncludedTabInfo,
+			@NonNull final LogicExpressionResult allowCreateNew,
+			@NonNull final String adLanguage)
+	{
+		final String roleReasonKey = DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message();
+		if (allowCreateNew.isFalse() && roleReasonKey.equals(allowCreateNew.getName()))
+		{
+			final String reason = DocumentPermissionsHelper.roleCreateNotAllowedReason(permissions).translate(adLanguage);
+			jsonIncludedTabInfo.setAllowCreateNew(false, reason, roleReasonKey);
+		}
+		else
+		{
+			jsonIncludedTabInfo.setAllowCreateNew(allowCreateNew.booleanValue(), allowCreateNew.getName());
+		}
+	}
+
 	private boolean isReadonly(@NonNull final Document document)
 	{
 		return readonlyDocuments.computeIfAbsent(document.getDocumentPath(), documentPath -> !DocumentPermissionsHelper.canEdit(document, permissions));
@@ -154,13 +180,10 @@ public class JSONDocumentPermissions
 		if (standardActions.contains(DocumentStandardAction.New))
 		{
 			final BooleanWithReason roleCanCreate = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(document.getEntityDescriptor(), permissions);
-			if (roleCanCreate.isFalse())
+			final JSONDisabledStandardAction newRefused = JSONDisabledStandardAction.newRefusedByRole(roleCanCreate, adLanguage);
+			if (newRefused != null)
 			{
-				disabledActions.add(JSONDisabledStandardAction.builder()
-						.action(DocumentStandardAction.New)
-						.reason(roleCanCreate.getReason().translate(adLanguage))
-						.reasonKey(DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message())
-						.build());
+				disabledActions.add(newRefused);
 			}
 		}
 

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.rest_api.utils.JsonErrors;
@@ -57,6 +58,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDisabledStandardAction;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
@@ -280,26 +282,41 @@ public class ViewRestController
 		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(rows);
 
 		final JSONViewResult json = JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
-		json.setAllowNew(isNewDocumentAllowed(viewId.getWindowId()));
+		setNewDocumentPermission(json, viewId.getWindowId(), jsonOpts.getAdLanguage());
 		return json;
 	}
 
-	private boolean isNewDocumentAllowed(@NonNull final WindowId windowId)
+	/**
+	 * Transmits whether a new record may be created from this view, and — where the role's per-table
+	 * permission is what forbids it — why, so the grid can grey the action instead of just hiding its cause.
+	 */
+	private void setNewDocumentPermission(
+			@NonNull final JSONViewResult json,
+			@NonNull final WindowId windowId,
+			@NonNull final String adLanguage)
 	{
 		if (windowId.toAdWindowIdOrNull() == null)
 		{
-			return false;
+			json.setAllowNew(false);
+			return;
 		}
 
 		try
 		{
 			final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId).getEntityDescriptor();
-			return DocumentPermissionsHelper.checkNewDocumentAllowed(documentEntityDescriptor, userSession).isTrue();
+			json.setAllowNew(DocumentPermissionsHelper.checkNewDocumentAllowed(documentEntityDescriptor, userSession).isTrue());
+
+			final BooleanWithReason roleCanCreate = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(documentEntityDescriptor, userSession.getUserRolePermissions());
+			final JSONDisabledStandardAction newRefused = JSONDisabledStandardAction.newRefusedByRole(roleCanCreate, adLanguage);
+			if (newRefused != null)
+			{
+				json.setDisabledStandardActions(ImmutableList.of(newRefused));
+			}
 		}
 		catch (Exception ex)
 		{
-			logger.warn("Failed checking if new document is allowed for windowId={}. Returning false.", windowId, ex);
-			return false;
+			logger.warn("Failed checking if new document is allowed for windowId={}. Not allowing it.", windowId, ex);
+			json.setAllowNew(false);
 		}
 	}
 

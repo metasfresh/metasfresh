@@ -1,10 +1,14 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.model.DocumentStandardAction;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -47,4 +51,25 @@ public class JSONDisabledStandardAction
 
 	@JsonProperty("reasonKey")
 	@NonNull String reasonKey;
+
+	/**
+	 * @param roleCanCreateNewRecords the answer of {@link DocumentPermissionsHelper#checkRoleCanCreateNewRecords}
+	 * @return the disabled {@link DocumentStandardAction#New}, or null if the role may create records
+	 */
+	@Nullable
+	public static JSONDisabledStandardAction newRefusedByRole(
+			@NonNull final BooleanWithReason roleCanCreateNewRecords,
+			@NonNull final String adLanguage)
+	{
+		if (!roleCanCreateNewRecords.isFalse())
+		{
+			return null;
+		}
+
+		return builder()
+				.action(DocumentStandardAction.New)
+				.reason(roleCanCreateNewRecords.getReason().translate(adLanguage))
+				.reasonKey(DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message())
+				.build();
+	}
 }

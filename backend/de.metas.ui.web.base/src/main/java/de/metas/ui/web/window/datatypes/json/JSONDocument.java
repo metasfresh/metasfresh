@@ -159,7 +159,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final LogicExpressionResult allowCreateNew = includedDocumentsCollection.getAllowCreateNewDocument();
 		if (allowCreateNew != null)
 		{
-			tabInfo.setAllowCreateNew(allowCreateNew.booleanValue(), allowCreateNew.getName());
+			options.getDocumentPermissions().setAllowCreateNew(tabInfo, allowCreateNew, options.getAdLanguage());
 		}
 
 		final LogicExpressionResult allowDelete = includedDocumentsCollection.getAllowDeleteDocument();
@@ -277,14 +277,16 @@ public final class JSONDocument extends JSONDocumentBase
 		// Included tabs info
 		documentChangedEvents.getIncludedDetailInfos()
 				.stream()
-				.map(JSONDocument::createIncludedTabInfo)
+				.map(includedDetailInfo -> createIncludedTabInfo(includedDetailInfo, options))
 				.peek(jsonIncludedTabInfo -> options.getDocumentPermissions().apply(documentPath, jsonIncludedTabInfo))
 				.forEach(jsonDocument::addIncludedTabInfo);
 
 		return jsonDocument;
 	}
 
-	private static JSONIncludedTabInfo createIncludedTabInfo(final DocumentChanges.IncludedDetailInfo includedDetailInfo)
+	private static JSONIncludedTabInfo createIncludedTabInfo(
+			@NonNull final DocumentChanges.IncludedDetailInfo includedDetailInfo,
+			@NonNull final JSONDocumentOptions options)
 	{
 		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDetailInfo.getDetailId());
 		if (includedDetailInfo.isStale())
@@ -295,7 +297,7 @@ public final class JSONDocument extends JSONDocumentBase
 		final LogicExpressionResult allowCreateNew = includedDetailInfo.getAllowNew();
 		if (allowCreateNew != null)
 		{
-			tabInfo.setAllowCreateNew(allowCreateNew.booleanValue(), allowCreateNew.getName());
+			options.getDocumentPermissions().setAllowCreateNew(tabInfo, allowCreateNew, options.getAdLanguage());
 		}
 
 		final LogicExpressionResult allowDelete = includedDetailInfo.getAllowDelete();
