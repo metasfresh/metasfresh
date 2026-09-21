@@ -793,7 +793,9 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		}
 
 		//
-		// Add default permission
+		// Add default permission.
+		// canCreateNewRecords deliberately stays unset: unlike the accesses, the create permission has no role-wide
+		// fallback to express - a table nobody configured must stay unrestricted.
 		final TablePermission defaultPermissions = TablePermission.builder()
 				.resource(TableResource.ANY_TABLE)
 				.accesses(defaultPermissionAccesses)
@@ -811,8 +813,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			@NonNull final I_AD_Table_Access tableAccessRecord,
 			@NonNull final Set<Access> defaultPermissionAccesses)
 	{
-		final Boolean exclude = StringUtils.toBoolean(tableAccessRecord.getIsExclude(), null);
-		if (!Boolean.FALSE.equals(exclude))
+		final Boolean isExclude = StringUtils.toBoolean(tableAccessRecord.getIsExclude(), null);
+		if (!Boolean.FALSE.equals(isExclude))
 		{
 			return;
 		}
@@ -838,23 +840,23 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			@NonNull final I_AD_Table_Access tableAccessRecord,
 			@NonNull final Set<Access> defaultPermissionAccesses)
 	{
-		final Boolean exclude = StringUtils.toBoolean(tableAccessRecord.getIsExclude(), null);
-		final Boolean readOnly = StringUtils.toBoolean(tableAccessRecord.getIsReadOnly(), null);
+		final Boolean isExclude = StringUtils.toBoolean(tableAccessRecord.getIsExclude(), null);
+		final Boolean isReadOnly = StringUtils.toBoolean(tableAccessRecord.getIsReadOnly(), null);
 		final Boolean canReport = StringUtils.toBoolean(tableAccessRecord.getIsCanReport(), null);
 		final Boolean canExport = StringUtils.toBoolean(tableAccessRecord.getIsCanExport(), null);
 		final Boolean canCreateNewRecords = StringUtils.toBoolean(tableAccessRecord.getIsCanCreateNewRecords(), null);
 
-		if (exclude == null && readOnly == null && canReport == null && canExport == null && canCreateNewRecords == null)
+		if (isExclude == null && isReadOnly == null && canReport == null && canExport == null && canCreateNewRecords == null)
 		{
 			return null;
 		}
 
 		final HashSet<Access> permissionAccesses;
-		if (exclude == null)
+		if (isExclude == null)
 		{
 			// Nothing said about the table as a whole, so the role's default stands; IsReadOnly still takes WRITE away.
 			permissionAccesses = new HashSet<>(defaultPermissionAccesses);
-			if (Boolean.TRUE.equals(readOnly))
+			if (Boolean.TRUE.equals(isReadOnly))
 			{
 				permissionAccesses.remove(Access.WRITE);
 			}
@@ -862,12 +864,12 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		else
 		{
 			permissionAccesses = new HashSet<>();
-			if (Boolean.TRUE.equals(readOnly))
+			if (Boolean.TRUE.equals(isReadOnly))
 			{
 				// Excluded and read-only means reading is what is left of the ban; included and read-only grants no more.
 				permissionAccesses.add(Access.READ);
 			}
-			else if (!exclude)
+			else if (!isExclude)
 			{
 				permissionAccesses.add(Access.READ);
 				permissionAccesses.add(Access.WRITE);
@@ -888,14 +890,14 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	private static void applyAccess(
 			@NonNull final Set<Access> accesses,
 			@NonNull final Access access,
-			@Nullable final Boolean granted)
+			@Nullable final Boolean isGranted)
 	{
-		if (granted == null)
+		if (isGranted == null)
 		{
 			return;
 		}
 
-		if (granted)
+		if (isGranted)
 		{
 			accesses.add(access);
 		}
