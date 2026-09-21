@@ -3,13 +3,18 @@ package de.metas.ui.web.window.model;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.table.api.AdTableId;
 
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -43,11 +48,13 @@ public final class IncludedDocumentsCollectionActions
 	private static final LogicExpressionResult DISALLOW_ParentDocumentInvalid = LogicExpressionResult.namedConstant("ParentDocumentInvalid", false);
 	private static final LogicExpressionResult DISALLOW_AnotherNewDocumentAlreadyExists = LogicExpressionResult.namedConstant("A new document already exists", false);
 	private static final LogicExpressionResult DISALLOW_UnsavedRowFound = LogicExpressionResult.namedConstant("Unsaved row found", false);
+	private static final LogicExpressionResult DISALLOW_RoleCannotCreateNewRecords = LogicExpressionResult.namedConstant(DocumentPermissionsHelper.MSG_CREATE_NOT_ALLOWED.toAD_Message(), false);
 
 	private final DetailId detailId;
 	private final ILogicExpression allowCreateNewLogic;
 	private final ILogicExpression allowDeleteLogic;
 	private final DocumentPath parentDocumentPath;
+	@Nullable private final AdTableId adTableId;
 
 	private LogicExpressionResult allowNew = DISALLOW_Initially;
 	private LogicExpressionResult allowDelete = DISALLOW_Initially;
@@ -57,12 +64,14 @@ public final class IncludedDocumentsCollectionActions
 			@NonNull final DetailId detailId,
 			@NonNull final ILogicExpression allowCreateNewLogic,
 			@NonNull final ILogicExpression allowDeleteLogic,
-			@NonNull final DocumentPath parentDocumentPath)
+			@NonNull final DocumentPath parentDocumentPath,
+			@Nullable final AdTableId adTableId)
 	{
 		this.detailId = detailId;
 		this.allowCreateNewLogic = allowCreateNewLogic;
 		this.allowDeleteLogic = allowDeleteLogic;
 		this.parentDocumentPath = parentDocumentPath;
+		this.adTableId = adTableId;
 	}
 
 	private IncludedDocumentsCollectionActions(final IncludedDocumentsCollectionActions from)
@@ -71,6 +80,7 @@ public final class IncludedDocumentsCollectionActions
 		allowCreateNewLogic = from.allowCreateNewLogic;
 		allowDeleteLogic = from.allowDeleteLogic;
 		parentDocumentPath = from.parentDocumentPath;
+		adTableId = from.adTableId;
 
 		allowNew = from.allowNew;
 		allowDelete = from.allowDelete;
@@ -180,7 +190,24 @@ public final class IncludedDocumentsCollectionActions
 		//
 		// Evaluate the allowCreateNew logic expression
 		final LogicExpressionResult allowCreateNew = allowCreateNewLogic.evaluateToResult(context.toEvaluatee(), OnVariableNotFound.ReturnNoResult);
-		return allowCreateNew;
+		if (!allowCreateNew.isTrue())
+		{
+			// the tab itself forbids it; the role's restriction is not consulted, so no role reason is shown
+			return allowCreateNew;
+		}
+
+		return isRoleAllowedToCreateNewRecords() ? allowCreateNew : DISALLOW_RoleCannotCreateNewRecords;
+	}
+
+	private boolean isRoleAllowedToCreateNewRecords()
+	{
+		// a background thread carries no user session, so there is no role to restrict (same reading as DocumentPermissionsHelper.assertCanEdit)
+		if (adTableId == null || !UserSession.isWebuiThread())
+		{
+			return true;
+		}
+
+		return UserSession.getCurrentPermissions().isCanCreateNewRecords(adTableId.getRepoId());
 	}
 
 	public LogicExpressionResult getAllowDeleteDocument()

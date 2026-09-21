@@ -14,13 +14,17 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
+import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -88,9 +92,19 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 				.detailId(detailId)
 				.allowCreateNewLogic(entityDescriptor.getAllowCreateNewLogic())
 				.allowDeleteLogic(entityDescriptor.getAllowDeleteLogic())
+				.adTableId(extractAdTableIdOrNull(entityDescriptor))
 				.build();
 		parentReadonly = null; // NOTE: don't fetch it from parentDocument because it's not needed now
 		staled = false;
+	}
+
+	@Nullable
+	private static AdTableId extractAdTableIdOrNull(@NonNull final DocumentEntityDescriptor entityDescriptor)
+	{
+		final String tableName = entityDescriptor.getTableNameOrNull();
+		return tableName != null
+				? AdTableId.ofRepoIdOrNull(Services.get(IADTableDAO.class).retrieveTableId(tableName))
+				: null;
 	}
 
 	/** copy constructor */
