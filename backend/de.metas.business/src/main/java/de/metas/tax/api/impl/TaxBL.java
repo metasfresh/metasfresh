@@ -104,10 +104,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 * Builds the {@link TaxQuery} used by {@link #getTaxNotNull(Object, TaxCategoryId, int, Timestamp, OrgId, WarehouseId, BPartnerLocationAndCaptureId, SOTrx)}
 	 * to resolve the applicable {@code C_Tax}, including the origin-country derivation (warehouse country, falling back to the org's country,
 	 * falling back to the system default country).
-	 *
-	 * <p>Not declared on {@link de.metas.tax.api.ITaxBL}: {@link TaxQuery} lives in {@code de.metas.business}, which the {@code ITaxBL}-owning
-	 * {@code de.metas.adempiere.adempiere.base} module does not depend on, so an interface-level declaration does not compile.
 	 */
+	@Override
 	@NonNull
 	public TaxQuery buildTaxQuery(
 			@NonNull final TaxCategoryId taxCategoryId,

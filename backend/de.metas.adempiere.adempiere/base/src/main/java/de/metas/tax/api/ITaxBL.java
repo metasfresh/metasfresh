@@ -57,7 +57,21 @@ public interface ITaxBL extends ISingletonService
 			@Nullable WarehouseId warehouseId,
 			BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			SOTrx soTrx);
-	
+
+	/**
+	 * Builds the {@link TaxQuery} used by {@link #getTaxNotNull(Object, TaxCategoryId, int, Timestamp, OrgId, WarehouseId, BPartnerLocationAndCaptureId, SOTrx)}
+	 * to resolve the applicable {@code C_Tax}, including the origin-country derivation (warehouse country, falling back to the org's country,
+	 * falling back to the system default country).
+	 */
+	@NonNull
+	TaxQuery buildTaxQuery(
+			@NonNull TaxCategoryId taxCategoryId,
+			@NonNull Timestamp shipDate,
+			@NonNull OrgId orgId,
+			@Nullable WarehouseId warehouseId,
+			@NonNull BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			@NonNull SOTrx soTrx);
+
 	/**
 	 * Calculate Tax - no rounding
 	 *
