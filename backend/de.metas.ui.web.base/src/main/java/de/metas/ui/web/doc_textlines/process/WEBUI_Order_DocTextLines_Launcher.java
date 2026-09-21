@@ -56,6 +56,22 @@ public class WEBUI_Order_DocTextLines_Launcher extends JavaProcess implements IP
 	private final DocTextLinesViewFactory docTextLinesViewFactory = SpringContextHolder.instance.getBean(DocTextLinesViewFactory.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
+	/**
+	 * Keeps this button at the END of the order-line tab's toolbar, behind the actions that create order
+	 * lines ("Neu hinzufuegen", "Schnellerfassung", "Produktvorschlaege").
+	 *
+	 * <p>Tab top actions are ordered by {@code JSONDocumentAction.ORDERBY_QuickActionFirst_Caption}:
+	 * enabled-first, then this sortNo, then the quick-action flags, then the CAPTION. Nothing populates a
+	 * sortNo for an {@code AD_Table_Process} row -- {@code ADProcessDAO.toRelatedProcessDescriptor} does not
+	 * set one -- so every such action defaults to 0 and the caption alphabetical order is what actually
+	 * decides the layout. That put "Freitextzeilen" in front of "Produktvorschlaege" for no better reason
+	 * than F preceding P, splitting the two line-creation actions that belong side by side.
+	 *
+	 * <p>Any strictly positive value sorts behind all of them; the exact number carries no meaning beyond
+	 * that, and leaves room for a later action to be placed in between.
+	 */
+	private static final int SORTNO_AfterTheLineCreationActions = 100;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
@@ -79,7 +95,7 @@ public class WEBUI_Order_DocTextLines_Launcher extends JavaProcess implements IP
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not allowed for a Closed, Voided or Reversed order");
 		}
 
-		return ProcessPreconditionsResolution.accept();
+		return ProcessPreconditionsResolution.accept().withSortNo(SORTNO_AfterTheLineCreationActions);
 	}
 
 	@Override

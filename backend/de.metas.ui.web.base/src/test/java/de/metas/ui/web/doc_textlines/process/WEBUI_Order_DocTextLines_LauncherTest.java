@@ -136,6 +136,39 @@ class WEBUI_Order_DocTextLines_LauncherTest
 				.isFalse();
 	}
 
+	/**
+	 * The button's POSITION in the tab toolbar, which is what the user actually sees.
+	 *
+	 * <p>Tab top actions are ordered by {@code JSONDocumentAction.ORDERBY_QuickActionFirst_Caption}:
+	 * enabled-first, then {@code sortNo}, then the quick-action flags, then the CAPTION alphabetically.
+	 * {@code ADProcessDAO.toRelatedProcessDescriptor} never sets a sortNo, so every {@code AD_Table_Process}
+	 * row defaults to 0 and the caption is the real tiebreak -- which put "Freitextzeilen" ahead of
+	 * "Produktvorschlaege" purely because F precedes P, wedging this button between the two
+	 * line-creation actions that belong next to each other.
+	 *
+	 * <p>A strictly positive sortNo is therefore what keeps this button behind every default-ordered
+	 * action, independently of what any of them happen to be called. Asserting merely "a sortNo is
+	 * present" would also pass for 0, which is exactly the broken ordering, so the assertion is on the
+	 * VALUE relative to the framework default.
+	 */
+	@Test
+	void acceptedResolution_sortsAfterEveryDefaultOrderedTabAction()
+	{
+		final int frameworkDefaultSortNo = 0;
+		final int orderId = order("DR");
+
+		final ProcessPreconditionsResolution resolution =
+				new WEBUI_Order_DocTextLines_Launcher().checkPreconditionsApplicable(contextSelecting(orderId));
+
+		assertThat(resolution.isAccepted()).isTrue();
+		assertThat(resolution.getSortNo())
+				.as("the launcher must pin its own sort position instead of falling back to the caption tiebreak")
+				.isPresent();
+		assertThat(resolution.getSortNo().getAsInt())
+				.as("must be > the framework default %s, otherwise the caption still decides the position", frameworkDefaultSortNo)
+				.isGreaterThan(frameworkDefaultSortNo);
+	}
+
 	/** Asserting {@code isAccepted()} alone cannot tell the two selection shapes apart -- which is how one generic reason for both went unnoticed. */
 	@Test
 	void rejectsWhenNoOrderIsSelected_withADifferentReasonThanMoreThanOne()
