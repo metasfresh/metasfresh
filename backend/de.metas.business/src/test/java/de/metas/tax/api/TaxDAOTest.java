@@ -189,22 +189,26 @@ class TaxDAOTest
 		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdByWarehouseIdMap.get(type));
 	}
 
-	@Test
-	void getBy_noRateCriterion_behavesAsBefore()
+	@Nested
+	class GetBy
 	{
-		// existing fixture: one active 19% C_Tax in the candidate's context
-		createRateTestTax("19");
-		assertThat(taxDAO.getBy(baseRateQuery()).getRate()).isEqualByComparingTo("19");
-	}
+		@Test
+		void noRateCriterion_behavesAsBefore()
+		{
+			// existing fixture: one active 19% C_Tax in the candidate's context
+			createRateTestTax("19");
+			assertThat(taxDAO.getBy(baseRateQuery()).getRate()).isEqualByComparingTo("19");
+		}
 
-	@Test
-	void getBy_withRateCriterion_matchesOnlyThatRate()
-	{
-		// fixture: two active C_Tax rows, same category and context, 19% and 7%
-		createRateTestTax("19");
-		createRateTestTax("7");
-		final TaxQuery query = baseRateQuery().toBuilder().rate(Percent.of("7")).build();
-		assertThat(taxDAO.getBy(query).getRate()).isEqualByComparingTo("7");
+		@Test
+		void withRateCriterion_matchesOnlyThatRate()
+		{
+			// fixture: two active C_Tax rows, same category and context, 19% and 7%
+			createRateTestTax("19");
+			createRateTestTax("7");
+			final TaxQuery query = baseRateQuery().toBuilder().rate(Percent.of("7")).build();
+			assertThat(taxDAO.getBy(query).getRate()).isEqualByComparingTo("7");
+		}
 	}
 
 	private TaxQuery baseRateQuery()

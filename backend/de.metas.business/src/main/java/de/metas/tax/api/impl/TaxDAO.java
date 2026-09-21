@@ -90,6 +90,10 @@ import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+/**
+ * Repository Tables: C_Tax, C_TaxCategory, C_VAT_SmallBusiness
+ * Repository Cluster: TaxDAO
+ */
 public class TaxDAO implements ITaxDAO
 {
 	private final static Logger logger = LogManager.getLogger(TaxDAO.class);
