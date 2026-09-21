@@ -3,7 +3,7 @@
 @allure.label.feature:F8005_Order_Checkup
 @ghActions:run_on_executor2
 Feature: Bestellkontrolle reprint after reactivate
-## F8008: Order Checkup Report
+## F8005: Order Checkup
 
   Background:
     Given infrastructure and metasfresh are running
