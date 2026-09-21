@@ -171,7 +171,7 @@ public class OrderCheckupTestHelper
 		return orderLine;
 	}
 
-	public I_C_Order_MFGWarehouse_Report retrieveReport(final String documentType, final I_M_Warehouse warehouse, final I_S_Resource plant)
+	public I_C_Order_MFGWarehouse_Report retrieveReport(final OrderCheckupDocumentType documentType, final I_M_Warehouse warehouse, final I_S_Resource plant)
 	{
 		final Integer warehouseId = warehouse == null ? null : warehouse.getM_Warehouse_ID();
 		final Integer plantId = plant == null ? null : plant.getS_Resource_ID();
@@ -179,7 +179,7 @@ public class OrderCheckupTestHelper
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_DocumentType, documentType)
-				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_M_Warehouse_ID, warehouseId)
+				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMNNAME_M_Warehouse_ID, warehouseId)
 				.addEqualsFilter(I_C_Order_MFGWarehouse_Report.COLUMN_PP_Plant_ID, plantId)
 				.create()
 				.firstOnly(I_C_Order_MFGWarehouse_Report.class);
