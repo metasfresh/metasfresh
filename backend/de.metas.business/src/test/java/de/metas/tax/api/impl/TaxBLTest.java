@@ -22,15 +22,36 @@
 
 package de.metas.tax.api.impl;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.lang.SOTrx;
+import de.metas.organization.OrgId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.SOPOType;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
+import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.TypeOfDestCountry;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -314,6 +335,107 @@ class TaxBLTest
 			// explicit belt-and-braces checks on the non-winner flags
 			assertThat(tax.isTaxExempt()).isFalse();
 			assertThat(tax.isReverseCharge()).isFalse();
+		}
+	}
+
+	// ---------------------------------------------------------------------
+	// Group F — buildTaxQuery seam parity with getTaxNotNull
+	// ---------------------------------------------------------------------
+	@Nested
+	@DisplayName("F. buildTaxQuery seam parity with getTaxNotNull")
+	class BuildTaxQuery
+	{
+		private static final int COUNTRY_ID = 2000;
+		private final OrgId orgId = OrgId.ofRepoId(20);
+		private final WarehouseId warehouseId = WarehouseId.ofRepoId(200);
+		private final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(42);
+
+		private ITaxDAO taxDAO;
+		private BPartnerLocationAndCaptureId shipBPartnerLocationId;
+
+		@BeforeEach
+		void buildTaxQueryFixture()
+		{
+			taxDAO = Services.get(ITaxDAO.class);
+
+			final I_AD_Org org = newInstance(I_AD_Org.class);
+			org.setAD_Org_ID(orgId.getRepoId());
+			save(org);
+
+			final I_C_Country country = newInstance(I_C_Country.class);
+			country.setAD_Org_ID(orgId.getRepoId());
+			country.setC_Country_ID(COUNTRY_ID);
+			country.setCountryCode("BQ");
+			save(country);
+
+			final I_C_Location location = newInstance(I_C_Location.class);
+			location.setAD_Org_ID(orgId.getRepoId());
+			location.setC_Country_ID(COUNTRY_ID);
+			save(location);
+
+			// warehouse's own address — drives IWarehouseBL#getCountryId
+			final I_C_BPartner warehouseBPartner = newInstance(I_C_BPartner.class);
+			warehouseBPartner.setAD_Org_ID(orgId.getRepoId());
+			save(warehouseBPartner);
+
+			final I_C_BPartner_Location warehouseBPartnerLocation = newInstance(I_C_BPartner_Location.class);
+			warehouseBPartnerLocation.setAD_Org_ID(orgId.getRepoId());
+			warehouseBPartnerLocation.setC_BPartner_ID(warehouseBPartner.getC_BPartner_ID());
+			warehouseBPartnerLocation.setC_Location_ID(location.getC_Location_ID());
+			warehouseBPartnerLocation.setIsBillTo(true);
+			save(warehouseBPartnerLocation);
+
+			final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+			warehouse.setAD_Org_ID(orgId.getRepoId());
+			warehouse.setM_Warehouse_ID(warehouseId.getRepoId());
+			warehouse.setC_BPartner_ID(warehouseBPartner.getC_BPartner_ID());
+			warehouse.setC_BPartner_Location_ID(warehouseBPartnerLocation.getC_BPartner_Location_ID());
+			save(warehouse);
+
+			// ship-to bpartner location — same country as the warehouse ⇒ domestic
+			final I_C_BPartner shipBPartner = newInstance(I_C_BPartner.class);
+			shipBPartner.setAD_Org_ID(orgId.getRepoId());
+			save(shipBPartner);
+
+			final I_C_BPartner_Location shipBPartnerLocation = newInstance(I_C_BPartner_Location.class);
+			shipBPartnerLocation.setAD_Org_ID(orgId.getRepoId());
+			shipBPartnerLocation.setC_BPartner_ID(shipBPartner.getC_BPartner_ID());
+			shipBPartnerLocation.setC_Location_ID(location.getC_Location_ID());
+			shipBPartnerLocation.setIsBillTo(true);
+			save(shipBPartnerLocation);
+
+			shipBPartnerLocationId = BPartnerLocationAndCaptureId.ofRepoId(
+					shipBPartnerLocation.getC_BPartner_ID(),
+					shipBPartnerLocation.getC_BPartner_Location_ID(),
+					shipBPartnerLocation.getC_Location_ID());
+
+			final I_C_Tax tax = newInstance(I_C_Tax.class);
+			tax.setName("buildTaxQuery-parity");
+			tax.setAD_Org_ID(orgId.getRepoId());
+			tax.setC_Country_ID(COUNTRY_ID);
+			tax.setTo_Country_ID(COUNTRY_ID);
+			tax.setTypeOfDestCountry(TypeOfDestCountry.DOMESTIC.getCode());
+			tax.setRequiresTaxCertificate(null);
+			tax.setIsSmallbusiness(null);
+			tax.setValidFrom(TimeUtil.addDays(new Date(), -1));
+			tax.setSOPOType(SOPOType.BOTH.getCode());
+			tax.setC_TaxCategory_ID(taxCategoryId.getRepoId());
+			tax.setRate(BigDecimal.valueOf(19));
+			save(tax);
+		}
+
+		@Test
+		void buildTaxQuery_producesTheSameTaxAsGetTaxNotNull()
+		{
+			final Timestamp shipDate = TimeUtil.asTimestamp(new Date());
+
+			final TaxQuery query = taxBL.buildTaxQuery(taxCategoryId, shipDate, orgId, warehouseId, shipBPartnerLocationId, SOTrx.SALES);
+			final TaxId viaQuery = taxDAO.getBy(query).getTaxId();
+
+			final TaxId viaEngine = taxBL.getTaxNotNull(null, taxCategoryId, 0, shipDate, orgId, warehouseId, shipBPartnerLocationId, SOTrx.SALES);
+
+			assertThat(viaQuery).isEqualTo(viaEngine);
+			assertThat(viaEngine).isNotEqualTo(TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND));
 		}
 	}
 

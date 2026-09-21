@@ -70,20 +70,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	{
 		if (taxCategoryId != null)
 		{
-			final CountryId countryFromId = Optional.ofNullable(warehouseId)
-					.map(warehouseBL::getCountryId)
-					.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
-							.orElseGet(countryDAO::getDefaultCountryId));
+			final TaxQuery query = buildTaxQuery(taxCategoryId, shipDate, orgId, warehouseId, shipBPartnerLocationId, soTrx);
 
-			final Tax tax = taxDAO.getBy(TaxQuery.builder()
-					.fromCountryId(countryFromId)
-					.orgId(orgId)
-					.bPartnerLocationId(shipBPartnerLocationId)
-					.dateOfInterest(shipDate)
-					.taxCategoryId(taxCategoryId)
-					.warehouseId(warehouseId)
-					.soTrx(soTrx)
-					.build());
+			final Tax tax = taxDAO.getBy(query);
 
 			if (tax != null)
 			{
@@ -109,6 +98,39 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// If we got here, it means that no tax was found to satisfy the conditions
 		// In this case, the Tax_Not_Found placeholder will be returned
 		return TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND);
+	}
+
+	/**
+	 * Builds the {@link TaxQuery} used by {@link #getTaxNotNull(Object, TaxCategoryId, int, Timestamp, OrgId, WarehouseId, BPartnerLocationAndCaptureId, SOTrx)}
+	 * to resolve the applicable {@code C_Tax}, including the origin-country derivation (warehouse country, falling back to the org's country,
+	 * falling back to the system default country).
+	 *
+	 * <p>Not declared on {@link de.metas.tax.api.ITaxBL}: {@link TaxQuery} lives in {@code de.metas.business}, which the {@code ITaxBL}-owning
+	 * {@code de.metas.adempiere.adempiere.base} module does not depend on, so an interface-level declaration does not compile.
+	 */
+	@NonNull
+	public TaxQuery buildTaxQuery(
+			@NonNull final TaxCategoryId taxCategoryId,
+			@NonNull final Timestamp shipDate,
+			@NonNull final OrgId orgId,
+			@Nullable final WarehouseId warehouseId,
+			@NonNull final BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			@NonNull final SOTrx soTrx)
+	{
+		final CountryId countryFromId = Optional.ofNullable(warehouseId)
+				.map(warehouseBL::getCountryId)
+				.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
+						.orElseGet(countryDAO::getDefaultCountryId));
+
+		return TaxQuery.builder()
+				.fromCountryId(countryFromId)
+				.orgId(orgId)
+				.bPartnerLocationId(shipBPartnerLocationId)
+				.dateOfInterest(shipDate)
+				.taxCategoryId(taxCategoryId)
+				.warehouseId(warehouseId)
+				.soTrx(soTrx)
+				.build();
 	}
 
 	public CalculateTaxResult calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
