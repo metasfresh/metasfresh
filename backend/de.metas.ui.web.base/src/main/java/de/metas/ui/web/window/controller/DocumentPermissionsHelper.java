@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.controller;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -54,6 +55,8 @@ public class DocumentPermissionsHelper
 {
 
 	private static final Logger logger = LogManager.getLogger(DocumentPermissionsHelper.class);
+
+	public static final AdMessageKey MSG_CREATE_NOT_ALLOWED = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed");
 
 	public static ElementPermission checkWindowAccess(@NonNull final DocumentEntityDescriptor entityDescriptor, final IUserRolePermissions permissions)
 	{
@@ -221,7 +224,12 @@ public class DocumentPermissionsHelper
 
 	private static int getAdTableId(final Document document)
 	{
-		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
+		return getAdTableId(document.getEntityDescriptor());
+	}
+
+	private static int getAdTableId(final DocumentEntityDescriptor entityDescriptor)
+	{
+		final String tableName = entityDescriptor.getTableNameOrNull();
 		if (tableName == null)
 		{
 			// cannot apply security because this is not table based
@@ -243,18 +251,26 @@ public class DocumentPermissionsHelper
 		}
 	}
 
-	public static boolean isNewDocumentAllowed(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final UserSession userSession)
+	/** Restrictive only: the window and tab checks refuse without a reason as before, only the role's per-table restriction carries one. */
+	public static BooleanWithReason checkNewDocumentAllowed(@NonNull final DocumentEntityDescriptor entityDescriptor, @NonNull final UserSession userSession)
 	{
 		final AdWindowId adWindowId = entityDescriptor.getWindowId().toAdWindowIdOrNull();
-		if (adWindowId == null) {return true;}
+		if (adWindowId == null) {return BooleanWithReason.TRUE;}
 
 		final IUserRolePermissions permissions = userSession.getUserRolePermissions();
 		final ElementPermission windowPermission = permissions.checkWindowPermission(adWindowId);
-		if (!windowPermission.hasWriteAccess()) {return false;}
+		if (!windowPermission.hasWriteAccess()) {return BooleanWithReason.FALSE;}
 
 		final ILogicExpression allowExpr = entityDescriptor.getAllowCreateNewLogic();
 		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), IExpressionEvaluator.OnVariableNotFound.ReturnNoResult);
-		return allow.isTrue();
+		if (!allow.isTrue()) {return BooleanWithReason.FALSE;}
+
+		final int adTableId = getAdTableId(entityDescriptor);
+		if (adTableId <= 0) {return BooleanWithReason.TRUE;}
+
+		return permissions.isCanCreateNewRecords(adTableId)
+				? BooleanWithReason.TRUE
+				: BooleanWithReason.falseBecause(MSG_CREATE_NOT_ALLOWED);
 	}
 
 }

@@ -527,6 +527,12 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
+	public boolean isCanCreateNewRecords(final int AD_Table_ID)
+	{
+		return tablePermissions.isCanCreateNewRecords(AD_Table_ID);
+	}
+
+	@Override
 	public boolean isCanExport(final int AD_Table_ID)
 	{
 		if (!isCanExport())                        // Role Level block

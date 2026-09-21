@@ -294,7 +294,7 @@ public class ViewRestController
 		try
 		{
 			final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId).getEntityDescriptor();
-			return DocumentPermissionsHelper.isNewDocumentAllowed(documentEntityDescriptor, userSession);
+			return DocumentPermissionsHelper.checkNewDocumentAllowed(documentEntityDescriptor, userSession).isTrue();
 		}
 		catch (Exception ex)
 		{

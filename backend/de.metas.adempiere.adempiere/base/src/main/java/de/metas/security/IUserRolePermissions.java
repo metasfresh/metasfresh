@@ -193,6 +193,7 @@ public interface IUserRolePermissions
 	 **/
 	BooleanWithReason checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 
+	/** Full client/org/table write-access check for creating a record; unrelated to {@link #isCanCreateNewRecords(int)}. */
 	BooleanWithReason checkCanCreateNewRecord(ClientId clientId, OrgId orgId, AdTableId adTableId);
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -203,6 +204,13 @@ public interface IUserRolePermissions
 	boolean isCanExport(int AD_Table_ID);
 
 	boolean isCanReport(int AD_Table_ID);
+
+	/**
+	 * The role's per-table create permission alone: restrictive only, i.e. granted unless the role explicitly forbids it.
+	 * Not an authorization check on its own - unlike {@link #checkCanCreateNewRecord(ClientId, OrgId, AdTableId)} it grants
+	 * nothing and gates nothing else, so the caller still has to establish window and table access itself.
+	 */
+	boolean isCanCreateNewRecords(int AD_Table_ID);
 
 	boolean isOrgAccess(OrgId OrgId, String tableName, Access access);
 
