@@ -101,7 +101,6 @@ import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.I_C_OrgAssignment;
 import org.compiere.model.I_Mobile_Application_Access;
 import org.compiere.model.POInfo;
-import org.compiere.model.X_AD_Table_Access;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -117,6 +116,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -773,81 +773,23 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.create()
 				.list();
 
-		final TablePermissions.Builder permissionsCollector = TablePermissions.builder();
-
 		// Default permission: allow all because actually this is an "exclude" list (if no include options were found).
+		// Computed over all records before any table permission is derived, because a table permission that keeps the
+		// role's default would otherwise depend on the order in which the records happen to be listed.
 		final HashSet<Access> defaultPermissionAccesses = new HashSet<>(TablePermission.ALL_ACCESSES);
-
 		for (final I_AD_Table_Access tableAccessRecord : tableAccessRecords)
 		{
-			final TableResource resource = TableResource.ofAD_Table_ID(tableAccessRecord.getAD_Table_ID());
-			final HashSet<Access> permissionAccesses = new HashSet<>();
+			removeAccessesRevokedByInclusion(tableAccessRecord, defaultPermissionAccesses);
+		}
 
-			final String type = tableAccessRecord.getAccessTypeRule();
-			final boolean exclude = tableAccessRecord.isExclude();
-			if (X_AD_Table_Access.ACCESSTYPERULE_Accessing.equals(type))
+		final TablePermissions.Builder permissionsCollector = TablePermissions.builder();
+		for (final I_AD_Table_Access tableAccessRecord : tableAccessRecords)
+		{
+			final TablePermission permission = extractTablePermissionOrNull(tableAccessRecord, defaultPermissionAccesses);
+			if (permission != null)
 			{
-				final boolean readOnly = tableAccessRecord.isReadOnly();
-				if (exclude)
-				{
-					// If you Exclude Access to a table and select Read Only,
-					// you can only read data (otherwise no access).
-					if (readOnly)
-					{
-						permissionAccesses.add(Access.READ);
-						// permissionAccesses.remove(Access.WRITE); // not needed
-					}
-				}
-				// include access
-				else
-				{
-					permissionAccesses.add(Access.READ);
-					if (!readOnly)
-					{
-						permissionAccesses.add(Access.WRITE);
-					}
-
-					// A include access implies that the default access is not granted
-					defaultPermissionAccesses.remove(Access.READ);
-					defaultPermissionAccesses.remove(Access.WRITE);
-				}
+				permissionsCollector.addPermission(permission, CollisionPolicy.Override);
 			}
-			else if (X_AD_Table_Access.ACCESSTYPERULE_Reporting.equals(type))
-			{
-				if (tableAccessRecord.isCanReport())
-				{
-					permissionAccesses.add(Access.REPORT);
-				}
-
-				// A include access implies that the default access is not granted
-				if (!exclude)
-				{
-					defaultPermissionAccesses.remove(Access.REPORT);
-				}
-			}
-			else if (X_AD_Table_Access.ACCESSTYPERULE_Exporting.equals(type))
-			{
-				if (tableAccessRecord.isCanExport())
-				{
-					permissionAccesses.add(Access.EXPORT);
-				}
-
-				// A include access implies that the default access is not granted
-				if (!exclude)
-				{
-					defaultPermissionAccesses.remove(Access.EXPORT);
-				}
-			}
-			else
-			{
-				throw new IllegalStateException("Unknown AccessRuleType: " + type);
-			}
-
-			final TablePermission permissions = TablePermission.builder()
-					.resource(resource)
-					.accesses(permissionAccesses)
-					.build();
-			permissionsCollector.addPermission(permissions, CollisionPolicy.Override);
 		}
 
 		//
@@ -860,6 +802,108 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 		return permissionsCollector.build();
 	}    // loadTableAccess
+
+	/**
+	 * An "include" record switches the role to allowlist mode for the aspects the record has an opinion about,
+	 * so the role's default no longer grants them on every other table.
+	 */
+	private static void removeAccessesRevokedByInclusion(
+			@NonNull final I_AD_Table_Access tableAccessRecord,
+			@NonNull final Set<Access> defaultPermissionAccesses)
+	{
+		final Boolean exclude = StringUtils.toBoolean(tableAccessRecord.getIsExclude(), null);
+		if (!Boolean.FALSE.equals(exclude))
+		{
+			return;
+		}
+
+		defaultPermissionAccesses.remove(Access.READ);
+		defaultPermissionAccesses.remove(Access.WRITE);
+		if (StringUtils.toBoolean(tableAccessRecord.getIsCanReport(), null) != null)
+		{
+			defaultPermissionAccesses.remove(Access.REPORT);
+		}
+		if (StringUtils.toBoolean(tableAccessRecord.getIsCanExport(), null) != null)
+		{
+			defaultPermissionAccesses.remove(Access.EXPORT);
+		}
+	}
+
+	/**
+	 * @return {@code null} if the record states no opinion at all; such a record must not produce a permission,
+	 * because a table's own permission replaces the role's default instead of refining it.
+	 */
+	@Nullable
+	private static TablePermission extractTablePermissionOrNull(
+			@NonNull final I_AD_Table_Access tableAccessRecord,
+			@NonNull final Set<Access> defaultPermissionAccesses)
+	{
+		final Boolean exclude = StringUtils.toBoolean(tableAccessRecord.getIsExclude(), null);
+		final Boolean readOnly = StringUtils.toBoolean(tableAccessRecord.getIsReadOnly(), null);
+		final Boolean canReport = StringUtils.toBoolean(tableAccessRecord.getIsCanReport(), null);
+		final Boolean canExport = StringUtils.toBoolean(tableAccessRecord.getIsCanExport(), null);
+		final Boolean canCreateNewRecords = StringUtils.toBoolean(tableAccessRecord.getIsCanCreateNewRecords(), null);
+
+		if (exclude == null && readOnly == null && canReport == null && canExport == null && canCreateNewRecords == null)
+		{
+			return null;
+		}
+
+		final HashSet<Access> permissionAccesses;
+		if (exclude == null)
+		{
+			// Nothing said about the table as a whole, so the role's default stands; IsReadOnly still takes WRITE away.
+			permissionAccesses = new HashSet<>(defaultPermissionAccesses);
+			if (Boolean.TRUE.equals(readOnly))
+			{
+				permissionAccesses.remove(Access.WRITE);
+			}
+		}
+		else
+		{
+			permissionAccesses = new HashSet<>();
+			if (Boolean.TRUE.equals(readOnly))
+			{
+				// Excluded and read-only means reading is what is left of the ban; included and read-only grants no more.
+				permissionAccesses.add(Access.READ);
+			}
+			else if (!exclude)
+			{
+				permissionAccesses.add(Access.READ);
+				permissionAccesses.add(Access.WRITE);
+			}
+			// Excluded without an explicit IsReadOnly=Yes: the ban stands whole.
+		}
+
+		applyAccess(permissionAccesses, Access.REPORT, canReport);
+		applyAccess(permissionAccesses, Access.EXPORT, canExport);
+
+		return TablePermission.builder()
+				.resource(TableResource.ofAD_Table_ID(tableAccessRecord.getAD_Table_ID()))
+				.accesses(permissionAccesses)
+				.canCreateNewRecords(canCreateNewRecords)
+				.build();
+	}
+
+	private static void applyAccess(
+			@NonNull final Set<Access> accesses,
+			@NonNull final Access access,
+			@Nullable final Boolean granted)
+	{
+		if (granted == null)
+		{
+			return;
+		}
+
+		if (granted)
+		{
+			accesses.add(access);
+		}
+		else
+		{
+			accesses.remove(access);
+		}
+	}
 
 	TableColumnPermissions getTableColumnPermissions(final RoleId adRoleId)
 	{

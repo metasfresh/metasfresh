@@ -2,6 +2,8 @@ package de.metas.security.permissions;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableSet;
 
 import lombok.EqualsAndHashCode;
@@ -35,13 +37,20 @@ public final class TablePermission implements Permission
 	private final TableResource resource;
 	private final ImmutableSet<Access> accesses;
 
+	/** {@code null} means the role states no opinion about creating new records in this table. */
+	@Getter
+	@Nullable
+	private final Boolean canCreateNewRecords;
+
 	@lombok.Builder(toBuilder = true)
 	private TablePermission(
 			@NonNull TableResource resource,
-			final Set<Access> accesses)
+			final Set<Access> accesses,
+			@Nullable final Boolean canCreateNewRecords)
 	{
 		this.resource = resource;
 		this.accesses = accesses != null ? ImmutableSet.copyOf(accesses) : ImmutableSet.of();
+		this.canCreateNewRecords = canCreateNewRecords;
 	}
 
 	@Override
@@ -53,7 +62,19 @@ public final class TablePermission implements Permission
 						.addAll(this.accesses)
 						.addAll(tablePermissionFrom.accesses)
 						.build())
+				.canCreateNewRecords(mergeCanCreateNewRecords(this.canCreateNewRecords, tablePermissionFrom.canCreateNewRecords))
 				.build();
+	}
+
+	/** An explicit {@code true} wins over an explicit {@code false}, as merging accesses is a union too. */
+	@Nullable
+	private static Boolean mergeCanCreateNewRecords(@Nullable final Boolean value1, @Nullable final Boolean value2)
+	{
+		if (Boolean.TRUE.equals(value1) || Boolean.TRUE.equals(value2))
+		{
+			return Boolean.TRUE;
+		}
+		return value1 != null ? value1 : value2;
 	}
 
 	@Override
