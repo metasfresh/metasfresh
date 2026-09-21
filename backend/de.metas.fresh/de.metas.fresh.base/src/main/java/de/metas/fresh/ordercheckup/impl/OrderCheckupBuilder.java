@@ -217,28 +217,26 @@ public class OrderCheckupBuilder
 	 * Resolves the {@code C_DocType} for this report's kind, by the {@link DocBaseType} the kind maps to.
 	 * The single place that decides the kind-&gt;doctype mapping, so the two {@code OrderCheckupBL} call
 	 * sites that choose a kind cannot end up disagreeing on which document type it gets.
+	 * <p>
+	 * Throws unconditionally when no document type is found, rather than leaving {@code C_DocType_ID}
+	 * unset: an unset document type makes the archiver fall back to the generic outbound configuration
+	 * and the catch-all printer routing, so both kinds would silently print the same report and the
+	 * Packzettel would never reach its printer - with no error anywhere. That silent fallback is the
+	 * defect this whole change exists to remove, so it must not be reintroduced as a tolerated state.
+	 * Unlike the missing-plant guard in {@code OrderCheckupBL}, this one is deliberately NOT sysconfig-
+	 * gated: a missing plant is per-instance master data the customer maintains, whereas both document
+	 * types ship together in one migration, so their absence means that migration has not been applied.
 	 */
 	private DocTypeId getDocTypeId()
 	{
 		final I_C_Order order = getC_Order();
-		final DocBaseType docBaseType = getDocBaseType(getDocumentType());
 
-		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(docBaseType)
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(getDocBaseType(getDocumentType()))
 				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE)
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
 				.build());
-		if (docTypeId == null)
-		{
-			throw new AdempiereException("No C_DocType found for order-checkup document type")
-					.appendParametersToMessage()
-					.setParameter("OrderCheckupDocumentType", getDocumentType())
-					.setParameter("DocBaseType", docBaseType)
-					.setParameter("AD_Client_ID", order.getAD_Client_ID())
-					.setParameter("AD_Org_ID", order.getAD_Org_ID());
-		}
-		return docTypeId;
 	}
 
 	private static DocBaseType getDocBaseType(@NonNull final OrderCheckupDocumentType documentType)
