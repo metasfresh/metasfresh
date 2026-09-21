@@ -20,7 +20,7 @@
 -- KEY below rejects them by itself - loudly, and without writing anything.
 --
 -- SCOPE OF THE FK SWEEP (accepted residual risk)
--- Steps 3/3b/4 clear the 7 tables that hold a foreign key to AD_Column or AD_Field ahead of the
+-- Steps 2/2b/3 clear the 7 tables that hold a foreign key to AD_Column or AD_Field ahead of the
 -- AD_Column_ID=10009 delete: AD_Field_Trl, AD_Field_ContextMenu, AD_UserDef_Field,
 -- AD_User_SortPref_Line, AD_Element_Link, AD_Column_Access and AD_Column_Trl. The live schema
 -- carries roughly 40 tables with such a FK; the remaining ~33 are not swept. That is judged
@@ -29,29 +29,23 @@
 -- tables (e.g. ad_find, ad_printformatitem, ad_reportview_col, ad_searchdefinition) pointing at
 -- it would require deliberate technical configuration, not ordinary use. Should that assumption
 -- ever be wrong on some instance, the failure is loud and atomic, not silent: the migration tool
--- runs this script with ON_ERROR_STOP=1 inside a single transaction, so the DROP COLUMN in step 7
+-- runs this script with ON_ERROR_STOP=1 inside a single transaction, so the DROP COLUMN in step 6
 -- aborts on the FK violation with a plain error and the whole script rolls back - the instance is
 -- left exactly as it was, never half-migrated.
 
--- 1. Backups. AD_Table_Access holds operator-configured permission data and is about to lose a
---    column; AD_DefaultValue loses a row's IsActive. Both are cheap insurance against an instance
---    that turns out to hold rows after all.
+-- 1. Backup. AD_Table_Access holds operator-configured permission data and is about to lose a
+--    column - cheap insurance against an instance that turns out to hold rows after all.
+--    AccessTypeRule's dictionary default read '@SQL=SELECT getDefaultValue_Column(...)', which on an
+--    instance carrying the AD_DefaultValue table resolved to 'A' (Accessing). That table is not part
+--    of metasfresh core - it is created by a support-module migration, so a freshly built database
+--    does not have it - and a core migration must therefore neither back it up nor write to it. It
+--    does not need to: step 3 deletes the AD_Column row that holds the '@SQL=' string, which is the
+--    only thing that ever calls getDefaultValue_Column for this column, so whatever row sits behind
+--    it becomes unreachable. AD_DefaultValue carries no foreign key to AD_Column, so such a leftover
+--    row is inert, exactly like the ones earlier column deletions already left there.
 SELECT backup_table('ad_table_access', '_gh27893_AccessTypeRule');
-SELECT backup_table('ad_defaultvalue', '_gh27893_AccessType');
 
--- 2. Deactivate the AD_DefaultValue row behind AccessTypeRule's '@SQL=' default ('A' = Accessing),
---    while the column it is keyed on still exists. Same treatment IsExclude's row got in 5825480.
-UPDATE AD_DefaultValue
-   SET IsActive  = 'N',
-       Updated   = TO_TIMESTAMP('2026-09-21 11:00:01','YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy = 100
- WHERE IsActive = 'Y'
-   AND AD_Column_ID = (SELECT AD_Column_ID FROM AD_Column
-                        WHERE ColumnName = 'AccessTypeRule'
-                          AND AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName='AD_Table_Access'))
-;
-
--- 3. The AccessTypeRule fields, with their full FK chain. On a vanilla instance that is field 8349
+-- 2. The AccessTypeRule fields, with their full FK chain. On a vanilla instance that is field 8349
 --    "Access Type" on tab 482, but the deletes are anchored on AD_Column_ID rather than on that id:
 --    a customer override window (AD_Window.Overrides_Window_ID=268) would carry its own AD_Field on
 --    the same column, and a hardcoded id would leave it behind to block the AD_Column delete below.
@@ -77,7 +71,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID IN (SELECT AD_Field_ID FROM AD_Fie
 DELETE FROM AD_Field WHERE AD_Column_ID=10009
 ;
 
--- 3b. Close the grid-sequence gap the DELETE leaves at SeqNoGrid=70. The Swing client does this
+-- 2b. Close the grid-sequence gap the DELETE leaves at SeqNoGrid=70. The Swing client does this
 --     automatically on a field delete; raw SQL does not, so the three fields that sat behind
 --     "Access Type" move up one slot. Form SeqNo is left as it is, matching that same behaviour.
 UPDATE AD_Field SET SeqNoGrid=70, Updated=TO_TIMESTAMP('2026-09-21 11:00:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Field_ID=6714
@@ -89,10 +83,10 @@ UPDATE AD_Field SET SeqNoGrid=80, Updated=TO_TIMESTAMP('2026-09-21 11:00:05','YY
 UPDATE AD_Field SET SeqNoGrid=90, Updated=TO_TIMESTAMP('2026-09-21 11:00:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Field_ID=8321
 ;
 
--- 4. Column AD_Table_Access.AccessTypeRule. Two tables reach the column directly rather than
---    through a field, so they go first for the same reason as step 3's per-user tables: empty here,
+-- 3. Column AD_Table_Access.AccessTypeRule. Two tables reach the column directly rather than
+--    through a field, so they go first for the same reason as step 2's per-user tables: empty here,
 --    but not necessarily on an instance someone has configured. AD_Column_Access is role-based
---    column-level security. AD_Field_ContextMenu carries two independent nullable FKs - step 3
+--    column-level security. AD_Field_ContextMenu carries two independent nullable FKs - step 2
 --    cleared the rows reachable by AD_Field_ID, this clears the ones that name the column directly.
 DELETE FROM AD_Column_Access WHERE AD_Column_ID=10009
 ;
@@ -106,7 +100,7 @@ DELETE FROM AD_Column_Trl WHERE AD_Column_ID=10009
 DELETE FROM AD_Column WHERE AD_Column_ID=10009
 ;
 
--- 5. Element AccessTypeRule (2225). Nothing else referenced it: column 10009 was its only usage.
+-- 4. Element AccessTypeRule (2225). Nothing else referenced it: column 10009 was its only usage.
 DELETE FROM AD_Element_Link WHERE AD_Element_ID=2225
 ;
 
@@ -116,7 +110,7 @@ DELETE FROM AD_Element_Trl WHERE AD_Element_ID=2225
 DELETE FROM AD_Element WHERE AD_Element_ID=2225
 ;
 
--- 6. Reference 293 "AD_Table_Access RuleType" and its three entries (A Accessing / R Reporting /
+-- 5. Reference 293 "AD_Table_Access RuleType" and its three entries (A Accessing / R Reporting /
 --    E Exporting). Column 10009 was its only consumer, so it is deactivated rather than deleted:
 --    an inactive reference is invisible to administrators and still readable on an instance whose
 --    backup rows carry the old values.
@@ -134,7 +128,7 @@ UPDATE AD_Reference
  WHERE AD_Reference_ID = 293
 ;
 
--- 7. Physical column and primary key. The key is dropped first and restated explicitly afterwards,
+-- 6. Physical column and primary key. The key is dropped first and restated explicitly afterwards,
 --    so the script says what the key becomes instead of leaving it to fall out of the column drop.
 SELECT db_alter_table('AD_Table_Access', 'ALTER TABLE public.AD_Table_Access DROP CONSTRAINT ad_table_access_pkey');
 SELECT db_alter_table('AD_Table_Access', 'ALTER TABLE public.AD_Table_Access DROP COLUMN AccessTypeRule');

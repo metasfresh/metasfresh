@@ -42,25 +42,17 @@ UPDATE AD_Column
    AND AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName='AD_Table_Access');
 
 -- 4. Remove IsExclude's dictionary default.
---    It read '@SQL=SELECT getDefaultValue_Column(p_AD_Column_ID => 8844)', which resolves to 'Y'
---    from the AD_DefaultValue row deactivated in step 5 below. Same reasoning as the DB default
---    in step 2: a default would give every new row an opinion it was never meant to carry.
+--    It read '@SQL=SELECT getDefaultValue_Column(p_AD_Column_ID => 8844)', which on an instance
+--    carrying the AD_DefaultValue table resolved to 'Y'. That table is not part of metasfresh core -
+--    it is created by a support-module migration, so a freshly built database does not have it - and
+--    a core migration must therefore not touch it. It does not need to: nulling DefaultValue here is
+--    what removes the default. The '@SQL=' string is the only thing that ever calls
+--    getDefaultValue_Column for this column, so once it is gone the row behind it, where one exists
+--    at all, is unreachable and can no longer reach a new AD_Table_Access row. Same reasoning as the
+--    DB default in step 2: a default would give every new row an opinion it was never meant to carry.
 UPDATE AD_Column
    SET DefaultValue = NULL,
        Updated      = TO_TIMESTAMP('2026-09-21 09:00:02','YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy    = 100
  WHERE ColumnName = 'IsExclude'
    AND AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName='AD_Table_Access');
-
--- 5. Deactivate the now-unreferenced AD_DefaultValue row behind that '@SQL=' expression, so the
---    'Y' opinion cannot be resurrected by re-pointing the column at it.
-SELECT backup_table('ad_defaultvalue', '_gh27893_IsExclude');
-
-UPDATE AD_DefaultValue
-   SET IsActive  = 'N',
-       Updated   = TO_TIMESTAMP('2026-09-21 09:00:03','YYYY-MM-DD HH24:MI:SS'),
-       UpdatedBy = 100
- WHERE IsActive = 'Y'
-   AND AD_Column_ID = (SELECT AD_Column_ID FROM AD_Column
-                        WHERE ColumnName = 'IsExclude'
-                          AND AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName='AD_Table_Access'));
