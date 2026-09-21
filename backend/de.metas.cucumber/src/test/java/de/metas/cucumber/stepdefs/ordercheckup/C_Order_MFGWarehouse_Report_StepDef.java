@@ -27,10 +27,12 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.document.DocTypeId;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
@@ -80,6 +82,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	@NonNull private final C_OrderLine_StepDefData orderLineTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final S_Resource_StepDefData plantTable;
+	@NonNull private final C_DocType_StepDefData docTypeTable;
 
 	/**
 	 * Asserts the COMPLETE set of {@code C_Order_MFGWarehouse_Report} records the given order currently holds:
@@ -102,7 +105,10 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	 *   <b>IsActive</b> — (optional) expected {@code IsActive} — part of the match<br>
 	 *   <b>Processed</b> — (optional) expected {@code Processed}, asserted on the matched record — set once and
 	 *       never reset, so it stays true across a reactivate<br>
-	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Warehouse_StepDefData, S_Resource_StepDefData
+	 *   <b>C_DocType_ID</b> — (optional, identifier-ref) expected {@code C_DocType_ID}, asserted on the matched
+	 *       record like {@code Processed} — the record loaded via "load C_DocType:"<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, M_Warehouse_StepDefData, S_Resource_StepDefData,
+	 *     C_DocType_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then the order identified by order has exactly the following C_Order_MFGWarehouse_Reports
@@ -175,6 +181,12 @@ public class C_Order_MFGWarehouse_Report_StepDef
 
 		row.getAsOptionalBoolean(I_C_Order_MFGWarehouse_Report.COLUMNNAME_Processed)
 				.ifPresent(expected -> softly.assertThat(report.isProcessed()).as("%s of %s", I_C_Order_MFGWarehouse_Report.COLUMNNAME_Processed, report).isEqualTo(expected));
+
+		row.getAsOptionalIdentifier(I_C_Order_MFGWarehouse_Report.COLUMNNAME_C_DocType_ID)
+				.map(identifier -> identifier.lookupIdIn(docTypeTable))
+				.ifPresent(expected -> softly.assertThat(DocTypeId.ofRepoIdOrNull(report.getC_DocType_ID()))
+						.as("%s of %s", I_C_Order_MFGWarehouse_Report.COLUMNNAME_C_DocType_ID, report)
+						.isEqualTo(expected));
 	}
 
 	/**
