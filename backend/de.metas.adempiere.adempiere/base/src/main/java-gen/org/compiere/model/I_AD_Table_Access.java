@@ -1,338 +1,289 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Table_Access
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_AD_Table_Access 
 {
 
-    /** TableName=AD_Table_Access */
-    public static final String Table_Name = "AD_Table_Access";
+	String Table_Name = "AD_Table_Access";
 
-    /** AD_Table_ID=565 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=565 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 6 - System - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Access Type.
-	 * The type of access for this rule
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAccessTypeRule (java.lang.String AccessTypeRule);
-
-	/**
-	 * Get Access Type.
-	 * The type of access for this rule
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAccessTypeRule();
-
-    /** Column definition for AccessTypeRule */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, Object> COLUMN_AccessTypeRule = new org.adempiere.model.ModelColumn<I_AD_Table_Access, Object>(I_AD_Table_Access.class, "AccessTypeRule", null);
-    /** Column name AccessTypeRule */
-    public static final String COLUMNNAME_AccessTypeRule = "AccessTypeRule";
-
-	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_Client>(I_AD_Table_Access.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_Org>(I_AD_Table_Access.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Rolle.
+	 * Set Role.
 	 * Responsibility Role
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Role_ID (int AD_Role_ID);
+	void setAD_Role_ID (int AD_Role_ID);
 
 	/**
-	 * Get Rolle.
+	 * Get Role.
 	 * Responsibility Role
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Role_ID();
+	int getAD_Role_ID();
 
-	public org.compiere.model.I_AD_Role getAD_Role();
+	org.compiere.model.I_AD_Role getAD_Role();
 
-	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role);
+	void setAD_Role(org.compiere.model.I_AD_Role AD_Role);
 
-    /** Column definition for AD_Role_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_Role>(I_AD_Table_Access.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
-    /** Column name AD_Role_ID */
-    public static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
+	ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_Role> COLUMN_AD_Role_ID = new ModelColumn<>(I_AD_Table_Access.class, "AD_Role_ID", org.compiere.model.I_AD_Role.class);
+	String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
 	/**
-	 * Set DB-Tabelle.
+	 * Set Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Table_ID (int AD_Table_ID);
+	void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get DB-Tabelle.
+	 * Get Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Table_ID();
+	int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_Table>(I_AD_Table_Access.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Table_Access, Object>(I_AD_Table_Access.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_Table_Access, Object> COLUMN_Created = new ModelColumn<>(I_AD_Table_Access.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_User>(I_AD_Table_Access.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Table_Access, Object>(I_AD_Table_Access.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Table_Access.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Kann exportieren.
+	 * Set Create new records.
+	 * Controls whether this role may create new records in this table. Not set = no restriction from this role.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsCanCreateNewRecords (@Nullable java.lang.String IsCanCreateNewRecords);
+
+	/**
+	 * Get Create new records.
+	 * Controls whether this role may create new records in this table. Not set = no restriction from this role.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsCanCreateNewRecords();
+
+	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsCanCreateNewRecords = new ModelColumn<>(I_AD_Table_Access.class, "IsCanCreateNewRecords", null);
+	String COLUMNNAME_IsCanCreateNewRecords = "IsCanCreateNewRecords";
+
+	/**
+	 * Set Can Export.
 	 * Users with this role can export data
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCanExport (boolean IsCanExport);
+	void setIsCanExport (@Nullable java.lang.String IsCanExport);
 
 	/**
-	 * Get Kann exportieren.
+	 * Get Can Export.
 	 * Users with this role can export data
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCanExport();
+	@Nullable java.lang.String getIsCanExport();
 
-    /** Column definition for IsCanExport */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, Object> COLUMN_IsCanExport = new org.adempiere.model.ModelColumn<I_AD_Table_Access, Object>(I_AD_Table_Access.class, "IsCanExport", null);
-    /** Column name IsCanExport */
-    public static final String COLUMNNAME_IsCanExport = "IsCanExport";
+	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsCanExport = new ModelColumn<>(I_AD_Table_Access.class, "IsCanExport", null);
+	String COLUMNNAME_IsCanExport = "IsCanExport";
 
 	/**
-	 * Set Kann Berichte erstellen.
+	 * Set Can Report.
 	 * Users with this role can create reports
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCanReport (boolean IsCanReport);
+	void setIsCanReport (@Nullable java.lang.String IsCanReport);
 
 	/**
-	 * Get Kann Berichte erstellen.
+	 * Get Can Report.
 	 * Users with this role can create reports
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCanReport();
+	@Nullable java.lang.String getIsCanReport();
 
-    /** Column definition for IsCanReport */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, Object> COLUMN_IsCanReport = new org.adempiere.model.ModelColumn<I_AD_Table_Access, Object>(I_AD_Table_Access.class, "IsCanReport", null);
-    /** Column name IsCanReport */
-    public static final String COLUMNNAME_IsCanReport = "IsCanReport";
+	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsCanReport = new ModelColumn<>(I_AD_Table_Access.class, "IsCanReport", null);
+	String COLUMNNAME_IsCanReport = "IsCanReport";
 
 	/**
-	 * Set Ausschluß.
+	 * Set Exclude.
 	 * Exclude access to the data - if not selected Include access to the data
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsExclude (boolean IsExclude);
+	void setIsExclude (@Nullable java.lang.String IsExclude);
 
 	/**
-	 * Get Ausschluß.
+	 * Get Exclude.
 	 * Exclude access to the data - if not selected Include access to the data
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isExclude();
+	@Nullable java.lang.String getIsExclude();
 
-    /** Column definition for IsExclude */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, Object> COLUMN_IsExclude = new org.adempiere.model.ModelColumn<I_AD_Table_Access, Object>(I_AD_Table_Access.class, "IsExclude", null);
-    /** Column name IsExclude */
-    public static final String COLUMNNAME_IsExclude = "IsExclude";
+	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsExclude = new ModelColumn<>(I_AD_Table_Access.class, "IsExclude", null);
+	String COLUMNNAME_IsExclude = "IsExclude";
 
 	/**
-	 * Set Schreibgeschützt.
-	 * Field is read only
+	 * Set readonly.
+	 * Feld / Eintrag / Berecih ist schreibgeschützt
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsReadOnly (boolean IsReadOnly);
+	void setIsReadOnly (@Nullable java.lang.String IsReadOnly);
 
 	/**
-	 * Get Schreibgeschützt.
-	 * Field is read only
+	 * Get readonly.
+	 * Feld / Eintrag / Berecih ist schreibgeschützt
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isReadOnly();
+	@Nullable java.lang.String getIsReadOnly();
 
-    /** Column definition for IsReadOnly */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, Object> COLUMN_IsReadOnly = new org.adempiere.model.ModelColumn<I_AD_Table_Access, Object>(I_AD_Table_Access.class, "IsReadOnly", null);
-    /** Column name IsReadOnly */
-    public static final String COLUMNNAME_IsReadOnly = "IsReadOnly";
+	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsReadOnly = new ModelColumn<>(I_AD_Table_Access.class, "IsReadOnly", null);
+	String COLUMNNAME_IsReadOnly = "IsReadOnly";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Table_Access, Object>(I_AD_Table_Access.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_Table_Access, Object> COLUMN_Updated = new ModelColumn<>(I_AD_Table_Access.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Table_Access, org.compiere.model.I_AD_User>(I_AD_Table_Access.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }
