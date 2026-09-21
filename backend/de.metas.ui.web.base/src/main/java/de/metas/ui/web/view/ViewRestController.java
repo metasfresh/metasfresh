@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.rest_api.utils.JsonErrors;
@@ -304,13 +305,21 @@ public class ViewRestController
 		try
 		{
 			final DocumentEntityDescriptor documentEntityDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId).getEntityDescriptor();
-			json.setAllowNew(DocumentPermissionsHelper.checkNewDocumentAllowed(documentEntityDescriptor, userSession).isTrue());
 
-			final BooleanWithReason roleCanCreate = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(documentEntityDescriptor, userSession.getUserRolePermissions());
-			final JSONDisabledStandardAction newRefused = JSONDisabledStandardAction.newRefusedByRole(roleCanCreate, adLanguage);
-			if (newRefused != null)
+			final BooleanWithReason allowNew = DocumentPermissionsHelper.checkNewDocumentAllowed(documentEntityDescriptor, userSession);
+			json.setAllowNew(allowNew.isTrue());
+
+			// checkNewDocumentAllowed short-circuits to a reasonless FALSE for the window-level refusals (write-access,
+			// allowCreateNewLogic) and only reaches the role check -- which alone carries a reason -- once those pass.
+			// JSONDisabledStandardAction.newRefusedByRole only returns null for a TRUE input, not for a reasonless FALSE,
+			// so gate on the reason here to let the window-level refusal win with no role message.
+			if (!TranslatableStrings.isBlank(allowNew.getReason()))
 			{
-				json.setDisabledStandardActions(ImmutableList.of(newRefused));
+				final JSONDisabledStandardAction newRefused = JSONDisabledStandardAction.newRefusedByRole(allowNew, adLanguage);
+				if (newRefused != null)
+				{
+					json.setDisabledStandardActions(ImmutableList.of(newRefused));
+				}
 			}
 		}
 		catch (Exception ex)
