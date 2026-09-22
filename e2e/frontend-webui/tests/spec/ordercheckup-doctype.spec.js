@@ -210,7 +210,7 @@ gh32265. Verifies that migration 5825570 surfaces C_Order_MFGWarehouse_Report.C_
 Language under test: ${language}.
       `);
 
-      // Must exceed the fixture's shipment-schedule ceiling plus this spec's own report and UI work.
+      // Must exceed SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT plus this spec's own report and UI work.
       test.setTimeout(180000);
 
       // 1. Provision a login user of the given language, plus the sales order whose checkup reports
@@ -563,12 +563,7 @@ Language under test: ${language}.
 
       // 6. (D) Detail form: the field renders, is populated, and its input is disabled.
       await test.step(`UI: C_DocType_ID renders populated and disabled on record ${renderedRecordId}`, async () => {
-        // Navigation budget: the shared VERY_SLOW_ACTION_TIMEOUT (40s). The shared constants are
-        // this module's documented convention for action/navigation timeouts
-        // (claude-docs/PAGE_OBJECT_PATTERNS.md § "Timeout Constants"), and they are what the large
-        // majority of page.goto call sites in tests/spec pass; the few `timeout: 120000` literals in
-        // sibling specs are those specs' whole-test budget reused verbatim, not a measured
-        // navigation need.
+        // Navigation budget: the shared VERY_SLOW_ACTION_TIMEOUT from tests/utils/common.js.
         await page.goto(
           `${FRONTEND_BASE_URL}/window/${BESTELLKONTROLLE_WINDOW_ID}/${renderedRecordId}`,
           { timeout: VERY_SLOW_ACTION_TIMEOUT }
