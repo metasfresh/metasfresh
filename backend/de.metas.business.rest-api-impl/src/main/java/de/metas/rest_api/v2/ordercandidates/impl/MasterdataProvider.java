@@ -67,6 +67,8 @@ import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -74,10 +76,12 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_TaxCategory;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -450,5 +454,45 @@ public final class MasterdataProvider
 									@NonNull final BPartnerId bPartnerId)
 	{
 		return bPartnerMasterdataProvider.getIncoterms(request, orgId, bPartnerId);
+	}
+
+	@NonNull
+	public TaxCategoryId getTaxCategoryId(
+			@NonNull final IdentifierString taxCategoryIdentifier,
+			@NonNull final Object parent)
+	{
+		final Optional<TaxCategoryId> taxCategoryId;
+		switch (taxCategoryIdentifier.getType())
+		{
+			case INTERNALNAME:
+				taxCategoryId = Services.get(ITaxBL.class)
+						.getTaxCategoryIdByInternalName(taxCategoryIdentifier.asInternalName());
+				break;
+			case METASFRESH_ID:
+				taxCategoryId = resolveActiveTaxCategoryById(taxCategoryIdentifier.asMetasfreshId().getValue());
+				break;
+			default:
+				throw new InvalidIdentifierException(taxCategoryIdentifier);
+		}
+
+		return taxCategoryId.orElseThrow(() -> MissingResourceException.builder()
+				.resourceName("TaxCategory")
+				.resourceIdentifier(taxCategoryIdentifier.toJson())
+				.parentResource(parent)
+				.build());
+	}
+
+	private Optional<TaxCategoryId> resolveActiveTaxCategoryById(final int repoId)
+	{
+		final I_C_TaxCategory record = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, repoId)
+				.create()
+				.firstOnlyOrNull(I_C_TaxCategory.class);
+
+		return Optional.ofNullable(record)
+				.map(I_C_TaxCategory::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId);
 	}
 }
