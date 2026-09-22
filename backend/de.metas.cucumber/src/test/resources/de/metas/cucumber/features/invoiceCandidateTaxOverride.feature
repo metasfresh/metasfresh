@@ -711,7 +711,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
             "qtyOrdered": 1,
             "soTrx": "SALES",
             "paymentTerm": "val-sofort",
-            "taxOverride": { "rate": 19, "taxCategoryIdentifier": "int-DoesNotExist" }
+            "taxOverride": { "rate": 7, "taxCategoryIdentifier": "int-@catInternalName@" }
           },
           {
             "orgCode": "001",
@@ -728,7 +728,9 @@ Feature: Invoice-Candidate API — the caller sets the tax
         ]
       }
       """
-    # not even the first item, which on its own would have resolved
+    # The second item names a category that DOES resolve, at a rate that category has no tax for. That
+    # fails while the candidates are being saved - not while they are being resolved - so item 1 is
+    # already written when it happens, and only a rollback can make the assertion below hold.
     Then there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC12_H
 
   @Id:S31985_TC13
