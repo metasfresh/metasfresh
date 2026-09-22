@@ -63,6 +63,7 @@ final class MenuTreeLoader
 	// services
 	private static final Logger logger = LogManager.getLogger(MenuTreeLoader.class);
 	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+	private final transient IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 
 	private static final int DEPTH_Root = 0;
 	private static final int DEPTH_RootChildren = 1;
@@ -279,7 +280,7 @@ final class MenuTreeLoader
 		// explicit UserRolePermissionsKey rather than from the session, so there is no session-less thread to fall open for.
 		// The table comes from the window passed in - the effective one - not from MenuNode.getMainTableName(), which the menu row
 		// derives from the base window and which therefore diverges once a customization window overrides in the menu.
-		final AdTableId adTableId = Services.get(IADWindowDAO.class).getMainTableId(adWindowId);
+		final AdTableId adTableId = adWindowDAO.getMainTableId(adWindowId);
 		if (adTableId == null)
 		{
 			// an unresolved table carries no restriction, so the node stays; never hide on a table we could not resolve
