@@ -152,14 +152,17 @@ public class CreateRoleCommand
 						+ "` is listed more than once; a role has one row per table, so state every flag in that one row");
 			}
 
+			// Every JsonRoleTableAccessRequest flag defaults to its column's non-restricting value
+			// (see JsonRoleTableAccessRequest), so each flag is written directly and a spec that sets
+			// nothing yields a row equal to the column defaults.
 			userRolePermissionsDAO.createTableAccess(CreateTableAccessRequest.builder()
 					.roleId(roleId)
 					.orgId(OrgId.ANY)
 					.adTableId(adTableId)
-					.readOnly(tableAccessRequest.getReadOnly())
-					.canReport(tableAccessRequest.getCanReport())
-					.canExport(tableAccessRequest.getCanExport())
-					.canCreateNewRecords(tableAccessRequest.getCanCreateNewRecords())
+					.readOnly(tableAccessRequest.isReadOnly())
+					.canReport(tableAccessRequest.isCanReport())
+					.canExport(tableAccessRequest.isCanExport())
+					.canCreateNewRecords(tableAccessRequest.isCanCreateNewRecords())
 					.build());
 		}
 	}
