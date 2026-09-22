@@ -84,7 +84,6 @@ public class InvoicesRestController
 {
 	private static final Logger logger = LogManager.getLogger(InvoicesRestController.class);
 
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final @NonNull JsonInvoiceService jsonInvoiceService;
 	private final @NonNull CheckInvoiceCandidatesStatusService checkInvoiceCandidatesStatusService;
 	private final @NonNull CreateInvoiceCandidatesService createInvoiceCandidatesService;
@@ -96,6 +95,8 @@ public class InvoicesRestController
 	private final @NonNull JsonServiceFactory jsonServiceFactory;
 	private final @NonNull ExternalSystemRepository externalSystemRepository;
 	private final @NonNull BPartnerMasterdataProvider bPartnerMasterdataProvider;
+
+	private final @NonNull ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@ApiOperation("Create new invoice candidates")
 	@ApiResponses(value = {

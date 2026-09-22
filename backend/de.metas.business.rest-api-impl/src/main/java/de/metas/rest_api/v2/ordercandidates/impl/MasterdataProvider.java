@@ -76,12 +76,10 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_TaxCategory;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -97,6 +95,7 @@ public final class MasterdataProvider
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@NonNull private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	@NonNull private final PermissionService permissionService;
 	@NonNull private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
@@ -461,18 +460,28 @@ public final class MasterdataProvider
 			@NonNull final IdentifierString taxCategoryIdentifier,
 			@NonNull final Object parent)
 	{
-		final Optional<TaxCategoryId> taxCategoryId;
+		Optional<TaxCategoryId> taxCategoryId;
 		switch (taxCategoryIdentifier.getType())
 		{
 			case INTERNALNAME:
-				taxCategoryId = Services.get(ITaxBL.class)
-						.getTaxCategoryIdByInternalName(taxCategoryIdentifier.asInternalName());
+				taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryIdentifier.asInternalName());
 				break;
 			case METASFRESH_ID:
-				taxCategoryId = resolveActiveTaxCategoryById(taxCategoryIdentifier.asMetasfreshId().getValue());
+				taxCategoryId = taxBL.getActiveTaxCategoryIdById(taxCategoryIdentifier.asMetasfreshId(TaxCategoryId::ofRepoId));
 				break;
 			default:
 				throw new InvalidIdentifierException(taxCategoryIdentifier);
+		}
+
+		// TaxCategoryId.NOT_FOUND is backed by a real, active, system-seeded C_TaxCategory row
+		// ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance, so both lookups above resolve it
+		// like any other category - by its id, and (since this branch makes InternalName writable) by its internal
+		// name too. It must not be resolvable through the API: the sentinel would travel into the tax query and only
+		// surface there as an ordinary "no tax matched", instead of telling the caller that the identifier they sent
+		// names no tax category.
+		if (taxCategoryId.isPresent() && TaxCategoryId.NOT_FOUND.equals(taxCategoryId.get()))
+		{
+			taxCategoryId = Optional.empty();
 		}
 
 		return taxCategoryId.orElseThrow(() -> MissingResourceException.builder()
@@ -480,29 +489,5 @@ public final class MasterdataProvider
 				.resourceIdentifier(taxCategoryIdentifier.toJson())
 				.parentResource(parent)
 				.build());
-	}
-
-	private Optional<TaxCategoryId> resolveActiveTaxCategoryById(final int repoId)
-	{
-		if (repoId == TaxCategoryId.NOT_FOUND.getRepoId())
-		{
-			// TaxCategoryId.NOT_FOUND is backed by a real, active, system-seeded C_TaxCategory row
-			// ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance, so the active-filtered
-			// query below would resolve it like any other category. It must not be resolvable through the API:
-			// the sentinel would travel into the tax query and only surface there as an ordinary "no tax
-			// matched", instead of telling the caller that the identifier they sent names no tax category.
-			return Optional.empty();
-		}
-
-		final I_C_TaxCategory record = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_TaxCategory.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, repoId)
-				.create()
-				.firstOnlyOrNull(I_C_TaxCategory.class);
-
-		return Optional.ofNullable(record)
-				.map(I_C_TaxCategory::getC_TaxCategory_ID)
-				.map(TaxCategoryId::ofRepoId);
 	}
 }

@@ -29,12 +29,9 @@ import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.security.permissions2.PermissionService;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_TaxCategory;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,9 +90,12 @@ public class MasterdataProviderTest
 		// row ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance. It is seeded here
 		// on purpose: without it, getTaxCategoryId_notFoundSentinelId_isRejected would pass merely because
 		// the active-filtered query finds nothing, i.e. it would prove the filter, not the rejection.
+		// It gets an InternalName because this branch makes C_TaxCategory.InternalName writable, so the
+		// sentinel row is reachable by internal name too, not only by its id.
 		final I_C_TaxCategory notFoundSentinelRecord = newInstance(I_C_TaxCategory.class);
 		notFoundSentinelRecord.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
 		notFoundSentinelRecord.setName("Tax_Not_Found_Category");
+		notFoundSentinelRecord.setInternalName("Tax_Not_Found_Category");
 		notFoundSentinelRecord.setIsActive(true);
 		saveRecord(notFoundSentinelRecord);
 
@@ -129,6 +129,13 @@ public class MasterdataProviderTest
 	void getTaxCategoryId_notFoundSentinelId_isRejected()
 	{
 		assertThatThrownBy(() -> masterdataProvider.getTaxCategoryId(IdentifierString.of("100"), parent))
+				.isInstanceOf(MissingResourceException.class);
+	}
+
+	@Test
+	void getTaxCategoryId_notFoundSentinelInternalName_isRejected()
+	{
+		assertThatThrownBy(() -> masterdataProvider.getTaxCategoryId(IdentifierString.of("int-Tax_Not_Found_Category"), parent))
 				.isInstanceOf(MissingResourceException.class);
 	}
 

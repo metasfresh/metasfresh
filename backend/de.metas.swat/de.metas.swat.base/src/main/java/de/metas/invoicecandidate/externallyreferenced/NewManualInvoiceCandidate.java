@@ -86,7 +86,10 @@ public class NewManualInvoiceCandidate
 	/** Set exactly when {@link #taxOverrideRate} is set; already resolved by the caller. */
 	@Nullable TaxCategoryId taxOverrideCategoryId;
 
-	/** The raw identifier the API caller sent for {@link #taxOverrideCategoryId}; carried along only to make a no-match error actionable. */
+	/**
+	 * The raw identifier the API caller sent for {@link #taxOverrideCategoryId}; carried along only to make a no-match error actionable.
+	 * It is a plain {@code String} because this module has no dependency on the REST-API module that resolves the tax-category identifier.
+	 */
 	@Nullable String taxOverrideCategoryIdentifier;
 
 	DocTypeId invoiceDocTypeId;

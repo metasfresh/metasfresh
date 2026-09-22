@@ -133,10 +133,22 @@ public class TaxNotFoundException extends AdempiereException
 
 	public static TaxNotFoundException ofQuery(@NonNull final TaxQuery taxQuery)
 	{
-		return ofQuery(taxQuery, null);
+		return TaxNotFoundException.builder()
+				.taxCategoryId(taxQuery.getTaxCategoryId())
+				.rate(taxQuery.getRate())
+				.isSOTrx(taxQuery.getSoTrx().isSales())
+				.isTaxExempt(taxQuery.getIsTaxExempt())
+				.billDate(taxQuery.getDateOfInterest())
+				.billFromCountryId(taxQuery.getFromCountryId())
+				.build();
 	}
 
 	/**
+	 * Unlike {@link #ofQuery(TaxQuery)}, this overload also renders the caller's own tax-category identifier and the
+	 * query's scope (org, ship-to location and country) into the message, so an API caller can tell which search came
+	 * up empty. Each scope element costs a DB lookup while the message is built, which is why the 1-arg overload
+	 * leaves them out.
+	 *
 	 * @param taxCategoryIdentifier the identifier an API caller sent for the queried tax category, to be echoed next to the resolved category name.
 	 */
 	public static TaxNotFoundException ofQuery(

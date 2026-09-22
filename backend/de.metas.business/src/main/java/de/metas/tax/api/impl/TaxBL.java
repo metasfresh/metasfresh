@@ -222,14 +222,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	@NonNull
 	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_TaxCategory.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
-				.create()
-				.firstOnlyOptional(I_C_TaxCategory.class)
-				.map(I_C_TaxCategory::getC_TaxCategory_ID)
-				.map(TaxCategoryId::ofRepoId);
+		return taxDAO.getTaxCategoryIdByInternalName(internalName);
+	}
+
+	@Override
+	@NonNull
+	public Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull final TaxCategoryId taxCategoryId)
+	{
+		return taxDAO.getActiveTaxCategoryIdById(taxCategoryId);
 	}
 
 	@Override

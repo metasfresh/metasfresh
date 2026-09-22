@@ -135,7 +135,6 @@ public class ManualCandidateService
 
 		if (newIC.getTaxOverrideRate() != null)
 		{
-			// this module has no dependency on the REST-API module that resolves the tax-category identifier
 			final TaxQuery overrideQuery = taxBL
 					.buildTaxQuery(
 							newIC.getTaxOverrideCategoryId(),

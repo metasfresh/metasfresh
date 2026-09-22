@@ -265,6 +265,30 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
+	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
+	{
+		return queryBL.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstOnlyOptional(I_C_TaxCategory.class)
+				.map(I_C_TaxCategory::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId);
+	}
+
+	@Override
+	public Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull final TaxCategoryId taxCategoryId)
+	{
+		final TaxCategoryId activeTaxCategoryId = queryBL.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, taxCategoryId)
+				.create()
+				.firstId(TaxCategoryId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(activeTaxCategoryId);
+	}
+
+	@Override
 	public Percent getRateById(@NonNull final TaxId taxId)
 	{
 		final Tax tax = getTaxById(taxId);

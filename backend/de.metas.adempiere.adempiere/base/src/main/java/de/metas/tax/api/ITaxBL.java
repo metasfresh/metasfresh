@@ -119,5 +119,11 @@ public interface ITaxBL extends ISingletonService
 
 	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
 
+	/**
+	 * @return the given tax category id, or empty if there is no {@code C_TaxCategory} record with that id, or if that record is inactive.
+	 */
+	@NonNull
+	Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull TaxCategoryId taxCategoryId);
+
 	Tax getDefaultTax(TaxCategoryId taxCategoryId);
 }
