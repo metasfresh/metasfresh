@@ -87,7 +87,8 @@ import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
  * sysconfig is a client-0/org-0 system-level write, so every sales order ANY concurrently-running spec
  * completes would start generating checkup reports too, while the process touches only the one order it is
  * invoked on. Why the REST invocation works although the process's gear-menu precondition sysconfig
- * (…CreateAndRouteJasperReports.EnableProcessGear) is seeded 'N': ProcessRestController.java:210-260.
+ * (…CreateAndRouteJasperReports.EnableProcessGear) is seeded 'N': the REST create-instance path does not
+ * consult preconditions.
  *
  * WHICH KINDS THIS YIELDS — both, deliberately, so the per-kind mapping assertion keeps its full meaning:
  *   * Warehouse('WH') — needs the ORDER LINE's product to have a manufacturing PP_Product_Planning WITH a
@@ -124,8 +125,9 @@ const VIEW_PAGE_LENGTH = 500;
  * field, so a warehouse created via `warehouses: {...}` has PP_Plant_ID NULL and would yield NO Plant('PL')
  * report at all: OrderCheckupBL.java:194-205 reads sysconfig
  * de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant, whose DEFAULT IS TRUE, so absent a sysconfig
- * row it THROWS (only with that row set to 'N' does it log a warning instead) — either way no Plant report
- * is created.
+ * row it THROWS — and it throws inside createReportBuilders (OrderCheckupBL.java:129), which runs before
+ * anything is built, so the whole process fails and NO reports at all are created. Only with that row set
+ * to 'N' does it log a warning instead and merely skip the Plant report.
  *
  *   M_Warehouse 540008 — Value 'StdWarehouse', Name 'Hauptlager', AD_Org_ID 1000000
  *                        PP_Plant_ID = 540006
@@ -151,8 +153,8 @@ const SEED_WAREHOUSE_IDENTIFIER = 'seedWarehouse';
 const SEED_WAREHOUSE_CONTEXT_KEY = `org.adempiere.warehouse.WarehouseId:${SEED_WAREHOUSE_IDENTIFIER}`;
 
 /**
- * AD_Process 540603 = C_Order_MFGWarehouse_Report_Generate, in the WebUI's process-id wire format
- * (`<ProcessHandlerType>_<AD_Process_ID>`, ProcessId.java:73-81 — a bare "540603" is rejected).
+ * C_Order_MFGWarehouse_Report_Generate. The `ADP_` prefix is required — a bare AD_Process_ID is rejected.
+ * Requires the seeded AD_Process_Access grant of 540603 to the WebUI role.
  */
 const ORDER_CHECKUP_GENERATE_PROCESS_ID = 'ADP_540603';
 
@@ -208,12 +210,15 @@ gh32265. Verifies that migration 5825570 surfaces C_Order_MFGWarehouse_Report.C_
 Language under test: ${language}.
       `);
 
-      test.setTimeout(180000);
+      // Must comfortably exceed the shared masterdata fixture's shipment-schedule ceiling
+      // (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s): the provisioning in step 1 happens
+      // inside this envelope, and its descriptive timeout must surface instead of a generic test timeout.
+      test.setTimeout(240000);
 
       // 1. Provision a login user of the given language, plus the sales order whose checkup reports
       //    this spec asserts on — see "HOW THE RECORDS UNDER TEST COME INTO EXISTENCE" above. Nothing
       //    here reaches into the DB: it is all the existing /api/v2/frontendTesting masterdata surface.
-      const masterdataRequest = () => ({
+      const masterdataRequest = {
         request: {
           // Makes SEED_WAREHOUSE_IDENTIFIER resolve to the seed warehouse (which HAS a plant) for the
           // `warehouse` fields below, instead of to a plant-less warehouse this spec would create.
@@ -260,9 +265,9 @@ Language under test: ${language}.
             },
           },
         },
-      });
+      };
 
-      const masterdata = await Backend.createMasterdata(masterdataRequest());
+      const masterdata = await Backend.createMasterdata(masterdataRequest);
 
       const salesOrderId = masterdata.salesOrders.order.id;
       expect(
