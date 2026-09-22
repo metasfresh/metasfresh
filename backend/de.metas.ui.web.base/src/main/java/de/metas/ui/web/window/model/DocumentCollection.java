@@ -865,6 +865,13 @@ public class DocumentCollection
 			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
 		}
 
+		// Cloning brings a new record into existence, so the role's create permission applies here too.
+		final BooleanWithReason roleCanCreateNewRecords = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(fromDocument.getEntityDescriptor(), permissions);
+		if (roleCanCreateNewRecords.isFalse())
+		{
+			throw new AdempiereException(roleCanCreateNewRecords.getReason());
+		}
+
 		final TableRecordReference fromRecordRef = fromDocument.getTableRecordReference()
 				.orElseThrow(() -> new AdempiereException("Cannot determine table/record from " + fromDocument));
 

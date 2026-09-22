@@ -68,4 +68,13 @@ public enum DocumentStandardAction
 				|| Clone.equals(this)
 				|| Delete.equals(this);
 	}
+
+	/**
+	 * Cloning produces a new record, so it needs the role's per-table create permission.
+	 * {@link #New} is deliberately not listed: its refusal is transmitted as disabled-with-a-reason instead of removed.
+	 */
+	public boolean isCreateNewRecordPermissionRequired()
+	{
+		return Clone.equals(this);
+	}
 }

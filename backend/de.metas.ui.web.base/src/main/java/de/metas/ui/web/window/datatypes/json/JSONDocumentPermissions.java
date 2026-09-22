@@ -135,6 +135,7 @@ public class JSONDocumentPermissions
 
 		Boolean allowWindowEdit = null;
 		Boolean allowDocumentEdit = null;
+		Boolean allowCreateNewRecords = null;
 
 		for (final Iterator<DocumentStandardAction> it = standardActions.iterator(); it.hasNext(); )
 		{
@@ -166,6 +167,20 @@ public class JSONDocumentPermissions
 				}
 
 				if (!allowWindowEdit)
+				{
+					it.remove();
+					continue;
+				}
+			}
+
+			if (action.isCreateNewRecordPermissionRequired())
+			{
+				if (allowCreateNewRecords == null)
+				{
+					allowCreateNewRecords = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(document.getEntityDescriptor(), permissions).isTrue();
+				}
+
+				if (!allowCreateNewRecords)
 				{
 					it.remove();
 					//noinspection UnnecessaryContinue
