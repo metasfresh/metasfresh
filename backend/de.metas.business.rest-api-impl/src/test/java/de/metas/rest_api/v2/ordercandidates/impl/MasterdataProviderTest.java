@@ -89,6 +89,16 @@ public class MasterdataProviderTest
 		saveRecord(inactiveRecord);
 		inactiveTaxCategoryId = TaxCategoryId.ofRepoId(inactiveRecord.getC_TaxCategory_ID());
 
+		// C_TaxCategory_ID=100 is the TaxCategoryId.NOT_FOUND sentinel AND a real, active, system-seeded
+		// row ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance. It is seeded here
+		// on purpose: without it, getTaxCategoryId_notFoundSentinelId_isRejected would pass merely because
+		// the active-filtered query finds nothing, i.e. it would prove the filter, not the rejection.
+		final I_C_TaxCategory notFoundSentinelRecord = newInstance(I_C_TaxCategory.class);
+		notFoundSentinelRecord.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
+		notFoundSentinelRecord.setName("Tax_Not_Found_Category");
+		notFoundSentinelRecord.setIsActive(true);
+		saveRecord(notFoundSentinelRecord);
+
 		parent = new Object();
 	}
 

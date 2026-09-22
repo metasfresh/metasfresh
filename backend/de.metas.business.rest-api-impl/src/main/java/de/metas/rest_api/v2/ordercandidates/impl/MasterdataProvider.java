@@ -484,6 +484,16 @@ public final class MasterdataProvider
 
 	private Optional<TaxCategoryId> resolveActiveTaxCategoryById(final int repoId)
 	{
+		if (repoId == TaxCategoryId.NOT_FOUND.getRepoId())
+		{
+			// TaxCategoryId.NOT_FOUND is backed by a real, active, system-seeded C_TaxCategory row
+			// ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance, so the active-filtered
+			// query below would resolve it like any other category. It must not be resolvable through the API:
+			// the sentinel would travel into the tax query and only surface there as an ordinary "no tax
+			// matched", instead of telling the caller that the identifier they sent names no tax category.
+			return Optional.empty();
+		}
+
 		final I_C_TaxCategory record = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_TaxCategory.class)
 				.addOnlyActiveRecordsFilter()

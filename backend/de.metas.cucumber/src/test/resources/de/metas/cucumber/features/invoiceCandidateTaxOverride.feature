@@ -2,8 +2,7 @@
 @allure.label.epic:E2200_Automatic_Tax_Determination
 @allure.label.feature:F2200
 @F2200
-@allure.label.feature:F4510
-@F4510
+@allure.label.feature:F4510_Invoice_Candidate
 @Id:S31985
 @ghActions:run_on_executor2
 Feature: Invoice-Candidate API — the caller sets the tax
@@ -504,6 +503,13 @@ Feature: Invoice-Candidate API — the caller sets the tax
         ]
       }
       """
+    # anchored on MissingResourceException's own "resourceIdentifier=" separator, not on a bare "100":
+    # the message also echoes the request item as parentResource, so a bare "100" would match that echo
+    # and pass even if the rejection came from somewhere other than the identifier-resolution path.
+    Then the metasfresh REST-API error message contains:
+      | Value                  |
+      | TaxCategory            |
+      | resourceIdentifier=100 |
     And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC8e_H
 
   @Id:S31985_TC9
