@@ -51,6 +51,7 @@ import de.metas.rest_api.v2.invoicecandidates.request.JsonCreateInvoiceCandidate
 import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.security.permissions2.PermissionServiceFactory;
+import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -58,6 +59,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -81,6 +84,7 @@ public class InvoicesRestController
 {
 	private static final Logger logger = LogManager.getLogger(InvoicesRestController.class);
 
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final @NonNull JsonInvoiceService jsonInvoiceService;
 	private final @NonNull CheckInvoiceCandidatesStatusService checkInvoiceCandidatesStatusService;
 	private final @NonNull CreateInvoiceCandidatesService createInvoiceCandidatesService;
@@ -104,6 +108,14 @@ public class InvoicesRestController
 	public ResponseEntity<JsonCreateInvoiceCandidatesResponse> createInvoiceCandidates(
 			@RequestBody @NonNull final JsonCreateInvoiceCandidatesRequest request)
 	{
+		final JsonCreateInvoiceCandidatesResponse response =
+				trxManager.call(ITrx.TRXNAME_ThreadInherited, () -> createInvoiceCandidates0(request));
+		return ResponseEntity.ok(response);
+	}
+
+	private JsonCreateInvoiceCandidatesResponse createInvoiceCandidates0(
+			@NonNull final JsonCreateInvoiceCandidatesRequest request)
+	{
 		final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
 				.permissionService(permissionServiceFactory.createPermissionService())
 				.bpartnerRestController(bpartnerRestController)
@@ -113,8 +125,7 @@ public class InvoicesRestController
 				.bPartnerMasterdataProvider(bPartnerMasterdataProvider)
 				.build();
 		// TODO make individual IC accessible via URL, then return "created" instead
-		final JsonCreateInvoiceCandidatesResponse response = createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider);
-		return ResponseEntity.ok(response);
+		return createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider);
 	}
 
 	@PostMapping(path = "/status", consumes = "application/json", produces = "application/json")
