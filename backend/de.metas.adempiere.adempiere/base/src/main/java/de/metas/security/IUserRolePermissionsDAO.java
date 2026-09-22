@@ -131,6 +131,11 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	/**
 	 * Creates one {@code AD_Table_Access} row for the role.
+	 * <p>
+	 * Unlike {@link #createWindowAccess(CreateWindowAccessRequest)} and the other {@code create*Access} methods,
+	 * this one INSERTS unconditionally - it is not an upsert and there is no {@code deleteTableAccess} counterpart.
+	 * Calling it twice for the same (role, table) hits the unique index, so the caller has to ensure each table is
+	 * passed at most once.
 	 */
 	void createTableAccess(CreateTableAccessRequest request);
 

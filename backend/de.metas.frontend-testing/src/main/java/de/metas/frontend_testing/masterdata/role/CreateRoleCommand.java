@@ -46,6 +46,9 @@ public class CreateRoleCommand
 	/** Suffix under which the role's user is registered in the {@link MasterdataContext}. */
 	public static final String USER_IDENTIFIER_SUFFIX = "_roleUser";
 
+	/** {@code AD_Role.Name} is {@code varchar(60)}; a longer name would surface as a raw DB length error. */
+	private static final int NAME_MAX_LENGTH = 60;
+
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -65,6 +68,12 @@ public class CreateRoleCommand
 		final String name = Check.isNotBlank(customName)
 				? Identifier.ofString(customName).toUniqueString()
 				: identifier.toUniqueString();
+		// toUniqueString() appends _yyyyMMddTHHmmssSSS (19 chars), so the checked value is the final name.
+		if (name.length() > NAME_MAX_LENGTH)
+		{
+			throw new AdempiereException("name must not exceed " + NAME_MAX_LENGTH + " characters including the"
+					+ " uniqueness suffix (got: `" + name + "`, " + name.length() + " characters)");
+		}
 
 		final RoleId roleId = createRole(name);
 		context.putIdentifier(identifier, roleId);

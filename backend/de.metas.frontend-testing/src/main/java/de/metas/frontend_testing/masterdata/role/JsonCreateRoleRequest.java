@@ -22,6 +22,7 @@ public class JsonCreateRoleRequest
 	/**
 	 * Role name, defaulting to the section's identifier. Either way a per-run timestamp is appended, because
 	 * {@code AD_Role.Name} is unique over the active rows and the database is shared across runs.
+	 * The suffix is 19 characters and {@code AD_Role.Name} is {@code varchar(60)}, so at most 41 characters here.
 	 */
 	@Nullable String name;
 
