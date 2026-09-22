@@ -109,6 +109,62 @@ Feature: Bestellkontrolle document type
 
 # ####################################################################################################################
 # ####################################################################################################################
+  @Id:S32265_TC3
+  Scenario: Each kind's printing-queue item carries its own document type and resolves its own printer routing
+    # Doctype-specific printer routings for the two Bestellkontrolle kinds. Printer 1000000 already exists on
+    # the target instance (it also backs the pre-existing catch-all routing, AD_PrinterRouting_ID=1000003,
+    # every dimension null) -- only the routing's document-type dimension differs here.
+    Given metasfresh contains AD_PrinterRouting:
+      | Identifier        | C_DocType_ID      | AD_Printer_ID |
+      | routingProduktion | docTypeProduktion | 1000000       |
+      | routingBuero      | docTypeBuero      | 1000000       |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order3     | true    | bpartner      | 2026-01-12  | warehouse      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine3 | order3     | product      | 5          |
+
+    When the order identified by order3 is completed
+
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID |
+      | warehouseRpt3 | order3     | WH           | warehouse      | plant       |
+      | plantRpt3     | order3     | PL           |                | plant       |
+
+    # Mirrors the real path: record -> archive -> printing-queue item. No queue item is fabricated -- this
+    # locates the one the order-completion pipeline itself enqueued. The doc-outbound work package runs on a
+    # background thread, so this step polls for the queue item rather than assuming it exists already.
+    And C_Printing_Queue item is located:
+      | Identifier      | C_Order_MFGWarehouse_Report_ID |
+      | warehouseQueue3 | warehouseRpt3                  |
+      | plantQueue3     | plantRpt3                      |
+
+    # The printing-queue item -- not just the report -- carries its own C_DocType_ID. This is
+    # DocumentPrintingQueueHandler reading the column generically off the archived record, the same mechanism
+    # DocOutboundConfigService uses, now exercised on the real enqueued queue item rather than the report.
+    Then C_Printing_Queue resolves C_DocType:
+      | C_Printing_Queue_ID | C_DocType_ID      |
+      | warehouseQueue3     | docTypeProduktion |
+      | plantQueue3         | docTypeBuero      |
+
+    # Each kind's queue item resolves ITS OWN doctype-specific AD_PrinterRouting -- never the
+    # pre-existing catch-all (AD_PrinterRouting_ID=1000003, every dimension null), which PrinterRoutingDAO
+    # also matches (PrinterRoutingDAO.java:81). Resolving the catch-all would pass a weaker "a routing was
+    # found" assertion but is the exact silent failure this feature exists to prevent. Stops at routing
+    # resolution -- the final hop to a physical printer (AD_Printer_Matching) needs real printers.
+    Then C_Printing_Queue resolves AD_PrinterRouting:
+      | C_Printing_Queue_ID | AD_PrinterRouting_ID |
+      | warehouseQueue3     | routingProduktion    |
+      | plantQueue3         | routingBuero         |
+
+    # The AD_PrinterRouting fixtures are removed by an @After hook (AD_PrinterRouting_StepDef), not a trailing
+    # step here -- Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need cleanup.
+
+
+# ####################################################################################################################
+# ####################################################################################################################
   Scenario: reset settings to default
     # A separate scenario rather than a trailing step, so it still runs if an assertion above failed -- see
     # ordercheckup_reprint.feature for the same pattern and its rationale.
