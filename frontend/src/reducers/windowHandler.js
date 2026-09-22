@@ -502,6 +502,26 @@ export const getMasterDocumentDisabledStandardActions = ({
   return state.windowHandler?.master?.disabledStandardActions ?? [];
 };
 
+/**
+ * @summary the reason why an included tab refuses creating a new record, but only where that reason
+ *          is meant for the user. The backend sets `allowCreateNewReasonKey` (the stable AD_Message
+ *          key, which tests assert on instead of the rendered wording) exactly then; without it
+ *          `allowCreateNewReason` carries an internal technical name (`ParentDocumentProcessed`,
+ *          `Unsaved row found`, ...) which must never be shown.
+ * @param {object} [tabInfo] - one entry of the `includedTabsInfo` payload
+ * @return {{reason: string, reasonKey: string}|null} `null` when nothing shall be rendered
+ */
+export const getIncludedTabCreateNewDisabledReason = (tabInfo) => {
+  if (!tabInfo || tabInfo.allowCreateNew || !tabInfo.allowCreateNewReasonKey) {
+    return null;
+  }
+
+  return {
+    reason: tabInfo.allowCreateNewReason,
+    reasonKey: tabInfo.allowCreateNewReasonKey,
+  };
+};
+
 //
 //
 //
