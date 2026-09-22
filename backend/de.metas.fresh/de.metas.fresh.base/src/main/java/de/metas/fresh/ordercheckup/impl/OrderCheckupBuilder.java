@@ -221,8 +221,8 @@ public class OrderCheckupBuilder
 	 * Throws unconditionally when no document type is found, rather than leaving {@code C_DocType_ID}
 	 * unset: an unset document type makes the archiver fall back to the generic outbound configuration
 	 * and the catch-all printer routing, so both kinds would silently print the same report and the
-	 * Packzettel would never reach its printer - with no error anywhere. That silent fallback is the
-	 * defect this whole change exists to remove, so it must not be reintroduced as a tolerated state.
+	 * Packzettel would never reach its printer - with no error anywhere. That silent fallback must not be
+	 * reintroduced as a tolerated state.
 	 * Unlike the missing-plant guard in {@code OrderCheckupBL}, this one is deliberately NOT sysconfig-
 	 * gated: a missing plant is per-instance master data the customer maintains, whereas both document
 	 * types ship together in one migration, so their absence means that migration has not been applied.

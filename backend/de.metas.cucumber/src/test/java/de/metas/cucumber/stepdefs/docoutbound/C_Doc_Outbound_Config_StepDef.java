@@ -150,9 +150,9 @@ public class C_Doc_Outbound_Config_StepDef
 	}
 
 	/**
-	 * Repoints an existing {@code C_Doc_Outbound_Config}'s {@code AD_PrintFormat_ID} -- the same field edit the
-	 * customer would make in the window once they decide the two Bestellkontrolle kinds should print different
-	 * reports. Resets the outbound-config cache so the change is visible to the next resolution.
+	 * Repoints an existing {@code C_Doc_Outbound_Config}'s {@code AD_PrintFormat_ID} -- the same field edit a
+	 * customer makes in the window to change which report a configuration prints. Resets the outbound-config
+	 * cache so the change is visible to the next resolution.
 	 * <p>
 	 * The prior value is captured before the overwrite and restored by
 	 * {@link #restoreRepointedPrintFormatsAfterScenario()}.

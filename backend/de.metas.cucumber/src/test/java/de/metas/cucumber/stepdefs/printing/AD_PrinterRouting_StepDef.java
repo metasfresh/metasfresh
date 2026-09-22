@@ -40,9 +40,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import java.util.List;
 
 /**
- * Fixture step for {@code AD_PrinterRouting} -- a scenario needing a doctype-specific printer routing (to prove
- * the doctype dimension wins over a catch-all routing) creates one here rather than fabricating it directly on
- * whatever step-def happens to need it.
+ * Fixture step for {@code AD_PrinterRouting} -- a scenario needing a doctype-specific or catch-all printer
+ * routing creates one here rather than fabricating it directly on whatever step-def happens to need it.
  */
 @RequiredArgsConstructor
 public class AD_PrinterRouting_StepDef
@@ -101,9 +100,8 @@ public class AD_PrinterRouting_StepDef
 	 * rather than a trailing Gherkin step, since Cucumber skips remaining steps once one fails, i.e. on exactly
 	 * the runs that need the cleanup. A no-op for every scenario that never called that step.
 	 * <p>
-	 * Unlike a step that MUTATES an existing shared row (which restores the captured prior value), every row
-	 * here is one this scenario itself INSERTED -- there is no prior value to restore to, so cleanup is a plain
-	 * delete of exactly the rows this scenario's own {@link #printerRoutingTable} holds.
+	 * Unlike the sibling step-defs, every row here was INSERTED by this scenario, not mutated -- so cleanup is
+	 * a plain delete, no prior value to restore.
 	 */
 	@After
 	public void deleteCreatedPrinterRoutingsAfterScenario()

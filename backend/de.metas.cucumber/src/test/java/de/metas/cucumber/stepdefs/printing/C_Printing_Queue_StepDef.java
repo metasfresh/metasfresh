@@ -179,8 +179,7 @@ public class C_Printing_Queue_StepDef
 	 * Asserts that a previously-located {@code C_Printing_Queue} item carries the given {@code C_DocType_ID} --
 	 * the routing key {@link IPrintingQueueBL#createPrinterRoutingsQueryForItem} reads to build the
 	 * {@link PrinterRoutingsQuery}. Set generically by {@code DocumentPrintingQueueHandler} straight off the
-	 * archived record's own {@code C_DocType_ID} column, the same mechanism proven for the report itself in
-	 * "the order identified by ... has exactly the following C_Order_MFGWarehouse_Reports".
+	 * archived record's own {@code C_DocType_ID} column.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -212,11 +211,10 @@ public class C_Printing_Queue_StepDef
 	 * Asserts which {@code AD_PrinterRouting} a previously-located {@code C_Printing_Queue} item resolves to, via
 	 * the exact production call {@link de.metas.printing.printingdata.PrintingDataFactory} makes:
 	 * {@link IPrintingQueueBL#createPrinterRoutingsQueryForItem} then {@link IPrinterRoutingDAO#fetchPrinterRoutings}.
-	 * The first entry of the returned (already-ordered) list is the routing production would use -- proves the
-	 * doctype-specific routing wins over a catch-all routing (every dimension null), which the DAO also matches.
+	 * The first entry of the returned (already-ordered) list is the routing production would use.
 	 * <p>
-	 * Stops at routing resolution, deliberately: the final hop to a physical printer via {@code AD_Printer_Matching}
-	 * needs a real printer and is out of scope here.
+	 * Stops at routing resolution: the final hop to a physical printer via {@code AD_Printer_Matching} needs a
+	 * real printer and is not covered by this step.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -256,8 +254,7 @@ public class C_Printing_Queue_StepDef
 	/**
 	 * Asserts the {@code IsActive} flag of a previously-located {@code C_Printing_Queue} item -- {@code false}
 	 * is how {@code OrderCheckupPrintingQueueHandler} cancels a print job when the underlying report has no
-	 * responsible user, with no error anywhere else. The regression guard for the accepted risk: an
-	 * unconfigured manufacturing routing silently loses the Packzettel print job.
+	 * responsible user, with no error anywhere else.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -288,10 +285,7 @@ public class C_Printing_Queue_StepDef
 	/**
 	 * Asserts that {@link IOrderCheckupBL#getNumberOfCopies} for a previously-located {@code C_Printing_Queue}
 	 * item equals the LIVE value of the given sys config -- read independently via {@link ISysConfigBL} at
-	 * assertion time, never a hardcoded literal. Each row names the sys config key its OWN report's kind must
-	 * route to (Warehouse-kind reports to the barcode-sheet copies count, Plant-kind reports to the plain
-	 * one -- {@code OrderCheckupBL#getNumberOfCopies}), so a swapped or ignored per-kind branch shows up as a
-	 * mismatch against distinct, non-default sys config values set earlier in the scenario.
+	 * assertion time, never a hardcoded literal.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

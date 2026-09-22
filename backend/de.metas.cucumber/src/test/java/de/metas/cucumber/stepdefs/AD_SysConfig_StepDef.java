@@ -130,8 +130,7 @@ public class AD_SysConfig_StepDef
 	 * Sets a sys config to a scenario-local int value, capturing its PRIOR value (via
 	 * {@link #priorValueBySysConfigName}, {@code putIfAbsent} so a second write in the same scenario never
 	 * overwrites the already-captured original) so {@link #restoreRepointedSysConfigsAfterScenario()} restores
-	 * it -- for a sys config a scenario mutates only to prove a regression guard discriminates (e.g. a
-	 * per-kind copies count), never to leave a changed value in shared/global {@code AD_SysConfig}.
+	 * it, never leaving a changed value in shared/global {@code AD_SysConfig}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example

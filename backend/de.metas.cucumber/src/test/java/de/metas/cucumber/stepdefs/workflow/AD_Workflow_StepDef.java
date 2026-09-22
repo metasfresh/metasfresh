@@ -212,10 +212,10 @@ public class AD_Workflow_StepDef
 
 	/**
 	 * Overwrites an existing {@code AD_Workflow}'s (manufacturing routing's) {@code AD_User_InCharge_ID} --
-	 * the same field edit the customer makes in the window to configure who a routing's Bestellkontrolle
-	 * print job goes to. Omitting {@code AD_User_InCharge_ID} (or leaving it blank) clears the routing to NO
-	 * user in charge, which is exactly the unconfigured state that silently cancels the print job with no
-	 * error anywhere (see {@code OrderCheckupPrintingQueueHandler}).
+	 * the same field edit a customer makes in the window to configure who a routing's print job goes to.
+	 * Omitting {@code AD_User_InCharge_ID} (or leaving it blank) clears the routing to NO user in charge,
+	 * which is exactly the unconfigured state that silently cancels the print job with no error anywhere
+	 * (see {@code OrderCheckupPrintingQueueHandler}).
 	 * <p>
 	 * Targets the routing by its raw {@code AD_Workflow_ID} rather than through {@link #workflowTable} --
 	 * this step exists specifically to mutate a SHARED, pre-existing routing (e.g. the default manufacturing
