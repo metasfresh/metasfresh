@@ -20,8 +20,8 @@ import java.util.List;
 public class JsonCreateRoleRequest
 {
 	/**
-	 * Role name. Defaults to a per-run-unique name derived from the section's identifier, so parallel runs
-	 * against the same database do not collide.
+	 * Role name, defaulting to the section's identifier. Either way a per-run timestamp is appended, because
+	 * {@code AD_Role.Name} is unique over the active rows and the database is shared across runs.
 	 */
 	@Nullable String name;
 

@@ -12,7 +12,6 @@ import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.UserAuthToken;
-import de.metas.security.requests.CreateRoleRequest;
 import de.metas.security.requests.CreateTableAccessRequest;
 import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
@@ -22,10 +21,16 @@ import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_Role_Included;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -33,7 +38,7 @@ import java.util.List;
  * user that is bound to this role and to no other one.
  * <p>
  * The single-role binding is what lets a spec log in without a role-selection step: {@code LoginRestController}
- * completes the login itself when exactly one role is available.
+ * completes the login itself when exactly one (role, tenant, org) entry is available.
  */
 @Builder
 public class CreateRoleCommand
@@ -54,16 +59,14 @@ public class CreateRoleCommand
 
 	public JsonCreateRoleResponse execute()
 	{
+		// The name goes through toUniqueString() even when the request supplies one: AD_Role.Name carries a
+		// unique index over the active rows, so a verbatim label collides across runs reusing it.
 		final String customName = request.getName();
-		final String name = Check.isNotBlank(customName) ? customName : identifier.toUniqueString();
+		final String name = Check.isNotBlank(customName)
+				? Identifier.ofString(customName).toUniqueString()
+				: identifier.toUniqueString();
 
-		final RoleId roleId = roleDAO.createRole(CreateRoleRequest.builder()
-				.name(name)
-				.orgId(OrgId.ANY)
-				.userLevel(TableAccessLevel.ClientPlusOrganization)
-				.accessAllOrgs(true)
-				.includedRoleIds(getIncludedRoleIds())
-				.build());
+		final RoleId roleId = createRole(name);
 		context.putIdentifier(identifier, roleId);
 
 		createTableAccessRecords(roleId);
@@ -73,6 +76,37 @@ public class CreateRoleCommand
 				.name(name)
 				.user(createUser(roleId))
 				.build();
+	}
+
+	private RoleId createRole(@NonNull final String name)
+	{
+		final I_AD_Role record = InterfaceWrapperHelper.newInstance(I_AD_Role.class);
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setName(name);
+		record.setUserLevel(TableAccessLevel.ClientPlusOrganization.getUserLevelString());
+		// One org only: the login offers one entry per (role, tenant, org), and it auto-completes only for a
+		// single entry. IsAccessAllOrgs=Y would make that depend on how many orgs the stack happens to have.
+		record.setIsAccessAllOrgs(false);
+		InterfaceWrapperHelper.save(record);
+
+		final RoleId roleId = RoleId.ofRepoId(record.getAD_Role_ID());
+
+		userRolePermissionsDAO.createOrgAccess(roleId, MasterdataContext.ORG_ID);
+
+		int seqNo = 10;
+		for (final RoleId includedRoleId : getIncludedRoleIds())
+		{
+			final I_AD_Role_Included includedRecord = InterfaceWrapperHelper.newInstance(I_AD_Role_Included.class);
+			includedRecord.setAD_Org_ID(OrgId.ANY.getRepoId());
+			includedRecord.setAD_Role_ID(roleId.getRepoId());
+			includedRecord.setIncluded_Role_ID(includedRoleId.getRepoId());
+			includedRecord.setSeqNo(seqNo);
+			InterfaceWrapperHelper.save(includedRecord);
+
+			seqNo += 10;
+		}
+
+		return roleId;
 	}
 
 	private ImmutableList<RoleId> getIncludedRoleIds()
@@ -85,9 +119,24 @@ public class CreateRoleCommand
 		}
 
 		return includedRoles.stream()
-				.map(includedRole -> context.getOptionalId(includedRole, RoleId.class)
-						.orElseGet(() -> includedRole.toId(RoleId.class)))
+				.map(this::getIncludedRoleId)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private RoleId getIncludedRoleId(@NonNull final Identifier includedRole)
+	{
+		return context.getOptionalId(includedRole, RoleId.class)
+				.orElseGet(() -> {
+					try
+					{
+						return includedRole.toId(RoleId.class);
+					}
+					catch (final Exception ex)
+					{
+						throw new AdempiereException("includedRoles: no role created under the identifier `"
+								+ includedRole.getAsString() + "`, and it is not an AD_Role_ID either", ex);
+					}
+				});
 	}
 
 	private void createTableAccessRecords(@NonNull final RoleId roleId)
@@ -98,12 +147,23 @@ public class CreateRoleCommand
 			return;
 		}
 
+		// A role has at most one AD_Table_Access row per table, so a table listed twice would fail with a raw
+		// unique violation; say which table it is instead.
+		final HashSet<AdTableId> seenTableIds = new HashSet<>();
+
 		for (final JsonRoleTableAccessRequest tableAccessRequest : tableAccessRequests)
 		{
+			final AdTableId adTableId = adTableDAO.retrieveAdTableId(tableAccessRequest.getTableName());
+			if (!seenTableIds.add(adTableId))
+			{
+				throw new AdempiereException("tableAccess: `" + tableAccessRequest.getTableName()
+						+ "` is listed more than once; a role has one row per table, so state every flag in that one row");
+			}
+
 			userRolePermissionsDAO.createTableAccess(CreateTableAccessRequest.builder()
 					.roleId(roleId)
 					.orgId(OrgId.ANY)
-					.adTableId(adTableDAO.retrieveAdTableId(tableAccessRequest.getTableName()))
+					.adTableId(adTableId)
 					.exclude(tableAccessRequest.getExclude())
 					.readOnly(tableAccessRequest.getReadOnly())
 					.canReport(tableAccessRequest.getCanReport())
@@ -133,8 +193,11 @@ public class CreateRoleCommand
 				.execute();
 
 		// LoginUserCommand binds the user to the WebUI role; rebind it to this role ONLY, so that the login
-		// has a single role to offer and completes without a role-selection step.
+		// has a single entry to offer and completes without a role-selection step. Its WebUI auth token goes
+		// too: a token carries the role it was issued for and the authentication reads that role off the
+		// token, so a token left behind would keep authenticating as the unrestricted WebUI role.
 		final UserId userId = context.getId(userIdentifier, UserId.class);
+		userAuthTokenService.deleteTokensByUserId(userId);
 		roleDAO.deleteUserRolesByUserId(userId);
 		roleDAO.createUserRoleAssignmentIfMissing(userId, roleId);
 

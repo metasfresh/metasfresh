@@ -1,7 +1,6 @@
 package de.metas.security;
 
 import de.metas.adempiere.model.I_AD_Role;
-import de.metas.security.requests.CreateRoleRequest;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
@@ -48,11 +47,6 @@ public interface IRoleDAO extends ISingletonService
 	Set<UserId> retrieveUserIdsForRoleId(RoleId adRoleId);
 
 	RoleId retrieveFirstRoleIdForUserId(UserId adUserId);
-
-	/**
-	 * Creates a new role together with its {@code AD_Role_Included} rows.
-	 */
-	RoleId createRole(CreateRoleRequest request);
 
 	void createUserRoleAssignmentIfMissing(UserId adUserId, RoleId adRoleId);
 
