@@ -356,16 +356,18 @@ describe('getIncludedTabCreateNewDisabledReason', () => {
 
   // The load-bearing case: this is what stops a technical string such as
   // `ParentDocumentProcessed` from being shown to a customer — only a reason accompanied
-  // by its stable AD_Message key is ever surfaced.
+  // by its stable AD_Message key is ever surfaced. The backend sets allowCreateNewReasonKey
+  // only for the role-permissions refusal (JSONDocumentPermissions.setAllowCreateNew), so the
+  // key here must be the real role-restriction message key, not an internal technical name.
   it('returns the reason and its key when creation is refused with a reasonKey', () => {
     const tabInfo = {
       allowCreateNew: false,
-      allowCreateNewReason: 'The parent document is already processed.',
-      allowCreateNewReasonKey: 'ParentDocumentProcessed',
+      allowCreateNewReason: 'Your role does not allow creating new records here.',
+      allowCreateNewReasonKey: 'ERR_Role_CreateNewRecordsNotAllowed',
     };
     expect(getIncludedTabCreateNewDisabledReason(tabInfo)).toEqual({
-      reason: 'The parent document is already processed.',
-      reasonKey: 'ParentDocumentProcessed',
+      reason: 'Your role does not allow creating new records here.',
+      reasonKey: 'ERR_Role_CreateNewRecordsNotAllowed',
     });
   });
 });
