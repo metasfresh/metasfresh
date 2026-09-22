@@ -475,6 +475,14 @@ public class CreateInvoiceCandidatesService
 		{
 			throw new MissingPropertyException("taxOverride.taxCategoryIdentifier", item);
 		}
+		// Zero is deliberately allowed: exempt, intra-community and reverse-charge taxes are all stored at 0%.
+		// A negative rate matches no C_Tax, so without this it would surface as an opaque "no tax found" instead of
+		// naming the property the caller got wrong.
+		if (taxOverride.getRate().signum() < 0)
+		{
+			throw new InvalidEntityException(TranslatableStrings.constant(
+					"taxOverride.rate must not be negative, but was " + taxOverride.getRate().toPlainString()));
+		}
 
 		final IdentifierString taxCategoryIdentifier = IdentifierString.of(taxOverride.getTaxCategoryIdentifier());
 		final TaxCategoryId taxCategoryId = masterdataProvider.getTaxCategoryId(taxCategoryIdentifier, item);

@@ -603,6 +603,33 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | taxOverride.rate |
     And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC9b_H
 
+    # a negative rate. It matches no tax, so without an explicit guard the caller would get an opaque
+    # "no tax found" naming a rate they should never have been allowed to send.
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/createCandidates' and fulfills with '422' status code
+      """
+      {
+        "items": [
+          {
+            "orgCode": "001",
+            "externalHeaderId": "31985_TC9c_H",
+            "externalLineId": "31985_TC9c_L1",
+            "billPartnerIdentifier": "val-@customerDEValue@",
+            "productIdentifier": "val-@productValue@",
+            "dateOrdered": "2023-05-10",
+            "qtyOrdered": 1,
+            "soTrx": "SALES",
+            "paymentTerm": "val-sofort",
+            "taxOverride": { "rate": -19, "taxCategoryIdentifier": "int-@catInternalName@" }
+          }
+        ]
+      }
+      """
+    Then the metasfresh REST-API error message contains:
+      | Value            |
+      | taxOverride.rate |
+      | negative         |
+    And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC9c_H
+
   @Id:S31985_TC10
   Scenario: expired and inactive taxes are invisible, and do not even count towards a multi-match
     Given metasfresh contains C_TaxCategory

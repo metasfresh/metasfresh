@@ -57,6 +57,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.util.web.exception.MissingPropertyException;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -315,6 +316,36 @@ class CreateInvoiceCandidatesServiceTest
 			assertThatThrownBy(() -> createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider))
 					.isInstanceOf(MissingPropertyException.class)
 					.hasMessageContaining("taxOverride.rate");
+		}
+
+		@Test
+		void negativeRate_isRejected()
+		{
+			final JsonCreateInvoiceCandidatesRequest request = createRequest(JsonTaxOverride.builder()
+					.rate(new BigDecimal("-19"))
+					.taxCategoryIdentifier(OVERRIDE_TAX_CATEGORY_IDENTIFIER)
+					.build());
+
+			assertThatThrownBy(() -> createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider))
+					.isInstanceOf(InvalidEntityException.class)
+					.hasMessageContaining("taxOverride.rate");
+		}
+
+		/**
+		 * Zero is a legitimate rate - exempt, intra-community and reverse-charge taxes are all stored at 0% - so the
+		 * guard must let it through to tax resolution. It reaches the lookup, where this fixture happens to have no
+		 * 0% tax in the override category; what matters is that it is NOT turned away as an invalid rate.
+		 */
+		@Test
+		void zeroRate_passesTheGuard()
+		{
+			final JsonCreateInvoiceCandidatesRequest request = createRequest(JsonTaxOverride.builder()
+					.rate(BigDecimal.ZERO)
+					.taxCategoryIdentifier(OVERRIDE_TAX_CATEGORY_IDENTIFIER)
+					.build());
+
+			assertThatThrownBy(() -> createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider))
+					.isInstanceOf(TaxNotFoundException.class);
 		}
 
 		@Test
