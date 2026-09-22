@@ -1,12 +1,9 @@
 @from:cucumber
-@allure.label.epic:E2200_Automatic_Tax_Determination
-@allure.label.feature:F2200
-@F2200
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F4510_Invoice_Candidate
-@Id:S31985
 @ghActions:run_on_executor2
 Feature: Invoice-Candidate API — the caller sets the tax
-## F2200: Tax
+## F4510: Invoice Candidate
   As an external system posting invoice-candidate lines
   I want to state the tax myself — the rate plus the tax category — for a line whose tax is not
   the one the product's tax category implies,
@@ -50,7 +47,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | locDE      | customerDE               | DE           | Y                   | Y                   |
 
   @Id:S31985_TC1
-  Scenario: TC1 — rate plus category resolve to one tax, and the new candidate carries it as C_Tax_Override_ID
+  Scenario: rate plus category resolve to one tax, and the new candidate carries it as C_Tax_Override_ID
     Given metasfresh contains C_TaxCategory
       | Identifier | REST.Context.InternalName |
       | cat        | catInternalName           |
@@ -85,7 +82,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | ic                                | product                     | tax19                            |
 
   @Id:S31985_TC2
-  Scenario: TC2 — the origin country governs, not the bill country
+  Scenario: the origin country governs, not the bill country
     Given metasfresh contains C_BPartners without locations:
       | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier | REST.Context.Value |
       | customerAT | Y              | ps                            | customerATValue    |
@@ -129,7 +126,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | ic                                | taxFromDE                        |
 
   @Id:S31985_TC3
-  Scenario: TC3 — engine parity on a cross-border line
+  Scenario: engine parity on a cross-border line
     Given metasfresh contains C_BPartners without locations:
       | Identifier | OPT.IsCustomer | M_PricingSystem_ID.Identifier | REST.Context.Value |
       | customerAT | Y              | ps                            | customerATValue    |
@@ -176,7 +173,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | ic                                | taxDEtoAT               | taxDEtoAT                        |
 
   @Id:S31985_TC4
-  Scenario: TC4 — the category selects between same-rate taxes, by either identifier form
+  Scenario: the category selects between same-rate taxes, by either identifier form
     Given metasfresh contains C_TaxCategory
       | Identifier   | REST.Context.InternalName | REST.Context.C_TaxCategory_ID |
       | catNormal    | catNormalInternalName     | catNormalId                   |
@@ -267,7 +264,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | icTransportById                   | taxTransport                     |
 
   @Id:S31985_TC5
-  Scenario: TC5 — several matches inside one category resolve by SeqNo, exactly as the engine does
+  Scenario: several matches inside one category resolve by SeqNo, exactly as the engine does
     Given metasfresh contains C_TaxCategory
       | Identifier | REST.Context.InternalName |
       | cat        | catInternalName           |
@@ -307,7 +304,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | ic                                | taxLowSeq               | taxLowSeq                        |
 
   @Id:S31985_TC6
-  Scenario: TC6 — a tied SeqNo is rejected, and nothing is persisted
+  Scenario: a tied SeqNo is rejected, and nothing is persisted
     Given metasfresh contains C_TaxCategory
       | Identifier | REST.Context.InternalName |
       | cat        | catInternalName           |
@@ -343,7 +340,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
     And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC6_H
 
   @Id:S31985_TC7
-  Scenario: TC7 — no matching tax is rejected with a message naming the rate, the category and the scope
+  Scenario: no matching tax is rejected with a message naming the rate, the category and the scope
     Given metasfresh contains C_TaxCategory
       | Identifier | REST.Context.InternalName |
       | cat        | catInternalName           |
@@ -378,10 +375,15 @@ Feature: Invoice-Candidate API — the caller sets the tax
     And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC7_H
 
   @Id:S31985_TC8
-  Scenario: TC8 — a tax-category identifier that does not resolve
+  Scenario: a tax-category identifier that does not resolve
     Given metasfresh contains C_TaxCategory
       | Identifier  | OPT.IsActive | REST.Context.C_TaxCategory_ID |
       | catInactive | N            | catInactiveId                 |
+    # C_TaxCategory_ID=100 is TaxCategoryId.NOT_FOUND: a real, active, system-seeded category on every
+    # instance, but without an InternalName. Give it one, so it can be named by the int- form below too.
+    And C_TaxCategory is given a fresh InternalName:
+      | C_TaxCategory_ID | REST.Context.InternalName |
+      | 100              | catNotFoundInternalName   |
 
     # an internal name nothing carries
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/createCandidates' and fulfills with '422' status code
@@ -512,8 +514,35 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | resourceIdentifier=100 |
     And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC8e_H
 
+    # ... and naming that very same sentinel by its internal name must be rejected just the same: the
+    # int- branch resolves it as readily as the id branch, so it needs the same guard.
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/createCandidates' and fulfills with '422' status code
+      """
+      {
+        "items": [
+          {
+            "orgCode": "001",
+            "externalHeaderId": "31985_TC8f_H",
+            "externalLineId": "31985_TC8f_L1",
+            "billPartnerIdentifier": "val-@customerDEValue@",
+            "productIdentifier": "val-@productValue@",
+            "dateOrdered": "2023-05-10",
+            "qtyOrdered": 1,
+            "soTrx": "SALES",
+            "paymentTerm": "val-sofort",
+            "taxOverride": { "rate": 19, "taxCategoryIdentifier": "int-@catNotFoundInternalName@" }
+          }
+        ]
+      }
+      """
+    Then the metasfresh REST-API error message contains:
+      | Value                                            |
+      | TaxCategory                                      |
+      | resourceIdentifier=int-@catNotFoundInternalName@ |
+    And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC8f_H
+
   @Id:S31985_TC9
-  Scenario: TC9 — a half-specified taxOverride is rejected, naming the missing property
+  Scenario: a half-specified taxOverride is rejected, naming the missing property
     Given metasfresh contains C_TaxCategory
       | Identifier | REST.Context.InternalName |
       | cat        | catInternalName           |
@@ -572,7 +601,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
     And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC9b_H
 
   @Id:S31985_TC10
-  Scenario: TC10 — expired and inactive taxes are invisible, and do not even count towards a multi-match
+  Scenario: expired and inactive taxes are invisible, and do not even count towards a multi-match
     Given metasfresh contains C_TaxCategory
       | Identifier | REST.Context.InternalName |
       | cat        | catInternalName           |
@@ -611,7 +640,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | ic                                | taxValid                         |
 
   @Id:S31985_TC11
-  Scenario: TC11 — without a taxOverride the candidate is exactly what it is today
+  Scenario: without a taxOverride the candidate is exactly what it is today
     Given metasfresh contains C_TaxCategory
       | Identifier | REST.Context.InternalName |
       | cat        | catInternalName           |
@@ -648,7 +677,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | ic                                | tax19                   | null                             |
 
   @Id:S31985_TC12
-  Scenario: TC12 — one bad item rejects the whole batch, leaving no candidate behind
+  Scenario: one bad item rejects the whole batch, leaving no candidate behind
     Given metasfresh contains C_TaxCategory
       | Identifier | REST.Context.InternalName |
       | cat        | catInternalName           |
@@ -703,7 +732,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
     Then there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC12_H
 
   @Id:S31985_TC13
-  Scenario: TC13 — the overridden tax reaches the invoice
+  Scenario: the overridden tax reaches the invoice
     Given metasfresh contains C_TaxCategory
       | Identifier | REST.Context.InternalName |
       | cat        | catInternalName           |
@@ -748,3 +777,31 @@ Feature: Invoice-Candidate API — the caller sets the tax
     And validate invoice lines for invoice:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | OPT.C_Tax_ID.Identifier |
       | invoiceLine                 | product                 | 1           | tax19                   |
+
+  @Id:S31985_TC15
+  Scenario: an InternalName belongs to at most one active tax category, and is freed when that category is deactivated
+    Given metasfresh contains C_TaxCategory
+      | Identifier |
+      | cat        |
+
+    # Nothing on the Java side stops a second active category from taking a name that is already in use,
+    # so this can only be rejected by the database - by the partial unique index on InternalName.
+    Then a second active C_TaxCategory with the same InternalName is rejected:
+      | Identifier |
+      | cat        |
+    # ... which is what lets the int- form of taxCategoryIdentifier resolve to a single category.
+    And C_TaxCategory is found by its InternalName:
+      | Identifier |
+      | cat        |
+
+    # The index is partial on IsActive='Y', and so is the lookup: a retired category no longer holds its
+    # InternalName, so the name can be handed to a new one.
+    When C_TaxCategory is deactivated:
+      | Identifier |
+      | cat        |
+    Then metasfresh contains C_TaxCategory
+      | Identifier | OPT.InternalName.Identifier |
+      | catReused  | cat                         |
+    And C_TaxCategory is found by its InternalName:
+      | Identifier |
+      | catReused  |
