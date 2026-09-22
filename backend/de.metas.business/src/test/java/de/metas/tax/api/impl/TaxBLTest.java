@@ -339,6 +339,7 @@ class TaxBLTest
 	}
 
 	// ---------------------------------------------------------------------
+	// Group F — getTaxNotNull delegates to buildTaxQuery
 	// ---------------------------------------------------------------------
 	@Nested
 	@DisplayName("F. getTaxNotNull resolves through buildTaxQuery, not through a query of its own")

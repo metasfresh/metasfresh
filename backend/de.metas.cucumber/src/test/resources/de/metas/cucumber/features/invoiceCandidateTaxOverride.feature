@@ -55,12 +55,9 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | Identifier | C_TaxCategory_ID.InternalName | Rate | C_Country_ID.CountryCode | SeqNo |
       | tax19      | cat                           | 19   | DE                       | 10    |
 
-    # The rate goes out as the JSON text 19.00 against a tax stored as 19, which the swagger promises are
-    # equivalent. Note what this does and does not pin: Percent's constructor strips trailing zeros
-    # (Percent.java:185), so the SQL filter sees a plain 19 either way - the DB never compares a scaled
-    # value. What is covered here is the JSON-text -> BigDecimal -> Percent leg, which nothing else in the
-    # suite exercises: it fails if rate is narrowed to an integral type or the endpoint starts rejecting a
-    # decimal rate. The stripping itself is not observable from here.
+    # The suite's only decimal rate: it covers the JSON-text -> BigDecimal -> Percent leg, and fails if the
+    # endpoint starts rejecting a decimal. It does NOT test scale matching - Percent normalises the scale
+    # before the query is built.
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/createCandidates' and fulfills with '200' status code
       """
       {
