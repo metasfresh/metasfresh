@@ -16,8 +16,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.tree.AdTreeId;
 import org.compiere.model.MTree;
@@ -242,7 +243,7 @@ final class MenuTreeLoader
 			return null;
 		}
 
-		if (!isRoleAllowedToCreateNewRecords(node.getMainTableName()))
+		if (!isRoleAllowedToCreateNewRecords(adWindowId))
 		{
 			return null;
 		}
@@ -272,16 +273,20 @@ final class MenuTreeLoader
 				.build();
 	}
 
-	private boolean isRoleAllowedToCreateNewRecords(@Nullable final String mainTableName)
+	private boolean isRoleAllowedToCreateNewRecords(@NonNull final AdWindowId adWindowId)
 	{
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(mainTableName);
-		if (adTableId <= 0)
+		// no UserSession.isWebuiThread() fail-open guard as in the sibling checks: this loader resolves the permissions from its own
+		// explicit UserRolePermissionsKey rather than from the session, so there is no session-less thread to fall open for.
+		// The table comes from the window passed in - the effective one - not from MenuNode.getMainTableName(), which the menu row
+		// derives from the base window and which therefore diverges once a customization window overrides in the menu.
+		final AdTableId adTableId = Services.get(IADWindowDAO.class).getMainTableId(adWindowId);
+		if (adTableId == null)
 		{
 			// an unresolved table carries no restriction, so the node stays; never hide on a table we could not resolve
 			return true;
 		}
 
-		return getUserRolePermissions().isCanCreateNewRecords(adTableId);
+		return getUserRolePermissions().isCanCreateNewRecords(adTableId.getRepoId());
 	}
 
 	private MTreeNode retrieveRootNodeModel()

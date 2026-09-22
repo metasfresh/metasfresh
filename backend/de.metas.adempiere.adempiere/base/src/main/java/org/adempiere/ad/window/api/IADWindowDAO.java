@@ -77,6 +77,12 @@ public interface IADWindowDAO extends ISingletonService
 	@Nullable
 	String getFirstTabWhereClause(@NonNull AdWindowId adWindowId);
 
+	/**
+	 * @return the table of the window's top-level ({@code TabLevel=0}) tab with the lowest {@code SeqNo}, or {@code null} if there is none
+	 */
+	@Nullable
+	AdTableId getMainTableId(@NonNull AdWindowId adWindowId);
+
 	void copyWindow(@NonNull WindowCopyRequest request);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
