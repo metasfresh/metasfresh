@@ -6,6 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { BUSINESS_PARTNER_WINDOW_ID } from '../utils/WindowIds';
+import { assertRecordIsValid, getFieldData } from '../utils/WebAPIValidation';
 
 /**
  * Per-role "may create new records" restriction on C_BPartner.
@@ -209,6 +210,131 @@ testCases.forEach(({ language, label }) => {
             // And no create-restriction key was ever delivered for this role.
             expect(restrictionKeyDelivered, 'no create-restriction key must be delivered for an unrestricted role').toBe(false);
             console.log(`[${language}] PASS — unrestricted role creates C_BPartner normally`);
+        });
+    });
+
+    // Neutral-row: the create restriction subtracts ONLY create — a role restricted from creating
+    // C_BPartner still READS and EDITS existing partners normally (WRITE is not removed).
+    test.describe(`Role create restriction — neutral row keeps read+edit (${label})`, () => {
+        test(`restricted role still reads and edits an existing partner (${label} UI)`, async ({ page }) => {
+            allure.epic('E0390: Business Partner');
+            allure.story('Role create restriction — read and edit are unaffected by the create block');
+            allure.tag('F33020: Roles');
+            allure.tag('F33020');
+            allure.severity('critical');
+            allure.parameter('Language', language);
+            allure.tag(language);
+            test.setTimeout(120000);
+
+            // Capture an existing partner's id from the list documentView payload (the response returns a
+            // bpartner code, not a numeric id, so the list row is the reliable handle to an existing record).
+            let firstRowId = null;
+            page.on('response', async (r) => {
+                try {
+                    if (firstRowId) return;
+                    if (!r.url().includes(`/documentView/${BUSINESS_PARTNER_WINDOW_ID}/`)) return;
+                    if (!(r.headers()['content-type'] || '').includes('json')) return;
+                    const j = JSON.parse(await r.text());
+                    if (Array.isArray(j.result) && j.result.length > 0 && j.result[0].id != null) firstRowId = String(j.result[0].id);
+                } catch (e) { /* ignore */ }
+            });
+
+            const masterdata = await Backend.createMasterdata({
+                request: {
+                    login: { user: { language } },
+                    roles: {
+                        restricted: {
+                            name: `CreateRestrictedRW_${language}`,
+                            tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }],
+                            user: { language },
+                        },
+                    },
+                },
+            });
+            const roleUser = masterdata.roles.restricted.user;
+            expect(roleUser, 'masterdata must return the restricted role user').toBeTruthy();
+
+            await LoginPage.goto();
+            await LoginPage.login(roleUser);
+            await DashboardPage.expectVisible();
+
+            // Open the list, capture an existing partner id.
+            await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
+            await page.locator('.document-list-wrapper, .document-list').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await expect.poll(() => firstRowId, { timeout: VERY_SLOW_ACTION_TIMEOUT, message: 'an existing partner row id must be available' }).not.toBeNull();
+            console.log(`[${language}] existing partner id = ${firstRowId}`);
+
+            // READ: the restricted role opens the existing partner and it loads as a valid record.
+            await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${firstRowId}`);
+            await page.waitForURL(new RegExp(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${firstRowId}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await assertRecordIsValid(BUSINESS_PARTNER_WINDOW_ID, firstRowId, 'restricted role reads an existing partner');
+
+            // EDIT still allowed: the create restriction subtracts CREATE only, not WRITE — so the loaded
+            // record's fields remain editable (readonly=false). This is the discriminating counterpart to
+            // the read-only role's readonly=true on the same field.
+            const name2 = await getFieldData(BUSINESS_PARTNER_WINDOW_ID, firstRowId, 'Name2');
+            expect(name2, 'the restricted role must still READ the partner fields').toBeTruthy();
+            expect(name2.readonly, 'a create-restricted role must still be able to EDIT (WRITE not removed)').toBe(false);
+            console.log(`[${language}] PASS — restricted role reads + can edit existing partner (Name2.readonly=${name2.readonly})`);
+        });
+    });
+
+    // Read-only-flag subtract: IsReadOnly='Y' removes WRITE only — read-yes / edit-no. This is the one
+    // assertion that distinguishes the subtract contract from the old replace encoding.
+    test.describe(`Role read-only table access — read yes, edit no (${label})`, () => {
+        test(`read-only role reads but cannot edit an existing partner (${label} UI)`, async ({ page }) => {
+            allure.epic('E0390: Business Partner');
+            allure.story('Role table access — read-only flag removes WRITE only (subtract contract)');
+            allure.tag('F33020: Roles');
+            allure.tag('F33020');
+            allure.severity('critical');
+            allure.parameter('Language', language);
+            allure.tag(language);
+            test.setTimeout(120000);
+
+            let firstRowId = null;
+            page.on('response', async (r) => {
+                try {
+                    if (firstRowId) return;
+                    if (!r.url().includes(`/documentView/${BUSINESS_PARTNER_WINDOW_ID}/`)) return;
+                    if (!(r.headers()['content-type'] || '').includes('json')) return;
+                    const j = JSON.parse(await r.text());
+                    if (Array.isArray(j.result) && j.result.length > 0 && j.result[0].id != null) firstRowId = String(j.result[0].id);
+                } catch (e) { /* ignore */ }
+            });
+
+            const masterdata = await Backend.createMasterdata({
+                request: {
+                    login: { user: { language } },
+                    roles: {
+                        readonly: {
+                            name: `ReadOnlyBP_${language}`,
+                            tableAccess: [{ tableName: 'C_BPartner', readOnly: true }],
+                            user: { language },
+                        },
+                    },
+                },
+            });
+            const roleUser = masterdata.roles.readonly.user;
+            expect(roleUser, 'masterdata must return the read-only role user').toBeTruthy();
+
+            await LoginPage.goto();
+            await LoginPage.login(roleUser);
+            await DashboardPage.expectVisible();
+
+            await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
+            await page.locator('.document-list-wrapper, .document-list').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await expect.poll(() => firstRowId, { timeout: VERY_SLOW_ACTION_TIMEOUT, message: 'an existing partner row id must be available' }).not.toBeNull();
+
+            // READ-YES: the record loads and its fields are readable.
+            await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${firstRowId}`);
+            await page.waitForURL(new RegExp(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${firstRowId}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+            const name2 = await getFieldData(BUSINESS_PARTNER_WINDOW_ID, firstRowId, 'Name2');
+            expect(name2, 'a read-only role must still READ the partner fields').toBeTruthy();
+
+            // EDIT-NO: WRITE is subtracted, so every field on the loaded record is read-only.
+            expect(name2.readonly, 'a read-only role must NOT be able to edit (WRITE removed by the subtract)').toBe(true);
+            console.log(`[${language}] PASS — read-only role: read yes, edit no (Name2.readonly=${name2.readonly})`);
         });
     });
 });
