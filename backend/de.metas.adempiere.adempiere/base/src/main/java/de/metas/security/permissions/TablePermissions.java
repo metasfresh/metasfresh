@@ -43,13 +43,6 @@ public final class TablePermissions extends AbstractPermissions<TablePermission>
 		return hasAccess(AD_Table_ID, Access.EXPORT);
 	}
 
-	/** The permission is restrictive only: it is granted unless the role explicitly forbids it. */
-	public boolean isCanCreateNewRecords(final int AD_Table_ID)
-	{
-		final TablePermission permission = getPermissionOrDefault(TableResource.ofAD_Table_ID(AD_Table_ID));
-		return !Boolean.FALSE.equals(permission.getCanCreateNewRecords());
-	}
-
 	public static class Builder extends PermissionsBuilder<TablePermission, TablePermissions>
 	{
 		@Override

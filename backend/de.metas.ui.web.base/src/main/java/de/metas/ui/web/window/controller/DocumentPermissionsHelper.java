@@ -7,6 +7,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -285,7 +286,7 @@ public class DocumentPermissionsHelper
 		final int adTableId = getAdTableId(entityDescriptor);
 		if (adTableId <= 0) {return BooleanWithReason.TRUE;}
 
-		return permissions.isCanCreateNewRecords(adTableId)
+		return permissions.isTableAccess(adTableId, Access.CREATE)
 				? BooleanWithReason.TRUE
 				: BooleanWithReason.falseBecause(roleCreateNotAllowedReason(permissions));
 	}

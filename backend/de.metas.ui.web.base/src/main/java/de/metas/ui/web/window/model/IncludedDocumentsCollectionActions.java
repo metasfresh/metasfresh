@@ -5,6 +5,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.table.api.AdTableId;
 
+import de.metas.security.permissions.Access;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -207,7 +208,7 @@ public final class IncludedDocumentsCollectionActions
 			return true;
 		}
 
-		return UserSession.getCurrentPermissions().isCanCreateNewRecords(adTableId.getRepoId());
+		return UserSession.getCurrentPermissions().isTableAccess(adTableId.getRepoId(), Access.CREATE);
 	}
 
 	public LogicExpressionResult getAllowDeleteDocument()

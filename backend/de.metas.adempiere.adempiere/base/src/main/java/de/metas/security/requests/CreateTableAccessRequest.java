@@ -32,8 +32,8 @@ import javax.annotation.Nullable;
  */
 
 /**
- * Creates one {@code AD_Table_Access} row. Each flag is three-state: {@code null} means the row says
- * nothing about that aspect, so the role's own default keeps standing.
+ * Creates one {@code AD_Table_Access} row. Each flag is nullable here: {@code null} means the row says
+ * nothing about that aspect, so the column keeps its own (non-restricting) default.
  */
 @Value
 @Builder
@@ -44,8 +44,6 @@ public class CreateTableAccessRequest
 	@NonNull OrgId orgId;
 
 	@NonNull AdTableId adTableId;
-
-	@Nullable Boolean exclude;
 
 	@Nullable Boolean readOnly;
 

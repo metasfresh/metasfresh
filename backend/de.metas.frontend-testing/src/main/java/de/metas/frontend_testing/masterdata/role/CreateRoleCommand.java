@@ -156,7 +156,6 @@ public class CreateRoleCommand
 					.roleId(roleId)
 					.orgId(OrgId.ANY)
 					.adTableId(adTableId)
-					.exclude(tableAccessRequest.getExclude())
 					.readOnly(tableAccessRequest.getReadOnly())
 					.canReport(tableAccessRequest.getCanReport())
 					.canExport(tableAccessRequest.getCanExport())

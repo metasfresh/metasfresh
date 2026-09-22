@@ -10,8 +10,8 @@ import javax.annotation.Nullable;
 /**
  * One {@code AD_Table_Access} row of a {@link JsonCreateRoleRequest}.
  * <p>
- * Every flag is three-state: leaving it out means the row says nothing about that aspect and the role's
- * own default keeps standing - which is not the same as setting it to {@code false}.
+ * Every flag is nullable: leaving it out means the row says nothing about that aspect and the column's
+ * own (non-restricting) default keeps standing - which is not the same as setting it to {@code false}.
  */
 @Value
 @Builder
@@ -20,9 +20,6 @@ public class JsonRoleTableAccessRequest
 {
 	/** e.g. {@code C_BPartner} */
 	@NonNull String tableName;
-
-	/** {@code IsExclude} */
-	@Nullable Boolean exclude;
 
 	/** {@code IsReadOnly} */
 	@Nullable Boolean readOnly;

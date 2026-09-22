@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.security.permissions.Access;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -385,7 +386,7 @@ public final class JSONDocumentLayoutElementField
 			return true;
 		}
 
-		return UserSession.getCurrentPermissions().isCanCreateNewRecords(adTableId);
+		return UserSession.getCurrentPermissions().isTableAccess(adTableId, Access.CREATE);
 	}
 
 	void setAdvSearchWindow(
