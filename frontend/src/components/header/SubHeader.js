@@ -1,3 +1,4 @@
+import classnames from 'classnames';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
@@ -15,7 +16,10 @@ import keymap from '../../shortcuts/keymap';
 import Actions from './Actions';
 import BookmarkButton from './BookmarkButton';
 import { DocumentAction } from '../../constants/DocumentAction';
-import { getMasterDocumentStandardActions } from '../../reducers/windowHandler';
+import {
+  getMasterDocumentDisabledStandardActions,
+  getMasterDocumentStandardActions,
+} from '../../reducers/windowHandler';
 
 const simplifyName = (name) => name.toLowerCase().replace(/\s/g, '');
 
@@ -239,9 +243,79 @@ export const getStandardActions = ({ state, windowId, documentId, viewId }) => {
   }
 };
 
+/**
+ * @summary the standard actions which are transmitted but shall be rendered disabled, each with the
+ *          reason why. Only the single document route carries them; the view route has no such payload.
+ * @return {Array} entries of `{ action, reason, reasonKey }`
+ */
+export const getDisabledStandardActions = ({
+  state,
+  windowId,
+  documentId,
+  viewId,
+}) => {
+  if (!windowId || viewId || !documentId) {
+    return [];
+  }
+
+  return getMasterDocumentDisabledStandardActions({
+    state,
+    windowId,
+    documentId,
+  });
+};
+
+/**
+ * @summary the standard actions which may actually be triggered: present in the list and not disabled.
+ *          The single source both the menu item's click handling and the keyboard shortcuts read,
+ *          so the permission is never derived twice.
+ */
+export const getEnabledStandardActions = ({
+  state,
+  windowId,
+  documentId,
+  viewId,
+}) => {
+  const standardActions = getStandardActions({
+    state,
+    windowId,
+    documentId,
+    viewId,
+  });
+
+  const disabledStandardActions = getDisabledStandardActions({
+    state,
+    windowId,
+    documentId,
+    viewId,
+  });
+  if (!disabledStandardActions.length) {
+    return standardActions;
+  }
+
+  return standardActions.filter(
+    (action) =>
+      !disabledStandardActions.some((disabled) => disabled.action === action)
+  );
+};
+
 const useStandardActions = ({ windowId, documentId, viewId }) => {
   return useSelector((state) =>
     getStandardActions({ state, windowId, documentId, viewId })
+  );
+};
+
+const useDisabledStandardAction = ({
+  windowId,
+  documentId,
+  viewId,
+  action,
+}) => {
+  return useSelector(
+    (state) =>
+      getDisabledStandardActions({ state, windowId, documentId, viewId }).find(
+        (disabled) => disabled.action === action
+      ) ?? null
   );
 };
 
@@ -265,6 +339,13 @@ const MenuNavigationColumn = ({
     windowId,
     documentId: dataId,
     viewId,
+  });
+
+  const newDocumentDisabled = useDisabledStandardAction({
+    windowId,
+    documentId: dataId,
+    viewId,
+    action: DocumentAction.NEW_DOCUMENT,
   });
 
   let currentNode = elementPath;
@@ -307,6 +388,8 @@ const MenuNavigationColumn = ({
         hotkey={keymap.NEW_DOCUMENT}
         onAction={onAction}
         visible={standardActions.includes(DocumentAction.NEW_DOCUMENT)}
+        disabled={!!newDocumentDisabled}
+        disabledReason={newDocumentDisabled?.reason}
       />
       <MenuItem
         action={DocumentAction.ABOUT_DOCUMENT}
@@ -440,6 +523,8 @@ const MenuItem = ({
   icon,
   hotkey,
   visible = true,
+  disabled = false,
+  disabledReason,
   onAction,
 }) => {
   if (!visible) return null;
@@ -450,13 +535,20 @@ const MenuItem = ({
     <div
       id={`subheaderNav_${simplifyName(caption)}`}
       key={action}
-      className="subheader-item js-subheader-item"
+      className={classnames('subheader-item js-subheader-item', {
+        'subheader-item-disabled': disabled,
+      })}
       tabIndex={0}
-      onClick={() => onAction({ action: action })}
+      onClick={disabled ? null : () => onAction({ action: action })}
     >
       <i className={icon} />
       {caption}
       <span className="tooltip-inline">{hotkey}</span>
+      {disabled && disabledReason && (
+        <p className="one-line">
+          <small>({disabledReason})</small>
+        </p>
+      )}
     </div>
   );
 };
@@ -467,6 +559,8 @@ MenuItem.propTypes = {
   icon: PropTypes.string,
   hotkey: PropTypes.string,
   visible: PropTypes.any,
+  disabled: PropTypes.bool,
+  disabledReason: PropTypes.string,
   onAction: PropTypes.func.isRequired,
 };
 

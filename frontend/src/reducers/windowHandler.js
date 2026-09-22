@@ -484,6 +484,24 @@ export const getMasterDocumentStandardActions = ({
   return state.windowHandler?.master?.standardActions ?? [];
 };
 
+/**
+ * @summary the standard actions of the master document which are transmitted but shall be rendered
+ *          disabled, each with the reason why (see the backend's `JSONDisabledStandardAction`).
+ *          Absent from the payload when nothing is disabled.
+ * @return {Array} entries of `{ action, reason, reasonKey }`
+ */
+export const getMasterDocumentDisabledStandardActions = ({
+  state,
+  windowId,
+  documentId,
+}) => {
+  if (!windowId || !documentId) {
+    return [];
+  }
+
+  return state.windowHandler?.master?.disabledStandardActions ?? [];
+};
+
 //
 //
 //
@@ -672,6 +690,7 @@ export default function windowHandler(state = initialState, action) {
           layout,
           saveStatus: action.saveStatus,
           standardActions: action.standardActions,
+          disabledStandardActions: action.disabledStandardActions,
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
