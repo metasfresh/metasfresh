@@ -77,25 +77,17 @@ import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
  * sysconfig that would make a completing sales order generate reports by itself
  * (de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete, read in
  * OrderCheckupBL.isGenerateReportsOnOrderComplete) ships as 'N'. A spec that only READ the window's view
- * therefore cannot work on CI, however well it works against a data-rich customer stack.
+ * therefore cannot work on CI, however well it works against a data-rich customer stack. So the spec
+ * provisions its own records, through the existing /api/v2/frontendTesting masterdata surface
+ * (e2e/CLAUDE.md § "Test data only via the Backend masterdata API") plus AD_Process 540603
+ * (C_Order_MFGWarehouse_Report_Generate), which calls OrderCheckupBL.generateReportsIfEligible directly
+ * (C_Order_MFGWarehouse_Report_Generate.java:60) — the same method the on-complete path calls.
  *
- * So the spec provisions its own records, through the real production path and only through the existing
- * /api/v2/frontendTesting masterdata surface (e2e/CLAUDE.md § "Test data only via the Backend masterdata
- * API"): a customer, a component product, a manufactured product with a BOM, a PP_Product_Planning for it,
- * and a completed sales order for that product out of the seed warehouse. Then it runs AD_Process 540603
- * (C_Order_MFGWarehouse_Report_Generate) on that order, which calls OrderCheckupBL.generateReportsIfEligible
- * directly (C_Order_MFGWarehouse_Report_Generate.java:60) — the same method the on-complete path calls.
- *
- * WHY THE PROCESS AND NOT THE SYSCONFIG: flipping OnSalesOrderComplete is a client-0/org-0, system-level
- * write, so every sales order that ANY concurrently-running spec completes would start generating checkup
- * reports too. The process touches only the one order it is invoked on, so its blast radius is zero. It is
- * also reachable for this suite's user: AD_Process_Access grants 540603 to role 540024, which is the role
- * LoginUserCommand assigns (RoleId.WEBUI, LoginUserCommand.java:87,91). The process's own
- * checkPreconditionsApplicable additionally requires sysconfig
- * de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.EnableProcessGear='Y', but that gates only
- * whether the WebUI OFFERS the action in the gear menu — ProcessRestController.createInstanceFromRequest
- * (ProcessRestController.java:210-260) does not consult preconditions, so the REST invocation below works
- * with that sysconfig left at its seeded 'N'. Verified against the seed image on 2026-09-22.
+ * DRIVING THAT PROCESS IS A DELIBERATE CHOICE over flipping the OnSalesOrderComplete sysconfig: the
+ * sysconfig is a client-0/org-0 system-level write, so every sales order ANY concurrently-running spec
+ * completes would start generating checkup reports too, while the process touches only the one order it is
+ * invoked on. Why the REST invocation works although the process's gear-menu precondition sysconfig
+ * (…CreateAndRouteJasperReports.EnableProcessGear) is seeded 'N': ProcessRestController.java:210-260.
  *
  * WHICH KINDS THIS YIELDS — both, deliberately, so the per-kind mapping assertion keeps its full meaning:
  *   * Warehouse('WH') — needs the ORDER LINE's product to have a manufacturing PP_Product_Planning WITH a
@@ -130,7 +122,10 @@ const VIEW_PAGE_LENGTH = 500;
  * docker-builds/Dockerfile.db-init loads and every *-preloaded CI db image is built from), and it is
  * hardcoded because the masterdata API cannot produce an equivalent: JsonWarehouseRequest has no plant
  * field, so a warehouse created via `warehouses: {...}` has PP_Plant_ID NULL and would yield NO Plant('PL')
- * report at all (OrderCheckupBL.java:191-217 only logs a warning and creates nothing).
+ * report at all: OrderCheckupBL.java:194-205 reads sysconfig
+ * de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant, whose DEFAULT IS TRUE, so absent a sysconfig
+ * row it THROWS (only with that row set to 'N' does it log a warning instead) — either way no Plant report
+ * is created.
  *
  *   M_Warehouse 540008 — Value 'StdWarehouse', Name 'Hauptlager', AD_Org_ID 1000000
  *                        PP_Plant_ID = 540006
@@ -213,10 +208,7 @@ gh32265. Verifies that migration 5825570 surfaces C_Order_MFGWarehouse_Report.C_
 Language under test: ${language}.
       `);
 
-      // 240s, not the 180s this spec used while it only READ existing rows: step 1 now provisions its
-      // own sales order and, on a cold stack, may burn up to two 30s shipment-schedule waits before the
-      // attempt that succeeds (see the retry below).
-      test.setTimeout(240000);
+      test.setTimeout(180000);
 
       // 1. Provision a login user of the given language, plus the sales order whose checkup reports
       //    this spec asserts on — see "HOW THE RECORDS UNDER TEST COME INTO EXISTENCE" above. Nothing
@@ -270,35 +262,7 @@ Language under test: ${language}.
         },
       });
 
-      // The FIRST sales order created on a freshly started stack can exceed SalesOrderCreateCommand's
-      // 30s wait for its M_ShipmentSchedule (SalesOrderCreateCommand.java:195-236): that schedule is
-      // written by an async workpackage, and on a cold app JVM the first one takes longer than that —
-      // measured on the CI seed image on 2026-09-22 as ~50s for the first order, with the next one
-      // already through. Nothing about this spec's subject matter: the checkup reports do not involve
-      // shipment schedules at all, and every sibling spec that provisions a sales order carries the
-      // same exposure. So retry the provisioning, but ONLY on exactly that message and only twice, so
-      // that any other masterdata failure — including a real regression in this setup — still fails
-      // immediately and loudly. No assertion is relaxed by this: it is fixture setup, and every
-      // assertion below runs unchanged against whichever attempt succeeded.
-      const SHIPMENT_SCHEDULE_WARMUP_ERROR =
-        'Timeout waiting for shipment schedules to be created and valid';
-      let masterdata;
-      for (let attempt = 1; ; attempt++) {
-        try {
-          masterdata = await Backend.createMasterdata(masterdataRequest());
-          break;
-        } catch (error) {
-            if (
-            attempt > 2 ||
-            !String(error && error.message).includes(SHIPMENT_SCHEDULE_WARMUP_ERROR)
-          ) {
-            throw error;
-          }
-          console.log(
-            `[WARN] masterdata attempt ${attempt} hit the cold-stack shipment-schedule wait; retrying`
-          );
-        }
-      }
+      const masterdata = await Backend.createMasterdata(masterdataRequest());
 
       const salesOrderId = masterdata.salesOrders.order.id;
       expect(
@@ -584,7 +548,7 @@ Language under test: ${language}.
             renderedRecordId = recordId;
             // SECONDARY only (a localized caption): kept to prove the widget shows THAT doctype.
             renderedDocTypeCaption = field.value.caption;
-            // Without this, an empty caption would degenerate the widget check in step 5 into
+            // Without this, an empty caption would degenerate the widget check in step 6 into
             // "the input is empty", which passes for a blank field.
             expect(
               renderedDocTypeCaption,
@@ -601,7 +565,7 @@ Language under test: ${language}.
         // (claude-docs/PAGE_OBJECT_PATTERNS.md § "Timeout Constants"), and they are what the large
         // majority of page.goto call sites in tests/spec pass; the few `timeout: 120000` literals in
         // sibling specs are those specs' whole-test budget reused verbatim, not a measured
-        // navigation need. The whole-test budget is test.setTimeout(240000) above.
+        // navigation need. The whole-test budget is test.setTimeout(180000) above.
         await page.goto(
           `${FRONTEND_BASE_URL}/window/${BESTELLKONTROLLE_WINDOW_ID}/${renderedRecordId}`,
           { timeout: VERY_SLOW_ACTION_TIMEOUT }
@@ -622,12 +586,12 @@ Language under test: ${language}.
         await docTypeInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
         // Not editable: RawLookup renders `disabled={readonly && !disabled}`. As with the payload
-        // `readonly` in step 4, this is DOCUMENT-level — the row is Processed, so the input stays
+        // `readonly` in step 5, this is DOCUMENT-level — the row is Processed, so the input stays
         // disabled even with AD_Field.IsReadOnly='N'. It pins the user-visible outcome, never the
         // field configuration.
         await expect(docTypeInput).toBeDisabled({ timeout: SLOW_ACTION_TIMEOUT });
         // Secondary: the widget shows the doctype the payload resolved (a localized caption — the
-        // invariant identity is pinned in step 4, never here).
+        // invariant identity is pinned in step 5, never here).
         await expect(docTypeInput).toHaveValue(renderedDocTypeCaption, {
           timeout: SLOW_ACTION_TIMEOUT,
         });
