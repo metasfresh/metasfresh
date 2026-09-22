@@ -22,6 +22,7 @@ import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -55,19 +56,15 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  */
 
 @Service
+@RequiredArgsConstructor
 public class ManualCandidateService
 {
-	private final BPartnerCompositeRepository bPartnerCompositeRepository;
+	@NonNull private final BPartnerCompositeRepository bPartnerCompositeRepository;
 
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
-
-	public ManualCandidateService(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository)
-	{
-		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
-	}
 
 	/**
 	 * Invokes different metasfresh services to complement additional fields such as the price.

@@ -342,7 +342,7 @@ class TaxBLTest
 	// Group F — buildTaxQuery seam parity with getTaxNotNull
 	// ---------------------------------------------------------------------
 	@Nested
-	@DisplayName("F. buildTaxQuery seam parity with getTaxNotNull")
+	@DisplayName("F. getTaxNotNull resolves through buildTaxQuery, not through a query of its own")
 	class BuildTaxQuery
 	{
 		private static final int COUNTRY_ID = 2000;

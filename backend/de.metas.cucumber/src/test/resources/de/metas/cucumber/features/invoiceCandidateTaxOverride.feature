@@ -55,6 +55,8 @@ Feature: Invoice-Candidate API — the caller sets the tax
       | Identifier | C_TaxCategory_ID.InternalName | Rate | C_Country_ID.CountryCode | SeqNo |
       | tax19      | cat                           | 19   | DE                       | 10    |
 
+    # The rate goes out as 19.00 against a tax stored as 19: the swagger promises the two are
+    # equivalent, and only a differently scaled rate on the wire tests that over a real numeric column.
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/createCandidates' and fulfills with '200' status code
       """
       {
@@ -69,7 +71,7 @@ Feature: Invoice-Candidate API — the caller sets the tax
             "qtyOrdered": 1,
             "soTrx": "SALES",
             "paymentTerm": "val-sofort",
-            "taxOverride": { "rate": 19, "taxCategoryIdentifier": "int-@catInternalName@" }
+            "taxOverride": { "rate": 19.00, "taxCategoryIdentifier": "int-@catInternalName@" }
           }
         ]
       }
@@ -432,9 +434,9 @@ Feature: Invoice-Candidate API — the caller sets the tax
       }
       """
     Then the metasfresh REST-API error message contains:
-      | Value       |
-      | TaxCategory |
-      | 999999999   |
+      | Value                      |
+      | TaxCategory                |
+      | resourceIdentifier=999999999 |
     And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC8b_H
 
     # the id of a category that exists but is INACTIVE — the id form checks IsActive, like the int- form
@@ -458,9 +460,9 @@ Feature: Invoice-Candidate API — the caller sets the tax
       }
       """
     Then the metasfresh REST-API error message contains:
-      | Value           |
-      | TaxCategory     |
-      | @catInactiveId@ |
+      | Value                            |
+      | TaxCategory                      |
+      | resourceIdentifier=@catInactiveId@ |
     And there is no C_Invoice_Candidate with ExternalHeaderId 31985_TC8c_H
 
     # an identifier form this property does not support -> 404, exactly as for every other identifier here

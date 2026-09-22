@@ -165,8 +165,6 @@ public class TaxNotFoundException extends AdempiereException
 	{
 		return builderOfQuery(taxQuery)
 				.taxCategoryIdentifier(taxCategoryIdentifier)
-				// the scope fields the 1-arg overload deliberately leaves out - each costs a DB lookup while the
-				// message is rendered
 				.orgId(taxQuery.getOrgId())
 				.shipToCountryId(taxQuery.getShippingCountryId())
 				.shipToC_Location_ID(taxQuery.getBPartnerLocationId())
