@@ -339,7 +339,6 @@ class TaxBLTest
 	}
 
 	// ---------------------------------------------------------------------
-	// Group F — buildTaxQuery seam parity with getTaxNotNull
 	// ---------------------------------------------------------------------
 	@Nested
 	@DisplayName("F. getTaxNotNull resolves through buildTaxQuery, not through a query of its own")
