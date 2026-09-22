@@ -87,6 +87,12 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
     allure.story('Pick scheduled to workplace');
     allure.severity('normal');
 
+    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
+    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
+    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
+    // config global does not.
+    test.setTimeout(240000);
+
     const masterdata = await createMasterdata();
 
     await test.step("Picking from workplace1", async () => {

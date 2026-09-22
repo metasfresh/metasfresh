@@ -81,6 +81,12 @@ test('Multi-product order lists all product names one per line', async ({ page }
     allure.story('Picking launcher block layout');
     allure.severity('normal');
 
+    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
+    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
+    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
+    // config global does not.
+    test.setTimeout(240000);
+
     const masterdata = await createMasterdata({
         isBlockLayout: true,
         lines: [
@@ -124,6 +130,12 @@ test('Single-product order renders the same block shape', async ({ page }) => {
     allure.story('Picking launcher block layout');
     allure.severity('normal');
 
+    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
+    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
+    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
+    // config global does not.
+    test.setTimeout(240000);
+
     const masterdata = await createMasterdata({
         isBlockLayout: true,
         lines: [
@@ -160,6 +172,12 @@ test('Switch off keeps a single-line caption without the multiline styling', asy
     allure.tag('F00240');
     allure.story('Picking launcher block layout');
     allure.severity('normal');
+
+    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
+    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
+    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
+    // config global does not.
+    test.setTimeout(240000);
 
     const masterdata = await createMasterdata({
         isBlockLayout: false,

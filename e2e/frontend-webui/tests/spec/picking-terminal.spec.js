@@ -187,6 +187,11 @@ languageCases.forEach(({ language, label }) => {
     );
     allure.severity("critical");
 
+    // Must exceed the shared masterdata fixture's shipment-schedule ceiling
+    // (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s) plus this test's own work; the
+    // 60s config global would otherwise swallow the fixture's descriptive timeout.
+    test.setTimeout(180000);
+
     const masterdata = await createPickingTestData(language);
     await loginAndNavigate(page, masterdata);
 
@@ -226,6 +231,11 @@ languageCases.forEach(({ language, label }) => {
       "Desktop Picking Terminal V2 — Pick from Products to Pick modal (QA scenario 7 equivalent)",
     );
     allure.severity("critical");
+
+    // Must exceed the shared masterdata fixture's shipment-schedule ceiling
+    // (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s) plus this test's own work; the
+    // 60s config global would otherwise swallow the fixture's descriptive timeout.
+    test.setTimeout(180000);
 
     const masterdata = await createPickingTestData(language);
     await loginAndNavigate(page, masterdata);
@@ -591,6 +601,11 @@ test.describe(`Picking Terminal V1 — Process/Unprocess/Remove (${label})`, () 
     allure.story("V1 Picking Terminal — pick HU and process (QA scenario 7)");
     allure.severity("critical");
 
+    // Must exceed the shared masterdata fixture's shipment-schedule ceiling
+    // (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s) plus this test's own work; the
+    // 60s config global would otherwise swallow the fixture's descriptive timeout.
+    test.setTimeout(180000);
+
     const { masterdata, psViewId, pickingSlotRowId } = await setupV1Test(page, language);
 
     // Verify order data visible in the UI
@@ -651,6 +666,11 @@ test.describe(`Picking Terminal V1 — Process/Unprocess/Remove (${label})`, () 
       "V1 Picking Terminal — pick HU creates candidate, unpick action available (QA scenario 6)",
     );
     allure.severity("critical");
+
+    // Must exceed the shared masterdata fixture's shipment-schedule ceiling
+    // (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s) plus this test's own work; the
+    // 60s config global would otherwise swallow the fixture's descriptive timeout.
+    test.setTimeout(180000);
 
     const { psViewId, pickingSlotRowId } = await setupV1Test(page, language);
 

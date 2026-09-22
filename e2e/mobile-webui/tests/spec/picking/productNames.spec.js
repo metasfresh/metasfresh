@@ -68,6 +68,12 @@ test('Multi-product order lists all product names', async ({ page }) => {
     allure.story('Picking launcher product names');
     allure.severity('normal');
 
+    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
+    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
+    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
+    // config global does not.
+    test.setTimeout(240000);
+
     const masterdata = await createMasterdata({
         productField: 'PRODUCT_NAMES',
         lines: [
@@ -102,6 +108,12 @@ test('Single-product order looks unchanged', async ({ page }) => {
     allure.story('Picking launcher product names');
     allure.severity('normal');
 
+    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
+    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
+    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
+    // config global does not.
+    test.setTimeout(240000);
+
     const masterdata = await createMasterdata({
         productField: 'PRODUCT_NAMES',
         lines: [
@@ -134,6 +146,12 @@ test('The existing PRODUCT_NAME field type is untouched', async ({ page }) => {
     allure.tag('F00240');
     allure.story('Picking launcher product names');
     allure.severity('normal');
+
+    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
+    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
+    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
+    // config global does not.
+    test.setTimeout(240000);
 
     const masterdata = await createMasterdata({
         productField: 'PRODUCT_NAME',

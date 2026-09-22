@@ -15,6 +15,12 @@ test('Already-started job still lists its products', async ({ page }) => {
     allure.story('Picking launcher product names');
     allure.severity('normal');
 
+    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
+    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
+    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
+    // config global does not.
+    test.setTimeout(240000);
+
     // Own workplace so this test's job list is scoped to jobs it created itself, isolating it
     // from jobs created by other tests sharing the same picking job list.
     const workplace = 'workplace1';
@@ -97,6 +103,12 @@ test('Detail surfaces name the right subject', async ({ page }) => {
     allure.tag('F00240');
     allure.story('Picking launcher product names');
     allure.severity('normal');
+
+    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
+    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
+    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
+    // config global does not.
+    test.setTimeout(240000);
 
     // Own workplace so this test's job list is scoped to jobs it created itself, isolating it
     // from jobs created by other tests sharing the same picking job list.
