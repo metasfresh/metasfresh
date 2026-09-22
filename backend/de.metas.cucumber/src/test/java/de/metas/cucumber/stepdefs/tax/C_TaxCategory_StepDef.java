@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Optionals;
@@ -51,6 +52,7 @@ public class C_TaxCategory_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final C_TaxCategory_StepDefData taxCategoryTable;
+	@NonNull private final TestContext restTestContext;
 
 	public Optional<TaxCategoryId> extractTaxCategoryId(@NonNull final DataTableRow row)
 	{
@@ -106,7 +108,15 @@ public class C_TaxCategory_StepDef
 	 *
 	 * <p><b>Optional columns</b>:
 	 * <ul>
-	 *     <li>{@code Name}, {@code InternalName} — auto-generated via {@code suggestValueAndName} if absent</li>
+	 *     <li>{@code Name}, {@code InternalName} — auto-generated via {@code suggestValueAndName} if absent.
+	 *         Leaving them out is the safest choice: {@code C_TaxCategory.InternalName} is unique among active
+	 *         records, so a hard-coded value collides with the row a previous run of the same scenario left behind</li>
+	 *     <li>{@code IsActive} — {@code Y}/{@code N}/{@code true}/{@code false}; defaults to {@code Y}. An
+	 *         inactive category is invisible both to tax determination and to the REST-API identifier lookup</li>
+	 *     <li>{@code REST.Context.C_TaxCategory_ID} — name of a REST context variable to hold the new record's
+	 *         {@code C_TaxCategory_ID}, for use as {@code @name@} in a later REST payload</li>
+	 *     <li>{@code REST.Context.InternalName} — name of a REST context variable to hold the new record's
+	 *         {@code InternalName}; needed to name an auto-generated category in a REST payload</li>
 	 * </ul>
 	 *
 	 * <p><b>Gherkin usage example</b>:
@@ -133,10 +143,17 @@ public class C_TaxCategory_StepDef
 		final I_C_TaxCategory taxCategoryRecord = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
 		taxCategoryRecord.setName(name);
 		taxCategoryRecord.setInternalName(internalName);
+		row.getAsOptionalBoolean(I_C_TaxCategory.COLUMNNAME_IsActive)
+				.ifPresent(taxCategoryRecord::setIsActive);
 		InterfaceWrapperHelper.saveRecord(taxCategoryRecord);
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(identifier -> taxCategoryTable.put(identifier, taxCategoryRecord));
+
+		row.getAsOptionalIdentifier("REST.Context.C_TaxCategory_ID")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), taxCategoryRecord.getC_TaxCategory_ID()));
+		row.getAsOptionalIdentifier("REST.Context.InternalName")
+				.ifPresent(id -> restTestContext.setVariable(id.getAsString(), taxCategoryRecord.getInternalName()));
 	}
 
 	@And("load C_TaxCategory:")
