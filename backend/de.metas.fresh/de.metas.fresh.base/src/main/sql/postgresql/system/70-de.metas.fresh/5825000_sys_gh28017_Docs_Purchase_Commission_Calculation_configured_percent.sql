@@ -1,24 +1,9 @@
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Docs_Purchase_Commission_Calculation.sql
+--
+-- Appends configuredpercentofbasepoints to the end of the RETURNS TABLE signature and passes
+-- through the column of the same name that C_Commission_Overview_V now exposes. Appending only:
+-- no existing column is reordered, renamed or removed, so existing report templates keep reading
+-- the columns they read today.
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Commission_Calculation (IN p_BPartner_SalesRep_ID numeric,
                                                                                                  IN p_CommissionDate_From  timestamp without time zone,
