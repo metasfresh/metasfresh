@@ -390,6 +390,7 @@ const MenuNavigationColumn = ({
         visible={standardActions.includes(DocumentAction.NEW_DOCUMENT)}
         disabled={!!newDocumentDisabled}
         disabledReason={newDocumentDisabled?.reason}
+        disabledReasonKey={newDocumentDisabled?.reasonKey}
       />
       <MenuItem
         action={DocumentAction.ABOUT_DOCUMENT}
@@ -525,6 +526,7 @@ const MenuItem = ({
   visible = true,
   disabled = false,
   disabledReason,
+  disabledReasonKey,
   onAction,
 }) => {
   if (!visible) return null;
@@ -540,6 +542,11 @@ const MenuItem = ({
       })}
       tabIndex={0}
       onClick={disabled ? null : () => onAction({ action: action })}
+      data-testid={
+        disabled && disabledReasonKey
+          ? `disabledReasonKey-${disabledReasonKey}`
+          : undefined
+      }
     >
       <i className={icon} />
       {caption}
@@ -561,6 +568,7 @@ MenuItem.propTypes = {
   visible: PropTypes.any,
   disabled: PropTypes.bool,
   disabledReason: PropTypes.string,
+  disabledReasonKey: PropTypes.string,
   onAction: PropTypes.func.isRequired,
 };
 
