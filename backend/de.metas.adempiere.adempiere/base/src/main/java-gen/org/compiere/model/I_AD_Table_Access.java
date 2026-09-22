@@ -78,6 +78,27 @@ public interface I_AD_Table_Access
 	String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
 	/**
+	 * Set AD_Table_Access.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Table_Access_ID (int AD_Table_Access_ID);
+
+	/**
+	 * Get AD_Table_Access.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Table_Access_ID();
+
+	ModelColumn<I_AD_Table_Access, Object> COLUMN_AD_Table_Access_ID = new ModelColumn<>(I_AD_Table_Access.class, "AD_Table_Access_ID", null);
+	String COLUMNNAME_AD_Table_Access_ID = "AD_Table_Access_ID";
+
+	/**
 	 * Set Table.
 	 * Database Table information
 	 *

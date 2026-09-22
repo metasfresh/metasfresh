@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Table_Access extends org.compiere.model.PO implements I_AD_Table_Access, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 794828551L;
+	private static final long serialVersionUID = -2119954533L;
 
     /** Standard Constructor */
     public X_AD_Table_Access (final Properties ctx, final int AD_Table_Access_ID, @Nullable final String trxName)
@@ -59,6 +59,21 @@ public class X_AD_Table_Access extends org.compiere.model.PO implements I_AD_Tab
 	public int getAD_Role_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Role_ID);
+	}
+
+	@Override
+	public void setAD_Table_Access_ID (final int AD_Table_Access_ID)
+	{
+		if (AD_Table_Access_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Table_Access_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_Table_Access_ID, AD_Table_Access_ID);
+	}
+
+	@Override
+	public int getAD_Table_Access_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Table_Access_ID);
 	}
 
 	@Override
