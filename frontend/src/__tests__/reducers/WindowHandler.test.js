@@ -15,6 +15,7 @@ import reducer, {
   getProcessWidgetFields,
   isRelevantSaveError,
   computeSaveStatusFlags,
+  getIncludedTabCreateNewDisabledReason,
 } from '../../reducers/windowHandler';
 import * as IndicatorState from '../../constants/IndicatorState';
 
@@ -326,6 +327,46 @@ describe('computeSaveStatusFlags — relevant save error surfacing', () => {
       },
     });
     expect(indicator).toBe(IndicatorState.PENDING);
+  });
+});
+
+describe('getIncludedTabCreateNewDisabledReason', () => {
+  it('is null when there is no tab info at all', () => {
+    expect(getIncludedTabCreateNewDisabledReason(undefined)).toBeNull();
+    expect(getIncludedTabCreateNewDisabledReason(null)).toBeNull();
+  });
+
+  it('is null when creating a new record is allowed (nothing to report)', () => {
+    const tabInfo = {
+      allowCreateNew: true,
+      allowCreateNewReason: 'irrelevant',
+      allowCreateNewReasonKey: 'irrelevant',
+    };
+    expect(getIncludedTabCreateNewDisabledReason(tabInfo)).toBeNull();
+  });
+
+  // An internal technical reason (no reasonKey) must never reach the DOM.
+  it('is null when creation is refused but no allowCreateNewReasonKey is present (internal technical reason)', () => {
+    const tabInfo = {
+      allowCreateNew: false,
+      allowCreateNewReason: 'Unsaved row found',
+    };
+    expect(getIncludedTabCreateNewDisabledReason(tabInfo)).toBeNull();
+  });
+
+  // The load-bearing case: this is what stops a technical string such as
+  // `ParentDocumentProcessed` from being shown to a customer — only a reason accompanied
+  // by its stable AD_Message key is ever surfaced.
+  it('returns the reason and its key when creation is refused with a reasonKey', () => {
+    const tabInfo = {
+      allowCreateNew: false,
+      allowCreateNewReason: 'The parent document is already processed.',
+      allowCreateNewReasonKey: 'ParentDocumentProcessed',
+    };
+    expect(getIncludedTabCreateNewDisabledReason(tabInfo)).toEqual({
+      reason: 'The parent document is already processed.',
+      reasonKey: 'ParentDocumentProcessed',
+    });
   });
 });
 

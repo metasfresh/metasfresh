@@ -154,7 +154,7 @@ const TableFilter = ({
   // creation is refused for a reason the user shall see: render the button disabled with that reason
   // instead of leaving the tab without any affordance. Covers both input modes which would otherwise
   // have offered one.
-  const showNewButtonDisabled =
+  const shouldShowDisabledNewButton =
     (newRecordInputMode === 'ALL_METHODS' ||
       newRecordInputMode === 'QUICK_INPUT_ONLY') &&
     !allowCreateNew &&
@@ -175,7 +175,7 @@ const TableFilter = ({
               {counterpart.translate('window.addNew.caption')}
             </button>
           )}
-          {showNewButtonDisabled && (
+          {shouldShowDisabledNewButton && (
             <button
               className="btn btn-meta-outline-secondary btn-distance btn-sm subheader-item-disabled"
               onClick={null}
@@ -186,7 +186,7 @@ const TableFilter = ({
               {counterpart.translate('window.addNew.caption')}
             </button>
           )}
-          {showNewButtonDisabled && createNewDisabled.reason && (
+          {shouldShowDisabledNewButton && createNewDisabled.reason && (
             <p className="one-line">
               <small>({createNewDisabled.reason})</small>
             </p>
