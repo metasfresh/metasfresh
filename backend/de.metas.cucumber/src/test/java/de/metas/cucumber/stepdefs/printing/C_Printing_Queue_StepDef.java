@@ -247,4 +247,36 @@ public class C_Printing_Queue_StepDef
 					.isEqualTo(expectedRouting.getAD_PrinterRouting_ID());
 		});
 	}
+
+	/**
+	 * Asserts the {@code IsActive} flag of a previously-located {@code C_Printing_Queue} item -- {@code false}
+	 * is how {@code OrderCheckupPrintingQueueHandler} cancels a print job when the underlying report has no
+	 * responsible user, with no error anywhere else. The regression guard for the accepted risk: an
+	 * unconfigured manufacturing routing silently loses the Packzettel print job.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Printing_Queue_ID</b> — (required, identifier-ref) a queue item located via
+	 *       "C_Printing_Queue item is located:"<br>
+	 *   <b>IsActive</b> — (required) expected {@code IsActive}<br>
+	 * @cucumber.depends StepDefData: C_Printing_Queue_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Printing_Queue has IsActive:
+	 *   | C_Printing_Queue_ID | IsActive |
+	 *   | warehouseQueue4     | false    |
+	 * </pre>
+	 */
+	@Then("C_Printing_Queue has IsActive:")
+	public void assert_is_active(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Printing_Queue queueItem = row.getAsIdentifier(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID).lookupNotNullIn(queueItemTable);
+			final boolean expectedIsActive = row.getAsBoolean(I_C_Printing_Queue.COLUMNNAME_IsActive);
+
+			assertThat(queueItem.isActive())
+					.as("%s of %s", I_C_Printing_Queue.COLUMNNAME_IsActive, queueItem)
+					.isEqualTo(expectedIsActive);
+		});
+	}
 }

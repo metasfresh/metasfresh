@@ -25,8 +25,10 @@ package de.metas.cucumber.stepdefs.ordercheckup;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
@@ -43,6 +45,7 @@ import de.metas.fresh.ordercheckup.OrderCheckupDocumentType;
 import de.metas.fresh.ordercheckup.OrderCheckupReportId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -88,6 +91,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final S_Resource_StepDefData plantTable;
 	@NonNull private final C_DocType_StepDefData docTypeTable;
+	@NonNull private final AD_User_StepDefData userTable;
 
 	/**
 	 * Asserts the COMPLETE set of {@code C_Order_MFGWarehouse_Report} records the given order currently holds:
@@ -426,6 +430,48 @@ public class C_Order_MFGWarehouse_Report_StepDef
 					.ifPresent(expectedPrintFormatId -> assertThat(config.getPrintFormatId().getRepoId())
 							.as("Resolved %s for %s", I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID, report)
 							.isEqualTo(expectedPrintFormatId));
+		});
+	}
+
+	/**
+	 * Asserts a previously-located {@code C_Order_MFGWarehouse_Report}'s {@code AD_User_Responsible_ID} -- the
+	 * user {@code OrderCheckupPrintingQueueHandler} prints the report to, or cancels the print job entirely
+	 * when none is set. Omitting {@code AD_User_ID} asserts NO responsible user is set -- the accepted-risk
+	 * case of an unconfigured manufacturing routing, which is exactly what silently cancels the Packzettel
+	 * print job with no error anywhere.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_MFGWarehouse_Report_ID</b> — (required, identifier-ref) a report located via
+	 *       "C_Order_MFGWarehouse_Report is located:"<br>
+	 *   <b>AD_User_ID</b> — (optional, identifier-ref) expected responsible user; omitted/blank means no
+	 *       responsible user is expected<br>
+	 * @cucumber.depends StepDefData: C_Order_MFGWarehouse_Report_StepDefData, AD_User_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Order_MFGWarehouse_Report resolves responsible user:
+	 *   | C_Order_MFGWarehouse_Report_ID | AD_User_ID  |
+	 *   | warehouseRpt5                  | routingUser |
+	 * </pre>
+	 */
+	@Then("C_Order_MFGWarehouse_Report resolves responsible user:")
+	public void assert_resolves_responsible_user(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Order_MFGWarehouse_Report report = row.getAsIdentifier("C_Order_MFGWarehouse_Report_ID").lookupNotNullIn(reportTable);
+			final UserId expectedUserId = row.getAsOptionalIdentifier("AD_User_ID")
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.map(identifier -> UserId.ofRepoId(identifier.lookupNotNullIn(userTable).getAD_User_ID()))
+					.orElse(null);
+
+			// AD_User_Responsible_ID is null in the database for every user id below 1 (see
+			// OrderCheckupReportIdentity#persistableUserIdOrNull) -- UserId.SYSTEM (repoId=0) means "no
+			// responsible user" here, same as a genuinely unset column.
+			final UserId actualUserId = UserId.ofRepoIdOrNullIfSystem(report.getAD_User_Responsible_ID());
+
+			assertThat(actualUserId)
+					.as("%s of %s", I_C_Order_MFGWarehouse_Report.COLUMNNAME_AD_User_Responsible_ID, report)
+					.isEqualTo(expectedUserId);
 		});
 	}
 }

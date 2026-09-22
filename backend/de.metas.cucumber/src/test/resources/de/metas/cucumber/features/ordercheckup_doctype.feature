@@ -165,6 +165,84 @@ Feature: Bestellkontrolle document type
 
 # ####################################################################################################################
 # ####################################################################################################################
+  @Id:S32265_TC4
+  Scenario: An unconfigured manufacturing routing silently cancels the Packzettel print job
+    # The manufacturing routing every order in this feature completes against (the default routing behind
+    # "metasfresh contains PP_Product_Plannings" in the Background) has no user in charge by default -- the
+    # exact unconfigured state that made the Packzettel vanish for the customer, with no error anywhere.
+    # That routing is shared master data referenced by many features on this executor, so pin the
+    # unconfigured precondition explicitly rather than assuming whatever ran before left it unset.
+    Given update AD_Workflow user in charge:
+      | AD_Workflow_ID | AD_User_InCharge_ID |
+      | 540075         |                     |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order4     | true    | bpartner      | 2026-01-12  | warehouse      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine4 | order4     | product      | 5          |
+
+    When the order identified by order4 is completed
+
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID |
+      | warehouseRpt4 | order4     | WH           | warehouse      | plant       |
+
+    And C_Printing_Queue item is located:
+      | Identifier      | C_Order_MFGWarehouse_Report_ID |
+      | warehouseQueue4 | warehouseRpt4                  |
+
+    # No user in charge on the routing -> the Warehouse record carries no responsible user, and its
+    # printing-queue item is cancelled (deactivated) -- this is the exact silent failure this scenario guards.
+    Then C_Order_MFGWarehouse_Report resolves responsible user:
+      | C_Order_MFGWarehouse_Report_ID |
+      | warehouseRpt4                  |
+
+    And C_Printing_Queue has IsActive:
+      | C_Printing_Queue_ID | IsActive |
+      | warehouseQueue4     | false    |
+
+    # Configuring a user in charge on that SAME routing is the actual fix: the responsible user is carried
+    # through to the next order's Warehouse record and its print job stays active.
+    Given metasfresh contains AD_Users:
+      | Identifier  |
+      | routingUser |
+    And update AD_Workflow user in charge:
+      | AD_Workflow_ID | AD_User_InCharge_ID |
+      | 540075         | routingUser         |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order5     | true    | bpartner      | 2026-01-12  | warehouse      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine5 | order5     | product      | 5          |
+
+    When the order identified by order5 is completed
+
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID |
+      | warehouseRpt5 | order5     | WH           | warehouse      | plant       |
+
+    And C_Printing_Queue item is located:
+      | Identifier      | C_Order_MFGWarehouse_Report_ID |
+      | warehouseQueue5 | warehouseRpt5                  |
+
+    Then C_Order_MFGWarehouse_Report resolves responsible user:
+      | C_Order_MFGWarehouse_Report_ID | AD_User_ID  |
+      | warehouseRpt5                  | routingUser |
+
+    And C_Printing_Queue has IsActive:
+      | C_Printing_Queue_ID | IsActive |
+      | warehouseQueue5     | true     |
+
+    # The routing's prior AD_User_InCharge_ID is restored by an @After hook (AD_Workflow_StepDef), not a
+    # trailing step here -- Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need
+    # the restore, and this routing is shared master data every order in this feature completes against.
+
+
+# ####################################################################################################################
+# ####################################################################################################################
   Scenario: reset settings to default
     # A separate scenario rather than a trailing step, so it still runs if an assertion above failed -- see
     # ordercheckup_reprint.feature for the same pattern and its rationale.
