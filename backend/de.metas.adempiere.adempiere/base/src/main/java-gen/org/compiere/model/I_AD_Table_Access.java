@@ -1,6 +1,5 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Table_Access
@@ -170,23 +169,23 @@ public interface I_AD_Table_Access
 
 	/**
 	 * Set Create new records.
-	 * Controls whether this role may create new records in this table. Not set = no restriction from this role.
+	 * When set to No, the desktop WebUI will not offer or accept creating a new record for this role in this table. Warning: a row added to an included role for an unrelated reason defaults to Yes here and can, in a role-inclusion chain, lift another role's restriction.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsCanCreateNewRecords (@Nullable java.lang.String IsCanCreateNewRecords);
+	void setIsCanCreateNewRecords (boolean IsCanCreateNewRecords);
 
 	/**
 	 * Get Create new records.
-	 * Controls whether this role may create new records in this table. Not set = no restriction from this role.
+	 * When set to No, the desktop WebUI will not offer or accept creating a new record for this role in this table. Warning: a row added to an included role for an unrelated reason defaults to Yes here and can, in a role-inclusion chain, lift another role's restriction.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsCanCreateNewRecords();
+	boolean isCanCreateNewRecords();
 
 	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsCanCreateNewRecords = new ModelColumn<>(I_AD_Table_Access.class, "IsCanCreateNewRecords", null);
 	String COLUMNNAME_IsCanCreateNewRecords = "IsCanCreateNewRecords";
@@ -195,21 +194,21 @@ public interface I_AD_Table_Access
 	 * Set Can Export.
 	 * Users with this role can export data
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsCanExport (@Nullable java.lang.String IsCanExport);
+	void setIsCanExport (boolean IsCanExport);
 
 	/**
 	 * Get Can Export.
 	 * Users with this role can export data
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsCanExport();
+	boolean isCanExport();
 
 	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsCanExport = new ModelColumn<>(I_AD_Table_Access.class, "IsCanExport", null);
 	String COLUMNNAME_IsCanExport = "IsCanExport";
@@ -218,67 +217,44 @@ public interface I_AD_Table_Access
 	 * Set Can Report.
 	 * Users with this role can create reports
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsCanReport (@Nullable java.lang.String IsCanReport);
+	void setIsCanReport (boolean IsCanReport);
 
 	/**
 	 * Get Can Report.
 	 * Users with this role can create reports
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsCanReport();
+	boolean isCanReport();
 
 	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsCanReport = new ModelColumn<>(I_AD_Table_Access.class, "IsCanReport", null);
 	String COLUMNNAME_IsCanReport = "IsCanReport";
 
 	/**
-	 * Set Exclude.
-	 * Exclude access to the data - if not selected Include access to the data
+	 * Set Read-only.
+	 * Field / entry / area is read-only.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsExclude (@Nullable java.lang.String IsExclude);
+	void setIsReadOnly (boolean IsReadOnly);
 
 	/**
-	 * Get Exclude.
-	 * Exclude access to the data - if not selected Include access to the data
+	 * Get Read-only.
+	 * Field / entry / area is read-only.
 	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getIsExclude();
-
-	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsExclude = new ModelColumn<>(I_AD_Table_Access.class, "IsExclude", null);
-	String COLUMNNAME_IsExclude = "IsExclude";
-
-	/**
-	 * Set readonly.
-	 * Feld / Eintrag / Berecih ist schreibgeschützt
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsReadOnly (@Nullable java.lang.String IsReadOnly);
-
-	/**
-	 * Get readonly.
-	 * Feld / Eintrag / Berecih ist schreibgeschützt
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIsReadOnly();
+	boolean isReadOnly();
 
 	ModelColumn<I_AD_Table_Access, Object> COLUMN_IsReadOnly = new ModelColumn<>(I_AD_Table_Access.class, "IsReadOnly", null);
 	String COLUMNNAME_IsReadOnly = "IsReadOnly";

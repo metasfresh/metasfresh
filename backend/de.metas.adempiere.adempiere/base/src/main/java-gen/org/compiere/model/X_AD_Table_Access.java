@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Table_Access extends org.compiere.model.PO implements I_AD_Table_Access, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2119954533L;
+	private static final long serialVersionUID = -1131862601L;
 
     /** Standard Constructor */
     public X_AD_Table_Access (final Properties ctx, final int AD_Table_Access_ID, @Nullable final String trxName)
@@ -91,108 +91,51 @@ public class X_AD_Table_Access extends org.compiere.model.PO implements I_AD_Tab
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
-	/** 
-	 * IsCanCreateNewRecords AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISCANCREATENEWRECORDS_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISCANCREATENEWRECORDS_Yes = "Y";
-	/** No = N */
-	public static final String ISCANCREATENEWRECORDS_No = "N";
 	@Override
-	public void setIsCanCreateNewRecords (final @Nullable java.lang.String IsCanCreateNewRecords)
+	public void setIsCanCreateNewRecords (final boolean IsCanCreateNewRecords)
 	{
 		set_Value (COLUMNNAME_IsCanCreateNewRecords, IsCanCreateNewRecords);
 	}
 
 	@Override
-	public java.lang.String getIsCanCreateNewRecords() 
+	public boolean isCanCreateNewRecords() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsCanCreateNewRecords);
+		return get_ValueAsBoolean(COLUMNNAME_IsCanCreateNewRecords);
 	}
 
-	/** 
-	 * IsCanExport AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISCANEXPORT_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISCANEXPORT_Yes = "Y";
-	/** No = N */
-	public static final String ISCANEXPORT_No = "N";
 	@Override
-	public void setIsCanExport (final @Nullable java.lang.String IsCanExport)
+	public void setIsCanExport (final boolean IsCanExport)
 	{
 		set_Value (COLUMNNAME_IsCanExport, IsCanExport);
 	}
 
 	@Override
-	public java.lang.String getIsCanExport() 
+	public boolean isCanExport() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsCanExport);
+		return get_ValueAsBoolean(COLUMNNAME_IsCanExport);
 	}
 
-	/** 
-	 * IsCanReport AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISCANREPORT_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISCANREPORT_Yes = "Y";
-	/** No = N */
-	public static final String ISCANREPORT_No = "N";
 	@Override
-	public void setIsCanReport (final @Nullable java.lang.String IsCanReport)
+	public void setIsCanReport (final boolean IsCanReport)
 	{
 		set_Value (COLUMNNAME_IsCanReport, IsCanReport);
 	}
 
 	@Override
-	public java.lang.String getIsCanReport() 
+	public boolean isCanReport() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsCanReport);
-	}
-
-	/** 
-	 * IsExclude AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISEXCLUDE_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISEXCLUDE_Yes = "Y";
-	/** No = N */
-	public static final String ISEXCLUDE_No = "N";
-	@Override
-	public void setIsExclude (final @Nullable java.lang.String IsExclude)
-	{
-		set_Value (COLUMNNAME_IsExclude, IsExclude);
+		return get_ValueAsBoolean(COLUMNNAME_IsCanReport);
 	}
 
 	@Override
-	public java.lang.String getIsExclude() 
-	{
-		return get_ValueAsString(COLUMNNAME_IsExclude);
-	}
-
-	/** 
-	 * IsReadOnly AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int ISREADONLY_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String ISREADONLY_Yes = "Y";
-	/** No = N */
-	public static final String ISREADONLY_No = "N";
-	@Override
-	public void setIsReadOnly (final @Nullable java.lang.String IsReadOnly)
+	public void setIsReadOnly (final boolean IsReadOnly)
 	{
 		set_Value (COLUMNNAME_IsReadOnly, IsReadOnly);
 	}
 
 	@Override
-	public java.lang.String getIsReadOnly() 
+	public boolean isReadOnly() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsReadOnly);
+		return get_ValueAsBoolean(COLUMNNAME_IsReadOnly);
 	}
 }
