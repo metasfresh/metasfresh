@@ -261,11 +261,14 @@ Feature: Bestellkontrolle document type
     # The DocumentType value list and the C_DocType_ID column represent the same kind. Values and
     # translations are unchanged.
     # Spot-checked in a language whose translation differs from the default, so a lost/reset translation is
-    # caught, not just a lost value.
+    # caught, not just a lost value. fr_CH and NOT fr_FR: the standard seed carries fr_CH as a system
+    # language and ships an AD_Ref_List_Trl row for it, while fr_FR has IsSystemLanguage='N' and no row at
+    # all -- the FR translation migration is a pure UPDATE, so it no-ops there and the step's
+    # firstOnlyNotNull finds nothing. fr_FR only resolves on stacks that carry it as a system language.
     Then C_Order_MFGWarehouse_Report DocumentType value list is unchanged:
       | Value | Name                       | AD_Language | TranslatedName        |
-      | WH    | Bestellkontrolle           | fr_FR       | Contrôle de l’ordre   |
-      | PL    | Bestellkontrolle spedition | fr_FR       | Transfert de commande |
+      | WH    | Bestellkontrolle           | fr_CH       | Contrôle de l’ordre   |
+      | PL    | Bestellkontrolle spedition | fr_CH       | Transfert de commande |
 
     # A non-default value on just the Warehouse-kind sys config so a swapped or ignored per-kind branch shows
     # up as a mismatch instead of passing vacuously against the shared default of 1 for both kinds.

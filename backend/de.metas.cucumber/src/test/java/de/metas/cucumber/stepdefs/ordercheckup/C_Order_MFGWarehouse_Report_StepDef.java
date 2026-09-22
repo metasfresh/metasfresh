@@ -561,7 +561,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	 * <pre>
 	 * Then C_Order_MFGWarehouse_Report DocumentType value list is unchanged:
 	 *   | Value | Name              | AD_Language | TranslatedName       |
-	 *   | WH    | Bestellkontrolle  | fr_FR       | Contrôle de l’ordre  |
+	 *   | WH    | Bestellkontrolle  | fr_CH       | Contrôle de l’ordre  |
 	 * </pre>
 	 */
 	@Then("C_Order_MFGWarehouse_Report DocumentType value list is unchanged:")
