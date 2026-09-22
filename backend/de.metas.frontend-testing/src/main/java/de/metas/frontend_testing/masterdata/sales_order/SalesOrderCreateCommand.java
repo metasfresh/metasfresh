@@ -61,13 +61,8 @@ public class SalesOrderCreateCommand
 	private transient OrderFactory salesOrderFactory;
 	private final ArrayList<LineCreateRequestAndBuilder> lineCreateRequestAndBuilders = new ArrayList<>();
 
-	/**
-	 * Generous because the schedules are written by an async workpackage: on a cold stack the first order
-	 * of a run needs well over half a minute before its schedules exist and are valid. A warm stack pays
-	 * nothing for it — {@link #waitForShipmentSchedulesToBeValid()} polls and returns as soon as they are
-	 * valid, so this is an upper bound, not a wait.
-	 */
-	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(90);
+	/** Upper bound for BOTH polling loops below — the schedules are written by an async workpackage and a cold stack's first order has been measured past 45s. */
+	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(60);
 	private static final Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
 
 	public JsonSalesOrderCreateResponse execute()
