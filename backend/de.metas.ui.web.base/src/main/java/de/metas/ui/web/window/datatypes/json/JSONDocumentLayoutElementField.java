@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -19,10 +20,12 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -359,7 +362,30 @@ public final class JSONDocumentLayoutElementField
 			return null;
 		}
 
+		if (!isRoleAllowedToCreateNewRecords(lookupTableName))
+		{
+			return null;
+		}
+
 		return newRecordDescriptorsProvider.getNewRecordEntityDescriptorIfAvailable(lookupTableName);
+	}
+
+	private static boolean isRoleAllowedToCreateNewRecords(@NonNull final String lookupTableName)
+	{
+		// a background thread carries no user session, so there is no role to restrict (same reading as IncludedDocumentsCollectionActions)
+		if (!UserSession.isWebuiThread())
+		{
+			return true;
+		}
+
+		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(lookupTableName);
+		if (adTableId <= 0)
+		{
+			// an unresolved table carries no restriction, so the entry stays; never hide on a table we could not resolve
+			return true;
+		}
+
+		return UserSession.getCurrentPermissions().isCanCreateNewRecords(adTableId);
 	}
 
 	void setAdvSearchWindow(

@@ -16,6 +16,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.tree.AdTreeId;
@@ -241,6 +242,11 @@ final class MenuTreeLoader
 			return null;
 		}
 
+		if (!isRoleAllowedToCreateNewRecords(node.getMainTableName()))
+		{
+			return null;
+		}
+
 		//
 		// Caption (in menu)
 		String captionEffective = caption;
@@ -264,6 +270,18 @@ final class MenuTreeLoader
 				.setTypeNewRecord(adWindowId)
 				.setMainTableName(node.getMainTableName())
 				.build();
+	}
+
+	private boolean isRoleAllowedToCreateNewRecords(@Nullable final String mainTableName)
+	{
+		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(mainTableName);
+		if (adTableId <= 0)
+		{
+			// an unresolved table carries no restriction, so the node stays; never hide on a table we could not resolve
+			return true;
+		}
+
+		return getUserRolePermissions().isCanCreateNewRecords(adTableId);
 	}
 
 	private MTreeNode retrieveRootNodeModel()
