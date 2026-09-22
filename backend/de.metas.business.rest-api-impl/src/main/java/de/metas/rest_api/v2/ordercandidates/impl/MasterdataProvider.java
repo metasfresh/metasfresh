@@ -460,7 +460,7 @@ public final class MasterdataProvider
 			@NonNull final IdentifierString taxCategoryIdentifier,
 			@NonNull final Object parent)
 	{
-		Optional<TaxCategoryId> taxCategoryId;
+		final Optional<TaxCategoryId> taxCategoryId;
 		switch (taxCategoryIdentifier.getType())
 		{
 			case INTERNALNAME:
@@ -473,21 +473,18 @@ public final class MasterdataProvider
 				throw new InvalidIdentifierException(taxCategoryIdentifier);
 		}
 
-		// TaxCategoryId.NOT_FOUND is backed by a real, active, system-seeded C_TaxCategory row
-		// ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance, so both lookups above resolve it
-		// like any other category - by its id, and (since this branch makes InternalName writable) by its internal
-		// name too. It must not be resolvable through the API: the sentinel would travel into the tax query and only
-		// surface there as an ordinary "no tax matched", instead of telling the caller that the identifier they sent
-		// names no tax category.
-		if (taxCategoryId.isPresent() && TaxCategoryId.NOT_FOUND.equals(taxCategoryId.get()))
-		{
-			taxCategoryId = Optional.empty();
-		}
-
-		return taxCategoryId.orElseThrow(() -> MissingResourceException.builder()
-				.resourceName("TaxCategory")
-				.resourceIdentifier(taxCategoryIdentifier.toJson())
-				.parentResource(parent)
-				.build());
+		return taxCategoryId
+				// TaxCategoryId.NOT_FOUND is backed by a real, active, system-seeded C_TaxCategory row
+				// ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance, so both lookups above resolve
+				// it like any other category - by its id, and (since this branch makes InternalName writable) by its
+				// internal name too. It must not be resolvable through the API: the sentinel would travel into the tax
+				// query and only surface there as an ordinary "no tax matched", instead of telling the caller that the
+				// identifier they sent names no tax category.
+				.filter(id -> !TaxCategoryId.NOT_FOUND.equals(id))
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("TaxCategory")
+						.resourceIdentifier(taxCategoryIdentifier.toJson())
+						.parentResource(parent)
+						.build());
 	}
 }

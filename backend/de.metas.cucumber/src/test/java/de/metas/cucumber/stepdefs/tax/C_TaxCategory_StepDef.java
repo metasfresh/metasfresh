@@ -32,6 +32,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -45,6 +46,8 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_ProductPrice;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_TaxCategory_InternalName;
@@ -64,6 +67,30 @@ public class C_TaxCategory_StepDef
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final C_TaxCategory_StepDefData taxCategoryTable;
 	@NonNull private final TestContext restTestContext;
+
+	/**
+	 * {@code C_TaxCategory_ID} -> the {@code InternalName} the row had before {@link #setFreshInternalName} overwrote
+	 * it (possibly {@code null}), so {@link #restoreInternalNames()} can put it back.
+	 */
+	private final Map<Integer, String> internalNameBeforeScenario = new LinkedHashMap<>();
+
+	/**
+	 * Restores the {@code InternalName} of every category {@link #setFreshInternalName} overwrote.
+	 *
+	 * <p>That step targets <i>system-seeded</i> rows (e.g. {@code C_TaxCategory_ID=100}) which the scenario does not
+	 * own; executor databases are shared by every scenario of a run, so a mutation left behind would leak into
+	 * whatever runs next.
+	 */
+	@After
+	public void restoreInternalNames()
+	{
+		internalNameBeforeScenario.forEach((taxCategoryId, previousInternalName) -> {
+			final I_C_TaxCategory taxCategoryRecord = InterfaceWrapperHelper.load(taxCategoryId, I_C_TaxCategory.class);
+			taxCategoryRecord.setInternalName(previousInternalName);
+			InterfaceWrapperHelper.saveRecord(taxCategoryRecord);
+		});
+		internalNameBeforeScenario.clear();
+	}
 
 	public Optional<TaxCategoryId> extractTaxCategoryId(@NonNull final DataTableRow row)
 	{
@@ -235,6 +262,8 @@ public class C_TaxCategory_StepDef
 		final StepDefDataIdentifier identifier = row.getAsIdentifier(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID);
 		final I_C_TaxCategory taxCategoryRecord = taxCategoryTable.getOptional(identifier)
 				.orElseGet(() -> InterfaceWrapperHelper.load(identifier.getAsInt(), I_C_TaxCategory.class));
+
+		internalNameBeforeScenario.putIfAbsent(taxCategoryRecord.getC_TaxCategory_ID(), taxCategoryRecord.getInternalName());
 
 		taxCategoryRecord.setInternalName(ValueAndName.unique(taxCategoryRecord.getName()).getName());
 		InterfaceWrapperHelper.saveRecord(taxCategoryRecord);

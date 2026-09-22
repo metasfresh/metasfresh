@@ -131,7 +131,11 @@ public class TaxNotFoundException extends AdempiereException
 		setParameter("billToC_Location_ID", billToC_Location_ID != null ? billToC_Location_ID.getRepoId() : null);
 	}
 
-	public static TaxNotFoundException ofQuery(@NonNull final TaxQuery taxQuery)
+	/**
+	 * The fields both {@code ofQuery} overloads render. Kept in one place so a field added here reaches both, while
+	 * each overload stays free to add only what is distinctly its own (see {@link #ofQuery(TaxQuery, String)}).
+	 */
+	private static TaxNotFoundExceptionBuilder builderOfQuery(@NonNull final TaxQuery taxQuery)
 	{
 		return TaxNotFoundException.builder()
 				.taxCategoryId(taxQuery.getTaxCategoryId())
@@ -139,8 +143,12 @@ public class TaxNotFoundException extends AdempiereException
 				.isSOTrx(taxQuery.getSoTrx().isSales())
 				.isTaxExempt(taxQuery.getIsTaxExempt())
 				.billDate(taxQuery.getDateOfInterest())
-				.billFromCountryId(taxQuery.getFromCountryId())
-				.build();
+				.billFromCountryId(taxQuery.getFromCountryId());
+	}
+
+	public static TaxNotFoundException ofQuery(@NonNull final TaxQuery taxQuery)
+	{
+		return builderOfQuery(taxQuery).build();
 	}
 
 	/**
@@ -155,15 +163,11 @@ public class TaxNotFoundException extends AdempiereException
 			@NonNull final TaxQuery taxQuery,
 			@Nullable final String taxCategoryIdentifier)
 	{
-		return TaxNotFoundException.builder()
-				.taxCategoryId(taxQuery.getTaxCategoryId())
+		return builderOfQuery(taxQuery)
 				.taxCategoryIdentifier(taxCategoryIdentifier)
-				.rate(taxQuery.getRate())
-				.isSOTrx(taxQuery.getSoTrx().isSales())
-				.isTaxExempt(taxQuery.getIsTaxExempt())
+				// the scope fields the 1-arg overload deliberately leaves out - each costs a DB lookup while the
+				// message is rendered
 				.orgId(taxQuery.getOrgId())
-				.billDate(taxQuery.getDateOfInterest())
-				.billFromCountryId(taxQuery.getFromCountryId())
 				.shipToCountryId(taxQuery.getShippingCountryId())
 				.shipToC_Location_ID(taxQuery.getBPartnerLocationId())
 				.build();

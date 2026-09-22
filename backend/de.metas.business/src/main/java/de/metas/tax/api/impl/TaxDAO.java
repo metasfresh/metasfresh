@@ -92,7 +92,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Repository Tables: C_Tax, C_TaxCategory, C_VAT_SmallBusiness
- * Repository Cluster: TaxDAO
+ * Repository Cluster: TaxDAO; C_Tax is additionally read (FK lookups only) by CiiMappingRepository.
  */
 public class TaxDAO implements ITaxDAO
 {

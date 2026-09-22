@@ -355,7 +355,10 @@ class CreateInvoiceCandidatesServiceTest
 
 		assertThat(result.getResponseItems()).hasSize(1);
 		final I_C_Invoice_Candidate record = getSingleInvoiceCandidateRecord();
-		assertThat(record.getC_Tax_Override_ID()).isEqualTo(-1);
+		// assert that the override is *not set*, not how a given layer encodes "not set": the in-memory POJOWrapper
+		// keeps the raw int (-1), while production POWrapper.checkZeroIdValue collapses any *_ID below 1 to SQL NULL,
+		// which reads back as 0.
+		assertThat(record.getC_Tax_Override_ID()).isLessThanOrEqualTo(0);
 		assertThat(TaxId.ofRepoIdOrNull(record.getC_Tax_Override_ID())).isNull();
 	}
 }
