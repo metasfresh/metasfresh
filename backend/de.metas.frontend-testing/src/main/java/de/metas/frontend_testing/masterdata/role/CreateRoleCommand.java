@@ -10,7 +10,6 @@ import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
-import de.metas.security.TableAccessLevel;
 import de.metas.security.UserAuthToken;
 import de.metas.security.requests.CreateTableAccessRequest;
 import de.metas.security.requests.CreateUserAuthTokenRequest;
@@ -24,10 +23,7 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Role;
-import org.compiere.model.I_AD_Role_Included;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
@@ -52,6 +48,7 @@ public class CreateRoleCommand
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final RoleRepository roleRepository = new RoleRepository();
 
 	@NonNull private final UserAuthTokenService userAuthTokenService;
 	@NonNull private final WorkplaceService workplaceService;
@@ -89,28 +86,14 @@ public class CreateRoleCommand
 
 	private RoleId createRole(@NonNull final String name)
 	{
-		final I_AD_Role record = InterfaceWrapperHelper.newInstance(I_AD_Role.class);
-		record.setAD_Org_ID(OrgId.ANY.getRepoId());
-		record.setName(name);
-		record.setUserLevel(TableAccessLevel.ClientPlusOrganization.getUserLevelString());
-		// One org only: the login offers one entry per (role, tenant, org), and it auto-completes only for a
-		// single entry. IsAccessAllOrgs=Y would make that depend on how many orgs the stack happens to have.
-		record.setIsAccessAllOrgs(false);
-		InterfaceWrapperHelper.save(record);
-
-		final RoleId roleId = RoleId.ofRepoId(record.getAD_Role_ID());
+		final RoleId roleId = roleRepository.createRole(name);
 
 		userRolePermissionsDAO.createOrgAccess(roleId, MasterdataContext.ORG_ID);
 
 		int seqNo = 10;
 		for (final RoleId includedRoleId : getIncludedRoleIds())
 		{
-			final I_AD_Role_Included includedRecord = InterfaceWrapperHelper.newInstance(I_AD_Role_Included.class);
-			includedRecord.setAD_Org_ID(OrgId.ANY.getRepoId());
-			includedRecord.setAD_Role_ID(roleId.getRepoId());
-			includedRecord.setIncluded_Role_ID(includedRoleId.getRepoId());
-			includedRecord.setSeqNo(seqNo);
-			InterfaceWrapperHelper.save(includedRecord);
+			roleRepository.createRoleInclusion(roleId, includedRoleId, seqNo);
 
 			seqNo += 10;
 		}
