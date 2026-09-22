@@ -7,6 +7,7 @@ import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
+import de.metas.security.requests.CreateTableAccessRequest;
 import de.metas.security.requests.CreateRecordPrivateAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
@@ -127,6 +128,11 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	void createOrgAccess(RoleId adRoleId, OrgId adOrgId);
 
 	List<I_AD_Role_OrgAccess> retrieveRoleOrgAccessRecordsForOrg(OrgId adOrgId);
+
+	/**
+	 * Creates one {@code AD_Table_Access} row for the role.
+	 */
+	void createTableAccess(CreateTableAccessRequest request);
 
 	void createWindowAccess(CreateWindowAccessRequest request);
 

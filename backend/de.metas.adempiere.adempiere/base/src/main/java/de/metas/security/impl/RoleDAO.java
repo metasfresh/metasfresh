@@ -15,6 +15,7 @@ import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.RoleInclude;
 import de.metas.security.TableAccessLevel;
+import de.metas.security.requests.CreateRoleRequest;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraints;
 import de.metas.security.permissions.DocumentApprovalConstraint;
@@ -314,6 +315,34 @@ public class RoleDAO implements IRoleDAO
 				.create()
 				.first(I_AD_User_Roles.COLUMNNAME_AD_Role_ID, Integer.class);
 		return firstRoleId == null ? null : RoleId.ofRepoIdOrNull(firstRoleId);
+	}
+
+	@Override
+	public RoleId createRole(@NonNull final CreateRoleRequest request)
+	{
+		final I_AD_Role record = InterfaceWrapperHelper.newInstance(I_AD_Role.class);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setName(request.getName());
+		record.setUserLevel(request.getUserLevel().getUserLevelString());
+		record.setIsAccessAllOrgs(request.isAccessAllOrgs());
+		InterfaceWrapperHelper.save(record);
+
+		final RoleId roleId = RoleId.ofRepoId(record.getAD_Role_ID());
+
+		int seqNo = 10;
+		for (final RoleId includedRoleId : request.getIncludedRoleIds())
+		{
+			final I_AD_Role_Included includedRecord = InterfaceWrapperHelper.newInstance(I_AD_Role_Included.class);
+			includedRecord.setAD_Org_ID(request.getOrgId().getRepoId());
+			includedRecord.setAD_Role_ID(roleId.getRepoId());
+			includedRecord.setIncluded_Role_ID(includedRoleId.getRepoId());
+			includedRecord.setSeqNo(seqNo);
+			InterfaceWrapperHelper.save(includedRecord);
+
+			seqNo += 10;
+		}
+
+		return roleId;
 	}
 
 	@Override

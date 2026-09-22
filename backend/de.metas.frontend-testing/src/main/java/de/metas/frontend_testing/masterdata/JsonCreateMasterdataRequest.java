@@ -20,6 +20,7 @@ import de.metas.frontend_testing.masterdata.product.JsonProductCategoryRequest;
 import de.metas.frontend_testing.masterdata.uom.JsonUOMRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleRequest;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
@@ -63,6 +64,15 @@ public class JsonCreateMasterdataRequest
 
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;
+
+	/**
+	 * Creates purpose-built roles - their {@code AD_Table_Access} rows and a user bound to nothing but the
+	 * role - so a spec can exercise a permission without touching any pre-existing role. Applied right after
+	 * {@code login}, so everything created later can already be looked at through such a role.
+	 * See {@link de.metas.frontend_testing.masterdata.role.CreateRoleCommand}.
+	 */
+	@Nullable Map<String, JsonCreateRoleRequest> roles;
+
 	@Nullable Map<String, JsonMailboxRequest> mailboxes;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;

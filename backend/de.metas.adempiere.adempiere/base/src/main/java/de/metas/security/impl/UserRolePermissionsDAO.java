@@ -46,6 +46,7 @@ import de.metas.security.requests.CreateFormAccessRequest;
 import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
 import de.metas.security.requests.CreateRecordPrivateAccessRequest;
+import de.metas.security.requests.CreateTableAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
 import de.metas.security.requests.CreateWindowAccessRequest;
 import de.metas.security.requests.CreateWorkflowAccessRequest;
@@ -1066,6 +1067,21 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		roleOrgAccess.setAD_Role_ID(adRoleId.getRepoId());
 		roleOrgAccess.setIsReadOnly(false);
 		InterfaceWrapperHelper.save(roleOrgAccess);
+	}
+
+	@Override
+	public void createTableAccess(@NonNull final CreateTableAccessRequest request)
+	{
+		final I_AD_Table_Access record = InterfaceWrapperHelper.newInstance(I_AD_Table_Access.class);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setAD_Role_ID(request.getRoleId().getRepoId());
+		record.setAD_Table_ID(request.getAdTableId().getRepoId());
+		record.setIsExclude(StringUtils.ofBoolean(request.getExclude()));
+		record.setIsReadOnly(StringUtils.ofBoolean(request.getReadOnly()));
+		record.setIsCanReport(StringUtils.ofBoolean(request.getCanReport()));
+		record.setIsCanExport(StringUtils.ofBoolean(request.getCanExport()));
+		record.setIsCanCreateNewRecords(StringUtils.ofBoolean(request.getCanCreateNewRecords()));
+		InterfaceWrapperHelper.save(record);
 	}
 
 	@Override

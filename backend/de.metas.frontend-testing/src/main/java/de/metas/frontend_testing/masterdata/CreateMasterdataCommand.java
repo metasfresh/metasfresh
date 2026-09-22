@@ -63,6 +63,9 @@ import de.metas.frontend_testing.masterdata.receipt.ReceiptCreateCommand;
 import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
+import de.metas.frontend_testing.masterdata.role.CreateRoleCommand;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleRequest;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
@@ -120,6 +123,9 @@ public class CreateMasterdataCommand
 
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
+		// Roles come right after the login users: a role brings its own single-role user along, and everything
+		// created below may have to be reachable through that role.
+		final ImmutableMap<String, JsonCreateRoleResponse> roles = createRoles();
 		final ImmutableMap<String, JsonMailboxResponse> mailboxes = createMailboxes();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		configureOrgSeller();
@@ -171,6 +177,7 @@ public class CreateMasterdataCommand
 				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs)
 				.mobileConfig(mobileConfig)
 				.login(login)
+				.roles(roles.isEmpty() ? null : roles)
 				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
 				.bpartners(bpartners)
 				.vatIdChecks(vatIdChecks.isEmpty() ? null : vatIdChecks)
@@ -224,6 +231,23 @@ public class CreateMasterdataCommand
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build().execute();
+	}
+
+	private ImmutableMap<String, JsonCreateRoleResponse> createRoles()
+	{
+		return process(request.getRoles(), this::createRole);
+	}
+
+	private JsonCreateRoleResponse createRole(final String identifier, final JsonCreateRoleRequest request)
+	{
+		return CreateRoleCommand.builder()
+				.userAuthTokenService(services.userAuthTokenService)
+				.workplaceService(services.workplaceService)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
 	}
 
 	private ImmutableMap<String, JsonCreateBPartnerResponse> createBPartners()

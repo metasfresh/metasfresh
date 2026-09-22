@@ -17,6 +17,7 @@ import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
 import de.metas.frontend_testing.masterdata.product.JsonProductCategoryResponse;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningResponse;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
+import de.metas.frontend_testing.masterdata.role.JsonCreateRoleResponse;
 import de.metas.frontend_testing.masterdata.purchase_order.JsonPurchaseOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.receipt.JsonReceiptCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
@@ -45,6 +46,7 @@ public class JsonCreateMasterdataResponse
 
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) JsonMobileConfigResponse mobileConfig;
 	@NonNull Map<String, JsonLoginUserResponse> login;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonCreateRoleResponse> roles;
 	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, JsonMailboxResponse> mailboxes;
 	@NonNull Map<String, JsonCreateBPartnerResponse> bpartners;
 	@Nullable Map<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas;
