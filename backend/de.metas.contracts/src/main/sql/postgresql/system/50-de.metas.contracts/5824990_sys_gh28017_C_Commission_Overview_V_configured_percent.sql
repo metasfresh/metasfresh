@@ -1,7 +1,13 @@
-DROP VIEW IF EXISTS C_Commission_Overview_V
-;
+-- Source DDL: backend/de.metas.contracts/src/main/sql/postgresql/ddl/views/C_Commission_Overview_V.sql
+--
+-- Adds ConfiguredPercentOfBasePoints: the commission rate as configured on the commission
+-- settings line, exposed unrounded. The pre-existing percentofbasepoints column stays exactly
+-- as it is -- it is the realised ratio back-computed from the points and rounded to whole
+-- percent, and other reports read it.
 
-CREATE OR REPLACE VIEW C_Commission_Overview_V AS
+DROP VIEW IF EXISTS C_Commission_Overview_V$new;
+
+CREATE OR REPLACE VIEW C_Commission_Overview_V$new AS
 SELECT
     -- Make sure that every view record has a unique and stable ID
     CASE
@@ -70,5 +76,13 @@ FROM C_Commission_Trigger_With_Instance_V trigger
          LEFT JOIN C_Invoice_Line_Alloc ila_settlement ON ila_settlement.C_Invoice_Candidate_ID = ic_settlement.C_Invoice_Candidate_ID AND ila_settlement.isactive = 'Y'
          LEFT JOIN C_InvoiceLine il_settlement ON il_settlement.C_InvoiceLine_ID = ila_settlement.C_InvoiceLine_ID AND il_settlement.isactive = 'Y'
          LEFT JOIN C_CommissionSettingsLine csl ON csl.C_CommissionSettingsLine_ID = cs.C_CommissionSettingsLine_ID
---LIMIT 10
 ;
+
+SELECT db_alter_view(
+    'C_Commission_Overview_V',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('C_Commission_Overview_V$new'))
+);
+
+DROP VIEW IF EXISTS C_Commission_Overview_V$new;
