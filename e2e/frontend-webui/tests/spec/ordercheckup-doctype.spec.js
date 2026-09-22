@@ -210,7 +210,9 @@ gh32265. Verifies that migration 5825570 surfaces C_Order_MFGWarehouse_Report.C_
 Language under test: ${language}.
       `);
 
-      // Must exceed SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT plus this spec's own report and UI work.
+      // Must exceed SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT plus this spec's own report
+      // and UI work. One ceiling here, not two: this spec provisions no job schedules, so
+      // createSchedules() returns before its own stopwatch starts.
       test.setTimeout(180000);
 
       // 1. Provision a login user of the given language, plus the sales order whose checkup reports
@@ -563,7 +565,6 @@ Language under test: ${language}.
 
       // 6. (D) Detail form: the field renders, is populated, and its input is disabled.
       await test.step(`UI: C_DocType_ID renders populated and disabled on record ${renderedRecordId}`, async () => {
-        // Navigation budget: the shared VERY_SLOW_ACTION_TIMEOUT from tests/utils/common.js.
         await page.goto(
           `${FRONTEND_BASE_URL}/window/${BESTELLKONTROLLE_WINDOW_ID}/${renderedRecordId}`,
           { timeout: VERY_SLOW_ACTION_TIMEOUT }
@@ -583,7 +584,8 @@ Language under test: ${language}.
         const docTypeInput = docTypeField.locator('input').first();
         await docTypeInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-        // Not editable: RawLookup renders `disabled={readonly && !disabled}`. As with the payload
+        // Not editable: RawLookup renders `disabled={readonly && !disabled}`
+        // (frontend/src/components/widget/Lookup/RawLookup.js:941). As with the payload
         // `readonly` in step 5, this is DOCUMENT-level — the row is Processed, so the input stays
         // disabled even with AD_Field.IsReadOnly='N'. It pins the user-visible outcome, never the
         // field configuration.

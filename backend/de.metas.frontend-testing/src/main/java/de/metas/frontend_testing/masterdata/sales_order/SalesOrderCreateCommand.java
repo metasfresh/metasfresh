@@ -61,7 +61,7 @@ public class SalesOrderCreateCommand
 	private transient OrderFactory salesOrderFactory;
 	private final ArrayList<LineCreateRequestAndBuilder> lineCreateRequestAndBuilders = new ArrayList<>();
 
-	/** Upper bound for both {@link #createSchedules()} and {@link #waitForShipmentSchedulesToBeValid()} — schedules are written by an async workpackage, measured past 45s on a cold stack. */
+	/** Upper bound for both {@link #createSchedules()} and {@link #waitForShipmentSchedulesToBeValid()} — schedules are written by an async workpackage, measured past 40s on a cold stack. */
 	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(60);
 	private static final Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
 
