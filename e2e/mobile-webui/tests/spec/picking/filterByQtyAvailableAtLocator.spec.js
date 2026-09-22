@@ -80,12 +80,6 @@ test('Filter by Qty Available flag', async ({ page }) => {
     allure.story('Filter by Qty Available at Locator');
     allure.severity('normal');
 
-    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
-    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
-    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
-    // config global does not.
-    test.setTimeout(240000);
-
     const masterdata = await createMasterdata({ qtyOnHand: 130 });
 
     await LoginScreen.login(masterdata.login.user);

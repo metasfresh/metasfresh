@@ -74,12 +74,6 @@ test('Two sales orders needing the same product are offered as ONE job carrying 
     allure.story('Aggregate replenishment orders by product');
     allure.severity('critical');
 
-    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
-    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
-    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
-    // config global does not.
-    test.setTimeout(240000);
-
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.mover);

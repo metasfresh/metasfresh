@@ -75,12 +75,6 @@ test('Check facets when the ready date is the first filter group', async ({ page
     allure.story('Picking facets');
     allure.severity('normal');
 
-    // The sales orders below carry per-workplace schedules, so the shared masterdata fixture pays its
-    // shipment-schedule ceiling TWICE (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s, governs
-    // both polling loops). This budget must exceed those 120s plus this test's own work, which the 120s
-    // config global does not.
-    test.setTimeout(240000);
-
     const masterdata = await createMasterdata({
         salesOrders: {
             'SO1': { bpartner: 'customer1', datePromised: '2025-03-01T05:00:00.000+02:00' },
