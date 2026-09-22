@@ -36,10 +36,10 @@ UPDATE AD_Element_Trl SET Name='Table Access', Description='Table access permiss
        Updated=TO_TIMESTAMP('2026-09-22 09:00:13','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
  WHERE AD_Element_ID=585480 AND AD_Language='en_US'
 ;
-UPDATE AD_Element_Trl SET Name='Table Access', Description='Table access permissions of this role', PrintName='Table Access', IsTranslated='N',
-       Updated=TO_TIMESTAMP('2026-09-22 09:00:14','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
- WHERE AD_Element_ID=585480 AND AD_Language='fr_CH'
-;
+-- fr_CH is deliberately left as seeded: it stays IsTranslated='N' and falls back to the German base
+-- text, exactly as the sibling migration 5825490 does for element 585478. fr_CH is out of this
+-- change's scope, and the tab's own fr_CH row inherits the same text through
+-- update_tab_translation_from_ad_element below.
 
 -- The tab itself. IsSingleRow='N' mirrors tab 304: the administrator works through a grid of table
 -- rules, not one record at a time.
