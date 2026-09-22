@@ -23,9 +23,11 @@ package de.metas.fresh.ordercheckup;
  */
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.document.DocBaseType;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
@@ -34,6 +36,10 @@ import org.junit.jupiter.api.Assertions;
 public class Masterdata
 {
 	private final OrderCheckupTestHelper helper;
+	/** The doctype the warehouse-kind (Produktion) report is stamped with. */
+	public final I_C_DocType docTypeProduction;
+	/** The doctype the plant-kind (Büro) report is stamped with. */
+	public final I_C_DocType docTypeOffice;
 	public final Plant plant01;
 	public final Plant plant02;
 
@@ -41,6 +47,10 @@ public class Masterdata
 	{
 		super();
 		this.helper = helper;
+		// Both doctypes ship together in migration 5825540; OrderCheckupBuilder resolves one per report
+		// kind and throws when it is missing, so they are part of the masterdata every report needs.
+		this.docTypeProduction = helper.createDocType(DocBaseType.OrderCheckupProduction, "Bestellkontrolle Produktion");
+		this.docTypeOffice = helper.createDocType(DocBaseType.OrderCheckupOffice, "Bestellkontrolle Büro");
 		this.plant01 = new Plant("plant01");
 		this.plant02 = new Plant("plant02");
 	}
@@ -74,6 +84,7 @@ public class Masterdata
 			Assertions.assertNotNull(report, "Plant report exists for " + plant.getName());
 			Assertions.assertEquals(plant.getS_Resource_ID(), report.getPP_Plant_ID(), "Plant");
 			Assertions.assertNull(WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()), "Warehouse");
+			Assertions.assertEquals(docTypeOffice.getC_DocType_ID(), report.getC_DocType_ID(), "C_DocType");
 			Assertions.assertEquals(responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID(), "Responsible");
 			Assertions.assertTrue(report.isProcessed(), "Processed");
 			Assertions.assertTrue(report.isActive(), "Active");
@@ -112,6 +123,7 @@ public class Masterdata
 				Assertions.assertNotNull(report, "Warehouse report exists for " + warehouse.getName());
 				Assertions.assertEquals(warehouse.getPP_Plant_ID(), report.getPP_Plant_ID(), "Plant");
 				Assertions.assertEquals(warehouse.getM_Warehouse_ID(), report.getM_Warehouse_ID(), "Warehouse");
+				Assertions.assertEquals(docTypeProduction.getC_DocType_ID(), report.getC_DocType_ID(), "C_DocType");
 				Assertions.assertEquals(responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID(), "Responsible");
 				Assertions.assertTrue(report.isProcessed(), "Processed");
 				Assertions.assertTrue(report.isActive(), "Active");

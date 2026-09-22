@@ -49,8 +49,9 @@ public class AD_SysConfig_StepDef
 	private final AD_User_StepDefData userTable;
 
 	/**
-	 * Sysconfigs this scenario overwrote via {@link #point_sysconfig_at_own_servlet_url}, mapped to their
-	 * value from BEFORE the overwrite (possibly {@code null}, meaning the sysconfig had none). Restored by
+	 * Sysconfigs this scenario overwrote via {@link #point_sysconfig_at_own_servlet_url} or
+	 * {@link #temporarily_set_sys_config_int_value}, mapped to their value from BEFORE the overwrite
+	 * (possibly {@code null}, meaning the sysconfig had none). Restored by
 	 * {@link #restoreRepointedSysConfigsAfterScenario()}.
 	 */
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
@@ -126,9 +127,32 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * Guaranteed-execution cleanup for {@link #point_sysconfig_at_own_servlet_url} -- an {@code @After} hook
-	 * rather than a trailing Gherkin step, since Cucumber skips remaining steps once one fails, i.e. on
-	 * exactly the runs that need the restore. A no-op for every scenario that never called that step.
+	 * Sets a sys config to a scenario-local int value, capturing its PRIOR value (via
+	 * {@link #priorValueBySysConfigName}, {@code putIfAbsent} so a second write in the same scenario never
+	 * overwrites the already-captured original) so {@link #restoreRepointedSysConfigsAfterScenario()} restores
+	 * it, never leaving a changed value in shared/global {@code AD_SysConfig}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given temporarily set sys config int value 3 for sys config 'de.metas.fresh.ordercheckup_barcode.Copies'
+	 * </pre>
+	 */
+	@And("temporarily set sys config int value {int} for sys config {string}")
+	public void temporarily_set_sys_config_int_value(final int value, @NonNull final String sysConfigName)
+	{
+		priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+
+		setSysConfigIntValue(sysConfigName, value);
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	/**
+	 * Guaranteed-execution cleanup for {@link #point_sysconfig_at_own_servlet_url} and
+	 * {@link #temporarily_set_sys_config_int_value} -- an {@code @After} hook rather than a trailing Gherkin
+	 * step, since Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the
+	 * restore. A no-op for every scenario that never called either step.
 	 * <p>
 	 * If the sysconfig had no prior value (a fresh key, {@code null}), there is nothing to restore it TO --
 	 * {@link ISysConfigBL} exposes no delete, so this scenario's own written value is left in place. That
