@@ -72,21 +72,25 @@ $$
         -- pre-exists on this DB as a legacy artifact — reuse it, do not drop/recreate it.
         CREATE SEQUENCE IF NOT EXISTS AD_TABLE_ACCESS_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000;
 
+        -- Every DDL statement goes through db_alter_table, which drops and recreates any view that
+        -- depends on the table around the change -- the same way this table's earlier scripts 5825490
+        -- and 5825500 do it. Raw ALTER TABLE would leave a dependent view on some instance unhandled.
+
         -- New physical column, backed by the sequence above (a volatile DEFAULT backfills any
         -- existing rows with a unique value at ADD COLUMN time).
-        ALTER TABLE AD_Table_Access
-            ADD COLUMN AD_Table_Access_ID numeric(10, 0) NOT NULL DEFAULT NEXTVAL('ad_table_access_seq');
+        PERFORM db_alter_table('AD_Table_Access',
+                               'ALTER TABLE public.AD_Table_Access ADD COLUMN AD_Table_Access_ID numeric(10,0) NOT NULL DEFAULT NEXTVAL(''ad_table_access_seq'')');
 
         -- Swap the primary key from the composite (AD_Role_ID, AD_Table_ID) onto the new surrogate key.
-        ALTER TABLE AD_Table_Access
-            DROP CONSTRAINT IF EXISTS ad_table_access_pkey;
+        PERFORM db_alter_table('AD_Table_Access',
+                               'ALTER TABLE public.AD_Table_Access DROP CONSTRAINT IF EXISTS ad_table_access_pkey');
 
-        ALTER TABLE AD_Table_Access
-            ADD CONSTRAINT ad_table_access_pkey PRIMARY KEY (AD_Table_Access_ID);
+        PERFORM db_alter_table('AD_Table_Access',
+                               'ALTER TABLE public.AD_Table_Access ADD CONSTRAINT ad_table_access_pkey PRIMARY KEY (AD_Table_Access_ID)');
 
         -- Keep the previous uniqueness as a UNIQUE constraint (one AD_Table_Access row per role+table).
-        ALTER TABLE AD_Table_Access
-            ADD CONSTRAINT ad_table_access_uq UNIQUE (AD_Role_ID, AD_Table_ID);
+        PERFORM db_alter_table('AD_Table_Access',
+                               'ALTER TABLE public.AD_Table_Access ADD CONSTRAINT ad_table_access_uq UNIQUE (AD_Role_ID, AD_Table_ID)');
     END
 $$
 ;
