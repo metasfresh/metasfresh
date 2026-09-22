@@ -38,7 +38,7 @@ public class Masterdata
 	private final OrderCheckupTestHelper helper;
 	/** The doctype the warehouse-kind (Produktion) report is stamped with. */
 	public final I_C_DocType docTypeProduction;
-	/** The doctype the plant-kind (Buero) report is stamped with. */
+	/** The doctype the plant-kind (Büro) report is stamped with. */
 	public final I_C_DocType docTypeOffice;
 	public final Plant plant01;
 	public final Plant plant02;
@@ -50,7 +50,7 @@ public class Masterdata
 		// Both doctypes ship together in migration 5825540; OrderCheckupBuilder resolves one per report
 		// kind and throws when it is missing, so they are part of the masterdata every report needs.
 		this.docTypeProduction = helper.createDocType(DocBaseType.OrderCheckupProduction, "Bestellkontrolle Produktion");
-		this.docTypeOffice = helper.createDocType(DocBaseType.OrderCheckupOffice, "Bestellkontrolle Buero");
+		this.docTypeOffice = helper.createDocType(DocBaseType.OrderCheckupOffice, "Bestellkontrolle Büro");
 		this.plant01 = new Plant("plant01");
 		this.plant02 = new Plant("plant02");
 	}
