@@ -10,6 +10,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -79,6 +80,15 @@ public class NewManualInvoiceCandidate
 
 	Percent discountOverride;
 
+	/** If set, the {@code C_Tax} matching this rate within {@link #taxOverrideCategoryId} is stored as {@code C_Tax_Override_ID}. */
+	@Nullable Percent taxOverrideRate;
+
+	/** Set exactly when {@link #taxOverrideRate} is set; already resolved by the caller. */
+	@Nullable TaxCategoryId taxOverrideCategoryId;
+
+	/** The raw identifier the API caller sent for {@link #taxOverrideCategoryId}; carried along only to make a no-match error actionable. */
+	@Nullable String taxOverrideCategoryIdentifier;
+
 	DocTypeId invoiceDocTypeId;
 
 	PaymentTermId paymentTermId;
@@ -105,6 +115,9 @@ public class NewManualInvoiceCandidate
 			@NonNull final UomId invoicingUomId,
 			@Nullable final ProductPrice priceEnteredOverride,
 			@Nullable final Percent discountOverride,
+			@Nullable final Percent taxOverrideRate,
+			@Nullable final TaxCategoryId taxOverrideCategoryId,
+			@Nullable final String taxOverrideCategoryIdentifier,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@NonNull final PaymentTermId paymentTermId,
 			@Nullable final String lineDescription,
@@ -128,6 +141,9 @@ public class NewManualInvoiceCandidate
 		this.paymentTermId = paymentTermId;
 		this.priceEnteredOverride = priceEnteredOverride;
 		this.discountOverride = discountOverride;
+		this.taxOverrideRate = taxOverrideRate;
+		this.taxOverrideCategoryId = taxOverrideCategoryId;
+		this.taxOverrideCategoryIdentifier = taxOverrideCategoryIdentifier;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
 		this.invoiceDetailItems = invoiceDetailItems;
@@ -146,6 +162,13 @@ public class NewManualInvoiceCandidate
 						.appendParametersToMessage()
 						.setParameter("newManualInvoiceCandidate", this);
 			}
+		}
+
+		if ((taxOverrideRate == null) != (taxOverrideCategoryId == null))
+		{
+			throw new AdempiereException("taxOverrideRate and taxOverrideCategoryId need to be both set or both unset")
+					.appendParametersToMessage()
+					.setParameter("newManualInvoiceCandidate", this);
 		}
 	}
 

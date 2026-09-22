@@ -131,6 +131,13 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.build();
 	}
 
+	@Override
+	@NonNull
+	public Optional<Tax> getByIfPresent(@NonNull final TaxQuery taxQuery)
+	{
+		return taxDAO.getByIfPresent(taxQuery);
+	}
+
 	public CalculateTaxResult calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
 		return TaxUtils.from(tax).calculateTax(amount, taxIncluded, scale);

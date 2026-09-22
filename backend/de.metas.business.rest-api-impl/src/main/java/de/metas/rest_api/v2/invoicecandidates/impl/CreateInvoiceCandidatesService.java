@@ -78,7 +78,9 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v1.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.v2.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
+import de.metas.rest_api.v2.invoicecandidates.request.JsonTaxOverride;
 import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -185,6 +187,8 @@ public class CreateInvoiceCandidatesService
 		syncPriceEnteredOverrideToCandidate(candidate, productId, item);
 
 		syncPaymentTermIdToCandidate(candidate, item, masterdataProvider, orgId);
+
+		syncTaxOverrideToCandidate(candidate, item, masterdataProvider);
 
 		// poReference
 		if (!isEmpty(item.getPoReference(), true))
@@ -451,6 +455,33 @@ public class CreateInvoiceCandidatesService
 			@Nullable final BigDecimal discountOverride)
 	{
 		candidate.discountOverride(Percent.ofNullable(discountOverride));
+	}
+
+	private static void syncTaxOverrideToCandidate(
+			@NonNull final NewManualInvoiceCandidateBuilder candidate,
+			@NonNull final JsonCreateInvoiceCandidatesRequestItem item,
+			@NonNull final MasterdataProvider masterdataProvider)
+	{
+		final JsonTaxOverride taxOverride = item.getTaxOverride();
+		if (taxOverride == null)
+		{
+			return;
+		}
+		if (taxOverride.getRate() == null)
+		{
+			throw new MissingPropertyException("taxOverride.rate", item);
+		}
+		if (isEmpty(taxOverride.getTaxCategoryIdentifier(), true))
+		{
+			throw new MissingPropertyException("taxOverride.taxCategoryIdentifier", item);
+		}
+
+		final IdentifierString taxCategoryIdentifier = IdentifierString.of(taxOverride.getTaxCategoryIdentifier());
+		final TaxCategoryId taxCategoryId = masterdataProvider.getTaxCategoryId(taxCategoryIdentifier, item);
+
+		candidate.taxOverrideRate(Percent.of(taxOverride.getRate()));
+		candidate.taxOverrideCategoryId(taxCategoryId);
+		candidate.taxOverrideCategoryIdentifier(taxOverride.getTaxCategoryIdentifier());
 	}
 
 	private void syncInvoiceRuleOverrideToCandidate(

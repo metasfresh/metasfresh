@@ -73,6 +73,15 @@ public interface ITaxBL extends ISingletonService
 			@NonNull SOTrx soTrx);
 
 	/**
+	 * Retrieves the {@code C_Tax} matching the given query.
+	 * If more than one {@code C_Tax} matches, the one with the lowest {@code SeqNo} wins; a tie on {@code SeqNo} is an error.
+	 *
+	 * @return the matching tax, or empty if there is none.
+	 */
+	@NonNull
+	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
+
+	/**
 	 * Calculate Tax - no rounding
 	 *
 	 * @param taxIncluded if true tax is calculated from gross otherwise from net

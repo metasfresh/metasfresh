@@ -15,6 +15,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -42,6 +43,10 @@ public class TaxNotFoundException extends AdempiereException
 	private final int chargeId;
 
 	private final TaxCategoryId taxCategoryId;
+	/** The identifier an API caller sent for {@link #taxCategoryId}; {@code null} if the category was not resolved from a caller-supplied identifier. */
+	@Nullable private final String taxCategoryIdentifier;
+	/** The tax rate that was explicitly searched for; {@code null} if the caller did not constrain the rate. */
+	@Nullable private final Percent rate;
 	private final Boolean isSOTrx;
 	private final Boolean isTaxExempt;
 
@@ -64,6 +69,8 @@ public class TaxNotFoundException extends AdempiereException
 			final ProductId productId,
 			final int chargeId,
 			final TaxCategoryId taxCategoryId,
+			@Nullable final String taxCategoryIdentifier,
+			@Nullable final Percent rate,
 			final Boolean isSOTrx,
 			final Boolean isTaxExempt,
 			//
@@ -89,6 +96,10 @@ public class TaxNotFoundException extends AdempiereException
 
 		this.taxCategoryId = taxCategoryId;
 		setParameter("taxCategoryId", taxCategoryId);
+		this.taxCategoryIdentifier = taxCategoryIdentifier;
+		setParameter("taxCategoryIdentifier", taxCategoryIdentifier);
+		this.rate = rate;
+		setParameter("rate", rate);
 		this.isSOTrx = isSOTrx;
 		setParameter("isSOTrx", isSOTrx);
 		this.isTaxExempt = isTaxExempt;
@@ -122,12 +133,27 @@ public class TaxNotFoundException extends AdempiereException
 
 	public static TaxNotFoundException ofQuery(@NonNull final TaxQuery taxQuery)
 	{
+		return ofQuery(taxQuery, null);
+	}
+
+	/**
+	 * @param taxCategoryIdentifier the identifier an API caller sent for the queried tax category, to be echoed next to the resolved category name.
+	 */
+	public static TaxNotFoundException ofQuery(
+			@NonNull final TaxQuery taxQuery,
+			@Nullable final String taxCategoryIdentifier)
+	{
 		return TaxNotFoundException.builder()
 				.taxCategoryId(taxQuery.getTaxCategoryId())
+				.taxCategoryIdentifier(taxCategoryIdentifier)
+				.rate(taxQuery.getRate())
 				.isSOTrx(taxQuery.getSoTrx().isSales())
 				.isTaxExempt(taxQuery.getIsTaxExempt())
+				.orgId(taxQuery.getOrgId())
 				.billDate(taxQuery.getDateOfInterest())
 				.billFromCountryId(taxQuery.getFromCountryId())
+				.shipToCountryId(taxQuery.getShippingCountryId())
+				.shipToC_Location_ID(taxQuery.getBPartnerLocationId())
 				.build();
 	}
 
@@ -154,6 +180,15 @@ public class TaxNotFoundException extends AdempiereException
 		{
 			final ITranslatableString taxCategoryName = Services.get(ITaxDAO.class).getTaxCategoryNameById(taxCategoryId);
 			message.append(" - ").appendADElement("C_TaxCategory_ID").append(": ").append(taxCategoryName);
+			if (taxCategoryIdentifier != null)
+			{
+				message.append(" (").append(taxCategoryIdentifier).append(")");
+			}
+		}
+
+		if (rate != null)
+		{
+			message.append(" - ").appendADElement("Rate").append(": ").append(rate.toBigDecimal().toPlainString());
 		}
 
 		if (isSOTrx != null)
