@@ -186,6 +186,10 @@ export function createTableData(rawData) {
     collapsible: rawData.collapsible,
     indentSupported: rawData.supportTree,
     allowNew: rawData.allowNew ?? true,
+    // the standard actions the server transmits as disabled-with-a-reason (JSONViewResult), so the
+    // grid can grey them instead of dropping them. Always set, because a later page fetch which
+    // carries none has to clear a previously stored one.
+    disabledStandardActions: rawData.disabledStandardActions ?? [],
   };
 
   // we're removing any keys without a value ta make merging with the existing data

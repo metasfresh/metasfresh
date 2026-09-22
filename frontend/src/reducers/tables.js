@@ -158,15 +158,43 @@ const compareValues = ({ value1, value2, ascending }) => {
   }
 };
 
-export const getMasterViewStandardActions = ({ state, windowId, viewId }) => {
+/**
+ * @summary the standard actions of the view which are transmitted but shall be rendered disabled,
+ *          each with the reason why (see the backend's `JSONDisabledStandardAction`, set on
+ *          `JSONViewResult` by `ViewRestController.setNewDocumentPermission`). Absent from the
+ *          payload when nothing is disabled.
+ * @return {Array} entries of `{ action, reason, reasonKey }`
+ */
+export const getMasterViewDisabledStandardActions = ({
+  state,
+  windowId,
+  viewId,
+}) => {
   if (!windowId || !viewId) {
     return [];
   }
 
   const table = getTable(state, getTableId({ windowId, viewId }));
 
+  return table.disabledStandardActions ?? [];
+};
+
+export const getMasterViewStandardActions = ({ state, windowId, viewId }) => {
+  if (!windowId || !viewId) {
+    return [];
+  }
+
+  const table = getTable(state, getTableId({ windowId, viewId }));
+  const disabledStandardActions = table.disabledStandardActions ?? [];
+
   const viewStandardActions = [];
-  if (table.allowNew ?? true) {
+  // A refusal which carries a reason (the role may not create records) keeps the entry in the list so
+  // it renders greyed with that reason; a reasonless refusal (the tab forbids insert) removes it, which
+  // is the unchanged behaviour for the 638 tabs with IsInsertRecord='N'.
+  const newDocumentDisabled = disabledStandardActions.some(
+    (disabled) => disabled.action === DocumentAction.NEW_DOCUMENT
+  );
+  if ((table.allowNew ?? true) || newDocumentDisabled) {
     viewStandardActions.push(DocumentAction.NEW_DOCUMENT);
   }
 

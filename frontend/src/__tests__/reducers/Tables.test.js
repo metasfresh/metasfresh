@@ -4,9 +4,12 @@ import { deleteTable, updateTableSelection } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import { SORT_TAB } from '../../constants/ActionTypes';
 import reducer, {
+  getMasterViewStandardActions,
+  getTableId,
   initialState,
   initialTableState,
 } from '../../reducers/tables';
+import { DocumentAction } from '../../constants/DocumentAction';
 
 const createState = function(state = {}) {
   return merge(
@@ -301,6 +304,57 @@ describe('Tables reducer', () => {
 
       const state = reducer(initialState, action);
       expect(state).toEqual(initialState);
+    });
+  });
+
+  describe('getMasterViewStandardActions', () => {
+    const windowId = '123';
+    const viewId = 'view-1';
+    const tableId = getTableId({ windowId, viewId });
+
+    const createStateWithTable = (tableProps) => ({
+      tables: {
+        [tableId]: {
+          ...initialTableState,
+          windowId,
+          viewId,
+          ...tableProps,
+        },
+      },
+      length: 1,
+    });
+
+    it('Should offer New when the view allows creating', () => {
+      const state = createStateWithTable({ allowNew: true });
+
+      expect(
+        getMasterViewStandardActions({ state, windowId, viewId })
+      ).toEqual([DocumentAction.NEW_DOCUMENT]);
+    });
+
+    it('Should keep New in the list when the role refuses it with a reason, so it can be greyed', () => {
+      const state = createStateWithTable({
+        allowNew: false,
+        disabledStandardActions: [
+          {
+            action: DocumentAction.NEW_DOCUMENT,
+            reason: 'Die Rolle darf keine neuen Datensätze anlegen',
+            reasonKey: 'de.metas.ui.web.RoleCreateNotAllowed',
+          },
+        ],
+      });
+
+      expect(
+        getMasterViewStandardActions({ state, windowId, viewId })
+      ).toEqual([DocumentAction.NEW_DOCUMENT]);
+    });
+
+    it('Should drop New when it is refused without a reason (tab level), keeping it hidden', () => {
+      const state = createStateWithTable({ allowNew: false });
+
+      expect(getMasterViewStandardActions({ state, windowId, viewId })).toEqual(
+        []
+      );
     });
   });
 });

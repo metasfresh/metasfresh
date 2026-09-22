@@ -7,6 +7,7 @@ import { connect, useSelector } from 'react-redux';
 
 import { elementPathRequest } from '../../api';
 import {
+  getMasterViewDisabledStandardActions,
   getMasterViewStandardActions,
   getSelection,
   getTableId,
@@ -245,7 +246,8 @@ export const getStandardActions = ({ state, windowId, documentId, viewId }) => {
 
 /**
  * @summary the standard actions which are transmitted but shall be rendered disabled, each with the
- *          reason why. Only the single document route carries them; the view route has no such payload.
+ *          reason why. Both routes carry them: the view route from the table state fed by
+ *          `JSONViewResult`, the single document route from the window state fed by `createWindow`.
  * @return {Array} entries of `{ action, reason, reasonKey }`
  */
 export const getDisabledStandardActions = ({
@@ -254,15 +256,21 @@ export const getDisabledStandardActions = ({
   documentId,
   viewId,
 }) => {
-  if (!windowId || viewId || !documentId) {
+  if (!windowId) {
     return [];
   }
 
-  return getMasterDocumentDisabledStandardActions({
-    state,
-    windowId,
-    documentId,
-  });
+  if (viewId) {
+    return getMasterViewDisabledStandardActions({ state, windowId, viewId });
+  } else if (documentId) {
+    return getMasterDocumentDisabledStandardActions({
+      state,
+      windowId,
+      documentId,
+    });
+  } else {
+    return [];
+  }
 };
 
 /**
