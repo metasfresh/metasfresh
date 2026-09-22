@@ -63,6 +63,17 @@ describe('SubHeader standard action selectors', () => {
       );
     });
 
+    it('Should neither offer nor arm New while the create permission is unknown', () => {
+      // same fail-open window as the reducer test: no permission transmitted yet. `Ctrl+N` reads
+      // `getEnabledStandardActions`, so this pins the shortcut too.
+      const state = createViewState({});
+
+      expect(getStandardActions({ state, windowId, viewId })).toEqual([]);
+      expect(getEnabledStandardActions({ state, windowId, viewId })).toEqual(
+        []
+      );
+    });
+
     it('Should report New as enabled for an unrestricted role', () => {
       const state = createViewState({ allowNew: true });
 

@@ -356,5 +356,24 @@ describe('Tables reducer', () => {
         []
       );
     });
+
+    it('Should not offer New while the view has not transmitted its create permission yet', () => {
+      // the window between `deleteTable` (filterView) or `createView` and the browse response: the
+      // table falls back to `initialTableState`, which states no permission. Unknown must not mean
+      // allowed, or a restricted role gets a live New (and Ctrl+N) for that round trip.
+      const state = createStateWithTable({});
+
+      expect(getMasterViewStandardActions({ state, windowId, viewId })).toEqual(
+        []
+      );
+    });
+
+    it('Should not offer New while the table does not exist at all', () => {
+      const state = { tables: {}, length: 0 };
+
+      expect(getMasterViewStandardActions({ state, windowId, viewId })).toEqual(
+        []
+      );
+    });
   });
 });
