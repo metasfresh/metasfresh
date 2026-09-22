@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.ordercheckup.C_Order_MFGWarehouse_Report_StepD
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.document.DocTypeId;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
@@ -44,6 +45,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.IQuery;
@@ -70,6 +73,8 @@ public class C_Printing_Queue_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
+	private final IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * @cucumber.stepdef
@@ -277,6 +282,47 @@ public class C_Printing_Queue_StepDef
 			assertThat(queueItem.isActive())
 					.as("%s of %s", I_C_Printing_Queue.COLUMNNAME_IsActive, queueItem)
 					.isEqualTo(expectedIsActive);
+		});
+	}
+
+	/**
+	 * Asserts that {@link IOrderCheckupBL#getNumberOfCopies} for a previously-located {@code C_Printing_Queue}
+	 * item equals the LIVE value of the given sys config -- read independently via {@link ISysConfigBL} at
+	 * assertion time, never a hardcoded literal. Each row names the sys config key its OWN report's kind must
+	 * route to (Warehouse-kind reports to the barcode-sheet copies count, Plant-kind reports to the plain
+	 * one -- {@code OrderCheckupBL#getNumberOfCopies}), so a swapped or ignored per-kind branch shows up as a
+	 * mismatch against distinct, non-default sys config values set earlier in the scenario.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Printing_Queue_ID</b> — (required, identifier-ref) a queue item located via
+	 *       "C_Printing_Queue item is located:"<br>
+	 *   <b>SysConfigName</b> — (required) the {@code AD_SysConfig.Name} this queue item's report kind must
+	 *       resolve its copies count from<br>
+	 * @cucumber.depends StepDefData: C_Printing_Queue_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Printing_Queue resolves number of copies from sys config:
+	 *   | C_Printing_Queue_ID | SysConfigName                              |
+	 *   | warehouseQueue6     | de.metas.fresh.ordercheckup_barcode.Copies |
+	 * </pre>
+	 */
+	@Then("C_Printing_Queue resolves number of copies from sys config:")
+	public void assert_resolves_number_of_copies(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Printing_Queue queueItem = row.getAsIdentifier(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID).lookupNotNullIn(queueItemTable);
+			final String sysConfigName = row.getAsString("SysConfigName");
+
+			final de.metas.document.archive.model.I_AD_Archive printOut = InterfaceWrapperHelper.load(
+					queueItem.getAD_Archive_ID(), de.metas.document.archive.model.I_AD_Archive.class);
+
+			final int actualCopies = orderCheckupBL.getNumberOfCopies(queueItem, printOut);
+			final int expectedCopies = sysConfigBL.getIntValue(sysConfigName, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+
+			assertThat(actualCopies)
+					.as("Number of copies for %s must equal the live sys config %s", queueItem, sysConfigName)
+					.isEqualTo(expectedCopies);
 		});
 	}
 }

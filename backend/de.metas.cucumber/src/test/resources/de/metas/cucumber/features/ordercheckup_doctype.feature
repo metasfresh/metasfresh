@@ -243,6 +243,67 @@ Feature: Bestellkontrolle document type
 
 # ####################################################################################################################
 # ####################################################################################################################
+  @Id:S32265_TC5
+  Scenario: Every existing Bestellkontrolle report has a document type consistent with its own kind
+    # Guards what the backfill migration actually claims: every row's document type is consistent with its
+    # own kind, in both directions, with at least one row of each kind checked -- not the weaker "no NULLs"
+    # proxy, which a no-op backfill could satisfy if every row already happened to carry some doctype.
+    Then every C_Order_MFGWarehouse_Report has a document type consistent with its DocumentType:
+      | DocumentType | C_DocType_ID      |
+      | WH           | docTypeProduktion |
+      | PL           | docTypeBuero      |
+
+
+# ####################################################################################################################
+# ####################################################################################################################
+  @Id:S32265_TC6
+  Scenario: The document type value list and its per-kind printed-copies count are unchanged
+    # The DocumentType value list and the C_DocType_ID column represent the same kind. Values and
+    # translations are unchanged.
+    # Spot-checked in a language whose translation differs from the default, so a lost/reset translation is
+    # caught, not just a lost value.
+    Then C_Order_MFGWarehouse_Report DocumentType value list is unchanged:
+      | Value | Name                       | AD_Language | TranslatedName        |
+      | WH    | Bestellkontrolle           | fr_FR       | Contrôle de l’ordre   |
+      | PL    | Bestellkontrolle spedition | fr_FR       | Transfert de commande |
+
+    # A non-default value on just the Warehouse-kind sys config so a swapped or ignored per-kind branch shows
+    # up as a mismatch instead of passing vacuously against the shared default of 1 for both kinds.
+    Given temporarily set sys config int value 2 for sys config 'de.metas.fresh.ordercheckup_barcode.Copies'
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order6     | true    | bpartner      | 2026-01-12  | warehouse      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine6 | order6     | product      | 5          |
+
+    When the order identified by order6 is completed
+
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID |
+      | warehouseRpt6 | order6     | WH           | warehouse      | plant       |
+      | plantRpt6     | order6     | PL           |                | plant       |
+
+    And C_Printing_Queue item is located:
+      | Identifier      | C_Order_MFGWarehouse_Report_ID |
+      | warehouseQueue6 | warehouseRpt6                  |
+      | plantQueue6     | plantRpt6                      |
+
+    # getNumberOfCopies still routes Warehouse-kind reports to the barcode-sheet sys config and Plant-kind
+    # reports to the plain one -- the per-kind branch that reads the DocumentType value list.
+    Then C_Printing_Queue resolves number of copies from sys config:
+      | C_Printing_Queue_ID | SysConfigName                              |
+      | warehouseQueue6     | de.metas.fresh.ordercheckup_barcode.Copies |
+      | plantQueue6         | de.metas.fresh.ordercheckup.Copies         |
+
+    # The sys config is restored to its prior value by an @After hook (AD_SysConfig_StepDef), not a trailing
+    # step here -- Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the
+    # restore.
+
+
+# ####################################################################################################################
+# ####################################################################################################################
   Scenario: reset settings to default
     # A separate scenario rather than a trailing step, so it still runs if an assertion above failed -- see
     # ordercheckup_reprint.feature for the same pattern and its rationale.

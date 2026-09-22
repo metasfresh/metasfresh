@@ -40,6 +40,7 @@ import de.metas.document.archive.config.DocOutboundConfigService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
+import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.fresh.ordercheckup.OrderCheckupDocumentType;
 import de.metas.fresh.ordercheckup.OrderCheckupReportId;
@@ -59,6 +60,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Ref_List;
+import org.compiere.model.I_AD_Ref_List_Trl;
 import org.compiere.model.I_C_Order;
 
 import java.util.HashSet;
@@ -472,6 +475,131 @@ public class C_Order_MFGWarehouse_Report_StepDef
 			assertThat(actualUserId)
 					.as("%s of %s", I_C_Order_MFGWarehouse_Report.COLUMNNAME_AD_User_Responsible_ID, report)
 					.isEqualTo(expectedUserId);
+		});
+	}
+
+	/**
+	 * Asserts EVERY {@code C_Order_MFGWarehouse_Report} row currently in the system -- not just ones this
+	 * scenario built -- carries a {@code C_DocType_ID} consistent with its own {@code DocumentType}, in both
+	 * directions: every row of the given {@code DocumentType} carries the given doctype, and every row
+	 * carrying that doctype has the given {@code DocumentType}. Also asserts no row anywhere has a null
+	 * {@code C_DocType_ID}, and that at least one row of each given kind exists, so the assertion cannot pass
+	 * vacuously against an empty table.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>DocumentType</b> — (required) a {@code C_Order_MFGWarehouse_Report.DocumentType} value<br>
+	 *   <b>C_DocType_ID</b> — (required, identifier-ref) the doctype every row of that {@code DocumentType}
+	 *       must carry, and the only {@code DocumentType} every row of that doctype must carry<br>
+	 * @cucumber.depends StepDefData: C_DocType_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then every C_Order_MFGWarehouse_Report has a document type consistent with its DocumentType:
+	 *   | DocumentType | C_DocType_ID      |
+	 *   | WH           | docTypeProduktion |
+	 *   | PL           | docTypeBuero      |
+	 * </pre>
+	 */
+	@Then("every C_Order_MFGWarehouse_Report has a document type consistent with its DocumentType:")
+	public void assert_every_report_has_consistent_doctype(@NonNull final DataTable dataTable)
+	{
+		final List<I_C_Order_MFGWarehouse_Report> allReports = queryBL.createQueryBuilder(I_C_Order_MFGWarehouse_Report.class)
+				.create()
+				.list();
+
+		final long noDocTypeCount = allReports.stream().filter(report -> report.getC_DocType_ID() <= 0).count();
+		assertThat(noDocTypeCount)
+				.as("C_Order_MFGWarehouse_Report rows with no C_DocType_ID, out of %s total rows", allReports.size())
+				.isZero();
+
+		final SoftAssertions softly = new SoftAssertions();
+		DataTableRows.of(dataTable).forEach(row -> assert_doctype_consistent_for_row(row, allReports, softly));
+		softly.assertAll();
+	}
+
+	private void assert_doctype_consistent_for_row(
+			@NonNull final DataTableRow row,
+			@NonNull final List<I_C_Order_MFGWarehouse_Report> allReports,
+			@NonNull final SoftAssertions softly)
+	{
+		final String documentType = row.getAsString(I_C_Order_MFGWarehouse_Report.COLUMNNAME_DocumentType);
+		final DocTypeId expectedDocTypeId = row.getAsIdentifier(I_C_Order_MFGWarehouse_Report.COLUMNNAME_C_DocType_ID).lookupIdIn(docTypeTable);
+
+		final List<I_C_Order_MFGWarehouse_Report> reportsOfThisDocumentType = allReports.stream()
+				.filter(report -> documentType.equals(report.getDocumentType()))
+				.collect(Collectors.toList());
+		softly.assertThat(reportsOfThisDocumentType)
+				.as("C_Order_MFGWarehouse_Report rows with DocumentType=%s (must exist for this check to prove anything)", documentType)
+				.isNotEmpty();
+		reportsOfThisDocumentType.forEach(report -> softly.assertThat(DocTypeId.ofRepoIdOrNull(report.getC_DocType_ID()))
+				.as("%s of C_Order_MFGWarehouse_Report_ID=%s (DocumentType=%s)", I_C_Order_MFGWarehouse_Report.COLUMNNAME_C_DocType_ID, report.getC_Order_MFGWarehouse_Report_ID(), documentType)
+				.isEqualTo(expectedDocTypeId));
+
+		final List<I_C_Order_MFGWarehouse_Report> reportsOfThisDocType = allReports.stream()
+				.filter(report -> expectedDocTypeId.getRepoId() == report.getC_DocType_ID())
+				.collect(Collectors.toList());
+		softly.assertThat(reportsOfThisDocType)
+				.as("C_Order_MFGWarehouse_Report rows with %s=%s (must exist for this check to prove anything)", I_C_Order_MFGWarehouse_Report.COLUMNNAME_C_DocType_ID, expectedDocTypeId)
+				.isNotEmpty();
+		reportsOfThisDocType.forEach(report -> softly.assertThat(report.getDocumentType())
+				.as("%s of C_Order_MFGWarehouse_Report_ID=%s (%s=%s)", I_C_Order_MFGWarehouse_Report.COLUMNNAME_DocumentType, report.getC_Order_MFGWarehouse_Report_ID(), I_C_Order_MFGWarehouse_Report.COLUMNNAME_C_DocType_ID, expectedDocTypeId)
+				.isEqualTo(documentType));
+	}
+
+	/**
+	 * Asserts the {@code C_Order_MFGWarehouse_Report.DocumentType} value list -- which represents the same
+	 * kind as {@code C_DocType_ID} -- still carries exactly the given active values, names and
+	 * (spot-checked) translations. Guards against the two representations of the kind drifting apart.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Value</b> — (required) expected {@code AD_Ref_List.Value}<br>
+	 *   <b>Name</b> — (required) expected {@code AD_Ref_List.Name} (default language)<br>
+	 *   <b>AD_Language</b> — (required) a language to spot-check the translation in<br>
+	 *   <b>TranslatedName</b> — (required) expected {@code AD_Ref_List_Trl.Name} for that language<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Order_MFGWarehouse_Report DocumentType value list is unchanged:
+	 *   | Value | Name              | AD_Language | TranslatedName       |
+	 *   | WH    | Bestellkontrolle  | fr_FR       | Contrôle de l’ordre  |
+	 * </pre>
+	 */
+	@Then("C_Order_MFGWarehouse_Report DocumentType value list is unchanged:")
+	public void assert_document_type_value_list_unchanged(@NonNull final DataTable dataTable)
+	{
+		final List<I_AD_Ref_List> refListRows = queryBL.createQueryBuilder(I_AD_Ref_List.class)
+				.addEqualsFilter(I_AD_Ref_List.COLUMNNAME_AD_Reference_ID, X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_AD_Reference_ID)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+		final DataTableRows rows = DataTableRows.of(dataTable);
+		assertThat(refListRows)
+				.as("Active AD_Ref_List rows for C_Order_MFGWarehouse_Report.DocumentType (AD_Reference_ID=%s)", X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_AD_Reference_ID)
+				.hasSize(rows.size());
+
+		rows.forEach(row -> {
+			final String value = row.getAsString("Value");
+			final String expectedName = row.getAsString("Name");
+			final String language = row.getAsString("AD_Language");
+			final String expectedTranslatedName = row.getAsString("TranslatedName");
+
+			final I_AD_Ref_List refList = refListRows.stream()
+					.filter(candidate -> value.equals(candidate.getValue()))
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("No active AD_Ref_List row found for value")
+							.appendParametersToMessage()
+							.setParameter("Value", value));
+
+			assertThat(refList.getName()).as("Name of AD_Ref_List value=%s", value).isEqualTo(expectedName);
+
+			final I_AD_Ref_List_Trl refListTrl = queryBL.createQueryBuilder(I_AD_Ref_List_Trl.class)
+					.addEqualsFilter(I_AD_Ref_List_Trl.COLUMNNAME_AD_Ref_List_ID, refList.getAD_Ref_List_ID())
+					.addEqualsFilter(I_AD_Ref_List_Trl.COLUMNNAME_AD_Language, language)
+					.create()
+					.firstOnlyNotNull(I_AD_Ref_List_Trl.class);
+
+			assertThat(refListTrl.getName()).as("Translated (%s) name of AD_Ref_List value=%s", language, value).isEqualTo(expectedTranslatedName);
 		});
 	}
 }
