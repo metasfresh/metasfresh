@@ -210,10 +210,8 @@ gh32265. Verifies that migration 5825570 surfaces C_Order_MFGWarehouse_Report.C_
 Language under test: ${language}.
       `);
 
-      // Must comfortably exceed the shared masterdata fixture's shipment-schedule ceiling
-      // (SalesOrderCreateCommand.JOB_SCHEDULE_CREATE_TIMEOUT, 60s): the provisioning in step 1 happens
-      // inside this envelope, and its descriptive timeout must surface instead of a generic test timeout.
-      test.setTimeout(240000);
+      // Must exceed the fixture's shipment-schedule ceiling plus this spec's own report and UI work.
+      test.setTimeout(180000);
 
       // 1. Provision a login user of the given language, plus the sales order whose checkup reports
       //    this spec asserts on — see "HOW THE RECORDS UNDER TEST COME INTO EXISTENCE" above. Nothing
@@ -570,7 +568,7 @@ Language under test: ${language}.
         // (claude-docs/PAGE_OBJECT_PATTERNS.md § "Timeout Constants"), and they are what the large
         // majority of page.goto call sites in tests/spec pass; the few `timeout: 120000` literals in
         // sibling specs are those specs' whole-test budget reused verbatim, not a measured
-        // navigation need. The whole-test budget is test.setTimeout(180000) above.
+        // navigation need.
         await page.goto(
           `${FRONTEND_BASE_URL}/window/${BESTELLKONTROLLE_WINDOW_ID}/${renderedRecordId}`,
           { timeout: VERY_SLOW_ACTION_TIMEOUT }
