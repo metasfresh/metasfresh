@@ -48,7 +48,17 @@ class TableCell extends PureComponent {
    */
   handleBackdropLock = (state) => {
     const { item } = this.props;
-    const widgetsList = ['ProductAttributes', 'Attributes', 'List', 'Lookup'];
+    // 'Address' is object-valued and edits through the same <Attributes>
+    // button-overlay as 'ProductAttributes', so it must be treated as a
+    // backdrop-locking widget too; otherwise clicking outside would trigger the
+    // grid's onClickOutside and tear down the overlay mid-edit.
+    const widgetsList = [
+      'ProductAttributes',
+      'Address',
+      'Attributes',
+      'List',
+      'Lookup',
+    ];
 
     if (!widgetsList.includes(item.widgetType)) {
       !state && this.props.onClickOutside();
@@ -70,12 +80,20 @@ class TableCell extends PureComponent {
     const { onKeyDown, property, isReadonly, tableCellData } = this.props;
     const widgetType = tableCellData?.widgetType;
 
+    // 'Address' is object-valued ({key,caption}) and, like 'ProductAttributes',
+    // commits its value through the <Attributes> button-overlay — never through
+    // the grid-nav raw-text row-write. Flag it as an attribute widget so
+    // TableRow's Tab/Enter handlers skip that write; otherwise the button's raw
+    // (empty) text clobbers the {key,caption} object -> silent data loss.
+    const isAttributeWidget =
+      widgetType === 'ProductAttributes' || widgetType === 'Address';
+
     onKeyDown &&
       onKeyDown({
         event,
         property,
         readonly: isReadonly,
-        isAttributeWidget: widgetType === 'ProductAttributes',
+        isAttributeWidget,
       });
   };
 
