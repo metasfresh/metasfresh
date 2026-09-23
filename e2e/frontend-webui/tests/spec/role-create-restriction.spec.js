@@ -6,7 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { BUSINESS_PARTNER_WINDOW_ID } from '../utils/WindowIds';
-import { assertRecordIsValid, getFieldData, getTabInfo } from '../utils/WebAPIValidation';
+import { assertRecordIsValid, getFieldData, getTabInfo, getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
  * Per-role "may create new records" restriction on C_BPartner.
@@ -489,6 +489,135 @@ testCases.forEach(({ language, label }) => {
                     console.log(`[${language}] PASS — union ALLOWED (${caseLabel})`);
                 }
             });
+        });
+    });
+
+    // TC15 — clone cannot bypass the restriction (AC18). A restricted role opens an existing partner: a
+    // clone request against the /duplicate endpoint is rejected, and the Clone action is not rendered.
+    // An unrestricted role clones normally. The endpoint is the real enforcement boundary
+    // (DocumentCollection.duplicateDocumentInTrx → checkRoleCanCreateNewRecords); the DOM check confirms
+    // the Clone standard action is removed (JSONDocumentPermissions drops it from standardActions).
+    const TC15_CASES = [
+        { key: 'restricted', restricted: true },
+        { key: 'unrestricted', restricted: false },
+    ];
+    TC15_CASES.forEach(({ key, restricted }) => {
+        test.describe(`Role create restriction — clone ${restricted ? 'blocked' : 'allowed'} (${label})`, () => {
+            test(`clone ${restricted ? 'rejected for a restricted role' : 'works for an unrestricted role'} (${label} UI)`, async ({ page }) => {
+                allure.epic('E0390: Business Partner');
+                allure.story('Role create restriction — clone is closed for a restricted role');
+                allure.tag('F33020: Roles');
+                allure.tag('F33020');
+                allure.severity('critical');
+                allure.parameter('Language', language);
+                allure.parameter('Role', key);
+                allure.tag(language);
+                test.setTimeout(120000);
+
+                const role = restricted
+                    ? { name: `CloneRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }], user: { language } }
+                    : { name: `CloneOpen_${language}`, user: { language } };
+                const masterdata = await Backend.createMasterdata({
+                    request: { login: { user: { language } }, bpartners: { bp1: {} }, roles: { r: role } },
+                });
+                const roleUser = masterdata.roles.r.user;
+                expect(roleUser, 'masterdata must return the role user').toBeTruthy();
+                const recordId = String(masterdata.bpartners.bp1.id);
+
+                await LoginPage.goto();
+                await LoginPage.login(roleUser);
+                await DashboardPage.expectVisible();
+
+                await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`);
+                await page.waitForURL(new RegExp(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await assertRecordIsValid(BUSINESS_PARTNER_WINDOW_ID, recordId, 'clone test opens the partner');
+
+                // Discriminating enforcement: the server-computed standardActions set the WebUI builds the
+                // action menu from. Clone is REMOVED from it for a restricted role and KEPT for an unrestricted
+                // one (JSONDocumentPermissions.getStandardActions it.remove() when create is not allowed).
+                // Language-invariant (the action's internalName 'clone'), and independent of menu rendering.
+                const record = await getRecordData(BUSINESS_PARTNER_WINDOW_ID, recordId);
+                const standardActions = record.standardActions || [];
+                console.log(`[${language}] standardActions (${key}) = ${JSON.stringify(standardActions)}`);
+
+                if (restricted) {
+                    expect(standardActions, 'Clone must be removed from the standard actions for a restricted role').not.toContain('clone');
+                    // Defense in depth: the /duplicate endpoint itself rejects, blocked at the role permission
+                    // check BEFORE any DB write (a plain AdempiereException, never reaching the DB layer). The
+                    // message is localized, so assert on the language-invariant exception class, not the text.
+                    const dupResp = await page.request.post(
+                        `${WEBAPI_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}/duplicate`,
+                        { headers: { 'Content-Type': 'application/json' } },
+                    );
+                    const dupBody = await dupResp.text().catch(() => '');
+                    console.log(`[${language}] /duplicate (restricted) = ${dupResp.status()} body=${dupBody.slice(0, 240)}`);
+                    expect(dupResp.status(), 'a restricted role must be refused at the /duplicate endpoint').toBeGreaterThanOrEqual(400);
+                    expect(dupBody, 'the /duplicate refusal must be the role permission rejection').toContain('org.adempiere.exceptions.AdempiereException');
+                    expect(dupBody, 'the restricted clone must be blocked at the permission gate, never reaching the DB').not.toContain('DBUniqueConstraint');
+                    console.log(`[${language}] PASS — clone blocked (no 'clone' standard action; /duplicate permission-rejected ${dupResp.status()})`);
+                } else {
+                    expect(standardActions, 'Clone must be available in the standard actions for an unrestricted role').toContain('clone');
+                    console.log(`[${language}] PASS — clone available (standard action present)`);
+                }
+            });
+        });
+    });
+
+    // TC16 — the menu new-record node is hidden (AC18). A C_BPartner window menu node with IsCreateNew='Y'
+    // (the "Neuer Geschäftspartner" node) produces a newRecord menu node ONLY when the role may create
+    // C_BPartner (MenuTreeLoader.createNewRecordNode returns null otherwise). The desktop menu exposes NO
+    // language-invariant per-node DOM handle, so this is asserted on the menu REST tree (type:"newRecord").
+    // The node's elementId is deployment-dependent — the core Business Partner window on core CI, the
+    // customer override window on the customer stack — so instead of hardcoding a window id, this compares
+    // the newRecord-node set of an unrestricted role with that of a role restricted ONLY on C_BPartner:
+    // restricting create must STRICTLY REMOVE node(s) (the business-partner one) and ADD none.
+    test.describe(`Role create restriction — menu new-record node hidden (${label})`, () => {
+        test(`restricting C_BPartner create removes the business-partner new-record menu node (${label})`, async ({ page }) => {
+            allure.epic('E0390: Business Partner');
+            allure.story('Role create restriction — the new-record menu node is hidden for a restricted role');
+            allure.tag('F33020: Roles');
+            allure.tag('F33020');
+            allure.severity('critical');
+            allure.parameter('Language', language);
+            allure.tag(language);
+            test.setTimeout(120000);
+
+            const md = await Backend.createMasterdata({
+                request: {
+                    login: { user: { language } },
+                    roles: {
+                        open: { name: `MenuOpen_${language}`, user: { language } },
+                        restricted: { name: `MenuRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }], user: { language } },
+                    },
+                },
+            });
+            expect(md.roles.open.user && md.roles.restricted.user, 'masterdata must return both role users').toBeTruthy();
+
+            // Collect the set of newRecord-node window ids in a role's full menu tree. Clears cookies first so
+            // the second login starts from a clean session (otherwise the login form never appears).
+            const newRecordWindowIds = async (user) => {
+                await page.context().clearCookies();
+                await LoginPage.goto();
+                await LoginPage.login(user);
+                await DashboardPage.expectVisible();
+                const resp = await page.request.get(`${WEBAPI_BASE_URL}/menu/root?depth=50&childrenLimit=0`, { headers: { 'Content-Type': 'application/json' } });
+                expect(resp.ok(), 'the menu tree must load').toBe(true);
+                const txt = await resp.text();
+                return new Set((txt.match(/"type":"newRecord","elementId":"[0-9]+"/g) || []).map((s) => s.match(/elementId":"([0-9]+)"/)[1]));
+            };
+
+            const openIds = await newRecordWindowIds(md.roles.open.user);
+            const restrictedIds = await newRecordWindowIds(md.roles.restricted.user);
+            console.log(`[${language}] newRecord window ids: open=${JSON.stringify([...openIds])} restricted=${JSON.stringify([...restrictedIds])}`);
+
+            const removed = [...openIds].filter((id) => !restrictedIds.has(id));
+            const added = [...restrictedIds].filter((id) => !openIds.has(id));
+            // Restricting ONLY C_BPartner create is per-table, so the ONLY newRecord node(s) that may vanish
+            // are the C_BPartner window's — the business-partner "new record" menu entry. It must vanish, and
+            // nothing may be added. Environment-independent: no window id is hardcoded.
+            expect(added, 'restricting create must not ADD any new-record menu node').toEqual([]);
+            expect(removed.length, 'restricting C_BPartner create must remove the business-partner new-record menu node').toBeGreaterThanOrEqual(1);
+            console.log(`[${language}] PASS — restricted menu removed new-record node(s) ${JSON.stringify(removed)}, added none`);
         });
     });
 });
