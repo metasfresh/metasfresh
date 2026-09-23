@@ -3,7 +3,9 @@ package de.metas.frontend_testing.masterdata.pos;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocTypeId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
@@ -23,6 +25,8 @@ import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.security.RoleId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -44,6 +48,7 @@ import org.compiere.model.X_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,6 +85,8 @@ public class CreatePOSTerminalCommandTest
 	private ProductPriceRepository productPriceRepository;
 	private MobileApplicationInfoRepository mobileApplicationInfoRepository;
 	private MasterdataContext context;
+	private DocTypeId salesOrderDocTypeId;
+	private TaxCategoryId normalTaxCategoryId;
 
 	@BeforeEach
 	public void init()
@@ -91,17 +98,17 @@ public class CreatePOSTerminalCommandTest
 		mobileApplicationInfoRepository = new MobileApplicationInfoRepository();
 		context = new MasterdataContext();
 
-		createSalesOrderDocType();
-		createNormalTaxCategory();
+		salesOrderDocTypeId = createSalesOrderDocType();
+		normalTaxCategoryId = createNormalTaxCategory();
 		createPOSMobileApplication();
 		createEachUom();
 	}
 
-	/** {@link de.metas.uom.UomId#EACH} is a fixed constant (repoId=100) that production code loads by id; seed it. */
+	/** {@link UomId#EACH} is a fixed constant (repoId=100) that production code loads by id; seed it. */
 	private static void createEachUom()
 	{
 		final I_C_UOM uom = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_UOM.class);
-		uom.setC_UOM_ID(de.metas.uom.UomId.EACH.getRepoId());
+		uom.setC_UOM_ID(UomId.EACH.getRepoId());
 		uom.setName("Each");
 		uom.setX12DE355("EA");
 		uom.setStdPrecision(0);
@@ -109,7 +116,7 @@ public class CreatePOSTerminalCommandTest
 		InterfaceWrapperHelper.saveRecord(uom);
 	}
 
-	private static void createSalesOrderDocType()
+	private static DocTypeId createSalesOrderDocType()
 	{
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		InterfaceWrapperHelper.setValue(docType, I_C_DocType.COLUMNNAME_AD_Client_ID, MasterdataContext.CLIENT_ID.getRepoId());
@@ -118,15 +125,17 @@ public class CreatePOSTerminalCommandTest
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_SalesOrder);
 		docType.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(docType);
+		return DocTypeId.ofRepoId(docType.getC_DocType_ID());
 	}
 
-	private static void createNormalTaxCategory()
+	private static TaxCategoryId createNormalTaxCategory()
 	{
 		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
 		taxCategory.setName("Normal");
 		taxCategory.setInternalName(MasterdataContext.DEFAULT_TaxCategory_InternalName);
 		taxCategory.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(taxCategory);
+		return TaxCategoryId.ofRepoId(taxCategory.getC_TaxCategory_ID());
 	}
 
 	private static void createPOSMobileApplication()
@@ -159,10 +168,16 @@ public class CreatePOSTerminalCommandTest
 
 	private ProductId createProduct(final String identifier)
 	{
+		return createProduct(identifier, null);
+	}
+
+	/** @param uom explicit stock UOM (e.g. {@code KGM} for a catch-weight / scale-label product); {@code null} keeps the default ({@code EACH}). */
+	private ProductId createProduct(final String identifier, @Nullable final X12DE355 uom)
+	{
 		final JsonCreateProductResponse response = CreateProductCommand.builder()
 				.productRepository(productRepository)
 				.context(context)
-				.request(JsonCreateProductRequest.builder().value(identifier).build())
+				.request(JsonCreateProductRequest.builder().value(identifier).uom(uom).build())
 				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
@@ -188,7 +203,7 @@ public class CreatePOSTerminalCommandTest
 	{
 		// given
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
-				.priceListCurrency("EUR")
+				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(false)
 				.build();
 
@@ -213,13 +228,14 @@ public class CreatePOSTerminalCommandTest
 		assertThat(posRecord.getC_BP_BankAccount_ID()).isEqualTo(response.getBankAccountId().getRepoId());
 		assertThat(posRecord.getC_BPartnerCashTrx_ID()).isEqualTo(response.getWalkInBPartnerId().getRepoId());
 		assertThat(posRecord.getM_Warehouse_ID()).isGreaterThan(0);
-		assertThat(posRecord.getC_DocTypeOrder_ID()).isGreaterThan(0);
+		assertThat(posRecord.getC_DocTypeOrder_ID()).isEqualTo(salesOrderDocTypeId.getRepoId());
 
 		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.load(response.getBankAccountId(), I_C_BP_BankAccount.class);
 		assertThat(bankAccount.getC_BPartner_ID()).isEqualTo(MasterdataContext.METASFRESH_ORG_BPARTNER_ID.getRepoId());
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.load(posRecord.getM_PriceList_ID(), I_M_PriceList.class);
 		assertThat(priceList.isTaxIncluded()).isFalse();
+		assertThat(priceList.isSOPriceList()).isTrue();
 	}
 
 	@Test
@@ -227,7 +243,7 @@ public class CreatePOSTerminalCommandTest
 	{
 		// given
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
-				.priceListCurrency("EUR")
+				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(true)
 				.build();
 
@@ -251,7 +267,7 @@ public class CreatePOSTerminalCommandTest
 		final ProductId productId = createProduct("P1");
 
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
-				.priceListCurrency("EUR")
+				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(false)
 				.products(ImmutableMap.of("P1", JsonPOSTerminalRequest.ProductPrice.builder()
 						.price(new BigDecimal("9.90"))
@@ -271,6 +287,8 @@ public class CreatePOSTerminalCommandTest
 
 		assertThat(productPrice.getPriceStd()).isEqualByComparingTo(new BigDecimal("9.90"));
 		assertThat(productPrice.getInvoicableQtyBasedOn()).isEqualTo(InvoicableQtyBasedOn.NominalWeight.getCode());
+		assertThat(productPrice.getC_UOM_ID()).isEqualTo(UomId.EACH.getRepoId());
+		assertThat(productPrice.getC_TaxCategory_ID()).isEqualTo(normalTaxCategoryId.getRepoId());
 	}
 
 	@Test
@@ -278,10 +296,12 @@ public class CreatePOSTerminalCommandTest
 	{
 		// given
 		createUom("KGM", 3);
-		final ProductId productId = createProduct("P_SCALE");
+		// realistic scale-label setup: the product itself is stocked in KGM, matching its per-kg price
+		// (an EACH-stocked product priced in KGM would fail MSG_ERR_M_PRODUCT_PRICE_NO_UOM_CONVERSION in production).
+		final ProductId productId = createProduct("P_SCALE", X12DE355.ofCode("KGM"));
 
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
-				.priceListCurrency("EUR")
+				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(false)
 				.products(ImmutableMap.of("P_SCALE", JsonPOSTerminalRequest.ProductPrice.builder()
 						.price(new BigDecimal("15.50"))
@@ -303,6 +323,7 @@ public class CreatePOSTerminalCommandTest
 
 		assertThat(productPrice.getPriceStd()).isEqualByComparingTo(new BigDecimal("15.50"));
 		assertThat(productPrice.getInvoicableQtyBasedOn()).isEqualTo(InvoicableQtyBasedOn.CatchWeight.getCode());
+		assertThat(productPrice.getC_TaxCategory_ID()).isEqualTo(normalTaxCategoryId.getRepoId());
 
 		final I_C_UOM uom = InterfaceWrapperHelper.load(productPrice.getC_UOM_ID(), I_C_UOM.class);
 		assertThat(uom.getX12DE355()).isEqualTo("KGM");
@@ -321,7 +342,7 @@ public class CreatePOSTerminalCommandTest
 				.execute();
 
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
-				.priceListCurrency("EUR")
+				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(false)
 				.walkInCustomer(Identifier.ofString("existingWalkIn"))
 				.build();
@@ -342,7 +363,7 @@ public class CreatePOSTerminalCommandTest
 	{
 		// given
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
-				.priceListCurrency("EUR")
+				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(false)
 				.build();
 
@@ -356,7 +377,12 @@ public class CreatePOSTerminalCommandTest
 		// then
 		final BPartnerId walkInBPartnerId = response.getWalkInBPartnerId();
 		assertThat(walkInBPartnerId).isNotNull();
-		assertThat(InterfaceWrapperHelper.load(walkInBPartnerId, I_C_BPartner.class)).isNotNull();
+		assertThat(walkInBPartnerId).isNotEqualTo(MasterdataContext.METASFRESH_ORG_BPARTNER_ID);
+
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(walkInBPartnerId, I_C_BPartner.class);
+		assertThat(bpartner).isNotNull();
+		assertThat(bpartner.getValue()).startsWith("T_AUTOWALKIN_walkIn_");
+		assertThat(bpartner.getValue().length()).isLessThanOrEqualTo(40);
 	}
 
 	@Test
@@ -364,7 +390,7 @@ public class CreatePOSTerminalCommandTest
 	{
 		// given
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
-				.priceListCurrency("EUR")
+				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(false)
 				.paymentMethods(ImmutableList.of(POSPaymentMethod.CARD))
 				.build();
@@ -383,7 +409,7 @@ public class CreatePOSTerminalCommandTest
 	{
 		// given
 		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
-				.priceListCurrency("EUR")
+				.priceListCurrency(CurrencyCode.EUR)
 				.isTaxIncluded(false)
 				.build();
 
