@@ -522,6 +522,7 @@ testCases.forEach(({ language, label }) => {
                 });
                 const roleUser = masterdata.roles.r.user;
                 expect(roleUser, 'masterdata must return the role user').toBeTruthy();
+                const roleName = masterdata.roles.r.name;
                 const recordId = String(masterdata.bpartners.bp1.id);
 
                 await LoginPage.goto();
@@ -552,7 +553,12 @@ testCases.forEach(({ language, label }) => {
                     const dupBody = await dupResp.text().catch(() => '');
                     console.log(`[${language}] /duplicate (restricted) = ${dupResp.status()} body=${dupBody.slice(0, 240)}`);
                     expect(dupResp.status(), 'a restricted role must be refused at the /duplicate endpoint').toBeGreaterThanOrEqual(400);
-                    expect(dupBody, 'the /duplicate refusal must be the role permission rejection').toContain('org.adempiere.exceptions.AdempiereException');
+                    // Pin the CREATE-restriction branch specifically: duplicateDocumentInTrx throws a plain
+                    // AdempiereException from two branches (canEdit=false → cloning-not-allowed, names the window;
+                    // create-check → the create-restriction message, names the ROLE). The restricted role's edit
+                    // is left open here, so the create branch fires — proven by the body naming the role. The role
+                    // name is a generated, language-invariant token (the message's {0} param).
+                    expect(dupBody, 'the /duplicate refusal must be the role create-restriction (names the role), not a cloning/window error').toContain(roleName);
                     expect(dupBody, 'the restricted clone must be blocked at the permission gate, never reaching the DB').not.toContain('DBUniqueConstraint');
                     console.log(`[${language}] PASS — clone blocked (no 'clone' standard action; /duplicate permission-rejected ${dupResp.status()})`);
                 } else {
@@ -602,8 +608,16 @@ testCases.forEach(({ language, label }) => {
                 await DashboardPage.expectVisible();
                 const resp = await page.request.get(`${WEBAPI_BASE_URL}/menu/root?depth=50&childrenLimit=0`, { headers: { 'Content-Type': 'application/json' } });
                 expect(resp.ok(), 'the menu tree must load').toBe(true);
-                const txt = await resp.text();
-                return new Set((txt.match(/"type":"newRecord","elementId":"[0-9]+"/g) || []).map((s) => s.match(/elementId":"([0-9]+)"/)[1]));
+                // Parse + recursively walk the tree (robust to JSON field ordering) collecting newRecord elementIds.
+                const tree = JSON.parse(await resp.text());
+                const ids = new Set();
+                const walk = (node) => {
+                    if (!node || typeof node !== 'object') return;
+                    if (node.type === 'newRecord' && node.elementId != null) ids.add(String(node.elementId));
+                    (node.children || []).forEach(walk);
+                };
+                walk(tree);
+                return ids;
             };
 
             const openIds = await newRecordWindowIds(md.roles.open.user);
