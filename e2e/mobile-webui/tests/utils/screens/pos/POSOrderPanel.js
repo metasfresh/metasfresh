@@ -29,8 +29,8 @@ export const POSOrderPanel = {
 
     /**
      * Asserts the order line at `index` (0-based) matches the given field values. `qty`, `catchWeight`
-     * and `amount` are the exact rendered display strings (e.g. `'5,00'`, `'0,482 kg'`) - see
-     * {@link exactTextMatch}.
+     * and `amount` are the exact rendered display strings, in the spec's login language - e.g. `'5,00'`
+     * / `'0,482 kg'` for a `de_DE` login - see {@link exactTextMatch}.
      */
     expectLine: async ({ index, productName, qty, catchWeight, amount }) => await test.step(`${NAME} - Expect line #${index}`, async () => {
         const line = page.getByTestId('pos-order-line').nth(index);
