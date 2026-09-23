@@ -24,13 +24,27 @@ package de.metas.externalsystem.endpoint;
 
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class ExternalSystemEndpointTest
 {
+	private ExternalSystemEndpointRepository externalSystemEndpointRepository;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+		externalSystemEndpointRepository = new ExternalSystemEndpointRepository();
+	}
 
 	@Test
 	void toJson_withAllFields()
@@ -132,5 +146,29 @@ class ExternalSystemEndpointTest
 		assertThat(json.getEndpointUrl()).isNull();
 		assertThat(json.getMethod()).isNull();
 		assertThat(json.getAuthType()).isNull();
+	}
+
+	@Test
+	void getById_localFileEndpoint_roundTripsLocalFileFields()
+	{
+		// given
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("LocalFileEndpoint");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_LOCAL_FILE);
+		endpointRecord.setLocalRootLocation("/data/in");
+		endpointRecord.setFrequency(5000);
+		endpointRecord.setImportFileNamePattern("{filename}_{timestamp}");
+		saveRecord(endpointRecord);
+
+		final ExternalSystemEndpointId id = ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID());
+
+		// when
+		final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(id);
+
+		// then
+		assertThat(endpoint.getTransportType()).isEqualTo(TransportType.LOCAL_FILE);
+		assertThat(endpoint.getLocalRootLocation()).isEqualTo("/data/in");
+		assertThat(endpoint.getFrequency()).isEqualTo(5000);
+		assertThat(endpoint.getImportFileNamePattern()).isEqualTo("{filename}_{timestamp}");
 	}
 }

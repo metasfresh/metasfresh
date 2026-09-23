@@ -82,6 +82,13 @@ public class ExternalSystemEndpoint
 	// SFTP inbound-polling settings (poll interval -- SFTP-only).
 	@Nullable Integer sftpPollingIntervalMs;
 
+	// LOCAL_FILE transport fields (null when transportType != LOCAL_FILE)
+	@Nullable String localRootLocation;
+
+	@Nullable Integer frequency;
+
+	@Nullable String importFileNamePattern;
+
 	// Local, transport-agnostic archive folders (used by both SFTP and REST import).
 	@Nullable String processedDirectory;
 
