@@ -2,15 +2,11 @@ import { page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 import { expect } from "@playwright/test";
 import { POSPaymentPanel } from "./POSPaymentPanel";
+import { exactTextMatch } from "./posText";
 
 const NAME = 'POSOrderPanel';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.getByTestId('pos-order-panel');
-
-// Exact-boundary match for a formatted numeric value inside a larger text node (a bare digit via
-// toContainText would false-positive: '5' also matches '15,00' or '50,00').
-const exactNumberMatch = (value) =>
-    new RegExp(`(^|[^0-9.,])${String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^0-9.,]|$)`);
 
 export const POSOrderPanel = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -31,7 +27,11 @@ export const POSOrderPanel = {
         await field.press('Enter');
     }),
 
-    /** Asserts the order line at `index` (0-based) matches the given field values. */
+    /**
+     * Asserts the order line at `index` (0-based) matches the given field values. `qty`, `catchWeight`
+     * and `amount` are the exact rendered display strings (e.g. `'5,00'`, `'0,482 kg'`) - see
+     * {@link exactTextMatch}.
+     */
     expectLine: async ({ index, productName, qty, catchWeight, amount }) => await test.step(`${NAME} - Expect line #${index}`, async () => {
         const line = page.getByTestId('pos-order-line').nth(index);
         await line.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -40,13 +40,13 @@ export const POSOrderPanel = {
             await expect(line.getByTestId('pos-order-line-product-name')).toHaveText(productName);
         }
         if (qty != null) {
-            await expect(line.getByTestId('pos-order-line-description')).toContainText(exactNumberMatch(qty));
+            await expect(line.getByTestId('pos-order-line-description')).toContainText(exactTextMatch(qty));
         }
         if (catchWeight != null) {
-            await expect(line.getByTestId('pos-order-line-description')).toContainText(exactNumberMatch(catchWeight));
+            await expect(line.getByTestId('pos-order-line-description')).toContainText(exactTextMatch(catchWeight));
         }
         if (amount != null) {
-            await expect(line.getByTestId('pos-order-line-amount')).toContainText(exactNumberMatch(amount));
+            await expect(line.getByTestId('pos-order-line-amount')).toContainText(exactTextMatch(amount));
         }
     }),
 

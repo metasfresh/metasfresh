@@ -57,15 +57,10 @@ const POSCashJournalClosingModal = () => {
         </section>
         <footer className="modal-card-foot">
           <div className="buttons">
-            <button
-              className="button is-large"
-              data-testid="pos-cash-journal-close-button"
-              disabled={!isValid}
-              onClick={onCloseClick}
-            >
+            <button className="button is-large" disabled={!isValid} onClick={onCloseClick}>
               {_('actions.close')}
             </button>
-            <button className="button is-large" data-testid="pos-cash-journal-cancel-button" onClick={onCancelClick}>
+            <button className="button is-large" onClick={onCancelClick}>
               {_('actions.cancel')}
             </button>
           </div>

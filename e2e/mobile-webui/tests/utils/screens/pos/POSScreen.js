@@ -1,6 +1,5 @@
 import { page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
-import { expect } from "@playwright/test";
 import { ApplicationsListScreen } from "../ApplicationsListScreen";
 
 const NAME = 'POSScreen';
@@ -27,7 +26,11 @@ export const POSScreen = {
      * instead. When more than one terminal is configured, the select modal is shown and the terminal
      * with the matching `data-terminal-id` is tapped.
      */
-    selectTerminal: async ({ posTerminalId } = {}) => await test.step(`${NAME} - Select terminal ${posTerminalId ?? '(auto)'}`, async () => {
+    selectTerminal: async ({ posTerminalId }) => await test.step(`${NAME} - Select terminal ${posTerminalId}`, async () => {
+        if (posTerminalId == null) {
+            throw new Error('POSScreen.selectTerminal requires posTerminalId (masterdata.posTerminals.<id>.id)');
+        }
+
         const selectModal = page.getByTestId('pos-terminal-select-modal');
         const openJournalModal = page.getByTestId('pos-cash-journal-open-modal');
 
@@ -50,18 +53,5 @@ export const POSScreen = {
         await page.getByTestId('pos-cash-journal-open-button').tap();
 
         await modal.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
-    }),
-
-    /**
-     * Asserts the drawer's current cash balance. The only place this value is rendered on screen
-     * outside the closing summary (see `POSCashJournalModals.expectSummary`) is the opening-balance
-     * input of `POSCashJournalOpenModal`, pre-filled from `posTerminal.cashLastBalance` - i.e. the
-     * balance carried over from the last closed journal. Only meaningful while that modal is showing
-     * (terminal not yet opened for the day).
-     */
-    expectDrawerBalance: async (amount) => await test.step(`${NAME} - Expect drawer balance ${amount}`, async () => {
-        const modal = page.getByTestId('pos-cash-journal-open-modal');
-        await modal.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
-        await expect(page.getByTestId('pos-cash-journal-opening-balance-input')).toHaveValue(`${amount}`);
     }),
 };
