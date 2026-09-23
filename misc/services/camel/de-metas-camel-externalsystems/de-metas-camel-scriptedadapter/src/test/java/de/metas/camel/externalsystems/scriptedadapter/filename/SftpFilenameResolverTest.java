@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
+package de.metas.camel.externalsystems.scriptedadapter.filename;
 
 import org.junit.jupiter.api.Test;
 

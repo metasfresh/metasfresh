@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
 import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.camel.externalsystems.scriptedadapter.filename.SftpFilenameResolver;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import de.metas.common.util.Check;
