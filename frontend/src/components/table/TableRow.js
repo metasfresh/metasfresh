@@ -187,8 +187,21 @@ class TableRow extends PureComponent {
           const { onFastInlineEdit } = this.props;
           onFastInlineEdit();
         } else {
-          const inp = String.fromCharCode(event.keyCode);
-          if (/[a-zA-Z0-9]/.test(inp) && !event.ctrlKey && !event.altKey) {
+          // Activate on any single printable character (event.key), not on
+          // event.keyCode/String.fromCharCode: keyCode-based mapping is wrong
+          // for the numeric keypad (e.g. numpad-0 is keyCode 96, which
+          // String.fromCharCode maps to a backtick, never matching a
+          // printable-character gate). event.key already reflects the
+          // actual character produced (numpad-0 and main-row-0 both give
+          // "0"), while non-printable keys (Enter, ArrowDown, F-keys, ...)
+          // report a multi-character name and are excluded by the length
+          // check below.
+          if (
+            event.key.length === 1 &&
+            !event.ctrlKey &&
+            !event.altKey &&
+            !event.metaKey
+          ) {
             this.handleKeyDown_RegularChar({ event, property, readonly });
           }
         }
