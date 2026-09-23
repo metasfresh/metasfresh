@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { BUSINESS_PARTNER_WINDOW_ID } from '../utils/WindowIds';
+import { BUSINESS_PARTNER_WINDOW_ID, SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
 import { assertRecordIsValid, getFieldData, getTabInfo, getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
@@ -642,7 +642,6 @@ testCases.forEach(({ language, label }) => {
     // CREATE). Driven through the RENDERED dropdown. The lookup is reached on a new Invoice (the role is
     // restricted only on C_BPartner, so it may still create an invoice); identical steps for both roles, so
     // the only variable is the create restriction.
-    const INVOICE_WINDOW_ID = 167;
     const TC14_CASES = [
         { key: 'restricted', restricted: true },
         { key: 'unrestricted', restricted: false },
@@ -671,7 +670,7 @@ testCases.forEach(({ language, label }) => {
                 await DashboardPage.expectVisible();
 
                 // Reach a C_BPartner lookup on a new Invoice, then type a no-match string.
-                await page.goto(`${FRONTEND_BASE_URL}/window/${INVOICE_WINDOW_ID}/NEW`);
+                await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_INVOICE_WINDOW_ID}/NEW`);
                 const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
                 await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
                 await bpInput.click();
@@ -679,8 +678,11 @@ testCases.forEach(({ language, label }) => {
 
                 const optionNew = page.getByTestId('option-NEW');
                 if (restricted) {
-                    // Give the dropdown time to render, then assert the new-partner entry is not offered.
-                    await page.waitForTimeout(3000);
+                    // Wait for the dropdown to finish rendering its typeahead response (a no-results header or any
+                    // option) BEFORE asserting the new-partner entry is absent — otherwise count 0 passes trivially
+                    // at t=0, before the async round-trip completes (a vacuous pass under CI/cold-JVM load). The
+                    // unrestricted branch's toBeVisible proves option-NEW DOES appear under identical steps.
+                    await page.locator('.input-dropdown-list-header, .input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
                     await expect(optionNew, 'the new-partner quick-input entry must be hidden for a restricted role').toHaveCount(0);
                     console.log(`[${language}] PASS — quick-input new-partner hidden`);
                 } else {
