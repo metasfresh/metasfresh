@@ -5,7 +5,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { POSScreen } from "../../utils/screens/pos/POSScreen";
 import { POSOrderPanel } from "../../utils/screens/pos/POSOrderPanel";
 
-// Logs in as de_DE because the amount assertions use de_DE display strings (e.g. '2,50').
+// de_DE login: rendered amounts/quantities use comma decimals (see exactTextMatch in posText.js).
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
         language: 'de_DE',
