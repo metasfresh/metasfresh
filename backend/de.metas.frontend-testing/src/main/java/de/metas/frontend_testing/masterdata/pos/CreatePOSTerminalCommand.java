@@ -1,10 +1,8 @@
 package de.metas.frontend_testing.masterdata.pos;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPBankAccountDAO;
-import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseType;
@@ -13,16 +11,21 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.frontend_testing.masterdata.PricingSetupHelper;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationRepoId;
+import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminalId;
 import de.metas.pricing.InvoicableQtyBasedOn;
-import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.productprice.CreateProductPriceRequest;
+import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -30,11 +33,11 @@ import de.metas.security.RoleId;
 import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -42,34 +45,24 @@ import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_POS;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.I_Mobile_Application;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Creates a POS terminal ({@code C_POS}) for frontend/mobile testing: a dedicated cashbook, a fresh
  * sales pricing setup ({@code M_PricingSystem} + {@code M_PriceList} + {@code M_PriceList_Version} with
  * {@code M_ProductPrice} for the requested products), a walk-in customer, a ship-from warehouse and the
- * sales-order document type. Also grants the {@code pos} mobile application to the {@link RoleId#WEBUI}
- * role, the role every {@code login} user of this masterdata API gets
- * ({@link de.metas.frontend_testing.masterdata.user.LoginUserCommand}).
- * <p>
- * Does NOT touch {@code de.metas.pos.base} main code; it only reads from it ({@link POSTerminalId}).
+ * sales-order document type. Also grants the {@code pos} mobile application to {@link RoleId#WEBUI}.
  */
 @Builder
 public class CreatePOSTerminalCommand
 {
 	private static final String POS_MOBILE_APPLICATION_VALUE = "pos";
 
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
@@ -77,6 +70,8 @@ public class CreatePOSTerminalCommand
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final ProductPriceRepository productPriceRepository;
+	@NonNull private final MobileApplicationInfoRepository mobileApplicationInfoRepository;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPOSTerminalRequest request;
@@ -91,10 +86,14 @@ public class CreatePOSTerminalCommand
 
 		final BankAccountId bankAccountId = createCashbookBankAccount(currencyId);
 
-		final I_M_PriceList_Version priceListVersion = createPOSPriceList(currencyId);
-		final PriceListId priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
-		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID());
-		createProductPrices(priceListVersionId, request.getProducts() != null ? request.getProducts() : ImmutableSet.of());
+		final PricingSetupHelper.PricingSetupResult pricingSetup = PricingSetupHelper.createPricingSystemAndPriceList(
+				orgId,
+				identifier.toUniqueString(),
+				currencyId,
+				MasterdataContext.COUNTRY_ID,
+				request.isTaxIncluded(),
+				true); // isSoPriceList
+		createProductPrices(pricingSetup.getPriceListVersionId(), request.getProducts());
 
 		final BPartnerId walkInBPartnerId = resolveOrCreateWalkInBPartner();
 		final WarehouseId warehouseId = createShipFromWarehouse();
@@ -111,7 +110,7 @@ public class CreatePOSTerminalCommand
 		posRecord.setC_BPartnerCashTrx_ID(walkInBPartnerId.getRepoId());
 		posRecord.setC_BP_BankAccount_ID(bankAccountId.getRepoId());
 		posRecord.setC_DocTypeOrder_ID(salesOrderDocTypeId.getRepoId());
-		posRecord.setM_PriceList_ID(priceListId.getRepoId());
+		posRecord.setM_PriceList_ID(pricingSetup.getPriceListId().getRepoId());
 		posRecord.setM_Warehouse_ID(warehouseId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(posRecord);
 
@@ -122,7 +121,7 @@ public class CreatePOSTerminalCommand
 				.id(posTerminalId)
 				.walkInBPartnerId(walkInBPartnerId)
 				.bankAccountId(bankAccountId)
-				.cashJournalOpen(false)
+				.isCashJournalOpen(false)
 				.build();
 	}
 
@@ -132,8 +131,8 @@ public class CreatePOSTerminalCommand
 	 */
 	private void assertOnlyCashPaymentMethod()
 	{
-		final List<String> paymentMethods = request.getPaymentMethods();
-		final boolean onlyCash = paymentMethods.stream().allMatch("CASH"::equalsIgnoreCase);
+		final List<POSPaymentMethod> paymentMethods = request.getPaymentMethods();
+		final boolean onlyCash = paymentMethods.stream().allMatch(POSPaymentMethod::isCash);
 		if (!onlyCash)
 		{
 			throw new AdempiereException("CreatePOSTerminalCommand currently supports only the CASH payment method; got: " + paymentMethods);
@@ -151,86 +150,35 @@ public class CreatePOSTerminalCommand
 		return BankAccountId.ofRepoId(bankAccount.getC_BP_BankAccount_ID());
 	}
 
-	/**
-	 * Creates a fresh, POS-dedicated {@code M_PricingSystem} + {@code M_PriceList} + {@code M_PriceList_Version}
-	 * (mirrors {@link CreateBPartnerCommand#createPricingSystem()}, but never reuses/registers a shared one in
-	 * the {@link MasterdataContext} — each POS terminal gets its own).
-	 */
-	private I_M_PriceList_Version createPOSPriceList(@NonNull final CurrencyId currencyId)
+	private void createProductPrices(
+			@NonNull final PriceListVersionId priceListVersionId,
+			@NonNull final Map<String, JsonPOSTerminalRequest.ProductPrice> products)
 	{
-		final String value = identifier.toUniqueString();
-
-		final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
-		pricingSystem.setValue(value);
-		pricingSystem.setName(value);
-		pricingSystem.setAD_Org_ID(orgId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(pricingSystem);
-
-		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
-		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
-		priceList.setAD_Org_ID(orgId.getRepoId());
-		priceList.setC_Currency_ID(currencyId.getRepoId());
-		priceList.setName(value);
-		priceList.setIsTaxIncluded(request.isTaxIncluded());
-		priceList.setPricePrecision(2);
-		priceList.setIsActive(true);
-		priceList.setIsSOPriceList(true);
-		priceList.setC_Country_ID(MasterdataContext.COUNTRY_ID.getRepoId());
-		InterfaceWrapperHelper.saveRecord(priceList);
-
-		final I_M_PriceList_Version plv = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
-		plv.setM_PriceList_ID(priceList.getM_PriceList_ID());
-		plv.setAD_Org_ID(priceList.getAD_Org_ID());
-		plv.setValidFrom(Timestamp.from(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant()));
-		InterfaceWrapperHelper.saveRecord(plv);
-
-		return plv;
+		products.forEach((productIdentifierStr, priceSpec) -> createProductPrice(priceListVersionId, Identifier.ofString(productIdentifierStr), priceSpec));
 	}
 
-	private void createProductPrices(@NonNull final PriceListVersionId priceListVersionId, @NonNull final Set<Identifier> productIdentifiers)
+	private void createProductPrice(
+			@NonNull final PriceListVersionId priceListVersionId,
+			@NonNull final Identifier productIdentifier,
+			@NonNull final JsonPOSTerminalRequest.ProductPrice priceSpec)
 	{
-		if (productIdentifiers.isEmpty())
-		{
-			return;
-		}
+		final ProductId productId = context.getId(productIdentifier, ProductId.class);
+		final UomId uomId = priceSpec.getUom() != null
+				? uomDAO.getUomIdByX12DE355(priceSpec.getUom())
+				: productBL.getStockUOMId(productId);
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = priceSpec.getInvoicableQtyBasedOn() != null
+				? priceSpec.getInvoicableQtyBasedOn()
+				: InvoicableQtyBasedOn.NominalWeight;
 
-		final ImmutableSet<ProductId> productIds = context.getIds(productIdentifiers, ProductId.class);
-		productIds.forEach(productId -> createProductPrice(priceListVersionId, productId));
-	}
-
-	/**
-	 * Reuses the {@code M_ProductPrice} creation pattern of
-	 * {@link de.metas.frontend_testing.masterdata.product.CreateProductCommand#createPrice}. This is infra
-	 * scaffolding (task satisfies no test case on its own): the {@code PriceStd} is best-effort copied from
-	 * the product's own already-created price (if any, e.g. via {@code JsonCreateProductRequest#getPrice()});
-	 * a product with no existing price gets {@code 0} here.
-	 */
-	private void createProductPrice(@NonNull final PriceListVersionId priceListVersionId, @NonNull final ProductId productId)
-	{
-		final UomId uomId = productBL.getStockUOMId(productId);
-		final BigDecimal priceStd = resolveExistingPriceStdOrZero(productId);
-
-		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
-		productPrice.setIsActive(true);
-		productPrice.setM_PriceList_Version_ID(priceListVersionId.getRepoId());
-		productPrice.setM_Product_ID(productId.getRepoId());
-		productPrice.setC_UOM_ID(uomId.getRepoId());
-		productPrice.setPriceStd(priceStd);
-		productPrice.setC_TaxCategory_ID(getTaxCategoryId().getRepoId());
-		productPrice.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight.getCode());
-		InterfaceWrapperHelper.saveRecord(productPrice);
-	}
-
-	private BigDecimal resolveExistingPriceStdOrZero(@NonNull final ProductId productId)
-	{
-		return queryBL.createQueryBuilder(I_M_ProductPrice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.stream()
-				.map(I_M_ProductPrice::getPriceStd)
-				.findFirst()
-				.orElse(BigDecimal.ZERO);
+		productPriceRepository.createProductPrice(CreateProductPriceRequest.builder()
+				.orgId(orgId)
+				.productId(productId)
+				.priceListVersionId(priceListVersionId)
+				.priceStd(priceSpec.getPrice())
+				.uomId(uomId)
+				.taxCategoryId(getTaxCategoryId())
+				.invoicableQtyBasedOn(invoicableQtyBasedOn)
+				.build());
 	}
 
 	private TaxCategoryId getTaxCategoryId()
@@ -251,8 +199,8 @@ public class CreatePOSTerminalCommand
 		final JsonCreateBPartnerResponse response = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
 				.context(context)
-				.request(JsonCreateBPartnerRequest.builder().build()) // defaults: isCustomer=true, isSoPriceList=true
-				.identifier(identifier.toUniqueString() + "_walkIn")
+				.request(JsonCreateBPartnerRequest.builder().build())
+				.identifier(identifier.getAsString() + "_walkIn")
 				.build()
 				.execute();
 		return response.getId();
@@ -280,23 +228,12 @@ public class CreatePOSTerminalCommand
 				.build());
 	}
 
-	/**
-	 * Grants the {@code pos} mobile application to {@link RoleId#WEBUI} — the role every masterdata-API
-	 * {@code login} user gets ({@link de.metas.frontend_testing.masterdata.user.LoginUserCommand}) — the same
-	 * {@link IUserRolePermissionsDAO#createMobileApplicationAccess} call the
-	 * {@code de.metas.mobile.application.interceptor.Mobile_Application} model interceptor uses when a new
-	 * {@code Mobile_Application} record is created. Idempotent (no-op if already granted).
-	 */
+	/** Grants the {@code pos} mobile application to {@link RoleId#WEBUI}, the masterdata-API login users' role. */
 	private void grantPOSMobileApplicationAccess()
 	{
-		final I_Mobile_Application mobileApp = queryBL.createQueryBuilder(I_Mobile_Application.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_Mobile_Application.COLUMNNAME_Value, POS_MOBILE_APPLICATION_VALUE)
-				.create()
-				.firstOnlyOptional(I_Mobile_Application.class)
-				.orElseThrow(() -> new AdempiereException("No Mobile_Application found with Value=`" + POS_MOBILE_APPLICATION_VALUE + "`"));
-
-		final MobileApplicationRepoId posApplicationId = MobileApplicationRepoId.ofRepoId(mobileApp.getMobile_Application_ID());
+		final MobileApplicationRepoId posApplicationId = mobileApplicationInfoRepository
+				.getById(MobileApplicationId.ofString(POS_MOBILE_APPLICATION_VALUE))
+				.getRepoId();
 
 		userRolePermissionsDAO.createMobileApplicationAccess(CreateMobileApplicationAccessRequest.builder()
 				.roleId(RoleId.WEBUI)

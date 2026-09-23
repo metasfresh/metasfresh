@@ -1,15 +1,20 @@
 package de.metas.frontend_testing.masterdata.pos;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.pos.POSPaymentMethod;
+import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.uom.X12DE355;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Request to create a POS terminal ({@code C_POS}) for frontend/mobile testing.
@@ -25,10 +30,13 @@ public class JsonPOSTerminalRequest
 	@NonNull String priceListCurrency;
 
 	/**
-	 * Identifiers (keys of the request's top-level {@code products} map) to be priced into the
-	 * terminal's own {@code M_PriceList_Version}.
+	 * Explicit {@code M_ProductPrice} to create in this terminal's own {@code M_PriceList_Version}, keyed by the
+	 * request's top-level {@code products} map identifier. Never defaulted or copied from elsewhere — a
+	 * catch-weight (scale-label) product needs its per-{@code uom} price stated here, e.g. a per-kg price for an
+	 * {@link InvoicableQtyBasedOn#CatchWeight} product.
 	 */
-	@Nullable Set<Identifier> products;
+	@Builder.Default
+	@NonNull Map<String, ProductPrice> products = ImmutableMap.of();
 
 	boolean isTaxIncluded;
 
@@ -43,5 +51,15 @@ public class JsonPOSTerminalRequest
 	 * {@link CreatePOSTerminalCommand} so far; defaults to {@code ["CASH"]}.
 	 */
 	@Builder.Default
-	@NonNull List<String> paymentMethods = ImmutableList.of("CASH");
+	@NonNull List<POSPaymentMethod> paymentMethods = ImmutableList.of(POSPaymentMethod.CASH);
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class ProductPrice
+	{
+		@NonNull BigDecimal price;
+		@Nullable X12DE355 uom;
+		@Nullable InvoicableQtyBasedOn invoicableQtyBasedOn;
+	}
 }

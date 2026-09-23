@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.pos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.pos.POSTerminalId;
@@ -16,5 +17,5 @@ public class JsonPOSTerminalResponse
 	@NonNull POSTerminalId id;
 	@NonNull BPartnerId walkInBPartnerId;
 	@NonNull BankAccountId bankAccountId;
-	boolean cashJournalOpen;
+	@JsonProperty("cashJournalOpen") boolean isCashJournalOpen;
 }

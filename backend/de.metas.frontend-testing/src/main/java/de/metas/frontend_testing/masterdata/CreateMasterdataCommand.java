@@ -365,6 +365,8 @@ public class CreateMasterdataCommand
 	{
 		return CreatePOSTerminalCommand.builder()
 				.currencyRepository(services.currencyRepository)
+				.productPriceRepository(services.productPriceRepository)
+				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

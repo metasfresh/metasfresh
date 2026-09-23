@@ -119,6 +119,11 @@ public class ProductPriceRepository
 			record.setSeqNo(request.getSeqNo());
 		}
 
+		if (request.getInvoicableQtyBasedOn() != null)
+		{
+			record.setInvoicableQtyBasedOn(request.getInvoicableQtyBasedOn().getCode());
+		}
+
 		return record;
 	}
 
