@@ -28,6 +28,8 @@ import de.metas.common.rest_api.common.JsonTestResponse;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.role.AD_Role_StepDefData;
+import org.compiere.model.I_AD_Role;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -54,16 +56,38 @@ public class REST_API_StepDef
 	private String userAuthToken;
 
 	private final TestContext testContext;
+	private final AD_Role_StepDefData roleTable;
 
-	public REST_API_StepDef(final TestContext testContext)
+	public REST_API_StepDef(final TestContext testContext, final AD_Role_StepDefData roleTable)
 	{
 		this.testContext = testContext;
+		this.roleTable = roleTable;
 	}
 
 	@Given("the existing user with login {string} receives a random a API token for the existing role with name {string}")
 	public void the_existing_user_has_the_authtoken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
 		userAuthToken = RESTUtil.getAuthToken(userLogin, roleName);
+	}
+
+	/**
+	 * Identifier-based counterpart of the name-based token step above: resolves a role registered earlier
+	 * (e.g. by {@code metasfresh contains AD_Roles including the WebUI role:}) via the {@code AD_Role_StepDefData}
+	 * table and mints the auth token from its actual name. This lets a scenario create a role with an
+	 * auto-generated (replay-safe) name and still obtain a token for it, since the generated name is never
+	 * known to the feature text.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the existing user with login 'metasfresh' receives a random a API token for the existing role with identifier 'restrictedRole'
+	 * </pre>
+	 */
+	@Given("the existing user with login {string} receives a random a API token for the existing role with identifier {string}")
+	public void the_existing_user_has_the_authtoken_by_role_identifier(@NonNull final String userLogin, @NonNull final String roleIdentifier)
+	{
+		final I_AD_Role role = roleTable.get(roleIdentifier);
+		userAuthToken = RESTUtil.getAuthToken(userLogin, role.getName());
 	}
 
 	@When("a {string} request with the below payload is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
