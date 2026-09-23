@@ -202,7 +202,12 @@ class TableRow extends PureComponent {
             !event.altKey &&
             !event.metaKey
           ) {
-            this.handleKeyDown_RegularChar({ event, property, readonly });
+            this.handleKeyDown_RegularChar({
+              event,
+              property,
+              readonly,
+              isAttributeWidget,
+            });
           }
         }
         break;
@@ -333,7 +338,22 @@ class TableRow extends PureComponent {
     }
   };
 
-  handleKeyDown_RegularChar = ({ event, property, readonly }) => {
+  handleKeyDown_RegularChar = ({
+    event,
+    property,
+    readonly,
+    isAttributeWidget,
+  }) => {
+    // Object-valued attribute widgets (ProductAttributes/Address) commit through
+    // the <Attributes> overlay, not the raw-text edit path. Routing a printable
+    // key (e.g. Space, accepted by the single-printable-character gate above)
+    // into handleEditProperty({ select: true }) would clearValue() the widget
+    // and clobber its {key,caption} value (silent data loss). Skip it here,
+    // mirroring the Tab/Enter isAttributeWidget guards.
+    if (isAttributeWidget) {
+      return;
+    }
+
     const { valueBeforeEditing } = this.state;
     if (valueBeforeEditing === null) {
       // for disabled fields/fields without value, we don't get the field data from the backend
