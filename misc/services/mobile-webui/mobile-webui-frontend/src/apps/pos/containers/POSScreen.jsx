@@ -28,7 +28,7 @@ const POSScreen = () => {
   const modal = useModal();
 
   return (
-    <div className="pos-screen">
+    <div className="pos-screen" data-testid="pos-screen">
       <Header />
       {modal}
       <POSContent disabled={!!modal} />

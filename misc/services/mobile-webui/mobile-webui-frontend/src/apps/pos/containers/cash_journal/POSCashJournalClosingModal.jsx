@@ -31,7 +31,7 @@ const POSCashJournalClosingModal = () => {
   };
 
   return (
-    <div className="modal is-active pos-journal-closing-panel">
+    <div className="modal is-active pos-journal-closing-panel" data-testid="pos-cash-journal-closing-modal">
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
@@ -57,10 +57,15 @@ const POSCashJournalClosingModal = () => {
         </section>
         <footer className="modal-card-foot">
           <div className="buttons">
-            <button className="button is-large" disabled={!isValid} onClick={onCloseClick}>
+            <button
+              className="button is-large"
+              data-testid="pos-cash-journal-close-button"
+              disabled={!isValid}
+              onClick={onCloseClick}
+            >
               {_('actions.close')}
             </button>
-            <button className="button is-large" onClick={onCancelClick}>
+            <button className="button is-large" data-testid="pos-cash-journal-cancel-button" onClick={onCancelClick}>
               {_('actions.cancel')}
             </button>
           </div>
@@ -140,14 +145,17 @@ const PaymentMethod = ({
 
   return (
     <>
-      <tr className="line-level1">
+      <tr className="line-level1" data-testid="pos-cash-journal-summary-row" data-payment-method={paymentMethod}>
         <td className="description-col">{getPaymentMethodCaption({ paymentMethod })}</td>
-        <td className="amt">{amountExpectedStr}</td>
+        <td className="amt" data-testid="pos-cash-journal-summary-booked-amount">
+          {amountExpectedStr}
+        </td>
         {isRenderCountedField && (
           <>
             <td className="amt">
               <input
                 type="number"
+                data-testid="pos-cash-journal-counted-amount-input"
                 value={amountCounted ?? 0}
                 onChange={(e) => {
                   onCountedAmountChanged(e.target.value);
@@ -191,9 +199,11 @@ const PaymentDetail = ({ type, description, amount, currency, precision }) => {
   const amountStr = formatAmountToHumanReadableStr({ amount, currency, precision });
   const descriptionEff = getPaymentDetailTypeCaption(type) + (description ? ' ' + description : '');
   return (
-    <tr className="line-level2">
+    <tr className="line-level2" data-testid="pos-cash-journal-summary-detail-row" data-detail-type={type}>
       <td className="description-col">{descriptionEff}</td>
-      <td className="amt">{amountStr}</td>
+      <td className="amt" data-testid="pos-cash-journal-summary-detail-amount">
+        {amountStr}
+      </td>
     </tr>
   );
 };
