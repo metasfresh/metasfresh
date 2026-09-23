@@ -197,6 +197,10 @@ export function getSizeStyle(col) {
     return undefined;
   }
 
+  // This min-width is a robust floor even on a narrower td-sm/td-md band: per
+  // CSS 2.1 §10.4, when the computed min-width exceeds the computed max-width,
+  // the used max-width is raised to the min-width — so the band's smaller
+  // max-width can never shrink the column back below the combobox floor.
   return { minWidth: `${COMBOBOX_MIN_WIDTH_PX}px` };
 }
 
