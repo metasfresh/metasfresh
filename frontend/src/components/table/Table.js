@@ -11,6 +11,7 @@ import {
 import {
   loadColumnWidths,
   saveColumnWidths,
+  clampComboboxColumnWidths,
 } from '../../utils/columnWidthStorage';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
@@ -38,8 +39,11 @@ class Table extends PureComponent {
     this.initialPaddingBottom = 100;
 
     // Load persisted column widths
-    const { windowId, viewId } = this.props;
-    const columnWidths = loadColumnWidths(windowId, viewId);
+    const { windowId, viewId, columns } = this.props;
+    const columnWidths = clampComboboxColumnWidths(
+      loadColumnWidths(windowId, viewId),
+      columns
+    );
     if (Object.keys(columnWidths).length > 0) {
       this.setState({ columnWidths });
     }
@@ -50,7 +54,7 @@ class Table extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { mainTable, open, rows, windowId, viewId } = this.props;
+    const { mainTable, open, rows, windowId, viewId, columns } = this.props;
 
     if (!this._isMounted) {
       return;
@@ -58,7 +62,10 @@ class Table extends PureComponent {
 
     // Reload column widths if window/view changed
     if (windowId !== prevProps.windowId || viewId !== prevProps.viewId) {
-      const columnWidths = loadColumnWidths(windowId, viewId);
+      const columnWidths = clampComboboxColumnWidths(
+        loadColumnWidths(windowId, viewId),
+        columns
+      );
       this.setState({ columnWidths });
     }
 
