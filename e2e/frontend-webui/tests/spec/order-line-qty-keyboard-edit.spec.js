@@ -195,8 +195,8 @@ async function createOrderAndOpenLinesTab(page, masterdata) {
  * Written inline rather than via SalesOrderPage.openQuickEntryAndSelectProduct /
  * submitQuickEntryLine: those helpers open batch entry with a mouse click on the toggle
  * button (not Alt+Q) and fill Menge with .fill() (not keyboard.type), so they leave a
- * different post-close focus target than the Alt+Q path this test measured and its Tab-count
- * to cell-QtyEntered relies on; they also don't loop several products or skip the Packvorschrift
+ * different post-close focus target than the Alt+Q path this test measured, which is where
+ * tabToFirstRowQtyCell starts; they also don't loop several products or skip the Packvorschrift
  * field the way this test needs.
  */
 async function addLinesViaBatchEntry(page, masterdata, qty) {
