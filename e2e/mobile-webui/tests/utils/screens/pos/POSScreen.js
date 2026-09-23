@@ -20,24 +20,25 @@ export const POSScreen = {
     }),
 
     /**
-     * Selects the POS terminal to work with.
+     * Selects the POS terminal to work with, by its backend id (`masterdata.posTerminals.<id>.id`).
      *
      * When exactly one POS terminal is configured, `POSTerminalSelectModal` auto-selects it and is
-     * never rendered (see the component's `useEffect`), so this call becomes a no-op wait. When more
-     * than one terminal is configured, the modal is shown and the terminal whose caption contains
-     * `caption` is tapped.
+     * never rendered (see the component's `useEffect`) - the cash-journal-open modal is shown directly
+     * instead. When more than one terminal is configured, the select modal is shown and the terminal
+     * with the matching `data-terminal-id` is tapped.
      */
-    selectTerminal: async ({ caption } = {}) => await test.step(`${NAME} - Select terminal ${caption ?? '(auto)'}`, async () => {
-        const modal = page.getByTestId('pos-terminal-select-modal');
-        try {
-            await modal.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        } catch {
-            // Exactly one POS terminal configured => it was auto-selected, nothing to tap.
-            return;
-        }
+    selectTerminal: async ({ posTerminalId } = {}) => await test.step(`${NAME} - Select terminal ${posTerminalId ?? '(auto)'}`, async () => {
+        const selectModal = page.getByTestId('pos-terminal-select-modal');
+        const openJournalModal = page.getByTestId('pos-cash-journal-open-modal');
 
-        await modal.getByTestId('pos-terminal-button').filter({ hasText: caption }).tap();
-        await modal.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        // Whichever appears first: the select modal (more than one terminal configured) or the
+        // cash-journal-open modal (exactly one terminal - already auto-selected).
+        await selectModal.or(openJournalModal).first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+        if (await selectModal.isVisible()) {
+            await selectModal.locator(`[data-testid="pos-terminal-button"][data-terminal-id="${posTerminalId}"]`).tap();
+            await selectModal.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        }
     }),
 
     /** Opens the terminal's cash journal for the day with the given opening balance. */

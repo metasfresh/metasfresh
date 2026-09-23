@@ -57,6 +57,7 @@ const POSTerminalSelectModal = ({ allowCancel }) => {
             <button
               className="button is-large"
               data-testid="pos-terminal-button"
+              data-terminal-id={posTerminal.id}
               key={posTerminal.id}
               onClick={() => onTerminalSelected(posTerminal.id)}
             >

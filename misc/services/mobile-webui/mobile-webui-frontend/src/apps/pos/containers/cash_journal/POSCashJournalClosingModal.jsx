@@ -155,7 +155,6 @@ const PaymentMethod = ({
             <td className="amt">
               <input
                 type="number"
-                data-testid="pos-cash-journal-counted-amount-input"
                 value={amountCounted ?? 0}
                 onChange={(e) => {
                   onCountedAmountChanged(e.target.value);
@@ -201,9 +200,7 @@ const PaymentDetail = ({ type, description, amount, currency, precision }) => {
   return (
     <tr className="line-level2" data-testid="pos-cash-journal-summary-detail-row" data-detail-type={type}>
       <td className="description-col">{descriptionEff}</td>
-      <td className="amt" data-testid="pos-cash-journal-summary-detail-amount">
-        {amountStr}
-      </td>
+      <td className="amt">{amountStr}</td>
     </tr>
   );
 };

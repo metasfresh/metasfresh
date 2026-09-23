@@ -4,10 +4,13 @@ import { expect } from "@playwright/test";
 import { POSPaymentPanel } from "./POSPaymentPanel";
 
 const NAME = 'POSOrderPanel';
-// POSOrderPanel.jsx (not touched by this task) already carries this class - used as a CSS fallback
-// selector instead of adding a data-testid to a file outside this task's scope.
 /** @returns {import('@playwright/test').Locator} */
-const containerElement = () => page.locator('.pos-order-panel');
+const containerElement = () => page.getByTestId('pos-order-panel');
+
+// Exact-boundary match for a formatted numeric value inside a larger text node (a bare digit via
+// toContainText would false-positive: '5' also matches '15,00' or '50,00').
+const exactNumberMatch = (value) =>
+    new RegExp(`(^|[^0-9.,])${String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^0-9.,]|$)`);
 
 export const POSOrderPanel = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -16,7 +19,8 @@ export const POSOrderPanel = {
     }),
 
     expectEmpty: async () => await test.step(`${NAME} - Expect empty order panel`, async () => {
-        await expect(containerElement()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        // Settle on the painted screen first, so an empty order list is not read before it has loaded.
+        await POSOrderPanel.waitForScreen();
         await expect(page.getByTestId('pos-order-line')).toHaveCount(0);
     }),
 
@@ -36,19 +40,18 @@ export const POSOrderPanel = {
             await expect(line.getByTestId('pos-order-line-product-name')).toHaveText(productName);
         }
         if (qty != null) {
-            await expect(line.getByTestId('pos-order-line-description')).toContainText(`${qty}`);
+            await expect(line.getByTestId('pos-order-line-description')).toContainText(exactNumberMatch(qty));
         }
         if (catchWeight != null) {
-            await expect(line.getByTestId('pos-order-line-description')).toContainText(`${catchWeight}`);
+            await expect(line.getByTestId('pos-order-line-description')).toContainText(exactNumberMatch(catchWeight));
         }
         if (amount != null) {
-            await expect(line.getByTestId('pos-order-line-amount')).toContainText(`${amount}`);
+            await expect(line.getByTestId('pos-order-line-amount')).toContainText(exactNumberMatch(amount));
         }
     }),
 
     checkout: async () => await test.step(`${NAME} - Checkout`, async () => {
-        // CurrentOrderActions.jsx (not touched by this task) already carries this class.
-        await page.locator('.current-order-actions .pay-action').tap();
+        await page.getByTestId('pos-order-checkout-button').tap();
         await POSPaymentPanel.waitForScreen();
     }),
 };

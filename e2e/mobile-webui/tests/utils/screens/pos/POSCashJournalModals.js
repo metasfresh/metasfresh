@@ -6,11 +6,15 @@ const NAME = 'POSCashJournalModals';
 /** @returns {import('@playwright/test').Locator} */
 const closingModalElement = () => page.getByTestId('pos-cash-journal-closing-modal');
 
+// Exact-boundary match for a formatted numeric value inside a larger text node (a bare digit via
+// toContainText would false-positive: '5' also matches '15,00' or '50,00').
+const exactNumberMatch = (value) =>
+    new RegExp(`(^|[^0-9.,])${String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^0-9.,]|$)`);
+
 export const POSCashJournalModals = {
     /** Opens the closing panel from the "close cash journal" header button. */
     openClosing: async () => await test.step(`${NAME} - Open closing panel`, async () => {
-        // Header.jsx (not touched by this task) has no data-testid for this button.
-        await page.locator('.pos-header .center .pos-header-button').tap();
+        await page.getByTestId('pos-close-cash-journal-button').tap();
         await closingModalElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
@@ -23,14 +27,17 @@ export const POSCashJournalModals = {
 
         if (cashIn != null) {
             await expect(page.locator('[data-testid="pos-cash-journal-summary-detail-row"][data-detail-type="CASH_IN"]'))
-                .toContainText(`${cashIn}`);
+                .toContainText(exactNumberMatch(cashIn));
         }
         if (cashOut != null) {
             await expect(page.locator('[data-testid="pos-cash-journal-summary-detail-row"][data-detail-type="CASH_OUT"]'))
-                .toContainText(`${cashOut}`);
+                .toContainText(exactNumberMatch(cashOut));
         }
         if (endingBalance != null) {
-            await expect(page.getByTestId('pos-cash-journal-summary-booked-amount')).toContainText(`${endingBalance}`);
+            // Scoped to the CASH summary row - getByTestId alone would strict-mode-violate once a
+            // second payment method (e.g. CARD) adds its own booked-amount cell.
+            const cashRow = page.locator('[data-testid="pos-cash-journal-summary-row"][data-payment-method="CASH"]');
+            await expect(cashRow.getByTestId('pos-cash-journal-summary-booked-amount')).toContainText(exactNumberMatch(endingBalance));
         }
     }),
 

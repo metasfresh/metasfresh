@@ -35,7 +35,7 @@ test('Open cash journal and see an empty order panel', async ({ page }) => {
 
     await LoginScreen.login(masterdata.login.user);
     await POSScreen.startFromApplicationsList();
-    await POSScreen.selectTerminal({ caption: 'T1' });
+    await POSScreen.selectTerminal({ posTerminalId: masterdata.posTerminals.T1.id });
     await POSScreen.openCashJournal({ openingBalance: 100 });
     await POSOrderPanel.expectEmpty();
 });
