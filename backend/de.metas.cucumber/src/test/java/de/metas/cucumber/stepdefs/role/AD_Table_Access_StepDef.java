@@ -28,6 +28,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Role;
@@ -38,16 +39,12 @@ import org.compiere.model.I_AD_Table_Access;
  * capabilities from the role's default (IsReadOnly removes WRITE; IsCanReport / IsCanExport / IsCanCreateNewRecords
  * remove REPORT / EXPORT / CREATE). A row left at its defaults is equivalent to no row.
  */
+@RequiredArgsConstructor
 public class AD_Table_Access_StepDef
 {
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	private final AD_Role_StepDefData roleTable;
-
-	public AD_Table_Access_StepDef(@NonNull final AD_Role_StepDefData roleTable)
-	{
-		this.roleTable = roleTable;
-	}
+	@NonNull private final AD_Role_StepDefData roleTable;
 
 	/**
 	 * Creates an {@code AD_Table_Access} row granting/restricting a role on one table. Each flag defaults to its
@@ -66,8 +63,8 @@ public class AD_Table_Access_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains AD_Table_Access:
-	 *   | AD_Role_ID       | TableName | IsCanCreateNewRecords |
-	 *   | restrictedRole   | C_BPartner | false                |
+	 *   | AD_Role_ID     | TableName  | IsCanCreateNewRecords |
+	 *   | restrictedRole | C_BPartner | false                 |
 	 * </pre>
 	 */
 	@Given("metasfresh contains AD_Table_Access:")

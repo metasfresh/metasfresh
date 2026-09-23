@@ -7,10 +7,9 @@ Feature: A role's WebUI create-restriction does not affect the REST API
 
   ## F33020: Roles
 
-  The AD_Table_Access "cannot create new records" restriction is enforced only in the WebUI
-  document layer. A role restricted from creating C_BPartner in the WebUI must therefore still be
-  able to create a business partner through the external REST API (api/v2/bpartner), so integrations
-  keep working while the greyed-out "New" only affects interactive WebUI users.
+  - The AD_Table_Access "cannot create new records" restriction is enforced only in the WebUI document layer.
+  - A role blocked from creating C_BPartner in the WebUI can still create one via api/v2/bpartner.
+  - Integrations keep working while the WebUI "New" button only greys out for interactive users.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -27,8 +26,8 @@ Feature: A role's WebUI create-restriction does not affect the REST API
       | AD_User_ID.Identifier | Login      |
       | metasfreshUser        | metasfresh |
     And user has role
-      | AD_User_ID.Identifier | AD_Role_ID.Identifier |
-      | metasfreshUser        | restrictedRole        |
+      | AD_User_ID     | AD_Role_ID     |
+      | metasfreshUser | restrictedRole |
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with identifier 'restrictedRole'
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """

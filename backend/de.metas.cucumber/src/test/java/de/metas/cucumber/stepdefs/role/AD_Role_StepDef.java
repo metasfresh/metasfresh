@@ -138,6 +138,23 @@ public class AD_Role_StepDef
 		roleTable.putOrReplace(row.getAsIdentifier(I_AD_Role.COLUMNNAME_AD_Role_ID), roleRecord);
 	}
 
+	/**
+	 * Assigns an existing role to an existing user (creates the {@code AD_User_Roles} link). Idempotent:
+	 * re-running with the same (user, role) pair upserts the existing link rather than adding a duplicate,
+	 * so the step is replay-safe against the same DB.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_User_ID</b> — (required, identifier-ref) the user to assign, resolved in {@code AD_User_StepDefData}<br>
+	 *   <b>AD_Role_ID</b> — (required, identifier-ref) the role to assign, resolved in {@code AD_Role_StepDefData}<br>
+	 * @cucumber.depends StepDefData: AD_User_StepDefData, AD_Role_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And user has role
+	 *   | AD_User_ID     | AD_Role_ID     |
+	 *   | metasfreshUser | restrictedRole |
+	 * </pre>
+	 */
 	@Given("user has role")
 	public void add_Role(@NonNull final DataTable dataTable)
 	{

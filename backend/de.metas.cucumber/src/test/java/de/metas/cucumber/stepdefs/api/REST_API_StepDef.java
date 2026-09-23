@@ -38,6 +38,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.compiere.util.Evaluatees;
@@ -51,18 +52,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class REST_API_StepDef
 {
 	private String userAuthToken;
 
-	private final TestContext testContext;
-	private final AD_Role_StepDefData roleTable;
-
-	public REST_API_StepDef(final TestContext testContext, final AD_Role_StepDefData roleTable)
-	{
-		this.testContext = testContext;
-		this.roleTable = roleTable;
-	}
+	@NonNull private final TestContext testContext;
+	@NonNull private final AD_Role_StepDefData roleTable;
 
 	@Given("the existing user with login {string} receives a random a API token for the existing role with name {string}")
 	public void the_existing_user_has_the_authtoken(@NonNull final String userLogin, @NonNull final String roleName)
