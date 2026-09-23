@@ -37,6 +37,10 @@ import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_ProductPrice
+ * Repository Cluster: ProductPriceRepository, ProductPricePackingInstructionRepository
+ */
 @Repository
 public class ProductPriceRepository
 {
