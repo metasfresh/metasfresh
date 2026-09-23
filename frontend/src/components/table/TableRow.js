@@ -90,6 +90,26 @@ class TableRow extends PureComponent {
   };
 
   /**
+   * @method isObjectValuedWidget
+   * @summary True for grid cells whose value is a {key,caption} object
+   * (Lookup/List; Search resolves to Lookup at field level).
+   *
+   * The grid nav row-write on Tab/Enter commits `event.target.value` (the
+   * editor's raw text string). For these object-valued cells that raw string
+   * would clobber the {key,caption} object, so the cell renders literal
+   * "undefined"/stale text after the user advances away and back. The active
+   * editing widget (RawLookup/RawList at selection) owns their commit, so the
+   * nav layer must skip the row-write for them. Scalar (text/number) cells are
+   * unaffected and still commit.
+   *
+   * @param {string} fieldName - the cell's field name
+   */
+  isObjectValuedWidget = (fieldName) => {
+    const widgetType = this.props.fieldsByName?.[fieldName]?.widgetType;
+    return widgetType === 'Lookup' || widgetType === 'List';
+  };
+
+  /**
    * @method initPropertyEditor
    * @summary Initialize the editor for a widget field
    * @param {object} fieldName - the name of the field,
@@ -207,6 +227,12 @@ class TableRow extends PureComponent {
         valueBeforeEditing: fieldValue,
       },
       () => {
+        // Skip the raw-string row-write for object-valued (Lookup/List) cells:
+        // it would clobber the {key,caption} object -> literal "undefined" on
+        // re-entry. Their own widget owns the commit at selection.
+        if (this.isObjectValuedWidget(property)) {
+          return;
+        }
         updatePropertyValue({
           property,
           value: inputContent,
@@ -232,8 +258,14 @@ class TableRow extends PureComponent {
 
     // this test is for a case when user is navigating around the table
     // without activating the field. Then there's no widget (input), so the value
-    // is undefined and we don't have to worry about it
-    if (typeof event.target.value !== 'undefined') {
+    // is undefined and we don't have to worry about it.
+    // Also skip the raw-string row-write for object-valued (Lookup/List) cells:
+    // it would clobber the {key,caption} object -> literal "undefined" on
+    // re-entry. Their own widget owns the commit at selection.
+    if (
+      typeof event.target.value !== 'undefined' &&
+      !this.isObjectValuedWidget(property)
+    ) {
       updatePropertyValue({
         property,
         value: event.target.value,
