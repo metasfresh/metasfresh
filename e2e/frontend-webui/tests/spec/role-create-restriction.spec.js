@@ -690,4 +690,68 @@ testCases.forEach(({ language, label }) => {
             });
         });
     });
+
+    // TC6 — the administrator lifts the restriction (AC7). A restricted role's user cannot create; an
+    // administrator clears the role's C_BPartner AD_Table_Access restriction in the Roles window (111); the
+    // affected user, in a NEW session, can create again — no app restart (the permission cache invalidates on
+    // the change). The "administrator" is the default login user (WebUI role, which has write access to window
+    // 111); it deletes the restricted role's C_BPartner (AD_Table 291) row on the Table Access tab (AD_Tab-549493),
+    // which returns the role to "no row" = allowed.
+    const ROLES_WINDOW_ID = 111;
+    const TABLE_ACCESS_TAB_ID = 'AD_Tab-549493';
+    const C_BPARTNER_AD_TABLE_ID = '291';
+    test.describe(`Role create restriction — administrator lifts it (${label})`, () => {
+        test(`clearing the restriction re-enables creation without a restart (${label} UI)`, async ({ page }) => {
+            allure.epic('E0390: Business Partner');
+            allure.story('Role create restriction — an administrator can lift it, no restart needed');
+            allure.tag('F33020: Roles');
+            allure.tag('F33020');
+            allure.severity('critical');
+            allure.parameter('Language', language);
+            allure.tag(language);
+            test.setTimeout(120000);
+
+            const md = await Backend.createMasterdata({
+                request: {
+                    login: { user: { language } },
+                    roles: { restricted: { name: `LiftRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }], user: { language } } },
+                },
+            });
+            const restrictedUser = md.roles.restricted.user;
+            const roleId = md.roles.restricted.roleId;
+            const adminUser = md.login.user; // WebUI role — has write access to the Roles window (111)
+            expect(restrictedUser && roleId && adminUser, 'masterdata must return the restricted user, role id, and admin user').toBeTruthy();
+
+            const canCreate = async (user) => {
+                await page.context().clearCookies();
+                await LoginPage.goto();
+                await LoginPage.login(user);
+                await DashboardPage.expectVisible();
+                await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
+                await page.waitForTimeout(3000);
+                return isNewRecordUrl(page.url());
+            };
+
+            // BEFORE: the restricted user cannot create a C_BPartner.
+            expect(await canCreate(restrictedUser), 'before lifting: the restricted role must NOT obtain a new record').toBe(false);
+
+            // ADMIN lifts it: delete the role's C_BPartner table-access row via the Roles window (111).
+            await page.context().clearCookies();
+            await LoginPage.goto();
+            await LoginPage.login(adminUser);
+            await DashboardPage.expectVisible();
+            const rowsResp = await page.request.get(`${WEBAPI_BASE_URL}/window/${ROLES_WINDOW_ID}/${roleId}/${TABLE_ACCESS_TAB_ID}`, { headers: { 'Content-Type': 'application/json' } });
+            expect(rowsResp.ok(), 'the admin must be able to read the role table-access rows').toBe(true);
+            const rows = (await rowsResp.json()).result || [];
+            const bpRow = rows.find((r) => String(r.fieldsByName?.AD_Table_ID?.value?.key) === C_BPARTNER_AD_TABLE_ID);
+            expect(bpRow, 'the role must have a C_BPartner (291) table-access row to clear').toBeTruthy();
+            const delResp = await page.request.delete(`${WEBAPI_BASE_URL}/window/${ROLES_WINDOW_ID}/${roleId}/${TABLE_ACCESS_TAB_ID}/${bpRow.rowId}`, { headers: { 'Content-Type': 'application/json' } });
+            console.log(`[${language}] admin DELETE table-access row ${bpRow.rowId} = ${delResp.status()}`);
+            expect(delResp.ok(), 'the administrator must be able to clear the restriction row').toBe(true);
+
+            // AFTER: the restricted user, in a NEW session, can now create — no app restart.
+            expect(await canCreate(restrictedUser), 'after lifting: the role can create a new record (no restart)').toBe(true);
+            console.log(`[${language}] PASS — administrator lifted the restriction; creation re-enabled without restart`);
+        });
+    });
 });
