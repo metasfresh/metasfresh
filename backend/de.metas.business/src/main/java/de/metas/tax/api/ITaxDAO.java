@@ -72,6 +72,34 @@ public interface ITaxDAO extends ISingletonService
 
 	Optional<TaxId> getIdByName(String name, ClientId clientId);
 
+	@NonNull
+	TaxCategoryId createTaxCategory(@NonNull CreateTaxCategoryRequest request);
+
+	@NonNull
+	TaxId createTax(@NonNull CreateTaxRequest request);
+
+	@Builder
+	@Value
+	class CreateTaxCategoryRequest
+	{
+		@NonNull String internalName;
+		@NonNull String name;
+	}
+
+	@Builder
+	@Value
+	class CreateTaxRequest
+	{
+		@NonNull TaxCategoryId taxCategoryId;
+		@NonNull String name;
+		@NonNull java.math.BigDecimal rate;
+		boolean documentLevel;
+		@NonNull Timestamp validFrom;
+
+		/** Same-country (domestic) tax: used for both {@code C_Country_ID} and {@code To_Country_ID}. */
+		@NonNull CountryId countryId;
+	}
+
 	@Builder
 	@Value
 	class TaxCategoryQuery

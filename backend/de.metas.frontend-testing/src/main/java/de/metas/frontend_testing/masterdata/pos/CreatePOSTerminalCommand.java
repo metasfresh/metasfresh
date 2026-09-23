@@ -32,6 +32,7 @@ import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -47,6 +48,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_POS;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,10 +63,12 @@ import java.util.Optional;
 public class CreatePOSTerminalCommand
 {
 	private static final String POS_MOBILE_APPLICATION_VALUE = "pos";
+	private static final String POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME = "POS_LineLevelTest";
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
@@ -184,11 +188,36 @@ public class CreatePOSTerminalCommand
 				.build());
 	}
 
+	/**
+	 * POS requires the product's applicable tax to be line-level (see
+	 * {@code POSOrderUpdateFromRemoteCommand#findTax}), but every tax under the seeded
+	 * {@link MasterdataContext#DEFAULT_TaxCategory_InternalName} category is document-level for this
+	 * org/country. Get-or-create a dedicated line-level tax category (created once, reused across runs)
+	 * instead of using the seeded default.
+	 */
 	private TaxCategoryId getTaxCategoryId()
 	{
-		final String taxCategoryInternalName = MasterdataContext.DEFAULT_TaxCategory_InternalName;
-		return taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName)
-				.orElseThrow(() -> new AdempiereException("Missing C_TaxCategory for internalName `" + taxCategoryInternalName + "`"));
+		return taxBL.getTaxCategoryIdByInternalName(POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME)
+				.orElseGet(this::createLineLevelTaxCategory);
+	}
+
+	private TaxCategoryId createLineLevelTaxCategory()
+	{
+		final TaxCategoryId taxCategoryId = taxDAO.createTaxCategory(ITaxDAO.CreateTaxCategoryRequest.builder()
+				.internalName(POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME)
+				.name("POS testing (line level)")
+				.build());
+
+		taxDAO.createTax(ITaxDAO.CreateTaxRequest.builder()
+				.taxCategoryId(taxCategoryId)
+				.name("POS testing 19% (line level)")
+				.rate(new BigDecimal("19"))
+				.documentLevel(false)
+				.validFrom(Timestamp.valueOf(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay()))
+				.countryId(MasterdataContext.COUNTRY_ID)
+				.build());
+
+		return taxCategoryId;
 	}
 
 	private BPartnerId resolveOrCreateWalkInBPartner()
