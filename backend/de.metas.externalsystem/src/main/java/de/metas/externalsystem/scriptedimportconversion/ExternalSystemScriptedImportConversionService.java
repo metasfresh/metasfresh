@@ -56,6 +56,9 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_DIR;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIR;
 
 @Service
@@ -178,6 +181,23 @@ public class ExternalSystemScriptedImportConversionService
 			if (endpoint.getSftpPollingIntervalMs() != null)
 			{
 				parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(endpoint.getSftpPollingIntervalMs()));
+			}
+		}
+
+		// Add LOCAL_FILE endpoint parameters if endpoint uses LOCAL_FILE transport
+		if (endpoint.getTransportType() == TransportType.LOCAL_FILE)
+		{
+			if (endpoint.getLocalRootLocation() != null)
+			{
+				parameters.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION, endpoint.getLocalRootLocation());
+			}
+			if (endpoint.getImportFileNamePattern() != null)
+			{
+				parameters.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN, endpoint.getImportFileNamePattern());
+			}
+			if (endpoint.getFrequency() != null)
+			{
+				parameters.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS, String.valueOf(endpoint.getFrequency()));
 			}
 		}
 

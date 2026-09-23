@@ -49,7 +49,11 @@ import org.adempiere.exceptions.AdempiereException;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIR;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_DIR;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -194,6 +198,93 @@ class ExternalSystemScriptedImportConversionServiceTest
 		assertThat(parameters.get(PARAM_SFTP_POLLING_INTERVAL_MS)).isEqualTo("30000");
 		assertThat(parameters.get(PARAM_PROCESSED_DIR)).isEqualTo("/inbound/processed");
 		assertThat(parameters.get(PARAM_ERROR_DIR)).isEqualTo("/inbound/error");
+	}
+
+	@Test
+	void getParameters_localFileEndpoint_producesLocalFileParameters()
+	{
+		// given: the LOCAL_FILE polling settings live on the ENDPOINT
+		final UserId userImportId = createUserId();
+		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
+				.userId(userImportId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.MAIN)
+				.roleId(RoleId.WEBUI)
+				.build());
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("packzettel-local-file");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_LOCAL_FILE);
+		endpointRecord.setLocalRootLocation("/data/packzettel/watch");
+		endpointRecord.setFrequency(15000);
+		endpointRecord.setImportFileNamePattern("*.pdf");
+		endpointRecord.setProcessedDirectory("/data/packzettel/processed");
+		endpointRecord.setErrorDirectory("/data/packzettel/error");
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when
+		final Map<String, String> parameters = service.getParameters(config);
+
+		// then: the local-file root location, polling frequency and import filename pattern are
+		// sourced from the endpoint, plus the transport-agnostic processed/error dirs
+		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION)).isEqualTo("/data/packzettel/watch");
+		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS)).isEqualTo("15000");
+		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN)).isEqualTo("*.pdf");
+		assertThat(parameters.get(PARAM_PROCESSED_DIR)).isEqualTo("/data/packzettel/processed");
+		assertThat(parameters.get(PARAM_ERROR_DIR)).isEqualTo("/data/packzettel/error");
+	}
+
+	@Test
+	void getParameters_sftpEndpoint_doesNotIncludeLocalFileParameters()
+	{
+		// given: a fully-configured SFTP endpoint (regression guard: the SFTP branch's output must
+		// stay exactly what it was before the LOCAL_FILE branch was added)
+		final UserId userImportId = createUserId();
+		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
+				.userId(userImportId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.MAIN)
+				.roleId(RoleId.WEBUI)
+				.build());
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("eddyson-sftp");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
+		endpointRecord.setSftpHost("sftp.example.com");
+		endpointRecord.setSftpPollingIntervalMs(30000);
+		endpointRecord.setProcessedDirectory("/inbound/processed");
+		endpointRecord.setErrorDirectory("/inbound/error");
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when
+		final Map<String, String> parameters = service.getParameters(config);
+
+		// then: SFTP parameters are present as before, and none of the LOCAL_FILE keys leak in
+		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_HOST)).isEqualTo("sftp.example.com");
+		assertThat(parameters.get(PARAM_SFTP_POLLING_INTERVAL_MS)).isEqualTo("30000");
+		assertThat(parameters).doesNotContainKey(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION);
+		assertThat(parameters).doesNotContainKey(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN);
+		assertThat(parameters).doesNotContainKey(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS);
 	}
 
 	@Test
