@@ -60,8 +60,19 @@ class Table extends PureComponent {
       return;
     }
 
-    // Reload column widths if window/view changed
-    if (windowId !== prevProps.windowId || viewId !== prevProps.viewId) {
+    // Reload column widths if window/view changed, OR once column metadata first
+    // becomes available. On a normal tab-open the table mounts before the column
+    // metadata is reduced, so componentDidMount clamps against columns === [] and
+    // a stored sub-floor combobox width is returned un-clamped; re-run the clamp
+    // when columns transitions []->populated so the ~210px combobox floor still
+    // applies. The columns []->populated check is a one-shot transition (next
+    // update has prevProps.columns populated), so it cannot re-clamp in a loop.
+    const windowOrViewChanged =
+      windowId !== prevProps.windowId || viewId !== prevProps.viewId;
+    const columnsBecameAvailable =
+      prevProps.columns.length === 0 && columns.length > 0;
+
+    if (windowOrViewChanged || columnsBecameAvailable) {
       const columnWidths = clampComboboxColumnWidths(
         loadColumnWidths(windowId, viewId),
         columns
