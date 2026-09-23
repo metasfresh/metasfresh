@@ -12,11 +12,6 @@ export const applicationDescriptor = {
     de: messages_de,
   },
   isFullScreen: true,
-  // startApplicationById (apps/index.js) calls this synchronously as startApplication({ dispatch, history })
-  // and does not dispatch/await its return value - so it must navigate directly (matching huManager's
-  // startApplication), never return a thunk for the caller to dispatch. The previous shape
-  // (`() => (dispatch) => dispatch(push(...))`) returned an un-dispatched thunk and silently did nothing:
-  // tapping "POS" on the applications list never navigated anywhere.
   startApplication: ({ history }) => {
     history.push(posLocation());
   },
