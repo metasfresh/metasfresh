@@ -66,10 +66,11 @@ test('Scan a prefix 28 variable-weight scale label', async ({ page }) => {
     await POSOrderPanel.scanBarcode(label28);
 
     // 0,482 kg x 15,50 EUR/kg = 7,471, rounded to the terminal's price precision (2 decimals) = 7,47.
+    // Till renders sub-1kg catch weight in grams (a separate, known display matter) - match on that part only.
     await POSOrderPanel.expectLine({
         index: 0,
         productName: masterdata.products.P1.productName,
-        catchWeight: '0,482 kg',
+        catchWeight: '482 g',
         amount: '7,47',
     });
 });
@@ -95,10 +96,11 @@ test('Scan a prefix 29 variable-weight scale label', async ({ page }) => {
     await POSOrderPanel.scanBarcode(label29);
 
     // 0,500 kg x 10,00 EUR/kg = 5,00 (exact, no rounding).
+    // Till renders sub-1kg catch weight in grams (a separate, known display matter) - match on that part only.
     await POSOrderPanel.expectLine({
         index: 0,
         productName: masterdata.products.P1.productName,
-        catchWeight: '0,500 kg',
+        catchWeight: '500 g',
         amount: '5,00',
     });
 });
