@@ -90,6 +90,10 @@ import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+/**
+ * Repository Tables: C_Tax, C_TaxCategory, C_VAT_SmallBusiness
+ * Repository Cluster: TaxDAO; C_Tax is additionally read (FK lookups only) by CiiMappingRepository.
+ */
 public class TaxDAO implements ITaxDAO
 {
 	private final static Logger logger = LogManager.getLogger(TaxDAO.class);
@@ -258,6 +262,30 @@ public class TaxDAO implements ITaxDAO
 				.firstId(TaxCategoryId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(taxCategoryId);
+	}
+
+	@Override
+	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
+	{
+		return queryBL.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstOnlyOptional(I_C_TaxCategory.class)
+				.map(I_C_TaxCategory::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId);
+	}
+
+	@Override
+	public Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull final TaxCategoryId taxCategoryId)
+	{
+		final TaxCategoryId activeTaxCategoryId = queryBL.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, taxCategoryId)
+				.create()
+				.firstId(TaxCategoryId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(activeTaxCategoryId);
 	}
 
 	@Override
@@ -451,6 +479,13 @@ public class TaxDAO implements ITaxDAO
 		final boolean hasFiscalRepresentation = fiscalRepresentationBL.hasFiscalRepresentation(destCountryId, orgId, fiscalRepresentationFromDate);
 		loggable.addLog("BPartner has fiscal Representation = {}", hasFiscalRepresentation);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, StringUtils.ofBoolean(hasFiscalRepresentation), null);
+
+		final Percent rate = taxQuery.getRate();
+		if (rate != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_Rate, rate.toBigDecimal());
+			loggable.addLog("Rate={}", rate);
+		}
 
 		queryBuilder.orderBy(I_C_Tax.COLUMNNAME_SeqNo);
 		return queryBuilder;

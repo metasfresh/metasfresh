@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -28,6 +28,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -72,7 +73,10 @@ public class TaxQuery
 	@Nullable
 	Boolean isTaxExempt;
 
-	@Builder
+	@Nullable
+	Percent rate;
+
+	@Builder(toBuilder = true)
 	public TaxQuery(
 			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
@@ -83,7 +87,8 @@ public class TaxQuery
 			@Nullable final TaxCategoryId taxCategoryId,
 			@Nullable final BPartnerId bPartnerId,
 			@Nullable final CountryId shippingCountryId,
-			@Nullable final Boolean isTaxExempt)
+			@Nullable final Boolean isTaxExempt,
+			@Nullable final Percent rate)
 	{
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;
@@ -107,5 +112,7 @@ public class TaxQuery
 		this.shippingCountryId = shippingCountryId;
 
 		this.isTaxExempt = isTaxExempt;
+
+		this.rate = rate;
 	}
 }
