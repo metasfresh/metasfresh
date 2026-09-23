@@ -554,10 +554,10 @@ testCases.forEach(({ language, label }) => {
                     console.log(`[${language}] /duplicate (restricted) = ${dupResp.status()} body=${dupBody.slice(0, 240)}`);
                     expect(dupResp.status(), 'a restricted role must be refused at the /duplicate endpoint').toBeGreaterThanOrEqual(400);
                     // Pin the CREATE-restriction branch specifically: duplicateDocumentInTrx throws a plain
-                    // AdempiereException from two branches (canEdit=false → cloning-not-allowed, names the window;
-                    // create-check → the create-restriction message, names the ROLE). The restricted role's edit
-                    // is left open here, so the create branch fires — proven by the body naming the role. The role
-                    // name is a generated, language-invariant token (the message's {0} param).
+                    // AdempiereException from two branches (canEdit=false → cloning-not-allowed, a static message
+                    // with no role name; create-check → the create-restriction message, which names the ROLE). The
+                    // restricted role's edit is left open here, so the create branch fires — proven by the body
+                    // naming the role. The role name is a generated, language-invariant token (the message's {0}).
                     expect(dupBody, 'the /duplicate refusal must be the role create-restriction (names the role), not a cloning/window error').toContain(roleName);
                     expect(dupBody, 'the restricted clone must be blocked at the permission gate, never reaching the DB').not.toContain('DBUniqueConstraint');
                     console.log(`[${language}] PASS — clone blocked (no 'clone' standard action; /duplicate permission-rejected ${dupResp.status()})`);
@@ -632,6 +632,62 @@ testCases.forEach(({ language, label }) => {
             expect(added, 'restricting create must not ADD any new-record menu node').toEqual([]);
             expect(removed.length, 'restricting C_BPartner create must remove the business-partner new-record menu node').toBeGreaterThanOrEqual(1);
             console.log(`[${language}] PASS — restricted menu removed new-record node(s) ${JSON.stringify(removed)}, added none`);
+        });
+    });
+
+    // TC14 — the quick-input "new business partner" entry in a C_BPartner lookup is hidden (AC18). Typing a
+    // no-match string in a C_BPartner lookup offers the "Neuer Geschäftspartner" entry (data-testid option-NEW)
+    // for an unrestricted role and nothing for a role restricted on C_BPartner. The option is gated by
+    // newRecordCaption, nulled when create is not allowed (JSONDocumentLayoutElementField → isTableAccess
+    // CREATE). Driven through the RENDERED dropdown. The lookup is reached on a new Invoice (the role is
+    // restricted only on C_BPartner, so it may still create an invoice); identical steps for both roles, so
+    // the only variable is the create restriction.
+    const INVOICE_WINDOW_ID = 167;
+    const TC14_CASES = [
+        { key: 'restricted', restricted: true },
+        { key: 'unrestricted', restricted: false },
+    ];
+    TC14_CASES.forEach(({ key, restricted }) => {
+        test.describe(`Role create restriction — quick-input new-partner ${restricted ? 'hidden' : 'offered'} (${label})`, () => {
+            test(`the C_BPartner lookup ${restricted ? 'hides' : 'offers'} the new-partner entry (${label} UI)`, async ({ page }) => {
+                allure.epic('E0390: Business Partner');
+                allure.story('Role create restriction — the lookup quick-input new-partner entry is hidden for a restricted role');
+                allure.tag('F33020: Roles');
+                allure.tag('F33020');
+                allure.severity('critical');
+                allure.parameter('Language', language);
+                allure.parameter('Role', key);
+                allure.tag(language);
+                test.setTimeout(120000);
+
+                const role = restricted
+                    ? { name: `QuickRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }], user: { language } }
+                    : { name: `QuickOpen_${language}`, user: { language } };
+                const md = await Backend.createMasterdata({ request: { login: { user: { language } }, roles: { r: role } } });
+                expect(md.roles.r.user, 'masterdata must return the role user').toBeTruthy();
+
+                await LoginPage.goto();
+                await LoginPage.login(md.roles.r.user);
+                await DashboardPage.expectVisible();
+
+                // Reach a C_BPartner lookup on a new Invoice, then type a no-match string.
+                await page.goto(`${FRONTEND_BASE_URL}/window/${INVOICE_WINDOW_ID}/NEW`);
+                const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
+                await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await bpInput.click();
+                await bpInput.fill(`ZZZ_NOMATCH_${Date.now()}`);
+
+                const optionNew = page.getByTestId('option-NEW');
+                if (restricted) {
+                    // Give the dropdown time to render, then assert the new-partner entry is not offered.
+                    await page.waitForTimeout(3000);
+                    await expect(optionNew, 'the new-partner quick-input entry must be hidden for a restricted role').toHaveCount(0);
+                    console.log(`[${language}] PASS — quick-input new-partner hidden`);
+                } else {
+                    await expect(optionNew, 'the new-partner quick-input entry must be offered for an unrestricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    console.log(`[${language}] PASS — quick-input new-partner offered`);
+                }
+            });
         });
     });
 });
