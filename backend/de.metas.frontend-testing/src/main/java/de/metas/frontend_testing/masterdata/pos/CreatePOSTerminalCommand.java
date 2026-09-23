@@ -3,7 +3,7 @@ package de.metas.frontend_testing.masterdata.pos;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPBankAccountDAO;
-import de.metas.currency.CurrencyCode;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -49,6 +49,7 @@ import org.compiere.model.I_C_POS;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Creates a POS terminal ({@code C_POS}) for frontend/mobile testing: a dedicated cashbook, a fresh
@@ -82,17 +83,19 @@ public class CreatePOSTerminalCommand
 	{
 		assertOnlyCashPaymentMethod();
 
-		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(request.getPriceListCurrency()));
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(request.getPriceListCurrency());
 
 		final BankAccountId bankAccountId = createCashbookBankAccount(currencyId);
 
 		final PricingSetupHelper.PricingSetupResult pricingSetup = PricingSetupHelper.createPricingSystemAndPriceList(
-				orgId,
-				identifier.toUniqueString(),
-				currencyId,
-				MasterdataContext.COUNTRY_ID,
-				request.isTaxIncluded(),
-				true); // isSoPriceList
+				PricingSetupHelper.PricingSetupRequest.builder()
+						.orgId(orgId)
+						.value(identifier.toUniqueString())
+						.currencyId(currencyId)
+						.countryId(MasterdataContext.COUNTRY_ID)
+						.isTaxIncluded(request.isTaxIncluded())
+						.isSoPriceList(true)
+						.build());
 		createProductPrices(pricingSetup.getPriceListVersionId(), request.getProducts());
 
 		final BPartnerId walkInBPartnerId = resolveOrCreateWalkInBPartner();
@@ -132,8 +135,8 @@ public class CreatePOSTerminalCommand
 	private void assertOnlyCashPaymentMethod()
 	{
 		final List<POSPaymentMethod> paymentMethods = request.getPaymentMethods();
-		final boolean onlyCash = paymentMethods.stream().allMatch(POSPaymentMethod::isCash);
-		if (!onlyCash)
+		final boolean isOnlyCash = paymentMethods.stream().allMatch(POSPaymentMethod::isCash);
+		if (!isOnlyCash)
 		{
 			throw new AdempiereException("CreatePOSTerminalCommand currently supports only the CASH payment method; got: " + paymentMethods);
 		}
@@ -154,21 +157,21 @@ public class CreatePOSTerminalCommand
 			@NonNull final PriceListVersionId priceListVersionId,
 			@NonNull final Map<String, JsonPOSTerminalRequest.ProductPrice> products)
 	{
-		products.forEach((productIdentifierStr, priceSpec) -> createProductPrice(priceListVersionId, Identifier.ofString(productIdentifierStr), priceSpec));
+		final TaxCategoryId taxCategoryId = getTaxCategoryId();
+		products.forEach((productIdentifierStr, priceSpec) -> createProductPrice(priceListVersionId, Identifier.ofString(productIdentifierStr), priceSpec, taxCategoryId));
 	}
 
 	private void createProductPrice(
 			@NonNull final PriceListVersionId priceListVersionId,
 			@NonNull final Identifier productIdentifier,
-			@NonNull final JsonPOSTerminalRequest.ProductPrice priceSpec)
+			@NonNull final JsonPOSTerminalRequest.ProductPrice priceSpec,
+			@NonNull final TaxCategoryId taxCategoryId)
 	{
 		final ProductId productId = context.getId(productIdentifier, ProductId.class);
-		final UomId uomId = priceSpec.getUom() != null
-				? uomDAO.getUomIdByX12DE355(priceSpec.getUom())
-				: productBL.getStockUOMId(productId);
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = priceSpec.getInvoicableQtyBasedOn() != null
-				? priceSpec.getInvoicableQtyBasedOn()
-				: InvoicableQtyBasedOn.NominalWeight;
+		final UomId uomId = Optional.ofNullable(priceSpec.getUom())
+				.map(uomDAO::getUomIdByX12DE355)
+				.orElseGet(() -> productBL.getStockUOMId(productId));
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = CoalesceUtil.coalesceNotNull(priceSpec.getInvoicableQtyBasedOn(), InvoicableQtyBasedOn.NominalWeight);
 
 		productPriceRepository.createProductPrice(CreateProductPriceRequest.builder()
 				.orgId(orgId)
@@ -176,7 +179,7 @@ public class CreatePOSTerminalCommand
 				.priceListVersionId(priceListVersionId)
 				.priceStd(priceSpec.getPrice())
 				.uomId(uomId)
-				.taxCategoryId(getTaxCategoryId())
+				.taxCategoryId(taxCategoryId)
 				.invoicableQtyBasedOn(invoicableQtyBasedOn)
 				.build());
 	}

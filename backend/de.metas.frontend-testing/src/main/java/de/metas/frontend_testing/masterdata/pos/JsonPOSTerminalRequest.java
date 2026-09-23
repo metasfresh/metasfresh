@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata.pos;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.currency.CurrencyCode;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -27,7 +28,7 @@ import java.util.Map;
 public class JsonPOSTerminalRequest
 {
 	/** ISO-4217 currency code (e.g. {@code "EUR"}) of the POS-specific sales price list created for this terminal. */
-	@NonNull String priceListCurrency;
+	@NonNull CurrencyCode priceListCurrency;
 
 	/**
 	 * Explicit {@code M_ProductPrice} to create in this terminal's own {@code M_PriceList_Version}, keyed by the
