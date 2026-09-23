@@ -136,6 +136,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_OrderLine_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Effective_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Discount_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
@@ -341,6 +342,31 @@ public class C_Invoice_Candidate_StepDef
 					InterfaceWrapperHelper.saveRecord(invoiceCandidate);
 					invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 				});
+	}
+
+	/**
+	 * Asserts that NO {@code C_Invoice_Candidate} at all carries the given {@code ExternalHeaderId} — the
+	 * counterpart of {@code after not more than (.*)s, locate C_Invoice_Candidates by externalHeaderId}.
+	 * Used to prove that a rejected REST call left nothing behind; inactive records count as "left behind"
+	 * too, so no active-records filter is applied.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then there is no C_Invoice_Candidate with ExternalHeaderId TC12_Header
+	 * </pre>
+	 */
+	@And("^there is no C_Invoice_Candidate with ExternalHeaderId (.*)$")
+	public void validate_no_C_Invoice_Candidate_for_externalHeaderId(@NonNull final String externalHeaderId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_ExternalHeaderId, externalHeaderId)
+				.create()
+				.list(I_C_Invoice_Candidate.class);
+
+		assertThat(invoiceCandidates)
+				.as("C_Invoice_Candidate records with ExternalHeaderId=" + externalHeaderId)
+				.isEmpty();
 	}
 
 	@And("^there is no C_Invoice_Candidate for C_Order (.*)$")
@@ -554,6 +580,10 @@ public class C_Invoice_Candidate_StepDef
 	 *   <li>{@code PaymentRule} (optional)</li>
 	 *   <li>{@code M_Product_ID} (optional)</li>
 	 *   <li>{@code Processed} (optional)</li>
+	 *   <li>{@code C_Tax_ID} (optional, identifier-ref) — expected tax as derived by the pricing engine</li>
+	 *   <li>{@code C_Tax_Override_ID} (optional, identifier-ref, null-allowed) — expected tax override;
+	 *       pass {@code null} to assert that no override is set</li>
+	 *   <li>{@code C_Tax_Effective_ID} (optional, identifier-ref)</li>
 	 *   <li>{@code IsWithoutCharge} (optional)</li>
 	 *   <li>{@code Reason} (optional)</li>
 	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
@@ -675,6 +705,27 @@ public class C_Invoice_Candidate_StepDef
 						row.getAsOptionalIdentifier(COLUMNNAME_C_Tax_Effective_ID)
 								.map(taxTable::getId)
 								.ifPresent(taxEffectiveId -> softly.assertThat(finalInvoiceCandidate.getC_Tax_Effective_ID()).isEqualTo(taxEffectiveId.getRepoId()));
+
+						row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID)
+								.map(taxTable::getId)
+								.ifPresent(taxId -> softly.assertThat(finalInvoiceCandidate.getC_Tax_ID()).as("C_Tax_ID").isEqualTo(taxId.getRepoId()));
+
+						// pass the `null` placeholder to assert that NO override is set
+						row.getAsOptionalIdentifier(COLUMNNAME_C_Tax_Override_ID)
+								.ifPresent(taxOverrideIdentifier -> {
+									if (taxOverrideIdentifier.isNotNullPlaceholder())
+									{
+										softly.assertThat(finalInvoiceCandidate.getC_Tax_Override_ID())
+												.as("C_Tax_Override_ID")
+												.isEqualTo(taxTable.getId(taxOverrideIdentifier).getRepoId());
+									}
+									else
+									{
+										softly.assertThat(finalInvoiceCandidate.getC_Tax_Override_ID())
+												.as("C_Tax_Override_ID")
+												.isZero();
+									}
+								});
 
 						row.getAsOptionalBoolean(COLUMNNAME_IsToClear)
 								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isToClear()).isEqualTo(expected));

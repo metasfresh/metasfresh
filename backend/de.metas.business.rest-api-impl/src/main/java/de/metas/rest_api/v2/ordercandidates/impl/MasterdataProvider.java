@@ -67,6 +67,8 @@ import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -93,6 +95,7 @@ public final class MasterdataProvider
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@NonNull private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	@NonNull private final PermissionService permissionService;
 	@NonNull private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
@@ -450,5 +453,38 @@ public final class MasterdataProvider
 									@NonNull final BPartnerId bPartnerId)
 	{
 		return bPartnerMasterdataProvider.getIncoterms(request, orgId, bPartnerId);
+	}
+
+	@NonNull
+	public TaxCategoryId getTaxCategoryId(
+			@NonNull final IdentifierString taxCategoryIdentifier,
+			@NonNull final Object parent)
+	{
+		final Optional<TaxCategoryId> taxCategoryId;
+		switch (taxCategoryIdentifier.getType())
+		{
+			case INTERNALNAME:
+				taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryIdentifier.asInternalName());
+				break;
+			case METASFRESH_ID:
+				taxCategoryId = taxBL.getActiveTaxCategoryIdById(taxCategoryIdentifier.asMetasfreshId(TaxCategoryId::ofRepoId));
+				break;
+			default:
+				throw new InvalidIdentifierException(taxCategoryIdentifier);
+		}
+
+		return taxCategoryId
+				// TaxCategoryId.NOT_FOUND is backed by a real, active, system-seeded C_TaxCategory row
+				// ('Tax_Not_Found_Category', AD_Client_ID=0) that exists on every instance, so both lookups above resolve
+				// it like any other category - by its id, and (since this branch makes InternalName writable) by its
+				// internal name too. It must not be resolvable through the API: the sentinel would travel into the tax
+				// query and only surface there as an ordinary "no tax matched", instead of telling the caller that the
+				// identifier they sent names no tax category.
+				.filter(id -> !TaxCategoryId.NOT_FOUND.equals(id))
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("TaxCategory")
+						.resourceIdentifier(taxCategoryIdentifier.toJson())
+						.parentResource(parent)
+						.build());
 	}
 }
