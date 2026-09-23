@@ -38,7 +38,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import de.metas.handlingunits.model.I_M_Warehouse;
+import org.adempiere.warehouse.api.CreateWarehouseRequest;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_POS;
 import org.compiere.model.I_M_PriceList;
@@ -73,6 +74,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@NonNull private final CurrencyRepository currencyRepository;
 
@@ -260,16 +262,14 @@ public class CreatePOSTerminalCommand
 	{
 		final String value = identifier.toUniqueString();
 
-		final I_M_Warehouse warehouseRecord = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
-		warehouseRecord.setAD_Org_ID(orgId.getRepoId());
-		warehouseRecord.setValue(value);
-		warehouseRecord.setName(value);
-		warehouseRecord.setSeparator("*");
-		warehouseRecord.setC_BPartner_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_LOCATION_ID.getBpartnerId().getRepoId());
-		warehouseRecord.setC_BPartner_Location_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_LOCATION_ID.getRepoId());
-		InterfaceWrapperHelper.saveRecord(warehouseRecord);
-
-		return WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID());
+		return warehouseBL.createWarehouse(CreateWarehouseRequest.builder()
+				.orgId(orgId)
+				.value(value)
+				.name(value)
+				.partnerLocationId(MasterdataContext.METASFRESH_ORG_BPARTNER_LOCATION_ID)
+				.active(true)
+				.build())
+				.getId();
 	}
 
 	private DocTypeId getSalesOrderDocTypeId()
