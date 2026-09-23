@@ -89,6 +89,10 @@ public class ExternalSystem_Endpoint
 			endpoint.setSftpRemotePath(null);
 			endpoint.setSftpFilenamePattern(null);
 			endpoint.setSftpPollingIntervalMs(0);
+
+			endpoint.setLocalRootLocation(null);
+			endpoint.setFrequency(0);
+			endpoint.setImportFileNamePattern(null);
 		}
 		else if (TransportType.SFTP.getCode().equals(newTransportType))
 		{
@@ -102,6 +106,32 @@ public class ExternalSystem_Endpoint
 			endpoint.setClientId(null);
 			endpoint.setClientSecret(null);
 			endpoint.setSasSignature(null);
+
+			endpoint.setLocalRootLocation(null);
+			endpoint.setFrequency(0);
+			endpoint.setImportFileNamePattern(null);
+		}
+		else if (TransportType.LOCAL_FILE.getCode().equals(newTransportType))
+		{
+			endpoint.setHttpEndPoint(null);
+			endpoint.setOutboundHttpMethod(null);
+			endpoint.setContentType(null);
+			endpoint.setAuthType(null);
+			endpoint.setAuthToken(null);
+			endpoint.setLoginUsername(null);
+			endpoint.setPassword(null);
+			endpoint.setClientId(null);
+			endpoint.setClientSecret(null);
+			endpoint.setSasSignature(null);
+
+			endpoint.setSftpHost(null);
+			endpoint.setSftpPort(0);
+			endpoint.setSftpUsername(null);
+			endpoint.setSftpAuthType(null);
+			endpoint.setSshPrivateKey(null);
+			endpoint.setSftpRemotePath(null);
+			endpoint.setSftpFilenamePattern(null);
+			endpoint.setSftpPollingIntervalMs(0);
 		}
 	}
 
