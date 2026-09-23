@@ -217,7 +217,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_LOCAL_FILE);
 		endpointRecord.setLocalRootLocation("/data/packzettel/watch");
 		endpointRecord.setFrequency(15000);
-		endpointRecord.setImportFileNamePattern("*.pdf");
+		endpointRecord.setImportFileNamePattern("Packzettel_{filename}_{timestamp}");
 		endpointRecord.setProcessedDirectory("/data/packzettel/processed");
 		endpointRecord.setErrorDirectory("/data/packzettel/error");
 		endpointRecord.setIsArrayFanOut(false);
@@ -239,7 +239,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 		// sourced from the endpoint, plus the transport-agnostic processed/error dirs
 		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION)).isEqualTo("/data/packzettel/watch");
 		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS)).isEqualTo("15000");
-		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN)).isEqualTo("*.pdf");
+		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN)).isEqualTo("Packzettel_{filename}_{timestamp}");
 		assertThat(parameters.get(PARAM_PROCESSED_DIR)).isEqualTo("/data/packzettel/processed");
 		assertThat(parameters.get(PARAM_ERROR_DIR)).isEqualTo("/data/packzettel/error");
 	}
