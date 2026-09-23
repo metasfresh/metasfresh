@@ -39,7 +39,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Repository Tables: M_ProductPrice
- * Repository Cluster: ProductPriceRepository, ProductPricePackingInstructionRepository
+ * Repository Cluster: ProductPriceRepository, ProductPricePackingInstructionRepository, PriceListDAO
  */
 @Repository
 public class ProductPriceRepository

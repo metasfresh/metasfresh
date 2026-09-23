@@ -22,6 +22,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -43,6 +44,7 @@ public class CreateBPartnerCommand
 {
 	@NonNull private final RandomGLNGenerator randomGLNGenerator = new RandomGLNGenerator();
 	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final PriceListVersionRepository priceListVersionRepository;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull final JsonCreateBPartnerRequest request;
@@ -56,11 +58,13 @@ public class CreateBPartnerCommand
 	@Builder
 	private CreateBPartnerCommand(
 			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final PriceListVersionRepository priceListVersionRepository,
 			@NonNull final MasterdataContext context,
 			@NonNull final JsonCreateBPartnerRequest request,
 			@Nullable final String identifier)
 	{
 		this.currencyRepository = currencyRepository;
+		this.priceListVersionRepository = priceListVersionRepository;
 		this.context = context;
 		this.request = request;
 
@@ -399,6 +403,7 @@ public class CreateBPartnerCommand
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.EUR);
 
 		final PricingSetupHelper.PricingSetupResult setup = PricingSetupHelper.createPricingSystemAndPriceList(
+				priceListVersionRepository,
 				PricingSetupHelper.PricingSetupRequest.builder()
 						.orgId(orgId)
 						.value(pricingSystemIdentifier.getAsString())

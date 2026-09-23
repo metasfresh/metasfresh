@@ -43,7 +43,6 @@ import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.AddProductPriceRequest;
 import de.metas.pricing.service.CopyProductPriceRequest;
 import de.metas.pricing.service.CreatePriceListRequest;
-import de.metas.pricing.service.CreatePriceListVersionRequest;
 import de.metas.pricing.service.CreatePricingSystemRequest;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
@@ -109,6 +108,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_PricingSystem, M_PriceList, M_PriceList_Version, M_ProductPrice, M_ProductScalePrice
+ * Repository Cluster: PriceListDAO, PlainPriceListDAO, PriceListVersionRepository, ProductPriceRepository, ProductPricePackingInstructionRepository
+ */
 public class PriceListDAO implements IPriceListDAO
 {
 	private static final Logger logger = LogManager.getLogger(PriceListDAO.class);
@@ -725,18 +728,6 @@ public class PriceListDAO implements IPriceListDAO
 		saveRecord(record);
 
 		return PriceListId.ofRepoId(record.getM_PriceList_ID());
-	}
-
-	@Override
-	public PriceListVersionId createPriceListVersion(@NonNull final CreatePriceListVersionRequest request)
-	{
-		final I_M_PriceList_Version record = newInstance(I_M_PriceList_Version.class);
-		record.setAD_Org_ID(request.getOrgId().getRepoId());
-		record.setM_PriceList_ID(request.getPriceListId().getRepoId());
-		record.setValidFrom(TimeUtil.asTimestampNotNull(request.getValidFrom()));
-		saveRecord(record);
-
-		return PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID());
 	}
 
 	@Override

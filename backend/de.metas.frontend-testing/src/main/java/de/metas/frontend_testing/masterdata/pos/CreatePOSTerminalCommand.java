@@ -26,6 +26,7 @@ import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalRepository;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.CreateProductPriceRequest;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.product.IProductBL;
@@ -81,6 +82,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final ProductPriceRepository productPriceRepository;
 	@NonNull private final MobileApplicationInfoRepository mobileApplicationInfoRepository;
 	@NonNull private final POSTerminalRepository posTerminalRepository;
+	@NonNull private final PriceListVersionRepository priceListVersionRepository;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPOSTerminalRequest request;
@@ -96,6 +98,7 @@ public class CreatePOSTerminalCommand
 		final BankAccountId bankAccountId = createCashbookBankAccount(currencyId);
 
 		final PricingSetupHelper.PricingSetupResult pricingSetup = PricingSetupHelper.createPricingSystemAndPriceList(
+				priceListVersionRepository,
 				PricingSetupHelper.PricingSetupRequest.builder()
 						.orgId(orgId)
 						.value(identifier.toUniqueString())
@@ -231,6 +234,7 @@ public class CreatePOSTerminalCommand
 
 		final JsonCreateBPartnerResponse response = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(priceListVersionRepository)
 				.context(context)
 				.request(JsonCreateBPartnerRequest.builder().build())
 				.identifier(identifier.getAsString() + "_walkIn")

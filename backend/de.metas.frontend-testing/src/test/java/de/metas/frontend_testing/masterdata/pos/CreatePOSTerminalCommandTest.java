@@ -20,6 +20,7 @@ import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminalRepository;
 import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
@@ -167,6 +168,7 @@ public class CreatePOSTerminalCommandTest
 				.productPriceRepository(productPriceRepository)
 				.mobileApplicationInfoRepository(mobileApplicationInfoRepository)
 				.posTerminalRepository(new POSTerminalRepository())
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context);
 	}
 
@@ -357,6 +359,7 @@ public class CreatePOSTerminalCommandTest
 		// given
 		final JsonCreateBPartnerResponse bpartnerResponse = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(JsonCreateBPartnerRequest.builder().isCustomer(true).build())
 				.identifier("existingWalkIn")

@@ -242,6 +242,7 @@ public class CreateMasterdataCommand
 	{
 		return CreateBPartnerCommand.builder()
 				.currencyRepository(services.currencyRepository)
+				.priceListVersionRepository(services.priceListVersionRepository)
 				.context(context)
 				.request(request)
 				.identifier(identifier)
@@ -365,6 +366,7 @@ public class CreateMasterdataCommand
 	{
 		return CreatePOSTerminalCommand.builder()
 				.currencyRepository(services.currencyRepository)
+				.priceListVersionRepository(services.priceListVersionRepository)
 				.productPriceRepository(services.productPriceRepository)
 				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
 				.posTerminalRepository(services.posTerminalRepository)

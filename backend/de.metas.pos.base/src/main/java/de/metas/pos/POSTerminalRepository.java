@@ -7,6 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 
+/**
+ * Repository Tables: C_POS
+ * Repository Cluster: POSTerminalRepository, POSTerminalService
+ */
 @Repository
 public class POSTerminalRepository
 {

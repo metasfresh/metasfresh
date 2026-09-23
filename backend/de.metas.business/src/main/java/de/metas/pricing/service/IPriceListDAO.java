@@ -203,8 +203,6 @@ public interface IPriceListDAO extends ISingletonService
 
 	PriceListId createPriceList(@NonNull CreatePriceListRequest request);
 
-	PriceListVersionId createPriceListVersion(@NonNull CreatePriceListVersionRequest request);
-
 	ProductPriceId addProductPrice(AddProductPriceRequest request);
 
 	ProductPriceId copyProductPrice(CopyProductPriceRequest request);

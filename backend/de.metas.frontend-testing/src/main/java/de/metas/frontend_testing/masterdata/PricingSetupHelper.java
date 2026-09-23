@@ -7,8 +7,9 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.pricelist.CreatePriceListVersionRequest;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.service.CreatePriceListRequest;
-import de.metas.pricing.service.CreatePriceListVersionRequest;
 import de.metas.pricing.service.CreatePricingSystemRequest;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
@@ -29,7 +30,9 @@ public final class PricingSetupHelper
 	{
 	}
 
-	public static PricingSetupResult createPricingSystemAndPriceList(@NonNull final PricingSetupRequest request)
+	public static PricingSetupResult createPricingSystemAndPriceList(
+			@NonNull final PriceListVersionRepository priceListVersionRepository,
+			@NonNull final PricingSetupRequest request)
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final OrgId orgId = request.getOrgId();
@@ -52,11 +55,12 @@ public final class PricingSetupHelper
 				.pricePrecision(2)
 				.build());
 
-		final PriceListVersionId priceListVersionId = priceListDAO.createPriceListVersion(CreatePriceListVersionRequest.builder()
-				.orgId(orgId)
-				.priceListId(priceListId)
-				.validFrom(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant())
-				.build());
+		final PriceListVersionId priceListVersionId = priceListVersionRepository.createPriceListVersion(CreatePriceListVersionRequest.builder()
+						.orgId(orgId)
+						.priceListId(priceListId)
+						.validFrom(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant())
+						.build())
+				.getPriceListVersionId();
 
 		return PricingSetupResult.of(pricingSystemId, priceListId, priceListVersionId);
 	}
