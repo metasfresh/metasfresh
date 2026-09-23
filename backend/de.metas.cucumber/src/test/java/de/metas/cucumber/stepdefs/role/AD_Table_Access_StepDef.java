@@ -47,8 +47,8 @@ import org.compiere.model.I_AD_Table_Access;
 @RequiredArgsConstructor
 public class AD_Table_Access_StepDef
 {
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 	@NonNull private final AD_Role_StepDefData roleTable;
 
