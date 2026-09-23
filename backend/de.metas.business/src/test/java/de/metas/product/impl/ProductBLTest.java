@@ -143,7 +143,7 @@ class ProductBLTest
 		void fixedPrefix_fallsBackToEAN13ProductCode_whenNoGTINMatch() // fixed-prefix GTIN, no exact GTIN match: falls back to EAN13_ProductCode
 		{
 			// "702766721" = barcode.substring(3, 12) (EAN13Parser#parseStandardProduct) -- same value
-			// pinned by the pre-existing EAN13Test.StandardProductCodes.happyCase2 for this exact barcode.
+			// pinned by EAN13Test.StandardProductCodes.happyCase2 for this exact barcode.
 			final ProductId p = product("F2", null, "702766721");
 			assertThat(productBL.getProductIdByGTIN(GTIN.ofString("7617027667210"))).contains(p);
 		}
