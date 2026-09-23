@@ -24,41 +24,48 @@ package de.metas.cucumber.stepdefs.role;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.organization.OrgId;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.security.requests.CreateTableAccessRequest;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Table_Access;
 
 /**
  * Responsible for {@code AD_Table_Access} rows — the per-(role, table) access grants whose four flags subtract
  * capabilities from the role's default (IsReadOnly removes WRITE; IsCanReport / IsCanExport / IsCanCreateNewRecords
- * remove REPORT / EXPORT / CREATE). A row left at its defaults is equivalent to no row.
+ * remove REPORT / EXPORT / CREATE). A row left at its defaults is equivalent to no row. Delegates to the production
+ * {@link IUserRolePermissionsDAO#createTableAccess} so the column defaults and org handling stay in one place.
  */
 @RequiredArgsConstructor
 public class AD_Table_Access_StepDef
 {
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 	@NonNull private final AD_Role_StepDefData roleTable;
 
 	/**
-	 * Creates an {@code AD_Table_Access} row granting/restricting a role on one table. Each flag defaults to its
-	 * column's non-restricting value, so a row that sets only {@code IsCanCreateNewRecords=false} subtracts just the
-	 * create permission and leaves read, edit, report and export intact.
+	 * Creates an {@code AD_Table_Access} row granting/restricting a role on one table. Each flag is optional; an
+	 * omitted flag is passed as {@code null} to {@link IUserRolePermissionsDAO#createTableAccess}, which leaves the
+	 * column's own (non-restricting) default in place — so a row that sets only {@code IsCanCreateNewRecords=false}
+	 * subtracts just the create permission and leaves read, edit, report and export intact.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>AD_Role_ID</b> — (required, identifier-ref) the role the access row belongs to<br>
 	 *   <b>TableName</b> — (required) the table the access applies to, e.g. {@code C_BPartner}<br>
-	 *   <b>IsReadOnly</b> — (optional, default false) removes WRITE when true<br>
-	 *   <b>IsCanReport</b> — (optional, default true) removes REPORT when false<br>
-	 *   <b>IsCanExport</b> — (optional, default true) removes EXPORT when false<br>
-	 *   <b>IsCanCreateNewRecords</b> — (optional, default true) removes CREATE when false<br>
+	 *   <b>IsReadOnly</b> — (optional) removes WRITE when true; omit to keep the column default<br>
+	 *   <b>IsCanReport</b> — (optional) removes REPORT when false; omit to keep the column default<br>
+	 *   <b>IsCanExport</b> — (optional) removes EXPORT when false; omit to keep the column default<br>
+	 *   <b>IsCanCreateNewRecords</b> — (optional) removes CREATE when false; omit to keep the column default<br>
 	 * @cucumber.depends StepDefData: AD_Role_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -76,17 +83,18 @@ public class AD_Table_Access_StepDef
 	private void createTableAccess(@NonNull final DataTableRow row)
 	{
 		final I_AD_Role roleRecord = row.getAsIdentifier(I_AD_Table_Access.COLUMNNAME_AD_Role_ID).lookupNotNullIn(roleTable);
-		final String tableName = row.getAsString("TableName");
-		final int adTableId = adTableDAO.retrieveTableId(tableName);
+		final AdTableId adTableId = adTableDAO.retrieveAdTableId(row.getAsString("TableName"));
 
-		final I_AD_Table_Access record = InterfaceWrapperHelper.newInstance(I_AD_Table_Access.class);
-		record.setAD_Role_ID(roleRecord.getAD_Role_ID());
-		record.setAD_Table_ID(adTableId);
-		record.setIsReadOnly(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsReadOnly).orElseFalse());
-		record.setIsCanReport(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanReport).orElse(true));
-		record.setIsCanExport(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanExport).orElse(true));
-		record.setIsCanCreateNewRecords(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanCreateNewRecords).orElse(true));
-		record.setIsActive(true);
-		InterfaceWrapperHelper.saveRecord(record);
+		// The role (and hence its table-access rows) is org-independent, so OrgId.ANY mirrors CreateRoleCommand;
+		// each null flag lets the DAO keep the AD_Column default rather than re-encoding it here.
+		userRolePermissionsDAO.createTableAccess(CreateTableAccessRequest.builder()
+				.roleId(RoleId.ofRepoId(roleRecord.getAD_Role_ID()))
+				.orgId(OrgId.ANY)
+				.adTableId(adTableId)
+				.readOnly(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsReadOnly).toBooleanOrNull())
+				.canReport(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanReport).toBooleanOrNull())
+				.canExport(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanExport).toBooleanOrNull())
+				.canCreateNewRecords(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanCreateNewRecords).toBooleanOrNull())
+				.build());
 	}
 }
