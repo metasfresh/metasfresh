@@ -15,6 +15,7 @@ import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.mobile.MobileConfigService;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
+import de.metas.pos.POSTerminalRepository;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.product.ProductRepository;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
@@ -54,4 +55,5 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final VATaxIDCheckRepository vataxIDCheckRepository;
 	@NonNull public final ProductPriceRepository productPriceRepository;
 	@NonNull public final MobileApplicationInfoRepository mobileApplicationInfoRepository;
+	@NonNull public final POSTerminalRepository posTerminalRepository;
 }

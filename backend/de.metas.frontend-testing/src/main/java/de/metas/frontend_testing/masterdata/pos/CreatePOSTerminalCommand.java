@@ -21,7 +21,9 @@ import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pos.POSPaymentMethod;
+import de.metas.pos.POSTerminalCreateRequest;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.POSTerminalRepository;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.productprice.CreateProductPriceRequest;
@@ -48,9 +50,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_POS;
 
-import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +66,7 @@ import java.util.Optional;
 public class CreatePOSTerminalCommand
 {
 	private static final String POS_MOBILE_APPLICATION_VALUE = "pos";
-	private static final String POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME = "POS_LineLevelTest";
+	static final String POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME = "POS_LineLevelTest";
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -80,6 +80,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final ProductPriceRepository productPriceRepository;
 	@NonNull private final MobileApplicationInfoRepository mobileApplicationInfoRepository;
+	@NonNull private final POSTerminalRepository posTerminalRepository;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPOSTerminalRequest request;
@@ -111,20 +112,15 @@ public class CreatePOSTerminalCommand
 
 		grantPOSMobileApplicationAccess();
 
-		final I_C_POS posRecord = InterfaceWrapperHelper.newInstance(I_C_POS.class);
-		posRecord.setAD_Org_ID(orgId.getRepoId());
-		posRecord.setName(identifier.toUniqueString());
-		posRecord.setIsActive(true);
-		posRecord.setIsModifyPrice(false);
-		posRecord.setCashLastBalance(BigDecimal.ZERO);
-		posRecord.setC_BPartnerCashTrx_ID(walkInBPartnerId.getRepoId());
-		posRecord.setC_BP_BankAccount_ID(bankAccountId.getRepoId());
-		posRecord.setC_DocTypeOrder_ID(salesOrderDocTypeId.getRepoId());
-		posRecord.setM_PriceList_ID(pricingSetup.getPriceListId().getRepoId());
-		posRecord.setM_Warehouse_ID(warehouseId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(posRecord);
-
-		final POSTerminalId posTerminalId = POSTerminalId.ofRepoId(posRecord.getC_POS_ID());
+		final POSTerminalId posTerminalId = posTerminalRepository.createPOSTerminal(POSTerminalCreateRequest.builder()
+				.orgId(orgId)
+				.name(identifier.toUniqueString())
+				.walkInCustomerId(walkInBPartnerId)
+				.cashbookId(bankAccountId)
+				.salesOrderDocTypeId(salesOrderDocTypeId)
+				.priceListId(pricingSetup.getPriceListId())
+				.shipFromWarehouseId(warehouseId)
+				.build());
 		context.putIdentifier(identifier, posTerminalId);
 
 		return JsonPOSTerminalResponse.builder()

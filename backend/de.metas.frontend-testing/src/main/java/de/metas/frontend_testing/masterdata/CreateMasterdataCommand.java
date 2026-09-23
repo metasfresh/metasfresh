@@ -367,6 +367,7 @@ public class CreateMasterdataCommand
 				.currencyRepository(services.currencyRepository)
 				.productPriceRepository(services.productPriceRepository)
 				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
+				.posTerminalRepository(services.posTerminalRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

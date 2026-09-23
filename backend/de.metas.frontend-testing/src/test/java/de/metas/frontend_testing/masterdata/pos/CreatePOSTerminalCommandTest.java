@@ -18,6 +18,7 @@ import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.pos.POSPaymentMethod;
+import de.metas.pos.POSTerminalRepository;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
@@ -37,6 +38,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_POS;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
@@ -50,6 +52,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -163,6 +166,7 @@ public class CreatePOSTerminalCommandTest
 				.currencyRepository(currencyRepository)
 				.productPriceRepository(productPriceRepository)
 				.mobileApplicationInfoRepository(mobileApplicationInfoRepository)
+				.posTerminalRepository(new POSTerminalRepository())
 				.context(context);
 	}
 
@@ -182,6 +186,24 @@ public class CreatePOSTerminalCommandTest
 				.build()
 				.execute();
 		return response.getId();
+	}
+
+	/**
+	 * POS order lines need a line-level tax, so the command must price under its own line-level tax category —
+	 * not under the seeded default ({@link MasterdataContext#DEFAULT_TaxCategory_InternalName}) category.
+	 */
+	private void assertPricedUnderPOSLineLevelTaxCategory(final I_M_ProductPrice productPrice)
+	{
+		assertThat(productPrice.getC_TaxCategory_ID()).isNotEqualTo(normalTaxCategoryId.getRepoId());
+
+		final I_C_TaxCategory taxCategory = InterfaceWrapperHelper.load(productPrice.getC_TaxCategory_ID(), I_C_TaxCategory.class);
+		assertThat(taxCategory.getInternalName()).isEqualTo(CreatePOSTerminalCommand.POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME);
+
+		final List<I_C_Tax> taxes = queryBL.createQueryBuilder(I_C_Tax.class)
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategory.getC_TaxCategory_ID())
+				.create()
+				.list();
+		assertThat(taxes).isNotEmpty().allSatisfy(tax -> assertThat(tax.isDocumentLevel()).isFalse());
 	}
 
 	private I_M_ProductPrice getProductPrice(final int priceListId, final ProductId productId)
@@ -288,7 +310,7 @@ public class CreatePOSTerminalCommandTest
 		assertThat(productPrice.getPriceStd()).isEqualByComparingTo(new BigDecimal("9.90"));
 		assertThat(productPrice.getInvoicableQtyBasedOn()).isEqualTo(InvoicableQtyBasedOn.NominalWeight.getCode());
 		assertThat(productPrice.getC_UOM_ID()).isEqualTo(UomId.EACH.getRepoId());
-		assertThat(productPrice.getC_TaxCategory_ID()).isEqualTo(normalTaxCategoryId.getRepoId());
+		assertPricedUnderPOSLineLevelTaxCategory(productPrice);
 	}
 
 	@Test
@@ -323,7 +345,7 @@ public class CreatePOSTerminalCommandTest
 
 		assertThat(productPrice.getPriceStd()).isEqualByComparingTo(new BigDecimal("15.50"));
 		assertThat(productPrice.getInvoicableQtyBasedOn()).isEqualTo(InvoicableQtyBasedOn.CatchWeight.getCode());
-		assertThat(productPrice.getC_TaxCategory_ID()).isEqualTo(normalTaxCategoryId.getRepoId());
+		assertPricedUnderPOSLineLevelTaxCategory(productPrice);
 
 		final I_C_UOM uom = InterfaceWrapperHelper.load(productPrice.getC_UOM_ID(), I_C_UOM.class);
 		assertThat(uom.getX12DE355()).isEqualTo("KGM");

@@ -7,15 +7,14 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.CreatePriceListRequest;
+import de.metas.pricing.service.CreatePriceListVersionRequest;
+import de.metas.pricing.service.CreatePricingSystemRequest;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-
-import java.sql.Timestamp;
 
 /**
  * Shared record-creation for a fresh {@code M_PricingSystem} + {@code M_PriceList} + {@code M_PriceList_Version},
@@ -32,35 +31,32 @@ public final class PricingSetupHelper
 
 	public static PricingSetupResult createPricingSystemAndPriceList(@NonNull final PricingSetupRequest request)
 	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final OrgId orgId = request.getOrgId();
 		final String value = request.getValue();
 
-		final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
-		pricingSystem.setValue(value);
-		pricingSystem.setName(value);
-		pricingSystem.setAD_Org_ID(orgId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(pricingSystem);
-		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
+		final PricingSystemId pricingSystemId = priceListDAO.createPricingSystem(CreatePricingSystemRequest.builder()
+				.orgId(orgId)
+				.value(value)
+				.name(value)
+				.build());
 
-		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
-		priceList.setM_PricingSystem_ID(pricingSystemId.getRepoId());
-		priceList.setAD_Org_ID(orgId.getRepoId());
-		priceList.setC_Currency_ID(request.getCurrencyId().getRepoId());
-		priceList.setName(value);
-		priceList.setIsTaxIncluded(request.isTaxIncluded());
-		priceList.setPricePrecision(2);
-		priceList.setIsActive(true);
-		priceList.setIsSOPriceList(request.isSoPriceList());
-		priceList.setC_Country_ID(request.getCountryId().getRepoId());
-		InterfaceWrapperHelper.saveRecord(priceList);
-		final PriceListId priceListId = PriceListId.ofRepoId(priceList.getM_PriceList_ID());
+		final PriceListId priceListId = priceListDAO.createPriceList(CreatePriceListRequest.builder()
+				.orgId(orgId)
+				.pricingSystemId(pricingSystemId)
+				.name(value)
+				.currencyId(request.getCurrencyId())
+				.countryId(request.getCountryId())
+				.isTaxIncluded(request.isTaxIncluded())
+				.isSOPriceList(request.isSoPriceList())
+				.pricePrecision(2)
+				.build());
 
-		final I_M_PriceList_Version plv = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
-		plv.setM_PriceList_ID(priceListId.getRepoId());
-		plv.setAD_Org_ID(orgId.getRepoId());
-		plv.setValidFrom(Timestamp.from(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant()));
-		InterfaceWrapperHelper.saveRecord(plv);
-		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
+		final PriceListVersionId priceListVersionId = priceListDAO.createPriceListVersion(CreatePriceListVersionRequest.builder()
+				.orgId(orgId)
+				.priceListId(priceListId)
+				.validFrom(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant())
+				.build());
 
 		return PricingSetupResult.of(pricingSystemId, priceListId, priceListVersionId);
 	}
