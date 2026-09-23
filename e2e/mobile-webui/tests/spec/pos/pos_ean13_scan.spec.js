@@ -9,9 +9,9 @@ import { generateEAN13 } from "../../utils/ean13";
 // de_DE login: rendered amounts/quantities use comma decimals (see exactTextMatch in posText.js).
 //
 // P1's `value` is deliberately left to the masterdata API's default (a random per-run unique
-// string, see CreateProductCommand#generateValue) — it never starts with the scanned EAN13
-// prefixes below, so a lookup that (wrongly) matched against M_Product.Value instead of
-// M_Product.EAN13_ProductCode could not accidentally pass.
+// string, see CreateProductCommand#generateValue) — it never starts with the numeric product code
+// embedded in the scanned label, so a lookup that (wrongly) matched against M_Product.Value instead
+// of M_Product.EAN13_ProductCode could not accidentally pass.
 const createMasterdata = ({ ean13ProductCode, pricePerKg }) => {
     return Backend.createMasterdata({
         language: 'de_DE',
@@ -44,7 +44,7 @@ const loginAndOpenOrderPanel = async (masterdata) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('prefix 28 label resolves via EAN13_ProductCode (AC10)', async ({ page }) => {
+test('Scan a prefix 28 variable-weight scale label', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0295: Frontend MobileUI');
     allure.tag('F12000: Frontend MobileUI');
@@ -75,7 +75,7 @@ test('prefix 28 label resolves via EAN13_ProductCode (AC10)', async ({ page }) =
 });
 
 // noinspection JSUnusedLocalSymbols
-test('prefix 29 label resolves via EAN13_ProductCode (AC11)', async ({ page }) => {
+test('Scan a prefix 29 variable-weight scale label', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0295: Frontend MobileUI');
     allure.tag('F12000: Frontend MobileUI');
@@ -84,8 +84,8 @@ test('prefix 29 label resolves via EAN13_ProductCode (AC11)', async ({ page }) =
     allure.severity('critical');
 
     // A fresh random product code each run - see the prefix-28 test above for why. Barcode
-    // structure: prefix 29 (internal use / variable measure), a 4-digit product code, and the
-    // embedded weight 00500 (= 0,500 kg).
+    // structure: prefix 29 (internal use / variable measure), a 4-digit product code, one ignored
+    // digit (0), and the embedded weight 00500 (= 0,500 kg).
     const code29 = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
     const { ean13: label29 } = generateEAN13({ prefix: '29', productCode: `${code29}000500` });
     const masterdata = await createMasterdata({ ean13ProductCode: code29, pricePerKg: 10.00 });
