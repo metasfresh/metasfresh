@@ -674,15 +674,24 @@ testCases.forEach(({ language, label }) => {
                 const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
                 await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
                 await bpInput.click();
+
+                // Synchronize on the actual typeahead HTTP response — race-free. A DOM-class wait cannot work
+                // here: the dropdown's loading spinner and its settled no-results header share the same class
+                // (SelectionDropdown.renderHeader), so a class wait can resolve DURING loading, before the
+                // round-trip completes — leaving the absence assertion vacuous. Waiting on the typeahead response
+                // guarantees the round-trip finished; option-NEW is layout-gated (newRecordCaption, nulled for a
+                // restricted role), so once the response is in, its presence/absence is settled.
+                const typeaheadDone = page.waitForResponse(
+                    (r) => r.url().includes('/field/C_BPartner_ID/typeahead') && r.status() === 200,
+                    { timeout: VERY_SLOW_ACTION_TIMEOUT },
+                );
                 await bpInput.fill(`ZZZ_NOMATCH_${Date.now()}`);
+                await typeaheadDone;
 
                 const optionNew = page.getByTestId('option-NEW');
                 if (restricted) {
-                    // Wait for the dropdown to finish rendering its typeahead response (a no-results header or any
-                    // option) BEFORE asserting the new-partner entry is absent — otherwise count 0 passes trivially
-                    // at t=0, before the async round-trip completes (a vacuous pass under CI/cold-JVM load). The
-                    // unrestricted branch's toBeVisible proves option-NEW DOES appear under identical steps.
-                    await page.locator('.input-dropdown-list-header, .input-dropdown-list-option').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    // The typeahead round-trip has completed (awaited above) and option-NEW is never added for a
+                    // restricted role — assert it is absent. Non-vacuous: we are provably past the round-trip.
                     await expect(optionNew, 'the new-partner quick-input entry must be hidden for a restricted role').toHaveCount(0);
                     console.log(`[${language}] PASS — quick-input new-partner hidden`);
                 } else {
