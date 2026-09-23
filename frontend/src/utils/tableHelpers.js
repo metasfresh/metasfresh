@@ -164,8 +164,8 @@ export function getSizeClass(col) {
 
 // combobox (Lookup/List — Search resolves to Lookup upstream) minimum-usable width: below this, the
 // open dropdown editor (`.input-dropdown-container`, floored at 200px) spills into the next column.
-const COMBOBOX_MIN_WIDTH_PX = 210;
-const COMBOBOX_WIDGET_TYPES = ['List', 'Lookup'];
+export const COMBOBOX_MIN_WIDTH_PX = 210;
+export const COMBOBOX_WIDGET_TYPES = ['List', 'Lookup'];
 
 // `td-*` band min-widths as defined in `table.scss` — used only to detect whether the band already
 // clears the combobox floor; the bands themselves are never changed here.
