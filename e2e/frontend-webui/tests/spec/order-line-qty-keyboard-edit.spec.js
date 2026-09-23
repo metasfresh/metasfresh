@@ -29,20 +29,25 @@ import { waitForTabAllowsNew, getRecordData, getTabRows } from '../utils/WebAPIV
  * Expected: every line keeps Menge 5 — in the grid after completion, after a reload,
  * and as persisted QtyEntered read back from the WebAPI; DocStatus is CO.
  *
- * Measured 2026-09-23 with webui.quickinput.EnablePackingInstructionsField=Y (this window's
- * batch entry then shows a Packvorschrift field before Menge):
+ * Measured locally 2026-09-23 with webui.quickinput.EnablePackingInstructionsField=Y (this
+ * window's batch entry then shows a Packvorschrift field before Menge) — this local DB's
+ * column set is NOT assumed identical elsewhere (e.g. core CI's preloaded image), so the
+ * grid Tab-navigation below does not hardcode a Tab count; it Tabs one key at a time and
+ * checks focus after each press (see tabToFirstRowQtyCell):
  * - the order-line grid carries several columns before Menge: Zeile Nr., Produkt,
  *   Verfügbare Menge, Verfügbar, Merkmale, Gebindemenge, Zusagbar (ATP), Packvorschrift,
- *   THEN Menge.
+ *   THEN Menge — 9 Tabs from <body> reached row 0's cell-QtyEntered on this local DB.
  * - in batch entry, pressing Enter on the resolved product moves focus into the
  *   (empty) Packvorschrift field (M_HU_PI_Item_Product_ID) rather than straight to
  *   Menge; Tab is the key that leaves that empty field and lands on Menge (same
  *   escape as tests/spec/quick-input.spec.js TEST 9's "Tab — the pre-existing escape
  *   that already worked").
- * - after Alt+Q closes batch entry, focus falls to <body>; from there it takes 9 Tabs
- *   to reach row 0's cell-QtyEntered: Line, M_Product_ID, QtyAvailableForSales,
- *   InsufficientQtyAvailableForSalesColor_ID, M_AttributeSetInstance_ID, QtyEnteredTU,
- *   Qty_AvailableToPromise, M_HU_PI_Item_Product_ID, QtyEntered.
+ * - after Alt+Q closes batch entry, focus falls to <body>, and Tabbing from there
+ *   reaches row 0's cell-QtyEntered by walking through: Line, M_Product_ID,
+ *   QtyAvailableForSales, InsufficientQtyAvailableForSalesColor_ID,
+ *   M_AttributeSetInstance_ID, QtyEnteredTU, Qty_AvailableToPromise,
+ *   M_HU_PI_Item_Product_ID, QtyEntered (locally; the exact set/order may differ in
+ *   another environment, which is why the count itself is not hardcoded).
  *
  * Keyboard shortcuts: metasfresh/frontend/src/shortcuts/keymap.js
  * (Alt+N NEW_DOCUMENT, Alt+Q TOGGLE_QUICK_INPUT, Alt+U COMPLETE_STATUS).
@@ -57,9 +62,11 @@ const ORDER_LINE_TAB_ID = 'AD_Tab-187';
 const PRODUCT_KEYS = ['P1', 'P2', 'P3'];
 const INITIAL_QTY = '4';
 const EDITED_QTY = '5';
-// Measured 2026-09-23 (see file header): Tabs from <body> (post Alt+Q close) to row 0's
-// cell-QtyEntered — this window's grid has several columns before Menge.
-const TABS_TO_FIRST_ROW_QTY_CELL = 9;
+// Safety cap for tabToFirstRowQtyCell below — locally this window's grid needed 9 Tabs (see
+// file header), but the exact column set is not assumed stable across environments, so the
+// loop checks focus after every Tab instead of hardcoding a count; this only bounds the
+// give-up point.
+const MAX_TABS_TO_FIRST_ROW_QTY_CELL = 20;
 
 // ---------------------------------------------------------------------------
 // Setup helpers
@@ -254,11 +261,31 @@ async function closeBatchEntryAndAssertFocusOutsideLines(page) {
 // ---------------------------------------------------------------------------
 
 /**
- * From the closed batch entry (focus on <body>): TABS_TO_FIRST_ROW_QTY_CELL Tabs reach row 0's
- * Menge cell (this window has several grid columns before Menge — see file header), then
- * ArrowDown+ArrowUp select row 0 (keeping the Menge column), then per row: type qty, Tab
- * (leaves the cell -> PATCH fires), ArrowLeft (back to Menge), ArrowDown (next row, same
- * column).
+ * From the closed batch entry (focus on <body>): press Tab one key at a time, checking focus
+ * after each press, until row 0's Menge cell (cell-QtyEntered) is reached — this window has
+ * several grid columns before Menge (see file header) and the exact column set/order is not
+ * assumed stable across environments, so no fixed Tab count is hardcoded here. Gives up after
+ * MAX_TABS_TO_FIRST_ROW_QTY_CELL Tabs with a failure naming the last focused cell.
+ */
+async function tabToFirstRowQtyCell(page) {
+  for (let i = 0; i < MAX_TABS_TO_FIRST_ROW_QTY_CELL; i++) {
+    await page.keyboard.press('Tab');
+    const info = await activeCellInfo(page);
+    if (info.cell === 'cell-QtyEntered' && info.rowIdx === 0) {
+      return;
+    }
+  }
+  const info = await activeCellInfo(page);
+  throw new Error(
+    `Tab did not reach row 0's cell-QtyEntered within ${MAX_TABS_TO_FIRST_ROW_QTY_CELL} Tabs; ` +
+      `last focused cell: ${JSON.stringify(info)}`
+  );
+}
+
+/**
+ * tabToFirstRowQtyCell reaches row 0's Menge cell, then ArrowDown+ArrowUp select row 0 (keeping
+ * the Menge column), then per row: type qty, Tab (leaves the cell -> PATCH fires), ArrowLeft
+ * (back to Menge), ArrowDown (next row, same column).
  * No waitForResponse on the QtyEntered PATCH anywhere in this function — only loading
  * indicators / fixed pauses. QtyEntered PATCH requests are recorded passively.
  */
@@ -275,10 +302,7 @@ async function editQtysKeyboardOnly(page, qty) {
   };
   page.on('request', onRequest);
   try {
-    for (let i = 0; i < TABS_TO_FIRST_ROW_QTY_CELL; i++) {
-      await page.keyboard.press('Tab');
-    }
-    await expectFocus(page, (f) => f.cell === 'cell-QtyEntered' && f.rowIdx === 0, 'row 0 Menge cell');
+    await tabToFirstRowQtyCell(page); // returns only once row 0's Menge cell is focused
 
     // select row 0 by keyboard (Tab only focuses the cell, it does not select the row)
     await page.keyboard.press('ArrowDown');
