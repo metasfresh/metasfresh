@@ -89,6 +89,7 @@ public class PPOrderCostDifferenceDistributorTest
 	private static final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(1);
 	private static final CostElementId materialCostElementId = CostElementId.ofRepoId(1);
 	private static final ProductId mainProductId = ProductId.ofRepoId(1);
+	private static final ProductId coProductId = ProductId.ofRepoId(2);
 
 	private final ClientId orderClientId = ClientId.ofRepoId(1);
 	private final OrgId orderOrgId = OrgId.ofRepoId(0);
@@ -199,7 +200,7 @@ public class PPOrderCostDifferenceDistributorTest
 	{
 		return PPOrderCost.builder()
 				.trxType(PPOrderCostTrxType.CoProduct)
-				.costSegmentAndElement(segment(mainProductId))
+				.costSegmentAndElement(segment(coProductId))
 				.price(costPrice("30", UomId.ofRepoId(uom.getC_UOM_ID())))
 				.accumulatedQty(Quantity.of(accumulatedQty, uom))
 				.build();
@@ -211,10 +212,18 @@ public class PPOrderCostDifferenceDistributorTest
 		return (qty, productId, targetUOMId) -> qty;
 	}
 
-	/** Converts a kg qty into Stk ({@code uomEach}) at a fixed {@code eachPerKg} factor. */
+	/**
+	 * Converts a kg qty into Stk ({@code uomEach}) at a fixed {@code eachPerKg} factor. Asserts the caller passes the
+	 * co-product's own id and the cost UOM as the conversion target, so a regression that converted against the wrong
+	 * product rate or the wrong UOM (e.g. the price UOM instead of {@code currentCost.getUomId()}) is caught here.
+	 */
 	private QuantityUOMConverter kgToEachConverter(final int eachPerKg)
 	{
-		return (qty, productId, targetUOMId) -> Quantity.of(qty.toBigDecimal().multiply(BigDecimal.valueOf(eachPerKg)), uomEach);
+		return (qty, productId, targetUOMId) -> {
+			assertThat(productId).isEqualTo(coProductId);
+			assertThat(targetUOMId).isEqualTo(uomEachId);
+			return Quantity.of(qty.toBigDecimal().multiply(BigDecimal.valueOf(eachPerKg)), uomEach);
+		};
 	}
 
 	private CostPrice costPrice(final String ownCostPrice)
