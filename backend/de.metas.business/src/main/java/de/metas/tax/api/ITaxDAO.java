@@ -17,6 +17,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_TaxCategory;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -92,12 +93,14 @@ public interface ITaxDAO extends ISingletonService
 	{
 		@NonNull TaxCategoryId taxCategoryId;
 		@NonNull String name;
-		@NonNull java.math.BigDecimal rate;
+		@NonNull Percent rate;
 		boolean documentLevel;
-		@NonNull Timestamp validFrom;
+		@NonNull Instant validFrom;
 
 		/** Same-country (domestic) tax: used for both {@code C_Country_ID} and {@code To_Country_ID}. */
 		@NonNull CountryId countryId;
+		@NonNull TypeOfDestCountry typeOfDestCountry;
+		@NonNull SOPOType sopoType;
 	}
 
 	@Builder

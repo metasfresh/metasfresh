@@ -33,10 +33,13 @@ import de.metas.security.RoleId;
 import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.SOPOType;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TypeOfDestCountry;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,7 +51,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_POS;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -211,10 +214,12 @@ public class CreatePOSTerminalCommand
 		taxDAO.createTax(ITaxDAO.CreateTaxRequest.builder()
 				.taxCategoryId(taxCategoryId)
 				.name("POS testing 19% (line level)")
-				.rate(new BigDecimal("19"))
+				.rate(Percent.of(19))
 				.documentLevel(false)
-				.validFrom(Timestamp.valueOf(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay()))
+				.validFrom(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(ZoneOffset.UTC).toInstant())
 				.countryId(MasterdataContext.COUNTRY_ID)
+				.typeOfDestCountry(TypeOfDestCountry.DOMESTIC)
+				.sopoType(SOPOType.BOTH)
 				.build());
 
 		return taxCategoryId;

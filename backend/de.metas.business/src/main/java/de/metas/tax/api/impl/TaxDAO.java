@@ -74,6 +74,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.X_C_Tax;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -541,13 +542,13 @@ public class TaxDAO implements ITaxDAO
 		final I_C_Tax tax = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
 		tax.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
 		tax.setName(request.getName());
-		tax.setRate(request.getRate());
+		tax.setRate(request.getRate().toBigDecimal());
 		tax.setIsDocumentLevel(request.isDocumentLevel());
-		tax.setValidFrom(request.getValidFrom());
+		tax.setValidFrom(TimeUtil.asTimestampNotNull(request.getValidFrom()));
 		tax.setC_Country_ID(request.getCountryId().getRepoId());
 		tax.setTo_Country_ID(request.getCountryId().getRepoId());
-		tax.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
-		tax.setSOPOType(X_C_Tax.SOPOTYPE_Both);
+		tax.setTypeOfDestCountry(request.getTypeOfDestCountry().getCode());
+		tax.setSOPOType(request.getSopoType().getCode());
 		InterfaceWrapperHelper.saveRecord(tax);
 
 		return TaxId.ofRepoId(tax.getC_Tax_ID());
