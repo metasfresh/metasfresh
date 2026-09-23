@@ -133,8 +133,15 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 		}
 		catch (final Exception e)
 		{
+			// Record the extracted message on the exchange, then RETHROW: a rejected/failed dispatch must
+			// never be filed as a success. Rethrowing lets the split's stopOnException() propagate this to
+			// the route's already-wired onException(...).process(archiveLocallyOnError).to(direct(MF_ERROR_ROUTE_ID)),
+			// so the payload is archived to the error folder instead of the trailing archiveLocallyOnSuccess
+			// silently filing it under processed.
 			log.warn("Exception caught when handling request: {}", request, e);
-			exchange.getMessage().setBody(getErrorMessage(e));
+			final String errorMessage = getErrorMessage(e);
+			exchange.getMessage().setBody(errorMessage);
+			throw new RuntimeCamelException(errorMessage, e);
 		}
 	}
 
