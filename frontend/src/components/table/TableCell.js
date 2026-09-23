@@ -6,6 +6,7 @@ import counterpart from 'counterpart';
 import {
   checkIfDateField,
   getSizeClass,
+  getSizeStyle,
   getTdTitle,
 } from '../../utils/tableHelpers';
 import TableCellWidget from './TableCellWidget';
@@ -192,6 +193,9 @@ class TableCell extends PureComponent {
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
     const isDateField = checkIfDateField({ item });
     const style = cellExtended ? { height: extendLongText * 20 } : {};
+    // a stored custom width wins over the size class (handled above); absent that, a combobox column
+    // still needs its ~210px minimum-usable-width floor applied inline, without promoting the td-* band
+    const comboboxFloorStyle = columnWidth ? undefined : getSizeStyle(item);
     const tdStyle = columnWidth
       ? {
           ...style,
@@ -199,6 +203,8 @@ class TableCell extends PureComponent {
           minWidth: `${columnWidth}px`,
           maxWidth: `${columnWidth}px`,
         }
+      : comboboxFloorStyle
+      ? { ...style, ...comboboxFloorStyle }
       : undefined;
 
     return (

@@ -162,6 +162,44 @@ export function getSizeClass(col) {
   }
 }
 
+// combobox (Lookup/List — Search resolves to Lookup upstream) minimum-usable width: below this, the
+// open dropdown editor (`.input-dropdown-container`, floored at 200px) spills into the next column.
+const COMBOBOX_MIN_WIDTH_PX = 210;
+const COMBOBOX_WIDGET_TYPES = ['List', 'Lookup'];
+
+// `td-*` band min-widths as defined in `table.scss` — used only to detect whether the band already
+// clears the combobox floor; the bands themselves are never changed here.
+const SIZE_CLASS_MIN_WIDTH_PX = {
+  'td-sm': 60,
+  'td-md': 144,
+  'td-lg': 225,
+  'td-xl': 350,
+  'td-xxl': 500,
+};
+
+/**
+ * @method getSizeStyle
+ * @param {object} col
+ * @summary combobox-only minimum-usable-width floor (~210px), enforced as an inline style at
+ * size-resolution time — never by promoting the column to a wider `td-*` band (which would also
+ * touch the band's `max-width` and every non-combobox column sharing it). Returns `undefined` for a
+ * non-combobox column, or for a combobox column whose resolved band already clears the floor.
+ */
+export function getSizeStyle(col) {
+  const { widgetType } = col;
+
+  if (COMBOBOX_WIDGET_TYPES.indexOf(widgetType) === -1) {
+    return undefined;
+  }
+
+  const bandMinWidth = SIZE_CLASS_MIN_WIDTH_PX[getSizeClass(col)] || 0;
+  if (bandMinWidth >= COMBOBOX_MIN_WIDTH_PX) {
+    return undefined;
+  }
+
+  return { minWidth: `${COMBOBOX_MIN_WIDTH_PX}px` };
+}
+
 /**
  * @method getIconClassName
  * @param {object} huType
