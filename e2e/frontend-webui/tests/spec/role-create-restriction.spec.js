@@ -349,7 +349,10 @@ testCases.forEach(({ language, label }) => {
             const tabInfo = await getTabInfo(BUSINESS_PARTNER_WINDOW_ID, recordId, ADRESSE_TAB_ID);
             console.log(`[${language}] Adresse tabInfo: ${JSON.stringify(tabInfo)}`);
             expect(tabInfo.allowCreateNew, 'the address included tab must forbid creating a new address for the restricted role').toBe(false);
-            console.log(`[${language}] PASS — restricted role cannot add an address (allowCreateNew=false)`);
+            // The block must be attributed to the ROLE (not a parent-is-new or tab-readonly reason): opening an
+            // EXISTING partner rules out "parent is new", so the reason key proves it is the role restriction.
+            expect(tabInfo.allowCreateNewReasonKey, 'the address tab must be disabled with the role restriction reason key').toBe(CREATE_RESTRICTION_MSG_KEY);
+            console.log(`[${language}] PASS — restricted role cannot add an address (allowCreateNew=false, reasonKey=${tabInfo.allowCreateNewReasonKey})`);
         });
     });
 
@@ -396,7 +399,7 @@ testCases.forEach(({ language, label }) => {
                 const tab = await getTabInfo(BUSINESS_PARTNER_WINDOW_ID, recordId, VORGAENGE_TAB_ID);
                 console.log(`[${language}] Vorgänge tabInfo (${stateLabel}): ${JSON.stringify(tab)}`);
                 // The tab forbids insert structurally → creation is not allowed regardless of the role row (AC3/AC4).
-                expect(tab.allowCreateNew, `a tab that forbids insert must not allow create (${stateLabel})`).not.toBe(true);
+                expect(tab.allowCreateNew, `a tab that forbids insert must not allow create (${stateLabel})`).toBe(false);
                 // The block is the TAB's, never the role's — no role reason key surfaces on it.
                 expect(tab.allowCreateNewReasonKey ?? null, `no role reason may surface on a tab-forbidden insert (${stateLabel})`).not.toBe(CREATE_RESTRICTION_MSG_KEY);
                 console.log(`[${language}] PASS — tab-forbidden insert unchanged, no role reason (${stateLabel})`);
@@ -406,10 +409,14 @@ testCases.forEach(({ language, label }) => {
 
     // TC8 — inclusion resolves the create permission by UNION (AC16). A role's effective create permission
     // is the union of its own and every included role's AD_Table_Access: a row grants or withholds CREATE,
-    // and where NO role in the chain has a row the table falls back to the role default (allowed). Four role
-    // graphs, each asserted on the greyed-New restriction key in the documentView payload. Case 4 pins the
-    // sole exception to the restrictive-only invariant — a plain granting row in the default (toolkit) shape,
-    // exactly what bulk role configuration writes, lifts a forbid under the union.
+    // and where NO role in the chain has a row the table falls back to the role default (allowed). Three
+    // distinct role graphs, each asserted on the greyed-New restriction key in the documentView payload.
+    // The "granting-row-lifts" case is the sole exception to the restrictive-only invariant, and its granter
+    // row is written in the plain default (toolkit) shape — every flag at its default, IsCanCreateNewRecords='Y'
+    // — i.e. the exact row support.ad_role_ensure_table_access writes when bulk role config re-opens a table.
+    // (There is deliberately no separate "explicit true" case: the masterdata DTO defaults canCreateNewRecords
+    // to true, so an omitted flag and an explicit `true` produce a byte-identical AD_Table_Access row — a
+    // second case would exercise nothing new. See JsonRoleTableAccessRequest.canCreateNewRecords @Builder.Default.)
     const TC8_CASES = [
         {
             key: 'forbid-propagates', caseLabel: 'forbid on an included role propagates', expectRestricted: true,
@@ -419,10 +426,11 @@ testCases.forEach(({ language, label }) => {
             },
         },
         {
-            key: 'explicit-allow-lifts', caseLabel: 'an allowing row in the chain lifts the forbid', expectRestricted: false,
+            key: 'granting-row-lifts', caseLabel: 'a plain granting row (toolkit default shape) in the chain lifts the forbid', expectRestricted: false,
             roles: {
                 base: { name: `UnionFbase_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] },
-                granter: { name: `UnionGrant_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: true }] },
+                // Every flag left at its default => IsCanCreateNewRecords='Y': the exact row support.ad_role_ensure_table_access writes.
+                granter: { name: `UnionGrant_${language}`, tableAccess: [{ tableName: 'C_BPartner' }] },
                 chain: { name: `UnionAllow_${language}`, includedRoles: ['base', 'granter'], user: { language } },
             },
         },
@@ -430,15 +438,6 @@ testCases.forEach(({ language, label }) => {
             key: 'no-row-anywhere', caseLabel: 'no row anywhere in the chain is unaffected', expectRestricted: false,
             roles: {
                 chain: { name: `UnionNorow_${language}`, user: { language } },
-            },
-        },
-        {
-            key: 'toolkit-grant-lifts', caseLabel: 'a plain granting row (toolkit default shape) lifts the forbid', expectRestricted: false,
-            roles: {
-                base: { name: `UnionTKbase_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] },
-                // Every flag left at its default => IsCanCreateNewRecords='Y': the exact row support.ad_role_ensure_table_access writes.
-                granter: { name: `UnionTKgrant_${language}`, tableAccess: [{ tableName: 'C_BPartner' }] },
-                chain: { name: `UnionTKchain_${language}`, includedRoles: ['base', 'granter'], user: { language } },
             },
         },
     ];
