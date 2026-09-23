@@ -27,7 +27,6 @@ import lombok.experimental.UtilityClass;
 import org.apache.camel.RuntimeCamelException;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -44,16 +43,17 @@ import java.nio.file.Path;
 class ScriptedImportConversionLocalArchiver
 {
 	/**
-	 * Writes {@code content} to {@code directory}/{@code fileName}, creating {@code directory}
-	 * (and any missing parents) if needed.
+	 * Writes the raw bytes of {@code content} to {@code directory}/{@code fileName}, creating
+	 * {@code directory} (and any missing parents) if needed. Never text-decodes or re-encodes the
+	 * content, so binary payloads (e.g. PDF) round-trip byte-identical.
 	 */
-	void archive(@NonNull final String directory, @NonNull final String fileName, @NonNull final String content)
+	void archive(@NonNull final String directory, @NonNull final String fileName, @NonNull final byte[] content)
 	{
 		try
 		{
 			final Path dirPath = Path.of(directory);
 			Files.createDirectories(dirPath);
-			Files.writeString(dirPath.resolve(fileName), content, StandardCharsets.UTF_8);
+			Files.write(dirPath.resolve(fileName), content);
 		}
 		catch (final IOException e)
 		{

@@ -34,7 +34,6 @@ import org.apache.camel.ProducerTemplate;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScriptedImportConversionArchivingRouteBuilder
@@ -82,7 +81,7 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.log("SFTP file received: ${header.CamelFileName}")
 				.convertBodyTo(String.class)
-				.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, body())
+				.process(this::captureOriginalPayloadAsUtf8Bytes)
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo))
 				.choice()
 					.when(body().isNull())

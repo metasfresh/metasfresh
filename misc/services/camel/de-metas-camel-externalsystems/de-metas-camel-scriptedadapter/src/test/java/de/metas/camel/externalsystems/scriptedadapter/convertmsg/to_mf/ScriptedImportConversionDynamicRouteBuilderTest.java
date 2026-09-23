@@ -239,4 +239,32 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 			assertThat(errorFiles.findAny()).isEmpty();
 		}
 	}
+
+	@Test
+	void successfulProcessing_archivesNonAsciiPayloadByteIdenticalAsUtf8() throws Exception
+	{
+		// regression guard: this route now carries the archived payload as explicit UTF-8 bytes
+		// (rather than an implicitly-converted String); a non-ASCII payload proves the archived
+		// file is byte-identical to the old Files.writeString(..., UTF_8) behaviour, not merely
+		// String-equal after a round-trip decode.
+		context.start();
+
+		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER)).thenReturn(MOCK_SCRIPT);
+
+		final String inputPayload = "{\"customer\":\"Müller & Söhne\",\"note\":\"日本語 café €\"}";
+
+		Mockito.when(javaScriptExecutorService.executeScript(MOCK_SCRIPT_IDENTIFIER, MOCK_SCRIPT, inputPayload))
+				.thenReturn("[]");
+
+		template.sendBody("direct:" + MOCK_ENDPOINT_NAME, inputPayload);
+
+		final List<Path> archivedFiles;
+		try (var files = java.nio.file.Files.list(localProcessedDir))
+		{
+			archivedFiles = files.toList();
+		}
+		assertThat(archivedFiles).hasSize(1);
+		assertThat(java.nio.file.Files.readAllBytes(archivedFiles.get(0)))
+				.isEqualTo(inputPayload.getBytes(StandardCharsets.UTF_8));
+	}
 }

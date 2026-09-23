@@ -42,6 +42,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,23 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	/** Derives the archive file name for {@code exchange} — the one difference between transports. */
 	protected abstract String archiveFileName(@NonNull Exchange exchange);
 
+	/**
+	 * Captures the current (already {@code convertBodyTo(String.class)}-ed) message body as the
+	 * {@link de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants#PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD}
+	 * exchange property, explicitly UTF-8-encoded to bytes — never relying on Camel's implicit
+	 * String→byte[] type conversion, whose default charset is not guaranteed. A {@code null} body
+	 * (e.g. nothing to process) leaves the property unset, matching the archiver's "nothing was
+	 * captured" contract in {@link #archiveLocally(Exchange, String)}.
+	 */
+	protected void captureOriginalPayloadAsUtf8Bytes(@NonNull final Exchange exchange)
+	{
+		final String bodyAsString = exchange.getIn().getBody(String.class);
+		if (bodyAsString != null)
+		{
+			exchange.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, bodyAsString.getBytes(StandardCharsets.UTF_8));
+		}
+	}
+
 	protected void archiveLocallyOnSuccess(@NonNull final Exchange exchange)
 	{
 		archiveLocally(exchange, processedDir);
@@ -90,7 +108,7 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 
 	private void archiveLocally(@NonNull final Exchange exchange, @NonNull final String directory)
 	{
-		final String payload = exchange.getProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, String.class);
+		final byte[] payload = exchange.getProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, byte[].class);
 		if (payload == null)
 		{
 			// nothing was ever read from the source (failure occurred before the body was captured)
