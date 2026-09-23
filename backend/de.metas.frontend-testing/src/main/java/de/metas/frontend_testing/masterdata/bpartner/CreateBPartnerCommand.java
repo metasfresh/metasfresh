@@ -399,12 +399,14 @@ public class CreateBPartnerCommand
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.EUR);
 
 		final PricingSetupHelper.PricingSetupResult setup = PricingSetupHelper.createPricingSystemAndPriceList(
-				orgId,
-				pricingSystemIdentifier.getAsString(),
-				currencyId,
-				countryId,
-				false, // isTaxIncluded
-				request.isSoPriceList());
+				PricingSetupHelper.PricingSetupRequest.builder()
+						.orgId(orgId)
+						.value(pricingSystemIdentifier.getAsString())
+						.currencyId(currencyId)
+						.countryId(countryId)
+						.isTaxIncluded(false)
+						.isSoPriceList(request.isSoPriceList())
+						.build());
 
 		context.putIdentifier(pricingSystemIdentifier, setup.getPricingSystemId());
 		context.putIdentifier(Identifier.unique("PLV"), setup.getPriceListVersionId());
