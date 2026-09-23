@@ -61,7 +61,8 @@ public class SalesOrderCreateCommand
 	private transient OrderFactory salesOrderFactory;
 	private final ArrayList<LineCreateRequestAndBuilder> lineCreateRequestAndBuilders = new ArrayList<>();
 
-	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(30);
+	/** Upper bound for both {@link #createSchedules()} and {@link #waitForShipmentSchedulesToBeValid()} — schedules are written by an async workpackage, measured past 40s on a cold stack. */
+	private static final Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(60);
 	private static final Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
 
 	public JsonSalesOrderCreateResponse execute()
@@ -188,9 +189,6 @@ public class SalesOrderCreateCommand
 	 * self-packed orders' schedules valid before the test scanned. The new launcher-based flow skips that,
 	 * so without this wait the schedules may still be flagged when {@code MassPrintingService} queries
 	 * {@code M_Packageable_V} and no packageable lines are found (boxesPacked=0).
-	 *
-	 * <p>Reuses the existing {@link #JOB_SCHEDULE_CREATE_TIMEOUT} / {@link #JOB_SCHEDULE_CREATE_SLEEP_BETWEEN}
-	 * constants and {@link #sleep(Duration)} helper to keep the polling budget consistent.
 	 */
 	private void waitForShipmentSchedulesToBeValid()
 	{

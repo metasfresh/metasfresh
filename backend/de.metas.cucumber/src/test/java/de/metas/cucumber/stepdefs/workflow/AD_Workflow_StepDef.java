@@ -25,7 +25,10 @@ package de.metas.cucumber.stepdefs.workflow;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -40,11 +43,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.PO;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -102,6 +107,17 @@ public class AD_Workflow_StepDef
 	 * #deactivateCreatedWorkflows()} alongside the cloned workflows themselves.
 	 */
 	private final Set<WFNodeId> createdViaCloneNodeIds = new HashSet<>();
+
+	/**
+	 * Every {@code AD_Workflow.AD_User_InCharge_ID} this scenario overwrote via
+	 * {@link #update_AD_Workflow_user_in_charge(DataTable)}, keyed by {@code AD_Workflow_ID} and mapped to the
+	 * value from BEFORE the overwrite ({@code 0} standing for "was unset") -- restored by
+	 * {@link #restoreUserInChargeAfterScenario()}. Unlike {@link #createdWorkflowIds} (rows this scenario
+	 * itself INSERTED, which are deactivated afterwards), a workflow named here is a pre-existing SHARED row
+	 * -- e.g. the default manufacturing routing every order in this feature completes against -- that other
+	 * scenarios and executors also read, so its prior value must be put BACK, never merely deactivated.
+	 */
+	private final Map<Integer, Integer> priorUserInChargeIdByWorkflowId = new LinkedHashMap<>();
 
 	public AD_Workflow_StepDef(
 			@NonNull final AD_Workflow_StepDefData workflowTable,
@@ -192,6 +208,82 @@ public class AD_Workflow_StepDef
 			}
 			InterfaceWrapperHelper.saveRecord(workflowRecord);
 		}
+	}
+
+	/**
+	 * Overwrites an existing {@code AD_Workflow}'s (manufacturing routing's) {@code AD_User_InCharge_ID} --
+	 * the same field edit a customer makes in the window to configure who a routing's print job goes to.
+	 * Omitting {@code AD_User_InCharge_ID} (or leaving it blank) clears the routing to NO user in charge,
+	 * which is exactly the unconfigured state that silently cancels the print job with no error anywhere
+	 * (see {@code OrderCheckupPrintingQueueHandler}).
+	 * <p>
+	 * Targets the routing by its raw {@code AD_Workflow_ID} rather than through {@link #workflowTable} --
+	 * this step exists specifically to mutate a SHARED, pre-existing routing (e.g. the default manufacturing
+	 * routing every order in this feature completes against), not one this scenario itself registered. The
+	 * prior value is captured before the overwrite and restored by
+	 * {@link #restoreUserInChargeAfterScenario()} -- see {@link #priorUserInChargeIdByWorkflowId}'s own
+	 * Javadoc for why.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_Workflow_ID</b> — (required) the existing routing to update, by raw id<br>
+	 *   <b>AD_User_InCharge_ID</b> — (optional, identifier-ref) the user to put in charge; omitted/blank
+	 *       clears the routing to no user in charge<br>
+	 * @cucumber.depends StepDefData: AD_User_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update AD_Workflow user in charge:
+	 *   | AD_Workflow_ID | AD_User_InCharge_ID |
+	 *   | 540075         | routingUser         |
+	 * </pre>
+	 */
+	@And("update AD_Workflow user in charge:")
+	public void update_AD_Workflow_user_in_charge(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::updateUserInCharge);
+	}
+
+	private void updateUserInCharge(@NonNull final DataTableRow row)
+	{
+		final int workflowId = row.getAsInt(COLUMNNAME_AD_Workflow_ID);
+		final int userId = row.getAsOptionalIdentifier(COLUMNNAME_AD_User_InCharge_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(identifier -> identifier.lookupNotNullIn(userTable))
+				.map(I_AD_User::getAD_User_ID)
+				.orElse(0);
+
+		final I_AD_Workflow workflowRecord = load(workflowId, I_AD_Workflow.class);
+
+		// captured once per workflow per scenario: a second overwrite in the same scenario must not clobber
+		// the ALREADY-captured original with this scenario's own first write (mirrors C_Doc_Outbound_Config_StepDef)
+		priorUserInChargeIdByWorkflowId.putIfAbsent(workflowId, workflowRecord.getAD_User_InCharge_ID());
+
+		workflowRecord.setAD_User_InCharge_ID(userId);
+		InterfaceWrapperHelper.saveRecord(workflowRecord);
+	}
+
+	/**
+	 * Guaranteed-execution restore for {@link #update_AD_Workflow_user_in_charge(DataTable)} -- an
+	 * {@code @After} hook rather than a trailing Gherkin step, since Cucumber skips remaining steps once one
+	 * fails, i.e. on exactly the runs that need the restore (mirrors {@code C_Doc_Outbound_Config_StepDef}
+	 * and {@code AD_PrinterRouting_StepDef}). A no-op for every scenario that never called that step.
+	 */
+	@After
+	public void restoreUserInChargeAfterScenario()
+	{
+		if (priorUserInChargeIdByWorkflowId.isEmpty())
+		{
+			return;
+		}
+
+		for (final Map.Entry<Integer, Integer> entry : priorUserInChargeIdByWorkflowId.entrySet())
+		{
+			final I_AD_Workflow workflowRecord = load(entry.getKey(), I_AD_Workflow.class);
+			workflowRecord.setAD_User_InCharge_ID(entry.getValue());
+			InterfaceWrapperHelper.saveRecord(workflowRecord);
+		}
+
+		priorUserInChargeIdByWorkflowId.clear();
 	}
 
 	private void createWorkflow(@NonNull final Map<String, String> row)

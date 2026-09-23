@@ -61,6 +61,8 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	CostRevaluation(X_C_DocType.DOCBASETYPE_CostRevaluation),
 	AnalysisReport(X_C_DocType.DOCBASETYPE_AnalysisReport),
 	TaxDeclaration(X_C_DocType.DOCBASETYPE_TaxDeclaration),
+	OrderCheckupProduction(X_C_DocType.DOCBASETYPE_OrderCheckupProduction),
+	OrderCheckupOffice(X_C_DocType.DOCBASETYPE_OrderCheckupOffice),
 	;
 
 	public static final int AD_REFERENCE_ID = X_C_DocType.DOCBASETYPE_AD_Reference_ID;

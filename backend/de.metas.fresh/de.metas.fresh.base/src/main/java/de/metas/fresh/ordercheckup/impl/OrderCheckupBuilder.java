@@ -27,11 +27,16 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
@@ -39,6 +44,7 @@ import de.metas.fresh.ordercheckup.OrderCheckupDocumentType;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -53,6 +59,8 @@ public class OrderCheckupBuilder
 	{
 		return new OrderCheckupBuilder();
 	}
+
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private boolean _built = false;
 	private OrderCheckupDocumentType _documentType = null;
@@ -90,6 +98,7 @@ public class OrderCheckupBuilder
 		final I_C_Order_MFGWarehouse_Report report = InterfaceWrapperHelper.newInstance(I_C_Order_MFGWarehouse_Report.class, order);
 		report.setAD_Org_ID(order.getAD_Org_ID());
 		report.setDocumentType(getDocumentType().getCode());
+		report.setC_DocType_ID(getDocTypeId().getRepoId());
 		report.setC_Order(order);
 		report.setC_BPartner_ID(order.getC_BPartner_ID());
 		report.setM_Warehouse_ID(WarehouseId.toRepoId(getWarehouseId()));
@@ -202,5 +211,44 @@ public class OrderCheckupBuilder
 	private OrderCheckupDocumentType getDocumentType()
 	{
 		return Check.assumeNotNull(_documentType, "documentType not null");
+	}
+
+	/**
+	 * Resolves the {@code C_DocType} for this report's kind, by the {@link DocBaseType} the kind maps to.
+	 * The single place that decides the kind-&gt;doctype mapping, so the two {@code OrderCheckupBL} call
+	 * sites that choose a kind cannot end up disagreeing on which document type it gets.
+	 * <p>
+	 * Throws unconditionally when no document type is found, rather than leaving {@code C_DocType_ID}
+	 * unset: an unset document type makes the archiver fall back to the generic outbound configuration
+	 * and the catch-all printer routing, so both kinds would silently print the same report and the
+	 * Packzettel would never reach its printer - with no error anywhere. That silent fallback must not be
+	 * reintroduced as a tolerated state.
+	 * Unlike the missing-plant guard in {@code OrderCheckupBL}, this one is deliberately NOT sysconfig-
+	 * gated: a missing plant is per-instance master data the customer maintains, whereas both document
+	 * types ship together in one migration, so their absence means that migration has not been applied.
+	 */
+	private DocTypeId getDocTypeId()
+	{
+		final I_C_Order order = getC_Order();
+
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(getDocBaseType(getDocumentType()))
+				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE)
+				.adClientId(order.getAD_Client_ID())
+				.adOrgId(order.getAD_Org_ID())
+				.build());
+	}
+
+	private static DocBaseType getDocBaseType(@NonNull final OrderCheckupDocumentType documentType)
+	{
+		switch (documentType)
+		{
+			case Warehouse:
+				return DocBaseType.OrderCheckupProduction;
+			case Plant:
+				return DocBaseType.OrderCheckupOffice;
+			default:
+				throw new AdempiereException("Unexpected OrderCheckupDocumentType: " + documentType);
+		}
 	}
 }
