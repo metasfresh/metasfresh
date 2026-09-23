@@ -29,6 +29,11 @@ const GEOMETRY_COLUMN = 'QtyEntered';
 // is the reported row-height/column-width jump, not noise.
 const TOLERANCE_PX = 1;
 
+// The button-shaped Attribute widget (ProductAttributes / Address) renders a <button>, not an
+// <input>, inside `.attributes-in-table` — a different DOM shape from the Number/Lookup cells
+// above, so it gets its own geometry leg rather than being folded into GEOMETRY_COLUMN.
+const ATTRIBUTE_COLUMN = 'M_AttributeSetInstance_ID';
+
 const testCases = [
   { language: 'de_DE', label: 'German' },
   { language: 'en_US', label: 'English' },
@@ -155,6 +160,135 @@ width must be unchanged (within ${TOLERANCE_PX}px of sub-pixel rounding).
         expect(
           Math.abs(cellRectAfter.width - cellRectBefore.width),
           `cell width must not change on cell activation (before=${cellRectBefore.width}, after=${cellRectAfter.width})`
+        ).toBeLessThanOrEqual(TOLERANCE_PX);
+      });
+    });
+  });
+});
+
+/**
+ * Geometry regression, button-shaped widget: the Attribute column (`M_AttributeSetInstance_ID`,
+ * widget type `ProductAttributes`) renders a `<button>` inside `.attributes-in-table` on
+ * activation, not an `<input>` — a different DOM shape from `GEOMETRY_COLUMN` above. The
+ * `.table-cell .form-group-table:not(.widgetType-LongText)` height cap in `table.scss` applies
+ * here too (the widget class is `widgetType-ProductAttributes`, not `widgetType-LongText`), so
+ * this asserts the same row/cell stability AND that the button itself is not clipped or pushed
+ * past the row's bottom edge by that cap.
+ */
+testCases.forEach(({ language, label }) => {
+  test.describe(`Sales order-line grid — no layout jump on Attribute cell activation (${label})`, () => {
+    test(`Activating the Attribute (ProductAttributes) cell does not change row/cell geometry or bleed the button into the next row (${label})`, async ({
+      page,
+    }) => {
+      allure.epic('E0500: Sales Orders');
+      allure.tag('F5010: Order Lines Grid');
+      allure.tag('F5010');
+      allure.story('Order-line grid — no layout jump on Attribute cell activation');
+      allure.severity('critical');
+      allure.description(`
+## No layout jump / row bleed on Attribute (button-shaped) cell activation
+
+Capture the row's and the \`${ATTRIBUTE_COLUMN}\` cell's \`getBoundingClientRect()\` while the grid
+line renders static, activate the cell (enter edit mode, rendering the ProductAttributes
+\`<button>\`), then re-capture. Row height AND column width must be unchanged (within
+${TOLERANCE_PX}px of sub-pixel rounding), and the activated button's own box must not extend past
+the row's bottom edge (no visual bleed into the row below).
+      `);
+
+      test.setTimeout(180000);
+
+      const masterdata = await createMasterdata(language);
+      allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await DashboardPage.expectVisible();
+
+      await gotoOrderList();
+
+      const recordId = await createNewOrder();
+      await selectOrderCustomer(recordId, masterdata.bpartners.CUSTOMER1.bpartnerCode);
+      await addOrderLine(recordId, { productCode: masterdata.products.Product1.productCode, quantity: 1 });
+
+      const cell = page.locator(`[data-cy="cell-${ATTRIBUTE_COLUMN}"]`).first();
+      await cell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const row = cell.locator('xpath=ancestor::tr[1]');
+
+      const { rowRectBefore, cellRectBefore } = await test.step(
+        'Capture static row + cell geometry',
+        async () => {
+          const rowRectBefore = await row.boundingBox();
+          const cellRectBefore = await cell.boundingBox();
+          expect(rowRectBefore, 'row must be measurable before activation').not.toBeNull();
+          expect(cellRectBefore, 'cell must be measurable before activation').not.toBeNull();
+          return { rowRectBefore, cellRectBefore };
+        }
+      );
+
+      const { rowRectAfter, cellRectAfter, buttonRect } = await test.step(
+        'Activate the cell (render the ProductAttributes button) and re-capture geometry',
+        async () => {
+          await cell.dblclick();
+
+          const button = cell.locator('.attributes-in-table button');
+          await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+          const rowRectAfter = await row.boundingBox();
+          const cellRectAfter = await cell.boundingBox();
+          const buttonRect = await button.boundingBox();
+          expect(rowRectAfter, 'row must be measurable after activation').not.toBeNull();
+          expect(cellRectAfter, 'cell must be measurable after activation').not.toBeNull();
+          expect(buttonRect, 'attribute button must be measurable after activation').not.toBeNull();
+
+          return { rowRectAfter, cellRectAfter, buttonRect };
+        }
+      );
+
+      await page.keyboard.press('Escape');
+
+      allure.attachment(
+        'Geometry (before/after activation)',
+        JSON.stringify({ rowRectBefore, rowRectAfter, cellRectBefore, cellRectAfter, buttonRect }, null, 2),
+        'application/json'
+      );
+      console.log(
+        `[GEOMETRY-ATTR:${label}] row height ${rowRectBefore.height}->${rowRectAfter.height}, ` +
+          `row width ${rowRectBefore.width}->${rowRectAfter.width}, ` +
+          `cell height ${cellRectBefore.height}->${cellRectAfter.height}, ` +
+          `cell width ${cellRectBefore.width}->${cellRectAfter.width}, ` +
+          `button height ${buttonRect.height}, button bottom ${buttonRect.y + buttonRect.height} vs row bottom ${
+            rowRectAfter.y + rowRectAfter.height
+          }`
+      );
+
+      await test.step('Row height + width unchanged on cell activation', async () => {
+        expect(
+          Math.abs(rowRectAfter.height - rowRectBefore.height),
+          `row height must not change on cell activation (before=${rowRectBefore.height}, after=${rowRectAfter.height})`
+        ).toBeLessThanOrEqual(TOLERANCE_PX);
+        expect(
+          Math.abs(rowRectAfter.width - rowRectBefore.width),
+          `row width must not change on cell activation (before=${rowRectBefore.width}, after=${rowRectAfter.width})`
+        ).toBeLessThanOrEqual(TOLERANCE_PX);
+      });
+
+      await test.step('Cell height + width unchanged on cell activation', async () => {
+        expect(
+          Math.abs(cellRectAfter.height - cellRectBefore.height),
+          `cell height must not change on cell activation (before=${cellRectBefore.height}, after=${cellRectAfter.height})`
+        ).toBeLessThanOrEqual(TOLERANCE_PX);
+        expect(
+          Math.abs(cellRectAfter.width - cellRectBefore.width),
+          `cell width must not change on cell activation (before=${cellRectBefore.width}, after=${cellRectAfter.width})`
+        ).toBeLessThanOrEqual(TOLERANCE_PX);
+      });
+
+      await test.step('Attribute button is not clipped or bled past the row bottom edge', async () => {
+        const rowBottom = rowRectAfter.y + rowRectAfter.height;
+        const buttonBottom = buttonRect.y + buttonRect.height;
+        expect(
+          buttonBottom - rowBottom,
+          `attribute button (bottom=${buttonBottom}) must not extend past the row's bottom edge (bottom=${rowBottom}) — a positive value here is row-bleed`
         ).toBeLessThanOrEqual(TOLERANCE_PX);
       });
     });
