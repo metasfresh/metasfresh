@@ -113,7 +113,7 @@ public class POSReturnService
 
 		// one query per line (not batched): the return's line count is small (single digits), and this reuses
 		// invoiceCandDAO's own canonical, full-semantics lookup (direct match, C_OrderLine_ID, IC-IOL association)
-		// rather than re-deriving a narrower query — see task report for the deliberate trade-off
+		// rather than re-deriving a narrower query
 		final ImmutableList.Builder<I_C_Invoice_Candidate> pricedCandidates = ImmutableList.builder();
 		for (int i = 0; i < request.getLines().size(); i++)
 		{
