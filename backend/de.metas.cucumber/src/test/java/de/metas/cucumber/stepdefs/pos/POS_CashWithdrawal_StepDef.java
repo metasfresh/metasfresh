@@ -33,6 +33,8 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.charge.C_ChargeType_StepDefData;
 import de.metas.cucumber.stepdefs.charge.C_Charge_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
@@ -127,11 +129,13 @@ public class POS_CashWithdrawal_StepDef
 			@NonNull final UserId cashierId,
 			@NonNull final DataTableRow row)
 	{
+		final CurrencyId terminalCurrencyId = posService.getPOSTerminalById(posTerminalId).getCurrencyId();
+
 		final POSCashWithdrawalResult result = posService.withdrawCash(POSCashWithdrawalRequest.builder()
 				.posTerminalId(posTerminalId)
 				.cashierId(cashierId)
 				.chargeId(row.getAsIdentifier(I_C_Payment.COLUMNNAME_C_Charge_ID).lookupNotNullIdIn(chargeTable))
-				.amount(row.getAsBigDecimal("Amount"))
+				.amount(Money.of(row.getAsBigDecimal("Amount"), terminalCurrencyId))
 				.build());
 
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Payment_ID)
