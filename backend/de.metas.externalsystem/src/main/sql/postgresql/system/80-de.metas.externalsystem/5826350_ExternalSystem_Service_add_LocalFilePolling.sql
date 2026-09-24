@@ -1,9 +1,6 @@
 -- Register the local-file-polling service for ScriptedImportConversion.
--- Without this row nothing resolves the local-file enable/disable commands: ExternalServices
--- (getServiceByTypeAndCommand) finds no service for them, so no service instance is created and the
--- camel-side startup reconciler -- which matches a component by ExternalSystem_Service.Value -- has
--- nothing to reconcile. Mirrors the SFTP-polling record 540018 (script
--- 5814520_ExternalSystem_Service_add_SftpPolling.sql) and the REST record 540017.
+-- Mirrors the SFTP-polling record 540018 (script 5814520_ExternalSystem_Service_add_SftpPolling.sql)
+-- and the REST record 540017.
 --
 -- Value / EnableCommand / DisableCommand below are literal matches against
 --   ScriptedImportConversionLocalFileRouteBuilder.getServiceValue() / getEnableCommand() / getDisableCommand()
