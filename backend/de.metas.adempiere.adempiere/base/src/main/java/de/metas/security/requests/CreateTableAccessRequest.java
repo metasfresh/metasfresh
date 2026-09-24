@@ -46,15 +46,13 @@ public class CreateTableAccessRequest
 
 	@NonNull AdTableId adTableId;
 
-	// The four access flags mirror their AD_Table_Access column defaults (NOT NULL; verified against the
-	// live schema). A row left at these defaults is non-restricting — equivalent to no row; flip one to
-	// restrict that aspect. Mirroring the DB defaults here keeps them compiler-checked in the builder
-	// instead of a prose "see the AD_Column" comment.
-	@Builder.Default boolean readOnly = false;            // IsReadOnly            default 'N'
+	// Defaults mirror the (NOT NULL) AD_Table_Access column defaults, verified against the live schema —
+	// compiler-checked here rather than described in a "see the AD_Column" prose comment.
+	@Builder.Default boolean readOnly = false;
 
-	@Builder.Default boolean canReport = true;            // IsCanReport           default 'Y'
+	@Builder.Default boolean canReport = true;
 
-	@Builder.Default boolean canExport = true;            // IsCanExport           default 'Y'
+	@Builder.Default boolean canExport = true;
 
-	@Builder.Default boolean canCreateNewRecords = true;  // IsCanCreateNewRecords default 'Y'
+	@Builder.Default boolean canCreateNewRecords = true;
 }
