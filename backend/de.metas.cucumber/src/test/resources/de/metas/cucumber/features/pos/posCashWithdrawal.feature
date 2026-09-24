@@ -25,9 +25,9 @@ Feature: POS Cash Withdrawal
       | chargeType1 |
       | chargeType2 |
     And metasfresh contains C_Charge:
-      | Identifier | Name                     | C_ChargeType_ID.Identifier |
-      | charge1    | Cash Withdrawal Charge 1 | chargeType1                |
-      | charge2    | Cash Withdrawal Charge 2 | chargeType2                |
+      | Identifier | C_ChargeType_ID.Identifier |
+      | charge1    | chargeType1                |
+      | charge2    | chargeType2                |
     And C_Charge_Acct is set for:
       | C_Charge_ID.Identifier | Ch_Expense_Acct | Ch_Revenue_Acct |
       | charge1                | 600100          | 400100          |
