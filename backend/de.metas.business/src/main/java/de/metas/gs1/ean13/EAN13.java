@@ -57,7 +57,8 @@ public final class EAN13
 	 */
 	public boolean isFixed() {return prefix.isFixed();}
 
-	public boolean isVariable() {return prefix.isFixed();}
+	/** @return true if variable-weight / variable-measure code (prefix 28 or 29) */
+	public boolean isVariable() {return prefix.isVariable();}
 
 	/**
 	 * @return true if variable weight EAN13 (i.e. starts with prefix 28)

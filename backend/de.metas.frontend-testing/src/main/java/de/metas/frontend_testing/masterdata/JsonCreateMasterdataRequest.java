@@ -14,6 +14,7 @@ import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonProductCategoryRequest;
@@ -91,6 +92,14 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateAttributeRequest> attributes;
 
 	@Nullable Map<String, JsonCreateProductRequest> products;
+
+	/**
+	 * Creates a POS terminal ({@code C_POS}) for frontend/mobile testing. Applied AFTER {@code products}
+	 * (whose identifiers it may reference to price them into its own {@code M_PriceList_Version}) and
+	 * {@code bpartners} (whose identifiers it may reference as the walk-in customer). See
+	 * {@link de.metas.frontend_testing.masterdata.pos.CreatePOSTerminalCommand}.
+	 */
+	@Nullable Map<String, JsonPOSTerminalRequest> posTerminals;
 
 	/**
 	 * Updates {@code M_Product.ProductLifeCycleStatus} (BBS-Status) on already-created products:
