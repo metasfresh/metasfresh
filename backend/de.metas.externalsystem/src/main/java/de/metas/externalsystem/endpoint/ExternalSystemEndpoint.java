@@ -134,7 +134,9 @@ public class ExternalSystemEndpoint
 				.sasSignature(sasSignature)
 				.contentType(contentType != null ? contentType.toString() : null)
 				.sftpHost(sftpHost)
-				.sftpPort(sftpPort)
+				// boundary guard: JsonExternalSystemEndpoint.sftpPort is @JsonInclude(NON_NULL), so a 0 would go out
+				// as "sftpPort": 0 and the SFTP delivery would dial port 0 instead of falling back to the default 22.
+				.sftpPort(sftpPort != null && sftpPort > 0 ? sftpPort : null)
 				.sftpUsername(sftpUsername)
 				.sftpAuthType(sftpAuthType != null ? sftpAuthType.getCode() : null)
 				.sshPrivateKey(sshPrivateKey)

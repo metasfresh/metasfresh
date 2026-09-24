@@ -22,6 +22,8 @@
 
 package de.metas.externalsystem.endpoint;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
@@ -170,5 +172,32 @@ class ExternalSystemEndpointTest
 		assertThat(endpoint.getLocalRootLocation()).isEqualTo("/data/in");
 		assertThat(endpoint.getFrequency()).isEqualTo(5000);
 		assertThat(endpoint.getImportFileNamePattern()).isEqualTo("{filename}_{timestamp}");
+	}
+
+	/**
+	 * A zero port must never reach the wire: {@code JsonExternalSystemEndpoint.sftpPort} is
+	 * {@code @JsonInclude(NON_NULL)}, so a {@code 0} would be serialized as {@code "sftpPort": 0} and the
+	 * downstream SFTP delivery would dial port 0 instead of falling back to the default 22.
+	 */
+	@Test
+	void toJson_sftpPortZero_isNotSerialized() throws Exception
+	{
+		// given
+		final ExternalSystemEndpoint endpoint = ExternalSystemEndpoint.builder()
+				.id(ExternalSystemEndpointId.ofRepoId(4))
+				.value("SftpEndpointWithoutPort")
+				.transportType(TransportType.SFTP)
+				.sftpHost("sftp.example.com")
+				.sftpPort(0)
+				.build();
+
+		// when
+		final JsonExternalSystemEndpoint json = endpoint.toJson();
+
+		// then
+		assertThat(json.getSftpPort()).isNull();
+
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+		assertThat(objectMapper.writeValueAsString(json)).doesNotContain("sftpPort");
 	}
 }
