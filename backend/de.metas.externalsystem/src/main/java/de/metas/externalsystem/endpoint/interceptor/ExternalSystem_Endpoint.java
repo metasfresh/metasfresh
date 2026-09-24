@@ -288,12 +288,15 @@ public class ExternalSystem_Endpoint
 
 		boolean isVisible(@NonNull final Evaluatee configuration)
 		{
+			// Only TRUE means shown. A display logic that cannot be decided -- it would have to name a
+			// variable without a default, which ExternalSystem_EndpointTest.VisibilityRules rules out --
+			// counts as HIDDEN, because that is the answer the window gives it too:
+			// LogicExpressionEvaluator#evaluate collapses the undecided result to false, and the window's
+			// Document#updateFieldDisplayed falls back to LogicExpressionResult.FALSE. So a field this
+			// answers false for is a field the operator really cannot see, which is the whole premise of
+			// clearing it.
 			final Boolean visible = visibleIf.evaluate(configuration, OnVariableNotFound.ReturnNoResult);
-
-			// A display logic that cannot be decided -- it would have to name a variable without a default,
-			// which ExternalSystem_EndpointTest.VisibilityRules rules out -- must not cost the operator the
-			// values they entered, so an undecidable field counts as shown and is left alone.
-			return !Boolean.FALSE.equals(visible);
+			return Boolean.TRUE.equals(visible);
 		}
 
 		void clear(@NonNull final I_ExternalSystem_Endpoint endpoint)

@@ -22,14 +22,19 @@
 
 package de.metas.externalsystem.endpoint.interceptor;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.externalsystem.endpoint.interceptor.ExternalSystem_Endpoint.HideableColumn;
 import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.util.Services;
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.util.CtxName;
+import org.compiere.util.Evaluatees;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -675,8 +680,10 @@ public class ExternalSystem_EndpointTest
 		}
 
 		/**
-		 * Every variable falls back to a default, so no display logic can end up undecidable at save time —
-		 * which is the one case {@code HideableColumn#isVisible} answers by leaving the field alone.
+		 * Every variable falls back to a default, so no display logic can end up undecidable at save time.
+		 * That matters because an undecidable one is answered as NOT shown and the field is CLEARED -- see
+		 * {@link #anUndecidableDisplayLogicCountsAsHiddenJustAsTheWindowCountsIt()}. This test is what keeps
+		 * that case out of the table.
 		 */
 		@Test
 		void everyDisplayLogicVariableHasADefaultValue()
@@ -690,6 +697,32 @@ public class ExternalSystem_EndpointTest
 							.isNotNull();
 				}
 			}
+		}
+
+		/**
+		 * What {@code HideableColumn#isVisible} does with an expression it cannot decide -- one naming a
+		 * variable that has no value AND no default. It answers "not shown", so the field is cleared.
+		 * <p>
+		 * That is not a safety valve, it is the window's own answer: {@code LogicExpressionEvaluator#evaluate}
+		 * collapses the undecided result to {@code false}, and the window's {@code Document#updateFieldDisplayed}
+		 * falls back to {@code LogicExpressionResult.FALSE} as well. A field the interceptor clears here is
+		 * therefore a field the operator genuinely cannot see. The sibling test
+		 * {@link #everyDisplayLogicVariableHasADefaultValue()} keeps the case from arising at all.
+		 */
+		@Test
+		void anUndecidableDisplayLogicCountsAsHiddenJustAsTheWindowCountsIt()
+		{
+			final String displayLogicNamingAVariableWithoutADefault = "@NoSuchColumn@='X'";
+			final ILogicExpression undecidable = Services.get(IExpressionFactory.class)
+					.compile(displayLogicNamingAVariableWithoutADefault, ILogicExpression.class);
+
+			final HideableColumn column = new HideableColumn(
+					"SomeColumn",
+					displayLogicNamingAVariableWithoutADefault,
+					undecidable,
+					endpoint -> {});
+
+			assertThat(column.isVisible(Evaluatees.ofMap(ImmutableMap.of()))).isFalse();
 		}
 
 		@Test
