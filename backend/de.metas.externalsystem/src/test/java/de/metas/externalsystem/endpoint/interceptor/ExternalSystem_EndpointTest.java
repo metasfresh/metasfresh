@@ -249,7 +249,7 @@ public class ExternalSystem_EndpointTest
 	class TransportTypeChange
 	{
 		@Test
-		void switchToHttp_clearsSftpAndLocalFileFields_keepsTheFieldsBasicAuthShows()
+		void switchToHttp_resetsSftpAndLocalFileFields_keepsTheFieldsBasicAuthShows()
 		{
 			// given: an SFTP endpoint carrying its own SFTP settings plus stale local-file settings
 			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
@@ -265,7 +265,7 @@ public class ExternalSystem_EndpointTest
 			setAllHttpFields(endpoint);
 			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
-			// then: every SFTP-specific and LOCAL_FILE-specific field is cleared ...
+			// then: every SFTP-specific and LOCAL_FILE-specific field is back at its column default ...
 			assertAllSftpFieldsResetToTheirColumnDefaults(endpoint);
 			assertAllLocalFileFieldsResetToTheirColumnDefaults(endpoint);
 			// ... the HTTP fields Basic authentication shows survive ...
@@ -304,7 +304,7 @@ public class ExternalSystem_EndpointTest
 		}
 
 		@Test
-		void switchToSftp_clearsHttpOnlyAndLocalFileFields_keepsTheFieldsPasswordAuthShows()
+		void switchToSftp_resetsHttpOnlyAndLocalFileFields_keepsTheFieldsPasswordAuthShows()
 		{
 			// given: an HTTP endpoint carrying its own HTTP settings plus stale local-file settings
 			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
@@ -320,12 +320,12 @@ public class ExternalSystem_EndpointTest
 			setAllSftpFields(endpoint);
 			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
-			// then: every HTTP-only field is cleared ...
+			// then: every HTTP-only field is back at its column default ...
 			assertHttpOnlyFieldsResetToTheirColumnDefaults(endpoint);
 			// ... but the password survives: SFTP password authentication shows that very field, so the
 			// endpoint stays usable instead of ending up valid-looking and unable to log in ...
 			assertThat(endpoint.getPassword()).isEqualTo("secret");
-			// ... every LOCAL_FILE-specific field is cleared ...
+			// ... every LOCAL_FILE-specific field is back at its column default ...
 			assertAllLocalFileFieldsResetToTheirColumnDefaults(endpoint);
 			// ... the SFTP fields password authentication shows survive ...
 			assertPasswordAuthSftpFieldsPreserved(endpoint);
@@ -337,7 +337,7 @@ public class ExternalSystem_EndpointTest
 		}
 
 		@Test
-		void switchToLocalFile_clearsHttpAndSftpFields_keepsLocalFileFields()
+		void switchToLocalFile_resetsHttpAndSftpFields_keepsLocalFileFields()
 		{
 			// given: an endpoint carrying stale HTTP/OAuth and SFTP settings from prior transports
 			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
@@ -353,11 +353,11 @@ public class ExternalSystem_EndpointTest
 			setAllLocalFileFields(endpoint);
 			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
-			// then: every HTTP-specific field is cleared ...
+			// then: every HTTP-specific field is back at its column default ...
 			assertHttpOnlyFieldsResetToTheirColumnDefaults(endpoint);
 			// ... the password too: no LOCAL_FILE configuration shows it ...
 			assertThat(endpoint.getPassword()).isNull();
-			// ... every SFTP-specific field is cleared ...
+			// ... every SFTP-specific field is back at its column default ...
 			assertAllSftpFieldsResetToTheirColumnDefaults(endpoint);
 			// ... the just-entered LOCAL_FILE fields survive ...
 			assertAllLocalFileFieldsPreserved(endpoint);
@@ -478,7 +478,7 @@ public class ExternalSystem_EndpointTest
 	}
 
 	/**
-	 * One save that changes MORE THAN ONE of the columns the clearing logic keys on. The point is that each
+	 * One save that changes MORE THAN ONE of the columns the reset logic keys on. The point is that each
 	 * field's fate is decided from the state the record ends up in, not from whichever single column
 	 * happened to fire a handler.
 	 */
@@ -770,7 +770,7 @@ public class ExternalSystem_EndpointTest
 
 		/**
 		 * Every transport the enum knows is keyed on by at least one rule. A transport no rule mentions
-		 * satisfies no condition at all, so the FIRST save of such an endpoint clears every hideable column
+		 * satisfies no condition at all, so the FIRST save of such an endpoint resets every hideable column
 		 * -- and {@code ExternalSystem_Endpoint#assertTransportTypeIsAKnownCode} lets it through, because
 		 * the code is in the enum.
 		 */
@@ -783,7 +783,7 @@ public class ExternalSystem_EndpointTest
 						I_ExternalSystem_Endpoint.COLUMNNAME_TransportType, transportType.getCode()));
 
 				assertThat(hideableColumns())
-						.as("columns still shown under transport %s -- none means every one of them is cleared",
+						.as("columns still shown under transport %s -- none means every one of them is reset",
 								transportType.getCode())
 						.anyMatch(column -> column.isVisible(onlyTheTransportSet));
 			}

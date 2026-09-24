@@ -62,7 +62,7 @@ import java.util.function.Consumer;
  * handler has to apply it.
  * <p>
  * <b>Scope: only columns whose {@code AD_Field} is active.</b> A column no configuration renders is hidden
- * by none either, and clearing it would destroy a value that has no field left to restore it from.
+ * by none either, and resetting it would destroy a value that has no field left to restore it from.
  * {@code Type} is the case in point: its {@code AD_Field} and {@code AD_UI_Element} are both
  * {@code IsActive='N'}, and its {@code AD_Column.MandatoryLogic} is {@code @TransportType/X@='HTTP'} -- so
  * clearing it would leave every HTTP endpoint unsaveable. Retiring such a column means dropping the column,
