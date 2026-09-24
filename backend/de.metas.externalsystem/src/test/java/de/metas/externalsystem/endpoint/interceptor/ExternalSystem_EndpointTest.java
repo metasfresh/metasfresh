@@ -27,6 +27,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,6 +83,38 @@ public class ExternalSystem_EndpointTest
 		assertThat(endpoint.getOAuthScope()).isNull();
 		assertThat(endpoint.isFileUpload()).isFalse();
 		assertThat(endpoint.isArrayFanOut()).isFalse();
+	}
+
+	/**
+	 * Same as {@link #assertAllHttpFieldsCleared(I_ExternalSystem_Endpoint)}, for the switch-to-SFTP case
+	 * specifically, where two of the HTTP-set columns are NOT actually HTTP-only:
+	 * <ul>
+	 * <li>{@code IsArrayFanOut} is also read by the SFTP outbound dispatch, so SFTP owns it too and it must
+	 * survive the switch (must NOT be cleared) — this is the one behavioural difference from
+	 * {@link #assertAllHttpFieldsCleared(I_ExternalSystem_Endpoint)}.</li>
+	 * <li>{@code Password} is left un-asserted here on purpose: the production code still clears it on this
+	 * switch (pre-existing, unchanged by this method), but a fixture with {@code SftpAuthType=PASSWORD}
+	 * needs a password for SFTP password auth to work at all, so asserting the clear here would read as an
+	 * endorsement of a valid-looking-but-broken SFTP config. See the class-level Password gotcha in this
+	 * module's CLAUDE.md.</li>
+	 * </ul>
+	 */
+	private static void assertHttpFieldsClearedForSftpSwitch(final I_ExternalSystem_Endpoint endpoint)
+	{
+		assertThat(endpoint.getHttpEndPoint()).isNull();
+		assertThat(endpoint.getOutboundHttpMethod()).isNull();
+		assertThat(endpoint.getContentType()).isNull();
+		assertThat(endpoint.getAuthType()).isNull();
+		assertThat(endpoint.getAuthToken()).isNull();
+		assertThat(endpoint.getLoginUsername()).isNull();
+		assertThat(endpoint.getClientId()).isNull();
+		assertThat(endpoint.getClientSecret()).isNull();
+		assertThat(endpoint.getSasSignature()).isNull();
+		assertThat(endpoint.getOAuthTokenUrl()).isNull();
+		assertThat(endpoint.getOAuthScope()).isNull();
+		assertThat(endpoint.isFileUpload()).isFalse();
+		// SFTP owns IsArrayFanOut too (the outbound dispatch reads it regardless of transport) — must survive
+		assertThat(endpoint.isArrayFanOut()).isTrue();
 	}
 
 	private static void assertAllHttpFieldsPreserved(final I_ExternalSystem_Endpoint endpoint)
@@ -166,87 +199,94 @@ public class ExternalSystem_EndpointTest
 		assertThat(endpoint.getErrorDirectory()).isEqualTo("/error");
 	}
 
-	@Test
-	void resetTransportSpecificFields_switchToHttp_clearsSftpAndLocalFileFields_keepsHttpFields()
+	/**
+	 * The full HTTP / SFTP / LOCAL_FILE transport matrix for
+	 * {@link ExternalSystem_Endpoint#resetTransportSpecificFields(I_ExternalSystem_Endpoint)}.
+	 */
+	@Nested
+	class ResetTransportSpecificFields
 	{
-		// given: an SFTP endpoint carrying its own SFTP settings plus stale local-file settings
-		final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-		endpoint.setTransportType(TransportType.SFTP.getCode());
-		setAllSftpFields(endpoint);
-		setAllLocalFileFields(endpoint);
-		endpoint.setProcessedDirectory("/processed");
-		endpoint.setErrorDirectory("/error");
-		InterfaceWrapperHelper.saveRecord(endpoint);
+		@Test
+		void switchToHttp_clearsSftpAndLocalFileFields_keepsHttpFields()
+		{
+			// given: an SFTP endpoint carrying its own SFTP settings plus stale local-file settings
+			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+			endpoint.setTransportType(TransportType.SFTP.getCode());
+			setAllSftpFields(endpoint);
+			setAllLocalFileFields(endpoint);
+			endpoint.setProcessedDirectory("/processed");
+			endpoint.setErrorDirectory("/error");
+			InterfaceWrapperHelper.saveRecord(endpoint);
 
-		// when: switching the transport type to HTTP and filling in the new transport's own fields
-		endpoint.setTransportType(TransportType.HTTP.getCode());
-		setAllHttpFields(endpoint);
-		interceptor.resetTransportSpecificFields(endpoint);
+			// when: switching the transport type to HTTP and filling in the new transport's own fields
+			endpoint.setTransportType(TransportType.HTTP.getCode());
+			setAllHttpFields(endpoint);
+			interceptor.resetTransportSpecificFields(endpoint);
 
-		// then: every SFTP-specific and LOCAL_FILE-specific field is cleared ...
-		assertAllSftpFieldsCleared(endpoint);
-		assertAllLocalFileFieldsCleared(endpoint);
-		// ... the just-entered HTTP fields (including OAuth2 + file-upload + array-fan-out) survive ...
-		assertAllHttpFieldsPreserved(endpoint);
-		// ... and the transport-agnostic directories are untouched
-		assertDirectoriesPreserved(endpoint);
-	}
+			// then: every SFTP-specific and LOCAL_FILE-specific field is cleared ...
+			assertAllSftpFieldsCleared(endpoint);
+			assertAllLocalFileFieldsCleared(endpoint);
+			// ... the just-entered HTTP fields (including OAuth2 + file-upload + array-fan-out) survive ...
+			assertAllHttpFieldsPreserved(endpoint);
+			// ... and the transport-agnostic directories are untouched
+			assertDirectoriesPreserved(endpoint);
+		}
 
-	@Test
-	void resetTransportSpecificFields_switchToSftp_clearsHttpAndLocalFileFields_keepsSftpFields()
-	{
-		// given: an HTTP/OAuth endpoint carrying its own HTTP settings plus stale local-file settings
-		final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-		endpoint.setTransportType(TransportType.HTTP.getCode());
-		setAllHttpFields(endpoint);
-		setAllLocalFileFields(endpoint);
-		endpoint.setProcessedDirectory("/processed");
-		endpoint.setErrorDirectory("/error");
-		InterfaceWrapperHelper.saveRecord(endpoint);
+		@Test
+		void switchToSftp_clearsHttpOnlyAndLocalFileFields_keepsSftpFieldsAndSharedArrayFanOut()
+		{
+			// given: an HTTP/OAuth endpoint carrying its own HTTP settings plus stale local-file settings
+			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+			endpoint.setTransportType(TransportType.HTTP.getCode());
+			setAllHttpFields(endpoint);
+			setAllLocalFileFields(endpoint);
+			endpoint.setProcessedDirectory("/processed");
+			endpoint.setErrorDirectory("/error");
+			InterfaceWrapperHelper.saveRecord(endpoint);
 
-		// when: switching the transport type to SFTP and filling in the new transport's own fields
-		endpoint.setTransportType(TransportType.SFTP.getCode());
-		setAllSftpFields(endpoint);
-		interceptor.resetTransportSpecificFields(endpoint);
+			// when: switching the transport type to SFTP and filling in the new transport's own fields
+			endpoint.setTransportType(TransportType.SFTP.getCode());
+			setAllSftpFields(endpoint);
+			interceptor.resetTransportSpecificFields(endpoint);
 
-		// then: every HTTP-specific field is cleared -- including the four HTTP/OAuth columns
-		// (OAuthTokenUrl, OAuthScope, IsFileUpload, IsArrayFanOut) that a prior version of this
-		// interceptor left set on every transport switch ...
-		assertAllHttpFieldsCleared(endpoint);
-		// ... every LOCAL_FILE-specific field is cleared too ...
-		assertAllLocalFileFieldsCleared(endpoint);
-		// ... the just-entered SFTP fields survive ...
-		assertAllSftpFieldsPreserved(endpoint);
-		// ... and the transport-agnostic directories are untouched
-		assertDirectoriesPreserved(endpoint);
-	}
+			// then: every HTTP-only field is cleared, but IsArrayFanOut survives -- SFTP owns it too (see
+			// assertHttpFieldsClearedForSftpSwitch) ...
+			assertHttpFieldsClearedForSftpSwitch(endpoint);
+			// ... every LOCAL_FILE-specific field is cleared too ...
+			assertAllLocalFileFieldsCleared(endpoint);
+			// ... the just-entered SFTP fields survive ...
+			assertAllSftpFieldsPreserved(endpoint);
+			// ... and the transport-agnostic directories are untouched
+			assertDirectoriesPreserved(endpoint);
+		}
 
-	@Test
-	void resetTransportSpecificFields_switchToLocalFile_clearsHttpAndSftpFields_keepsLocalFileFields()
-	{
-		// given: an endpoint carrying stale HTTP/OAuth and SFTP settings from prior transports
-		final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-		endpoint.setTransportType(TransportType.HTTP.getCode());
-		setAllHttpFields(endpoint);
-		setAllSftpFields(endpoint);
-		endpoint.setProcessedDirectory("/processed");
-		endpoint.setErrorDirectory("/error");
-		InterfaceWrapperHelper.saveRecord(endpoint);
+		@Test
+		void switchToLocalFile_clearsHttpAndSftpFields_keepsLocalFileFields()
+		{
+			// given: an endpoint carrying stale HTTP/OAuth and SFTP settings from prior transports
+			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+			endpoint.setTransportType(TransportType.HTTP.getCode());
+			setAllHttpFields(endpoint);
+			setAllSftpFields(endpoint);
+			endpoint.setProcessedDirectory("/processed");
+			endpoint.setErrorDirectory("/error");
+			InterfaceWrapperHelper.saveRecord(endpoint);
 
-		// when: switching the transport type to LOCAL_FILE and filling in the new transport's own fields
-		endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
-		setAllLocalFileFields(endpoint);
-		interceptor.resetTransportSpecificFields(endpoint);
+			// when: switching the transport type to LOCAL_FILE and filling in the new transport's own fields
+			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
+			setAllLocalFileFields(endpoint);
+			interceptor.resetTransportSpecificFields(endpoint);
 
-		// then: every HTTP-specific field is cleared -- including the four HTTP/OAuth columns
-		// (OAuthTokenUrl, OAuthScope, IsFileUpload, IsArrayFanOut) that a prior version of this
-		// interceptor left set on every transport switch ...
-		assertAllHttpFieldsCleared(endpoint);
-		// ... every SFTP-specific field is cleared too ...
-		assertAllSftpFieldsCleared(endpoint);
-		// ... the just-entered LOCAL_FILE fields survive ...
-		assertAllLocalFileFieldsPreserved(endpoint);
-		// ... and the transport-agnostic directories are untouched
-		assertDirectoriesPreserved(endpoint);
+			// then: every HTTP-specific field is cleared -- including the four HTTP/OAuth columns
+			// (OAuthTokenUrl, OAuthScope, IsFileUpload, IsArrayFanOut) that a prior version of this
+			// interceptor left set on every transport switch ...
+			assertAllHttpFieldsCleared(endpoint);
+			// ... every SFTP-specific field is cleared too ...
+			assertAllSftpFieldsCleared(endpoint);
+			// ... the just-entered LOCAL_FILE fields survive ...
+			assertAllLocalFileFieldsPreserved(endpoint);
+			// ... and the transport-agnostic directories are untouched
+			assertDirectoriesPreserved(endpoint);
+		}
 	}
 }
