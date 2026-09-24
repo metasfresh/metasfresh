@@ -95,8 +95,9 @@ public class ExternalSystem_EndpointTest
 	 * <li>{@code Password} is left un-asserted here on purpose: the production code still clears it on this
 	 * switch (pre-existing, unchanged by this method), but a fixture with {@code SftpAuthType=PASSWORD}
 	 * needs a password for SFTP password auth to work at all, so asserting the clear here would read as an
-	 * endorsement of a valid-looking-but-broken SFTP config. See the class-level Password gotcha in this
-	 * module's CLAUDE.md.</li>
+	 * endorsement of a valid-looking-but-broken SFTP config. Switching a saved endpoint to SFTP therefore
+	 * leaves it permanently invalid until a password is re-entered; that is pre-existing behaviour and is
+	 * deliberately not changed here.</li>
 	 * </ul>
 	 */
 	private static void assertHttpFieldsClearedForSftpSwitch(final I_ExternalSystem_Endpoint endpoint)
