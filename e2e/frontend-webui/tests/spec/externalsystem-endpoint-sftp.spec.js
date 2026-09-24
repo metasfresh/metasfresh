@@ -20,14 +20,22 @@ import * as fs from 'node:fs';
  * 3. Create and save a full SFTP endpoint configuration
  * 4. AuthType=OAuth2 -> OAuth2 token URL + scope + credential fields visible
  * 5. Create and save a full OAuth2 HTTP endpoint configuration
- * 6. TransportType=LOCAL_FILE -> root location, frequency and filename pattern visible; hidden for HTTP/SFTP
- * 7. LOCAL_FILE root location is mandatory -> the endpoint stays invalid/unsaved until it is filled
- * 8. Switching transport away and back (LOCAL_FILE <-> SFTP) leaves no foreign transport values behind
- * 9. Switching HTTP + Basic -> SFTP + PASSWORD keeps the password, because both configurations show it
- * 10. The LOCAL_FILE field labels render in German and in English
+ * 6. AuthType=OAuth (v1) -> the Password field is shown, and the endpoint saves without one
+ * 7. TransportType=LOCAL_FILE -> root location, frequency and filename pattern visible; hidden for HTTP/SFTP
+ * 8. LOCAL_FILE root location is mandatory -> the endpoint stays invalid/unsaved until it is filled
+ * 9. Switching transport away and back (LOCAL_FILE <-> SFTP) leaves no foreign transport values behind
+ * 10. Switching HTTP + Basic -> SFTP + PASSWORD keeps the password, because both configurations show it
+ * 11. The LOCAL_FILE field labels render in German and in English
  */
 
 const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
+
+/**
+ * The AuthType AD_Ref_List value for OAuth version 1 — spelled out because "OAuth" and "OAuth2" sit
+ * in the same list and the list renders OAuth2 first, so anything that matches loosely lands on
+ * OAuth2 and silently runs the scenario on the other configuration.
+ */
+const OAUTH_V1 = 'OAuth';
 
 /**
  * The save-status bar the WebUI renders under the header (`Indicator`): the element carries
@@ -561,6 +569,59 @@ OAuthTokenUrl is accepted and the record persists).
     // Saved OAuth2 values persist
     await expect(page.locator('.form-field-OAuthTokenUrl input[type="text"]')).toHaveValue('https://dw.example.com/DocuWare/Platform/Identity/connect/token');
     await expect(page.locator('.form-field-OAuthScope input[type="text"]')).toHaveValue('docuware.platform');
+  });
+
+  test('AuthType=OAuth shows the password, and does not demand one', async ({ page }) => {
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
+    allure.story('AuthType OAuth display logic');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — AuthType=OAuth (v1) shows the Password field
+
+The route that prepares an OAuth request builds its token request from client id, client secret,
+username AND password, so an HTTP + OAuth endpoint needs somewhere to put a password. The window
+shows the field for that combination — and only shows it: Password's MandatoryLogic covers
+HTTP + Basic, SFTP + PASSWORD and HTTP + OAuth2, not HTTP + OAuth, because the token request omits
+a blank credential rather than failing.
+
+1. New record, TransportType=HTTP, AuthType=OAuth -> the Password field is on screen
+2. Fill only what HTTP demands, no password -> the endpoint is valid and saved
+3. Type a password -> it reaches the record, so the field is not merely decorative
+    `);
+
+    test.setTimeout(180000);
+
+    await openNewEndpoint(page);
+
+    await selectListValue(page, 'TransportType', 'HTTP');
+    // OAuth v1, NOT OAuth2 — see OAUTH_V1.
+    await selectListValue(page, 'AuthType', OAUTH_V1);
+    // Mandatory under HTTP and without a default — the record can never persist unless they are set.
+    await selectListValue(page, 'OutboundHttpMethod', 'POST');
+    await fillTextField(page, 'HttpEndPoint', 'https://example.com/api/packzettel');
+
+    // The field the token request needs is on screen for this configuration ...
+    await expect(page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]'))
+      .toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+
+    const oauthV1RecordId = await savedRecordId(page);
+
+    // ... and nobody typed a password, yet the endpoint is complete: shown, not mandatory.
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, oauthV1RecordId, 'after configuring an HTTP + OAuth endpoint with no password');
+
+    const oauthV1Record = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), oauthV1RecordId);
+    expect(oauthV1Record.fieldsByName.AuthType.value.key, 'the scenario must be running on OAuth v1, not OAuth2').toBe('OAuth');
+    expect(emptyish(oauthV1Record.fieldsByName.Password.value), 'no password was typed, so the record must carry none').toBe(true);
+
+    await saveStill(page, 'endpoint-window-HTTP-OAuth-password-shown.png');
+
+    // A password typed into that field does reach the record — the field is editable, not just drawn.
+    await fillPasswordField(page, 'oauth-secret');
+    const withPassword = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), oauthV1RecordId);
+    expect(withPassword.fieldsByName.Password.value, 'the password an OAuth endpoint types must be stored').toBe('oauth-secret');
   });
 
   test('TransportType=LOCAL_FILE reveals root location, frequency and filename pattern; HTTP and SFTP hide them', async ({ page }) => {
