@@ -5,8 +5,8 @@
 -- What this does NOT cover is the 0 a transport switch leaves behind. Switching an endpoint away from
 -- LOCAL_FILE clears Frequency to 0 rather than to NULL -- 0 is the only "empty" an integer column can be
 -- set to on that path -- and mandatory validation rejects only an UNSET value, so 0 passes it and the
--- record stays valid. That round trip is closed on the application side instead, by re-defaulting the
--- frequency whenever an endpoint switches back to the local-file transport.
+-- record stays valid. Switching back to LOCAL_FILE leaves Frequency at that 0; the operator re-enters it,
+-- same as for every other transport-specific field the switch cleared.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-24:
 --   AD_MigrationScript 5826120 (this script)

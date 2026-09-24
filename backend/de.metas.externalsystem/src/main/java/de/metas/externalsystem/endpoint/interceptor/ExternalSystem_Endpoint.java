@@ -114,13 +114,6 @@ public class ExternalSystem_Endpoint
 			// clear it
 			I_ExternalSystem_Endpoint.COLUMNNAME_IsArrayFanOut);
 
-	/**
-	 * Polling frequency a LOCAL_FILE endpoint falls back to when it arrives at that transport without a
-	 * usable one. Mirrors the column's DefaultValue, which only fires when a record is CREATED — a record
-	 * that reaches LOCAL_FILE by a transport switch never passes through it.
-	 */
-	private static final int DEFAULT_LOCAL_FILE_FREQUENCY_MS = 60_000;
-
 	private static final ImmutableSet<String> LOCAL_FILE_OWNED_COLUMN_NAMES = ImmutableSet.of(
 			I_ExternalSystem_Endpoint.COLUMNNAME_LocalRootLocation,
 			I_ExternalSystem_Endpoint.COLUMNNAME_Frequency,
@@ -189,17 +182,6 @@ public class ExternalSystem_Endpoint
 				clearAction.accept(endpoint);
 			}
 		});
-
-		// An endpoint that LEFT the local-file transport had its Frequency cleared to 0 by the loop above --
-		// 0 being the only "empty" the column's int setter can express, and the constant's javadoc above
-		// explains why the column's DefaultValue can't re-apply here. A frequency <= 0 is read back as no
-		// frequency at all (ExternalSystemEndpointRepository normalises it to null), so the endpoint could
-		// never be made pollable. Re-default it so the round trip ends on a working, visible configuration
-		// the operator can still override.
-		if (TransportType.LOCAL_FILE.getCode().equals(newTransportType) && endpoint.getFrequency() <= 0)
-		{
-			endpoint.setFrequency(DEFAULT_LOCAL_FILE_FREQUENCY_MS);
-		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType)

@@ -289,35 +289,5 @@ public class ExternalSystem_EndpointTest
 			// ... and the transport-agnostic directories are untouched
 			assertDirectoriesPreserved(endpoint);
 		}
-
-		/**
-		 * Round trip LOCAL_FILE -&gt; another transport -&gt; LOCAL_FILE. Switching away clears Frequency to 0 —
-		 * the only "empty" its {@code int} setter can express — and the column's DefaultValue never re-fires
-		 * on an existing row, so without a re-default the endpoint comes back with a frequency that reads
-		 * back as no frequency at all, leaving it unable to poll.
-		 */
-		@Test
-		void switchBackToLocalFile_afterFrequencyWasClearedBySwitchingAway_restoresTheDefaultFrequency()
-		{
-			// given: a working LOCAL_FILE endpoint
-			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
-			setAllLocalFileFields(endpoint);
-			InterfaceWrapperHelper.saveRecord(endpoint);
-
-			// ... that is switched away to SFTP, which clears its local-file settings
-			endpoint.setTransportType(TransportType.SFTP.getCode());
-			setAllSftpFields(endpoint);
-			interceptor.resetTransportSpecificFields(endpoint);
-			assertThat(endpoint.getFrequency()).isZero();
-
-			// when: switching back to LOCAL_FILE, re-entering only the root location
-			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
-			endpoint.setLocalRootLocation("/data/in2");
-			interceptor.resetTransportSpecificFields(endpoint);
-
-			// then: the endpoint is polling-ready again without the operator having to re-enter a frequency
-			assertThat(endpoint.getFrequency()).isEqualTo(60_000);
-		}
 	}
 }
