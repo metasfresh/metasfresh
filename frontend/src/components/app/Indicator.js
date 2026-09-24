@@ -8,9 +8,9 @@ import * as IndicatorState from '../../constants/IndicatorState';
  * line beneath the Header.
  *
  * The bar's colour comes from `indicator`, which reads error for as long as a persisted document is
- * invalid. `rawIndicator` is the underlying save state, which tracks one save from pending to saved
- * regardless of that validity; it is published as `data-save-state` so automation can wait for a
- * save to land instead of for a colour.
+ * invalid. `rawIndicator` is the stored save state before that fold, published as `data-save-state`
+ * so automation can wait on a save rather than on a colour. It is one slot per scope, written by
+ * view fetches as well as by field PATCHes — not a per-request flag.
  * @module Indicator
  */
 const Indicator = ({

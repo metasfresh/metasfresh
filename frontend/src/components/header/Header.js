@@ -1071,9 +1071,10 @@ const mapStateToProps = (state, ownProps) => {
     docSummaryData: getDocSummaryDataFromState(state),
     isShowComments: isShowCommentsMarker(state),
     indicator,
-    // The stored save state, before computeSaveStatusFlags folds the document's validity into it.
-    // It is what tracks one PATCH from pending to saved; `indicator` reads error for as long as a
-    // persisted document is invalid, whether or not a save is in flight.
+    // The stored save state, before computeSaveStatusFlags folds the document's validity into it
+    // (`indicator` reads error for as long as a persisted document is invalid, whether or not a
+    // save is in flight). One slot per scope, written by view fetches as well as by field
+    // PATCHes — not a per-request flag.
     rawIndicator: master.indicator,
     saveStatus,
     selected,

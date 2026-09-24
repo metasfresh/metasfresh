@@ -37,10 +37,14 @@ const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
 const OAUTH_V1 = 'OAuth';
 
 /**
- * The WebUI's save state, as the store holds it. It returns to `saved` only once the PATCH response
- * has been merged into the form, so it is the DOM proof of that merge — on an invalid record as much
- * as on a valid one, unlike the save bar's colour, which reads `error` throughout while a persisted
- * record is invalid.
+ * The WebUI's stored save state — `pending` from just before a field's PATCH goes out until just
+ * after its response is merged — unaffected by the document's validity, unlike the save bar's
+ * colour, which reads `error` throughout while a persisted record is invalid.
+ *
+ * It is one slot, not one per request: a view fetch (DocumentListContainer.getData) drives it too,
+ * and the draft-creating PATCH .../NEW never sets it at all. That is harmless only because this
+ * spec opens the window directly on /NEW, never through a grid, and awaits that response
+ * separately — a spec that reaches the window through its view must not reuse this wait.
  */
 const SAVE_SETTLED = '.window-indicator-container[data-save-state="saved"]';
 
@@ -64,7 +68,8 @@ function endpointFieldPatch(page, fieldName) {
 
 /**
  * Run `commit` — the action that makes the WebUI send `fieldName`'s value — and return once the
- * server has answered and, per {@link SAVE_SETTLED}, the answer has been merged into the form.
+ * server has answered and the answer has been merged into the form: the response is awaited first,
+ * and the field PATCH returns {@link SAVE_SETTLED}'s state to `saved` only after merging it.
  * A value typed while the previous response is still in flight is re-rendered away before React sees
  * it and is then never patched at all, so no field is entered until the one before it is through.
  */
