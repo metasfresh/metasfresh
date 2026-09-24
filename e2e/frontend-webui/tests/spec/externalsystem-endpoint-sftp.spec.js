@@ -251,9 +251,9 @@ test.describe('ExternalSystem Endpoint — SFTP Transport', () => {
   });
 
   test('TransportType field visibility toggles SFTP/HTTP fields', async ({ page }) => {
-    allure.epic('E1500: External Systems');
-    allure.tag('F15010: External System Endpoint');
-    allure.tag('F15010');
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
     allure.story('TransportType field display logic');
     allure.severity('critical');
 
@@ -305,9 +305,9 @@ and hides HTTP fields, and vice versa.
   });
 
   test('SftpAuthType toggles Password vs SSH key fields', async ({ page }) => {
-    allure.epic('E1500: External Systems');
-    allure.tag('F15010: External System Endpoint');
-    allure.tag('F15010');
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
     allure.story('SftpAuthType field display logic');
     allure.severity('critical');
 
@@ -347,9 +347,9 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
   });
 
   test('Create and save full SFTP endpoint configuration', async ({ page }) => {
-    allure.epic('E1500: External Systems');
-    allure.tag('F15010: External System Endpoint');
-    allure.tag('F15010');
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
     allure.story('Full SFTP Configuration Flow');
     allure.severity('critical');
 
@@ -423,9 +423,9 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
   });
 
   test('AuthType=OAuth2 reveals OAuth2 token URL + scope + credential fields', async ({ page }) => {
-    allure.epic('E1500: External Systems');
-    allure.tag('F15010: External System Endpoint');
-    allure.tag('F15010');
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
     allure.story('AuthType OAuth2 display logic');
     allure.severity('critical');
 
@@ -468,9 +468,9 @@ switching to a non-OAuth2 auth type (Token) hides the OAuth2-specific fields.
   });
 
   test('Create and save full OAuth2 HTTP endpoint configuration', async ({ page }) => {
-    allure.epic('E1500: External Systems');
-    allure.tag('F15010: External System Endpoint');
-    allure.tag('F15010');
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
     allure.story('Full OAuth2 Configuration Flow');
     allure.severity('critical');
 
@@ -515,9 +515,9 @@ OAuthTokenUrl is accepted and the record persists).
   });
 
   test('TransportType=LOCAL_FILE reveals root location, frequency and filename pattern; HTTP and SFTP hide them', async ({ page }) => {
-    allure.epic('E1500: External Systems');
-    allure.tag('F15010: External System Endpoint');
-    allure.tag('F15010');
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
     allure.story('TransportType LOCAL_FILE display logic');
     allure.severity('critical');
 
@@ -588,9 +588,9 @@ visible for LOCAL_FILE and hidden for every other transport.
   });
 
   test('LOCAL_FILE root location is mandatory — the endpoint stays unsaved until it is filled', async ({ page }) => {
-    allure.epic('E1500: External Systems');
-    allure.tag('F15010: External System Endpoint');
-    allure.tag('F15010');
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
     allure.story('LOCAL_FILE mandatory logic');
     allure.severity('critical');
 
@@ -631,9 +631,9 @@ endpoint with no directory to poll must not become a valid, saved record.
   });
 
   test('Switching transport away and back leaves no foreign transport values behind', async ({ page }) => {
-    allure.epic('E1500: External Systems');
-    allure.tag('F15010: External System Endpoint');
-    allure.tag('F15010');
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
     allure.story('TransportType switch clears foreign transport fields');
     allure.severity('critical');
 
@@ -726,9 +726,9 @@ stale configuration on the record.
   });
 
   test('Switching an HTTP endpoint to SFTP password authentication keeps the password', async ({ page }) => {
-    allure.epic('E1500: External Systems');
-    allure.tag('F15010: External System Endpoint');
-    allure.tag('F15010');
+    allure.epic('E0292: EDI');
+    allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+    allure.tag('F00380');
     allure.story('A field the new configuration still shows keeps its value');
     allure.severity('critical');
 
@@ -839,9 +839,9 @@ const LOCAL_FILE_LABEL_CASES = [
 test.describe('ExternalSystem Endpoint — LOCAL_FILE field labels per language', () => {
   LOCAL_FILE_LABEL_CASES.forEach(({ language, label, captions }) => {
     test(`LOCAL_FILE fields render their ${label} labels`, async ({ page }) => {
-      allure.epic('E1500: External Systems');
-      allure.tag('F15010: External System Endpoint');
-      allure.tag('F15010');
+      allure.epic('E0292: EDI');
+      allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
+      allure.tag('F00380');
       allure.story('TransportType field display logic');
       allure.severity('normal');
 
