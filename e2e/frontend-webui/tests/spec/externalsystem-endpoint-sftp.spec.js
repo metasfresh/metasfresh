@@ -21,7 +21,7 @@ import * as fs from 'node:fs';
  * 4. AuthType=OAuth2 -> OAuth2 token URL + scope + credential fields visible
  * 5. Create and save a full OAuth2 HTTP endpoint configuration
  * 6. AuthType=OAuth (v1) -> the Password field is shown, and the endpoint saves without one
- * 7. TransportType=LOCAL_FILE -> root location, frequency and filename pattern visible; hidden for HTTP/SFTP
+ * 7. TransportType=LOCAL_FILE -> root location, polling interval and filename pattern visible; hidden for HTTP/SFTP
  * 8. LOCAL_FILE root location is mandatory -> the endpoint stays invalid/unsaved until it is filled
  * 9. Switching transport away and back (LOCAL_FILE <-> SFTP) leaves no foreign transport values behind
  * 10. Switching HTTP + Basic -> SFTP + PASSWORD keeps the password, because both configurations show it
@@ -555,7 +555,7 @@ a blank credential rather than failing.
     expect(withPassword.fieldsByName.Password.value, 'the password an OAuth endpoint types must be stored').toBe('oauth-secret');
   });
 
-  test('TransportType=LOCAL_FILE reveals root location, frequency and filename pattern; HTTP and SFTP hide them', async ({ page }) => {
+  test('TransportType=LOCAL_FILE reveals root location, polling interval and filename pattern; HTTP and SFTP hide them', async ({ page }) => {
     allure.epic('E0292: EDI');
     allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
     allure.tag('F00380');
@@ -589,7 +589,7 @@ visible for LOCAL_FILE and hidden for every other transport.
       await expect(page.locator('.form-field-ImportFileNamePattern input[type="text"]')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
     });
 
-    await test.step('Polling frequency comes up pre-filled with its default, not empty', async () => {
+    await test.step('The polling interval comes up pre-filled with its default, not empty', async () => {
       // Frequency defaults from AD_Column.DefaultValue rather than coming up empty
       // (integer widget — tolerate any locale grouping separator between "60" and "000").
       await expect(page.locator('.form-field-Frequency input')).toHaveValue(/^60[.,\s ]?000$/);
@@ -764,7 +764,7 @@ stale configuration on the record.
     expect(emptyish(pollableAgainRecord.fieldsByName.SftpAuthType.value), 'SftpAuthType must be cleared when the endpoint leaves SFTP').toBe(true);
     expect(emptyish(pollableAgainRecord.fieldsByName.SshPrivateKey.value), 'SshPrivateKey must be cleared when the endpoint leaves SFTP').toBe(true);
 
-    await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE-frequency-reentered.png');
+    await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE-interval-reentered.png');
   });
 
   test('Switching an HTTP endpoint to SFTP password authentication keeps the password', async ({ page }) => {
