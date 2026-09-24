@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
 import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
+import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.CamelServiceRouteIdWithRequestType;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.ScriptedImportConversionFileInput;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import org.apache.camel.Exchange;
@@ -66,6 +67,16 @@ public class ScriptedImportConversionLocalFileRouteTest extends CamelTestSupport
 	private static final String MOCK_SCRIPT_IDENTIFIER = "mock:scriptIdentifier";
 	private static final String MOCK_SCRIPT = "mock:script.js";
 	private static final long FREQUENCY_MS = 100L;
+
+	/**
+	 * A one-item transform result using a real, resolvable {@code camelServiceRouteID} (see
+	 * {@link CamelServiceRouteIdWithRequestType}), so dispatching it exercises the actual
+	 * route-id-resolution + endpoint-dispatch path instead of a synthetic stand-in.
+	 */
+	private static final String ONE_VALID_ITEM_SCRIPT_RESPONSE = "["
+			+ "{ \"camelServiceRouteID\": \"" + CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRouteId() + "\", "
+			+ "\"requestBody\": \"{\\\"requests\\\":[]}\"}"
+			+ "]";
 
 	private final JavaScriptRepo javaScriptRepo = Mockito.mock(JavaScriptRepo.class);
 	private final JavaScriptExecutorService javaScriptExecutorService = Mockito.mock(JavaScriptExecutorService.class);
@@ -145,6 +156,61 @@ public class ScriptedImportConversionLocalFileRouteTest extends CamelTestSupport
 		}
 
 		// nothing filed under error
+		try (var errorFiles = Files.list(localErrorDir))
+		{
+			assertThat(errorFiles.findAny()).isEmpty();
+		}
+	}
+
+	/**
+	 * The scenario this transport exists for: a polled PDF, converted by the script into ONE real order
+	 * candidate item, actually dispatched to metasfresh -- not the "[]"/throw stand-ins every other test in
+	 * this class and {@link ScriptedImportConversionLocalFileImportFileNamePatternTest} use, which never
+	 * exercise the {@code .split(...).process(handleItemInList)} step at all. Mirrors
+	 * {@code ScriptedImportConversionDynamicRouteBuilderTest#handleOneSuccessfulItem} (the REST/SFTP
+	 * sibling route's equivalent coverage), adapted to a file-drop trigger: {@code producerTemplate} is
+	 * already a Mockito spy of the {@code ProducerTemplate} interface (see the field above), so the
+	 * dispatch itself is stubbed rather than requiring a real metasfresh endpoint -- what this test proves
+	 * is that the route ACTUALLY CALLS that dispatch for a real item, with the resolved endpoint URI and a
+	 * payload of the declared request type, and archives the source once dispatch succeeds.
+	 */
+	@Test
+	void oneRealItemFromScript_isActuallyDispatched_andArchivedOnSuccess() throws Exception
+	{
+		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER)).thenReturn(MOCK_SCRIPT);
+		Mockito.when(javaScriptExecutorService.executeScript(eq(MOCK_SCRIPT_IDENTIFIER), eq(MOCK_SCRIPT), any()))
+				.thenReturn(ONE_VALID_ITEM_SCRIPT_RESPONSE);
+		Mockito.when(producerTemplate.requestBody(eq("direct:" + CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRouteId()), any(), eq(String.class)))
+				.thenReturn("{\"result\":1}");
+
+		final byte[] pdfBytes = { (byte) 0x25, (byte) 0x50, (byte) 0x44, (byte) 0x46, 0x03, 0x04 };
+		final String originalFileName = "scan004.pdf";
+
+		context.start();
+
+		final NotifyBuilder notify = new NotifyBuilder(context).whenDone(1).create();
+		Files.write(localInputDir.resolve(originalFileName), pdfBytes);
+
+		assertThat(notify.matches(10, TimeUnit.SECONDS)).isTrue();
+
+		// the dispatch actually happened -- the route's whole reason to exist -- against the resolved
+		// endpoint, with a payload of the declared request type (not the raw JSON string)
+		final ArgumentCaptor<Object> bodyCaptor = ArgumentCaptor.forClass(Object.class);
+		Mockito.verify(producerTemplate).requestBody(
+				eq("direct:" + CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRouteId()),
+				bodyCaptor.capture(),
+				eq(String.class));
+		assertThat(bodyCaptor.getValue()).isInstanceOf(CamelServiceRouteIdWithRequestType.MF_PUSH_OL_CANDIDATES_ROUTE_ID.getRequestType());
+
+		// archived to the processed dir -- the dispatched item counts as a success
+		final List<Path> archivedFiles;
+		try (var files = Files.list(localProcessedDir))
+		{
+			archivedFiles = files.toList();
+		}
+		assertThat(archivedFiles).hasSize(1);
+		assertThat(Files.readAllBytes(archivedFiles.get(0))).isEqualTo(pdfBytes);
+
 		try (var errorFiles = Files.list(localErrorDir))
 		{
 			assertThat(errorFiles.findAny()).isEmpty();
