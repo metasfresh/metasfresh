@@ -723,8 +723,8 @@ public class ExternalSystem_EndpointTest
 		 * What {@code HideableColumn#isVisible} does with an expression it cannot decide -- one naming a
 		 * variable that has no value AND no default. It answers "not shown", so the field is cleared; the
 		 * window answers FALSE too, by a different route. The expression below is synthetic and deliberately
-		 * outside the governing columns; {@link #everyDisplayLogicVariableHasADefaultValue()} keeps a real rule from
-		 * ever reaching this case.
+		 * outside the governing columns; {@link #everyDisplayLogicVariableHasADefaultValue()} keeps a real
+		 * rule from ever reaching this case.
 		 */
 		@Test
 		void anUndecidableDisplayLogicCountsAsHiddenJustAsTheWindowCountsIt()
