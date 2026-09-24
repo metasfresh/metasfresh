@@ -26,7 +26,9 @@ import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.document.archive.config.DocOutboundConfigId;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.report.PrintFormatId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
@@ -62,7 +64,7 @@ public class C_Doc_Outbound_Config_StepDef
 	 * {@code AD_PrintFormat_ID} from BEFORE the repoint. Restored by
 	 * {@link #restoreRepointedPrintFormatsAfterScenario()}.
 	 */
-	private final Map<Integer, Integer> priorPrintFormatIdByConfigId = new LinkedHashMap<>();
+	private final Map<DocOutboundConfigId, PrintFormatId> priorPrintFormatIdByConfigId = new LinkedHashMap<>();
 
 	@Given("metasfresh contains C_Doc_Outbound_Config:")
 	public void metasfresh_contains_C_Doc_Outbound_Config(@NonNull final DataTable dataTable)
@@ -151,38 +153,61 @@ public class C_Doc_Outbound_Config_StepDef
 
 	/**
 	 * Repoints an existing {@code C_Doc_Outbound_Config}'s {@code AD_PrintFormat_ID} -- the same field edit a
-	 * customer makes in the window to change which report a configuration prints.
+	 * customer makes in the window to change which report a configuration prints. The configuration is found by
+	 * its table and document base type; the print format by its name.
 	 * <p>
 	 * The prior value is captured before the overwrite and restored by
 	 * {@link #restoreRepointedPrintFormatsAfterScenario()}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>C_Doc_Outbound_Config_ID</b> — (required) the existing configuration to update<br>
-	 *   <b>AD_PrintFormat_ID</b> — (required) the print format to point it at<br>
+	 *   <b>TableName</b> — (required) {@code AD_Table.TableName} of the configuration to update<br>
+	 *   <b>DocBaseType</b> — (required) {@code C_Doc_Outbound_Config.DocBaseType} of the configuration to update<br>
+	 *   <b>PrintFormat.Name</b> — (required) {@code AD_PrintFormat.Name} of the print format to point it at<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_Doc_Outbound_Config print format:
-	 *   | C_Doc_Outbound_Config_ID | AD_PrintFormat_ID |
-	 *   | 540022                   | 540097            |
+	 *   | TableName                   | DocBaseType | PrintFormat.Name                     |
+	 *   | C_Order_MFGWarehouse_Report | BKP         | C_Order_MFGWarehouse_Report_Combined |
 	 * </pre>
 	 */
 	@And("update C_Doc_Outbound_Config print format:")
 	public void update_doc_outbound_config_print_format(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final int configId = row.getAsInt(I_C_Doc_Outbound_Config.COLUMNNAME_C_Doc_Outbound_Config_ID);
-			final int printFormatId = row.getAsInt(I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID);
+			final String tableName = row.getAsString(I_AD_Table.COLUMNNAME_TableName);
+			final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
+			assertThat(tableId).as("AD_Table not found: %s", tableName).isNotNull();
 
-			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.load(configId, I_C_Doc_Outbound_Config.class);
+			final I_C_Doc_Outbound_Config config = queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID, tableId)
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, row.getAsString(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType))
+					.create()
+					.firstOnlyNotNull(I_C_Doc_Outbound_Config.class);
+			final DocOutboundConfigId configId = DocOutboundConfigId.ofRepoId(config.getC_Doc_Outbound_Config_ID());
+			final PrintFormatId printFormatId = retrievePrintFormatIdByName(row.getAsString("PrintFormat." + I_AD_PrintFormat.COLUMNNAME_Name));
 
 			// captured once per config per scenario: a second repoint in the same scenario must not overwrite
 			// the ALREADY-captured original with this scenario's own first write
-			priorPrintFormatIdByConfigId.putIfAbsent(configId, config.getAD_PrintFormat_ID());
+			priorPrintFormatIdByConfigId.putIfAbsent(configId, PrintFormatId.ofRepoId(config.getAD_PrintFormat_ID()));
 
-			config.setAD_PrintFormat_ID(printFormatId);
+			config.setAD_PrintFormat_ID(printFormatId.getRepoId());
 			InterfaceWrapperHelper.save(config);
 		});
+	}
+
+	/**
+	 * Resolves an active {@code AD_PrintFormat} by its exact {@code Name}; fails if there is none or more than one.
+	 */
+	public static PrintFormatId retrievePrintFormatIdByName(@NonNull final String printFormatName)
+	{
+		final I_AD_PrintFormat printFormat = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrintFormat.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_PrintFormat.COLUMNNAME_Name, printFormatName)
+				.create()
+				.firstOnlyNotNull(I_AD_PrintFormat.class);
+		return PrintFormatId.ofRepoId(printFormat.getAD_PrintFormat_ID());
 	}
 
 	/**
@@ -198,12 +223,11 @@ public class C_Doc_Outbound_Config_StepDef
 			return;
 		}
 
-		for (final Map.Entry<Integer, Integer> entry : priorPrintFormatIdByConfigId.entrySet())
-		{
-			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.load(entry.getKey(), I_C_Doc_Outbound_Config.class);
-			config.setAD_PrintFormat_ID(entry.getValue());
+		priorPrintFormatIdByConfigId.forEach((configId, priorPrintFormatId) -> {
+			final I_C_Doc_Outbound_Config config = InterfaceWrapperHelper.load(configId, I_C_Doc_Outbound_Config.class);
+			config.setAD_PrintFormat_ID(priorPrintFormatId.getRepoId());
 			InterfaceWrapperHelper.save(config);
-		}
+		});
 
 		priorPrintFormatIdByConfigId.clear();
 	}

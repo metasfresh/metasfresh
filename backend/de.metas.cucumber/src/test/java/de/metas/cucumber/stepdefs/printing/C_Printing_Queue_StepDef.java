@@ -35,6 +35,8 @@ import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.document.DocTypeId;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Services;
@@ -44,6 +46,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -235,7 +238,7 @@ public class C_Printing_Queue_StepDef
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_C_Printing_Queue queueItem = row.getAsIdentifier(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID).lookupNotNullIn(queueItemTable);
-			final I_AD_PrinterRouting expectedRouting = row.getAsIdentifier(I_AD_PrinterRouting.COLUMNNAME_AD_PrinterRouting_ID).lookupNotNullIn(printerRoutingTable);
+			final PrinterRoutingId expectedRoutingId = row.getAsIdentifier(I_AD_PrinterRouting.COLUMNNAME_AD_PrinterRouting_ID).lookupNotNullIdIn(printerRoutingTable);
 
 			final PrinterRoutingsQuery query = printingQueueBL.createPrinterRoutingsQueryForItem(queueItem);
 			final List<I_AD_PrinterRouting> matchingRoutings = printerRoutingDAO.fetchPrinterRoutings(query);
@@ -244,10 +247,10 @@ public class C_Printing_Queue_StepDef
 					.as("AD_PrinterRouting candidates for %s (query=%s)", queueItem, query)
 					.isNotEmpty();
 
-			final I_AD_PrinterRouting winningRouting = matchingRoutings.get(0);
-			assertThat(winningRouting.getAD_PrinterRouting_ID())
+			final PrinterRoutingId winningRoutingId = PrinterRoutingId.ofRepoId(matchingRoutings.get(0).getAD_PrinterRouting_ID());
+			assertThat(winningRoutingId)
 					.as("Winning %s for %s must be the doctype-specific routing, not the catch-all", I_AD_PrinterRouting.COLUMNNAME_AD_PrinterRouting_ID, queueItem)
-					.isEqualTo(expectedRouting.getAD_PrinterRouting_ID());
+					.isEqualTo(expectedRoutingId);
 		});
 	}
 
@@ -309,10 +312,10 @@ public class C_Printing_Queue_StepDef
 			final String sysConfigName = row.getAsString("SysConfigName");
 
 			final de.metas.document.archive.model.I_AD_Archive printOut = InterfaceWrapperHelper.load(
-					queueItem.getAD_Archive_ID(), de.metas.document.archive.model.I_AD_Archive.class);
+					ArchiveId.ofRepoId(queueItem.getAD_Archive_ID()), de.metas.document.archive.model.I_AD_Archive.class);
 
 			final int actualCopies = orderCheckupBL.getNumberOfCopies(queueItem, printOut);
-			final int expectedCopies = sysConfigBL.getIntValue(sysConfigName, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
+			final int expectedCopies = sysConfigBL.getIntValue(sysConfigName, 1, ClientAndOrgId.ofClientAndOrg(queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID()));
 
 			assertThat(actualCopies)
 					.as("Number of copies for %s must equal the live sys config %s", queueItem, sysConfigName)
