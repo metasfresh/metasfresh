@@ -163,7 +163,10 @@ public class ExternalSystemScriptedImportConversionService
 		if (endpoint.getTransportType() == TransportType.SFTP)
 		{
 			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_HOST, endpoint.getSftpHost());
-			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(endpoint.getSftpPort()));
+			if (endpoint.getSftpPort() != null)
+			{
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(endpoint.getSftpPort()));
+			}
 			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_USERNAME, endpoint.getSftpUsername());
 			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE, endpoint.getSftpAuthType() != null ? endpoint.getSftpAuthType().getCode() : null);
 			if (endpoint.getPassword() != null)

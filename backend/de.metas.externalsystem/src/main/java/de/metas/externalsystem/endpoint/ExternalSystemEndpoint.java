@@ -67,7 +67,9 @@ public class ExternalSystemEndpoint
 	// SFTP transport fields (null when transportType == HTTP)
 	@Nullable String sftpHost;
 
-	int sftpPort;
+	// null when no port is configured. Boxed, like sftpPollingIntervalMs and frequency below, so that
+	// "not configured" survives the trip out of PO.get_ValueAsInt, which collapses SQL NULL onto 0.
+	@Nullable Integer sftpPort;
 
 	@Nullable String sftpUsername;
 
@@ -132,7 +134,7 @@ public class ExternalSystemEndpoint
 				.sasSignature(sasSignature)
 				.contentType(contentType != null ? contentType.toString() : null)
 				.sftpHost(sftpHost)
-				.sftpPort(sftpPort > 0 ? sftpPort : null)
+				.sftpPort(sftpPort)
 				.sftpUsername(sftpUsername)
 				.sftpAuthType(sftpAuthType != null ? sftpAuthType.getCode() : null)
 				.sshPrivateKey(sshPrivateKey)

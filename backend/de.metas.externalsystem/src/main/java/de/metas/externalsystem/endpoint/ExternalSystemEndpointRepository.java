@@ -107,7 +107,7 @@ public class ExternalSystemEndpointRepository
 				.sasSignature(endpointRecord.getSasSignature())
 				// SFTP transport fields (nullable — only set for SFTP transport)
 				.sftpHost(endpointRecord.getSftpHost())
-				.sftpPort(endpointRecord.getSftpPort())
+				.sftpPort(endpointRecord.getSftpPort() > 0 ? endpointRecord.getSftpPort() : null)
 				.sftpUsername(endpointRecord.getSftpUsername())
 				.sftpAuthType(parseSftpAuthType(endpointRecord.getSftpAuthType()))
 				.sshPrivateKey(endpointRecord.getSshPrivateKey())

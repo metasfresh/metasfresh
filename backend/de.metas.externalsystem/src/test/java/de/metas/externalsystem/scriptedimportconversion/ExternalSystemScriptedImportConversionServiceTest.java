@@ -50,6 +50,7 @@ import org.adempiere.exceptions.AdempiereException;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN;
@@ -201,6 +202,48 @@ class ExternalSystemScriptedImportConversionServiceTest
 	}
 
 	@Test
+	void getParameters_sftpEndpointWithoutPort_omitsPortParameter()
+	{
+		// given: an SFTP endpoint whose SftpPort column was never set. PO.get_ValueAsInt cannot tell SQL
+		// NULL from a stored 0 -- both read back as 0 -- so an unconfigured port must not reach the camel
+		// poller, which would append it verbatim and dial sftp://host:0.
+		final UserId userImportId = createUserId();
+		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
+				.userId(userImportId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.MAIN)
+				.roleId(RoleId.WEBUI)
+				.build());
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("eddyson-sftp");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
+		endpointRecord.setSftpHost("sftp.example.com");
+		endpointRecord.setSftpUsername("sftpuser");
+		endpointRecord.setSftpAuthType(X_ExternalSystem_Endpoint.SFTPAUTHTYPE_PASSWORD);
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when
+		final Map<String, String> parameters = service.getParameters(config);
+
+		// then: the port key is absent altogether -- the camel route builder skips the ":port" segment for an
+		// absent value and lets the SFTP component apply its own default, exactly as the outbound path does.
+		// The rest of the SFTP block is still emitted, so the absence is the port's alone.
+		assertThat(parameters).doesNotContainKey(PARAM_SFTP_POLLING_ENDPOINT_PORT);
+		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_HOST)).isEqualTo("sftp.example.com");
+	}
+
+	@Test
 	void getParameters_localFileEndpoint_producesLocalFileParameters()
 	{
 		// given: the LOCAL_FILE polling settings live on the ENDPOINT
@@ -267,6 +310,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 		endpointRecord.setValue("eddyson-sftp");
 		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
 		endpointRecord.setSftpHost("sftp.example.com");
+		endpointRecord.setSftpPort(2222);
 		endpointRecord.setSftpPollingIntervalMs(30000);
 		endpointRecord.setProcessedDirectory("/inbound/processed");
 		endpointRecord.setErrorDirectory("/inbound/error");
@@ -290,6 +334,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 
 		// then: SFTP parameters are present as before, and none of the LOCAL_FILE keys leak in
 		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_HOST)).isEqualTo("sftp.example.com");
+		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_PORT)).isEqualTo("2222");
 		assertThat(parameters.get(PARAM_SFTP_POLLING_INTERVAL_MS)).isEqualTo("30000");
 		assertThat(parameters).doesNotContainKey(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION);
 		assertThat(parameters).doesNotContainKey(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN);
