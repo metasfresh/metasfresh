@@ -1,7 +1,6 @@
 package de.metas.pos.returns;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
@@ -9,7 +8,6 @@ import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineCandidate
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -113,16 +111,16 @@ public class POSReturnService
 					.setParameter("requestLines", request.getLines().size());
 		}
 
-		final ImmutableListMultimap<InOutLineId, I_C_Invoice_Candidate> candidatesByLineId = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLines(
-				returnLines.stream().map(line -> InOutLineId.ofRepoId(line.getM_InOutLine_ID())).collect(ImmutableList.toImmutableList()));
-
+		// one query per line (not batched): the return's line count is small (single digits), and this reuses
+		// invoiceCandDAO's own canonical, full-semantics lookup (direct match, C_OrderLine_ID, IC-IOL association)
+		// rather than re-deriving a narrower query — see task report for the deliberate trade-off
 		final ImmutableList.Builder<I_C_Invoice_Candidate> pricedCandidates = ImmutableList.builder();
 		for (int i = 0; i < request.getLines().size(); i++)
 		{
 			final POSReturnLine line = request.getLines().get(i);
 			final I_M_InOutLine returnLine = returnLines.get(i);
 
-			for (final I_C_Invoice_Candidate ic : candidatesByLineId.get(InOutLineId.ofRepoId(returnLine.getM_InOutLine_ID())))
+			for (final I_C_Invoice_Candidate ic : invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(returnLine))
 			{
 				// checked first: a candidate with no tax is left in a degraded state (e.g. no Price_UOM_ID yet),
 				// so a UOM/currency check below would fail on that symptom instead of the real cause

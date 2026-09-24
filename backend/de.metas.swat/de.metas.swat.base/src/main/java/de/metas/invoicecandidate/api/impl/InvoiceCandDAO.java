@@ -24,7 +24,6 @@ package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.async.AsyncBatchId;
@@ -43,7 +42,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -526,29 +524,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return retrieveInvoiceCandidatesForInOutLineQuery(inoutLine)
 				.create()
 				.list(I_C_Invoice_Candidate.class);
-	}
-
-	@Override
-	@NonNull
-	public final ImmutableListMultimap<InOutLineId, I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLines(@NonNull final Collection<InOutLineId> inoutLineIds)
-	{
-		if (inoutLineIds.isEmpty())
-		{
-			return ImmutableListMultimap.of();
-		}
-
-		// one query to batch-load the lines; the per-line candidate lookup below reuses the canonical,
-		// full-semantics retrieveInvoiceCandidatesForInOutLine (direct match, C_OrderLine_ID, IC-IOL association)
-		// rather than re-deriving a narrower query here
-		final List<I_M_InOutLine> inoutLines = Services.get(IInOutDAO.class).getLinesByIds(ImmutableSet.copyOf(inoutLineIds), I_M_InOutLine.class);
-
-		final ImmutableListMultimap.Builder<InOutLineId, I_C_Invoice_Candidate> result = ImmutableListMultimap.builder();
-		for (final I_M_InOutLine inoutLine : inoutLines)
-		{
-			final InOutLineId inoutLineId = InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID());
-			retrieveInvoiceCandidatesForInOutLine(inoutLine).forEach(ic -> result.put(inoutLineId, ic));
-		}
-		return result.build();
 	}
 
 	@Override

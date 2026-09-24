@@ -37,7 +37,7 @@ WHERE AD_Language='de_CH' AND AD_Message_ID=545858
 -- Message 2: de.metas.pos.Return.PriceUomMismatch
 -- ############################################################
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545859 /*From ID Server*/,0,TO_TIMESTAMP('2026-09-24 14:00:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Die Preis-Mengeneinheit der Rücknahmeposition muss mit der Preis-Mengeneinheit der Rechnungsposition übereinstimmen.','E',TO_TIMESTAMP('2026-09-24 14:00:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.Return.PriceUomMismatch')
+VALUES (0,545859 /*From ID Server*/,0,TO_TIMESTAMP('2026-09-24 14:00:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Die Preis-Mengeneinheit der Rücknahmeposition muss mit der Preis-Mengeneinheit des Rechnungskandidaten übereinstimmen.','E',TO_TIMESTAMP('2026-09-24 14:00:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.Return.PriceUomMismatch')
 ;
 
 UPDATE AD_Message SET ErrorCode='POS_RETURN_PRICE_UOM_MISMATCH', Updated=TO_TIMESTAMP('2026-09-24 14:00:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
@@ -67,7 +67,7 @@ WHERE AD_Language='de_CH' AND AD_Message_ID=545859
 -- Message 3: de.metas.pos.Return.CurrencyMismatch
 -- ############################################################
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545860 /*From ID Server*/,0,TO_TIMESTAMP('2026-09-24 14:00:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Die Währung der Rücknahmeposition muss mit der Währung der Rechnungsposition übereinstimmen.','E',TO_TIMESTAMP('2026-09-24 14:00:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.Return.CurrencyMismatch')
+VALUES (0,545860 /*From ID Server*/,0,TO_TIMESTAMP('2026-09-24 14:00:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos','Y','Die Währung der Rücknahmeposition muss mit der Währung des Rechnungskandidaten übereinstimmen.','E',TO_TIMESTAMP('2026-09-24 14:00:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.pos.Return.CurrencyMismatch')
 ;
 
 UPDATE AD_Message SET ErrorCode='POS_RETURN_CURRENCY_MISMATCH', Updated=TO_TIMESTAMP('2026-09-24 14:00:11','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100

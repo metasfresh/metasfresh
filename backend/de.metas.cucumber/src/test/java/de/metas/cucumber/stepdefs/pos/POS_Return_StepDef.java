@@ -76,6 +76,7 @@ public class POS_Return_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final POSService posService = SpringContextHolder.instance.getBean(POSService.class);
 
 	private final C_POS_StepDefData posTable;
@@ -158,7 +159,7 @@ public class POS_Return_StepDef
 		// back to the AdMessageKey itself otherwise (the exact resolution AdempiereException's own constructor
 		// does) — resolve the expectation the same way rather than assuming it is always the bare key
 		final AdMessageKey expectedKey = AdMessageKey.of(expectedAdMessage);
-		final String expectedErrorCode = Optional.ofNullable(Services.get(IMsgBL.class).getErrorCode(expectedKey))
+		final String expectedErrorCode = Optional.ofNullable(msgBL.getErrorCode(expectedKey))
 				.orElseGet(expectedKey::toAD_Message);
 
 		assertThatThrownBy(() -> posService.createReturn(request))
