@@ -197,10 +197,10 @@ public interface IUserRolePermissions
 	/**
 	 * Full client/org/table write-access check for creating a record (uses {@code Access.WRITE}).
 	 * Distinct from (not a substitute for) the per-table CREATE restriction
-	 * {@link #isTableAccess(int, Access)} with {@code Access.CREATE}: both gate record creation, but
-	 * neither subsumes the other. This method performs the client/org/table write-access check and does
-	 * NOT apply the CREATE restriction (enforced separately, in the WebUI document layer); the CREATE
-	 * restriction does not perform this write-access check.
+	 * {@link #isCanCreateNewRecords(AdTableId)}: both gate record creation, but neither subsumes the
+	 * other. This method performs the client/org/table write-access check and does NOT apply the CREATE
+	 * restriction (enforced separately, in the WebUI document layer); the CREATE restriction does not
+	 * perform this client/org/table write-access check.
 	 */
 	BooleanWithReason checkCanCreateNewRecord(ClientId clientId, OrgId orgId, AdTableId adTableId);
 

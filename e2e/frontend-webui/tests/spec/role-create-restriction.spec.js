@@ -405,7 +405,7 @@ testCases.forEach(({ language, label }) => {
     test.describe(`Role read-only table access — read yes, edit no, create no (${label})`, () => {
         test(`read-only role reads but cannot edit or create a partner (${label} UI)`, async ({ page }) => {
             allure.epic('E0390: Business Partner');
-            allure.story('Role table access — read-only flag removes WRITE only (subtract contract)');
+            allure.story('Role table access — read-only flag removes WRITE, and CREATE with it (subtract contract)');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
             allure.severity('critical');
