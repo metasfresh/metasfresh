@@ -48,10 +48,9 @@ public class ExternalSystem_Endpoint
 	 * derives each transport's owned columns from {@link #OWNED_COLUMN_NAMES_BY_TRANSPORT_CODE} and clears
 	 * every column here that the new transport does NOT own. Ownership only ever means "do not clear on
 	 * switch to this transport", so a column may be owned by more than one transport (e.g.
-	 * {@code IsArrayFanOut}, read by both the HTTP and SFTP outbound dispatch; {@code Password}, read by
-	 * both HTTP Basic auth and SFTP password auth) — it is simply listed in every owning transport's set
-	 * below. A newly added transport-specific column only needs to be added HERE and to each set that owns
-	 * it — never to N per-transport clearing lists.
+	 * {@code IsArrayFanOut}, read by both the HTTP and SFTP outbound dispatch) — it is simply listed in
+	 * every owning transport's set below. A newly added transport-specific column only needs to be added
+	 * HERE and to each set that owns it — never to N per-transport clearing lists.
 	 */
 	private static final ImmutableMap<String, Consumer<I_ExternalSystem_Endpoint>> CLEAR_ACTIONS_BY_COLUMN_NAME =
 			ImmutableMap.<String, Consumer<I_ExternalSystem_Endpoint>>builder()
@@ -113,11 +112,7 @@ public class ExternalSystem_Endpoint
 			// transport-agnostic, also HTTP-owned below: the SFTP outbound dispatch reads it too (see
 			// ScriptedAdapterConvertMsgFromMFRouteBuilder#isFanOutEnabled), so switching to SFTP must not
 			// clear it
-			I_ExternalSystem_Endpoint.COLUMNNAME_IsArrayFanOut,
-			// transport-agnostic, also HTTP-owned above: SFTP password auth reads it too (see
-			// ExternalSystemScriptedImportConversionService#getParameters and SftpDeliveryProcessor#buildSftpUri),
-			// so switching to SFTP must not clear it
-			I_ExternalSystem_Endpoint.COLUMNNAME_Password);
+			I_ExternalSystem_Endpoint.COLUMNNAME_IsArrayFanOut);
 
 	/**
 	 * Polling frequency a LOCAL_FILE endpoint falls back to when it arrives at that transport without a
