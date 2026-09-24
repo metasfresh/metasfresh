@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -160,7 +160,7 @@ public interface IPriceListDAO extends ISingletonService
 
 	String getPriceListName(final PriceListId priceListId);
 
-	Set<CountryId> retrieveCountryIdsByPricingSystem(final PricingSystemId pricingSystemId);
+	Set<CountryId> retrieveCountryIdsByPricingSystem(@NonNull final PricingSystemId pricingSystemId);
 
 	Set<ProductId> retrieveHighPriceProducts(BigDecimal minimumPrice, LocalDate date);
 
