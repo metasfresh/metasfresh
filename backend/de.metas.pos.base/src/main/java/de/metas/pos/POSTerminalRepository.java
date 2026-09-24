@@ -1,6 +1,9 @@
 package de.metas.pos;
 
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ForUpdate;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_POS;
 import org.springframework.stereotype.Repository;
@@ -14,6 +17,23 @@ import java.math.BigDecimal;
 @Repository
 public class POSTerminalRepository
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * Locks the terminal's {@code C_POS} row for the rest of the caller's transaction, serializing two concurrent
+	 * callers against the SAME terminal (e.g. two in-flight requests carrying the same idempotency key) — the
+	 * second blocks here until the first commits, by which point its result already exists for the second to find.
+	 */
+	@NonNull
+	public I_C_POS lockForUpdate(@NonNull final POSTerminalId posTerminalId)
+	{
+		return queryBL.createQueryBuilder(I_C_POS.class)
+				.addEqualsFilter(I_C_POS.COLUMNNAME_C_POS_ID, posTerminalId)
+				.create()
+				.setForUpdate(ForUpdate.FOR_UPDATE)
+				.firstOnlyNotNull(I_C_POS.class);
+	}
+
 	@NonNull
 	public POSTerminalId createPOSTerminal(@NonNull final POSTerminalCreateRequest request)
 	{

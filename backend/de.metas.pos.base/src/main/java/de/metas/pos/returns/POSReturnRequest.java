@@ -1,7 +1,6 @@
 package de.metas.pos.returns;
 
 import de.metas.pos.POSTerminalId;
-import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -17,7 +16,6 @@ import java.util.UUID;
 public class POSReturnRequest
 {
 	@NonNull POSTerminalId posTerminalId;
-	@NonNull UserId cashierId;
 
 	/** Identifies this return so a retried request does not create a second one. */
 	@NonNull UUID externalId;

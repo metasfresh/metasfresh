@@ -3,6 +3,7 @@ package de.metas.pos;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
@@ -116,6 +117,8 @@ public class POSTerminal
 	public String getCurrencySymbol(final String adLanguage) {return currency.getSymbol().translate(adLanguage);}
 
 	public CurrencyPrecision getCurrencyPrecision() {return currency.getPrecision();}
+
+	public BPartnerLocationId getWalkInCustomerShipToBPartnerLocationId() {return walkInCustomerShipToLocationId.getBpartnerLocationId();}
 
 	public boolean isCashJournalOpen() {return cashJournalId != null;}
 
