@@ -41,11 +41,13 @@ import de.metas.product.ResourceId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -54,6 +56,9 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -69,6 +74,15 @@ public class M_Warehouse_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+
+	/**
+	 * {@code IsQualityReturnWarehouse} is shared seed-DB state: the exclusivity update below (only one
+	 * quality-return warehouse allowed at a time) is a bulk {@code updateDirectly}, bypassing the in-memory
+	 * model, and other features on the same executor rely on the seed DB's own quality-return warehouse
+	 * staying flagged. So the warehouses this scenario clears are recorded here and restored in
+	 * {@link #restoreQualityReturnWarehouseFlags()} regardless of pass/fail.
+	 */
+	private final List<Integer> clearedQualityReturnWarehouseIds = new ArrayList<>();
 
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final M_Locator_StepDefData locatorTable;
@@ -260,9 +274,28 @@ public class M_Warehouse_StepDef
 
 					final boolean isQualityReturnWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse).orElse(false);
 					if (isQualityReturnWarehouse)
-					{ // HUWarehouseDAO.retrieveFirstQualityReturnWarehouseId() picks an arbitrary one when several are active, so make sure that all other WHs are not quality-return warehouses
+					{
+						// HUWarehouseDAO.retrieveFirstQualityReturnWarehouseId() picks an arbitrary one when several are active, so make
+						// sure that all OTHER WHs are not quality-return warehouses. Never let the raw-SQL clear below also match THIS
+						// row (excluded by ID when it already exists): a clear that touched an already-loaded warehouseRecord would
+						// desync its in-memory cache from the DB (the ORM still thinks the column is "true" from before the clear), so
+						// the setIsQualityReturnWarehouse(true) + saveRecord() further down would see no change and skip writing the
+						// column back — leaving the DB at "false" even though this record is right here reasserting "true".
+						final IQueryBuilder<I_M_Warehouse> otherQualityReturnWarehousesQuery = queryBL.createQueryBuilder(I_M_Warehouse.class)
+								.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true)
+								.addEqualsFilter(COLUMNNAME_IsActive, true);
+						if (warehouseRecord.getM_Warehouse_ID() > 0)
+						{
+							otherQualityReturnWarehousesQuery.addNotEqualsFilter(COLUMNNAME_M_Warehouse_ID, warehouseRecord.getM_Warehouse_ID());
+						}
+
+						// record which OTHER warehouses we're about to clear (incl. the seed DB's own one) so
+						// restoreQualityReturnWarehouseFlags() can put them back after this scenario — shared seed-DB state must not
+						// leak into the rest of the executor.
+						clearedQualityReturnWarehouseIds.addAll(otherQualityReturnWarehousesQuery.create().listIds());
+
 						final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, false);
-						queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true).addEqualsFilter(COLUMNNAME_IsActive, true).create().updateDirectly(updater);
+						otherQualityReturnWarehousesQuery.create().updateDirectly(updater);
 					}
 
 					warehouseRecord.setValue(valueAndName.getValue());
@@ -393,5 +426,29 @@ public class M_Warehouse_StepDef
 		row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_DD_NetworkDistribution_ID)
 				.map(identifier -> identifier.lookupIdIn(ddNetworkTable))
 				.ifPresent(networkId -> warehouseRecord.setDD_NetworkDistribution_ID(networkId.getRepoId()));
+	}
+
+	/**
+	 * Restores {@code IsQualityReturnWarehouse} on every warehouse this scenario cleared via the
+	 * exclusivity update in {@link #create_M_Warehouse} — including the seed DB's own quality-return
+	 * warehouse, which other features on the same executor rely on. Fires for every scenario regardless of
+	 * pass/fail, so a scenario that sets its own quality-return warehouse cannot leak the clear to the rest
+	 * of the executor when it fails part-way; no-op when nothing was cleared.
+	 */
+	@After
+	public void restoreQualityReturnWarehouseFlags()
+	{
+		if (clearedQualityReturnWarehouseIds.isEmpty())
+		{
+			return;
+		}
+
+		final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true);
+		queryBL.createQueryBuilder(I_M_Warehouse.class)
+				.addInArrayFilter(COLUMNNAME_M_Warehouse_ID, clearedQualityReturnWarehouseIds)
+				.create()
+				.updateDirectly(updater);
+
+		clearedQualityReturnWarehouseIds.clear();
 	}
 }
