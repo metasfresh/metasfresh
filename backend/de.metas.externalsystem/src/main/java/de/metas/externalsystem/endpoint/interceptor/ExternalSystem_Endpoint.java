@@ -33,7 +33,6 @@ import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -75,7 +74,6 @@ import java.util.function.Consumer;
  */
 @Interceptor(I_ExternalSystem_Endpoint.class)
 @Component
-@RequiredArgsConstructor
 public class ExternalSystem_Endpoint
 {
 	/**
