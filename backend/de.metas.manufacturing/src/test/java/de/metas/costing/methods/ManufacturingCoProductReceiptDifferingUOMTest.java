@@ -119,6 +119,26 @@ class ManufacturingCoProductReceiptDifferingUOMTest
 	/** the snapshot price after conversion into the row's kg UOM: 10 EUR/Stück x 2 Stück/kg = 20 EUR/kg */
 	private static final BigDecimal EXPECTED_PRICE_PER_KG = new BigDecimal("20");
 
+	//
+	// Constants for the full close-path scenario (receipt -> updatePostCalculationAmounts -> distributor.createCostDetails).
+	// Deliberately clean whole-number amounts, independent of the receipt-only scenario above, so the WIP=0 and the
+	// capitalized carve are exact.
+	//
+	/** the order's total inbound costs for the close scenario (a material issue already booked) */
+	private static final String CLOSE_TOTAL_INBOUND = "100";
+	/** the co-product's current cost, priced per STOCK UOM (Stück); the receipt lifts on-hand from 0 to 6 Stück */
+	private static final String CLOSE_COPRODUCT_PRICE_PER_STUECK = "2";
+	/** the co-product's cost-distribution share of the total inbound costs */
+	private static final Percent CLOSE_COPRODUCT_PERCENT = Percent.of(30);
+	/** the co-product's distribution-% carve of the total inbound costs: 100 x 30% = 30 */
+	private static final BigDecimal CLOSE_EXPECTED_COPRODUCT_CARVE = new BigDecimal("30");
+	/** what the co-product's receipt books: current-cost(2/Stück) x received(3kg -> 6 Stück) = 12 */
+	private static final BigDecimal CLOSE_EXPECTED_RECEIPT_AMOUNT = new BigDecimal("12");
+	/** the co-product's still-open WIP after the receipt: carve(30) - booked receipt(12) = 18 */
+	private static final BigDecimal CLOSE_EXPECTED_COPRODUCT_RESIDUAL_BEFORE_CLOSE = new BigDecimal("18");
+	/** the co-product's current cost price after the in-stock carve capitalizes: (2 x 6 + 18) / 6 = 5 EUR/Stück */
+	private static final BigDecimal CLOSE_EXPECTED_COPRODUCT_PRICE_PER_STUECK = new BigDecimal("5");
+
 	private final ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ANY;
 	private final PPOrderId orderId = PPOrderId.ofRepoId(1);
@@ -242,6 +262,63 @@ class ManufacturingCoProductReceiptDifferingUOMTest
 		assertThat(coProductCost.getPrice().toBigDecimal()).isEqualByComparingTo(EXPECTED_PRICE_PER_KG);
 	}
 
+	/**
+	 * WIP=0 end-to-end at the costing layer, under differing UOM: this drives the full order-close path the two
+	 * manufacturing handlers run - the co-product RECEIPT (which internally runs
+	 * {@code PPOrderCosts.updatePostCalculationAmounts}), then the CC-170 {@code CostDifferenceDistribution} leg that
+	 * both {@link ManufacturingAveragePOCostingMethodHandler} and {@link ManufacturingMovingAverageInvoiceCostingMethodHandler}
+	 * route to {@code costDifferenceDistributor.createCostDetails}. It proves, as a green end-to-end run rather than by
+	 * reasoning, that with the co-product row in kg and its cost/stock in Stück:
+	 * <ul>
+	 *   <li>(a) every WIP residual (main product AND co-product) nets to EXACTLY zero after the close, and</li>
+	 *   <li>(b) the co-product capitalizes its distribution-% carve ({@code total inbound x percent}) onto both its
+	 *       {@code PP_Order_Cost} line and its current cost price.</li>
+	 * </ul>
+	 */
+	@ParameterizedTest
+	@EnumSource(ManufacturingHandlerUnderTest.class)
+	void coProductReceiptThenClose_underDifferingUom_netsWipToZero_andCapitalizesCarve(final ManufacturingHandlerUnderTest handlerUnderTest)
+	{
+		setupOrderForClose(handlerUnderTest);
+
+		//
+		// (1) RECEIPT leg: the co-product MixVariance receipt values at current-cost x received-qty
+		// (2 EUR/Stück x 6 Stück = 12) and - inside the handler - runs updatePostCalculationAmounts, which carves the
+		// co-product's distribution share (100 total inbound x 30% = 30) and relieves the main product with the
+		// remainder (70). The carve exceeds what the receipt booked, so the co-product still owes 18 to WIP.
+		handler.createOrUpdateCost(receiptRequest());
+
+		final PPOrderCost coProductAfterReceipt = coProductOrderCost();
+		assertThat(coProductAfterReceipt.getAccumulatedAmount().toBigDecimal()).isEqualByComparingTo(CLOSE_EXPECTED_RECEIPT_AMOUNT);
+		assertThat(coProductAfterReceipt.getPostCalculationAmount().toBigDecimal()).isEqualByComparingTo(CLOSE_EXPECTED_COPRODUCT_CARVE);
+		assertThat(coProductAfterReceipt.getResidualCost().toBigDecimal()).isEqualByComparingTo(CLOSE_EXPECTED_COPRODUCT_RESIDUAL_BEFORE_CLOSE);
+
+		//
+		// (2) CLOSE leg: the CC-170 CostDifferenceDistribution collector - exactly what the manufacturing handlers
+		// route to costDifferenceDistributor.createCostDetails - discharges every WIP residual (main product and each
+		// co-product), capitalizing the in-stock share onto the current cost price.
+		final PPCostCollectorId distributionCollectorId = createCostCollector(CostCollectorType.CostDifferenceDistribution, BigDecimal.ZERO);
+		distributor.createCostDetails(closeRequest(distributionCollectorId), orderId);
+
+		//
+		// (a) WIP nets to EXACTLY zero: neither the main product nor the co-product carries a residual after the close.
+		final PPOrderCosts afterClose = ppOrderCostBL.getByOrderId(orderId);
+		assertThat(afterClose.getResidualCost(acctSchemaId, costElement.getId()).toBigDecimal())
+				.isEqualByComparingTo(BigDecimal.ZERO);
+		final PPOrderCost coProductAfterClose = coProductOrderCost();
+		assertThat(coProductAfterClose.getResidualCost().toBigDecimal()).isEqualByComparingTo(BigDecimal.ZERO);
+
+		//
+		// (b) the co-product capitalized its distribution-% carve: its line now carries exactly 100 x 30% = 30, and the
+		// whole in-stock share (all 6 Stück the receipt put on hand) lifted its current cost price from 2 to 5 EUR/Stück.
+		assertThat(coProductAfterClose.getAccumulatedAmount().toBigDecimal()).isEqualByComparingTo(CLOSE_EXPECTED_COPRODUCT_CARVE);
+		final BigDecimal coProductPriceAfterClose = utils
+				.getCurrentCostForUpdate(utils.extractCostSegmentAndElement(receiptRequest()))
+				.getCostPrice()
+				.toBigDecimal();
+		assertThat(coProductPriceAfterClose).isEqualByComparingTo(CLOSE_EXPECTED_COPRODUCT_PRICE_PER_STUECK);
+	}
+
 	//
 	//
 	// fixture
@@ -331,6 +408,87 @@ class ManufacturingCoProductReceiptDifferingUOMTest
 				.orderId(orderId)
 				.costs(ImmutableList.of(materialIssue, mainProduct, coProduct))
 				.build());
+	}
+
+	//
+	//
+	// fixture - full close-path scenario
+	//
+	//
+
+	private void setupOrderForClose(@NonNull final ManufacturingHandlerUnderTest handlerUnderTest)
+	{
+		acctSchemaId = AcctSchemaTestHelper.newAcctSchema()
+				.costingLevel(CostingLevel.Client)
+				.costingMethod(handlerUnderTest.costingMethod)
+				.currencyId(currencyId)
+				.build();
+		costElement = costElementRepo.getOrCreateMaterialCostElement(clientId, handlerUnderTest.costingMethod);
+		handler = handlerUnderTest.createHandler(utils, distributor);
+
+		receiptCollectorId = createCostCollector(CostCollectorType.MixVariance, RECEIPT_QTY_KG);
+
+		// the co-product's current M_Cost is priced per STOCK UOM (Stück) and starts empty; the receipt adds on-hand
+		saveCurrentCost(coProductId, CLOSE_COPRODUCT_PRICE_PER_STUECK, "0");
+		// the main product needs a current M_Cost row too: the close reads it to split the main-product residual
+		saveCurrentCost(mainProductId, "0", "0");
+		createOrderCostsForClose();
+	}
+
+	/**
+	 * The {@code PP_Order_Cost} rows for the close scenario: a booked material issue (the total inbound costs), an
+	 * empty main-product line, and a co-product line carrying its cost-distribution percent. As with
+	 * {@link #createOrderCosts()} every row keeps its {@code accumulatedQty} in the BOM-line UOM (kg).
+	 */
+	private void createOrderCostsForClose()
+	{
+		final PPOrderCost materialIssue = PPOrderCost.builder()
+				.trxType(PPOrderCostTrxType.MaterialIssue)
+				.costSegmentAndElement(utils.extractCostSegmentAndElement(receiptRequest().withProductId(rawProductId)))
+				.price(costPriceKg("0"))
+				.accumulatedAmount(CostAmount.of(new BigDecimal(CLOSE_TOTAL_INBOUND), currencyId))
+				.accumulatedQty(Quantity.zero(uomKg))
+				.build();
+
+		final PPOrderCost mainProduct = PPOrderCost.builder()
+				.trxType(PPOrderCostTrxType.MainProduct)
+				.costSegmentAndElement(utils.extractCostSegmentAndElement(receiptRequest().withProductId(mainProductId)))
+				.price(costPriceKg("0"))
+				.accumulatedAmount(CostAmount.zero(currencyId))
+				.accumulatedQty(Quantity.zero(uomKg))
+				.build();
+
+		final PPOrderCost coProduct = PPOrderCost.builder()
+				.trxType(PPOrderCostTrxType.CoProduct)
+				.costSegmentAndElement(utils.extractCostSegmentAndElement(receiptRequest()))
+				.price(costPriceKg("0"))
+				.coProductCostDistributionPercent(CLOSE_COPRODUCT_PERCENT)
+				.accumulatedAmount(CostAmount.zero(currencyId))
+				.accumulatedQty(Quantity.zero(uomKg))
+				.build();
+
+		ppOrderCostBL.save(PPOrderCosts.builder()
+				.orderId(orderId)
+				.costs(ImmutableList.of(materialIssue, mainProduct, coProduct))
+				.build());
+	}
+
+	/** what the framework hands the distributor for the main product's CC-170 CostDifferenceDistribution leg */
+	private CostDetailCreateRequest closeRequest(@NonNull final PPCostCollectorId distributionCollectorId)
+	{
+		return CostDetailCreateRequest.builder()
+				.acctSchemaId(acctSchemaId)
+				.clientId(clientId)
+				.orgId(orgId)
+				.productId(mainProductId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.costElement(costElement)
+				.documentRef(CostingDocumentRef.ofCostCollectorId(distributionCollectorId))
+				// value-only discharge: the qty is zeroed downstream, its UOM only needs to be the main product's stock UOM
+				.qty(Quantity.zero(uomStueck))
+				.amt(CostAmount.zero(currencyId))
+				.date(DATE)
+				.build();
 	}
 
 	/** a zero-ish cost price expressed in the BOM-line UOM (kg), to match the PP_Order_Cost rows' accumulatedQty UOM */
