@@ -3,7 +3,6 @@ Authorization: {{authToken}}
 Content-Type: application/json;charset=UTF-8
 accept: application/json;charset=UTF-8
 
-
 {
   "items": [
     {
@@ -26,7 +25,6 @@ accept: application/json;charset=UTF-8
 > {%
     client.global.set("externalHeaderId", response.body.responseItems[0].externalHeaderId);
     client.global.set("externalLineId", response.body.responseItems[0].externalLineId);
-    client.global.set("invoiceCandidateId", response.body.responseItems[0].metasfreshId);
 %}
 
 ### enqueue the invoice candidate created above
