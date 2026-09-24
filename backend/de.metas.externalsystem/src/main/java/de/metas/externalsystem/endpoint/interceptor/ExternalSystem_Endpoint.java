@@ -291,11 +291,11 @@ public class ExternalSystem_Endpoint
 
 		boolean isVisible(@NonNull final Evaluatee configuration)
 		{
-			// Only TRUE means shown; anything else counts as HIDDEN, and the field is cleared. The window
-			// reaches the same verdict only while every rule stays inside the three governing columns AND
-			// compares against a NON-EMPTY literal: an unset ref-list field resolves to "" in the window,
-			// whose DocumentEvaluatee is no Evaluatee2, and to the CtxName default "X" here, where
-			// Evaluatees.ofMap is one. Both halves are pinned by ExternalSystem_EndpointTest.VisibilityRules.
+			// Agrees with the window only while every rule stays inside the three governing columns and
+			// compares against a literal that is neither empty nor the variable's own CtxName default: on a
+			// ROOT tab an unset ref-list field reads as "" in the window (DocumentEvaluatee hands it back),
+			// while here the column is simply absent, so the default "X" wins. All three are pinned by
+			// ExternalSystem_EndpointTest.VisibilityRules.
 			final Boolean visible = visibleIf.evaluate(configuration, OnVariableNotFound.ReturnNoResult);
 			return Boolean.TRUE.equals(visible);
 		}
