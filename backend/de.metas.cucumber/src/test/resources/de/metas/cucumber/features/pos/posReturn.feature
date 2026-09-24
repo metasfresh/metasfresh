@@ -58,11 +58,11 @@ Feature: POS Product Return
       | product      | 0.3 | KGM | return_1       |
 
     Then validate the created material receipt
-      | M_InOut_ID | DocStatus | M_Warehouse_ID   | MovementType | OPT.C_Order_ID.Identifier |
-      | return_1   | CO        | qualityWarehouse | C+           | null                      |
+      | M_InOut_ID | DocStatus | M_Warehouse_ID   | MovementType | OPT.C_Order_ID |
+      | return_1   | CO        | qualityWarehouse | C+           | null           |
     And validate the created material receipt lines
-      | M_InOut_ID | M_Product_ID | movementqty | OPT.Return_Origin_InOutLine_ID.Identifier |
-      | return_1   | product      | 0.3         | null                                      |
+      | M_InOut_ID | M_Product_ID | movementqty | OPT.Return_Origin_InOutLine_ID |
+      | return_1   | product      | 0.3         | null                           |
     And load HUs assigned to M_InOut
       | M_InOut_ID | M_HU_ID     |
       | return_1   | return_1_hu |

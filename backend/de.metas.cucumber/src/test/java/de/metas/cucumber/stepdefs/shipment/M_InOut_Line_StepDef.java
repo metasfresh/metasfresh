@@ -115,7 +115,7 @@ public class M_InOut_Line_StepDef
 	 *   <b>movementqty</b> — (optional) expected {@code MovementQty}<br>
 	 *   <b>ExternalId</b> — (optional) expected {@code ExternalId}<br>
 	 *   <b>C_Project_ID</b> — (optional, identifier-ref) expected project<br>
-	 *   <b>OPT.Return_Origin_InOutLine_ID.Identifier</b> — (optional, identifier-ref, null-allowed) expected origin
+	 *   <b>OPT.Return_Origin_InOutLine_ID</b> — (optional, identifier-ref, null-allowed) expected origin
 	 *   shipment/receipt line; pass {@code null} to assert the line has no origin (e.g. a POS return line, which
 	 *   is a fresh receipt, never a match against a prior shipment line)<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_InOutLine_StepDefData, M_Product_StepDefData,
@@ -123,8 +123,8 @@ public class M_InOut_Line_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And validate the created material receipt lines
-	 *   | M_InOut_ID | M_Product_ID | movementqty | OPT.Return_Origin_InOutLine_ID.Identifier |
-	 *   | return_1   | product      | 0.3         | null                                       |
+	 *   | M_InOut_ID | M_Product_ID | movementqty | OPT.Return_Origin_InOutLine_ID |
+	 *   | return_1   | product      | 0.3         | null                           |
 	 * </pre>
 	 */
 	@And("^validate the created (shipment|material receipt) lines$")

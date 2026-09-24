@@ -1029,8 +1029,8 @@ public class C_Invoice_Candidate_StepDef
 	 * <ul>
 	 *   <li>{@code OPT.M_Product_ID.Identifier} – when present, filters ICs by this product; required when
 	 *       the return generates multiple ICs (e.g. packing-material lines alongside the product line)</li>
-	 *   <li>{@code OPT.M_InOutLine_ID.Identifier} – when present, narrows the lookup to the ICs of this specific
-	 *       return line (registered via {@code OPT.M_InOutLine_ID.Identifier} on the "validate the created
+	 *   <li>{@code OPT.M_InOutLine_ID} – when present, narrows the lookup to the ICs of this specific
+	 *       return line (registered via {@code OPT.M_InOutLine_ID} on the "validate the created
 	 *       material receipt lines" step); required (instead of {@code OPT.M_Product_ID.Identifier}) when the
 	 *       return has several lines of the SAME product (e.g. two different batches returned in one visit) —
 	 *       {@code QtyDelivered}/{@code QtyOrdered} cannot disambiguate them because they are only populated by
@@ -1060,17 +1060,16 @@ public class C_Invoice_Candidate_StepDef
 					return queryBuilder.create().list();
 				});
 
-		// pass OPT.M_InOutLine_ID.Identifier / OPT.M_Product_ID.Identifier to narrow the lookup whenever the
+		// pass OPT.M_InOutLine_ID / OPT.M_Product_ID.Identifier to narrow the lookup whenever the
 		// return generates several ICs (e.g. HU packing-material lines alongside the product line)
 		assertThat(matchingCandidates).as("invoice candidates for row %s", row).hasSizeLessThanOrEqualTo(1);
 
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = matchingCandidates.stream().findFirst();
-		if (!invoiceCandidate.isPresent())
+		if (matchingCandidates.isEmpty())
 		{
 			return false;
 		}
 
-		invoiceCandTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID), invoiceCandidate.get());
+		invoiceCandTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID), matchingCandidates.get(0));
 
 		return true;
 	}
