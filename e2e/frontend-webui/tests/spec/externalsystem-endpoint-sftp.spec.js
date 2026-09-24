@@ -401,7 +401,7 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     // Fill optional filename pattern
     await fillTextField(page, 'SftpFilenamePattern', 'export_{timestamp}.json');
 
-    // SFTP inbound-polling settings now live on the endpoint (moved off the scripted-import config).
+    // SFTP inbound-polling settings live on the endpoint.
     await fillNumericField(page, 'SftpPollingIntervalMs', '30000');
     await fillTextField(page, 'ProcessedDirectory', '/inbound/processed');
     await fillTextField(page, 'ErrorDirectory', '/inbound/error');
