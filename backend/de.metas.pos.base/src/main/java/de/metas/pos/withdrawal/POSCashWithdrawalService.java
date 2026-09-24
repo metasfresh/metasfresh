@@ -5,6 +5,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.ChargeId;
+import de.metas.costing.ChargeTypeId;
+import de.metas.costing.impl.ChargeRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
@@ -26,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +52,7 @@ public class POSCashWithdrawalService
 
 	private static final AdMessageKey MSG_NoCategories = AdMessageKey.of("de.metas.pos.CashWithdrawal.NoCategories");
 	private static final AdMessageKey MSG_AmountMustBePositive = AdMessageKey.of("de.metas.pos.CashWithdrawal.AmountMustBePositive");
+	private static final AdMessageKey MSG_NoOrgBPartner = AdMessageKey.of("de.metas.pos.CashWithdrawal.NoOrgBPartner");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -59,10 +63,10 @@ public class POSCashWithdrawalService
 
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final POSCashJournalService posCashJournalService;
-	@NonNull private final POSCashWithdrawalCategoryRepository categoryRepository;
+	@NonNull private final ChargeRepository chargeRepository;
 
 	/**
-	 * @throws AdempiereException ({@code de.metas.pos.CashWithdrawal.NoCategories}) if no charge type is configured or it has no active charges
+	 * @return the offered categories; empty if no charge type is configured or it has no active charges
 	 */
 	@NonNull
 	public ImmutableList<POSCashWithdrawalCategory> getCategories(@NonNull final POSTerminalId posTerminalId)
@@ -77,23 +81,31 @@ public class POSCashWithdrawalService
 		final OrgId orgId = terminal.getOrgId();
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(orgDAO.getClientIdByOrgId(orgId), orgId);
 
-		final int chargeTypeRepoId = sysConfigBL.getIntValue(SYSCONFIG_ChargeTypeId, -1, clientAndOrgId);
-		if (chargeTypeRepoId <= 0)
+		final ChargeTypeId chargeTypeId = ChargeTypeId.ofRepoIdOrNull(sysConfigBL.getIntValue(SYSCONFIG_ChargeTypeId, -1, clientAndOrgId));
+		if (chargeTypeId == null)
 		{
-			throw new AdempiereException(MSG_NoCategories);
+			return ImmutableList.of();
 		}
 
-		final ImmutableList<POSCashWithdrawalCategory> categories = categoryRepository.getByChargeTypeId(chargeTypeRepoId, clientAndOrgId);
-		if (categories.isEmpty())
-		{
-			throw new AdempiereException(MSG_NoCategories);
-		}
-		return categories;
+		return chargeRepository.getActiveByChargeTypeId(chargeTypeId, clientAndOrgId)
+				.stream()
+				.map(POSCashWithdrawalService::toCategory)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static POSCashWithdrawalCategory toCategory(@NonNull final I_C_Charge chargeRecord)
+	{
+		return POSCashWithdrawalCategory.builder()
+				.chargeId(ChargeId.ofRepoId(chargeRecord.getC_Charge_ID()))
+				.name(chargeRecord.getName())
+				.build();
 	}
 
 	/**
 	 * @throws AdempiereException ({@code de.metas.pos.CashJournalNotOpen}) if the terminal has no open cash journal
 	 * @throws AdempiereException ({@code de.metas.pos.CashWithdrawal.AmountMustBePositive}) if the amount is not greater than zero
+	 * @throws AdempiereException ({@code de.metas.pos.CashWithdrawal.NoCategories}) if no categories are configured
+	 * @throws AdempiereException ({@code de.metas.pos.CashWithdrawal.NoOrgBPartner}) if the terminal's org has no linked business partner
 	 */
 	@NonNull
 	public POSCashWithdrawalResult withdraw(@NonNull final POSCashWithdrawalRequest request)
@@ -107,17 +119,18 @@ public class POSCashWithdrawalService
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(request.getPosTerminalId());
 		final POSCashJournalId journalId = terminal.getCashJournalIdNotNull();
 
-		if (request.getAmount().signum() <= 0)
+		final Money amount = request.getAmount();
+		amount.assertCurrencyId(terminal.getCurrencyId());
+		if (amount.signum() <= 0)
 		{
 			throw new AdempiereException(MSG_AmountMustBePositive);
 		}
-		final Money amount = Money.of(request.getAmount(), terminal.getCurrencyId());
 
 		final POSCashWithdrawalCategory category = getCategory(terminal, request.getChargeId());
 
 		final OrgId orgId = terminal.getOrgId();
 		final BPartnerId orgBPartnerId = bpartnerOrgBL.retrieveLinkedBPartnerId(orgId)
-				.orElseThrow(() -> new AdempiereException("No business partner is linked to the POS terminal's organization")
+				.orElseThrow(() -> new AdempiereException(MSG_NoOrgBPartner)
 						.setParameter("AD_Org_ID", orgId)
 						.setParameter("posTerminalId", terminal.getId()));
 
@@ -156,7 +169,13 @@ public class POSCashWithdrawalService
 	@NonNull
 	private POSCashWithdrawalCategory getCategory(@NonNull final POSTerminal terminal, @NonNull final ChargeId chargeId)
 	{
-		return getCategories(terminal)
+		final ImmutableList<POSCashWithdrawalCategory> categories = getCategories(terminal);
+		if (categories.isEmpty())
+		{
+			throw new AdempiereException(MSG_NoCategories);
+		}
+
+		return categories
 				.stream()
 				.filter(category -> category.getChargeId().equals(chargeId))
 				.findFirst()
