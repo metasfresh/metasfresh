@@ -42,6 +42,8 @@ import java.util.Map;
  *   <li>{@code {documentno}} — document number of the exported record (e.g. shipment number)</li>
  *   <li>{@code {table}} — table name of the exported record (e.g. {@code M_InOut})</li>
  *   <li>{@code {recordid}} — database record ID of the exported record</li>
+ *   <li>{@code {filename}} — base name of the incoming file, import-side only
+ *       (see {@link ImportFileNameResolver})</li>
  * </ul>
  *
  * <p>Unknown placeholders are left unchanged.
