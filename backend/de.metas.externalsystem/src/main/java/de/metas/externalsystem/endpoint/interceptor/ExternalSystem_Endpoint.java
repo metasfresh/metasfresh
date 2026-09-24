@@ -86,6 +86,8 @@ public class ExternalSystem_Endpoint
 			I_ExternalSystem_Endpoint.COLUMNNAME_AuthType,
 			I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType);
 
+	@NonNull private final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+
 	/**
 	 * Every column this endpoint's window can hide, together with the condition under which it is shown and
 	 * how to take its value away.
@@ -99,18 +101,20 @@ public class ExternalSystem_Endpoint
 	 * {@code IsArrayFanOut} is the case in point — both the HTTP and the SFTP dispatch read it, the window
 	 * shows it for every transport, and so no transport switch may clear it.
 	 * <p>
-	 * Lazily built: compiling a logic expression asks a sysconfig, which is not necessarily answerable while
-	 * this class is being loaded.
+	 * Lazily built: compiling a logic expression asks a sysconfig ({@code LogicExpressionCompiler
+	 * #isUseOperatorPrecedence}), which is not necessarily answerable while this bean is being constructed.
+	 * <p>
+	 * Package-private so {@code ExternalSystem_EndpointTest.VisibilityRules} can walk the rules.
 	 */
-	private static final Supplier<ImmutableList<HideableColumn>> HIDEABLE_COLUMNS =
-			Suppliers.memoize(ExternalSystem_Endpoint::createHideableColumns);
+	@VisibleForTesting
+	final Supplier<ImmutableList<HideableColumn>> hideableColumns = Suppliers.memoize(this::createHideableColumns);
 
 	private static final String VISIBLE_FOR_HTTP = "@TransportType/X@='HTTP'";
 	private static final String VISIBLE_FOR_SFTP = "@TransportType/X@='SFTP'";
 	private static final String VISIBLE_FOR_LOCAL_FILE = "@TransportType/X@='LOCAL_FILE'";
 	private static final String VISIBLE_FOR_HTTP_OAUTH2 = "@TransportType/X@='HTTP' & @AuthType/X@='OAuth2'";
 
-	private static ImmutableList<HideableColumn> createHideableColumns()
+	private ImmutableList<HideableColumn> createHideableColumns()
 	{
 		return ImmutableList.of(
 				// HTTP transport
@@ -182,12 +186,12 @@ public class ExternalSystem_Endpoint
 						endpoint -> endpoint.setImportFileNamePattern(null)));
 	}
 
-	private static HideableColumn hideable(
+	private HideableColumn hideable(
 			@NonNull final String columnName,
 			@NonNull final String displayLogic,
 			@NonNull final Consumer<I_ExternalSystem_Endpoint> clearAction)
 	{
-		final ILogicExpression visibleIf = Services.get(IExpressionFactory.class).compile(displayLogic, ILogicExpression.class);
+		final ILogicExpression visibleIf = expressionFactory.compile(displayLogic, ILogicExpression.class);
 		return new HideableColumn(columnName, displayLogic, visibleIf, clearAction);
 	}
 
@@ -213,7 +217,7 @@ public class ExternalSystem_Endpoint
 		// out before anything is taken away
 		final Evaluatee newConfiguration = extractVisibilityGoverningValues(endpoint);
 
-		final ImmutableList<HideableColumn> hiddenColumns = HIDEABLE_COLUMNS.get().stream()
+		final ImmutableList<HideableColumn> hiddenColumns = hideableColumns.get().stream()
 				.filter(column -> !column.isVisible(newConfiguration))
 				.collect(ImmutableList.toImmutableList());
 
@@ -264,12 +268,6 @@ public class ExternalSystem_Endpoint
 		{
 			values.put(columnName, value);
 		}
-	}
-
-	@VisibleForTesting
-	static ImmutableList<HideableColumn> getHideableColumns()
-	{
-		return HIDEABLE_COLUMNS.get();
 	}
 
 	/** A column the window hides under some configurations, and what "hidden" must leave behind. */

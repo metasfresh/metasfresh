@@ -642,7 +642,7 @@ public class ExternalSystem_EndpointTest
 	{
 		private List<HideableColumn> hideableColumns()
 		{
-			return ExternalSystem_Endpoint.getHideableColumns();
+			return interceptor.hideableColumns.get();
 		}
 
 		/**
