@@ -154,5 +154,12 @@ Feature: POS Product Return
   @Id:S28210_TC15
   Scenario: A concurrent request for the same terminal blocks on the terminal lock instead of racing
     When a product return at POS terminal till by metasfresh blocks while the terminal is locked by a concurrent transaction:
-      | M_Product_ID | Qty | UOM |
-      | product      | 0.3 | KGM |
+      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID |
+      | product      | 0.3 | KGM | return_4       |
+
+    Then after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID | C_Invoice_Candidate_ID |
+      | return_4   | lockedCreditCand       |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | IsError |
+      | lockedCreditCand       | false   |

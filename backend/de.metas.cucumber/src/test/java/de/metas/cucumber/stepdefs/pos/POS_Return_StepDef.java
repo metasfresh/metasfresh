@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.pos.POSProduct;
 import de.metas.pos.POSService;
@@ -57,6 +58,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -83,6 +85,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @RequiredArgsConstructor
 public class POS_Return_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(POS_Return_StepDef.class);
+
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -134,9 +138,7 @@ public class POS_Return_StepDef
 
 		final POSReturnResult result = posService.createReturn(request);
 
-		final I_M_InOut returnRecord = InterfaceWrapperHelper.load(result.getReturnInOutId(), I_M_InOut.class);
-		rows.get(0).getAsOptionalIdentifier("M_InOut_ID")
-				.ifPresent(returnIdentifier -> inoutTable.putOrReplace(returnIdentifier, returnRecord));
+		registerReturnInOut(rows, result);
 	}
 
 	/**
@@ -191,13 +193,14 @@ public class POS_Return_StepDef
 	 * never actually overlap inside the critical section), so this step controls the window explicitly instead.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns same as {@link #posProductReturn}
-	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData
+	 * @cucumber.columns same as {@link #posProductReturn} (incl. {@code OPT.M_InOut_ID}, registered once the
+	 * call has completed)
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData, M_InOut_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * When a product return at POS terminal till by metasfresh blocks while the terminal is locked by a concurrent transaction:
-	 *   | M_Product_ID | Qty | UOM |
-	 *   | product      | 0.3 | KGM |
+	 *   | M_Product_ID | Qty | UOM | OPT.M_InOut_ID |
+	 *   | product      | 0.3 | KGM | return_1       |
 	 * </pre>
 	 */
 	@And("^a product return at POS terminal (\\S+) by (\\S+) blocks while the terminal is locked by a concurrent transaction:$")
@@ -224,21 +227,7 @@ public class POS_Return_StepDef
 			// 1) own thread, own (thread-inherited) transaction: acquire and HOLD the row lock until told to
 			// release. Goes through POSTerminalService (not POSTerminalRepository directly) so this exercises
 			// the exact same production entry point POSReturnService itself calls.
-			final Future<?> lockHolderFuture = executor.submit((Runnable)() -> trxManager.callInThreadInheritedTrx(() ->
-			{
-				try
-				{
-					posTerminalService.lockForUpdate(posTerminalId);
-					lockAcquired.countDown();
-					releaseSignal.await(30, TimeUnit.SECONDS);
-				}
-				catch (final Throwable t)
-				{
-					lockHolderFailure.set(t);
-					lockAcquired.countDown();
-				}
-				return null;
-			}));
+			final Future<?> lockHolderFuture = executor.submit(() -> holdLockUntilReleased(posTerminalId, lockAcquired, releaseSignal, lockHolderFailure));
 
 			assertThat(lockAcquired.await(10, TimeUnit.SECONDS)).as("lock holder acquired the C_POS row lock").isTrue();
 			if (lockHolderFailure.get() != null)
@@ -267,6 +256,8 @@ public class POS_Return_StepDef
 			final POSReturnResult result = createReturnFuture.get(30, TimeUnit.SECONDS);
 			assertThat(result).as("createReturn must complete once the lock is released").isNotNull();
 			assertThat(countReturnDocumentsByExternalId(returnExternalId)).as("exactly one POS return document once the lock is released").isEqualTo(1);
+
+			registerReturnInOut(rows, result);
 		}
 		finally
 		{
@@ -279,6 +270,45 @@ public class POS_Return_StepDef
 				executor.shutdownNow();
 			}
 		}
+	}
+
+	/**
+	 * Runs on the lock-holder worker thread, in its own (thread-inherited) transaction: acquires the terminal's
+	 * {@code C_POS} row lock and HOLDS it until {@code releaseSignal} fires (or 30s pass). Any failure is logged and
+	 * handed back to the step thread via {@code failure}; {@code lockAcquired} is counted down either way so the
+	 * step thread never waits on a lock holder that already died.
+	 */
+	private void holdLockUntilReleased(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final CountDownLatch lockAcquired,
+			@NonNull final CountDownLatch releaseSignal,
+			@NonNull final AtomicReference<Throwable> failure)
+	{
+		trxManager.callInThreadInheritedTrx(() -> {
+			try
+			{
+				posTerminalService.lockForUpdate(posTerminalId);
+				lockAcquired.countDown();
+				releaseSignal.await(30, TimeUnit.SECONDS);
+			}
+			catch (final Throwable t)
+			{
+				logger.error("Lock holder failed for posTerminalId={}", posTerminalId, t);
+				failure.set(t);
+				lockAcquired.countDown();
+			}
+			return null;
+		});
+	}
+
+	/**
+	 * Registers the return's {@code M_InOut} under the first row's {@code OPT.M_InOut_ID} identifier, if given.
+	 */
+	private void registerReturnInOut(@NonNull final List<DataTableRow> rows, @NonNull final POSReturnResult result)
+	{
+		final I_M_InOut returnRecord = InterfaceWrapperHelper.load(result.getReturnInOutId(), I_M_InOut.class);
+		rows.get(0).getAsOptionalIdentifier("M_InOut_ID")
+				.ifPresent(returnIdentifier -> inoutTable.putOrReplace(returnIdentifier, returnRecord));
 	}
 
 	/**
