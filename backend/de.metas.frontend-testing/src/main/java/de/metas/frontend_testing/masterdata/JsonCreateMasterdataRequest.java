@@ -66,10 +66,8 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonLoginUserRequest> login;
 
 	/**
-	 * Creates purpose-built roles - their {@code AD_Table_Access} rows and a user bound to nothing but the
-	 * role - so a spec can exercise a permission without touching any pre-existing role. Applied right after
-	 * {@code login}, so everything created later can already be looked at through such a role.
-	 * See {@link de.metas.frontend_testing.masterdata.role.CreateRoleCommand}.
+	 * Purpose-built roles (each with its bound user), applied right after {@code login} so later-created
+	 * masterdata can be viewed through them. See {@link de.metas.frontend_testing.masterdata.role.CreateRoleCommand}.
 	 */
 	@Nullable Map<String, JsonCreateRoleRequest> roles;
 
