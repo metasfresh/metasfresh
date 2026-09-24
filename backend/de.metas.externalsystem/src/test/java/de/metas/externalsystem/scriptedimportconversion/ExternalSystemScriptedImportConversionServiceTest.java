@@ -248,7 +248,13 @@ class ExternalSystemScriptedImportConversionServiceTest
 	void getParameters_sftpEndpoint_doesNotIncludeLocalFileParameters()
 	{
 		// given: a fully-configured SFTP endpoint (regression guard: the SFTP branch's output must
-		// stay exactly what it was before the LOCAL_FILE branch was added)
+		// stay exactly what it was before the LOCAL_FILE branch was added) -- the three LOCAL_FILE
+		// columns are set here too, on purpose: they are stored per-endpoint regardless of transport
+		// (nothing in the schema stops an SFTP row from having a LocalRootLocation), so ONLY the
+		// service's own `transportType == LOCAL_FILE` guard keeps them out of the SFTP output. Leaving
+		// these columns unset (as this fixture used to) would make the assertions below pass even with
+		// that guard deleted -- PO.get_ValueAsString returns null for an unset column regardless, so the
+		// null-check inside each `if (endpoint.getXxx() != null)` would suppress the key on its own.
 		final UserId userImportId = createUserId();
 		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
 				.userId(userImportId)
@@ -264,6 +270,9 @@ class ExternalSystemScriptedImportConversionServiceTest
 		endpointRecord.setSftpPollingIntervalMs(30000);
 		endpointRecord.setProcessedDirectory("/inbound/processed");
 		endpointRecord.setErrorDirectory("/inbound/error");
+		endpointRecord.setLocalRootLocation("/data/should-not-leak/watch");
+		endpointRecord.setImportFileNamePattern("should-not-leak_{filename}");
+		endpointRecord.setFrequency(15000);
 		endpointRecord.setIsArrayFanOut(false);
 		saveRecord(endpointRecord);
 
