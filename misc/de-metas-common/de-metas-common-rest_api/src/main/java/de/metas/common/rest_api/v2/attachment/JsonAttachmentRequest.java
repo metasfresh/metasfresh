@@ -65,15 +65,17 @@ public class JsonAttachmentRequest
 			@Nullable @JsonProperty("targets") final List<JsonExternalReferenceTarget> targets,
 			@Nullable @JsonProperty("references") @Singular final List<JsonTableRecordReference> references)
 	{
-		if (targets == null && references == null)
-		{
-			throw new RuntimeException("targets and references cannot be null at the same time. At least one must be provided!");
-		}
-
 		this.orgCode = orgCode;
 		this.attachment = attachment;
 
 		this.targets = CoalesceUtil.coalesce(targets, ImmutableList.of());
 		this.references = CoalesceUtil.coalesce(references, ImmutableList.of());
+
+		// emptiness, not null: "references" carries @Singular, so the builder hands this constructor
+		// an empty list when nothing was added, and Jackson only ever gets here through that builder.
+		if (this.targets.isEmpty() && this.references.isEmpty())
+		{
+			throw new RuntimeException("targets and references cannot be empty at the same time. At least one must be provided!");
+		}
 	}
 }
