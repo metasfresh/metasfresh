@@ -283,7 +283,22 @@ public class DocumentPermissionsHelper
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
 			@NonNull final IUserRolePermissions permissions)
 	{
-		final int adTableId = getAdTableId(entityDescriptor);
+		final String tableName = entityDescriptor.getTableNameOrNull();
+		if (tableName == null) {return BooleanWithReason.TRUE;} // not table based => OK
+
+		return checkRoleCanCreateNewRecords(tableName, permissions);
+	}
+
+	/**
+	 * The role's per-table create permission for a table given by name. Used where the record being created
+	 * lives in a different table than the document driving the request (e.g. the BPartner quick input:
+	 * the document is a C_BPartner_QuickInput template, but the record created is a C_BPartner).
+	 */
+	public static BooleanWithReason checkRoleCanCreateNewRecords(
+			@NonNull final String tableName,
+			@NonNull final IUserRolePermissions permissions)
+	{
+		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		if (adTableId <= 0) {return BooleanWithReason.TRUE;}
 
 		return permissions.isTableAccess(adTableId, Access.CREATE)

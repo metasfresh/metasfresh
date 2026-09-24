@@ -25,6 +25,7 @@ import { assertRecordIsValid, getFieldData, getTabInfo, getRecordData, WEBAPI_BA
  */
 
 const CREATE_RESTRICTION_MSG_KEY = 'ERR_Role_CreateNewRecordsNotAllowed';
+const BPARTNER_QUICK_INPUT_WINDOW_ID = 540327; // "Neuer Geschäftspartner" — C_BPartner_QuickInput window
 const ADRESSE_TAB_ID = 'AD_Tab-222'; // C_BPartner_Location included tab in window 123
 const VORGAENGE_TAB_ID = 'AD_Tab-540829'; // R_Request included tab in window 123, IsInsertRecord='N' (forbids insert already)
 const isNewRecordUrl = (url) => /\/window\/\d+\/\d+(\?|$)/.test(url);
@@ -51,6 +52,57 @@ async function ensureSubheaderOpen(page, targetLocator) {
         }
         await page.waitForTimeout(600);
     }
+}
+
+// Drive the real WebUI "create new BPartner via Quick Input" server sequence directly against the API
+// (the UI hides the option for a restricted role, so the fail-open can only be reproduced by replaying the
+// server calls the frontend makes). Sequence discovered from the frontend action + WindowRestController:
+//   1. POST /address                            -> a new address (C_Location) document
+//   2. PATCH /address/{id} (C_Country_ID, City) + POST /address/{id}/complete -> the C_Location lookup value
+//   3. PATCH /window/540327/NEW                  -> a new C_BPartner_QuickInput template document
+//   4. PATCH /window/540327/{docId}             -> fill Companyname, C_BP_Group_ID, C_Location_ID (make it valid)
+//   5. POST  /window/540327/{docId}/processNewRecord -> creates the C_BPartner (returns its repo id) or refuses
+// Returns { status, body, createdId } where createdId is the created C_BPartner id (a positive int) or null.
+async function createBPartnerViaQuickInput(page) {
+    const H = { 'Content-Type': 'application/json' };
+    const WIN = BPARTNER_QUICK_INPUT_WINDOW_ID;
+
+    // 1./2. address document with a valid country, then complete it into a C_Location lookup value
+    const addrResp = await page.request.post(`${WEBAPI_BASE_URL}/address`, { headers: H, data: { templateId: 0 } });
+    const addrId = (await addrResp.json()).id;
+    const countryDropdown = await (await page.request.get(`${WEBAPI_BASE_URL}/address/${addrId}/field/C_Country_ID/dropdown`, { headers: H })).json();
+    const country = (countryDropdown.values || [])[0];
+    const addrEvents = [
+        { op: 'replace', path: 'C_Country_ID', value: country.key },
+        { op: 'replace', path: 'City', value: `QI Testcity ${Date.now()}` },
+    ];
+    await page.request.patch(`${WEBAPI_BASE_URL}/address/${addrId}`, { headers: H, data: addrEvents });
+    const locValue = await (await page.request.post(`${WEBAPI_BASE_URL}/address/${addrId}/complete`, { headers: H, data: { events: addrEvents } })).json();
+
+    // 3. new quick-input template document
+    const createResp = await page.request.patch(`${WEBAPI_BASE_URL}/window/${WIN}/NEW`, { headers: H, data: [] });
+    const createBody = await createResp.json();
+    const docData = createBody.documents ? createBody.documents[0] : (Array.isArray(createBody) ? createBody[0] : createBody);
+    const docId = docData.id;
+
+    // 4. fill the mandatory template fields so the create would actually succeed (pins the gate, not validation)
+    const groupDropdown = await (await page.request.get(`${WEBAPI_BASE_URL}/window/${WIN}/${docId}/field/C_BP_Group_ID/dropdown`, { headers: H })).json();
+    const group = (groupDropdown.values || [])[0];
+    await page.request.patch(`${WEBAPI_BASE_URL}/window/${WIN}/${docId}`, {
+        headers: H,
+        data: [
+            { op: 'replace', path: 'Companyname', value: `QI BP ${Date.now()}` },
+            { op: 'replace', path: 'C_BP_Group_ID', value: group.key },
+            { op: 'replace', path: 'C_Location_ID', value: locValue },
+        ],
+    });
+
+    // 5. the create endpoint under test
+    const pr = await page.request.post(`${WEBAPI_BASE_URL}/window/${WIN}/${docId}/processNewRecord`, { headers: H, data: {} });
+    const body = await pr.text();
+    const trimmed = (body || '').trim();
+    const createdId = /^\d+$/.test(trimmed) && Number(trimmed) > 0 ? Number(trimmed) : null;
+    return { status: pr.status(), body, createdId };
 }
 
 testCases.forEach(({ language, label }) => {
@@ -157,6 +209,91 @@ testCases.forEach(({ language, label }) => {
             expect(isNewRecordUrl(urlAfterAltN), `Alt+N must not open a new record for a restricted role (url=${urlAfterAltN})`).toBe(false);
 
             console.log(`[${language}] PASS — restricted role blocked from creating C_BPartner`);
+        });
+    });
+
+    // TC-QI (AC1/AC5, server enforcement) — the "create new BPartner via Quick Input" path must be refused
+    // SERVER-SIDE for a restricted role. The WebUI hides the quick-input "New" option (TC14), but the option
+    // being hidden does not protect the endpoint: a direct/replayed POST to /window/540327/{doc}/processNewRecord
+    // must still be refused. This drives the exact server sequence the frontend uses (createBPartnerViaQuickInput)
+    // and asserts the server REJECTS it (non-2xx + the role-create-not-allowed reason naming the role) and creates
+    // NO C_BPartner. Language-invariant: asserts on the HTTP status and the generated role-name token (the reason's
+    // {0}), never localized text.
+    test.describe(`Role create restriction — Quick Input create refused server-side (${label})`, () => {
+        test(`restricted role is refused at processNewRecord (${label})`, async ({ page }) => {
+            allure.epic('E0390: Business Partner');
+            allure.story('Role create restriction — the BPartner Quick Input create endpoint enforces the role restriction');
+            allure.tag('F33020: Roles');
+            allure.tag('F33020');
+            allure.severity('critical');
+            allure.parameter('Language', language);
+            allure.tag(language);
+            test.setTimeout(120000);
+
+            const masterdata = await Backend.createMasterdata({
+                request: {
+                    login: { user: { language } },
+                    roles: {
+                        restricted: {
+                            name: `QICreateRestricted_${language}`,
+                            tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }],
+                            user: { language },
+                        },
+                    },
+                },
+            });
+            const roleUser = masterdata.roles.restricted.user;
+            const roleName = masterdata.roles.restricted.name;
+            expect(roleUser, 'masterdata must return the restricted role user').toBeTruthy();
+
+            await LoginPage.goto();
+            await LoginPage.login(roleUser);
+            await DashboardPage.expectVisible();
+
+            const result = await createBPartnerViaQuickInput(page);
+            console.log(`[${language}] Quick Input processNewRecord (restricted) -> status=${result.status} createdId=${result.createdId} body=${result.body.slice(0, 200)}`);
+
+            // The server must refuse the create (an error response), with the role create-restriction reason (which
+            // names the role — the {0} of ERR_Role_CreateNewRecordsNotAllowed), and NO C_BPartner may be created.
+            expect(result.status, `processNewRecord must refuse a restricted role (was ${result.status})`).toBeGreaterThanOrEqual(400);
+            expect(result.body, 'the refusal must be the role create-restriction reason (names the restricted role)').toContain(roleName);
+            expect(result.createdId, 'no C_BPartner may be created for a restricted role via Quick Input').toBeNull();
+            console.log(`[${language}] PASS — Quick Input create refused server-side for the restricted role`);
+        });
+    });
+
+    // TC-QI control — an UNRESTRICTED role creates a BPartner through the very same Quick Input endpoint, proving
+    // the gate is scoped to the restriction and does not block everyone.
+    test.describe(`Role create restriction — Quick Input create allowed for unrestricted role (${label})`, () => {
+        test(`unrestricted role creates a business partner via processNewRecord (${label})`, async ({ page }) => {
+            allure.epic('E0390: Business Partner');
+            allure.story('Role create restriction — the BPartner Quick Input create endpoint stays open for an unrestricted role');
+            allure.tag('F33020: Roles');
+            allure.tag('F33020');
+            allure.severity('critical');
+            allure.parameter('Language', language);
+            allure.tag(language);
+            test.setTimeout(120000);
+
+            const masterdata = await Backend.createMasterdata({
+                request: {
+                    login: { user: { language } },
+                    roles: { open: { name: `QIUnrestricted_${language}`, user: { language } } },
+                },
+            });
+            const roleUser = masterdata.roles.open.user;
+            expect(roleUser, 'masterdata must return the unrestricted role user').toBeTruthy();
+
+            await LoginPage.goto();
+            await LoginPage.login(roleUser);
+            await DashboardPage.expectVisible();
+
+            const result = await createBPartnerViaQuickInput(page);
+            console.log(`[${language}] Quick Input processNewRecord (unrestricted) -> status=${result.status} createdId=${result.createdId}`);
+
+            expect(result.status, `an unrestricted role must be allowed to create via Quick Input (was ${result.status}, body=${result.body.slice(0, 200)})`).toBe(200);
+            expect(result.createdId, 'an unrestricted role must create a C_BPartner via Quick Input').toBeGreaterThan(0);
+            console.log(`[${language}] PASS — unrestricted role creates a C_BPartner via Quick Input`);
         });
     });
 
