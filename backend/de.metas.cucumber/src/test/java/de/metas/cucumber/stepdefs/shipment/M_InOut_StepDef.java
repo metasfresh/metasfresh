@@ -200,6 +200,8 @@ public class M_InOut_StepDef
 	 * <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
 	 * <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
 	 * <b>ExternalId</b> — (optional) expected external ID<br>
+	 * <b>M_Warehouse_ID</b> — (optional, identifier-ref) expected warehouse<br>
+	 * <b>MovementType</b> — (optional) expected movement type code (e.g. {@code C+} for a customer return)<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example <pre>
 	 * And validate the created shipments
@@ -276,6 +278,13 @@ public class M_InOut_StepDef
 					final I_C_Project project = projectTable.get(projectIdentifier);
 					softly.assertThat(inout.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
 				});
+
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getIdOrParse)
+				.ifPresent(expectedWarehouseId -> softly.assertThat(inout.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(expectedWarehouseId.getRepoId()));
+
+		row.getAsOptionalString(I_M_InOut.COLUMNNAME_MovementType)
+				.ifPresent(movementType -> softly.assertThat(inout.getMovementType()).as("MovementType").isEqualTo(movementType));
 
 		softly.assertAll();
 	}
@@ -1302,6 +1311,34 @@ public class M_InOut_StepDef
 		assertThat(receiptRecord).isNotNull();
 
 		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), receiptRecord);
+	}
+
+	/**
+	 * Reads the {@code createdReturnIdList} of a {@code POST /api/v2/receipts} response (the
+	 * {@code returnList} half of the payload) and loads the resulting customer return M_InOut.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier) alias to store the found customer return<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example <pre>
+	 * Then process single return response
+	 *   | M_InOut_ID |
+	 *   | return_1   |
+	 * </pre>
+	 */
+	@Then("process single return response")
+	public void process_return_response(@NonNull final DataTable table) throws JsonProcessingException
+	{
+		final JsonCreateReceiptsResponse receiptsResponse = mapper.readValue(restTestContext.getApiResponse().getContent(), JsonCreateReceiptsResponse.class);
+		assertThat(receiptsResponse).isNotNull();
+
+		final List<JsonMetasfreshId> createdReturnIdList = receiptsResponse.getCreatedReturnIdList();
+		assertThat(createdReturnIdList.size()).isEqualTo(1);
+
+		final I_M_InOut returnRecord = inOutDAO.getById(InOutId.ofRepoId(createdReturnIdList.get(0).getValue()));
+		assertThat(returnRecord).isNotNull();
+
+		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), returnRecord);
 	}
 
 	/**

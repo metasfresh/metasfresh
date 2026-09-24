@@ -104,7 +104,6 @@ public class CustomerReturnsWithoutHUsProducer
 
 		returnLineCandidateList
 				.stream()
-				.filter(candidate -> candidate.getOrderId() != null)
 				.forEach(returnLineCandidate -> {
 					final List<CustomerReturnLineCandidate> returnLineCandidates = new ArrayList<>();
 					returnLineCandidates.add(returnLineCandidate);

@@ -32,6 +32,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 
 import java.util.Map;
 
@@ -42,10 +43,12 @@ public class AD_SysConfig_StepDef
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final AD_User_StepDefData userTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 
-	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable)
+	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable, @NonNull final C_BPartner_StepDefData bpartnerTable)
 	{
 		this.userTable = userTable;
+		this.bpartnerTable = bpartnerTable;
 	}
 
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
@@ -87,6 +90,35 @@ public class AD_SysConfig_StepDef
 
 			setSysConfigIntValue(name, user.getAD_User_ID());
 		}
+	}
+
+	/**
+	 * Sets an AD_SysConfig value to a C_BPartner's repo id — for sysconfig keys that resolve a business
+	 * partner (e.g. the customer-return REST path's "unknown customer" fallback).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Name</b> — (required) the AD_SysConfig name<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) business partner whose repo id is stored<br>
+	 * @cucumber.depends StepDefData: C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update AD_SysConfig with C_BPartner_ID:
+	 *   | Name                                      | C_BPartner_ID |
+	 *   | sysconfig.customerReturn.unknownBpartner  | bpartner_1    |
+	 * </pre>
+	 */
+	@And("update AD_SysConfig with C_BPartner_ID:")
+	public void set_sysConfig_bpartner(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String name = row.getAsString(I_AD_SysConfig.COLUMNNAME_Name);
+			final I_C_BPartner bpartner = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupNotNullIn(bpartnerTable);
+
+			setSysConfigIntValue(name, bpartner.getC_BPartner_ID());
+		});
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 
 	@And("reset all cache")
