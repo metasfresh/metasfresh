@@ -69,6 +69,7 @@ public class ScriptedImportConversionDynamicRouteBuilder extends AbstractScripte
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.convertBodyTo(String.class)
 				.process(this::captureOriginalPayloadAsUtf8Bytes)
+				.process(this::initFailedItemCount)
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo)).id(SCRIPTED_IMPORT_CONVERSION_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
@@ -80,7 +81,7 @@ public class ScriptedImportConversionDynamicRouteBuilder extends AbstractScripte
 						.end()
 					.endChoice()
 				.end()
-				.process(this::archiveLocallyOnSuccess);
+				.process(this::archiveLocallyByItemOutcome);
 		//@formatter:on
 	}
 

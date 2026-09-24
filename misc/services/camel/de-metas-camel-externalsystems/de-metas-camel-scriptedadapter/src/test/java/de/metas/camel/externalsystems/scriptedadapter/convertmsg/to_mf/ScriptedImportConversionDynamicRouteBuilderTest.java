@@ -67,6 +67,16 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 	private static final String JSON_ONE_VALID_ITEM_SCRIPT_RESPONSE = "1_OneValidItem_ScriptResponse.json";
 	private static final String JSON_ONE_VALID_ITEM_ENDPOINT_RESPONSE = "1_OneValidItem_EndpointResponse.json";
 
+	/**
+	 * A two-item transform result using a real, resolvable {@code camelServiceRouteID} (see
+	 * {@link CamelServiceRouteIdWithRequestType}) — so a failure a test injects is unambiguously the
+	 * DISPATCH to the resolved endpoint, not an unrelated route-id-resolution failure.
+	 */
+	private static final String TWO_VALID_ITEMS_SCRIPT_RESPONSE = "["
+			+ "{ \"camelServiceRouteID\": \"To-MF_PushOLCandidates-Route\", \"requestBody\": \"{\\\"requests\\\":[]}\"},"
+			+ "{ \"camelServiceRouteID\": \"To-MF_PushOLCandidates-Route\", \"requestBody\": \"{\\\"requests\\\":[]}\"}"
+			+ "]";
+
 	private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
 	private final JavaScriptRepo javaScriptRepo = Mockito.mock(JavaScriptRepo.class);
@@ -141,20 +151,8 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER))
 				.thenReturn(MOCK_SCRIPT);
 
-		// A real, resolvable camelServiceRouteID (see CamelServiceRouteIdWithRequestType) — NOT the
-		// fixture's old "Route1", which CamelServiceRouteIdWithRequestType.ofRouteId cannot resolve at
-		// all. That fixture bug was masked as long as handleItemInList swallowed every exception
-		// (including this route-id-resolution failure) and returned it as a normal body value. Now that a
-		// genuine failure propagates instead of being swallowed, this fixture must use a route id that
-		// actually resolves, or this "multiple successful items" test would fail on the fixture bug
-		// rather than testing multi-item aggregation.
-		final String multiJson = "["
-				+ "{ \"camelServiceRouteID\": \"To-MF_PushOLCandidates-Route\", \"requestBody\": \"{\\\"requests\\\":[]}\"},"
-				+ "{ \"camelServiceRouteID\": \"To-MF_PushOLCandidates-Route\", \"requestBody\": \"{\\\"requests\\\":[]}\"}"
-				+ "]";
-
 		Mockito.when(javaScriptExecutorService.executeScript(any(), any(), any()))
-				.thenReturn(multiJson);
+				.thenReturn(TWO_VALID_ITEMS_SCRIPT_RESPONSE);
 
 		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
 				.thenReturn("{\"result\":1}");
@@ -166,34 +164,15 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 	}
 
 	/**
-	 * Regression test for a previously-swallowed dispatch failure: {@code handleItemInList} used to catch
-	 * a failed dispatch, log it, and set the error message as the exchange body WITHOUT rethrowing — so
-	 * the exchange completed normally and this test used to assert exactly that:
-	 * {@code assertThat(result.get(0)).isEqualTo("Exception - exception")}, i.e. a rejected request
-	 * silently becoming a normal, "successful" response value (this method was named
-	 * {@code whenExceptionThrown_exceptionIsReturnedAsBody} for that reason). That assertion pinned the
-	 * defect itself, not a legitimate contract — {@code handleItemInList} now rethrows after recording
-	 * the extracted message, so the correct, corrected expectation is the mirror image: the failed
-	 * dispatch now FAILS the exchange instead of being swallowed into its body. This test is renamed and
-	 * its assertion inverted to match; the archiving outcome (error dir vs. processed dir) this failure
-	 * drives is covered end-to-end by {@code ScriptedImportConversionErrorRoutingTest}, not duplicated here.
+	 * A rejected dispatch is reported to the caller as that item's extracted error message — the per-item
+	 * outcome the callers of this route (the REST endpoint in particular) classify to decide their own
+	 * answer. That error message reaching the response is therefore a contract, NOT the item silently
+	 * passing as a success: the run's own verdict is the archive folder, asserted here too.
 	 */
 	@Test
-	void whenExceptionThrown_exceptionPropagatesInsteadOfBeingSwallowed() throws Exception
+	void whenDispatchIsRejected_errorMessageIsReportedPerItemAndPayloadLandsInErrorDir() throws Exception
 	{
-		// A real consumer for the route's onException(...).to(direct(MF_ERROR_ROUTE_ID)) send, so the
-		// exception that propagates out of template.requestBody below is the genuine dispatch failure —
-		// not an unrelated DirectConsumerNotAvailableException from a missing error-route consumer.
-		context.addRoutes(new RouteBuilder()
-		{
-			@Override
-			public void configure()
-			{
-				from("direct:" + MF_ERROR_ROUTE_ID)
-						.routeId(MF_ERROR_ROUTE_ID)
-						.log("Error route invoked (test)");
-			}
-		});
+		registerDummyErrorRoute();
 
 		context.start();
 
@@ -210,11 +189,97 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
 				.thenThrow(new RuntimeCamelException("exception"));
 
-		// A rejected dispatch must fail the exchange — never return the error message as if it were a
-		// normal, successfully-processed response.
-		assertThatThrownBy(() -> template.requestBody("direct:" + MOCK_ENDPOINT_NAME, JSON_ONE_VALID_ITEM_SCRIPT_RESPONSE, List.class))
-				.isInstanceOf(CamelExecutionException.class)
-				.hasRootCauseMessage("exception");
+		@SuppressWarnings("unchecked") final List<Object> result =
+				template.requestBody("direct:" + MOCK_ENDPOINT_NAME, jsonOneValidItemScriptResponseAsString, List.class);
+
+		assertThat(result).containsExactly("Exception - exception");
+
+		final List<Path> errorFiles;
+		try (var files = java.nio.file.Files.list(localErrorDir))
+		{
+			errorFiles = files.toList();
+		}
+		assertThat(errorFiles).hasSize(1);
+
+		try (var processedFiles = java.nio.file.Files.list(localProcessedDir))
+		{
+			assertThat(processedFiles.findAny()).isEmpty();
+		}
+	}
+
+	/**
+	 * A script emitting several items must have EVERY item attempted, even when an earlier item's
+	 * dispatch is rejected: the per-item outcome is what the caller is told about, so item 1 failing may
+	 * not silently cancel items 2..N. The split is configured {@code stopOnException()}, so this only
+	 * holds as long as a rejected dispatch is recorded rather than thrown out of the per-item step.
+	 */
+	@Test
+	void whenFirstItemFails_remainingItemsAreStillDispatched() throws Exception
+	{
+		registerDummyErrorRoute();
+
+		context.start();
+
+		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER))
+				.thenReturn(MOCK_SCRIPT);
+
+		Mockito.when(javaScriptExecutorService.executeScript(any(), any(), any()))
+				.thenReturn(TWO_VALID_ITEMS_SCRIPT_RESPONSE);
+
+		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
+				.thenThrow(new RuntimeCamelException("first item rejected"))
+				.thenReturn("{\"result\":1}");
+
+		@SuppressWarnings("unchecked") final List<Object> aggregatedResult =
+				template.requestBody("direct:" + MOCK_ENDPOINT_NAME, "ignored", List.class);
+
+		// the second item was dispatched although the first one had already failed ...
+		verify(producerTemplate, times(2)).requestBody(anyString(), any(), any());
+
+		// ... and both outcomes are reported per item: the failure as its extracted error message, the
+		// success as its parsed response.
+		assertThat(aggregatedResult).containsExactly("Exception - first item rejected", Map.of("result", 1));
+	}
+
+	/**
+	 * The flip side of {@link #whenFirstItemFails_remainingItemsAreStillDispatched()}: continuing with the
+	 * remaining items must not make the run count as a success. A run in which ANY item was rejected
+	 * belongs in the error folder — filing it under processed would tell the operator the payload was
+	 * imported when part of it was not, while the source has already been consumed.
+	 */
+	@Test
+	void whenOneOfSeveralItemsFails_payloadIsArchivedToErrorDirNotProcessed() throws Exception
+	{
+		registerDummyErrorRoute();
+
+		context.start();
+
+		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER))
+				.thenReturn(MOCK_SCRIPT);
+
+		final String inputPayload = "{\"orderId\":\"partial-failure-test\"}";
+
+		Mockito.when(javaScriptExecutorService.executeScript(MOCK_SCRIPT_IDENTIFIER, MOCK_SCRIPT, inputPayload))
+				.thenReturn(TWO_VALID_ITEMS_SCRIPT_RESPONSE);
+
+		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
+				.thenThrow(new RuntimeCamelException("first item rejected"))
+				.thenReturn("{\"result\":1}");
+
+		template.sendBody("direct:" + MOCK_ENDPOINT_NAME, inputPayload);
+
+		final List<Path> errorFiles;
+		try (var files = java.nio.file.Files.list(localErrorDir))
+		{
+			errorFiles = files.toList();
+		}
+		assertThat(errorFiles).hasSize(1);
+		assertThat(java.nio.file.Files.readString(errorFiles.get(0), StandardCharsets.UTF_8)).isEqualTo(inputPayload);
+
+		try (var processedFiles = java.nio.file.Files.list(localProcessedDir))
+		{
+			assertThat(processedFiles.findAny()).isEmpty();
+		}
 	}
 
 	@Test
@@ -303,5 +368,26 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		assertThat(archivedFiles).hasSize(1);
 		assertThat(java.nio.file.Files.readAllBytes(archivedFiles.get(0)))
 				.isEqualTo(inputPayload.getBytes(StandardCharsets.UTF_8));
+	}
+
+	/**
+	 * A real consumer for the route's {@code onException(...).to(direct(MF_ERROR_ROUTE_ID))} send.
+	 * Camel's {@code interceptSendToEndpoint} does not intercept a send originating inside an
+	 * {@code onException(...)} clause, only ones on the route's main flow, so without a real consumer
+	 * such a send fails with {@code DirectConsumerNotAvailableException} — which would mask whatever
+	 * failure the test actually injected.
+	 */
+	private void registerDummyErrorRoute() throws Exception
+	{
+		context.addRoutes(new RouteBuilder()
+		{
+			@Override
+			public void configure()
+			{
+				from("direct:" + MF_ERROR_ROUTE_ID)
+						.routeId(MF_ERROR_ROUTE_ID)
+						.log("Error route invoked (test)");
+			}
+		});
 	}
 }

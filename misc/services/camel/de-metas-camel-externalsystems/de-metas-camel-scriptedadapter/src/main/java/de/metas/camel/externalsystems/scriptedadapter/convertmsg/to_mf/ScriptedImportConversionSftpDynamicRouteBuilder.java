@@ -82,6 +82,7 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 				.log("SFTP file received: ${header.CamelFileName}")
 				.convertBodyTo(String.class)
 				.process(this::captureOriginalPayloadAsUtf8Bytes)
+				.process(this::initFailedItemCount)
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo))
 				.choice()
 					.when(body().isNull())
@@ -93,7 +94,7 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends AbstractScr
 						.end()
 					.endChoice()
 				.end()
-				.process(this::archiveLocallyOnSuccess);
+				.process(this::archiveLocallyByItemOutcome);
 		//@formatter:on
 	}
 

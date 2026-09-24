@@ -122,6 +122,7 @@ public class ScriptedImportConversionLocalFileRouteBuilder extends AbstractScrip
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.log("Local file received: ${header.CamelFileName}")
 				.process(this::captureRawPayloadAndBuildEnvelope)
+				.process(this::initFailedItemCount)
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo))
 				.choice()
 					.when(body().isNull())
@@ -133,7 +134,7 @@ public class ScriptedImportConversionLocalFileRouteBuilder extends AbstractScrip
 						.end()
 					.endChoice()
 				.end()
-				.process(this::archiveLocallyOnSuccess);
+				.process(this::archiveLocallyByItemOutcome);
 		//@formatter:on
 	}
 

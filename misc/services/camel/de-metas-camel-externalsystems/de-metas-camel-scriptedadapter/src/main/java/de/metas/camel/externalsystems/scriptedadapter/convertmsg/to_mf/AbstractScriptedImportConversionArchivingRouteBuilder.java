@@ -47,16 +47,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 
 /**
- * Shared archiving + dispatch behaviour for the two ScriptedImportConversion transports (SFTP polling
- * and REST POST): split the transform's response into items, dispatch each item to the resolved Camel
- * endpoint, and archive the original payload to a LOCAL, transport-agnostic processed/error folder — see
- * {@code ExternalSystem_Endpoint.ProcessedDirectory}/{@code ErrorDirectory}.
+ * Shared archiving + dispatch behaviour for the ScriptedImportConversion transports (SFTP polling, local
+ * file polling and REST POST): split the transform's response into items, dispatch each item to the
+ * resolved Camel endpoint, and archive the original payload to a LOCAL, transport-agnostic
+ * processed/error folder — see {@code ExternalSystem_Endpoint.ProcessedDirectory}/{@code ErrorDirectory}.
+ * <p>
+ * Every item is attempted even after an earlier one was rejected, and each item's outcome — its response
+ * or its extracted error message — ends up in the aggregated response the caller sees. Which of the two
+ * folders the payload lands in is a separate, per-RUN verdict: see
+ * {@link #archiveLocallyByItemOutcome(Exchange)}.
  * <p>
  * The one behavioural difference between transports is the archive file name: a subclass derives it via
  * {@link #archiveFileName(Exchange)} (the real remote file name for SFTP, a synthesized name for REST,
@@ -65,6 +71,21 @@ import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterCons
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends RouteBuilder
 {
+	/**
+	 * Exchange property holding the number of items whose dispatch was rejected, as an
+	 * {@link AtomicInteger} the route arms via {@link #initFailedItemCount(Exchange)} BEFORE the item
+	 * split.
+	 * <p>
+	 * The split hands each item a COPY of the exchange, and a property written on such a copy does not
+	 * travel back to the original — so what is shared is the counter OBJECT, not a property value: the
+	 * copies see the very same instance the original holds, increment it, and the trailing
+	 * {@link #archiveLocallyByItemOutcome(Exchange)} reads the result back off the original. Arming it
+	 * lazily from inside the split would create the counter on a copy, where the trailing step can never
+	 * see it.
+	 */
+	@VisibleForTesting
+	static final String EXCHANGE_PROPERTY_FAILED_ITEM_COUNT = "ScriptedImportConversion-failedItemCount";
+
 	@NonNull protected final String endpointName;
 	@NonNull protected final String scriptIdentifier;
 	@NonNull protected final JavaScriptRepo javaScriptRepo;
@@ -96,6 +117,34 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 		}
 	}
 
+	/**
+	 * Arms the per-item dispatch-failure tally for this exchange. MUST run before the item split — see
+	 * {@link #EXCHANGE_PROPERTY_FAILED_ITEM_COUNT} for why it cannot be armed lazily from inside the split.
+	 */
+	protected void initFailedItemCount(@NonNull final Exchange exchange)
+	{
+		exchange.setProperty(EXCHANGE_PROPERTY_FAILED_ITEM_COUNT, new AtomicInteger());
+	}
+
+	/**
+	 * The run's verdict, and the trailing step of every transport's route: the payload is filed under
+	 * {@code processedDir} only if EVERY item was dispatched successfully, and under {@code errorDir}
+	 * otherwise. A partially-imported payload counts as an error — the source has already been consumed,
+	 * so filing it under processed would tell the operator the whole payload was imported when part of it
+	 * was rejected, with no copy left anywhere to retry from.
+	 */
+	protected void archiveLocallyByItemOutcome(@NonNull final Exchange exchange)
+	{
+		if (getFailedItemCount(exchange).get() > 0)
+		{
+			archiveLocallyOnError(exchange);
+		}
+		else
+		{
+			archiveLocallyOnSuccess(exchange);
+		}
+	}
+
 	protected void archiveLocallyOnSuccess(@NonNull final Exchange exchange)
 	{
 		archiveLocally(exchange, processedDir);
@@ -104,6 +153,21 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	protected void archiveLocallyOnError(@NonNull final Exchange exchange)
 	{
 		archiveLocally(exchange, errorDir);
+	}
+
+	@NonNull
+	private static AtomicInteger getFailedItemCount(@NonNull final Exchange exchange)
+	{
+		final AtomicInteger failedItemCount = exchange.getProperty(EXCHANGE_PROPERTY_FAILED_ITEM_COUNT, AtomicInteger.class);
+		if (failedItemCount == null)
+		{
+			// A route reusing handleItemInList without the initFailedItemCount step would otherwise have
+			// no record of its failures left, and would file every rejected import under processed — the
+			// exact defect this tally exists to prevent. Fail loudly on the route's first run instead.
+			throw new RuntimeCamelException("Missing exchange property '" + EXCHANGE_PROPERTY_FAILED_ITEM_COUNT
+					+ "': the route must run initFailedItemCount before splitting the items");
+		}
+		return failedItemCount;
 	}
 
 	private void archiveLocally(@NonNull final Exchange exchange, @NonNull final String directory)
@@ -133,15 +197,17 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 		}
 		catch (final Exception e)
 		{
-			// Record the extracted message on the exchange, then RETHROW: a rejected/failed dispatch must
-			// never be filed as a success. Rethrowing lets the split's stopOnException() propagate this to
-			// the route's already-wired onException(...).process(archiveLocallyOnError).to(direct(MF_ERROR_ROUTE_ID)),
-			// so the payload is archived to the error folder instead of the trailing archiveLocallyOnSuccess
-			// silently filing it under processed.
+			// A rejected dispatch is RECORDED, never rethrown. Two things depend on that:
+			//  - the remaining items still get dispatched. The split is configured stopOnException(), so
+			//    throwing here would cancel items 2..N the moment item 1 fails.
+			//  - the error message becomes this item's entry in the aggregated response, which is how a
+			//    caller tells a partial import from a total one (the REST transport answers 207 for the
+			//    former, 500 for the latter).
+			// The failure is not lost by being swallowed: it is tallied on the exchange, and the trailing
+			// archiveLocallyByItemOutcome files the whole payload under the error folder because of it.
 			log.warn("Exception caught when handling request: {}", request, e);
-			final String errorMessage = getErrorMessage(e);
-			exchange.getMessage().setBody(errorMessage);
-			throw new RuntimeCamelException(errorMessage, e);
+			exchange.getMessage().setBody(getErrorMessage(e));
+			getFailedItemCount(exchange).incrementAndGet();
 		}
 	}
 

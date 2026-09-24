@@ -41,16 +41,23 @@ import java.util.List;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 
 /**
  * Regression test for the defect where a rejected dispatch of an item to its resolved Camel endpoint
- * (the downstream endpoint throws — e.g. an {@code HttpOperationFailedException}) was silently absorbed
- * by {@link AbstractScriptedImportConversionArchivingRouteBuilder#handleItemInList}: the exception was
- * logged and turned into an error-message BODY, but never rethrown, so the route's trailing
- * {@code .process(this::archiveLocallyOnSuccess)} filed the payload under PROCESSED — a rejected request
- * was reported to the operator as a success, and the remote original was already consumed.
+ * (the downstream endpoint throws — e.g. an {@code HttpOperationFailedException}) was filed as a SUCCESS:
+ * {@link AbstractScriptedImportConversionArchivingRouteBuilder#handleItemInList} logged the exception and
+ * turned it into an error-message body, and the route's trailing archiving step then filed the payload
+ * under PROCESSED — a rejected request reported to the operator as imported, with the source already
+ * consumed. The fix is the tally the trailing step reads, not an exception: see
+ * {@link AbstractScriptedImportConversionArchivingRouteBuilder#EXCHANGE_PROPERTY_FAILED_ITEM_COUNT}.
+ * <p>
+ * This test therefore pins BOTH halves of that: a rejected item lands in the error archive, and it does
+ * so without failing the exchange — the whole point being that the remaining items of a multi-item
+ * import still get dispatched (covered by
+ * {@code ScriptedImportConversionDynamicRouteBuilderTest#whenFirstItemFails_remainingItemsAreStillDispatched}).
  * <p>
  * Exercises the shared {@code handleItemInList}/archiving behaviour via
  * {@link ScriptedImportConversionDynamicRouteBuilder} (the transport-agnostic base the SFTP and REST
@@ -101,18 +108,7 @@ public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 	@Test
 	void rejectedDispatch_landsInErrorArchive_notProcessed() throws Exception
 	{
-		// A real consumer for the route's onException(...).to(direct(MF_ERROR_ROUTE_ID)) send, forwarding
-		// to a mock endpoint for assertion (see class javadoc for why interceptSendToEndpoint won't do here).
-		context.addRoutes(new RouteBuilder()
-		{
-			@Override
-			public void configure()
-			{
-				from("direct:" + MF_ERROR_ROUTE_ID)
-						.routeId(MF_ERROR_ROUTE_ID)
-						.to(MOCK_ERROR_ROUTE_URI);
-			}
-		});
+		registerErrorRouteForwardingToMock();
 
 		context.start();
 
@@ -131,21 +127,9 @@ public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 		Mockito.when(producerTemplate.requestBody(anyString(), any(), any()))
 				.thenThrow(new RuntimeCamelException("rejected by endpoint"));
 
-		final MockEndpoint mockErrorRoute = getMockEndpoint(MOCK_ERROR_ROUTE_URI);
-		mockErrorRoute.expectedMessageCount(1);
-
-		// The route's onException is not marked handled(), so the failure also propagates back to this
-		// synchronous send — that propagation is not what this test is about, only the archiving outcome is.
-		try
-		{
-			template.sendBody("direct:" + MOCK_ENDPOINT_NAME, inputPayload);
-		}
-		catch (final RuntimeException ignored)
-		{
-			// expected: the rejected dispatch fails the exchange all the way back to the caller
-		}
-
-		mockErrorRoute.assertIsSatisfied();
+		// A rejected item does not fail the exchange: it is recorded, so that the remaining items of a
+		// multi-item import still get dispatched.
+		assertThatNoException().isThrownBy(() -> template.sendBody("direct:" + MOCK_ENDPOINT_NAME, inputPayload));
 
 		// The rejected request must be archived to the LOCAL error folder, carrying the original payload...
 		final List<Path> errorFiles;
@@ -161,5 +145,68 @@ public class ScriptedImportConversionErrorRoutingTest extends CamelTestSupport
 		{
 			assertThat(files.findAny()).isEmpty();
 		}
+
+		// A rejected item is reported through the error FOLDER, not through the error route: that route
+		// reports failures that fail the whole exchange (see transformFailure_reachesTheErrorRoute), and
+		// raising it per item would report the same REST failure twice — the REST transport's own
+		// doCatch(Exception.class) already sends there when its per-item verdict is a total failure.
+		getMockEndpoint(MOCK_ERROR_ROUTE_URI).expectedMessageCount(0);
+		MockEndpoint.assertIsSatisfied(context);
+	}
+
+	/**
+	 * The counterpart to {@link #rejectedDispatch_landsInErrorArchive_notProcessed()}: a failure that is
+	 * NOT a per-item dispatch rejection — here the transform itself blowing up — still fails the exchange
+	 * and still reaches the error route via the route's {@code onException}. Guards against "recording the
+	 * per-item failure" being mistaken for "this route no longer reports errors at all".
+	 */
+	@Test
+	void transformFailure_reachesTheErrorRoute() throws Exception
+	{
+		registerErrorRouteForwardingToMock();
+
+		context.start();
+
+		Mockito.when(javaScriptRepo.get(MOCK_SCRIPT_IDENTIFIER)).thenReturn(MOCK_SCRIPT);
+
+		final String inputPayload = "{\"orderId\":\"transform-failure-test\"}";
+
+		Mockito.when(javaScriptExecutorService.executeScript(MOCK_SCRIPT_IDENTIFIER, MOCK_SCRIPT, inputPayload))
+				.thenThrow(new RuntimeCamelException("transform blew up"));
+
+		final MockEndpoint mockErrorRoute = getMockEndpoint(MOCK_ERROR_ROUTE_URI);
+		mockErrorRoute.expectedMessageCount(1);
+
+		// This route's onException is not marked handled(), so the failure propagates back to the caller
+		// too — what this test pins is the error-route send, not that propagation.
+		try
+		{
+			template.sendBody("direct:" + MOCK_ENDPOINT_NAME, inputPayload);
+		}
+		catch (final RuntimeException ignored)
+		{
+			// expected
+		}
+
+		mockErrorRoute.assertIsSatisfied();
+	}
+
+	/**
+	 * A real consumer for the route's {@code onException(...).to(direct(MF_ERROR_ROUTE_ID))} send,
+	 * forwarding to a mock endpoint for assertion (see the class javadoc for why
+	 * {@code interceptSendToEndpoint} will not do here).
+	 */
+	private void registerErrorRouteForwardingToMock() throws Exception
+	{
+		context.addRoutes(new RouteBuilder()
+		{
+			@Override
+			public void configure()
+			{
+				from("direct:" + MF_ERROR_ROUTE_ID)
+						.routeId(MF_ERROR_ROUTE_ID)
+						.to(MOCK_ERROR_ROUTE_URI);
+			}
+		});
 	}
 }
