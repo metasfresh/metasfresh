@@ -45,25 +45,16 @@ import java.nio.file.StandardOpenOption;
 class ScriptedImportConversionLocalArchiver
 {
 	/**
-	 * Writes the raw bytes of {@code content} to {@code directory}/{@code fileName}, creating
-	 * {@code directory} (and any missing parents) if needed. This method itself never text-decodes or
-	 * re-encodes {@code content}, so whatever bytes it is handed round-trip byte-identical (whether that
-	 * makes the archived file byte-identical to the ORIGINAL source depends on how the caller captured
-	 * {@code content} — see {@code AbstractScriptedImportConversionArchivingRouteBuilder} for the
-	 * per-transport caveat).
+	 * Writes {@code content}'s raw bytes to {@code directory}/{@code fileName} (creating missing parent
+	 * dirs), never decoding/re-encoding them -- byte-identical to the ORIGINAL source only as far as the
+	 * caller's own capture was (see {@code AbstractScriptedImportConversionArchivingRouteBuilder}).
 	 * <p>
-	 * Never overwrites an existing file: {@code fileName} is operator-controlled (an
-	 * {@code ImportFileNamePattern} left blank — the default — resolves to the raw incoming file name), so
-	 * a scanner that reuses a name (e.g. every scan landing as {@code scan001.pdf}) must not destroy the
-	 * previously archived original. On a name collision, a numeric suffix is inserted before the extension
-	 * and the write is retried; the check-then-write race between two near-simultaneous arrivals of the
-	 * same name is closed by {@link StandardOpenOption#CREATE_NEW}, which fails atomically instead of
-	 * silently truncating an existing file, so the retry loop always converges on a name nobody has taken
-	 * yet.
+	 * Never overwrites: a name collision (e.g. a scanner reusing {@code scan001.pdf}) gets a numeric
+	 * suffix and a retried write, with {@link StandardOpenOption#CREATE_NEW} closing the check-then-write
+	 * race atomically.
 	 *
-	 * @throws RuntimeCamelException if {@code fileName} would resolve outside {@code directory} (e.g. via
-	 * {@code ..} or a path separator), or if the write ultimately fails for a reason other than a name
-	 * collision.
+	 * @throws RuntimeCamelException if {@code fileName} would resolve outside {@code directory}, or the
+	 * write fails for any other reason.
 	 */
 	void archive(@NonNull final String directory, @NonNull final String fileName, @NonNull final byte[] content)
 	{

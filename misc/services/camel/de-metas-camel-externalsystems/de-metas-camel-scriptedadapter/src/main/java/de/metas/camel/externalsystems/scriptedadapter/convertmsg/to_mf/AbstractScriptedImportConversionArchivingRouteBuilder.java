@@ -76,12 +76,9 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	 * {@link AtomicInteger} the route arms via {@link #initFailedItemCount(Exchange)} BEFORE the item
 	 * split.
 	 * <p>
-	 * The split hands each item a COPY of the exchange, and a property written on such a copy does not
-	 * travel back to the original — so what is shared is the counter OBJECT, not a property value: the
-	 * copies see the very same instance the original holds, increment it, and the trailing
-	 * {@link #archiveLocallyByItemOutcome(Exchange)} reads the result back off the original. Arming it
-	 * lazily from inside the split would create the counter on a copy, where the trailing step can never
-	 * see it.
+	 * The split gives each item a COPY of the exchange, so a property WRITE on a copy never reaches the
+	 * original -- only the shared {@link AtomicInteger} OBJECT does, which is why it must be armed before
+	 * the split, not lazily from inside it.
 	 */
 	@VisibleForTesting
 	static final String EXCHANGE_PROPERTY_FAILED_ITEM_COUNT = "ScriptedImportConversion-failedItemCount";
@@ -108,13 +105,10 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	 * (e.g. nothing to process) leaves the property unset, matching the archiver's "nothing was
 	 * captured" contract in {@link #archiveLocally(Exchange, String)}.
 	 * <p>
-	 * This pins only the ENCODE half (String → bytes). The preceding {@code convertBodyTo(String.class)}
-	 * step (SFTP and REST call it before this method runs; see each route builder) is a DECODE (raw
-	 * transport bytes → String) whose charset this class does not control — so for those two transports,
-	 * the archived copy is only as faithful to the original transport bytes as that decode was. The
-	 * LOCAL_FILE transport does not go through this method at all: it reads and archives the polled file's
-	 * {@code byte[]} directly (see {@code ScriptedImportConversionLocalFileRouteBuilder}), which is the
-	 * only one of the three with a genuinely guaranteed byte-identical round trip.
+	 * Pins only the encode half -- SFTP and REST reach this after their own upstream
+	 * {@code convertBodyTo(String.class)} decode, so their archived copy is only as faithful as that
+	 * decode was. LOCAL_FILE skips this method and archives raw bytes directly, so it alone is guaranteed
+	 * byte-identical.
 	 */
 	protected void captureOriginalPayloadAsUtf8Bytes(@NonNull final Exchange exchange)
 	{
@@ -160,6 +154,8 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 
 	protected void archiveLocallyOnError(@NonNull final Exchange exchange)
 	{
+		// By design, this file IS the operator's rejection notification for the polling transports
+		// (SFTP, LOCAL_FILE) -- there is no synchronous caller to answer, unlike REST's HTTP response.
 		archiveLocally(exchange, errorDir);
 	}
 
@@ -205,14 +201,9 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 		}
 		catch (final Exception e)
 		{
-			// A rejected dispatch is RECORDED, never rethrown. Two things depend on that:
-			//  - the remaining items still get dispatched. The split is configured stopOnException(), so
-			//    throwing here would cancel items 2..N the moment item 1 fails.
-			//  - the error message becomes this item's entry in the aggregated response, which is how a
-			//    caller tells a partial import from a total one (the REST transport answers 207 for the
-			//    former, 500 for the latter).
-			// The failure is not lost by being swallowed: it is tallied on the exchange, and the trailing
-			// archiveLocallyByItemOutcome files the whole payload under the error folder because of it.
+			// Swallowed on purpose, not lost: stopOnException() would otherwise cancel items 2..N the
+			// moment one fails, and the tally here is what archiveLocallyByItemOutcome later reads to
+			// route the whole payload to the error folder.
 			log.warn("Exception caught when handling request: {}", request, e);
 			exchange.getMessage().setBody(getErrorMessage(e));
 			getFailedItemCount(exchange).incrementAndGet();
