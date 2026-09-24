@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.charge.C_Charge_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PriceList_StepDefData;
@@ -88,6 +89,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_POS;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
@@ -133,6 +135,7 @@ public class C_POS_StepDef
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final C_Payment_StepDefData paymentTable;
 	private final C_Invoice_StepDefData invoiceTable;
+	private final C_Charge_StepDefData chargeTable;
 
 	/**
 	 * Creates one {@code C_POS} (POS terminal) record per data-table row, via {@link POSTerminalRepository} —
@@ -407,6 +410,8 @@ public class C_POS_StepDef
 	 *   <b>Type</b> — (required) {@link POSCashJournalLineType} code<br>
 	 *   <b>Amount</b> — (required) signed line amount (negative for cash out)<br>
 	 *   <b>Description</b> — (optional) line description<br>
+	 *   <b>C_Charge_ID</b> — (optional, identifier-ref) the line's description must be this charge's name (a cash
+	 *   withdrawal's line carries its category's name)<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And the cash journal of POS terminal till contains lines:
@@ -437,6 +442,12 @@ public class C_POS_StepDef
 			if (expectedDescription.isPresent())
 			{
 				assertThat(line.getDescription()).as("Description of line %s", lineIdx).isEqualTo(expectedDescription.get());
+			}
+
+			final Optional<I_C_Charge> expectedCharge = expectedRow.getAsOptionalIdentifier(I_C_Charge.COLUMNNAME_C_Charge_ID).map(identifier -> identifier.lookupNotNullIn(chargeTable));
+			if (expectedCharge.isPresent())
+			{
+				assertThat(line.getDescription()).as("Description of line %s (charge name)", lineIdx).isEqualTo(expectedCharge.get().getName());
 			}
 		}
 	}

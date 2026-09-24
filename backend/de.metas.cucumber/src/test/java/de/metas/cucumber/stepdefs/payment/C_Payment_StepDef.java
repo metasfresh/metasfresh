@@ -53,6 +53,8 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
+import de.metas.cucumber.stepdefs.charge.C_Charge_StepDefData;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -64,7 +66,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.acct.PostingStatus;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
@@ -93,6 +98,8 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 @RequiredArgsConstructor
 public class C_Payment_StepDef
 {
+	private static final String COLUMNNAME_PostingError = "PostingError";
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
@@ -109,6 +116,7 @@ public class C_Payment_StepDef
 	private final C_BankStatementLine_StepDefData bankStatementLineTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final C_Charge_StepDefData chargeTable;
 
 	/**
 	 * Creates one or more {@link I_C_Payment} records in Draft status.
@@ -216,6 +224,26 @@ public class C_Payment_StepDef
 		}
 	}
 
+	/**
+	 * Asserts the given payments' current state (reloaded from the DB).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Payment_ID</b> — (required, identifier-ref) the payment to validate<br>
+	 *   <b>C_Charge_ID</b> — (optional, identifier-ref) expected charge<br>
+	 *   <b>Posted</b> — (optional) expected posting status code (e.g. {@code Y} posted, {@code E} posting error)<br>
+	 *   <b>PostingError</b> — (optional) the payment must carry a {@code PostingError_Issue_ID} whose issue summary contains this text<br>
+	 *   (further optional columns: IsAllocated, PayAmt, OpenAmt, DiscountAmt, WriteOffAmt, C_Invoice_ID, DateTrx, C_BPartner_ID,
+	 *   C_BP_BankAccount_ID, C_DocType_ID, IsReceipt, DocStatus, IsPrepayment, Proforma_Invoice_ID)
+	 * @cucumber.depends StepDefData: C_Payment_StepDefData, C_Charge_StepDefData, C_Invoice_StepDefData, C_BPartner_StepDefData,
+	 * C_BP_BankAccount_StepDefData, C_DocType_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate payments
+	 *   | C_Payment_ID | IsReceipt | C_Charge_ID | DocStatus | Posted | PostingError               |
+	 *   | withdrawal   | false     | unmapped    | CO        | E      | No Charge accounts defined |
+	 * </pre>
+	 */
 	@And("validate payments")
 	public void validateCreatedPayments(@NonNull final DataTable table)
 	{
@@ -290,6 +318,25 @@ public class C_Payment_StepDef
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_Proforma_Invoice_ID)
 				.map(invoiceTable::getId)
 				.ifPresent(expectedProformaInvoiceId -> softly.assertThat(payment.getProforma_Invoice_ID()).as("Proforma_Invoice_ID").isEqualTo(expectedProformaInvoiceId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Charge_ID)
+				.map(chargeTable::getId)
+				.ifPresent(expectedChargeId -> softly.assertThat(payment.getC_Charge_ID()).as("C_Charge_ID").isEqualTo(expectedChargeId.getRepoId()));
+
+		row.getAsOptionalEnum(I_C_Payment.COLUMNNAME_Posted, PostingStatus.class)
+				.ifPresent(expectedPostingStatus -> softly.assertThat(AccountingCucumberHelper.retrievePostingStatus(TableRecordReference.of(payment)))
+						.as("Posted")
+						.isEqualTo(expectedPostingStatus));
+
+		row.getAsOptionalString(COLUMNNAME_PostingError)
+				.ifPresent(expectedPostingErrorSubstring -> {
+					softly.assertThat(payment.getPostingError_Issue_ID()).as("PostingError_Issue_ID").isPositive();
+					if (payment.getPostingError_Issue_ID() > 0)
+					{
+						final I_AD_Issue postingErrorIssue = InterfaceWrapperHelper.load(payment.getPostingError_Issue_ID(), I_AD_Issue.class);
+						softly.assertThat(postingErrorIssue.getIssueSummary()).as("PostingError_Issue_ID.IssueSummary").contains(expectedPostingErrorSubstring);
+					}
+				});
 
 		softly.assertAll();
 	}
