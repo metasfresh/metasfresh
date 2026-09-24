@@ -30,6 +30,84 @@ import * as fs from 'node:fs';
 const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
 
 /**
+ * The save-status bar the WebUI renders under the header (`Indicator`): the element carries
+ * `bar pending` while a field PATCH is in flight and `bar saved` / `bar error` once the response has
+ * been applied. PATCH_SUCCESS / PATCH_FAILURE are dispatched *after* `mapDataToState`, so the class
+ * leaving `pending` is the DOM proof that the response has been merged into the form's data — not
+ * merely that the bytes arrived.
+ */
+const SAVE_SETTLED = '.window-indicator-container .bar:not(.pending)';
+
+/**
+ * The response to the PATCH the WebUI issues for `fieldName` on this window's document.
+ *
+ * The listener has to be armed BEFORE the action that commits the field, or a fast response is
+ * missed and the wait runs into its timeout. The payload filter (`"path":"<ColumnName>"`) keeps it
+ * from settling on a different field's PATCH, and skips the empty-payload PATCH .../NEW that only
+ * creates the draft.
+ */
+function endpointFieldPatch(page, fieldName) {
+  return page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PATCH' &&
+      response.url().includes(`/rest/api/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/`) &&
+      (response.request().postData() || '').includes(`"path":"${fieldName}"`),
+    { timeout: SLOW_ACTION_TIMEOUT }
+  );
+}
+
+/**
+ * Run `commit` — the action that makes the WebUI send `fieldName`'s value — and return only once the
+ * server has answered AND the answer has been rendered.
+ *
+ * Both halves are load-bearing. A PATCH response replaces the document data the whole form renders
+ * from, so a value typed into the NEXT field while one is still in flight is overwritten by the
+ * arriving response before React ever sees it: no `onChange`, no cached value, and therefore no
+ * PATCH for that field at all — the value is silently lost. Committing every field and waiting the
+ * round-trip out means no input is ever typed while a response is on its way.
+ */
+async function commitField(page, fieldName, commit) {
+  const patched = endpointFieldPatch(page, fieldName);
+  await commit();
+  const response = await patched;
+  expect(response.ok(), `the WebUI's PATCH of ${fieldName} was rejected: HTTP ${response.status()}`).toBe(true);
+  await page.locator(SAVE_SETTLED).waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
+}
+
+/**
+ * Open the window on a brand-new record and wait until its draft document exists.
+ *
+ * Opening `/NEW` makes the WebUI PATCH `.../NEW` with an empty payload; that response is what carries
+ * the draft's id and its field data. Typing before it lands would patch a document the form does not
+ * have yet.
+ */
+async function openNewEndpoint(page) {
+  const draftCreated = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PATCH' &&
+      response.url().includes(`/rest/api/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`),
+    { timeout: SLOW_ACTION_TIMEOUT }
+  );
+  await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
+  await draftCreated;
+  await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+}
+
+/**
+ * The record id the WebUI put in the URL once the draft was given one.
+ */
+async function savedRecordId(page) {
+  await page.waitForURL(
+    (url) => {
+      const urlStr = url.toString();
+      return urlStr.includes(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/`) && !urlStr.includes('/NEW');
+    },
+    { timeout: SLOW_ACTION_TIMEOUT }
+  );
+  return page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+}
+
+/**
  * Select a value from a List dropdown widget (AD_Reference_ID=17).
  * List widgets render a readonly input — we must click the container to open
  * the dropdown, then click the matching option.
@@ -40,12 +118,10 @@ const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
 async function selectListValue(page, fieldName, optionText) {
   const container = page.locator(`.form-field-${fieldName}`);
   await container.locator('input').click();
-  await page.waitForTimeout(300);
 
   const option = page.locator('.input-dropdown-list-option').filter({ hasText: optionText }).first();
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await option.click();
-  await page.waitForTimeout(1000);
+  await commitField(page, fieldName, () => option.click());
 }
 
 /**
@@ -88,23 +164,50 @@ function emptyish(value) {
 }
 
 /**
+ * Type `value` into `field` and hand it to the server.
+ *
+ * An input widget normally sends its value when it loses focus, so the blur is what triggers the
+ * PATCH — but not always: the widget also sends on the typing itself, and that PATCH can be answered
+ * before the next statement runs. So the whole fill-and-blur pair is what {@link commitField} wraps;
+ * arming the wait only around the blur misses a PATCH that the fill already sent and got answered.
+ */
+async function fillFieldLocator(page, fieldName, field, value) {
+  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await commitField(page, fieldName, async () => {
+    await field.fill(value);
+    await field.blur();
+  });
+}
+
+/**
  * Fill a text input field by column name using the form-field CSS class pattern.
  */
 async function fillTextField(page, fieldName, value) {
-  const field = page.locator(`.form-field-${fieldName} input[type="text"]`);
-  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await field.fill(value);
-  await page.waitForTimeout(300);
+  return fillFieldLocator(page, fieldName, page.locator(`.form-field-${fieldName} input[type="text"]`), value);
 }
 
 /**
  * Fill a numeric input field by column name.
  */
 async function fillNumericField(page, fieldName, value) {
-  const field = page.locator(`.form-field-${fieldName} input`);
-  await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await field.fill(value);
-  await page.waitForTimeout(300);
+  return fillFieldLocator(page, fieldName, page.locator(`.form-field-${fieldName} input`), value);
+}
+
+/**
+ * Fill the Password field. It renders as a text or a password input depending on the widget's
+ * reveal state, so both are accepted.
+ */
+async function fillPasswordField(page, value) {
+  const field = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
+  return fillFieldLocator(page, 'Password', field, value);
+}
+
+/**
+ * Fill the SSH private key. It renders as a textarea or an input depending on the widget type.
+ */
+async function fillSshPrivateKeyField(page, value) {
+  const field = page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input');
+  return fillFieldLocator(page, 'SshPrivateKey', field, value);
 }
 
 test.describe('ExternalSystem Endpoint — SFTP Transport', () => {
@@ -117,22 +220,30 @@ test.describe('ExternalSystem Endpoint — SFTP Transport', () => {
     await page.locator('input[name="username"]').fill('metasfresh');
     await page.locator('input[name="password"]').fill('metasfresh');
     await page.locator('.btn-meta-success').click();
-    await page.waitForTimeout(1200);
+
+    // Either the login is through, or the server came back asking which role to use. Wait for
+    // whichever of the two actually happens instead of guessing how long the round-trip takes.
+    await page.waitForFunction(
+      () =>
+        !window.location.href.includes('/login') ||
+        !!document.querySelector('.input-dropdown-container .input-field'),
+      null,
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
 
     if (page.url().includes('/login')) {
       const roleDropdown = page.locator('.input-dropdown-container .input-field').first();
       if (await roleDropdown.isVisible().catch(() => false)) {
         await roleDropdown.click();
-        await page.waitForTimeout(400);
         const roleOption = page
           .locator('.input-dropdown-list-option')
           .filter({ hasText: /^WebUI, metasfresh, metasfresh AG$/ })
           .first();
         await roleOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
         await roleOption.dispatchEvent('mousedown');
-        await page.waitForTimeout(300);
         await page.keyboard.press('Escape');
-        await page.waitForTimeout(200);
+        // The option list is gone once the pick has been taken and the dropdown closed.
+        await page.locator('.input-dropdown-list-option').first().waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
       }
       await page.locator('.btn-meta-success').click();
     }
@@ -161,11 +272,7 @@ and hides HTTP fields, and vice versa.
     test.setTimeout(120000);
 
     // Navigate to the ExternalSystem_Endpoint window and create a new record
-    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-    await page.waitForTimeout(2000);
-
-    // Wait for the form to load
-    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await openNewEndpoint(page);
 
     // --- Test 1: Set TransportType = SFTP ---
     await selectListValue(page, 'TransportType', 'SFTP');
@@ -214,9 +321,7 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
     test.setTimeout(120000);
 
     // Navigate and create new record
-    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-    await page.waitForTimeout(2000);
-    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await openNewEndpoint(page);
 
     // Set TransportType = SFTP first
     await selectListValue(page, 'TransportType', 'SFTP');
@@ -262,9 +367,7 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     test.setTimeout(120000);
 
     // Navigate and create new record
-    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-    await page.waitForTimeout(2000);
-    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await openNewEndpoint(page);
 
     // Value field is auto-generated by document sequence (IsUseDocSequence=Y) — skip it
 
@@ -280,10 +383,7 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     await selectListValue(page, 'SftpAuthType', /PASSWORD/);
 
     // Fill password (mandatory when SFTP + SftpAuthType=PASSWORD)
-    const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
-    await passwordField.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await passwordField.fill('secret123');
-    await page.waitForTimeout(300);
+    await fillPasswordField(page, 'secret123');
 
     // Fill remote path (mandatory when SFTP)
     await fillTextField(page, 'SftpRemotePath', '/outbound/edi');
@@ -296,22 +396,12 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     await fillTextField(page, 'ProcessedDirectory', '/inbound/processed');
     await fillTextField(page, 'ErrorDirectory', '/inbound/error');
 
-    // Tab out to trigger save
-    await page.keyboard.press('Tab');
-    await page.waitForTimeout(2000);
-
-    // Verify the URL changed from /NEW to a record ID (indicating successful save)
-    await page.waitForURL(
-      (url) => {
-        const urlStr = url.toString();
-        return urlStr.includes(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/`) && !urlStr.includes('/NEW');
-      },
-      { timeout: SLOW_ACTION_TIMEOUT }
-    );
-
+    // Every field above was handed to the server and its response awaited, so the record is as
+    // complete as this scenario makes it. The URL leaving /NEW is the WebUI's own statement that the
+    // draft was given a record id.
     // The URL change alone does not prove persistence (a NEW record gets a cached id even when invalid).
     // Assert the record is actually valid/saved via the WebAPI.
-    const sftpRecordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    const sftpRecordId = await savedRecordId(page);
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, sftpRecordId, 'after saving the SFTP endpoint');
 
     // Verify the saved field values are still present
@@ -353,9 +443,7 @@ switching to a non-OAuth2 auth type (Token) hides the OAuth2-specific fields.
 
     test.setTimeout(120000);
 
-    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-    await page.waitForTimeout(2000);
-    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await openNewEndpoint(page);
 
     // HTTP transport, then OAuth2 auth
     await selectListValue(page, 'TransportType', 'HTTP');
@@ -395,9 +483,7 @@ OAuthTokenUrl is accepted and the record persists).
 
     test.setTimeout(120000);
 
-    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-    await page.waitForTimeout(2000);
-    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await openNewEndpoint(page);
 
     // Value is auto-generated (IsUseDocSequence=Y) — skip it.
     // The legacy "Art" (Type) field was retired from this window (its AD_Field/AD_UI_Element are
@@ -415,27 +501,12 @@ OAuthTokenUrl is accepted and the record persists).
     await fillTextField(page, 'OAuthScope', 'docuware.platform');
     await fillTextField(page, 'ClientId', 'docuware.platform.net.client');
     await fillTextField(page, 'LoginUsername', 'svc-user');
-    const pwd = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
-    await pwd.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await pwd.fill('svc-secret');
-    await page.waitForTimeout(300);
-
-    // Tab out to trigger save
-    await page.keyboard.press('Tab');
-    await page.waitForTimeout(2000);
+    await fillPasswordField(page, 'svc-secret');
 
     // URL changes from /NEW to a record ID => saved (mandatory logic satisfied)
-    await page.waitForURL(
-      (url) => {
-        const urlStr = url.toString();
-        return urlStr.includes(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/`) && !urlStr.includes('/NEW');
-      },
-      { timeout: SLOW_ACTION_TIMEOUT }
-    );
-
     // A NEW record is assigned a cached id (URL leaves /NEW) even when validStatus.valid=false, so the
     // URL change alone does NOT prove the row persisted. Assert real persistence via the WebAPI.
-    const oauthRecordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    const oauthRecordId = await savedRecordId(page);
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, oauthRecordId, 'after saving the OAuth2 HTTP endpoint');
 
     // Saved OAuth2 values persist
@@ -466,8 +537,7 @@ visible for LOCAL_FILE and hidden for every other transport.
     test.setTimeout(180000);
 
     await test.step('Open a new External System Endpoint', async () => {
-      await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await openNewEndpoint(page);
     });
 
     await test.step('Select transport Local File — the three local-file fields appear', async () => {
@@ -537,16 +607,12 @@ endpoint with no directory to poll must not become a valid, saved record.
 
     test.setTimeout(180000);
 
-    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await openNewEndpoint(page);
 
     await selectListValue(page, 'TransportType', /LOCAL_FILE/);
 
-    // Tab out without filling the mandatory root location
-    await page.keyboard.press('Tab');
-    await page.waitForTimeout(2000);
-
-    const recordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    // Nothing else is entered: the transport is set, the mandatory root location is not.
+    const recordId = await savedRecordId(page);
 
     // The document must NOT be valid — the mandatory root location is missing.
     const invalidStatus = await getValidationStatus(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
@@ -557,8 +623,6 @@ endpoint with no directory to poll must not become a valid, saved record.
 
     // Filling it makes the record valid and saved.
     await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel');
-    await page.keyboard.press('Tab');
-    await page.waitForTimeout(2000);
 
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after filling the mandatory LocalRootLocation');
     await expect(page.locator('.form-field-LocalRootLocation input[type="text"]')).toHaveValue('/var/metasfresh/import/packzettel');
@@ -590,17 +654,14 @@ stale configuration on the record.
     test.setTimeout(240000);
 
     await test.step('Save a complete Local File endpoint', async () => {
-      await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await openNewEndpoint(page);
 
       await selectListValue(page, 'TransportType', /LOCAL_FILE/);
       await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel');
       await fillTextField(page, 'ImportFileNamePattern', '{filename}_{timestamp}');
-      await page.keyboard.press('Tab');
-      await page.waitForTimeout(2000);
     });
 
-    const recordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    const recordId = await savedRecordId(page);
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after saving the LOCAL_FILE endpoint');
 
     const localFileRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
@@ -617,13 +678,8 @@ stale configuration on the record.
       // the same save, because SFTP + PASSWORD shows that field — but then the scenario would be
       // testing two things at once.)
       await selectListValue(page, 'SftpAuthType', /SSH_KEY/);
-      const sshPrivateKey = page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input');
-      await sshPrivateKey.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await sshPrivateKey.fill('-----BEGIN OPENSSH PRIVATE KEY-----');
-      await page.waitForTimeout(300);
+      await fillSshPrivateKeyField(page, '-----BEGIN OPENSSH PRIVATE KEY-----');
       await fillTextField(page, 'SftpRemotePath', '/outbound/edi');
-      await page.keyboard.press('Tab');
-      await page.waitForTimeout(2000);
     });
 
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint to SFTP');
@@ -639,8 +695,6 @@ stale configuration on the record.
     await test.step('Switch back to Local File and re-enter only the root location', async () => {
       await selectListValue(page, 'TransportType', /LOCAL_FILE/);
       await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel2');
-      await page.keyboard.press('Tab');
-      await page.waitForTimeout(2000);
     });
 
     // Nobody typed a polling interval in this step: the switch to SFTP cleared Frequency to SQL NULL, and
@@ -654,8 +708,6 @@ stale configuration on the record.
 
     await test.step('Re-enter the polling interval the switch cleared', async () => {
       await fillNumericField(page, 'Frequency', '60000');
-      await page.keyboard.press('Tab');
-      await page.waitForTimeout(2000);
     });
 
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after re-entering the polling interval');
@@ -697,22 +749,17 @@ thing the clearing exists to prevent.
     test.setTimeout(240000);
 
     await test.step('Save a complete HTTP + Basic endpoint with a password', async () => {
-      await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await openNewEndpoint(page);
 
       await selectListValue(page, 'TransportType', 'HTTP');
       await selectListValue(page, 'AuthType', /Basic/);
       await selectListValue(page, 'OutboundHttpMethod', 'POST');
       await fillTextField(page, 'HttpEndPoint', 'https://example.com/api/orders');
       await fillTextField(page, 'LoginUsername', 'svc-user');
-      const httpPassword = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
-      await httpPassword.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await httpPassword.fill('shared-secret');
-      await page.keyboard.press('Tab');
-      await page.waitForTimeout(2000);
+      await fillPasswordField(page, 'shared-secret');
     });
 
-    const recordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    const recordId = await savedRecordId(page);
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after saving the HTTP + Basic endpoint');
     expect((await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId)).fieldsByName.Password.value).toBe('shared-secret');
 
@@ -723,8 +770,6 @@ thing the clearing exists to prevent.
       await fillNumericField(page, 'SftpPort', '22');
       await fillTextField(page, 'SftpUsername', 'sftpuser');
       await fillTextField(page, 'SftpRemotePath', '/outbound/edi');
-      await page.keyboard.press('Tab');
-      await page.waitForTimeout(2000);
     });
 
     // The window still shows the password field under SFTP + PASSWORD ...
@@ -747,11 +792,7 @@ thing the clearing exists to prevent.
     // the record is invalid, the WebUI never saves it, and the interceptor never runs at all.
     await test.step('Switch the SFTP authentication to SSH key', async () => {
       await selectListValue(page, 'SftpAuthType', /SSH_KEY/);
-      const sshPrivateKey = page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input');
-      await sshPrivateKey.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await sshPrivateKey.fill('-----BEGIN OPENSSH PRIVATE KEY-----');
-      await page.keyboard.press('Tab');
-      await page.waitForTimeout(2000);
+      await fillSshPrivateKeyField(page, '-----BEGIN OPENSSH PRIVATE KEY-----');
     });
 
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint to SFTP + SSH_KEY');
@@ -822,8 +863,7 @@ translation is caught instead of being eyeballed on a screenshot.
       await LoginPage.login(masterdata.login.user);
       await LoginPage.expectLoggedIn();
 
-      await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
-      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await openNewEndpoint(page);
 
       await selectListValue(page, 'TransportType', /LOCAL_FILE/);
 
