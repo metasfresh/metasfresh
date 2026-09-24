@@ -571,6 +571,32 @@ public class ExternalSystem_EndpointTest
 		}
 
 		/**
+		 * OAuth (v1) fetches its token from a login endpoint, and the scripted-adapter route builds that
+		 * request out of client id, client secret, username AND password -- every one of them a value the
+		 * operator has to be able to enter. The window shows all four under {@code HTTP + OAuth}, so a
+		 * switch to OAuth must leave all four alone.
+		 */
+		@Test
+		void basicToOAuth_keepsEveryCredentialTheTokenRequestSends()
+		{
+			final I_ExternalSystem_Endpoint endpoint = newSavedBasicAuthEndpoint();
+
+			endpoint.setAuthType("OAuth");
+			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+
+			assertThat(endpoint.getPassword()).isEqualTo("secret");
+			assertThat(endpoint.getLoginUsername()).isEqualTo("user");
+			assertThat(endpoint.getClientId()).isEqualTo("clientId");
+			assertThat(endpoint.getClientSecret()).isEqualTo("clientSecret");
+			// hidden under OAuth: the token URL and scope belong to OAuth2, and a bearer token or SAS
+			// signature is a different authentication type altogether
+			assertThat(endpoint.getAuthToken()).isNull();
+			assertThat(endpoint.getSasSignature()).isNull();
+			assertThat(endpoint.getOAuthTokenUrl()).isNull();
+			assertThat(endpoint.getOAuthScope()).isNull();
+		}
+
+		/**
 		 * OAuth2 shows the widest credential set of all authentication types: username + password (the
 		 * resource-owner grant) as well as client id + secret, token URL and scope.
 		 */

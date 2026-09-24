@@ -146,7 +146,7 @@ public class ExternalSystem_Endpoint
 						"@TransportType/X@='HTTP' & (@AuthType/X@='OAuth' | @AuthType/X@='Basic' | @AuthType/X@='OAuth2')",
 						endpoint -> endpoint.setLoginUsername(null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_Password,
-						"(@TransportType/X@='HTTP' & @AuthType/X@='Basic') | (@TransportType/X@='SFTP' & @SftpAuthType/X@='PASSWORD') | (@TransportType/X@='HTTP' & @AuthType/X@='OAuth2')",
+						"(@TransportType/X@='HTTP' & @AuthType/X@='Basic') | (@TransportType/X@='SFTP' & @SftpAuthType/X@='PASSWORD') | (@TransportType/X@='HTTP' & @AuthType/X@='OAuth2') | (@TransportType/X@='HTTP' & @AuthType/X@='OAuth')",
 						endpoint -> endpoint.setPassword(null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_ClientId,
 						"@TransportType/X@='HTTP' & (@AuthType/X@='OAuth' | @AuthType/X@='OAuth2')",
