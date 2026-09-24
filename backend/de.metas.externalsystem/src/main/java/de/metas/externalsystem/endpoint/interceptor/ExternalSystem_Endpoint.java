@@ -65,12 +65,13 @@ import java.util.function.Consumer;
  * clearing it would leave every HTTP endpoint unsaveable. Retiring such a column means dropping the column,
  * a change of its own.
  * <p>
- * <b>Assumption: this never runs on a half-configured transport.</b> The rules read the record as it is
- * about to be stored, so {@code TransportType=SFTP} with {@code SftpAuthType} still unset would read as
- * "SFTP, and not password authentication" and take the password away. What rules that state out is
- * {@code AD_Column.MandatoryLogic}: {@code SftpHost}, {@code SftpPort}, {@code SftpUsername},
+ * <b>Assumption: a WINDOW save never arrives with a half-configured transport.</b> The rules read the
+ * record as it is about to be stored, so {@code TransportType=SFTP} with {@code SftpAuthType} still unset
+ * would read as "SFTP, and not password authentication" and take the password away. What rules that state
+ * out is {@code AD_Column.MandatoryLogic}: {@code SftpHost}, {@code SftpPort}, {@code SftpUsername},
  * {@code SftpRemotePath} and {@code SftpAuthType} each carry {@code @TransportType/X@='SFTP'}, so picking
- * SFTP alone cannot be saved. Whoever relaxes one of those five takes this assumption away.
+ * SFTP alone cannot be saved. That check is the window's, though, and this fires on every {@code save()}:
+ * a writer that stores the record outside a window is not covered.
  */
 @Interceptor(I_ExternalSystem_Endpoint.class)
 @Component
@@ -162,7 +163,8 @@ public class ExternalSystem_Endpoint
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpFilenamePattern, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpFilenamePattern(null)),
 				// the plain int setter here, unlike SftpPort above and Frequency below: this column carries
-				// no MandatoryLogic, so a stored 0 and SQL NULL say the same thing
+				// no MandatoryLogic, and ExternalSystemEndpointRepository screens a 0 out, so DOWNSTREAM a
+				// stored 0 and SQL NULL say the same thing. The window still renders the 0
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpPollingIntervalMs(0)),
 				// SFTP authentication
@@ -192,11 +194,9 @@ public class ExternalSystem_Endpoint
 	}
 
 	/**
-	 * The {@code AD_Field.DisplayLogic} copy this class carries, per column it can hide.
-	 * <p>
-	 * Public for one reader only: the cucumber scenario in {@code externalSystemEndpointDisplayLogic.feature},
-	 * which holds these copies against the live dictionary -- the only test home with this branch's migration
-	 * scripts applied to a real database.
+	 * The {@code AD_Field.DisplayLogic} copy this class carries, per column it can hide. Public for one
+	 * reader: {@code externalSystemEndpointDisplayLogic.feature}, which holds these copies against the live
+	 * dictionary -- the only test home that runs against a database with the migration scripts applied.
 	 */
 	@VisibleForTesting
 	public ImmutableMap<String, String> getDisplayLogicByColumnName()
@@ -252,8 +252,8 @@ public class ExternalSystem_Endpoint
 
 	/**
 	 * The record's {@link #VISIBILITY_GOVERNING_COLUMN_NAMES} values, as the display logic expressions read
-	 * them. A column that holds no value is left out, so the expression falls back to its own default and
-	 * simply matches none of the codes it compares against.
+	 * them. A column that holds no value is left out, so the expression falls back to its own default --
+	 * which matches none of the NON-EMPTY codes the rules compare against (see {@link HideableColumn#isVisible}).
 	 */
 	private static Evaluatee extractVisibilityGoverningValues(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{
@@ -292,11 +292,10 @@ public class ExternalSystem_Endpoint
 		boolean isVisible(@NonNull final Evaluatee configuration)
 		{
 			// Only TRUE means shown; anything else counts as HIDDEN, and the field is cleared. The window
-			// reaches the same verdict only because every rule stays inside the three governing columns
-			// (pinned by ExternalSystem_EndpointTest.VisibilityRules) and compares against a NON-EMPTY
-			// literal: an unset ref-list field resolves to "" in the window, whose DocumentEvaluatee is no
-			// Evaluatee2, and to the CtxName default "X" here, where Evaluatees.ofMap is one -- so a rule of
-			// the form @AuthType/X@='' would clear a field the operator can still see.
+			// reaches the same verdict only while every rule stays inside the three governing columns AND
+			// compares against a NON-EMPTY literal: an unset ref-list field resolves to "" in the window,
+			// whose DocumentEvaluatee is no Evaluatee2, and to the CtxName default "X" here, where
+			// Evaluatees.ofMap is one. Both halves are pinned by ExternalSystem_EndpointTest.VisibilityRules.
 			final Boolean visible = visibleIf.evaluate(configuration, OnVariableNotFound.ReturnNoResult);
 			return Boolean.TRUE.equals(visible);
 		}
