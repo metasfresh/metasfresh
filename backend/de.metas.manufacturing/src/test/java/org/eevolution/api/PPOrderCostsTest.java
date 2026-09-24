@@ -696,7 +696,8 @@ public class PPOrderCostsTest
 				.build();
 
 		final CostPrice newPrice = CostPrice.ownCostPrice(CostAmount.of(25, currencyId), uomId);
-		orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, newPrice);
+		// price UOM matches the row's accumulatedQty UOM here, so the conversion is identity
+		orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, newPrice, (price, prodId, targetUomId) -> price);
 
 		assertThat(orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement))
 				.contains(newPrice);
