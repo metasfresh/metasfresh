@@ -411,11 +411,31 @@ public class ADWindowDAO implements IADWindowDAO
 	@Nullable
 	public AdTableId getMainTableId(@NonNull final AdWindowId adWindowId)
 	{
-		// Reuse the single retrieveFirstTab query (the window's first / lowest-SeqNo tab) rather than a
-		// second, divergent one. Making that shared query header-aware (TabLevel=0) and handling headerless
-		// windows correctly is a follow-up improvement.
-		final I_AD_Tab firstTab = retrieveFirstTab(adWindowId);
-		return firstTab != null ? AdTableId.ofRepoIdOrNull(firstTab.getAD_Table_ID()) : null;
+		// The window's MAIN table is its header (TabLevel=0) tab's table, NOT simply its lowest-SeqNo tab — so
+		// retrieveFirstTab() must NOT be reused here. retrieveFirstTab orders by SeqNo alone, and a window can
+		// have a detail tab (TabLevel>0) sharing the header's SeqNo: e.g. window 123 "Business Partner" has the
+		// TabLevel-0 C_BPartner tab and a TabLevel-1 R_Request tab both at SeqNo=10. With no TabLevel filter and
+		// no unique tie-breaker the header is then picked only by chance of DB row order, so on some databases
+		// getMainTableId returned the R_Request table — silently breaking the per-table CREATE-permission gate
+		// (the "new Business Partner" menu node stayed visible for a role restricted from creating C_BPartner).
+		// Filter to the header tab and order deterministically (AD_Tab_ID tie-breaks header tabs sharing a SeqNo).
+		final I_AD_Tab mainTab = queryBL
+				.createQueryBuilder(I_AD_Tab.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, adWindowId)
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_TabLevel, 0)
+				.addInSubQueryFilter(I_AD_Tab.COLUMNNAME_AD_Table_ID, I_AD_Table.COLUMNNAME_AD_Table_ID,
+						queryBL.createQueryBuilder(I_AD_Table.class)
+								.addOnlyActiveRecordsFilter()
+								.create())
+				.orderBy()
+				.addColumn(I_AD_Tab.COLUMNNAME_SeqNo)
+				.addColumn(I_AD_Tab.COLUMNNAME_AD_Tab_ID)
+				.endOrderBy()
+				.create()
+				.first(I_AD_Tab.class);
+
+		return mainTab != null ? AdTableId.ofRepoIdOrNull(mainTab.getAD_Table_ID()) : null;
 	}
 
 	@Override
