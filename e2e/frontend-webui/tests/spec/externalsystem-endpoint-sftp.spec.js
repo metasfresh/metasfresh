@@ -90,7 +90,6 @@ async function commitField(page, fieldName, commit) {
  * have yet.
  */
 async function openNewEndpoint(page) {
-  listOptionCaptions.clear();
   const draftCreated = page.waitForResponse(
     (response) =>
       response.request().method() === 'PATCH' &&
@@ -117,66 +116,20 @@ async function savedRecordId(page) {
 }
 
 /**
- * What each List field's dropdown answered, as AD_Ref_List Value -> rendered caption. Emptied
- * whenever a new document is opened, because the captions belong to that document's field options
- * and to the language of whoever is logged in.
- */
-const listOptionCaptions = new Map();
-
-/**
- * Quote `text` so it can stand for itself inside a RegExp.
- */
-function escapeForRegExp(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
  * Select a value from a List dropdown widget (AD_Reference_ID=17) by its AD_Ref_List **Value**.
  * List widgets render a readonly input — we must click the container to open the dropdown, then
  * click the matching option.
  *
- * An option's rendered text is the localized `AD_Ref_List.Name` — "Lokale Datei", "Passwort" — so
- * neither the value nor an English name can be matched against it. It carries a "<Value>_" prefix
- * ONLY where the server runs in developer mode (`MLookupFactory.getLookup_List`), which a
- * from-source stack does and a deployed one does not; matching on the value therefore passes
- * locally and can never match on CI. So ask the WebUI's own dropdown endpoint, which answers with
- * {key, caption} pairs, for the caption belonging to the value, and click the option rendering it.
- * The match is anchored: captions of one list are frequently prefixes of each other ("OAuth" and
- * "OAuth2"), and the list renders the longer one first.
+ * The option carries that Value verbatim as its test id (`SelectionDropdown#renderOption`, whose
+ * `key` is the lookup's key column `AD_Ref_List.Value`). The rendered caption is unusable here: it
+ * is localized, and it gains a `<Value>_` prefix wherever the server runs in developer mode — which
+ * a from-source stack does and a deployed one does not.
  */
 async function selectListValue(page, fieldName, optionValue) {
   const container = page.locator(`.form-field-${fieldName}`);
-
-  // The WebUI asks for a field's options once per document and serves every later open of the same
-  // dropdown from its own store, so only the first open can be awaited as a response. None of these
-  // four fields carries an AD_Val_Rule, so the set it answered with holds for the whole document.
-  const known = listOptionCaptions.get(fieldName);
-  const optionsLoaded = known
-    ? null
-    : page.waitForResponse(
-        (response) => response.request().method() === 'GET' && response.url().includes(`/field/${fieldName}/dropdown`),
-        { timeout: SLOW_ACTION_TIMEOUT }
-      );
-
   await container.locator('input').click();
 
-  let captionsByValue = known;
-  if (!captionsByValue) {
-    const offered = (await (await optionsLoaded).json()).values;
-    captionsByValue = new Map(offered.map((offer) => [offer.key, offer.caption]));
-    listOptionCaptions.set(fieldName, captionsByValue);
-  }
-
-  const caption = captionsByValue.get(optionValue);
-  expect(
-    caption,
-    `the ${fieldName} dropdown must offer ${optionValue}; it offered ${JSON.stringify([...captionsByValue.keys()])}`
-  ).toBeDefined();
-
-  const option = page
-    .locator('.input-dropdown-list-option')
-    .filter({ hasText: new RegExp(`^\\s*${escapeForRegExp(caption)}\\s*$`) })
-    .first();
+  const option = page.getByTestId(`option-${optionValue}`);
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await commitField(page, fieldName, () => option.click());
 }
