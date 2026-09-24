@@ -48,6 +48,7 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -219,7 +220,17 @@ public class AttachmentRestService
 	@NonNull
 	private static TableRecordReference extractTableRecordReference(@NonNull final JsonTableRecordReference reference)
 	{
-		return TableRecordReference.of(reference.getTableName(), reference.getRecordId().getValue());
+		final int recordId = reference.getRecordId().getValue();
+
+		final Integer adTableId = reference.getAdTableId();
+		if (adTableId != null)
+		{
+			// AdTableId.ofRepoId validates the given number; TableRecordReference.of(int, int) would not.
+			return TableRecordReference.of(AdTableId.ofRepoId(adTableId), recordId);
+		}
+
+		// JsonTableRecordReference guarantees that tableName is set whenever adTableId is not.
+		return TableRecordReference.of(reference.getTableName(), recordId);
 	}
 
 	private static void validateLocalFileURL(@NonNull final URL url)
