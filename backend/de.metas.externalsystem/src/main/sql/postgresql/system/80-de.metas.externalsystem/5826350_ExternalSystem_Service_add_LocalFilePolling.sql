@@ -18,6 +18,7 @@ INSERT INTO ExternalSystem_Service
 	(AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive,
 	 ExternalSystem_Service_ID, ExternalSystem_ID, value, Name, Description, EnableCommand, DisableCommand)
 VALUES
-	(1000000, 1000000, now(), 100, now(), 100, 'Y',
+	(1000000, 1000000, TO_TIMESTAMP('2026-09-24 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
+	 TO_TIMESTAMP('2026-09-24 12:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y',
 	 540019 /*From ID Server*/, 540058, 'defaultLocalFilePollingScriptedImportConversion', 'Local File Polling',
 	 '/scriptedimportconversion', 'enableLocalFilePolling', 'disableLocalFilePolling');
