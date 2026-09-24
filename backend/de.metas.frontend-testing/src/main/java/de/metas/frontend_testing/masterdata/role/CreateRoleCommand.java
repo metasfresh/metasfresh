@@ -6,7 +6,6 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
-import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
@@ -157,7 +156,6 @@ public class CreateRoleCommand
 			// nothing yields a row equal to the column defaults.
 			userRolePermissionsDAO.createTableAccess(CreateTableAccessRequest.builder()
 					.roleId(roleId)
-					.orgId(OrgId.ANY)
 					.adTableId(adTableId)
 					.readOnly(tableAccessRequest.isReadOnly())
 					.canReport(tableAccessRequest.isCanReport())

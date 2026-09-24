@@ -989,24 +989,12 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setAD_Role_ID(request.getRoleId().getRepoId());
 		record.setAD_Table_ID(request.getAdTableId().getRepoId());
-		// Every flag is NOT NULL with a non-restricting DefaultValue (see the AD_Column); a null request field
-		// leaves that column default in place instead of writing a value.
-		if (request.getReadOnly() != null)
-		{
-			record.setIsReadOnly(request.getReadOnly());
-		}
-		if (request.getCanReport() != null)
-		{
-			record.setIsCanReport(request.getCanReport());
-		}
-		if (request.getCanExport() != null)
-		{
-			record.setIsCanExport(request.getCanExport());
-		}
-		if (request.getCanCreateNewRecords() != null)
-		{
-			record.setIsCanCreateNewRecords(request.getCanCreateNewRecords());
-		}
+		// The four flags carry the AD_Column's non-restricting defaults as builder defaults
+		// (see CreateTableAccessRequest), so a caller that omits one still writes that column's default value.
+		record.setIsReadOnly(request.isReadOnly());
+		record.setIsCanReport(request.isCanReport());
+		record.setIsCanExport(request.isCanExport());
+		record.setIsCanCreateNewRecords(request.isCanCreateNewRecords());
 		InterfaceWrapperHelper.save(record);
 	}
 

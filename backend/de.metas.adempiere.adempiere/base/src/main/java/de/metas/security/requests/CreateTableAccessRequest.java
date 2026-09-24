@@ -7,8 +7,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.table.api.AdTableId;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -41,15 +39,21 @@ public class CreateTableAccessRequest
 {
 	@NonNull RoleId roleId;
 
-	@NonNull OrgId orgId;
+	// Role table-access is org-independent (AD_Table_Access is AccessLevel System+Client), so this
+	// defaults to OrgId.ANY (the "*" org) and callers need not pass it; still @NonNull to reject an explicit null.
+	@Builder.Default @NonNull OrgId orgId = OrgId.ANY;
 
 	@NonNull AdTableId adTableId;
 
-	@Nullable Boolean readOnly;
+	// The four access flags mirror their AD_Table_Access column defaults (NOT NULL; verified against the
+	// live schema). A row left at these defaults is non-restricting — equivalent to no row; flip one to
+	// restrict that aspect. Mirroring the DB defaults here keeps them compiler-checked in the builder
+	// instead of a prose "see the AD_Column" comment.
+	@Builder.Default boolean readOnly = false;            // IsReadOnly            default 'N'
 
-	@Nullable Boolean canReport;
+	@Builder.Default boolean canReport = true;            // IsCanReport           default 'Y'
 
-	@Nullable Boolean canExport;
+	@Builder.Default boolean canExport = true;            // IsCanExport           default 'Y'
 
-	@Nullable Boolean canCreateNewRecords;
+	@Builder.Default boolean canCreateNewRecords = true;  // IsCanCreateNewRecords default 'Y'
 }

@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs.role;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
 import de.metas.security.requests.CreateTableAccessRequest;
@@ -54,9 +53,9 @@ public class AD_Table_Access_StepDef
 
 	/**
 	 * Creates an {@code AD_Table_Access} row granting/restricting a role on one table. Each flag is optional; an
-	 * omitted flag is passed as {@code null} to {@link IUserRolePermissionsDAO#createTableAccess}, which leaves the
-	 * column's own (non-restricting) default in place — so a row that sets only {@code IsCanCreateNewRecords=false}
-	 * subtracts just the create permission and leaves read, edit, report and export intact.
+	 * omitted flag is left off the request, so its builder default (which mirrors the column's non-restricting
+	 * default) applies — a row that sets only {@code IsCanCreateNewRecords=false} subtracts just the create
+	 * permission and leaves read, edit, report and export intact.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -85,16 +84,17 @@ public class AD_Table_Access_StepDef
 		final I_AD_Role roleRecord = row.getAsIdentifier(I_AD_Table_Access.COLUMNNAME_AD_Role_ID).lookupNotNullIn(roleTable);
 		final AdTableId adTableId = adTableDAO.retrieveAdTableId(row.getAsString("TableName"));
 
-		// The role (and hence its table-access rows) is org-independent, so OrgId.ANY mirrors CreateRoleCommand;
-		// each null flag lets the DAO keep the AD_Column default rather than re-encoding it here.
-		userRolePermissionsDAO.createTableAccess(CreateTableAccessRequest.builder()
+		// orgId and every unspecified flag fall through to the request's builder defaults (which mirror the
+		// AD_Table_Access column defaults); only a flag the DataTable actually sets is passed, so an omitted
+		// column stays at its non-restricting default.
+		final CreateTableAccessRequest.CreateTableAccessRequestBuilder builder = CreateTableAccessRequest.builder()
 				.roleId(RoleId.ofRepoId(roleRecord.getAD_Role_ID()))
-				.orgId(OrgId.ANY)
-				.adTableId(adTableId)
-				.readOnly(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsReadOnly).toBooleanOrNull())
-				.canReport(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanReport).toBooleanOrNull())
-				.canExport(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanExport).toBooleanOrNull())
-				.canCreateNewRecords(row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanCreateNewRecords).toBooleanOrNull())
-				.build());
+				.adTableId(adTableId);
+		row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsReadOnly).ifPresent(builder::readOnly);
+		row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanReport).ifPresent(builder::canReport);
+		row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanExport).ifPresent(builder::canExport);
+		row.getAsOptionalBoolean(I_AD_Table_Access.COLUMNNAME_IsCanCreateNewRecords).ifPresent(builder::canCreateNewRecords);
+
+		userRolePermissionsDAO.createTableAccess(builder.build());
 	}
 }
