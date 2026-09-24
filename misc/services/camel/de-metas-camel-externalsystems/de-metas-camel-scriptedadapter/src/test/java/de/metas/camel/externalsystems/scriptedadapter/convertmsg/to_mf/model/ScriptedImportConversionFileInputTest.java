@@ -39,7 +39,6 @@ class ScriptedImportConversionFileInputTest
 		final ScriptedImportConversionFileInput input = ScriptedImportConversionFileInput.builder()
 				.fileName("packzettel.pdf")
 				.fileBase64("dGVzdC1jb250ZW50")
-				.contentType("application/pdf")
 				.attachmentFileName("packzettel_attachment.pdf")
 				.build();
 
@@ -48,7 +47,6 @@ class ScriptedImportConversionFileInputTest
 
 		assertThat(deserialized.getFileName()).isEqualTo("packzettel.pdf");
 		assertThat(deserialized.getFileBase64()).isEqualTo("dGVzdC1jb250ZW50");
-		assertThat(deserialized.getContentType()).isEqualTo("application/pdf");
 		assertThat(deserialized.getAttachmentFileName()).isEqualTo("packzettel_attachment.pdf");
 	}
 
@@ -58,7 +56,6 @@ class ScriptedImportConversionFileInputTest
 		final ScriptedImportConversionFileInput input = ScriptedImportConversionFileInput.builder()
 				.fileName("packzettel.pdf")
 				.fileBase64("dGVzdC1jb250ZW50")
-				.contentType("application/pdf")
 				.attachmentFileName("packzettel_attachment.pdf")
 				.build();
 
@@ -67,17 +64,15 @@ class ScriptedImportConversionFileInputTest
 
 		assertThat(node.has("fileName")).isTrue();
 		assertThat(node.has("fileBase64")).isTrue();
-		assertThat(node.has("contentType")).isTrue();
 		assertThat(node.has("attachmentFileName")).isTrue();
 
 		assertThat(node.get("fileName").asText()).isEqualTo("packzettel.pdf");
 		assertThat(node.get("fileBase64").asText()).isEqualTo("dGVzdC1jb250ZW50");
-		assertThat(node.get("contentType").asText()).isEqualTo("application/pdf");
 		assertThat(node.get("attachmentFileName").asText()).isEqualTo("packzettel_attachment.pdf");
 
-		// exactly these four fields — a renamed field would leave the old key absent and an extra key present
+		// exactly these three fields — a renamed field would leave the old key absent and an extra key present
 		assertThat(node.fieldNames()).toIterable().containsExactlyInAnyOrder(
-				"fileName", "fileBase64", "contentType", "attachmentFileName");
+				"fileName", "fileBase64", "attachmentFileName");
 	}
 
 	@Test
@@ -91,16 +86,14 @@ class ScriptedImportConversionFileInputTest
 		final String json = objectMapper.writeValueAsString(input);
 
 		// the key must be ABSENT, not present-with-null — a round-tripped null value alone would also
-		// pass when the DTO serializes an explicit "contentType":null, which is the defect this guards
+		// pass when the DTO serializes an explicit "attachmentFileName":null, which is the defect this guards
 		final JsonNode node = objectMapper.readTree(json);
-		assertThat(node.has("contentType")).isFalse();
 		assertThat(node.has("attachmentFileName")).isFalse();
 
 		final ScriptedImportConversionFileInput deserialized = objectMapper.readValue(json, ScriptedImportConversionFileInput.class);
 
 		assertThat(deserialized.getFileName()).isEqualTo("packzettel.pdf");
 		assertThat(deserialized.getFileBase64()).isEqualTo("dGVzdC1jb250ZW50");
-		assertThat(deserialized.getContentType()).isNull();
 		assertThat(deserialized.getAttachmentFileName()).isNull();
 	}
 }
