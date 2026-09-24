@@ -108,8 +108,8 @@ public class ExternalSystem_EndpointTest
 
 	/**
 	 * {@code IsArrayFanOut} carries no display logic: the window shows it under every transport and every
-	 * authentication type, and both the HTTP and the SFTP outbound dispatch read it. Nothing may ever clear
-	 * it.
+	 * authentication type, and the outbound dispatch fans out on it under both HTTP and SFTP. Nothing may
+	 * ever clear it.
 	 */
 	private static void assertArrayFanOutPreserved(final I_ExternalSystem_Endpoint endpoint)
 	{
@@ -155,10 +155,7 @@ public class ExternalSystem_EndpointTest
 		endpoint.setSftpPollingIntervalMs(60_000);
 	}
 
-	/**
-	 * The stored value, not the generated {@code int} getter: that getter answers 0 both for a stored 0 and
-	 * for SQL NULL, and only NULL trips the column's MandatoryLogic.
-	 */
+	/** The stored value: the generated {@code int} getter answers 0 for a stored 0 and for SQL NULL alike. */
 	@Nullable
 	private static Integer sftpPortOf(final I_ExternalSystem_Endpoint endpoint)
 	{
@@ -196,10 +193,7 @@ public class ExternalSystem_EndpointTest
 		endpoint.setImportFileNamePattern("{filename}_{timestamp}");
 	}
 
-	/**
-	 * The stored value, not the generated {@code int} getter: that getter answers 0 both for a stored 0 and
-	 * for SQL NULL, and only NULL trips the column's MandatoryLogic.
-	 */
+	/** The stored value: the generated {@code int} getter answers 0 for a stored 0 and for SQL NULL alike. */
 	@Nullable
 	private static Integer frequencyOf(final I_ExternalSystem_Endpoint endpoint)
 	{
@@ -337,9 +331,7 @@ public class ExternalSystem_EndpointTest
 			setAllLocalFileFields(endpoint);
 			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
 
-			// then: every HTTP-specific field is cleared -- including the four HTTP/OAuth columns
-			// (OAuthTokenUrl, OAuthScope, IsFileUpload, IsArrayFanOut) that a prior version of this
-			// interceptor left set on every transport switch ...
+			// then: every HTTP-specific field is cleared ...
 			assertHttpOnlyFieldsCleared(endpoint);
 			// ... the password too: no LOCAL_FILE configuration shows it ...
 			assertThat(endpoint.getPassword()).isNull();
@@ -355,9 +347,9 @@ public class ExternalSystem_EndpointTest
 		/**
 		 * Round trip LOCAL_FILE -&gt; another transport -&gt; LOCAL_FILE. The switch away must leave Frequency
 		 * unset rather than 0: the column's MandatoryLogic rejects only an unset value, so a 0 would end the
-		 * round trip on a record the window calls valid while
-		 * {@code ExternalSystemEndpointRepository} reads the frequency back as absent — an endpoint that
-		 * silently never polls. Unset, the operator is prompted for it, exactly as for LocalRootLocation.
+		 * round trip on a record the window calls valid while {@code ExternalSystemEndpointRepository} reads
+		 * the frequency back as absent. Unset, the operator is prompted for it, exactly as for
+		 * LocalRootLocation.
 		 */
 		@Test
 		void switchBackToLocalFile_afterFrequencyWasClearedBySwitchingAway_leavesFrequencyUnset()
@@ -571,10 +563,10 @@ public class ExternalSystem_EndpointTest
 		}
 
 		/**
-		 * OAuth (v1) fetches its token from a login endpoint, and the scripted-adapter route builds that
-		 * request out of client id, client secret, username AND password -- every one of them a value the
-		 * operator has to be able to enter. The window shows all four under {@code HTTP + OAuth}, so a
-		 * switch to OAuth must leave all four alone.
+		 * OAuth (v1) fetches its token from a login endpoint, and the scripted-adapter route can put client
+		 * id, client secret, username AND password into that request -- so each of the four is a value the
+		 * operator must be able to enter. The window shows all four under {@code HTTP + OAuth}, so a switch
+		 * to OAuth must leave all four alone.
 		 */
 		@Test
 		void basicToOAuth_keepsEveryCredentialTheTokenRequestSends()
@@ -673,8 +665,7 @@ public class ExternalSystem_EndpointTest
 
 		/**
 		 * The interceptor only runs when one of the columns it declares fires it. A display logic that named
-		 * a fourth column would therefore keep its stale verdict when that column changed — which is the
-		 * defect the three separate handlers this class replaced had, one column at a time.
+		 * a fourth column would therefore keep its stale verdict when that column changed.
 		 */
 		@Test
 		void everyDisplayLogicUsesOnlyTheColumnsTheInterceptorTriggersOn()
@@ -730,12 +721,11 @@ public class ExternalSystem_EndpointTest
 
 		/**
 		 * What {@code HideableColumn#isVisible} does with an expression it cannot decide -- one naming a
-		 * variable that has no value AND no default. It answers "not shown", so the field is cleared.
-		 * <p>
-		 * The window answers FALSE too, but by a different route, so the two agree only while
-		 * {@link #everyDisplayLogicUsesOnlyTheColumnsTheInterceptorTriggersOn()} holds -- see the comment in
-		 * {@code HideableColumn#isVisible}. {@link #everyDisplayLogicVariableHasADefaultValue()} keeps the
-		 * case from arising at all.
+		 * variable that has no value AND no default. It answers "not shown", so the field is cleared; the
+		 * window answers FALSE too, by a different route (see the comment in
+		 * {@code HideableColumn#isVisible}). The expression below is synthetic and deliberately outside the
+		 * governing columns; {@link #everyDisplayLogicVariableHasADefaultValue()} keeps a real rule from
+		 * ever reaching this case.
 		 */
 		@Test
 		void anUndecidableDisplayLogicCountsAsHiddenJustAsTheWindowCountsIt()
