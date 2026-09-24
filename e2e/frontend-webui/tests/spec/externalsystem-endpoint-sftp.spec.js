@@ -82,6 +82,7 @@ async function commitField(page, fieldName, commit) {
  * have yet.
  */
 async function openNewEndpoint(page) {
+  listOptionCaptions.clear();
   const draftCreated = page.waitForResponse(
     (response) =>
       response.request().method() === 'PATCH' &&
@@ -108,18 +109,66 @@ async function savedRecordId(page) {
 }
 
 /**
- * Select a value from a List dropdown widget (AD_Reference_ID=17).
- * List widgets render a readonly input — we must click the container to open
- * the dropdown, then click the matching option.
- *
- * An option renders as "<AD_Ref_List.Value>_<localized name>", so pass a RegExp on the Value
- * (e.g. /SSH_KEY/) to stay language-independent; a localized name only matches on the one language.
+ * What each List field's dropdown answered, as AD_Ref_List Value -> rendered caption. Emptied
+ * whenever a new document is opened, because the captions belong to that document's field options
+ * and to the language of whoever is logged in.
  */
-async function selectListValue(page, fieldName, optionText) {
+const listOptionCaptions = new Map();
+
+/**
+ * Quote `text` so it can stand for itself inside a RegExp.
+ */
+function escapeForRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Select a value from a List dropdown widget (AD_Reference_ID=17) by its AD_Ref_List **Value**.
+ * List widgets render a readonly input — we must click the container to open the dropdown, then
+ * click the matching option.
+ *
+ * An option's rendered text is the localized `AD_Ref_List.Name` — "Lokale Datei", "Passwort" — so
+ * neither the value nor an English name can be matched against it. It carries a "<Value>_" prefix
+ * ONLY where the server runs in developer mode (`MLookupFactory.getLookup_List`), which a
+ * from-source stack does and a deployed one does not; matching on the value therefore passes
+ * locally and can never match on CI. So ask the WebUI's own dropdown endpoint, which answers with
+ * {key, caption} pairs, for the caption belonging to the value, and click the option rendering it.
+ * The match is anchored: captions of one list are frequently prefixes of each other ("OAuth" and
+ * "OAuth2"), and the list renders the longer one first.
+ */
+async function selectListValue(page, fieldName, optionValue) {
   const container = page.locator(`.form-field-${fieldName}`);
+
+  // The WebUI asks for a field's options once per document and serves every later open of the same
+  // dropdown from its own store, so only the first open can be awaited as a response. None of these
+  // four fields carries an AD_Val_Rule, so the set it answered with holds for the whole document.
+  const known = listOptionCaptions.get(fieldName);
+  const optionsLoaded = known
+    ? null
+    : page.waitForResponse(
+        (response) => response.request().method() === 'GET' && response.url().includes(`/field/${fieldName}/dropdown`),
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+
   await container.locator('input').click();
 
-  const option = page.locator('.input-dropdown-list-option').filter({ hasText: optionText }).first();
+  let captionsByValue = known;
+  if (!captionsByValue) {
+    const offered = (await (await optionsLoaded).json()).values;
+    captionsByValue = new Map(offered.map((offer) => [offer.key, offer.caption]));
+    listOptionCaptions.set(fieldName, captionsByValue);
+  }
+
+  const caption = captionsByValue.get(optionValue);
+  expect(
+    caption,
+    `the ${fieldName} dropdown must offer ${optionValue}; it offered ${JSON.stringify([...captionsByValue.keys()])}`
+  ).toBeDefined();
+
+  const option = page
+    .locator('.input-dropdown-list-option')
+    .filter({ hasText: new RegExp(`^\\s*${escapeForRegExp(caption)}\\s*$`) })
+    .first();
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await commitField(page, fieldName, () => option.click());
 }
@@ -327,7 +376,7 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
     await selectListValue(page, 'TransportType', 'SFTP');
 
     // --- Test: Set SftpAuthType = PASSWORD ---
-    await selectListValue(page, 'SftpAuthType', /PASSWORD/);
+    await selectListValue(page, 'SftpAuthType', 'PASSWORD');
 
     // Password field should be visible
     const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
@@ -337,7 +386,7 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
     await expect(page.locator('.form-field-SshPrivateKey')).toBeHidden({ timeout: 3000 });
 
     // --- Test: Switch to SftpAuthType = SSH_KEY ---
-    await selectListValue(page, 'SftpAuthType', /SSH_KEY/);
+    await selectListValue(page, 'SftpAuthType', 'SSH_KEY');
 
     // SshPrivateKey should now be visible
     await expect(page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
@@ -380,7 +429,7 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     await fillTextField(page, 'SftpUsername', 'testuser');
 
     // Set SftpAuthType = PASSWORD (mandatory when SFTP)
-    await selectListValue(page, 'SftpAuthType', /PASSWORD/);
+    await selectListValue(page, 'SftpAuthType', 'PASSWORD');
 
     // Fill password (mandatory when SFTP + SftpAuthType=PASSWORD)
     await fillPasswordField(page, 'secret123');
@@ -541,7 +590,7 @@ visible for LOCAL_FILE and hidden for every other transport.
     });
 
     await test.step('Select transport Local File — the three local-file fields appear', async () => {
-      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
+      await selectListValue(page, 'TransportType', 'LOCAL_FILE');
 
       await expect(page.locator('.form-field-LocalRootLocation input[type="text"]')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       await expect(page.locator('.form-field-Frequency input')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
@@ -579,7 +628,7 @@ visible for LOCAL_FILE and hidden for every other transport.
     });
 
     await test.step('Back to Local File — the three fields are shown again', async () => {
-      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
+      await selectListValue(page, 'TransportType', 'LOCAL_FILE');
 
       await expect(page.locator('.form-field-LocalRootLocation input[type="text"]')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       await expect(page.locator('.form-field-Frequency input')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
@@ -609,7 +658,7 @@ endpoint with no directory to poll must not become a valid, saved record.
 
     await openNewEndpoint(page);
 
-    await selectListValue(page, 'TransportType', /LOCAL_FILE/);
+    await selectListValue(page, 'TransportType', 'LOCAL_FILE');
 
     // Nothing else is entered: the transport is set, the mandatory root location is not.
     const recordId = await savedRecordId(page);
@@ -656,7 +705,7 @@ stale configuration on the record.
     await test.step('Save a complete Local File endpoint', async () => {
       await openNewEndpoint(page);
 
-      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
+      await selectListValue(page, 'TransportType', 'LOCAL_FILE');
       await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel');
       await fillTextField(page, 'ImportFileNamePattern', '{filename}_{timestamp}');
     });
@@ -677,7 +726,7 @@ stale configuration on the record.
       // transport switch on its own. (Password auth works too — the record keeps a password entered in
       // the same save, because SFTP + PASSWORD shows that field — but then the scenario would be
       // testing two things at once.)
-      await selectListValue(page, 'SftpAuthType', /SSH_KEY/);
+      await selectListValue(page, 'SftpAuthType', 'SSH_KEY');
       await fillSshPrivateKeyField(page, '-----BEGIN OPENSSH PRIVATE KEY-----');
       await fillTextField(page, 'SftpRemotePath', '/outbound/edi');
     });
@@ -693,7 +742,7 @@ stale configuration on the record.
     await saveStill(page, 'endpoint-window-switched-LOCAL_FILE-to-SFTP.png');
 
     await test.step('Switch back to Local File and re-enter only the root location', async () => {
-      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
+      await selectListValue(page, 'TransportType', 'LOCAL_FILE');
       await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel2');
     });
 
@@ -752,7 +801,7 @@ thing the clearing exists to prevent.
       await openNewEndpoint(page);
 
       await selectListValue(page, 'TransportType', 'HTTP');
-      await selectListValue(page, 'AuthType', /Basic/);
+      await selectListValue(page, 'AuthType', 'Basic');
       await selectListValue(page, 'OutboundHttpMethod', 'POST');
       await fillTextField(page, 'HttpEndPoint', 'https://example.com/api/orders');
       await fillTextField(page, 'LoginUsername', 'svc-user');
@@ -765,7 +814,7 @@ thing the clearing exists to prevent.
 
     await test.step('Switch the saved endpoint to SFTP with password authentication', async () => {
       await selectListValue(page, 'TransportType', 'SFTP');
-      await selectListValue(page, 'SftpAuthType', /PASSWORD/);
+      await selectListValue(page, 'SftpAuthType', 'PASSWORD');
       await fillTextField(page, 'SftpHost', 'sftp.example.com');
       await fillNumericField(page, 'SftpPort', '22');
       await fillTextField(page, 'SftpUsername', 'sftpuser');
@@ -791,7 +840,7 @@ thing the clearing exists to prevent.
     // The SSH key has to be entered in this step: it is mandatory under SFTP + SSH_KEY, so without it
     // the record is invalid, the WebUI never saves it, and the interceptor never runs at all.
     await test.step('Switch the SFTP authentication to SSH key', async () => {
-      await selectListValue(page, 'SftpAuthType', /SSH_KEY/);
+      await selectListValue(page, 'SftpAuthType', 'SSH_KEY');
       await fillSshPrivateKeyField(page, '-----BEGIN OPENSSH PRIVATE KEY-----');
     });
 
@@ -865,7 +914,7 @@ translation is caught instead of being eyeballed on a screenshot.
 
       await openNewEndpoint(page);
 
-      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
+      await selectListValue(page, 'TransportType', 'LOCAL_FILE');
 
       for (const [fieldName, caption] of Object.entries(captions)) {
         const fieldLabel = page.locator(`.form-field-${fieldName} label.form-control-label`);
