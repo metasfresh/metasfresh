@@ -100,8 +100,8 @@ test('Serial-no product: scan one serial per picked unit (N of N), deduped, pers
         await GetQuantityDialog.expectSerialNoChipCount(2);
         await GetQuantityDialog.expectDoneDisabled();
 
-        // scan a duplicate of s1 → silently deduped, count unchanged, still gated
-        await GetQuantityDialog.scanDuplicateSerialNo(s1);
+        // scan a duplicate of s1 → deduped with an error toast, count unchanged, still gated
+        await GetQuantityDialog.scanDuplicateSerialNo(s1, { expectedError: 'Serial number already scanned' });
         await GetQuantityDialog.expectSerialNoCount({ scanned: 2, total: 3 });
         await GetQuantityDialog.expectDoneDisabled();
 
