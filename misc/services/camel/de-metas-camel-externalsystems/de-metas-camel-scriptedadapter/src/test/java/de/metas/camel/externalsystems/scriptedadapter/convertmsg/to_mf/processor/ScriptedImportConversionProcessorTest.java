@@ -79,6 +79,29 @@ class ScriptedImportConversionProcessorTest
 		assertThat(body.get(0).getRequestBody()).isEqualTo("{}");
 	}
 
+	/**
+	 * A transform may decide there is nothing to import and return the JSON literal {@code null}, which
+	 * deserializes to a null list. This is what makes each transport route's "nothing to process" branch
+	 * ({@code .when(body().isNull())}) reachable even for a transport whose own input is never empty —
+	 * the branch guards the TRANSFORM's output, not the payload the route read from its source.
+	 */
+	@Test
+	void nullOutput_leavesANullBody_soTheNothingToProcessBranchIsReachable() throws Exception
+	{
+		Mockito.when(javaScriptRepo.get(SCRIPT_IDENTIFIER)).thenReturn(SCRIPT);
+
+		final String request = "{\"orderId\":\"1\"}";
+
+		Mockito.when(javaScriptExecutorService.executeScript(SCRIPT_IDENTIFIER, SCRIPT, request))
+				.thenReturn("null");
+
+		final Exchange exchange = newExchange(request);
+
+		processor.process(exchange);
+
+		assertThat(exchange.getIn().getBody()).isNull();
+	}
+
 	@Test
 	void nonArrayOutput_failsWithClearActionableMessage_notOpaqueJacksonError() throws Exception
 	{
