@@ -611,10 +611,10 @@ stale configuration on the record.
       await fillTextField(page, 'SftpHost', 'sftp.example.com');
       await fillNumericField(page, 'SftpPort', '22');
       await fillTextField(page, 'SftpUsername', 'testuser');
-      // SSH-key auth on purpose: Password is NOT among the columns SFTP owns, so switching an existing
-      // endpoint to SFTP clears it in the same save — a pre-existing dead end (Password is mandatory for
-      // SFTP + PASSWORD auth, so such a record can never be made valid through this window). SshPrivateKey
-      // IS SFTP-owned, so SSH-key auth exercises the switch without depending on that.
+      // SSH-key auth on purpose: it needs no field that HTTP also uses, so this step exercises the
+      // transport switch on its own. (Password auth works too — the record keeps a password entered in
+      // the same save, because SFTP + PASSWORD shows that field — but then the scenario would be
+      // testing two things at once.)
       await selectListValue(page, 'SftpAuthType', /SSH_KEY/);
       const sshPrivateKey = page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input');
       await sshPrivateKey.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
