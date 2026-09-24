@@ -37,10 +37,8 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Payment;
@@ -67,6 +65,7 @@ public class POSReturnService
 	private static final AdMessageKey MSG_NoTaxFound = AdMessageKey.of("de.metas.pos.Return.NoTaxFound");
 	private static final AdMessageKey MSG_PriceUomMismatch = AdMessageKey.of("de.metas.pos.Return.PriceUomMismatch");
 	private static final AdMessageKey MSG_CurrencyMismatch = AdMessageKey.of("de.metas.pos.Return.CurrencyMismatch");
+	private static final AdMessageKey MSG_NotACreditMemo = AdMessageKey.of("de.metas.pos.Return.NotACreditMemo");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -76,7 +75,6 @@ public class POSReturnService
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
@@ -90,9 +88,16 @@ public class POSReturnService
 	 * waits synchronously for an async invoice-candidate workpackage that reads the candidates from a different
 	 * DB connection, so phase 1's changes (the {@code PriceEntered_Override} etc.) must already be committed by
 	 * the time phase 2 runs, exactly like the {@code updateInvalid()} visibility issue phase 1 itself works
-	 * around (see the class Javadoc history). The {@code C_POS} row lock ({@link POSTerminalService#lockForUpdate})
-	 * therefore only ever covers phase 1 (as it did before this method existed) — phases 2/3 rely on idempotency
-	 * instead (an already-generated credit memo / already-paid credit memo is detected and reused, never recreated).
+	 * around (see the class Javadoc history).
+	 * <p>
+	 * A transaction-scoped row lock cannot span three separate transactions, so the whole method body runs inside
+	 * {@link POSTerminalService#runWithCrossTransactionLock}: a Postgres advisory lock, held on its own dedicated
+	 * connection for the ENTIRE call, that serializes two concurrent callers against the SAME terminal end to end
+	 * — a second caller cannot start ANY phase while a first is still in flight in any of its three, closing the
+	 * cross-phase race a phase-1-only lock would leave open. The {@code C_POS} row lock inside phase 1
+	 * ({@link POSTerminalService#lockForUpdate}) still runs too, unchanged from before this method existed — it is
+	 * now redundant for mutual exclusion (the outer lock already guarantees only one caller is ever inside phase 1
+	 * at a time) but is kept as-is since it is exercised directly, on its own, by a dedicated test.
 	 *
 	 * @throws AdempiereException if the request itself is invalid ({@code NoLines}/{@code QtyMustBePositive}), if
 	 * pricing the credit fails synchronously (UOM/currency mismatch, no tax found, or the candidate is already in
@@ -103,11 +108,13 @@ public class POSReturnService
 	@NonNull
 	public POSReturnResult createReturn(@NonNull final POSReturnRequest request)
 	{
-		final ReturnAndCandidates phase1 = trxManager.callInThreadInheritedTrx(() -> ensureReturnAndCandidates(request));
+		return posTerminalService.runWithCrossTransactionLock(request.getPosTerminalId(), () -> {
+			final ReturnAndCandidates phase1 = trxManager.callInThreadInheritedTrx(() -> ensureReturnAndCandidates(request));
 
-		final InvoiceId creditMemoId = ensureCreditMemo(phase1.getInvoiceCandidateIds());
+			final InvoiceId creditMemoId = ensureCreditMemo(phase1.getInvoiceCandidateIds());
 
-		return trxManager.callInThreadInheritedTrx(() -> ensureSettlement(request, phase1, creditMemoId));
+			return trxManager.callInThreadInheritedTrx(() -> ensureSettlement(request, phase1, creditMemoId));
+		});
 	}
 
 	/** Phase 1 result: the material document plus the invoice candidates priced for its credit. */
@@ -250,6 +257,8 @@ public class POSReturnService
 	@NonNull
 	private InvoiceId ensureCreditMemo(@NonNull final List<InvoiceCandidateId> invoiceCandidateIds)
 	{
+		// one query per candidate (not batched): the return's candidate count is small (single digits), the same
+		// "cardinality is small" trade-off already accepted for the per-line query in ensureReturnAndCandidates above
 		final ImmutableSet<InvoiceId> existingInvoiceIds = invoiceCandidateIds.stream()
 				.flatMap(icId -> invoiceCandDAO.retrieveIlForIc(icId).stream())
 				.map(I_C_InvoiceLine::getC_Invoice_ID)
@@ -260,11 +269,19 @@ public class POSReturnService
 				? CollectionUtils.singleElement(invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.copyOf(invoiceCandidateIds)))
 				: CollectionUtils.singleElement(existingInvoiceIds);
 
+		// a customer-return invoice candidate always carries a negative qty/amount (IInvoiceCandidateHandlerBL's
+		// M_InOutLine_Handler#getQtyMultiplier flips the sign for a return movement type), and this return's own
+		// invoice never mixes with an unrelated candidate (it is its own standalone document, C_Order_ID=null) —
+		// InvoiceCandBLCreateInvoices itself asserts a generated invoice's header/line credit-memo status agree, so
+		// a genuinely mixed aggregation would already fail loudly there, before this guard is ever reached. Could
+		// not fully trace every doc-type-resolution path (e.g. a BPartner-level doc-type override) to prove this
+		// guard is unreachable with 100% certainty, so — unlike this file's other internal-consistency guards
+		// (e.g. "does not have exactly one line per request line" above) — it gets a proper localized AD_Message
+		// rather than a raw exception, in case a cashier ever does see it.
 		final I_C_Invoice creditMemo = invoiceDAO.getByIdInTrx(creditMemoId);
 		if (!invoiceBL.isCreditMemo(creditMemo))
 		{
-			throw new AdempiereException("The invoice generated for the POS return is not a credit memo")
-					.setParameter("C_Invoice_ID", creditMemoId);
+			throw new AdempiereException(MSG_NotACreditMemo).setParameter("C_Invoice_ID", creditMemoId);
 		}
 
 		return creditMemoId;
@@ -279,9 +296,13 @@ public class POSReturnService
 	 * needed, and {@code IAllocationBL#autoAllocateSpecificPayment} would in fact be a no-op here: it explicitly
 	 * skips credit memos).
 	 * <p>
-	 * Idempotent: {@code MPayment#allocateIt()} synchronously sets the credit memo's {@code IsPaid=Y}, so a retry
-	 * sees {@code creditMemo.isPaid()} true and reuses the existing settlement payment instead of creating a
-	 * second one and a second journal line.
+	 * Idempotent, AND — since {@link #createReturn} now runs its whole body inside
+	 * {@link POSTerminalService#runWithCrossTransactionLock} — no two callers for the SAME terminal ever execute
+	 * this method (or any other phase of {@link #createReturn}) concurrently, so a retry (sequential OR a genuinely
+	 * concurrent one, blocked by that lock until the first caller is fully done) can never observe a completed
+	 * payment with no matching journal line, or vice versa: {@code MPayment#allocateIt()} synchronously sets the
+	 * credit memo's {@code IsPaid=Y}, so a retry sees {@code creditMemo.isPaid()} true and reuses the existing
+	 * settlement payment instead of creating a second one and a second journal line.
 	 */
 	@NonNull
 	private POSReturnResult ensureSettlement(
@@ -312,7 +333,7 @@ public class POSReturnService
 		}
 		else
 		{
-			payment = findExistingSettlementPayment(creditMemoId);
+			payment = paymentBL.getById(CollectionUtils.singleElement(returnRepository.findSettlementPaymentIds(creditMemoId)));
 			journal = posCashJournalService.getById(journalId);
 		}
 
@@ -325,29 +346,6 @@ public class POSReturnService
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.journal(journal)
 				.build();
-	}
-
-	/**
-	 * Finds the credit memo's already-completed outbound settlement payment via {@code C_AllocationLine} — not
-	 * {@code C_Payment.C_Invoice_ID} directly, per this workspace's payment-to-invoice-linking rule (de.metas.business
-	 * CLAUDE.md): only used on a retry, where {@link #ensureSettlement} skips creating a second payment.
-	 */
-	@NonNull
-	private I_C_Payment findExistingSettlementPayment(@NonNull final InvoiceId creditMemoId)
-	{
-		final List<I_C_AllocationLine> allocationLines = queryBL.createQueryBuilder(I_C_AllocationLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, creditMemoId.getRepoId())
-				.addNotNull(I_C_AllocationLine.COLUMNNAME_C_Payment_ID)
-				.create()
-				.list();
-
-		final ImmutableSet<PaymentId> paymentIds = allocationLines.stream()
-				.map(I_C_AllocationLine::getC_Payment_ID)
-				.map(PaymentId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		return paymentBL.getById(CollectionUtils.singleElement(paymentIds));
 	}
 
 	private void assertQtyIsPositive(@NonNull final POSReturnLine line)

@@ -53,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -261,6 +262,19 @@ class POSReturnServiceTest
 		{
 			assertThat(terminal).as("terminal set up by the test").isNotNull();
 			return terminal;
+		}
+
+		/**
+		 * No real DB connection is available in this unit test — the cross-transaction lock is genuine
+		 * infrastructure (a Postgres advisory lock on its own dedicated JDBC connection), irrelevant to what these
+		 * guards test (rejecting an invalid request before ANY DB work happens). Runs the action directly,
+		 * unlocked — a single-threaded unit test needs no mutual exclusion anyway.
+		 */
+		@Override
+		@NonNull
+		public <T> T runWithCrossTransactionLock(@NonNull final POSTerminalId posTerminalId, @NonNull final Supplier<T> action)
+		{
+			return action.get();
 		}
 	}
 }

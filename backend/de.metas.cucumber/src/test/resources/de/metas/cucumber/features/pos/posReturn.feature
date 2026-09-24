@@ -178,7 +178,7 @@ Feature: POS Product Return
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:S28210_TC3
+  @Id:S28210_TC16
   Scenario: A completed return settles a credit memo with a cash refund posted against the till clearing account
     When a product return is made at POS terminal till by metasfresh:
       | M_Product_ID | Qty | UOM | OPT.M_InOut_ID | OPT.C_Invoice_ID | OPT.C_Payment_ID |
@@ -212,7 +212,7 @@ Feature: POS Product Return
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:S28210_TC3_19
+  @Id:S28210_TC17
   Scenario: A return of a 19%-rate product credits its own tax rate on the credit memo line
     Given metasfresh contains C_TaxCategory
       | Identifier    |
@@ -249,7 +249,7 @@ Feature: POS Product Return
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:S28210_TC3_retry
+  @Id:S28210_TC18
   Scenario: Retrying a settled POS return creates no second credit memo, payment or journal line
     When a product return is made at POS terminal till by metasfresh:
       | M_Product_ID | Qty | UOM | OPT.M_InOut_ID | OPT.ExternalId    |
@@ -266,6 +266,32 @@ Feature: POS Product Return
       | C_Invoice_Candidate_ID | IsError |
       | retrySettleCand        | false   |
     And there is exactly one credit memo and settlement payment for retry token settlementRetryId
+    And the cash journal of POS terminal till contains lines:
+      | Type       | Amount |
+      | CASH_INOUT | -4.65  |
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC19
+  Scenario: A concurrent request for the same terminal blocks on the cross-transaction lock across all three phases
+    When a product return at POS terminal till by metasfresh blocks while the terminal is locked by a concurrent cross-transaction lock:
+      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID | OPT.C_Invoice_ID | OPT.C_Payment_ID |
+      | product      | 0.3 | KGM | return_8       | creditMemo8      | refundPayment8   |
+
+    Then after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID | C_Invoice_Candidate_ID |
+      | return_8   | lockedCreditCand       |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | IsError |
+      | lockedCreditCand       | false   |
+    And validate created invoices
+      | C_Invoice_ID | DocBaseType | GrandTotal | IsPaid |
+      | creditMemo8  | ARC         | 4.65 EUR   | true   |
+    And validate payments
+      | C_Payment_ID   | IsReceipt | C_Invoice_ID | PayAmt | DocStatus |
+      | refundPayment8 | false     | creditMemo8  | 4.65   | CO        |
     And the cash journal of POS terminal till contains lines:
       | Type       | Amount |
       | CASH_INOUT | -4.65  |

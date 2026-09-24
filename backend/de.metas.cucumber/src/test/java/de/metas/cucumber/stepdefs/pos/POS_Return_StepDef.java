@@ -61,6 +61,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Payment;
@@ -316,6 +317,137 @@ public class POS_Return_StepDef
 	}
 
 	/**
+	 * Proves {@link POSTerminalService#runWithCrossTransactionLock} genuinely serializes two concurrent
+	 * {@code createReturn} calls against the SAME terminal for the call's ENTIRE duration — not just phase 1
+	 * (that narrower claim is {@link #posProductReturnBlocksOnConcurrentLock}/TC15 above). Without this lock, a
+	 * second caller could reach phase 3 (cash settlement) while a first caller's own phase 3 is still in flight,
+	 * double-refunding the same credit memo; this step proves a real {@code createReturn} call cannot even START
+	 * while the lock is held by a concurrent holder, and — once released — completes with exactly one credit
+	 * memo, one settlement payment and one journal line, never two.
+	 *
+	 * <p>Uses the SAME deterministic holder technique as TC15 (a lock taken directly, on a separate
+	 * thread/transaction, instead of racing two real {@code createReturn} calls and hoping they happen to overlap
+	 * at exactly the narrow phase-2/3 window) — but holding {@link POSTerminalService#runWithCrossTransactionLock}
+	 * itself (the same lock {@code POSReturnService#createReturn} now takes for its whole body), not the phase-1
+	 * row lock, so the blocking window it proves covers all three phases, not just the first.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns same as {@link #posProductReturn} (incl. {@code OPT.M_InOut_ID}/{@code OPT.C_Invoice_ID}/
+	 * {@code OPT.C_Payment_ID}, registered once the call has completed)
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData, M_InOut_StepDefData,
+	 * C_Invoice_StepDefData, C_Payment_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When a product return at POS terminal till by metasfresh blocks while the terminal is locked by a concurrent cross-transaction lock:
+	 *   | M_Product_ID | Qty | UOM | OPT.M_InOut_ID |
+	 *   | product      | 0.3 | KGM | return_1       |
+	 * </pre>
+	 */
+	@And("^a product return at POS terminal (\\S+) by (\\S+) blocks while the terminal is locked by a concurrent cross-transaction lock:$")
+	public void posProductReturnBlocksOnConcurrentCrossTransactionLock(
+			@NonNull final String terminalIdentifier,
+			@NonNull final String userLogin,
+			@NonNull final DataTable dataTable) throws Exception
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
+		final POSReturnRequest request = buildRequest(terminalIdentifier, userLogin, rows);
+		final POSTerminalId posTerminalId = request.getPosTerminalId();
+		final String returnExternalId = "POSReturn-" + request.getExternalId();
+
+		final ExecutorService executor = Executors.newFixedThreadPool(2);
+		final CountDownLatch lockAcquired = new CountDownLatch(1);
+		final CountDownLatch releaseSignal = new CountDownLatch(1);
+		final AtomicReference<Throwable> lockHolderFailure = new AtomicReference<>();
+
+		try
+		{
+			// 1) own thread: acquire and HOLD the cross-transaction lock until told to release — the exact same
+			// production entry point POSReturnService#createReturn itself calls to wrap its whole body
+			final Future<?> lockHolderFuture = executor.submit(() -> holdCrossTransactionLockUntilReleased(posTerminalId, lockAcquired, releaseSignal, lockHolderFailure));
+
+			assertThat(lockAcquired.await(10, TimeUnit.SECONDS)).as("lock holder acquired the cross-transaction lock").isTrue();
+			if (lockHolderFailure.get() != null)
+			{
+				throw AdempiereException.wrapIfNeeded(lockHolderFailure.get());
+			}
+
+			// 2) own thread: the real call under test — must not be able to make ANY progress while the lock is held
+			final Future<POSReturnResult> createReturnFuture = executor.submit(() -> posService.createReturn(request));
+
+			// 3) must NOT complete while the lock is held, and must not have created a document yet (so certainly
+			// no credit memo or settlement payment either — those can only exist once the M_InOut does)
+			assertThatThrownBy(() -> createReturnFuture.get(3, TimeUnit.SECONDS))
+					.as("createReturn must block for its ENTIRE duration (all three phases) while the cross-transaction lock is held")
+					.isInstanceOf(TimeoutException.class);
+			assertThat(countReturnDocumentsByExternalId(returnExternalId))
+					.as("no POS return document while the cross-transaction lock is held")
+					.isZero();
+
+			// 4) release the lock
+			releaseSignal.countDown();
+			lockHolderFuture.get(10, TimeUnit.SECONDS);
+			if (lockHolderFailure.get() != null)
+			{
+				throw AdempiereException.wrapIfNeeded(lockHolderFailure.get());
+			}
+
+			// 5) must now complete, with exactly one credit memo, settlement payment and journal line
+			final POSReturnResult result = createReturnFuture.get(90, TimeUnit.SECONDS);
+			assertThat(result).as("createReturn must complete once the cross-transaction lock is released").isNotNull();
+			assertThat(countReturnDocumentsByExternalId(returnExternalId)).as("exactly one POS return document once the lock is released").isEqualTo(1);
+			assertExactlyOneCreditMemoAndSettlementPaymentByReturnExternalId(returnExternalId, "concurrent cross-transaction-lock scenario");
+
+			registerReturnResult(rows, result);
+		}
+		finally
+		{
+			// unconditional cleanup so a failed assertion above can never wedge the stack
+			releaseSignal.countDown();
+			executor.shutdown();
+			if (!executor.awaitTermination(90, TimeUnit.SECONDS))
+			{
+				executor.shutdownNow();
+			}
+		}
+	}
+
+	/**
+	 * Runs on the lock-holder worker thread: acquires {@link POSTerminalService#runWithCrossTransactionLock} and
+	 * HOLDS it (by never returning from the action) until {@code releaseSignal} fires (or 30s pass). Unlike
+	 * {@link #holdLockUntilReleased}, this needs no {@code callInThreadInheritedTrx} wrapper — the cross-transaction
+	 * lock runs on its own dedicated JDBC connection, entirely independent of the thread-inherited transaction.
+	 */
+	private void holdCrossTransactionLockUntilReleased(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final CountDownLatch lockAcquired,
+			@NonNull final CountDownLatch releaseSignal,
+			@NonNull final AtomicReference<Throwable> failure)
+	{
+		try
+		{
+			posTerminalService.runWithCrossTransactionLock(posTerminalId, () -> {
+				lockAcquired.countDown();
+				try
+				{
+					releaseSignal.await(30, TimeUnit.SECONDS);
+				}
+				catch (final InterruptedException ex)
+				{
+					Thread.currentThread().interrupt();
+					throw AdempiereException.wrapIfNeeded(ex);
+				}
+				return null;
+			});
+		}
+		catch (final Throwable t)
+		{
+			logger.error("Cross-transaction lock holder failed for posTerminalId={}", posTerminalId, t);
+			failure.set(t);
+			lockAcquired.countDown();
+		}
+	}
+
+	/**
 	 * Registers the return's {@code M_InOut}, credit memo and settlement payment under the first row's
 	 * {@code OPT.M_InOut_ID}/{@code OPT.C_Invoice_ID}/{@code OPT.C_Payment_ID} identifiers, if given.
 	 */
@@ -372,10 +504,7 @@ public class POS_Return_StepDef
 	/**
 	 * Asserts exactly one credit memo and one settlement payment exist for the POS return retried with the given
 	 * retry token — the phase-2/3 (invoicing + cash refund) counterpart to {@link #assertExactlyOnePOSReturnDocument}
-	 * (which covers only the phase-1 {@code M_InOut}). Finds the credit memo via the {@code C_InvoiceLine.M_InOutLine_ID}
-	 * back-reference the invoicing pipeline itself sets (not a stored identifier on the return), and the settlement
-	 * payment via its {@code C_Invoice_ID} — safe here (unlike the general rule in de.metas.business's CLAUDE.md)
-	 * because this flow never reverses a payment.
+	 * (which covers only the phase-1 {@code M_InOut}).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -386,8 +515,22 @@ public class POS_Return_StepDef
 	@And("^there is exactly one credit memo and settlement payment for retry token (\\S+)$")
 	public void assertExactlyOneCreditMemoAndSettlementPayment(@NonNull final String retryToken)
 	{
-		final String returnExternalId = "POSReturn-" + externalIdForRetryToken(retryToken);
+		assertExactlyOneCreditMemoAndSettlementPaymentByReturnExternalId(
+				"POSReturn-" + externalIdForRetryToken(retryToken),
+				"retry token=" + retryToken);
+	}
 
+	/**
+	 * Finds the credit memo via the {@code C_InvoiceLine.M_InOutLine_ID} back-reference the invoicing pipeline
+	 * itself sets (not a stored identifier on the return), and the settlement payment via {@code C_AllocationLine}
+	 * — NOT {@code C_Payment.C_Invoice_ID} directly, per de.metas.business's CLAUDE.md ("NEVER use
+	 * C_Payment.C_Invoice_ID as the canonical link between payments and invoices"), mirroring exactly how
+	 * production ({@code POSReturnRepository#findSettlementPaymentIds}) looks it up.
+	 */
+	private void assertExactlyOneCreditMemoAndSettlementPaymentByReturnExternalId(
+			@NonNull final String returnExternalId,
+			@NonNull final String descriptionSuffix)
+	{
 		final I_M_InOut returnRecord = queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_ExternalId, returnExternalId)
 				.create()
@@ -402,16 +545,23 @@ public class POS_Return_StepDef
 				.addInArrayFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, returnLineIds)
 				.create()
 				.listDistinctAsImmutableSet(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, Integer.class);
-		assertThat(creditMemoIds).as("credit memos for the POS return retried with retry token=%s", retryToken).hasSize(1);
+		assertThat(creditMemoIds).as("credit memos for the POS return (%s)", descriptionSuffix).hasSize(1);
 
 		final int creditMemoId = creditMemoIds.iterator().next();
-		final int paymentCount = queryBL.createQueryBuilder(I_C_Payment.class)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Invoice_ID, creditMemoId)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, false)
-				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed.getCode())
+		final ImmutableSet<Integer> paymentIds = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, creditMemoId)
+				.addNotNull(I_C_AllocationLine.COLUMNNAME_C_Payment_ID)
 				.create()
-				.count();
-		assertThat(paymentCount).as("settlement payments for the POS return retried with retry token=%s", retryToken).isEqualTo(1);
+				.listDistinctAsImmutableSet(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, Integer.class);
+		assertThat(paymentIds).as("settlement payments for the POS return (%s)", descriptionSuffix).hasSize(1);
+
+		final I_C_Payment payment = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, paymentIds.iterator().next())
+				.create()
+				.firstOnlyNotNull(I_C_Payment.class);
+		assertThat(payment.isReceipt()).as("settlement payment is an outbound payment (%s)", descriptionSuffix).isFalse();
+		assertThat(DocStatus.ofCode(payment.getDocStatus())).as("settlement payment DocStatus (%s)", descriptionSuffix).isEqualTo(DocStatus.Completed);
 	}
 
 	private int countPOSReturnDocuments(@NonNull final String retryToken)

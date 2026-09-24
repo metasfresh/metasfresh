@@ -1,18 +1,22 @@
 package de.metas.pos.returns;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 /**
- * Repository Tables: M_InOut
+ * Repository Tables: M_InOut, C_AllocationLine
  * Repository Cluster: POSReturnRepository, POSReturnService
  */
 @Repository
@@ -37,5 +41,25 @@ public class POSReturnRepository
 				.addNotInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, ImmutableList.of(DocStatus.Voided.getCode(), DocStatus.Reversed.getCode()))
 				.create()
 				.firstIdOnlyOptional(InOutId::ofRepoIdOrNull);
+	}
+
+	/**
+	 * Finds the credit memo's already-completed outbound settlement payment(s) via {@code C_AllocationLine} — NOT
+	 * {@code C_Payment.C_Invoice_ID} directly, per this workspace's payment-to-invoice-linking rule (de.metas.business
+	 * CLAUDE.md: "NEVER use C_Payment.C_Invoice_ID as the canonical link between payments and invoices"). Used only
+	 * on a retry, where {@code POSReturnService#ensureSettlement} skips creating a second payment because the
+	 * credit memo is already paid.
+	 */
+	@NonNull
+	public ImmutableSet<PaymentId> findSettlementPaymentIds(@NonNull final InvoiceId creditMemoId)
+	{
+		final ImmutableSet<Integer> paymentIds = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, creditMemoId)
+				.addNotNull(I_C_AllocationLine.COLUMNNAME_C_Payment_ID)
+				.create()
+				.listDistinctAsImmutableSet(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, Integer.class);
+
+		return paymentIds.stream().map(PaymentId::ofRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 }
