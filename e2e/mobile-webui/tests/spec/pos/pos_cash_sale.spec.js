@@ -68,9 +68,15 @@ test('An ordinary cash sale completes and journals', async ({ page }) => {
     await POSOrderPanel.checkout();
     await POSPaymentPanel.payCash({ tendered: 10 });
     await POSPaymentPanel.expectOrderCompleted();
+    // Checkout creates the sales order, its invoice (paid by the cash payment) and its shipment asynchronously.
+    await Backend.expect({
+        posOrders: {
+            T1: { cashier: 'user', salesOrderDocStatus: 'CL', invoiceDocStatus: 'CO', invoicePaid: true, shipmentDocStatus: 'CO' },
+        },
+    });
     await POSPaymentPanel.closeOrderSummary();
 
     await POSCashJournalModals.openClosing();
-    // Cash sales book under CASH_PAYMENTS, not CASH_IN (ruling 2026-09-23).
+    // Cash sales book under CASH_PAYMENTS; CASH_IN is only for manual cash deposits.
     await POSCashJournalModals.expectSummary({ cashPayments: '2,50', endingBalance: '102,50' });
 });
