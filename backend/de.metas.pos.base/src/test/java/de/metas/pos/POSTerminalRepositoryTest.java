@@ -36,6 +36,23 @@ class POSTerminalRepositoryTest
 	}
 
 	@Test
+	void actionSucceeds_releaseRuns()
+	{
+		final AtomicBoolean released = new AtomicBoolean(false);
+
+		final String result = POSTerminalRepository.runWithBoundedAcquire(
+				() -> true,
+				() -> released.set(true),
+				1_000L,
+				10L,
+				() -> "acquired",
+				() -> new RuntimeException("onTimeout must not be invoked — the lock was acquired immediately"));
+
+		assertThat(result).isEqualTo("acquired");
+		assertThat(released).as("release must run on the plain success path, same as on the exception path").isTrue();
+	}
+
+	@Test
 	void neverAcquires_throwsTheSuppliedTimeoutException_releaseNeverCalled()
 	{
 		final RuntimeException timeoutException = new RuntimeException("timed out");

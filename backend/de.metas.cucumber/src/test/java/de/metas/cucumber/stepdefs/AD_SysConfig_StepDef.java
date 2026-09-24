@@ -58,6 +58,18 @@ public class AD_SysConfig_StepDef
 	/** Populated only by {@link #temporarily_set_sys_config}; drained and restored by {@link #restoreTemporarilySetSysConfigs}. */
 	private final Map<String, Optional<String>> temporarilySetSysConfigPriorValues = new LinkedHashMap<>();
 
+	/**
+	 * Sets a SYSTEM-level AD_SysConfig to the given value — permanently, for the rest of the scenario
+	 * (and, if the scenario doesn't restore it itself, for whatever runs after it on the same executor).
+	 * Prefer {@link #temporarily_set_sys_config} instead whenever the override must not outlive this
+	 * scenario, per the self-contained-global-state rule (de.metas.cucumber/CLAUDE.md rules 12/13).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given set sys config boolean value true for sys config de.metas.pos.Return.SomeFlag
+	 * </pre>
+	 */
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
