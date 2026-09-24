@@ -46,6 +46,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class POSReturnService
 {
+	private static final AdMessageKey MSG_NoLines = AdMessageKey.of("de.metas.pos.Return.NoLines");
+	private static final AdMessageKey MSG_QtyMustBePositive = AdMessageKey.of("de.metas.pos.Return.QtyMustBePositive");
 	private static final AdMessageKey MSG_InvoiceCandidateError = AdMessageKey.of("de.metas.pos.Return.InvoiceCandidateError");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -73,6 +75,11 @@ public class POSReturnService
 	@NonNull
 	private POSReturnResult ensureReturnAndCandidates(@NonNull final POSReturnRequest request)
 	{
+		if (request.getLines().isEmpty())
+		{
+			throw new AdempiereException(MSG_NoLines);
+		}
+		request.getLines().forEach(this::assertQtyIsPositive);
 		request.getLines().forEach(this::assertPriceUomIsStockUom);
 
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(request.getPosTerminalId());
@@ -178,6 +185,14 @@ public class POSReturnService
 				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId)
 				.create()
 				.firstOnlyNotNull(I_M_InOutLine.class);
+	}
+
+	private void assertQtyIsPositive(@NonNull final POSReturnLine line)
+	{
+		if (line.getQty().isZeroOrNegative())
+		{
+			throw new AdempiereException(MSG_QtyMustBePositive);
+		}
 	}
 
 	/**
