@@ -684,11 +684,11 @@ endpoint with no directory to poll must not become a valid, saved record.
     allure.epic('E0292: EDI');
     allure.tag('F00380: ExternalSystem Scripted-Import-Processor');
     allure.tag('F00380');
-    allure.story('TransportType switch clears foreign transport fields');
+    allure.story('TransportType switch resets foreign transport fields');
     allure.severity('critical');
 
     allure.description(`
-## ExternalSystem_Endpoint — switching TransportType clears the other transports' fields
+## ExternalSystem_Endpoint — switching TransportType resets the other transports' fields
 
 A saved endpoint that is switched from one transport to another must not keep the previous
 transport's configuration around: it is invisible in the window, so it would be a silent
