@@ -24,6 +24,7 @@ import org.assertj.core.api.AbstractBigDecimalAssert;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -305,6 +306,9 @@ public class PPOrderCostsTest
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("-50"));
 	}
 
+	@Nested
+	class Backstop
+	{
 	/**
 	 * Backstop absorb-band: with {@code Sigma p} at exactly 100% the percent guard passes, but the two co-product
 	 * carves are rounded to the costing precision INDEPENDENTLY, so their rounded sum can overshoot the total
@@ -317,7 +321,7 @@ public class PPOrderCostsTest
 	 * rounded co-products sum to 1.0001 and the raw main product is 1 - 1.0001 = -0.0001 (one ulp at precision 4).
 	 */
 	@Test
-	public void testBackstop_absorbsSubPrecisionRoundingOvershoot_clampsMainAndNetsOntoLargestCoProduct()
+	public void absorbsSubPrecisionRoundingOvershoot_clampsMainAndNetsOntoLargestCoProduct()
 	{
 		final ProductId mainProductId = createProduct("blocks_main");
 		final ProductId issueProductId = createProduct("input_milk");
@@ -359,10 +363,10 @@ public class PPOrderCostsTest
 		orderCosts.updatePostCalculationAmounts(costingPrecision);
 
 		// main clamped to zero
-		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(BigDecimal.ZERO);
+		assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(BigDecimal.ZERO);
 		// the overshoot is netted onto the LARGEST carve: 0.5001 - 0.0001 = 0.5000; the smaller carve is untouched
-		this.assertThatPostCalculationAmt(orderCosts, coProductLargerId).isEqualByComparingTo(new BigDecimal("0.5000"));
-		this.assertThatPostCalculationAmt(orderCosts, coProductSmallerId).isEqualByComparingTo(new BigDecimal("0.5000"));
+		assertThatPostCalculationAmt(orderCosts, coProductLargerId).isEqualByComparingTo(new BigDecimal("0.5000"));
+		assertThatPostCalculationAmt(orderCosts, coProductSmallerId).isEqualByComparingTo(new BigDecimal("0.5000"));
 		// cost conserved: Sigma(outputs) == total inbound costs exactly -> WIP nets to zero
 		final BigDecimal sumOutputs = getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal()
 				.add(getPostCalculationCostAmt(orderCosts, coProductLargerId).toBigDecimal())
@@ -373,7 +377,7 @@ public class PPOrderCostsTest
 	/**
 	 * Backstop absorb-band with THREE co-products: the rounding tolerance the backstop allows is
 	 * {@code one currency ulp x #co-products}, so it must scale with the co-product count (the sibling
-	 * {@link #testBackstop_absorbsSubPrecisionRoundingOvershoot_clampsMainAndNetsOntoLargestCoProduct()} pins the
+	 * {@link #absorbsSubPrecisionRoundingOvershoot_clampsMainAndNetsOntoLargestCoProduct()} pins the
 	 * two-co-product case; this one pins {@code size() == 3} and the {@code max}-by-carve selection over more than two
 	 * carves). With {@code Sigma p} at exactly 100% split three ways and each carve rounded UP to the costing precision,
 	 * the rounded carves overshoot the total inbound costs, driving the main product a sub-precision amount negative -
@@ -384,7 +388,7 @@ public class PPOrderCostsTest
 	 * (well inside the 3-ulp = 0.0003 tolerance). The overshoot nets onto the largest carve: 0.5001 - 0.0001 = 0.5000.
 	 */
 	@Test
-	public void testBackstop_absorbsRoundingOvershoot_scalesToleranceWithCoProductCount_threeCoProducts()
+	public void absorbsRoundingOvershoot_scalesToleranceWithCoProductCount_threeCoProducts()
 	{
 		final ProductId mainProductId = createProduct("blocks_main");
 		final ProductId issueProductId = createProduct("input_milk");
@@ -434,17 +438,19 @@ public class PPOrderCostsTest
 		orderCosts.updatePostCalculationAmounts(costingPrecision);
 
 		// main clamped to zero
-		this.assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(BigDecimal.ZERO);
+		assertThatPostCalculationAmt(orderCosts, mainProductId).isEqualByComparingTo(BigDecimal.ZERO);
 		// the overshoot is netted onto the LARGEST carve only: 0.5001 - 0.0001 = 0.5000; the other two carves are untouched
-		this.assertThatPostCalculationAmt(orderCosts, coProductLargestId).isEqualByComparingTo(new BigDecimal("0.5000"));
-		this.assertThatPostCalculationAmt(orderCosts, coProductMidId).isEqualByComparingTo(new BigDecimal("0.3334"));
-		this.assertThatPostCalculationAmt(orderCosts, coProductSmallId).isEqualByComparingTo(new BigDecimal("0.1666"));
+		assertThatPostCalculationAmt(orderCosts, coProductLargestId).isEqualByComparingTo(new BigDecimal("0.5000"));
+		assertThatPostCalculationAmt(orderCosts, coProductMidId).isEqualByComparingTo(new BigDecimal("0.3334"));
+		assertThatPostCalculationAmt(orderCosts, coProductSmallId).isEqualByComparingTo(new BigDecimal("0.1666"));
 		// cost conserved: Sigma(outputs) == total inbound costs exactly -> WIP nets to zero
 		final BigDecimal sumOutputs = getPostCalculationCostAmt(orderCosts, mainProductId).toBigDecimal()
 				.add(getPostCalculationCostAmt(orderCosts, coProductLargestId).toBigDecimal())
 				.add(getPostCalculationCostAmt(orderCosts, coProductMidId).toBigDecimal())
 				.add(getPostCalculationCostAmt(orderCosts, coProductSmallId).toBigDecimal());
 		assertThat(sumOutputs).isEqualByComparingTo(BigDecimal.ONE);
+	}
+
 	}
 
 	/**
