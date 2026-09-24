@@ -1,8 +1,9 @@
 -- Window fields for the LOCAL_FILE transport on ExternalSystem_Endpoint (tab 548506, window 541967).
--- Exposes the columns added in Task 2 (LocalRootLocation, Frequency, ImportFileNamePattern), visible only
--- when TransportType = LOCAL_FILE. Follows the per-transport UI structure already used by HTTP (group 554995,
--- column 549281) and SFTP (group 554996, column 549282): a dedicated AD_UI_Column (SeqNo=30) holding one
--- AD_UI_ElementGroup named 'LOCAL_FILE' (SeqNo=10), both new — not the existing SFTP group.
+-- Exposes the columns added by 5826050_sys_gh26558_endpoint_localfile_columns.sql (LocalRootLocation,
+-- Frequency, ImportFileNamePattern), visible only when TransportType = LOCAL_FILE. Follows the
+-- per-transport UI structure already used by HTTP (group 554995, column 549281) and SFTP (group 554996,
+-- column 549282): a dedicated AD_UI_Column (SeqNo=30) holding one AD_UI_ElementGroup named 'LOCAL_FILE'
+-- (SeqNo=10), both new — not the existing SFTP group.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-23:
 --   AD_UI_Column      549759 (new column, SeqNo=30, under section 547602 "Transport")
