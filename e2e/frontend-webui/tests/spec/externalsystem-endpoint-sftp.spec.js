@@ -37,11 +37,12 @@ const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
 const OAUTH_V1 = 'OAuth';
 
 /**
- * The WebUI's save-status bar. It leaves `pending` only once the PATCH response has been merged into
- * the form, so it is the DOM proof of that merge — except on a record that is already persisted and
- * currently invalid, where the bar reads `error` throughout and this selector matches at once.
+ * The WebUI's save state, as the store holds it. It returns to `saved` only once the PATCH response
+ * has been merged into the form, so it is the DOM proof of that merge — on an invalid record as much
+ * as on a valid one, unlike the save bar's colour, which reads `error` throughout while a persisted
+ * record is invalid.
  */
-const SAVE_SETTLED = '.window-indicator-container .bar:not(.pending)';
+const SAVE_SETTLED = '.window-indicator-container[data-save-state="saved"]';
 
 /**
  * The response to the PATCH the WebUI issues for `fieldName` on this window's document.
@@ -63,7 +64,7 @@ function endpointFieldPatch(page, fieldName) {
 
 /**
  * Run `commit` — the action that makes the WebUI send `fieldName`'s value — and return once the
- * server has answered and, as far as {@link SAVE_SETTLED} can prove it, the answer has been merged.
+ * server has answered and, per {@link SAVE_SETTLED}, the answer has been merged into the form.
  * A value typed while the previous response is still in flight is re-rendered away before React sees
  * it and is then never patched at all, so no field is entered until the one before it is through.
  */
