@@ -31,6 +31,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Covers the full HTTP / SFTP / LOCAL_FILE transport matrix for
+ * {@link ExternalSystem_Endpoint#resetTransportSpecificFields(I_ExternalSystem_Endpoint)}: for each of the three
+ * transports, switching TO it must clear every column owned by the OTHER two transports (never the
+ * transport-agnostic ProcessedDirectory/ErrorDirectory) and must NOT clear the columns it owns itself.
+ */
 public class ExternalSystem_EndpointTest
 {
 	private ExternalSystem_Endpoint interceptor;
@@ -42,74 +48,8 @@ public class ExternalSystem_EndpointTest
 		interceptor = new ExternalSystem_Endpoint();
 	}
 
-	@Test
-	void resetTransportSpecificFields_switchFromSftpToHttp_resetsSftpPollingIntervalMs()
+	private static void setAllHttpFields(final I_ExternalSystem_Endpoint endpoint)
 	{
-		// given: an SFTP endpoint with a polling interval configured, plus stale local-file settings
-		final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-		endpoint.setTransportType(TransportType.SFTP.getCode());
-		endpoint.setSftpHost("sftp.example.com");
-		endpoint.setSftpPort(22);
-		endpoint.setSftpUsername("sftpuser");
-		endpoint.setSftpPollingIntervalMs(60_000);
-		endpoint.setLocalRootLocation("/data/in");
-		endpoint.setFrequency(5000);
-		endpoint.setImportFileNamePattern("{filename}_{timestamp}");
-		endpoint.setProcessedDirectory("/processed");
-		endpoint.setErrorDirectory("/error");
-		InterfaceWrapperHelper.saveRecord(endpoint);
-
-		// when: switching the transport type to HTTP
-		endpoint.setTransportType(TransportType.HTTP.getCode());
-		interceptor.resetTransportSpecificFields(endpoint);
-
-		// then: the SFTP-only polling interval is reset to the unset sentinel (0)
-		assertThat(endpoint.getSftpPollingIntervalMs()).isZero();
-
-		// and: the local-file-only fields are cleared
-		assertThat(endpoint.getLocalRootLocation()).isNull();
-		assertThat(endpoint.getFrequency()).isZero();
-		assertThat(endpoint.getImportFileNamePattern()).isNull();
-
-		// and (regression-guard): the transport-agnostic directory fields are NOT cleared
-		assertThat(endpoint.getProcessedDirectory()).isEqualTo("/processed");
-		assertThat(endpoint.getErrorDirectory()).isEqualTo("/error");
-	}
-
-	@Test
-	void resetTransportSpecificFields_switchToSftp_resetsLocalFileFields()
-	{
-		// given: an HTTP endpoint carrying stale local-file settings from a prior transport
-		final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-		endpoint.setTransportType(TransportType.HTTP.getCode());
-		endpoint.setHttpEndPoint("https://example.com/api");
-		endpoint.setLocalRootLocation("/data/in");
-		endpoint.setFrequency(5000);
-		endpoint.setImportFileNamePattern("{filename}_{timestamp}");
-		endpoint.setProcessedDirectory("/processed");
-		endpoint.setErrorDirectory("/error");
-		InterfaceWrapperHelper.saveRecord(endpoint);
-
-		// when: switching the transport type to SFTP
-		endpoint.setTransportType(TransportType.SFTP.getCode());
-		interceptor.resetTransportSpecificFields(endpoint);
-
-		// then: the local-file-only fields are cleared
-		assertThat(endpoint.getLocalRootLocation()).isNull();
-		assertThat(endpoint.getFrequency()).isZero();
-		assertThat(endpoint.getImportFileNamePattern()).isNull();
-
-		// and (regression-guard): the transport-agnostic directory fields are NOT cleared
-		assertThat(endpoint.getProcessedDirectory()).isEqualTo("/processed");
-		assertThat(endpoint.getErrorDirectory()).isEqualTo("/error");
-	}
-
-	@Test
-	void resetTransportSpecificFields_switchToLocalFile_resetsHttpAndSftpFields()
-	{
-		// given: an endpoint carrying stale HTTP and SFTP settings from a prior transport
-		final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-		endpoint.setTransportType(TransportType.HTTP.getCode());
 		endpoint.setHttpEndPoint("https://example.com/api");
 		endpoint.setOutboundHttpMethod("POST");
 		endpoint.setContentType("application/json");
@@ -120,23 +60,14 @@ public class ExternalSystem_EndpointTest
 		endpoint.setClientId("clientId");
 		endpoint.setClientSecret("clientSecret");
 		endpoint.setSasSignature("sasSignature");
-		endpoint.setSftpHost("sftp.example.com");
-		endpoint.setSftpPort(22);
-		endpoint.setSftpUsername("sftpuser");
-		endpoint.setSftpAuthType("PASSWORD");
-		endpoint.setSshPrivateKey("private-key");
-		endpoint.setSftpRemotePath("/upload");
-		endpoint.setSftpFilenamePattern("order_{date}.edi");
-		endpoint.setSftpPollingIntervalMs(60_000);
-		endpoint.setProcessedDirectory("/processed");
-		endpoint.setErrorDirectory("/error");
-		InterfaceWrapperHelper.saveRecord(endpoint);
+		endpoint.setOAuthTokenUrl("https://example.com/oauth/token");
+		endpoint.setOAuthScope("docuware.platform");
+		endpoint.setIsFileUpload(true);
+		endpoint.setIsArrayFanOut(true);
+	}
 
-		// when: switching the transport type to LOCAL_FILE
-		endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
-		interceptor.resetTransportSpecificFields(endpoint);
-
-		// then: every HTTP-specific field is cleared
+	private static void assertAllHttpFieldsCleared(final I_ExternalSystem_Endpoint endpoint)
+	{
 		assertThat(endpoint.getHttpEndPoint()).isNull();
 		assertThat(endpoint.getOutboundHttpMethod()).isNull();
 		assertThat(endpoint.getContentType()).isNull();
@@ -147,8 +78,44 @@ public class ExternalSystem_EndpointTest
 		assertThat(endpoint.getClientId()).isNull();
 		assertThat(endpoint.getClientSecret()).isNull();
 		assertThat(endpoint.getSasSignature()).isNull();
+		assertThat(endpoint.getOAuthTokenUrl()).isNull();
+		assertThat(endpoint.getOAuthScope()).isNull();
+		assertThat(endpoint.isFileUpload()).isFalse();
+		assertThat(endpoint.isArrayFanOut()).isFalse();
+	}
 
-		// and: every SFTP-specific field is cleared
+	private static void assertAllHttpFieldsPreserved(final I_ExternalSystem_Endpoint endpoint)
+	{
+		assertThat(endpoint.getHttpEndPoint()).isEqualTo("https://example.com/api");
+		assertThat(endpoint.getOutboundHttpMethod()).isEqualTo("POST");
+		assertThat(endpoint.getContentType()).isEqualTo("application/json");
+		assertThat(endpoint.getAuthType()).isEqualTo("Basic");
+		assertThat(endpoint.getAuthToken()).isEqualTo("token");
+		assertThat(endpoint.getLoginUsername()).isEqualTo("user");
+		assertThat(endpoint.getPassword()).isEqualTo("secret");
+		assertThat(endpoint.getClientId()).isEqualTo("clientId");
+		assertThat(endpoint.getClientSecret()).isEqualTo("clientSecret");
+		assertThat(endpoint.getSasSignature()).isEqualTo("sasSignature");
+		assertThat(endpoint.getOAuthTokenUrl()).isEqualTo("https://example.com/oauth/token");
+		assertThat(endpoint.getOAuthScope()).isEqualTo("docuware.platform");
+		assertThat(endpoint.isFileUpload()).isTrue();
+		assertThat(endpoint.isArrayFanOut()).isTrue();
+	}
+
+	private static void setAllSftpFields(final I_ExternalSystem_Endpoint endpoint)
+	{
+		endpoint.setSftpHost("sftp.example.com");
+		endpoint.setSftpPort(22);
+		endpoint.setSftpUsername("sftpuser");
+		endpoint.setSftpAuthType("PASSWORD");
+		endpoint.setSshPrivateKey("private-key");
+		endpoint.setSftpRemotePath("/upload");
+		endpoint.setSftpFilenamePattern("order_{date}.edi");
+		endpoint.setSftpPollingIntervalMs(60_000);
+	}
+
+	private static void assertAllSftpFieldsCleared(final I_ExternalSystem_Endpoint endpoint)
+	{
 		assertThat(endpoint.getSftpHost()).isNull();
 		assertThat(endpoint.getSftpPort()).isZero();
 		assertThat(endpoint.getSftpUsername()).isNull();
@@ -157,9 +124,129 @@ public class ExternalSystem_EndpointTest
 		assertThat(endpoint.getSftpRemotePath()).isNull();
 		assertThat(endpoint.getSftpFilenamePattern()).isNull();
 		assertThat(endpoint.getSftpPollingIntervalMs()).isZero();
+	}
 
-		// and (regression-guard): the transport-agnostic directory fields are NOT cleared
+	private static void assertAllSftpFieldsPreserved(final I_ExternalSystem_Endpoint endpoint)
+	{
+		assertThat(endpoint.getSftpHost()).isEqualTo("sftp.example.com");
+		assertThat(endpoint.getSftpPort()).isEqualTo(22);
+		assertThat(endpoint.getSftpUsername()).isEqualTo("sftpuser");
+		assertThat(endpoint.getSftpAuthType()).isEqualTo("PASSWORD");
+		assertThat(endpoint.getSshPrivateKey()).isEqualTo("private-key");
+		assertThat(endpoint.getSftpRemotePath()).isEqualTo("/upload");
+		assertThat(endpoint.getSftpFilenamePattern()).isEqualTo("order_{date}.edi");
+		assertThat(endpoint.getSftpPollingIntervalMs()).isEqualTo(60_000);
+	}
+
+	private static void setAllLocalFileFields(final I_ExternalSystem_Endpoint endpoint)
+	{
+		endpoint.setLocalRootLocation("/data/in");
+		endpoint.setFrequency(5000);
+		endpoint.setImportFileNamePattern("{filename}_{timestamp}");
+	}
+
+	private static void assertAllLocalFileFieldsCleared(final I_ExternalSystem_Endpoint endpoint)
+	{
+		assertThat(endpoint.getLocalRootLocation()).isNull();
+		assertThat(endpoint.getFrequency()).isZero();
+		assertThat(endpoint.getImportFileNamePattern()).isNull();
+	}
+
+	private static void assertAllLocalFileFieldsPreserved(final I_ExternalSystem_Endpoint endpoint)
+	{
+		assertThat(endpoint.getLocalRootLocation()).isEqualTo("/data/in");
+		assertThat(endpoint.getFrequency()).isEqualTo(5000);
+		assertThat(endpoint.getImportFileNamePattern()).isEqualTo("{filename}_{timestamp}");
+	}
+
+	private static void assertDirectoriesPreserved(final I_ExternalSystem_Endpoint endpoint)
+	{
+		// regression-guard: the transport-agnostic directory fields are NEVER cleared, regardless of transport
 		assertThat(endpoint.getProcessedDirectory()).isEqualTo("/processed");
 		assertThat(endpoint.getErrorDirectory()).isEqualTo("/error");
+	}
+
+	@Test
+	void resetTransportSpecificFields_switchToHttp_clearsSftpAndLocalFileFields_keepsHttpFields()
+	{
+		// given: an SFTP endpoint carrying its own SFTP settings plus stale local-file settings
+		final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+		endpoint.setTransportType(TransportType.SFTP.getCode());
+		setAllSftpFields(endpoint);
+		setAllLocalFileFields(endpoint);
+		endpoint.setProcessedDirectory("/processed");
+		endpoint.setErrorDirectory("/error");
+		InterfaceWrapperHelper.saveRecord(endpoint);
+
+		// when: switching the transport type to HTTP and filling in the new transport's own fields
+		endpoint.setTransportType(TransportType.HTTP.getCode());
+		setAllHttpFields(endpoint);
+		interceptor.resetTransportSpecificFields(endpoint);
+
+		// then: every SFTP-specific and LOCAL_FILE-specific field is cleared ...
+		assertAllSftpFieldsCleared(endpoint);
+		assertAllLocalFileFieldsCleared(endpoint);
+		// ... the just-entered HTTP fields (including OAuth2 + file-upload + array-fan-out) survive ...
+		assertAllHttpFieldsPreserved(endpoint);
+		// ... and the transport-agnostic directories are untouched
+		assertDirectoriesPreserved(endpoint);
+	}
+
+	@Test
+	void resetTransportSpecificFields_switchToSftp_clearsHttpAndLocalFileFields_keepsSftpFields()
+	{
+		// given: an HTTP/OAuth endpoint carrying its own HTTP settings plus stale local-file settings
+		final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+		endpoint.setTransportType(TransportType.HTTP.getCode());
+		setAllHttpFields(endpoint);
+		setAllLocalFileFields(endpoint);
+		endpoint.setProcessedDirectory("/processed");
+		endpoint.setErrorDirectory("/error");
+		InterfaceWrapperHelper.saveRecord(endpoint);
+
+		// when: switching the transport type to SFTP and filling in the new transport's own fields
+		endpoint.setTransportType(TransportType.SFTP.getCode());
+		setAllSftpFields(endpoint);
+		interceptor.resetTransportSpecificFields(endpoint);
+
+		// then: every HTTP-specific field is cleared -- including the four HTTP/OAuth columns
+		// (OAuthTokenUrl, OAuthScope, IsFileUpload, IsArrayFanOut) that a prior version of this
+		// interceptor left set on every transport switch ...
+		assertAllHttpFieldsCleared(endpoint);
+		// ... every LOCAL_FILE-specific field is cleared too ...
+		assertAllLocalFileFieldsCleared(endpoint);
+		// ... the just-entered SFTP fields survive ...
+		assertAllSftpFieldsPreserved(endpoint);
+		// ... and the transport-agnostic directories are untouched
+		assertDirectoriesPreserved(endpoint);
+	}
+
+	@Test
+	void resetTransportSpecificFields_switchToLocalFile_clearsHttpAndSftpFields_keepsLocalFileFields()
+	{
+		// given: an endpoint carrying stale HTTP/OAuth and SFTP settings from prior transports
+		final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+		endpoint.setTransportType(TransportType.HTTP.getCode());
+		setAllHttpFields(endpoint);
+		setAllSftpFields(endpoint);
+		endpoint.setProcessedDirectory("/processed");
+		endpoint.setErrorDirectory("/error");
+		InterfaceWrapperHelper.saveRecord(endpoint);
+
+		// when: switching the transport type to LOCAL_FILE and filling in the new transport's own fields
+		endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
+		setAllLocalFileFields(endpoint);
+		interceptor.resetTransportSpecificFields(endpoint);
+
+		// then: every HTTP-specific field is cleared -- including the four HTTP/OAuth columns
+		// (OAuthTokenUrl, OAuthScope, IsFileUpload, IsArrayFanOut) that a prior version of this
+		// interceptor left set on every transport switch ...
+		assertAllHttpFieldsCleared(endpoint);
+		// ... every SFTP-specific field is cleared too ...
+		assertAllSftpFieldsCleared(endpoint);
+		// ... the just-entered LOCAL_FILE fields survive ...
+		assertAllLocalFileFieldsPreserved(endpoint);
+		// ... and the transport-agnostic directories are untouched
+		assertDirectoriesPreserved(endpoint);
 	}
 }
