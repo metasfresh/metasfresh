@@ -176,10 +176,9 @@ function emptyish(value) {
 /**
  * Type `value` into `field` and hand it to the server.
  *
- * An input widget normally sends its value when it loses focus, so the blur is what triggers the
- * PATCH — but not always: the widget also sends on the typing itself, and that PATCH can be answered
- * before the next statement runs. So the whole fill-and-blur pair is what {@link commitField} wraps;
- * arming the wait only around the blur misses a PATCH that the fill already sent and got answered.
+ * `fill()` only dispatches `input`, which these widgets answer with a local state update; the PATCH
+ * comes from the blur. {@link commitField} wraps both so the response wait is armed before either
+ * can fire.
  */
 async function fillFieldLocator(page, fieldName, field, value) {
   await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
