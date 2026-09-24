@@ -41,6 +41,7 @@ import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
 import de.metas.fresh.ordercheckup.OrderCheckupDocumentType;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -234,8 +235,7 @@ public class OrderCheckupBuilder
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(getDocBaseType(getDocumentType()))
 				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE)
-				.adClientId(order.getAD_Client_ID())
-				.adOrgId(order.getAD_Org_ID())
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()))
 				.build());
 	}
 
