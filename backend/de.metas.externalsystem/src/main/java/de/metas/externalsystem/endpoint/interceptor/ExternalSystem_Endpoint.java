@@ -53,8 +53,18 @@ import java.util.function.Consumer;
  * <p>
  * An endpoint's transport type and the two authentication types decide which of its fields the window
  * renders. Whenever one of them changes, every field that the resulting configuration HIDES must end up
- * without a value: a value nobody can see is a value nobody can correct, and it is still read by the
- * outbound/inbound dispatch.
+ * without a value: a value nobody can see is a value nobody can correct, and every column listed in
+ * {@link #createHideableColumns()} is one {@code ExternalSystemEndpointRepository#fromRecord} hands to the
+ * outbound/inbound dispatch -- a stale host or credential would otherwise keep being sent.
+ * <p>
+ * <b>Scope: only columns whose {@code AD_Field} is active.</b> A column whose field is
+ * {@code IsActive='N'} is rendered under no configuration at all, so no configuration can be said to hide
+ * it; clearing it would destroy a value that has no field left to restore it from. {@code Type} is the case
+ * in point: its {@code AD_Field} and {@code AD_UI_Element} were both deactivated, it is the one endpoint
+ * column {@code ExternalSystemEndpointRepository#fromRecord} does not read, and its
+ * {@code AD_Column.MandatoryLogic} is {@code @TransportType/X@='HTTP'} -- so clearing it would leave every
+ * HTTP endpoint unsaveable with no field to fix it in. Retiring such a column means dropping the column, a
+ * change of its own.
  */
 @Interceptor(I_ExternalSystem_Endpoint.class)
 @Component
@@ -108,8 +118,6 @@ public class ExternalSystem_Endpoint
 						endpoint -> endpoint.setOutboundHttpMethod(null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_ContentType, VISIBLE_FOR_HTTP,
 						endpoint -> endpoint.setContentType(null)),
-				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_Type, VISIBLE_FOR_HTTP,
-						endpoint -> endpoint.setType(null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_IsFileUpload, VISIBLE_FOR_HTTP,
 						endpoint -> endpoint.setIsFileUpload(false)),
 				// HTTP authentication

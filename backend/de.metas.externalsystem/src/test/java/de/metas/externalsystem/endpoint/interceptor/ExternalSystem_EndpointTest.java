@@ -254,6 +254,32 @@ public class ExternalSystem_EndpointTest
 			assertDirectoriesPreserved(endpoint);
 		}
 
+		/**
+		 * {@code Type} is a retired column: its {@code AD_Field} and {@code AD_UI_Element} are both
+		 * {@code IsActive='N'}, so no configuration renders it and nothing reads it. A handler that cleared
+		 * it would produce a value the operator can neither see nor restore, and -- because the column's
+		 * MandatoryLogic is {@code @TransportType/X@='HTTP'} -- an HTTP endpoint that cannot be saved at
+		 * all. The handler therefore leaves it alone under every transport.
+		 */
+		@Test
+		void switchToSftp_leavesTheRetiredTypeColumnAlone()
+		{
+			// given: an HTTP endpoint that still carries a value in the retired Type column
+			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+			endpoint.setTransportType(TransportType.HTTP.getCode());
+			setAllHttpFields(endpoint);
+			endpoint.setType("HTTP");
+			InterfaceWrapperHelper.saveRecord(endpoint);
+
+			// when: switching to a transport whose configuration would not show an HTTP-only field
+			endpoint.setTransportType(TransportType.SFTP.getCode());
+			setAllSftpFields(endpoint);
+			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+
+			// then: the retired column keeps its value
+			assertThat(endpoint.getType()).isEqualTo("HTTP");
+		}
+
 		@Test
 		void switchToSftp_clearsHttpOnlyAndLocalFileFields_keepsTheFieldsPasswordAuthShows()
 		{
