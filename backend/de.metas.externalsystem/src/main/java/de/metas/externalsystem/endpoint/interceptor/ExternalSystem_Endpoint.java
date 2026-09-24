@@ -218,7 +218,7 @@ public class ExternalSystem_Endpoint
 			I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType })
 	public void clearFieldsHiddenByTheNewConfiguration(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{
-		assertTransportTypeIsOneThisHandlerCovers(endpoint);
+		assertTransportTypeIsAKnownCode(endpoint);
 
 		// ONE snapshot of the state the record is about to be stored in decides every field: clearing e.g.
 		// AuthType must not change the verdict already reached for Password
@@ -232,15 +232,15 @@ public class ExternalSystem_Endpoint
 	}
 
 	/**
-	 * Refuses a transport code this handler carries no rules for.
-	 * <p>
-	 * Every condition in {@link #createHideableColumns()} is keyed on a transport, so an unrecognised one
-	 * satisfies none of them and the handler would take EVERY hideable column away in a single save. It
-	 * becomes reachable the moment a fourth transport is added to the ref list without a matching entry
-	 * here. Failing the save adds no restriction: {@code ExternalSystemEndpointRepository#fromRecord}
+	 * Refuses a transport code {@link TransportType} has no constant for -- no condition in
+	 * {@link #createHideableColumns()} is keyed on it, so the handler would take EVERY hideable column away
+	 * in a single save. Refusing adds no restriction: {@code ExternalSystemEndpointRepository#fromRecord}
 	 * resolves the very same {@link TransportType#ofCode(String)}, so the record would be unloadable anyway.
+	 * <p>
+	 * A code the enum DOES have a constant for but no rule is keyed on passes here; that is the separate
+	 * guarantee {@code ExternalSystem_EndpointTest.VisibilityRules} carries.
 	 */
-	private static void assertTransportTypeIsOneThisHandlerCovers(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	private static void assertTransportTypeIsAKnownCode(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{
 		final String transportTypeCode = Check.assumeNotEmpty(
 				endpoint.getTransportType(),

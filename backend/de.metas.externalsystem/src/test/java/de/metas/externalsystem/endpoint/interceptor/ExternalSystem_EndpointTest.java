@@ -34,6 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.util.CtxName;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -413,14 +414,15 @@ public class ExternalSystem_EndpointTest
 	}
 
 	/**
-	 * A transport code this class carries no rules for. Every rule is keyed on a transport, so an
-	 * unrecognised one matches none of them.
+	 * A transport code {@link TransportType} has no constant for. Whether a code the enum DOES know is
+	 * keyed on by any rule is a separate guarantee -- see
+	 * {@link VisibilityRules#everyTransportTypeIsKeyedOnByARule()}.
 	 */
 	@Nested
 	class UnknownTransportType
 	{
 		@Test
-		void isRejected_ratherThanSilentlyClearingEveryColumn()
+		void aCodeTheEnumHasNoConstantFor_isRejected()
 		{
 			// given: a fully configured HTTP endpoint
 			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
@@ -428,8 +430,8 @@ public class ExternalSystem_EndpointTest
 			setAllHttpFields(endpoint);
 			InterfaceWrapperHelper.saveRecord(endpoint);
 
-			// when: the transport is switched to a code this class has no rules for -- what a fourth
-			// transport added to the ref list without a matching Java entry would look like
+			// when: the transport is switched to a code the enum has no constant for -- what a fourth
+			// transport added to the ref list without a matching Java constant would look like
 			endpoint.setTransportType("CARRIER_PIGEON");
 
 			// then: the save is refused ...
@@ -658,8 +660,8 @@ public class ExternalSystem_EndpointTest
 
 	/**
 	 * Structural guards on the visibility rules themselves. They do not check WHAT the rules say — only the
-	 * behavioural tests above can do that — but they do rule out the two ways the rule table can become
-	 * unenforceable without anyone noticing.
+	 * behavioural tests above can do that — but they do rule out the ways the rule table can become
+	 * unenforceable, or stop agreeing with the window, without anyone noticing.
 	 */
 	@Nested
 	class VisibilityRules
@@ -749,6 +751,27 @@ public class ExternalSystem_EndpointTest
 					endpoint -> {});
 
 			assertThat(column.isVisible(Evaluatees.ofMap(ImmutableMap.of()))).isFalse();
+		}
+
+		/**
+		 * Every transport the enum knows is keyed on by at least one rule. A transport no rule mentions
+		 * satisfies no condition at all, so the FIRST save of such an endpoint clears every hideable column
+		 * -- and {@code ExternalSystem_Endpoint#assertTransportTypeIsAKnownCode} lets it through, because
+		 * the code is in the enum.
+		 */
+		@Test
+		void everyTransportTypeIsKeyedOnByARule()
+		{
+			for (final TransportType transportType : TransportType.values())
+			{
+				final Evaluatee onlyTheTransportSet = Evaluatees.ofMap(ImmutableMap.of(
+						I_ExternalSystem_Endpoint.COLUMNNAME_TransportType, transportType.getCode()));
+
+				assertThat(hideableColumns())
+						.as("columns still shown under transport %s -- none means every one of them is cleared",
+								transportType.getCode())
+						.anyMatch(column -> column.isVisible(onlyTheTransportSet));
+			}
 		}
 
 		@Test
