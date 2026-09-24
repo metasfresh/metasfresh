@@ -238,7 +238,6 @@ public class AttachmentRestService
 		final Integer adTableId = reference.getAdTableId();
 		if (adTableId != null)
 		{
-			// AdTableId.ofRepoId validates the given number; TableRecordReference.of(int, int) would not.
 			return TableRecordReference.of(AdTableId.ofRepoId(adTableId), recordId);
 		}
 
