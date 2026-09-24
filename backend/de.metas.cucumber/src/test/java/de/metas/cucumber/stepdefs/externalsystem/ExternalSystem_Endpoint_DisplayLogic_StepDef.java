@@ -264,7 +264,10 @@ public class ExternalSystem_Endpoint_DisplayLogic_StepDef
 					+ "\n  window : " + shownConditionally.getValue()
 					+ "\n  Every other configuration hides this column, and with no rule its value is never taken away:"
 					+ "\n  it stays in the database where nobody can see it and the dispatch keeps reading it. Add a"
-					+ "\n  hideable(...) entry carrying exactly the string above, plus the way to clear the column.");
+					+ "\n  hideable(...) entry carrying exactly the string above, plus the way to clear the column --"
+					+ "\n  or, if the column carries an AD_Column.DefaultValue, a hideableWithColumnDefault(...) entry"
+					+ "\n  carrying that value instead: a plain hideable(...) there fails the defaults scenario with"
+					+ "\n  NO DEFAULT COPIED.");
 		}
 		return problems;
 	}
