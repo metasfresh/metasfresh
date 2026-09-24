@@ -295,3 +295,47 @@ Feature: POS Product Return
     And the cash journal of POS terminal till contains lines:
       | Type       | Amount |
       | CASH_INOUT | -4.65  |
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC20
+  Scenario: A lock wait exceeding the configured timeout is rejected as till-busy, no document created
+    Given set sys config int value 2000 for sys config de.metas.pos.Return.LockTimeoutMillis
+
+    When a product return at POS terminal till by metasfresh fails with AD_Message 'de.metas.pos.Return.TillBusy' while the terminal is locked by a concurrent cross-transaction lock:
+      | M_Product_ID | Qty | UOM | OPT.ExternalId |
+      | product      | 0.3 | KGM | tillBusyToken  |
+
+    Then set sys config int value 30000 for sys config de.metas.pos.Return.LockTimeoutMillis
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC21
+  Scenario: A rejected return releases the cross-transaction lock for the next request on the same till
+    Given metasfresh contains C_TaxCategory
+      | Identifier           |
+      | taxCategoryNoTaxTC21 |
+    And metasfresh contains M_Products:
+      | Identifier       | X12DE355 |
+      | productNoTaxTC21 | KGM      |
+    And metasfresh contains M_ProductPrices
+      | Identifier            | M_Product_ID     | M_PriceList_Version_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID     |
+      | productNoTaxTC21Price | productNoTaxTC21 | priceListVersion       | 9.90     | KGM      | taxCategoryNoTaxTC21 |
+
+    When a product return at POS terminal till by metasfresh fails with AD_Message 'de.metas.pos.Return.NoTaxFound':
+      | M_Product_ID     | Qty | UOM | OPT.ExternalId     |
+      | productNoTaxTC21 | 0.3 | KGM | releaseAfterFailId |
+    And a product return is made at POS terminal till by metasfresh:
+      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID |
+      | product      | 0.3 | KGM | return_10      |
+
+    Then after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID | C_Invoice_Candidate_ID |
+      | return_10  | releasedLockCand       |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | IsError |
+      | releasedLockCand       | false   |

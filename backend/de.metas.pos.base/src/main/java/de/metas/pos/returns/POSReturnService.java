@@ -39,6 +39,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Payment;
@@ -66,8 +67,15 @@ public class POSReturnService
 	private static final AdMessageKey MSG_PriceUomMismatch = AdMessageKey.of("de.metas.pos.Return.PriceUomMismatch");
 	private static final AdMessageKey MSG_CurrencyMismatch = AdMessageKey.of("de.metas.pos.Return.CurrencyMismatch");
 	private static final AdMessageKey MSG_NotACreditMemo = AdMessageKey.of("de.metas.pos.Return.NotACreditMemo");
+	private static final AdMessageKey MSG_TillBusy = AdMessageKey.of("de.metas.pos.Return.TillBusy");
+
+	/** How long {@link #createReturn} waits to acquire the terminal's cross-transaction lock before rejecting
+	 * with {@link #MSG_TillBusy} — see {@code 5826360_POS_Return_TillBusyMessageAndLockTimeout.sql}. */
+	private static final String SYSCONFIG_LockTimeoutMillis = "de.metas.pos.Return.LockTimeoutMillis";
+	private static final int SYSCONFIG_LockTimeoutMillis_DEFAULT = 30_000;
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -91,30 +99,39 @@ public class POSReturnService
 	 * around (see the class Javadoc history).
 	 * <p>
 	 * A transaction-scoped row lock cannot span three separate transactions, so the whole method body runs inside
-	 * {@link POSTerminalService#runWithCrossTransactionLock}: a Postgres advisory lock, held on its own dedicated
-	 * connection for the ENTIRE call, that serializes two concurrent callers against the SAME terminal end to end
-	 * — a second caller cannot start ANY phase while a first is still in flight in any of its three, closing the
-	 * cross-phase race a phase-1-only lock would leave open. The {@code C_POS} row lock inside phase 1
+	 * {@link POSTerminalService#tryRunWithCrossTransactionLock}: a Postgres advisory lock, held on its own
+	 * dedicated connection for the ENTIRE call, that serializes two concurrent callers against the SAME terminal
+	 * end to end — a second caller cannot start ANY phase while a first is still in flight in any of its three,
+	 * closing the cross-phase race a phase-1-only lock would leave open. The {@code C_POS} row lock inside phase 1
 	 * ({@link POSTerminalService#lockForUpdate}) still runs too, unchanged from before this method existed — it is
 	 * now redundant for mutual exclusion (the outer lock already guarantees only one caller is ever inside phase 1
 	 * at a time) but is kept as-is since it is exercised directly, on its own, by a dedicated test.
+	 * <p>
+	 * The lock acquisition is BOUNDED (polled {@code pg_try_advisory_lock}, not a blocking {@code pg_advisory_lock})
+	 * — an unbounded wait would let one stuck caller (e.g. a slow/hung async workpackage inside phase 2) freeze
+	 * every OTHER return attempt on that till indefinitely. The timeout comes from
+	 * {@value #SYSCONFIG_LockTimeoutMillis} (default {@value #SYSCONFIG_LockTimeoutMillis_DEFAULT} ms); on
+	 * exhaustion this method rejects with {@link #MSG_TillBusy} rather than hanging.
 	 *
 	 * @throws AdempiereException if the request itself is invalid ({@code NoLines}/{@code QtyMustBePositive}), if
 	 * pricing the credit fails synchronously (UOM/currency mismatch, no tax found, or the candidate is already in
-	 * error) — the whole return (goods receipt included) is rolled back — or if invoicing does not produce exactly
-	 * one credit memo. A failure surfacing only later, from the candidate's own async recompute, is NOT covered
-	 * here and does not roll back an already-committed return.
+	 * error) — the whole return (goods receipt included) is rolled back — if invoicing does not produce exactly
+	 * one credit memo, or if the terminal's cross-transaction lock could not be acquired within the configured
+	 * timeout ({@link #MSG_TillBusy}). A failure surfacing only later, from the candidate's own async recompute, is
+	 * NOT covered here and does not roll back an already-committed return.
 	 */
 	@NonNull
 	public POSReturnResult createReturn(@NonNull final POSReturnRequest request)
 	{
-		return posTerminalService.runWithCrossTransactionLock(request.getPosTerminalId(), () -> {
+		final int lockTimeoutMillis = sysConfigBL.getIntValue(SYSCONFIG_LockTimeoutMillis, SYSCONFIG_LockTimeoutMillis_DEFAULT);
+
+		return posTerminalService.tryRunWithCrossTransactionLock(request.getPosTerminalId(), lockTimeoutMillis, () -> {
 			final ReturnAndCandidates phase1 = trxManager.callInThreadInheritedTrx(() -> ensureReturnAndCandidates(request));
 
 			final InvoiceId creditMemoId = ensureCreditMemo(phase1.getInvoiceCandidateIds());
 
 			return trxManager.callInThreadInheritedTrx(() -> ensureSettlement(request, phase1, creditMemoId));
-		});
+		}).orElseThrow(() -> new AdempiereException(MSG_TillBusy).setParameter("C_POS_ID", request.getPosTerminalId()));
 	}
 
 	/** Phase 1 result: the material document plus the invoice candidates priced for its credit. */

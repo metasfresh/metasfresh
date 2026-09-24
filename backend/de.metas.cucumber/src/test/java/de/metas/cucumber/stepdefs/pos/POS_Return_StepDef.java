@@ -317,17 +317,18 @@ public class POS_Return_StepDef
 	}
 
 	/**
-	 * Proves {@link POSTerminalService#runWithCrossTransactionLock} genuinely serializes two concurrent
+	 * Proves {@link POSTerminalService#tryRunWithCrossTransactionLock} genuinely serializes two concurrent
 	 * {@code createReturn} calls against the SAME terminal for the call's ENTIRE duration — not just phase 1
 	 * (that narrower claim is {@link #posProductReturnBlocksOnConcurrentLock}/TC15 above). Without this lock, a
 	 * second caller could reach phase 3 (cash settlement) while a first caller's own phase 3 is still in flight,
 	 * double-refunding the same credit memo; this step proves a real {@code createReturn} call cannot even START
-	 * while the lock is held by a concurrent holder, and — once released — completes with exactly one credit
-	 * memo, one settlement payment and one journal line, never two.
+	 * while the lock is held by a concurrent holder, and — once released well within
+	 * {@code de.metas.pos.Return.LockTimeoutMillis} — completes with exactly one credit memo, one settlement
+	 * payment and one journal line, never two.
 	 *
 	 * <p>Uses the SAME deterministic holder technique as TC15 (a lock taken directly, on a separate
 	 * thread/transaction, instead of racing two real {@code createReturn} calls and hoping they happen to overlap
-	 * at exactly the narrow phase-2/3 window) — but holding {@link POSTerminalService#runWithCrossTransactionLock}
+	 * at exactly the narrow phase-2/3 window) — but holding {@link POSTerminalService#tryRunWithCrossTransactionLock}
 	 * itself (the same lock {@code POSReturnService#createReturn} now takes for its whole body), not the phase-1
 	 * row lock, so the blocking window it proves covers all three phases, not just the first.
 	 *
@@ -412,10 +413,83 @@ public class POS_Return_StepDef
 	}
 
 	/**
-	 * Runs on the lock-holder worker thread: acquires {@link POSTerminalService#runWithCrossTransactionLock} and
-	 * HOLDS it (by never returning from the action) until {@code releaseSignal} fires (or 30s pass). Unlike
-	 * {@link #holdLockUntilReleased}, this needs no {@code callInThreadInheritedTrx} wrapper — the cross-transaction
-	 * lock runs on its own dedicated JDBC connection, entirely independent of the thread-inherited transaction.
+	 * Proves {@code createReturn}'s lock-acquire wait is BOUNDED, not indefinite: while a concurrent holder keeps
+	 * the cross-transaction lock for longer than the currently-configured {@code de.metas.pos.Return.LockTimeoutMillis},
+	 * a real {@code createReturn} call for the SAME terminal gives up once that timeout elapses and rejects with
+	 * the given AD_Message ({@code de.metas.pos.Return.TillBusy}) — never creating a return document. Uses the
+	 * SAME holder technique as {@link #posProductReturnBlocksOnConcurrentCrossTransactionLock}, but the holder is
+	 * never deliberately released within the assertion — it only ever unwinds via its own internal 30s bound
+	 * (in {@code finally}, as an unconditional safety net), long after the timeout under test has already fired.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns same as {@link #posProductReturnFails}
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData, M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When a product return at POS terminal till by metasfresh fails with AD_Message 'de.metas.pos.Return.TillBusy' while the terminal is locked by a concurrent cross-transaction lock:
+	 *   | M_Product_ID | Qty | UOM | OPT.ExternalId |
+	 *   | product      | 0.3 | KGM | tillBusyToken  |
+	 * </pre>
+	 */
+	@And("^a product return at POS terminal (\\S+) by (\\S+) fails with AD_Message '(.*)' while the terminal is locked by a concurrent cross-transaction lock:$")
+	public void posProductReturnFailsOnConcurrentCrossTransactionLockTimeout(
+			@NonNull final String terminalIdentifier,
+			@NonNull final String userLogin,
+			@NonNull final String expectedAdMessage,
+			@NonNull final DataTable dataTable) throws Exception
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
+		final POSReturnRequest request = buildRequest(terminalIdentifier, userLogin, rows);
+		final POSTerminalId posTerminalId = request.getPosTerminalId();
+		final String returnExternalId = "POSReturn-" + request.getExternalId();
+
+		final AdMessageKey expectedKey = AdMessageKey.of(expectedAdMessage);
+		final String expectedErrorCode = Optional.ofNullable(msgBL.getErrorCode(expectedKey)).orElseGet(expectedKey::toAD_Message);
+
+		final ExecutorService executor = Executors.newFixedThreadPool(1);
+		final CountDownLatch lockAcquired = new CountDownLatch(1);
+		final CountDownLatch releaseSignal = new CountDownLatch(1);
+		final AtomicReference<Throwable> lockHolderFailure = new AtomicReference<>();
+
+		try
+		{
+			final Future<?> lockHolderFuture = executor.submit(() -> holdCrossTransactionLockUntilReleased(posTerminalId, lockAcquired, releaseSignal, lockHolderFailure));
+
+			assertThat(lockAcquired.await(10, TimeUnit.SECONDS)).as("lock holder acquired the cross-transaction lock").isTrue();
+			if (lockHolderFailure.get() != null)
+			{
+				throw AdempiereException.wrapIfNeeded(lockHolderFailure.get());
+			}
+
+			// the holder is NOT released here — createReturn must give up on its own once the configured
+			// (scenario-shortened) LockTimeoutMillis elapses, well before the holder's own 30s safety bound
+			assertThatThrownBy(() -> posService.createReturn(request))
+					.as("createReturn must reject once its bounded lock-acquire wait is exhausted")
+					.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedErrorCode));
+			assertThat(countReturnDocumentsByExternalId(returnExternalId))
+					.as("no POS return document is created when the till is busy")
+					.isZero();
+		}
+		finally
+		{
+			// unconditional cleanup: release the holder (no-op if it already unwound on its own 30s bound) and
+			// wait for the worker thread to actually finish
+			releaseSignal.countDown();
+			executor.shutdown();
+			if (!executor.awaitTermination(30, TimeUnit.SECONDS))
+			{
+				executor.shutdownNow();
+			}
+		}
+	}
+
+	/**
+	 * Runs on the lock-holder worker thread: acquires {@link POSTerminalService#tryRunWithCrossTransactionLock} and
+	 * HOLDS it (by never returning from the action) until {@code releaseSignal} fires (or 30s pass). Passes a
+	 * generous acquire timeout (60s) since this holder is always the FIRST to contend for the lock in these
+	 * scenarios — it should acquire near-instantly, never itself hit a timeout. Unlike {@link #holdLockUntilReleased},
+	 * this needs no {@code callInThreadInheritedTrx} wrapper — the cross-transaction lock runs on its own dedicated
+	 * JDBC connection, entirely independent of the thread-inherited transaction.
 	 */
 	private void holdCrossTransactionLockUntilReleased(
 			@NonNull final POSTerminalId posTerminalId,
@@ -425,7 +499,7 @@ public class POS_Return_StepDef
 	{
 		try
 		{
-			posTerminalService.runWithCrossTransactionLock(posTerminalId, () -> {
+			posTerminalService.tryRunWithCrossTransactionLock(posTerminalId, TimeUnit.SECONDS.toMillis(60), () -> {
 				lockAcquired.countDown();
 				try
 				{

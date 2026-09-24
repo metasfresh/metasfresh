@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -83,11 +84,22 @@ public class POSTerminalService
 	 * {@code POSReturnService#createReturn} to serialize its three separate top-level transactions (goods
 	 * receipt/pricing, credit-memo generation, cash settlement) end to end against the same terminal, so two
 	 * concurrent callers (e.g. two in-flight retries) can never interleave into each other's phases.
+	 * <p>
+	 * BOUNDED: polls to acquire the lock for at most {@code timeoutMillis} before giving up — never blocks
+	 * indefinitely, so a single stuck caller (e.g. {@code action} hanging on a slow async wait) cannot freeze every
+	 * OTHER caller for the same terminal. Carries no policy of its own for what "giving up" means: the caller reads
+	 * its own timeout value and decides how to react to an empty result (e.g. a user-facing rejection message) —
+	 * this method's job stops at "did we get the lock in time, yes or no".
+	 *
+	 * @return empty if the lock could not be acquired within {@code timeoutMillis}
 	 */
 	@NonNull
-	public <T> T runWithCrossTransactionLock(@NonNull final POSTerminalId posTerminalId, @NonNull final Supplier<T> action)
+	public <T> Optional<T> tryRunWithCrossTransactionLock(
+			@NonNull final POSTerminalId posTerminalId,
+			final long timeoutMillis,
+			@NonNull final Supplier<T> action)
 	{
-		return posTerminalRepository.runWithCrossTransactionLock(posTerminalId, action);
+		return posTerminalRepository.tryRunWithCrossTransactionLock(posTerminalId, timeoutMillis, action);
 	}
 
 	public Collection<POSTerminal> getPOSTerminals()

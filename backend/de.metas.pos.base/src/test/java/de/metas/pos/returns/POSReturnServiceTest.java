@@ -272,9 +272,12 @@ class POSReturnServiceTest
 		 */
 		@Override
 		@NonNull
-		public <T> T runWithCrossTransactionLock(@NonNull final POSTerminalId posTerminalId, @NonNull final Supplier<T> action)
+		public <T> Optional<T> tryRunWithCrossTransactionLock(
+				@NonNull final POSTerminalId posTerminalId,
+				final long timeoutMillis,
+				@NonNull final Supplier<T> action)
 		{
-			return action.get();
+			return Optional.of(action.get());
 		}
 	}
 }
