@@ -7,7 +7,6 @@ import de.metas.menu.AdMenuId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsKey;
-import de.metas.security.permissions.Access;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
@@ -288,7 +287,7 @@ final class MenuTreeLoader
 			return true;
 		}
 
-		return getUserRolePermissions().isTableAccess(adTableId, Access.CREATE);
+		return getUserRolePermissions().isCanCreateNewRecords(adTableId);
 	}
 
 	private MTreeNode retrieveRootNodeModel()

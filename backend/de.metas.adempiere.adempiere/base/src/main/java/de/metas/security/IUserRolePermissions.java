@@ -222,6 +222,14 @@ public interface IUserRolePermissions
 
 	boolean isCanReport(int AD_Table_ID);
 
+	/**
+	 * The role's per-table permission to create new records (mirrors {@link #isCanReport(int)} /
+	 * {@link #isCanExport(int)}). Creating a record is a write, so a table whose WRITE is removed
+	 * (IsReadOnly='Y') also loses CREATE; removing CREATE alone leaves WRITE - and editing - intact
+	 * ("WRITE exclusion includes no CREATE, but not the other way around").
+	 */
+	boolean isCanCreateNewRecords(@NonNull AdTableId adTableId);
+
 	boolean isOrgAccess(OrgId OrgId, String tableName, Access access);
 
 	String getClientWhere(@Nullable String tableName, @Nullable String tableAlias, Access access);

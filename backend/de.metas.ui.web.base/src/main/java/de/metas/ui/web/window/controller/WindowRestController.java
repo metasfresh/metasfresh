@@ -96,6 +96,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -925,8 +926,9 @@ public class WindowRestController
 			// both enforce this, but this endpoint did not, so a replayed/direct POST created the record
 			// fail-open for a role with WRITE but IsCanCreateNewRecords='N'. checkCanCreateNewRecord (WRITE-only)
 			// stays untouched because it is shared with the REST path (PermissionService.assertCanCreateOrUpdate).
+			final AdTableId targetTableId = AdTableId.ofRepoIdOrNull(adTableDAO.retrieveTableId(newRecordDescriptor.getTableName()));
 			final BooleanWithReason roleCanCreateNewRecord = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(
-					newRecordDescriptor.getTableName(),
+					targetTableId,
 					userSession.getUserRolePermissions());
 			if (roleCanCreateNewRecord.isFalse())
 			{

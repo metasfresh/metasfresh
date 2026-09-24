@@ -7,7 +7,6 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -23,7 +22,9 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
@@ -283,27 +284,35 @@ public class DocumentPermissionsHelper
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
 			@NonNull final IUserRolePermissions permissions)
 	{
-		final String tableName = entityDescriptor.getTableNameOrNull();
-		if (tableName == null) {return BooleanWithReason.TRUE;} // not table based => OK
-
-		return checkRoleCanCreateNewRecords(tableName, permissions);
+		return checkRoleCanCreateNewRecords(getAdTableIdOrNull(entityDescriptor.getTableNameOrNull()), permissions);
 	}
 
 	/**
-	 * The role's per-table create permission for a table given by name. Used where the record being created
-	 * lives in a different table than the document driving the request (e.g. the BPartner quick input:
-	 * the document is a C_BPartner_QuickInput template, but the record created is a C_BPartner).
+	 * The role's per-table create permission for a given table - the single place the role-level answer is
+	 * turned into a user-facing reason. A {@code null} table (not table-based, or a name that resolves to no
+	 * {@code AD_Table}) carries no restriction, so creation stays allowed. Callers that hold only a table name
+	 * (e.g. the BPartner quick input, whose document is a C_BPartner_QuickInput template but whose created
+	 * record is a C_BPartner) resolve it first via {@link #getAdTableIdOrNull(String)}.
 	 */
 	public static BooleanWithReason checkRoleCanCreateNewRecords(
-			@NonNull final String tableName,
+			@Nullable final AdTableId adTableId,
 			@NonNull final IUserRolePermissions permissions)
 	{
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		if (adTableId <= 0) {return BooleanWithReason.TRUE;}
+		if (adTableId == null) {return BooleanWithReason.TRUE;}
 
-		return permissions.isTableAccess(adTableId, Access.CREATE)
+		return permissions.isCanCreateNewRecords(adTableId)
 				? BooleanWithReason.TRUE
 				: BooleanWithReason.falseBecause(roleCreateNotAllowedReason(permissions));
+	}
+
+	/**
+	 * Resolves a table name to its {@link AdTableId} via the in-memory {@link TableIdsCache} (O(1), no DB,
+	 * no service lookup); a {@code null} name or an unknown table yields {@code null}.
+	 */
+	@Nullable
+	private static AdTableId getAdTableIdOrNull(@Nullable final String tableName)
+	{
+		return tableName != null ? TableIdsCache.instance.getTableId(tableName).orElse(null) : null;
 	}
 
 	/**

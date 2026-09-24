@@ -15,7 +15,9 @@ import { assertRecordIsValid, getFieldData, getTabInfo, getRecordData, WEBAPI_BA
  * (IsCanCreateNewRecords='N' removes Access.CREATE from the role default). When a role is
  * restricted on C_BPartner, the WebUI greys the "New" record action with the AD_Message key
  * ERR_Role_CreateNewRecordsNotAllowed, and the server rejects a create — while reading/editing
- * existing partners still works. Read-only (IsReadOnly='Y') independently removes only WRITE.
+ * existing partners still works. Read-only (IsReadOnly='Y') removes WRITE - and, since creating is a
+ * write, CREATE with it ("WRITE exclusion includes no CREATE, but not the other way around"); removing
+ * CREATE alone leaves WRITE (edit) intact.
  *
  * Assertions are language-invariant: the greyed action by its data-testid (the message KEY, never the
  * localized sentence — CLAUDE.md:204,206); the block by the server's explicit rejection; read/edit by
@@ -398,10 +400,10 @@ testCases.forEach(({ language, label }) => {
         });
     });
 
-    // Read-only-flag subtract: IsReadOnly='Y' removes WRITE only — read-yes / edit-no. This is the one
-    // assertion that distinguishes the subtract contract from the old replace encoding.
-    test.describe(`Role read-only table access — read yes, edit no (${label})`, () => {
-        test(`read-only role reads but cannot edit an existing partner (${label} UI)`, async ({ page }) => {
+    // Read-only-flag subtract: IsReadOnly='Y' removes WRITE — read-yes / edit-no — and CREATE with it
+    // (creating is a write). Distinguishes the subtract contract from the old replace encoding.
+    test.describe(`Role read-only table access — read yes, edit no, create no (${label})`, () => {
+        test(`read-only role reads but cannot edit or create a partner (${label} UI)`, async ({ page }) => {
             allure.epic('E0390: Business Partner');
             allure.story('Role table access — read-only flag removes WRITE only (subtract contract)');
             allure.tag('F33020: Roles');
@@ -440,7 +442,18 @@ testCases.forEach(({ language, label }) => {
 
             // EDIT-NO: WRITE is subtracted, so the loaded record's field is read-only.
             expect(name2.readonly, 'a read-only role must NOT be able to edit (WRITE removed by the subtract)').toBe(true);
-            console.log(`[${language}] PASS — read-only role: read yes, edit no (Name2.readonly=${name2.readonly})`);
+
+            // CREATE-NO: "WRITE exclusion includes no CREATE, but not the other way around" — creating a
+            // record is a write, so removing WRITE also removes CREATE. The read-only role's "New" action is
+            // therefore greyed with the same create-restriction key, though no IsCanCreateNewRecords flag was
+            // set on it; reached via the WRITE subtract instead of the CREATE flag.
+            await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
+            await page.locator('.document-list-wrapper, .document-list').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+            const greyedNew = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
+            await ensureSubheaderOpen(page, greyedNew);
+            await expect(greyedNew, 'a read-only role must ALSO be create-blocked (WRITE exclusion removes CREATE)').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await expect(greyedNew, 'the greyed "New" action must carry the disabled class').toHaveClass(/subheader-item-disabled/);
+            console.log(`[${language}] PASS — read-only role: read yes, edit no, create no (Name2.readonly=${name2.readonly})`);
         });
     });
 

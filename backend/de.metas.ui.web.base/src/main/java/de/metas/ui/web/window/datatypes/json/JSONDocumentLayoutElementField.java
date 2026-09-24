@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.security.permissions.Access;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -21,12 +20,12 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -379,14 +378,15 @@ public final class JSONDocumentLayoutElementField
 			return true;
 		}
 
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(lookupTableName);
-		if (adTableId <= 0)
+		// resolve via the in-memory TableIdsCache (O(1), no DB, no service lookup); an unresolved table
+		// carries no restriction, so the entry stays - never hide on a table we could not resolve
+		final AdTableId adTableId = TableIdsCache.instance.getTableId(lookupTableName).orElse(null);
+		if (adTableId == null)
 		{
-			// an unresolved table carries no restriction, so the entry stays; never hide on a table we could not resolve
 			return true;
 		}
 
-		return UserSession.getCurrentPermissions().isTableAccess(adTableId, Access.CREATE);
+		return UserSession.getCurrentPermissions().isCanCreateNewRecords(adTableId);
 	}
 
 	void setAdvSearchWindow(

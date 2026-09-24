@@ -546,6 +546,17 @@ class UserRolePermissions implements IUserRolePermissions
 		return tablePermissions.isCanExport(AD_Table_ID);
 	}
 
+	@Override
+	public boolean isCanCreateNewRecords(@NonNull final AdTableId adTableId)
+	{
+		final int tableId = adTableId.getRepoId();
+		// "WRITE exclusion includes no CREATE, but not the other way around": creating a record is a write,
+		// so removing WRITE (IsReadOnly='Y') also removes CREATE; removing CREATE alone (IsCanCreateNewRecords='N')
+		// leaves WRITE - and thus editing existing records - intact.
+		return isTableAccess(tableId, Access.WRITE)
+				&& isTableAccess(tableId, Access.CREATE);
+	}
+
 	/**
 	 * @return has RO/RW access to table
 	 */
