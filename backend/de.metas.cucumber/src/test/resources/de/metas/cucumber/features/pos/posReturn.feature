@@ -302,13 +302,11 @@ Feature: POS Product Return
   @allure.label.feature:F18030_POS_Checkout
   @Id:S28210_TC20
   Scenario: A lock wait exceeding the configured timeout is rejected as till-busy, no document created
-    Given set sys config int value 2000 for sys config de.metas.pos.Return.LockTimeoutMillis
+    Given temporarily set sys config int value 2000 for sys config de.metas.pos.Return.LockTimeoutMillis
 
     When a product return at POS terminal till by metasfresh fails with AD_Message 'de.metas.pos.Return.TillBusy' while the terminal is locked by a concurrent cross-transaction lock:
       | M_Product_ID | Qty | UOM | OPT.ExternalId |
       | product      | 0.3 | KGM | tillBusyToken  |
-
-    Then set sys config int value 30000 for sys config de.metas.pos.Return.LockTimeoutMillis
 
   # ##########################################################################
   @from:cucumber

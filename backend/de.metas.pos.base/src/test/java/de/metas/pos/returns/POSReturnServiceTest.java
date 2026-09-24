@@ -268,16 +268,19 @@ class POSReturnServiceTest
 		 * No real DB connection is available in this unit test — the cross-transaction lock is genuine
 		 * infrastructure (a Postgres advisory lock on its own dedicated JDBC connection), irrelevant to what these
 		 * guards test (rejecting an invalid request before ANY DB work happens). Runs the action directly,
-		 * unlocked — a single-threaded unit test needs no mutual exclusion anyway.
+		 * unlocked — a single-threaded unit test needs no mutual exclusion anyway. {@code onTimeout} is never
+		 * invoked here (the fake never times out), and the action's result is returned verbatim, matching the
+		 * production contract exactly (no {@code Optional} wrapping).
 		 */
 		@Override
 		@NonNull
-		public <T> Optional<T> tryRunWithCrossTransactionLock(
+		public <T> T runWithCrossTransactionLock(
 				@NonNull final POSTerminalId posTerminalId,
 				final long timeoutMillis,
-				@NonNull final Supplier<T> action)
+				@NonNull final Supplier<T> action,
+				@NonNull final Supplier<? extends RuntimeException> onTimeout)
 		{
-			return Optional.of(action.get());
+			return action.get();
 		}
 	}
 }

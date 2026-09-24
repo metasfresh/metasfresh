@@ -99,7 +99,7 @@ public class POSReturnService
 	 * around (see the class Javadoc history).
 	 * <p>
 	 * A transaction-scoped row lock cannot span three separate transactions, so the whole method body runs inside
-	 * {@link POSTerminalService#tryRunWithCrossTransactionLock}: a Postgres advisory lock, held on its own
+	 * {@link POSTerminalService#runWithCrossTransactionLock}: a Postgres advisory lock, held on its own
 	 * dedicated connection for the ENTIRE call, that serializes two concurrent callers against the SAME terminal
 	 * end to end — a second caller cannot start ANY phase while a first is still in flight in any of its three,
 	 * closing the cross-phase race a phase-1-only lock would leave open. The {@code C_POS} row lock inside phase 1
@@ -125,13 +125,17 @@ public class POSReturnService
 	{
 		final int lockTimeoutMillis = sysConfigBL.getIntValue(SYSCONFIG_LockTimeoutMillis, SYSCONFIG_LockTimeoutMillis_DEFAULT);
 
-		return posTerminalService.tryRunWithCrossTransactionLock(request.getPosTerminalId(), lockTimeoutMillis, () -> {
-			final ReturnAndCandidates phase1 = trxManager.callInThreadInheritedTrx(() -> ensureReturnAndCandidates(request));
+		return posTerminalService.runWithCrossTransactionLock(
+				request.getPosTerminalId(),
+				lockTimeoutMillis,
+				() -> {
+					final ReturnAndCandidates phase1 = trxManager.callInThreadInheritedTrx(() -> ensureReturnAndCandidates(request));
 
-			final InvoiceId creditMemoId = ensureCreditMemo(phase1.getInvoiceCandidateIds());
+					final InvoiceId creditMemoId = ensureCreditMemo(phase1.getInvoiceCandidateIds());
 
-			return trxManager.callInThreadInheritedTrx(() -> ensureSettlement(request, phase1, creditMemoId));
-		}).orElseThrow(() -> new AdempiereException(MSG_TillBusy).setParameter("C_POS_ID", request.getPosTerminalId()));
+					return trxManager.callInThreadInheritedTrx(() -> ensureSettlement(request, phase1, creditMemoId));
+				},
+				() -> new AdempiereException(MSG_TillBusy).setParameter("C_POS_ID", request.getPosTerminalId()));
 	}
 
 	/** Phase 1 result: the material document plus the invoice candidates priced for its credit. */

@@ -15,7 +15,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -72,47 +72,75 @@ public class POSTerminalRepository
 	 * {@code pg_try_advisory_lock} miss, whereas this caller can tolerate a short, bounded wait (the timeout is
 	 * caller-supplied so it can be tuned per use), so it polls instead of failing on the very first miss.
 	 *
-	 * @return empty if the lock could not be acquired within {@code timeoutMillis}; the caller decides how to react
-	 * (e.g. a user-facing "till busy" rejection) — this repository method carries no such policy itself.
+	 * @throws RuntimeException the one {@code onTimeout} supplies, if the lock could not be acquired within
+	 * {@code timeoutMillis} — the caller decides what that means (e.g. a user-facing "till busy" rejection);
+	 * this repository method carries no such policy itself. On success, returns whatever {@code action} itself
+	 * returns, VERBATIM — including {@code null}, if {@code action} is a {@code Void}/{@code Runnable}-shaped
+	 * action — with NO wrapping in between, so "timed out" and "action's own result" can never be confused
+	 * (unlike an {@code Optional<T>}-returning design, where {@code action} legitimately returning {@code null}
+	 * is indistinguishable from a timeout).
 	 */
 	@NonNull
-	public <T> Optional<T> tryRunWithCrossTransactionLock(
+	public <T> T runWithCrossTransactionLock(
 			@NonNull final POSTerminalId posTerminalId,
 			final long timeoutMillis,
-			@NonNull final Supplier<T> action)
+			@NonNull final Supplier<T> action,
+			@NonNull final Supplier<? extends RuntimeException> onTimeout)
 	{
 		final Connection lockConnection = DB.createConnection(true /*autoCommit*/, Connection.TRANSACTION_READ_COMMITTED);
+		try
+		{
+			return runWithBoundedAcquire(
+					() -> tryAdvisoryLock(lockConnection, posTerminalId),
+					() -> advisoryUnlock(lockConnection, posTerminalId),
+					timeoutMillis,
+					POLL_INTERVAL_MILLIS,
+					action,
+					onTimeout);
+		}
+		finally
+		{
+			DB.close(lockConnection);
+		}
+	}
+
+	/**
+	 * The generic "poll a bounded number of times to acquire, then run-and-return-verbatim or throw" algorithm,
+	 * factored out of {@link #runWithCrossTransactionLock} so it can be unit-tested directly — with fake
+	 * {@code tryAcquire}/{@code release} suppliers — without a real DB connection, which
+	 * {@link #runWithCrossTransactionLock} itself cannot be exercised without (it needs a real Postgres session
+	 * for {@code pg_try_advisory_lock}/{@code pg_advisory_unlock}). Package-private + static: pure algorithm, no
+	 * instance state, no DB/AD-context dependency at all.
+	 */
+	@NonNull
+	static <T> T runWithBoundedAcquire(
+			@NonNull final BooleanSupplier tryAcquire,
+			@NonNull final Runnable release,
+			final long timeoutMillis,
+			final long pollIntervalMillis,
+			@NonNull final Supplier<T> action,
+			@NonNull final Supplier<? extends RuntimeException> onTimeout)
+	{
 		boolean locked = false;
 		try
 		{
 			final long deadline = System.currentTimeMillis() + timeoutMillis;
-			while (!(locked = tryAdvisoryLock(lockConnection, posTerminalId)))
+			while (!(locked = tryAcquire.getAsBoolean()))
 			{
 				if (System.currentTimeMillis() >= deadline)
 				{
-					return Optional.empty();
+					throw onTimeout.get();
 				}
-				sleepQuietly(POLL_INTERVAL_MILLIS);
+				sleepQuietly(pollIntervalMillis);
 			}
 
-			// ofNullable, not of(): action MAY legitimately return null (e.g. a Void/Runnable-shaped action), which
-			// must not NPE here — this only makes "acquired, action returned null" and "never acquired" both read as
-			// empty; harmless for both current callers (POSReturnService#createReturn's action always returns a
-			// real POSReturnResult, and callers that pass a null-returning action never inspect this return value)
-			return Optional.ofNullable(action.get());
+			return action.get();
 		}
 		finally
 		{
-			try
+			if (locked)
 			{
-				if (locked)
-				{
-					advisoryUnlock(lockConnection, posTerminalId);
-				}
-			}
-			finally
-			{
-				DB.close(lockConnection);
+				release.run();
 			}
 		}
 	}

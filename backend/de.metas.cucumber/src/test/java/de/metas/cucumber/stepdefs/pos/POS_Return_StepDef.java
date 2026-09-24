@@ -317,7 +317,7 @@ public class POS_Return_StepDef
 	}
 
 	/**
-	 * Proves {@link POSTerminalService#tryRunWithCrossTransactionLock} genuinely serializes two concurrent
+	 * Proves {@link POSTerminalService#runWithCrossTransactionLock} genuinely serializes two concurrent
 	 * {@code createReturn} calls against the SAME terminal for the call's ENTIRE duration — not just phase 1
 	 * (that narrower claim is {@link #posProductReturnBlocksOnConcurrentLock}/TC15 above). Without this lock, a
 	 * second caller could reach phase 3 (cash settlement) while a first caller's own phase 3 is still in flight,
@@ -328,7 +328,7 @@ public class POS_Return_StepDef
 	 *
 	 * <p>Uses the SAME deterministic holder technique as TC15 (a lock taken directly, on a separate
 	 * thread/transaction, instead of racing two real {@code createReturn} calls and hoping they happen to overlap
-	 * at exactly the narrow phase-2/3 window) — but holding {@link POSTerminalService#tryRunWithCrossTransactionLock}
+	 * at exactly the narrow phase-2/3 window) — but holding {@link POSTerminalService#runWithCrossTransactionLock}
 	 * itself (the same lock {@code POSReturnService#createReturn} now takes for its whole body), not the phase-1
 	 * row lock, so the blocking window it proves covers all three phases, not just the first.
 	 *
@@ -484,12 +484,15 @@ public class POS_Return_StepDef
 	}
 
 	/**
-	 * Runs on the lock-holder worker thread: acquires {@link POSTerminalService#tryRunWithCrossTransactionLock} and
+	 * Runs on the lock-holder worker thread: acquires {@link POSTerminalService#runWithCrossTransactionLock} and
 	 * HOLDS it (by never returning from the action) until {@code releaseSignal} fires (or 30s pass). Passes a
 	 * generous acquire timeout (60s) since this holder is always the FIRST to contend for the lock in these
-	 * scenarios — it should acquire near-instantly, never itself hit a timeout. Unlike {@link #holdLockUntilReleased},
-	 * this needs no {@code callInThreadInheritedTrx} wrapper — the cross-transaction lock runs on its own dedicated
-	 * JDBC connection, entirely independent of the thread-inherited transaction.
+	 * scenarios — it should acquire near-instantly, never itself hit a timeout (the {@code onTimeout} supplier
+	 * is therefore never expected to actually run). The action returns {@code null} (it is a pure hold-and-wait,
+	 * nothing for the real caller under test to read back) — safe under the current contract, which returns the
+	 * action's result verbatim rather than wrapping it, so no special-casing is needed here for that. Unlike
+	 * {@link #holdLockUntilReleased}, this needs no {@code callInThreadInheritedTrx} wrapper — the cross-transaction
+	 * lock runs on its own dedicated JDBC connection, entirely independent of the thread-inherited transaction.
 	 */
 	private void holdCrossTransactionLockUntilReleased(
 			@NonNull final POSTerminalId posTerminalId,
@@ -499,19 +502,24 @@ public class POS_Return_StepDef
 	{
 		try
 		{
-			posTerminalService.tryRunWithCrossTransactionLock(posTerminalId, TimeUnit.SECONDS.toMillis(60), () -> {
-				lockAcquired.countDown();
-				try
-				{
-					releaseSignal.await(30, TimeUnit.SECONDS);
-				}
-				catch (final InterruptedException ex)
-				{
-					Thread.currentThread().interrupt();
-					throw AdempiereException.wrapIfNeeded(ex);
-				}
-				return null;
-			});
+			posTerminalService.runWithCrossTransactionLock(
+					posTerminalId,
+					TimeUnit.SECONDS.toMillis(60),
+					() -> {
+						lockAcquired.countDown();
+						try
+						{
+							releaseSignal.await(30, TimeUnit.SECONDS);
+						}
+						catch (final InterruptedException ex)
+						{
+							Thread.currentThread().interrupt();
+							throw AdempiereException.wrapIfNeeded(ex);
+						}
+						return null;
+					},
+					() -> new AdempiereException("Lock holder itself failed to acquire the cross-transaction lock — should never happen, it is always first")
+							.setParameter("C_POS_ID", posTerminalId));
 		}
 		catch (final Throwable t)
 		{

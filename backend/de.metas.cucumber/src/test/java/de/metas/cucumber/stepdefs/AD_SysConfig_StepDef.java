@@ -23,19 +23,25 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.cache.CacheMgt;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.ISysConfigDAO;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -43,12 +49,79 @@ import static org.assertj.core.api.Assertions.*;
 public class AD_SysConfig_StepDef
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ISysConfigDAO sysConfigDAO = Services.get(ISysConfigDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
+	/** Populated only by {@link #temporarily_set_sys_config}; drained and restored by {@link #restoreTemporarilySetSysConfigs}. */
+	private final Map<String, Optional<String>> temporarilySetSysConfigPriorValues = new LinkedHashMap<>();
+
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
 	public void enable_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	/**
+	 * Same as {@link #enable_sys_config}, but captures the value the given SYSTEM-level AD_SysConfig had
+	 * BEFORE this call (present or absent) and restores exactly that — via {@link #restoreTemporarilySetSysConfigs},
+	 * a real {@code @After} hook, so the restore runs unconditionally at scenario end even if the scenario
+	 * itself fails — never a plain Gherkin step, which Cucumber skips once an earlier step in the same
+	 * scenario has already failed. Use this instead of {@code set sys config ...} whenever a scenario
+	 * needs a SHORT-LIVED override of a value other scenarios/features on the same executor also read,
+	 * per the self-contained-global-state rule (de.metas.cucumber/CLAUDE.md rules 12/13).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given temporarily set sys config int value 2000 for sys config de.metas.pos.Return.LockTimeoutMillis
+	 * </pre>
+	 */
+	@And("^temporarily set sys config (String|boolean|int) value (.*) for sys config (.*)$")
+	public void temporarily_set_sys_config(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
+	{
+		temporarilySetSysConfigPriorValues.computeIfAbsent(sysConfigName, name -> sysConfigDAO.getValue(name, ClientAndOrgId.SYSTEM));
+		applySysConfigValue(sysconfigType, sysconfigValue, sysConfigName);
+	}
+
+	/**
+	 * Restores every AD_SysConfig temporarily overridden via {@link #temporarily_set_sys_config} back to its
+	 * value from immediately before this scenario touched it — the prior value if one existed, or deletes the
+	 * row entirely if it didn't — so a scenario's short-lived override never leaks into a later scenario/feature
+	 * on the same executor, even when THIS scenario itself fails partway through (an ordinary Gherkin restore
+	 * step would simply never run in that case). Mirrors {@code M_ShipmentSchedule_StepDef#deleteSeededRecomputeSchedules}.
+	 */
+	@After
+	public void restoreTemporarilySetSysConfigs()
+	{
+		if (temporarilySetSysConfigPriorValues.isEmpty())
+		{
+			return;
+		}
+
+		temporarilySetSysConfigPriorValues.forEach((name, priorValue) -> {
+			if (priorValue.isPresent())
+			{
+				sysConfigBL.setValue(name, priorValue.get(), ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+			}
+			else
+			{
+				queryBL.createQueryBuilder(I_AD_SysConfig.class)
+						.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_Name, name)
+						.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM.getRepoId())
+						.addEqualsFilter(I_AD_SysConfig.COLUMNNAME_AD_Org_ID, StepDefConstants.ORG_ID_SYSTEM.getRepoId())
+						.create()
+						.deleteDirectly();
+			}
+		});
+		temporarilySetSysConfigPriorValues.clear();
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	private void applySysConfigValue(@NonNull final String sysconfigType, @NonNull final String sysconfigValue, @NonNull final String sysConfigName)
 	{
 		switch (sysconfigType)
 		{
