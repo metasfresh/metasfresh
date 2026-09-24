@@ -108,7 +108,7 @@ class ExternalSystemEndpointTest
 		assertThat(endpoint.getSftpAuthType()).isEqualTo(SftpAuthType.PASSWORD);
 		assertThat(endpoint.getSftpRemotePath()).isEqualTo("/upload/edi");
 		assertThat(endpoint.getSftpFilenamePattern()).isEqualTo("order_{date}.edi");
-		// HTTP fields are null for SFTP endpoints
+		// the HTTP fields were never set on this builder -- TransportType.SFTP does not null them
 		assertThat(endpoint.getEndpointUrl()).isNull();
 		assertThat(endpoint.getMethod()).isNull();
 		assertThat(endpoint.getContentType()).isNull();
@@ -144,7 +144,7 @@ class ExternalSystemEndpointTest
 		assertThat(json.getPassword()).isEqualTo("secret");
 		assertThat(json.getSftpRemotePath()).isEqualTo("/outbound");
 		assertThat(json.getSftpFilenamePattern()).isEqualTo("DESADV_{documentno}.json");
-		// HTTP-specific fields are null
+		// the HTTP fields were never set on the source builder -- toJson copies them through unconditionally
 		assertThat(json.getEndpointUrl()).isNull();
 		assertThat(json.getMethod()).isNull();
 		assertThat(json.getAuthType()).isNull();
