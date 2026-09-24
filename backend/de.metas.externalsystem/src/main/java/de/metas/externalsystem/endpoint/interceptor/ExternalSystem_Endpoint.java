@@ -43,11 +43,14 @@ import java.util.function.Consumer;
 public class ExternalSystem_Endpoint
 {
 	/**
-	 * Every column that belongs to exactly one transport, together with how to clear it. This is the single
+	 * Every column this interceptor knows how to clear, together with how to clear it. This is the single
 	 * source of truth for "what does transport X own" — {@link #resetTransportSpecificFields(I_ExternalSystem_Endpoint)}
 	 * derives each transport's owned columns from {@link #OWNED_COLUMN_NAMES_BY_TRANSPORT_CODE} and clears
-	 * the complement, so a newly added transport-specific column only needs to be added HERE and to the one
-	 * owning transport's set below — never to N per-transport clearing lists.
+	 * every column here that the new transport does NOT own. Ownership only ever means "do not clear on
+	 * switch to this transport", so a column may be owned by more than one transport (e.g.
+	 * {@code IsArrayFanOut}, read by both the HTTP and SFTP outbound dispatch) — it is simply listed in
+	 * every owning transport's set below. A newly added transport-specific column only needs to be added
+	 * HERE and to each set that owns it — never to N per-transport clearing lists.
 	 */
 	private static final ImmutableMap<String, Consumer<I_ExternalSystem_Endpoint>> CLEAR_ACTIONS_BY_COLUMN_NAME =
 			ImmutableMap.<String, Consumer<I_ExternalSystem_Endpoint>>builder()
@@ -105,14 +108,18 @@ public class ExternalSystem_Endpoint
 			I_ExternalSystem_Endpoint.COLUMNNAME_SshPrivateKey,
 			I_ExternalSystem_Endpoint.COLUMNNAME_SftpRemotePath,
 			I_ExternalSystem_Endpoint.COLUMNNAME_SftpFilenamePattern,
-			I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs);
+			I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs,
+			// transport-agnostic, also HTTP-owned below: the SFTP outbound dispatch reads it too (see
+			// ScriptedAdapterConvertMsgFromMFRouteBuilder#isFanOutEnabled), so switching to SFTP must not
+			// clear it
+			I_ExternalSystem_Endpoint.COLUMNNAME_IsArrayFanOut);
 
 	private static final ImmutableSet<String> LOCAL_FILE_OWNED_COLUMN_NAMES = ImmutableSet.of(
 			I_ExternalSystem_Endpoint.COLUMNNAME_LocalRootLocation,
 			I_ExternalSystem_Endpoint.COLUMNNAME_Frequency,
 			I_ExternalSystem_Endpoint.COLUMNNAME_ImportFileNamePattern);
 
-	/** Maps each transport's DB code to the set of columns it (and only it) owns. */
+	/** Maps each transport's DB code to the set of columns it owns (a column may appear in more than one set). */
 	private static final ImmutableMap<String, ImmutableSet<String>> OWNED_COLUMN_NAMES_BY_TRANSPORT_CODE = ImmutableMap.of(
 			TransportType.HTTP.getCode(), HTTP_OWNED_COLUMN_NAMES,
 			TransportType.SFTP.getCode(), SFTP_OWNED_COLUMN_NAMES,
