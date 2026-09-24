@@ -39,30 +39,35 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeSet;
 
 import static org.assertj.core.api.Assertions.fail;
 
 /**
- * Holds the display-logic copies inside {@link ExternalSystem_Endpoint} against the live application
- * dictionary.
+ * Holds the two kinds of dictionary copy inside {@link ExternalSystem_Endpoint} against the live
+ * application dictionary.
  * <p>
  * The interceptor decides which endpoint fields a new transport/authentication configuration hides by
- * evaluating a <b>verbatim string copy</b> of each field's {@code AD_Field.DisplayLogic}. A copy cannot see
- * the dictionary, so nothing in that module's plain-JUnit tests notices when a migration script changes a
- * condition -- or deactivates a field, which no string copy can express at all. This step is the only place
- * in the build where both sides are present at once.
+ * evaluating a <b>verbatim string copy</b> of each field's {@code AD_Field.DisplayLogic}, and puts each
+ * hidden field back to a <b>verbatim copy</b> of its column's {@code AD_Column.DefaultValue}. A copy cannot
+ * see the dictionary, so nothing in that module's plain-JUnit tests notices when a migration script changes
+ * a condition, changes a default -- or deactivates a field, which no string copy can express at all. These
+ * steps are the only place in the build where both sides are present at once.
  * <p>
- * It asserts in both directions: every rule's condition is byte-identical to that column's live
- * {@code AD_Field.DisplayLogic}, every column the window shows conditionally has a rule, and no rule names a
- * column the window does not show conditionally (an inactive {@code AD_Field} included).
+ * The display-logic step asserts in both directions: every rule's condition is byte-identical to that
+ * column's live {@code AD_Field.DisplayLogic}, every column the window shows conditionally has a rule, and
+ * no rule names a column the window does not show conditionally (an inactive {@code AD_Field} included).
+ * The column-default step does the same for the defaults: same value, and the same columns carry one.
  * <p>
  * Gherkin usage -- no parameters, no DataTable:
  * <pre>
  *   Then the ExternalSystem_Endpoint interceptor's display logic is exactly the window's
+ *   Then the ExternalSystem_Endpoint interceptor's column defaults are exactly the dictionary's
  * </pre>
  */
 public class ExternalSystem_Endpoint_DisplayLogic_StepDef
@@ -93,6 +98,122 @@ public class ExternalSystem_Endpoint_DisplayLogic_StepDef
 			fail(HEADER + "\n\n" + String.join("\n\n", problems) + "\n");
 		}
 	}
+
+	/**
+	 * Reports every disagreement between the copied defaults and {@code AD_Column.DefaultValue} in one
+	 * failure, each naming the column and both values.
+	 *
+	 * @see ExternalSystem_Endpoint#getColumnDefaultByColumnName()
+	 */
+	@Then("the ExternalSystem_Endpoint interceptor's column defaults are exactly the dictionary's")
+	public void interceptorColumnDefaultsAreExactlyTheDictionarys()
+	{
+		final ExternalSystem_Endpoint interceptor = new ExternalSystem_Endpoint();
+		final ImmutableSet<String> hideableColumnNames = interceptor.getDisplayLogicByColumnName().keySet();
+		final ImmutableMap<String, Object> copiedIntoCode = interceptor.getColumnDefaultByColumnName();
+		final ImmutableMap<String, String> inTheDictionary = retrieveEndpointColumnDefaultValues();
+
+		final List<String> problems = new ArrayList<>();
+		for (final String columnName : hideableColumnNames)
+		{
+			problems.addAll(describeDefaultThatDiffers(
+					columnName,
+					asDictionaryText(copiedIntoCode.get(columnName)),
+					inTheDictionary.get(columnName)));
+		}
+
+		if (!problems.isEmpty())
+		{
+			fail(DEFAULTS_HEADER + "\n\n" + String.join("\n\n", problems) + "\n");
+		}
+	}
+
+	private static List<String> describeDefaultThatDiffers(
+			@NonNull final String columnName,
+			@Nullable final String inTheCode,
+			@Nullable final String inTheDictionary)
+	{
+		if (Objects.equals(inTheCode, inTheDictionary))
+		{
+			return ImmutableList.of();
+		}
+
+		if (inTheCode == null)
+		{
+			return ImmutableList.of("NO DEFAULT COPIED for " + columnName + ":"
+					+ "\n  dictionary : " + inTheDictionary
+					+ "\n  code       : (none)"
+					+ "\n  The window pre-fills this value on a newly created endpoint, and the rule table says the"
+					+ "\n  column has no default -- so hiding the field leaves it empty and the same column behaves two"
+					+ "\n  ways depending on how the operator got there. Change the hideable(...) entry to"
+					+ "\n  hideableWithColumnDefault(...) carrying exactly the value above, in the type the column stores.");
+		}
+
+		if (inTheDictionary == null)
+		{
+			return ImmutableList.of("DEFAULT COPIED FOR A COLUMN THAT HAS NONE -- " + columnName + ":"
+					+ "\n  dictionary : (none)"
+					+ "\n  code       : " + inTheCode
+					+ "\n  Hiding this field would write a value a newly created endpoint does not get. If the default"
+					+ "\n  was dropped on purpose, turn the entry back into a plain hideable(...) that takes the value"
+					+ "\n  away; if it was dropped by mistake, restore it in a migration script.");
+		}
+
+		return ImmutableList.of("DEFAULT DIFFERS for " + columnName + ":"
+				+ "\n  dictionary : " + inTheDictionary
+				+ "\n  code       : " + inTheCode
+				+ "\n  The two are no longer the same value, so a hidden field is reset to something other than what"
+				+ "\n  the window pre-fills on a new record. If a migration script changed this column's DefaultValue,"
+				+ "\n  copy the dictionary's value into the rule -- it is the dictionary that decides what a new record"
+				+ "\n  gets. If the rule is the newer of the two, the change was never written as a migration script.");
+	}
+
+	/**
+	 * The copied default as {@code AD_Column.DefaultValue} spells it. The rule table carries each default in
+	 * the type its column stores, so {@code IsFileUpload}'s {@code false} has to be rendered back as the
+	 * dictionary's {@code 'N'} -- compared as {@code "false"} it would read as a permanent disagreement.
+	 */
+	@Nullable
+	private static String asDictionaryText(@Nullable final Object columnDefault)
+	{
+		if (columnDefault == null)
+		{
+			return null;
+		}
+		if (columnDefault instanceof Boolean)
+		{
+			return StringUtils.ofBoolean((Boolean)columnDefault);
+		}
+		return columnDefault.toString();
+	}
+
+	/** Every endpoint column that carries a non-blank {@code AD_Column.DefaultValue}. */
+	@NonNull
+	private ImmutableMap<String, String> retrieveEndpointColumnDefaultValues()
+	{
+		final AdTableId adTableId = tableDAO.retrieveAdTableId(I_ExternalSystem_Endpoint.Table_Name);
+
+		final ImmutableMap.Builder<String, String> defaultValueByColumnName = ImmutableMap.builder();
+		queryBL.createQueryBuilder(I_AD_Column.class)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, adTableId)
+				.create()
+				.forEach(column -> {
+					final String defaultValue = StringUtils.trimBlankToNull(column.getDefaultValue());
+					if (defaultValue != null)
+					{
+						defaultValueByColumnName.put(column.getColumnName(), defaultValue);
+					}
+				});
+
+		return defaultValueByColumnName.build();
+	}
+
+	private static final String DEFAULTS_HEADER = ""
+			+ "The " + I_ExternalSystem_Endpoint.Table_Name + " interceptor and the dictionary it copied its defaults\n"
+			+ "from disagree.\n"
+			+ "  dictionary : AD_Column.DefaultValue, as the migration scripts left it in the database\n"
+			+ "  code       : the verbatim copies in " + ExternalSystem_Endpoint.class.getName() + "#createHideableColumns()\n"
+			+ "One of the two is stale. Which one tells you what to fix -- each finding below says how to tell.";
 
 	private static final String HEADER = ""
 			+ "The " + I_ExternalSystem_Endpoint.Table_Name + " interceptor and the window it was copied from disagree.\n"
