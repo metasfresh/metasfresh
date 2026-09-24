@@ -52,9 +52,22 @@ public class SupplyRequiredHandlerUtils
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final MaterialPlanningContext context)
 	{
+		return mkRequest(supplyRequiredDescriptor, context, extractQtyToSupply(supplyRequiredDescriptor));
+	}
 
+	/**
+	 * Variant that overrides {@code qtyToSupply} — used by the leftover-quantity dispatch in
+	 * {@link SupplyRequiredHandler}, so an advisor receives only the portion of demand not
+	 * already claimed by a higher-priority advisor.
+	 */
+	@NonNull
+	public static MaterialRequest mkRequest(
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final MaterialPlanningContext context,
+			@NonNull final Quantity qtyToSupply)
+	{
 		return MaterialRequest.builder()
-				.qtyToSupply(getQuantity(supplyRequiredDescriptor))
+				.qtyToSupply(qtyToSupply)
 				.context(context)
 				.mrpDemandBPartnerId(BPartnerId.toRepoIdOr(supplyRequiredDescriptor.getCustomerId(), -1))
 				.mrpDemandOrderLineSOId(supplyRequiredDescriptor.getOrderLineId())
@@ -64,7 +77,8 @@ public class SupplyRequiredHandlerUtils
 				.build();
 	}
 
-	private static @NonNull Quantity getQuantity(final @NonNull SupplyRequiredDescriptor supplyRequiredDescriptor)
+	@NonNull
+	public static Quantity extractQtyToSupply(final @NonNull SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 

@@ -39,12 +39,15 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.planning.ddordercandidate.DDOrderCandidateDataFactory;
-import de.metas.material.planning.ddordercandidate.DDOrderCandidateDemandMatcher;
+import de.metas.material.planning.ddordercandidate.SourceWarehouseAvailableQtyProvider;
+import de.metas.material.planning.event.SupplyAdvice;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -64,7 +67,7 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -76,7 +79,6 @@ class DDOrderCandidateAdvisedEventCreatorTest
 	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofString("1");
 	public static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(25);
 
-	private DDOrderCandidateDemandMatcher demandMatcher;
 	private DDOrderCandidateDataFactory ddOrderCandidateDataFactory;
 	private DDOrderCandidateService ddOrderCandidateService;
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
@@ -91,12 +93,15 @@ class DDOrderCandidateAdvisedEventCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		demandMatcher = Mockito.mock(DDOrderCandidateDemandMatcher.class);
 		ddOrderCandidateService = Mockito.mock(DDOrderCandidateService.class);
 		candidateRepositoryWriteService = Mockito.mock(CandidateRepositoryWriteService.class);
 		candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
-		ddOrderCandidateDataFactory = new DDOrderCandidateDataFactory(new DistributionNetworkRepository(), new ReplenishInfoRepository());
-		advisedEventCreator = new DDOrderCandidateAdvisedEventCreator(demandMatcher, ddOrderCandidateDataFactory, ddOrderCandidateService, candidateRepositoryWriteService, candidateRepositoryRetrieval);
+		// Existing tests exercise the "no clipping" path (pre-28877 behavior), so use the UNLIMITED provider.
+		ddOrderCandidateDataFactory = new DDOrderCandidateDataFactory(
+				new DistributionNetworkRepository(),
+				new ReplenishInfoRepository(),
+				SourceWarehouseAvailableQtyProvider.UNLIMITED);
+		advisedEventCreator = new DDOrderCandidateAdvisedEventCreator(ddOrderCandidateDataFactory, ddOrderCandidateService, candidateRepositoryWriteService, candidateRepositoryRetrieval);
 
 		createMasterData();
 	}
@@ -197,12 +202,13 @@ class DDOrderCandidateAdvisedEventCreatorTest
 						.build())
 				.build();
 
-		Mockito.when(demandMatcher.matches(Mockito.any(MaterialPlanningContext.class))).thenReturn(true);
-		final List<DDOrderCandidateAdvisedEvent> events = advisedEventCreator.createAdvisedEvents(supplyRequiredDescriptor, context);
+		final Quantity remainingQty = Quantitys.of(new BigDecimal("123"), productId);
+		final SupplyAdvice advice = advisedEventCreator.createAdvisedEvents(supplyRequiredDescriptor, context, remainingQty);
 
-		assertThat(events).hasSize(1);
+		assertThat(advice.getEvents()).hasSize(1);
+		assertThat(advice.getConsumedQty()).isEqualTo(remainingQty);
 
-		final DDOrderCandidateAdvisedEvent event = events.get(0);
+		final DDOrderCandidateAdvisedEvent event = (DDOrderCandidateAdvisedEvent)advice.getEvents().get(0);
 
 		final EventDescriptor eventDescriptor = event.getEventDescriptor();
 		System.out.println(eventDescriptor);
@@ -224,6 +230,138 @@ class DDOrderCandidateAdvisedEventCreatorTest
 		// assertThat(event.).isEqualTo();
 
 		assertThat(event.getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+	}
+
+	/**
+	 * Regression test for me03#28877 DD-ATP-clipping: if the source warehouse can only cover part
+	 * of the demand, the DD candidate is sized to the available qty and {@code consumedQty} reports
+	 * just that portion — not the full {@code remainingQty}. The leftover is then picked up by the
+	 * next advisor in {@code SupplyRequiredHandler} (manufacturing → purchasing).
+	 */
+	@Test
+	public void partialFulfillment_consumedQty_reflects_actual_atp_not_full_demand()
+	{
+		final WarehouseId sourceWarehouseId;
+		final WarehouseId targetWarehouseId;
+		final DistributionNetworkAndLineId distributionNetworkAndLineId = distributionNetwork()
+				.sourceWarehouseId(sourceWarehouseId = warehouse().name("source").build())
+				.targetWarehouseId(targetWarehouseId = warehouse().name("target").build())
+				.durationInDays(12)
+				.build();
+
+		// Source can only cover 30 of the 100 demanded.
+		final Quantity atpAtSource = Quantitys.of(new BigDecimal("30"), productId);
+		final SourceWarehouseAvailableQtyProvider cappedAtSource = (whId, pId, ak, d) -> Optional.of(atpAtSource);
+
+		final DDOrderCandidateDataFactory clippingFactory = new DDOrderCandidateDataFactory(
+				new DistributionNetworkRepository(),
+				new ReplenishInfoRepository(),
+				cappedAtSource);
+		final DDOrderCandidateAdvisedEventCreator clippingAdvisor = new DDOrderCandidateAdvisedEventCreator(
+				clippingFactory,
+				ddOrderCandidateService,
+				candidateRepositoryWriteService,
+				candidateRepositoryRetrieval);
+
+		final MaterialPlanningContext context = MaterialPlanningContext.builder()
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.warehouseId(targetWarehouseId)
+				.productPlanning(ProductPlanning.builder()
+						.id(ProductPlanningId.ofRepoId(1))
+						.distributionNetworkId(distributionNetworkAndLineId.getNetworkId())
+						.warehouseId(targetWarehouseId)
+						.build())
+				.plantId(ResourceId.ofRepoId(2))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.MAIN))
+				.build();
+
+		final SupplyRequiredDescriptor descriptor = SupplyRequiredDescriptor.builder()
+				.shipmentScheduleId(21)
+				.demandCandidateId(41)
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.MAIN)))
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptorWithProductId(productId.getRepoId()))
+						.warehouseId(WarehouseId.ofRepoId(9999999))
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal("100"))
+						.date(Instant.parse("2024-04-15T00:00:00Z"))
+						.build())
+				.build();
+
+		final Quantity remainingQty = Quantitys.of(new BigDecimal("100"), productId);
+		final SupplyAdvice advice = clippingAdvisor.createAdvisedEvents(descriptor, context, remainingQty);
+
+		// One DD candidate, clipped to 30.
+		assertThat(advice.getEvents()).hasSize(1);
+		final DDOrderCandidateAdvisedEvent event = (DDOrderCandidateAdvisedEvent)advice.getEvents().get(0);
+		assertThat(event.getQty()).isEqualByComparingTo("30");
+		assertThat(event.getSourceWarehouseId()).isEqualTo(sourceWarehouseId);
+
+		// consumedQty = 30, NOT 100. The leftover 70 is what gets handed to the next advisor.
+		assertThat(advice.getConsumedQty().toBigDecimal()).isEqualByComparingTo("30");
+	}
+
+	/**
+	 * When the source warehouse has zero ATP, no candidate is created and consumedQty is zero —
+	 * the full demand flows through to the next advisor.
+	 */
+	@Test
+	public void zeroSourceAtp_producesNoCandidate_andZeroConsumedQty()
+	{
+		final WarehouseId sourceWarehouseId;
+		final WarehouseId targetWarehouseId;
+		final DistributionNetworkAndLineId distributionNetworkAndLineId = distributionNetwork()
+				.sourceWarehouseId(sourceWarehouseId = warehouse().name("source").build())
+				.targetWarehouseId(targetWarehouseId = warehouse().name("target").build())
+				.durationInDays(12)
+				.build();
+
+		final SourceWarehouseAvailableQtyProvider nothingAvailable =
+				(whId, pId, ak, d) -> Optional.of(Quantitys.of(BigDecimal.ZERO, productId));
+
+		final DDOrderCandidateDataFactory clippingFactory = new DDOrderCandidateDataFactory(
+				new DistributionNetworkRepository(),
+				new ReplenishInfoRepository(),
+				nothingAvailable);
+		final DDOrderCandidateAdvisedEventCreator clippingAdvisor = new DDOrderCandidateAdvisedEventCreator(
+				clippingFactory,
+				ddOrderCandidateService,
+				candidateRepositoryWriteService,
+				candidateRepositoryRetrieval);
+
+		final MaterialPlanningContext context = MaterialPlanningContext.builder()
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.warehouseId(targetWarehouseId)
+				.productPlanning(ProductPlanning.builder()
+						.id(ProductPlanningId.ofRepoId(1))
+						.distributionNetworkId(distributionNetworkAndLineId.getNetworkId())
+						.warehouseId(targetWarehouseId)
+						.build())
+				.plantId(ResourceId.ofRepoId(2))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.MAIN))
+				.build();
+
+		final SupplyRequiredDescriptor descriptor = SupplyRequiredDescriptor.builder()
+				.shipmentScheduleId(21)
+				.demandCandidateId(41)
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.MAIN)))
+				.materialDescriptor(MaterialDescriptor.builder()
+						.productDescriptor(createProductDescriptorWithProductId(productId.getRepoId()))
+						.warehouseId(WarehouseId.ofRepoId(9999999))
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal("100"))
+						.date(Instant.parse("2024-04-15T00:00:00Z"))
+						.build())
+				.build();
+
+		final Quantity remainingQty = Quantitys.of(new BigDecimal("100"), productId);
+		final SupplyAdvice advice = clippingAdvisor.createAdvisedEvents(descriptor, context, remainingQty);
+
+		assertThat(advice.getEvents()).isEmpty();
+		assertThat(advice.getConsumedQty().toBigDecimal()).isEqualByComparingTo("0");
+		assertThat(sourceWarehouseId).isNotNull(); // used above; silence unused warning
 	}
 
 	private ProductDescriptor createProductDescriptorWithProductId(final int productId)
