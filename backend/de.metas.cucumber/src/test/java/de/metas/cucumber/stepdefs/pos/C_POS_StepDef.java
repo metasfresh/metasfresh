@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.pos;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -350,7 +351,7 @@ public class C_POS_StepDef
 						.filter(order -> order.getSalesOrderId() != null));
 
 		final OrderId salesOrderId = completedOrder.getSalesOrderId();
-		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(salesOrderId));
+		final List<I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(salesOrderId));
 		if (invoices.size() != 1)
 		{
 			throw new AdempiereException("Expected exactly one invoice for the POS sales order")
@@ -358,7 +359,7 @@ public class C_POS_StepDef
 					.setParameter("invoices found", invoices.size());
 		}
 
-		final de.metas.adempiere.model.I_C_Invoice invoice = invoices.get(0);
+		final I_C_Invoice invoice = invoices.get(0);
 		assertThat(invoice.isPaid()).as("POS sale invoice IsPaid").isTrue();
 		invoiceTable.putOrReplace(saleIdentifier, invoice);
 
