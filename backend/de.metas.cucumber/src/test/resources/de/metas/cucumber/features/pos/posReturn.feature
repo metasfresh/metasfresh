@@ -46,6 +46,7 @@ Feature: POS Product Return
     And metasfresh contains C_POS:
       | Identifier | C_BP_BankAccount_ID | M_PricingSystem_ID | M_PriceList_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Warehouse_ID |
       | till       | cashbook            | pricingSystem      | priceList      | customer      | customer               | warehouse      |
+    And the cash journal of POS terminal till is opened with 100 by metasfresh
 
   # ##########################################################################
   @from:cucumber
@@ -54,8 +55,8 @@ Feature: POS Product Return
   @Id:S28210_TC11
   Scenario: A returned product is received and its credit priced at the till price
     When a product return is made at POS terminal till by metasfresh:
-      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID |
-      | product      | 0.3 | KGM | return_1       |
+      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID | OPT.C_Invoice_ID |
+      | product      | 0.3 | KGM | return_1       | creditMemo       |
 
     Then validate the created material receipt
       | M_InOut_ID | DocStatus | M_Warehouse_ID   | MovementType | OPT.C_Order_ID |
@@ -73,8 +74,11 @@ Feature: POS Product Return
       | M_InOut_ID | C_Invoice_Candidate_ID |
       | return_1   | creditCand             |
     And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID | PriceEntered_Override | InvoiceRule_Override | IsError | C_Tax_Effective_ID |
-      | creditCand             | 15.50                 | I                    | false   | tax7               |
+      | C_Invoice_Candidate_ID | InvoiceRule_Override | IsError | C_Tax_Effective_ID |
+      | creditCand             | I                    | false   | tax7               |
+    And validate created invoice lines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | PriceEntered | C_Tax_ID |
+      | creditMemo   | product      | 0.300       | 15.50 EUR    | tax7     |
 
   # ##########################################################################
   @from:cucumber
@@ -83,9 +87,9 @@ Feature: POS Product Return
   @Id:S28210_TC12
   Scenario: The same product returned on two lines of one request is priced on each line separately
     When a product return is made at POS terminal till by metasfresh:
-      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID |
-      | product      | 0.3 | KGM | return_2       |
-      | product      | 0.2 | KGM |                |
+      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID | OPT.C_Invoice_ID |
+      | product      | 0.3 | KGM | return_2       | creditMemo       |
+      | product      | 0.2 | KGM |                |                  |
 
     Then validate the created material receipt lines
       | M_InOut_ID | M_Product_ID | MovementQty | movementqty | M_InOutLine_ID |
@@ -100,9 +104,15 @@ Feature: POS Product Return
       | M_InOut_ID | OPT.M_InOutLine_ID | C_Invoice_Candidate_ID |
       | return_2   | line2              | creditCand2            |
     And validate C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID | PriceEntered_Override | IsError |
-      | creditCand1            | 15.50                 | false   |
-      | creditCand2            | 15.50                 | false   |
+      | C_Invoice_Candidate_ID | IsError |
+      | creditCand1            | false   |
+      | creditCand2            | false   |
+    And validate created invoice lines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | PriceEntered |
+      | creditMemo   | product      | 0.300       | 15.50 EUR    |
+    And validate created invoice lines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | PriceEntered |
+      | creditMemo   | product      | 0.200       | 15.50 EUR    |
 
   # ##########################################################################
   @from:cucumber
@@ -163,3 +173,99 @@ Feature: POS Product Return
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID | IsError |
       | lockedCreditCand       | false   |
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC3
+  Scenario: A completed return settles a credit memo with a cash refund posted against the till clearing account
+    When a product return is made at POS terminal till by metasfresh:
+      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID | OPT.C_Invoice_ID | OPT.C_Payment_ID |
+      | product      | 0.3 | KGM | return_5       | creditMemo       | refundPayment    |
+
+    Then after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID | C_Invoice_Candidate_ID |
+      | return_5   | creditCand             |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | IsError |
+      | creditCand             | false   |
+    And validate created invoices
+      | C_Invoice_ID | DocBaseType | GrandTotal | IsPaid |
+      | creditMemo   | ARC         | 4.65 EUR   | true   |
+    And validate created invoice lines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | creditMemo   | product      | 0.300       | tax7     |
+    And Wait until documents refundPayment is posted
+    And validate payments
+      | C_Payment_ID  | IsReceipt | C_Invoice_ID | PayAmt | DocStatus | C_BP_BankAccount_ID | Posted |
+      | refundPayment | false     | creditMemo   | 4.65   | CO        | cashbook            | Y      |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID     |
+      | B_PaymentSelect_Acct  | 4.65 EUR    |             | refundPayment |
+      | B_InTransit_Acct      |             | 4.65 EUR    | refundPayment |
+    And the cash journal of POS terminal till contains lines:
+      | Type       | Amount |
+      | CASH_INOUT | -4.65  |
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC3_19
+  Scenario: A return of a 19%-rate product credits its own tax rate on the credit memo line
+    Given metasfresh contains C_TaxCategory
+      | Identifier    |
+      | taxCategory19 |
+    And metasfresh contains C_Tax
+      | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode | IsDocumentLevel |
+      | tax19      | taxCategory19    | 19   | DE                       | DE                        | false           |
+    And metasfresh contains M_Products:
+      | Identifier | X12DE355 |
+      | product19  | KGM      |
+    And metasfresh contains M_ProductPrices
+      | Identifier           | M_Product_ID | M_PriceList_Version_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | product19Price       | product19    | priceListVersion       | 15.50    | KGM      | taxCategory19    |
+      | walkInProduct19Price | product19    | walkInPriceListVersion | 20.00    | KGM      | taxCategory19    |
+
+    When a product return is made at POS terminal till by metasfresh:
+      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID | OPT.C_Invoice_ID |
+      | product19    | 0.3 | KGM | return_6       | creditMemo19     |
+
+    Then after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID | C_Invoice_Candidate_ID |
+      | return_6   | creditCand19           |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | IsError |
+      | creditCand19           | false   |
+    And validate created invoices
+      | C_Invoice_ID | DocBaseType | GrandTotal | IsPaid |
+      | creditMemo19 | ARC         | 4.65 EUR   | true   |
+    And validate created invoice lines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | creditMemo19 | product19    | 0.300       | tax19    |
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC3_retry
+  Scenario: Retrying a settled POS return creates no second credit memo, payment or journal line
+    When a product return is made at POS terminal till by metasfresh:
+      | M_Product_ID | Qty | UOM | OPT.M_InOut_ID | OPT.ExternalId    |
+      | product      | 0.3 | KGM | return_7       | settlementRetryId |
+    And a product return is made at POS terminal till by metasfresh:
+      | M_Product_ID | Qty | UOM | OPT.ExternalId    |
+      | product      | 0.3 | KGM | settlementRetryId |
+
+    Then there is exactly one POS return for retry token settlementRetryId
+    And after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID | C_Invoice_Candidate_ID |
+      | return_7   | retrySettleCand        |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | IsError |
+      | retrySettleCand        | false   |
+    And there is exactly one credit memo and settlement payment for retry token settlementRetryId
+    And the cash journal of POS terminal till contains lines:
+      | Type       | Amount |
+      | CASH_INOUT | -4.65  |

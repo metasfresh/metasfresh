@@ -23,13 +23,17 @@
 package de.metas.cucumber.stepdefs.pos;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -46,6 +50,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -56,7 +61,11 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
@@ -97,6 +106,8 @@ public class POS_Return_StepDef
 	private final C_POS_StepDefData posTable;
 	private final M_Product_StepDefData productTable;
 	private final M_InOut_StepDefData inoutTable;
+	private final C_Invoice_StepDefData invoiceTable;
+	private final C_Payment_StepDefData paymentTable;
 
 	/** Per-scenario token → externalId map, so a retry token resolves to a fresh random UUID the first time it is
 	 * seen in this scenario, and to that SAME UUID on every later call — never to a UUID any other scenario/run
@@ -115,11 +126,14 @@ public class POS_Return_StepDef
 	 *   <b>UOM</b> — (required) {@code X12DE355} code the quantity is expressed in (e.g. {@code KGM})<br>
 	 *   <b>OPT.M_InOut_ID</b> — (optional, first row only, identifier) alias for the resulting customer-return
 	 *   {@code M_InOut}<br>
+	 *   <b>OPT.C_Invoice_ID</b> — (optional, first row only, identifier) alias for the resulting credit memo<br>
+	 *   <b>OPT.C_Payment_ID</b> — (optional, first row only, identifier) alias for the resulting settlement payment<br>
 	 *   <b>OPT.ExternalId</b> — (optional, first row only) an arbitrary token, mapped to a random UUID the first
 	 *   time this scenario sees it and to that SAME UUID on every later call; pass the SAME token on a later call
 	 *   to simulate a retried request (idempotency: resolves to the SAME return document instead of creating a
 	 *   second one). Defaults to a fresh random UUID per call.<br>
-	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData, M_InOut_StepDefData
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData, M_InOut_StepDefData,
+	 * C_Invoice_StepDefData, C_Payment_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * When a product return is made at POS terminal till by metasfresh:
@@ -138,7 +152,7 @@ public class POS_Return_StepDef
 
 		final POSReturnResult result = posService.createReturn(request);
 
-		registerReturnInOut(rows, result);
+		registerReturnResult(rows, result);
 	}
 
 	/**
@@ -257,7 +271,7 @@ public class POS_Return_StepDef
 			assertThat(result).as("createReturn must complete once the lock is released").isNotNull();
 			assertThat(countReturnDocumentsByExternalId(returnExternalId)).as("exactly one POS return document once the lock is released").isEqualTo(1);
 
-			registerReturnInOut(rows, result);
+			registerReturnResult(rows, result);
 		}
 		finally
 		{
@@ -302,13 +316,22 @@ public class POS_Return_StepDef
 	}
 
 	/**
-	 * Registers the return's {@code M_InOut} under the first row's {@code OPT.M_InOut_ID} identifier, if given.
+	 * Registers the return's {@code M_InOut}, credit memo and settlement payment under the first row's
+	 * {@code OPT.M_InOut_ID}/{@code OPT.C_Invoice_ID}/{@code OPT.C_Payment_ID} identifiers, if given.
 	 */
-	private void registerReturnInOut(@NonNull final List<DataTableRow> rows, @NonNull final POSReturnResult result)
+	private void registerReturnResult(@NonNull final List<DataTableRow> rows, @NonNull final POSReturnResult result)
 	{
 		final I_M_InOut returnRecord = InterfaceWrapperHelper.load(result.getReturnInOutId(), I_M_InOut.class);
 		rows.get(0).getAsOptionalIdentifier("M_InOut_ID")
 				.ifPresent(returnIdentifier -> inoutTable.putOrReplace(returnIdentifier, returnRecord));
+
+		final I_C_Invoice creditMemoRecord = InterfaceWrapperHelper.load(result.getCreditMemoId(), I_C_Invoice.class);
+		rows.get(0).getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID)
+				.ifPresent(invoiceIdentifier -> invoiceTable.putOrReplace(invoiceIdentifier, creditMemoRecord));
+
+		final I_C_Payment paymentRecord = InterfaceWrapperHelper.load(result.getPaymentId(), I_C_Payment.class);
+		rows.get(0).getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Payment_ID)
+				.ifPresent(paymentIdentifier -> paymentTable.putOrReplace(paymentIdentifier, paymentRecord));
 	}
 
 	/**
@@ -346,6 +369,51 @@ public class POS_Return_StepDef
 		assertThat(count).as("no M_InOut must exist for the rolled-back POS return (retry token=%s)", retryToken).isZero();
 	}
 
+	/**
+	 * Asserts exactly one credit memo and one settlement payment exist for the POS return retried with the given
+	 * retry token — the phase-2/3 (invoicing + cash refund) counterpart to {@link #assertExactlyOnePOSReturnDocument}
+	 * (which covers only the phase-1 {@code M_InOut}). Finds the credit memo via the {@code C_InvoiceLine.M_InOutLine_ID}
+	 * back-reference the invoicing pipeline itself sets (not a stored identifier on the return), and the settlement
+	 * payment via its {@code C_Invoice_ID} — safe here (unlike the general rule in de.metas.business's CLAUDE.md)
+	 * because this flow never reverses a payment.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then there is exactly one credit memo and settlement payment for retry token retryToken
+	 * </pre>
+	 */
+	@And("^there is exactly one credit memo and settlement payment for retry token (\\S+)$")
+	public void assertExactlyOneCreditMemoAndSettlementPayment(@NonNull final String retryToken)
+	{
+		final String returnExternalId = "POSReturn-" + externalIdForRetryToken(retryToken);
+
+		final I_M_InOut returnRecord = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_ExternalId, returnExternalId)
+				.create()
+				.firstOnlyNotNull(I_M_InOut.class);
+
+		final List<Integer> returnLineIds = queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, returnRecord.getM_InOut_ID())
+				.create()
+				.listIds();
+
+		final ImmutableSet<Integer> creditMemoIds = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+				.addInArrayFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, returnLineIds)
+				.create()
+				.listDistinctAsImmutableSet(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, Integer.class);
+		assertThat(creditMemoIds).as("credit memos for the POS return retried with retry token=%s", retryToken).hasSize(1);
+
+		final int creditMemoId = creditMemoIds.iterator().next();
+		final int paymentCount = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Invoice_ID, creditMemoId)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, false)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed.getCode())
+				.create()
+				.count();
+		assertThat(paymentCount).as("settlement payments for the POS return retried with retry token=%s", retryToken).isEqualTo(1);
+	}
+
 	private int countPOSReturnDocuments(@NonNull final String retryToken)
 	{
 		return countReturnDocumentsByExternalId("POSReturn-" + externalIdForRetryToken(retryToken));
@@ -372,8 +440,7 @@ public class POS_Return_StepDef
 			@NonNull final List<DataTableRow> rows)
 	{
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
-		// resolves and validates the login; POSReturnRequest itself carries no cashierId
-		StepDefUtil.getUserIdByLogin(userLogin);
+		final UserId cashierId = StepDefUtil.getUserIdByLogin(userLogin);
 		final POSTerminal terminal = posService.getPOSTerminalById(posTerminalId);
 
 		// reads the till's own products/prices ONCE, the same way POSProductsService does — not per row
@@ -411,6 +478,7 @@ public class POS_Return_StepDef
 		return POSReturnRequest.builder()
 				.posTerminalId(posTerminalId)
 				.externalId(externalId)
+				.cashierId(cashierId)
 				.lines(lines.build())
 				.build();
 	}

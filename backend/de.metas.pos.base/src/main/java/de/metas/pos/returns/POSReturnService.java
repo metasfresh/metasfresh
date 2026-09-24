@@ -1,6 +1,7 @@
 package de.metas.pos.returns;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
@@ -8,14 +9,25 @@ import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineCandidate
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceService;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.TenderType;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.pos.POSCashJournal;
+import de.metas.pos.POSCashJournalId;
+import de.metas.pos.POSCashJournalService;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalService;
 import de.metas.tax.api.Tax;
@@ -24,8 +36,14 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Service;
@@ -55,25 +73,53 @@ public class POSReturnService
 	@NonNull private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
 	@NonNull private final POSReturnRepository returnRepository;
+	@NonNull private final InvoiceService invoiceService;
+	@NonNull private final POSCashJournalService posCashJournalService;
 
 	/**
-	 * @throws AdempiereException if the request itself is invalid ({@code NoLines}/{@code QtyMustBePositive}), or if
+	 * Phase 1 (goods receipt + pricing the credit candidates), phase 2 (generating the credit memo) and phase 3
+	 * (cash refund + journal) run as three SEPARATE top-level transactions, not one — {@link #ensureCreditMemo}
+	 * waits synchronously for an async invoice-candidate workpackage that reads the candidates from a different
+	 * DB connection, so phase 1's changes (the {@code PriceEntered_Override} etc.) must already be committed by
+	 * the time phase 2 runs, exactly like the {@code updateInvalid()} visibility issue phase 1 itself works
+	 * around (see the class Javadoc history). The {@code C_POS} row lock ({@link POSTerminalService#lockForUpdate})
+	 * therefore only ever covers phase 1 (as it did before this method existed) — phases 2/3 rely on idempotency
+	 * instead (an already-generated credit memo / already-paid credit memo is detected and reused, never recreated).
+	 *
+	 * @throws AdempiereException if the request itself is invalid ({@code NoLines}/{@code QtyMustBePositive}), if
 	 * pricing the credit fails synchronously (UOM/currency mismatch, no tax found, or the candidate is already in
-	 * error) — the whole return (goods receipt included) is rolled back. A failure surfacing only later, from the
-	 * candidate's own async recompute, is NOT covered here and does not roll back an already-committed return.
+	 * error) — the whole return (goods receipt included) is rolled back — or if invoicing does not produce exactly
+	 * one credit memo. A failure surfacing only later, from the candidate's own async recompute, is NOT covered
+	 * here and does not roll back an already-committed return.
 	 */
 	@NonNull
 	public POSReturnResult createReturn(@NonNull final POSReturnRequest request)
 	{
-		return trxManager.callInThreadInheritedTrx(() -> ensureReturnAndCandidates(request));
+		final ReturnAndCandidates phase1 = trxManager.callInThreadInheritedTrx(() -> ensureReturnAndCandidates(request));
+
+		final InvoiceId creditMemoId = ensureCreditMemo(phase1.getInvoiceCandidateIds());
+
+		return trxManager.callInThreadInheritedTrx(() -> ensureSettlement(request, phase1, creditMemoId));
+	}
+
+	/** Phase 1 result: the material document plus the invoice candidates priced for its credit. */
+	@Value
+	private static class ReturnAndCandidates
+	{
+		InOutId returnInOutId;
+		List<InvoiceCandidateId> invoiceCandidateIds;
 	}
 
 	@NonNull
-	private POSReturnResult ensureReturnAndCandidates(@NonNull final POSReturnRequest request)
+	private ReturnAndCandidates ensureReturnAndCandidates(@NonNull final POSReturnRequest request)
 	{
 		if (request.getLines().isEmpty())
 		{
@@ -161,10 +207,7 @@ public class POSReturnService
 			invoiceCandidateIds.add(InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()));
 		}
 
-		return POSReturnResult.builder()
-				.returnInOutId(returnId)
-				.invoiceCandidateIds(invoiceCandidateIds.build())
-				.build();
+		return new ReturnAndCandidates(returnId, invoiceCandidateIds.build());
 	}
 
 	@NonNull
@@ -194,6 +237,117 @@ public class POSReturnService
 
 		final List<InOutId> createdReturnIds = returnsServiceFacade.createCustomerReturnsFromCandidates(candidates);
 		return CollectionUtils.singleElement(createdReturnIds);
+	}
+
+	/**
+	 * Generates the return's credit memo from its priced invoice candidates if it doesn't exist yet, and asserts
+	 * exactly one invoice was produced and that it is a credit memo. A retry finds the invoice already generated:
+	 * {@code InvoiceCandBLCreateInvoices} sets {@code C_InvoiceLine.M_InOutLine_ID} from the candidate's own
+	 * IC-IOL association when it creates the line, so the existing invoice is found via that back-reference
+	 * rather than re-invoicing (which would be a no-op anyway — the candidates have nothing left to invoice —
+	 * but would still cost another synchronous wait on the async workpackage).
+	 */
+	@NonNull
+	private InvoiceId ensureCreditMemo(@NonNull final List<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		final ImmutableSet<InvoiceId> existingInvoiceIds = invoiceCandidateIds.stream()
+				.flatMap(icId -> invoiceCandDAO.retrieveIlForIc(icId).stream())
+				.map(I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final InvoiceId creditMemoId = existingInvoiceIds.isEmpty()
+				? CollectionUtils.singleElement(invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.copyOf(invoiceCandidateIds)))
+				: CollectionUtils.singleElement(existingInvoiceIds);
+
+		final I_C_Invoice creditMemo = invoiceDAO.getByIdInTrx(creditMemoId);
+		if (!invoiceBL.isCreditMemo(creditMemo))
+		{
+			throw new AdempiereException("The invoice generated for the POS return is not a credit memo")
+					.setParameter("C_Invoice_ID", creditMemoId);
+		}
+
+		return creditMemoId;
+	}
+
+	/**
+	 * Settles the credit memo with a completed outbound cash payment and records the refund on the till's cash
+	 * journal — both in the SAME transaction, so a retry can never observe a completed payment with no matching
+	 * journal line, or vice versa. {@code DefaultPaymentBuilder#createAndProcess()} both completes the payment
+	 * AND allocates it to the credit memo ({@code MPayment#allocateIt()} runs unconditionally from
+	 * {@code completeIt()} whenever {@code C_Invoice_ID} is set — no separate {@code IAllocationBL} call is
+	 * needed, and {@code IAllocationBL#autoAllocateSpecificPayment} would in fact be a no-op here: it explicitly
+	 * skips credit memos).
+	 * <p>
+	 * Idempotent: {@code MPayment#allocateIt()} synchronously sets the credit memo's {@code IsPaid=Y}, so a retry
+	 * sees {@code creditMemo.isPaid()} true and reuses the existing settlement payment instead of creating a
+	 * second one and a second journal line.
+	 */
+	@NonNull
+	private POSReturnResult ensureSettlement(
+			@NonNull final POSReturnRequest request,
+			@NonNull final ReturnAndCandidates phase1,
+			@NonNull final InvoiceId creditMemoId)
+	{
+		final POSTerminal terminal = posTerminalService.getPOSTerminalById(request.getPosTerminalId());
+		final POSCashJournalId journalId = terminal.getCashJournalIdNotNull();
+
+		final I_C_Invoice creditMemo = invoiceDAO.getByIdInTrx(creditMemoId);
+		final Money refundAmount = Money.of(creditMemo.getGrandTotal(), CurrencyId.ofRepoId(creditMemo.getC_Currency_ID()));
+
+		final I_C_Payment payment;
+		final POSCashJournal journal;
+		if (!creditMemo.isPaid())
+		{
+			payment = paymentBL.newBuilderOfInvoice(creditMemo)
+					.orgBankAccountId(terminal.getCashbookId())
+					.tenderType(TenderType.Cash)
+					.payAmt(refundAmount.toBigDecimal())
+					.dateTrx(SystemTime.asInstant())
+					.createAndProcess();
+
+			journal = posCashJournalService.changeJournalById(
+					journalId,
+					j -> j.addCashInOut(refundAmount.negate(), request.getCashierId(), "Rücknahme " + creditMemo.getDocumentNo()));
+		}
+		else
+		{
+			payment = findExistingSettlementPayment(creditMemoId);
+			journal = posCashJournalService.getById(journalId);
+		}
+
+		return POSReturnResult.builder()
+				.returnInOutId(phase1.getReturnInOutId())
+				.invoiceCandidateIds(phase1.getInvoiceCandidateIds())
+				.creditMemoId(creditMemoId)
+				.creditMemoDocumentNo(creditMemo.getDocumentNo())
+				.refundAmount(refundAmount)
+				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
+				.journal(journal)
+				.build();
+	}
+
+	/**
+	 * Finds the credit memo's already-completed outbound settlement payment via {@code C_AllocationLine} — not
+	 * {@code C_Payment.C_Invoice_ID} directly, per this workspace's payment-to-invoice-linking rule (de.metas.business
+	 * CLAUDE.md): only used on a retry, where {@link #ensureSettlement} skips creating a second payment.
+	 */
+	@NonNull
+	private I_C_Payment findExistingSettlementPayment(@NonNull final InvoiceId creditMemoId)
+	{
+		final List<I_C_AllocationLine> allocationLines = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, creditMemoId.getRepoId())
+				.addNotNull(I_C_AllocationLine.COLUMNNAME_C_Payment_ID)
+				.create()
+				.list();
+
+		final ImmutableSet<PaymentId> paymentIds = allocationLines.stream()
+				.map(I_C_AllocationLine::getC_Payment_ID)
+				.map(PaymentId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return paymentBL.getById(CollectionUtils.singleElement(paymentIds));
 	}
 
 	private void assertQtyIsPositive(@NonNull final POSReturnLine line)

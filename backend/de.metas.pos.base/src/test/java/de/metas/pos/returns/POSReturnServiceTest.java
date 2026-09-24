@@ -1,6 +1,9 @@
 package de.metas.pos.returns;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.eventbus.AsyncBatchEventBusService;
+import de.metas.async.service.AsyncBatchObserver;
+import de.metas.async.service.AsyncBatchService;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.Currency;
@@ -8,18 +11,23 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
+import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.event.log.EventLogUserService;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnInOutRecordFactory;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnsWithoutHUsProducer;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.invoice.InvoiceService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.pos.POSCashJournalRepository;
+import de.metas.pos.POSCashJournalService;
 import de.metas.pos.POSShipFrom;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
@@ -29,6 +37,7 @@ import de.metas.pricing.PricingSystemAndListId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -64,6 +73,7 @@ class POSReturnServiceTest
 	private static final POSTerminalId TERMINAL_ID = POSTerminalId.ofRepoId(1);
 	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(1);
 	private static final UomId UOM_ID = UomId.ofRepoId(1);
+	private static final UserId CASHIER_ID = UserId.ofRepoId(1);
 
 	private POSReturnService service;
 	private OrgId orgId;
@@ -80,7 +90,24 @@ class POSReturnServiceTest
 		final ReturnsServiceFacade returnsServiceFacade = new ReturnsServiceFacade(
 				new CustomerReturnsWithoutHUsProducer(new CustomerReturnInOutRecordFactory()));
 
-		service = new POSReturnService(posTerminalService, returnsServiceFacade, new POSReturnRepository());
+		service = new POSReturnService(
+				posTerminalService,
+				returnsServiceFacade,
+				new POSReturnRepository(),
+				newInvoiceService(),
+				new POSCashJournalService(new POSCashJournalRepository()));
+	}
+
+	/**
+	 * None of this test's guards (all rejected before phase 2) ever call {@link InvoiceService}, but the
+	 * constructor still needs a real instance — {@link PlainEventBusFactory} is the framework's own "empty dummy
+	 * factory for unit testing", so this stays a plain object graph like the rest of this fixture, not a mock.
+	 */
+	private static InvoiceService newInvoiceService()
+	{
+		return new InvoiceService(new AsyncBatchService(
+				new AsyncBatchObserver(),
+				new AsyncBatchEventBusService(PlainEventBusFactory.newInstance(), new EventLogUserService())));
 	}
 
 	@Test
@@ -89,6 +116,7 @@ class POSReturnServiceTest
 		final POSReturnRequest request = POSReturnRequest.builder()
 				.posTerminalId(TERMINAL_ID)
 				.externalId(UUID.randomUUID())
+				.cashierId(CASHIER_ID)
 				.lines(ImmutableList.of())
 				.build();
 
@@ -153,6 +181,7 @@ class POSReturnServiceTest
 		return POSReturnRequest.builder()
 				.posTerminalId(TERMINAL_ID)
 				.externalId(UUID.randomUUID())
+				.cashierId(CASHIER_ID)
 				.lines(ImmutableList.of(POSReturnLine.builder()
 						.productId(PRODUCT_ID)
 						.qty(Quantity.of(qty, mockUom()))

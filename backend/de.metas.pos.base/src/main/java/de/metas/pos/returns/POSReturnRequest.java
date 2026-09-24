@@ -1,6 +1,7 @@
 package de.metas.pos.returns;
 
 import de.metas.pos.POSTerminalId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -19,6 +20,9 @@ public class POSReturnRequest
 
 	/** Identifies this return so a retried request does not create a second one. */
 	@NonNull UUID externalId;
+
+	/** Cashier taking the return; recorded on the cash-journal refund line. */
+	@NonNull UserId cashierId;
 
 	@NonNull List<POSReturnLine> lines;
 }
