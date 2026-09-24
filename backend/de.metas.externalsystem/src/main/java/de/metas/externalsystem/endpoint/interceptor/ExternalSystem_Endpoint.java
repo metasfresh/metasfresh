@@ -67,6 +67,16 @@ import java.util.function.Consumer;
  * {@code AD_Column.MandatoryLogic} is {@code @TransportType/X@='HTTP'} -- so clearing it would leave every
  * HTTP endpoint unsaveable with no field to fix it in. Retiring such a column means dropping the column, a
  * change of its own.
+ * <p>
+ * <b>Assumption: this never runs on a half-configured transport.</b> The rules read the record as it is
+ * about to be stored, so a half-finished state would be read as a finished one -- {@code TransportType=SFTP}
+ * with {@code SftpAuthType} still unset says "SFTP, and not password authentication", and the password would
+ * go. What rules that state out is {@code AD_Column.MandatoryLogic}: {@code SftpHost}, {@code SftpPort},
+ * {@code SftpUsername}, {@code SftpRemotePath} and {@code SftpAuthType} each carry
+ * {@code @TransportType/X@='SFTP'}, so picking SFTP alone cannot be saved -- the authentication type is
+ * filled in by the same save that switches the transport. Whoever relaxes one of those five
+ * {@code MandatoryLogic} values takes this assumption away. The unit tests call the handler directly and so
+ * bypass the dictionary entirely; they assemble the finished state themselves.
  */
 @Interceptor(I_ExternalSystem_Endpoint.class)
 @Component
