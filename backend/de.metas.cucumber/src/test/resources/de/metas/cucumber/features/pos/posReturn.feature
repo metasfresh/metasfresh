@@ -146,3 +146,13 @@ Feature: POS Product Return
       | productNoTax | 0.3 | KGM | noTaxToken     |
 
     Then there is no POS return for retry token noTaxToken
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC15
+  Scenario: A concurrent request for the same terminal blocks on the terminal lock instead of racing
+    When a product return at POS terminal till by metasfresh blocks while the terminal is locked by a concurrent transaction:
+      | M_Product_ID | Qty | UOM |
+      | product      | 0.3 | KGM |

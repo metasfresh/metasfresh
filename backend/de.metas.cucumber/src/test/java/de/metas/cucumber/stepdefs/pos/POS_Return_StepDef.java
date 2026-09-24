@@ -37,6 +37,7 @@ import de.metas.pos.POSProduct;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.POSTerminalService;
 import de.metas.pos.returns.POSReturnLine;
 import de.metas.pos.returns.POSReturnRequest;
 import de.metas.pos.returns.POSReturnResult;
@@ -50,6 +51,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -62,6 +64,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -77,7 +86,9 @@ public class POS_Return_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final POSService posService = SpringContextHolder.instance.getBean(POSService.class);
+	@NonNull private final POSTerminalService posTerminalService = SpringContextHolder.instance.getBean(POSTerminalService.class);
 
 	private final C_POS_StepDefData posTable;
 	private final M_Product_StepDefData productTable;
@@ -168,6 +179,109 @@ public class POS_Return_StepDef
 	}
 
 	/**
+	 * Proves the terminal's {@code C_POS} row lock genuinely SERIALIZES two concurrent requests, rather than
+	 * only resolving a retry after the fact once one has already committed (that idempotency-only case is
+	 * {@link #posProductReturn} called twice with the same {@code OPT.ExternalId}, asserted via
+	 * {@link #assertExactlyOnePOSReturnDocument}).
+	 *
+	 * <p>In production this models a client that resends a request — e.g. after a network timeout — while the
+	 * server is still mid-flight on the first attempt for the SAME terminal. Locking the {@code C_POS} row
+	 * directly, on a separate thread/transaction, instead of racing two real {@code createReturn} calls and
+	 * hoping they overlap, makes the blocking window deterministic: a bare race is flaky (the two calls might
+	 * never actually overlap inside the critical section), so this step controls the window explicitly instead.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns same as {@link #posProductReturn}
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When a product return at POS terminal till by metasfresh blocks while the terminal is locked by a concurrent transaction:
+	 *   | M_Product_ID | Qty | UOM |
+	 *   | product      | 0.3 | KGM |
+	 * </pre>
+	 */
+	@And("^a product return at POS terminal (\\S+) by (\\S+) blocks while the terminal is locked by a concurrent transaction:$")
+	public void posProductReturnBlocksOnConcurrentLock(
+			@NonNull final String terminalIdentifier,
+			@NonNull final String userLogin,
+			@NonNull final DataTable dataTable) throws Exception
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
+		final POSReturnRequest request = buildRequest(terminalIdentifier, userLogin, rows);
+		final POSTerminalId posTerminalId = request.getPosTerminalId();
+		final String returnExternalId = "POSReturn-" + request.getExternalId();
+
+		final ExecutorService executor = Executors.newFixedThreadPool(2);
+		// signals crossing the two worker threads and the main (step) thread — no StepDefData/shared step-def
+		// state is touched by either worker; they only see the plain posTerminalId/request captured above and
+		// report back exclusively via these latches and the Futures below
+		final CountDownLatch lockAcquired = new CountDownLatch(1);
+		final CountDownLatch releaseSignal = new CountDownLatch(1);
+		final AtomicReference<Throwable> lockHolderFailure = new AtomicReference<>();
+
+		try
+		{
+			// 1) own thread, own (thread-inherited) transaction: acquire and HOLD the row lock until told to
+			// release. Goes through POSTerminalService (not POSTerminalRepository directly) so this exercises
+			// the exact same production entry point POSReturnService itself calls.
+			final Future<?> lockHolderFuture = executor.submit((Runnable)() -> trxManager.callInThreadInheritedTrx(() ->
+			{
+				try
+				{
+					posTerminalService.lockForUpdate(posTerminalId);
+					lockAcquired.countDown();
+					releaseSignal.await(30, TimeUnit.SECONDS);
+				}
+				catch (final Throwable t)
+				{
+					lockHolderFailure.set(t);
+					lockAcquired.countDown();
+				}
+				return null;
+			}));
+
+			assertThat(lockAcquired.await(10, TimeUnit.SECONDS)).as("lock holder acquired the C_POS row lock").isTrue();
+			if (lockHolderFailure.get() != null)
+			{
+				throw AdempiereException.wrapIfNeeded(lockHolderFailure.get());
+			}
+
+			// 2) own thread, own (thread-inherited) transaction: the real call under test
+			final Future<POSReturnResult> createReturnFuture = executor.submit(() -> posService.createReturn(request));
+
+			// 3) must NOT complete while the lock is held, and must not have created a document yet
+			assertThatThrownBy(() -> createReturnFuture.get(3, TimeUnit.SECONDS))
+					.as("createReturn must block while the terminal's row lock is held by the concurrent transaction")
+					.isInstanceOf(TimeoutException.class);
+			assertThat(countReturnDocumentsByExternalId(returnExternalId)).as("no POS return document while the lock is held").isZero();
+
+			// 4) release the lock
+			releaseSignal.countDown();
+			lockHolderFuture.get(10, TimeUnit.SECONDS);
+			if (lockHolderFailure.get() != null)
+			{
+				throw AdempiereException.wrapIfNeeded(lockHolderFailure.get());
+			}
+
+			// 5) must now complete, and exactly one document must exist
+			final POSReturnResult result = createReturnFuture.get(30, TimeUnit.SECONDS);
+			assertThat(result).as("createReturn must complete once the lock is released").isNotNull();
+			assertThat(countReturnDocumentsByExternalId(returnExternalId)).as("exactly one POS return document once the lock is released").isEqualTo(1);
+		}
+		finally
+		{
+			// unconditional cleanup so a failed assertion above can never wedge the stack: unblock the lock
+			// holder (no-op if already released) and wait for both worker threads to actually finish
+			releaseSignal.countDown();
+			executor.shutdown();
+			if (!executor.awaitTermination(30, TimeUnit.SECONDS))
+			{
+				executor.shutdownNow();
+			}
+		}
+	}
+
+	/**
 	 * Asserts exactly one POS-return {@code M_InOut} exists for the given {@code OPT.ExternalId} retry token —
 	 * used after two {@link #posProductReturn} calls with the SAME token to prove the retry resolved back to the
 	 * one document instead of creating a second one.
@@ -204,8 +318,11 @@ public class POS_Return_StepDef
 
 	private int countPOSReturnDocuments(@NonNull final String retryToken)
 	{
-		final String returnExternalId = "POSReturn-" + externalIdForRetryToken(retryToken);
+		return countReturnDocumentsByExternalId("POSReturn-" + externalIdForRetryToken(retryToken));
+	}
 
+	private int countReturnDocumentsByExternalId(@NonNull final String returnExternalId)
+	{
 		return queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_ExternalId, returnExternalId)
 				.create()
