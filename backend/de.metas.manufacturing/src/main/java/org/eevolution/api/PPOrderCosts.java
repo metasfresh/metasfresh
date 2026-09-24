@@ -6,6 +6,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostPrice;
+import de.metas.costing.CostPriceUOMConverter;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.AdMessageKey;
@@ -14,6 +15,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -194,19 +196,24 @@ public final class PPOrderCosts
 
 	/**
 	 * Sets the current-cost price snapshot on the existing cost row for the given segment.
-	 * Callers must ensure {@code newPrice}'s UOM matches the existing row's {@code accumulatedQty} UOM; this
-	 * is currently true because they derive from the product's stocking UOM at every current call site
-	 * ({@code ManufacturingAveragePOCostingMethodHandler}, {@code ManufacturingMovingAverageInvoiceCostingMethodHandler}
-	 * and {@code ManufacturingLastPOCostingMethodHandler}),
-	 * but it is NOT structurally enforced by
-	 * {@link CostSegmentAndElement}. The underlying {@code withPrice} rebuild throws {@code AdempiereException}
-	 * if {@code newPrice}'s UOM diverges from the row's {@code accumulatedQty} UOM.
+	 * <p>
+	 * The receipt handlers snapshot {@code newPrice} in the product's stock/cost UOM, while the row keeps its
+	 * {@code accumulatedQty} in the BOM-line UOM. For a product made and stocked in different UOMs (e.g. produced
+	 * in kg, stocked in Stück) those diverge, and {@code withPrice} would rebuild a {@link PPOrderCost} whose
+	 * constructor invariant rejects a price whose UOM differs from the row's {@code accumulatedQty} UOM
+	 * ("UOM not matching"). So convert {@code newPrice} into the row's {@code accumulatedQty} UOM first, using the
+	 * product's UOM conversion. For a same-UOM product the conversion is identity, so behaviour is unchanged.
 	 */
 	public void updatePriceForCostSegmentAndElement(
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
-			@NonNull final CostPrice newPrice)
+			@NonNull final CostPrice newPrice,
+			@NonNull final CostPriceUOMConverter costPriceConverter)
 	{
-		changeExistingCost(costSegmentAndElement, cost -> cost.withPrice(newPrice));
+		changeExistingCost(costSegmentAndElement, cost -> {
+			final UomId rowUomId = cost.getAccumulatedQty().getUomId();
+			final CostPrice newPriceConv = costPriceConverter.convertCostPriceTo(newPrice, cost.getProductId(), rowUomId);
+			return cost.withPrice(newPriceConv);
+		});
 	}
 
 	private void changeExistingCost(
