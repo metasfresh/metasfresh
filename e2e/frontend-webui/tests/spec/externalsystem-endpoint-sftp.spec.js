@@ -39,9 +39,10 @@ const OAUTH_V1 = 'OAuth';
 /**
  * The save-status bar the WebUI renders under the header (`Indicator`): the element carries
  * `bar pending` while a field PATCH is in flight and `bar saved` / `bar error` once the response has
- * been applied. PATCH_SUCCESS / PATCH_FAILURE are dispatched *after* `mapDataToState`, so the class
- * leaving `pending` is the DOM proof that the response has been merged into the form's data — not
- * merely that the bytes arrived.
+ * been applied. PATCH_SUCCESS / PATCH_FAILURE are dispatched *after* `mapDataToState`, except on
+ * the stale-response discard paths — a mid-PATCH navigation, or a modal, neither of which this spec
+ * has. So the class leaving `pending` is the DOM proof that the response has been merged into the
+ * form's data, not merely that the bytes arrived.
  */
 const SAVE_SETTLED = '.window-indicator-container .bar:not(.pending)';
 
