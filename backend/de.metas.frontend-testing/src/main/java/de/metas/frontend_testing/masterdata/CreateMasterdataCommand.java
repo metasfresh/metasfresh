@@ -92,8 +92,10 @@ import de.metas.order.OrderId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -110,13 +112,17 @@ public class CreateMasterdataCommand
 	@NonNull private final JsonCreateMasterdataRequest request;
 
 	private final MasterdataContext context = new MasterdataContext();
+	/**
+	 * Previous values of every sysconfig changed by this request (the request's own {@code sysconfigs} and those set by sub-commands).
+	 */
+	private final LinkedHashMap<String, String> previousSysconfigs = new LinkedHashMap<>();
 
 	public JsonCreateMasterdataResponse execute()
 	{
 		this.context.putFromJson(request.getContext());
 
 		// Apply sysconfigs early (before any masterdata creation)
-		final ImmutableMap<String, String> previousSysconfigs = applySysconfigs();
+		previousSysconfigs.putAll(applySysconfigs());
 
 		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
 		applyAdProcessFlags();
@@ -174,7 +180,7 @@ public class CreateMasterdataCommand
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
-				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs)
+				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSysconfigs))
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
@@ -359,7 +365,28 @@ public class CreateMasterdataCommand
 
 	private ImmutableMap<String, JsonPOSTerminalResponse> createPOSTerminals()
 	{
+		assertAtMostOnePOSTerminalWithCashWithdrawalCategories();
 		return process(request.getPosTerminals(), this::createPOSTerminal);
+	}
+
+	/**
+	 * The cash withdrawal categories are configured by one global sysconfig, so a second terminal's categories would silently replace the first one's.
+	 */
+	private void assertAtMostOnePOSTerminalWithCashWithdrawalCategories()
+	{
+		final Map<String, JsonPOSTerminalRequest> posTerminals = request.getPosTerminals();
+		if (posTerminals == null)
+		{
+			return;
+		}
+
+		final long count = posTerminals.values().stream()
+				.filter(posTerminal -> !posTerminal.getCashWithdrawalCategories().isEmpty())
+				.count();
+		if (count > 1)
+		{
+			throw new AdempiereException("At most one POS terminal per request may declare cashWithdrawalCategories, but got " + count);
+		}
 	}
 
 	private JsonPOSTerminalResponse createPOSTerminal(final String identifier, final JsonPOSTerminalRequest request)
@@ -370,7 +397,9 @@ public class CreateMasterdataCommand
 				.productPriceRepository(services.productPriceRepository)
 				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
 				.posTerminalRepository(services.posTerminalRepository)
+				.chargeRepository(services.chargeRepository)
 				.context(context)
+				.previousSysconfigsCollector(previousSysconfigs)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build()

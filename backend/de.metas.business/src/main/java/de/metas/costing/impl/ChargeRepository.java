@@ -32,12 +32,15 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Charge;
+import org.compiere.model.I_C_ChargeType;
 import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
- * Repository Tables: C_Charge
+ * Repository Tables: C_Charge, C_ChargeType
  * Repository Cluster: ChargeRepository
  */
 @Repository
@@ -72,5 +75,33 @@ public class ChargeRepository
 				.orderBy(I_C_Charge.COLUMNNAME_C_Charge_ID)
 				.create()
 				.listImmutable(I_C_Charge.class);
+	}
+
+	/**
+	 * Creates a charge type whose search key and name are both {@code name}.
+	 */
+	@NonNull
+	public ChargeTypeId createChargeType(@NonNull final String name, @NonNull final OrgId orgId)
+	{
+		final I_C_ChargeType chargeTypeRecord = newInstance(I_C_ChargeType.class);
+		chargeTypeRecord.setAD_Org_ID(orgId.getRepoId());
+		chargeTypeRecord.setValue(name);
+		chargeTypeRecord.setName(name);
+		saveRecord(chargeTypeRecord);
+		return ChargeTypeId.ofRepoId(chargeTypeRecord.getC_ChargeType_ID());
+	}
+
+	/**
+	 * Creates a charge of the given charge type. Its {@code C_Charge_Acct} rows are materialized from the accounting schema defaults on save.
+	 */
+	@NonNull
+	public ChargeId createCharge(@NonNull final String name, @NonNull final ChargeTypeId chargeTypeId, @NonNull final OrgId orgId)
+	{
+		final I_C_Charge chargeRecord = newInstance(I_C_Charge.class);
+		chargeRecord.setAD_Org_ID(orgId.getRepoId());
+		chargeRecord.setName(name);
+		chargeRecord.setC_ChargeType_ID(chargeTypeId.getRepoId());
+		saveRecord(chargeRecord);
+		return ChargeId.ofRepoId(chargeRecord.getC_Charge_ID());
 	}
 }

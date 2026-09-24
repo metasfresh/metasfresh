@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata;
 
+import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
@@ -58,4 +59,5 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final MobileApplicationInfoRepository mobileApplicationInfoRepository;
 	@NonNull public final POSTerminalRepository posTerminalRepository;
 	@NonNull public final PriceListVersionRepository priceListVersionRepository;
+	@NonNull public final ChargeRepository chargeRepository;
 }

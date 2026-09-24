@@ -3,6 +3,8 @@ package de.metas.frontend_testing.masterdata.pos;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.ChargeTypeId;
+import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
@@ -19,6 +21,7 @@ import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminalRepository;
+import de.metas.pos.withdrawal.POSCashWithdrawalService;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.ProductPriceRepository;
@@ -29,14 +32,18 @@ import de.metas.product.ProductRepository;
 import de.metas.security.RoleId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
+import de.metas.organization.OrgId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_POS;
 import org.compiere.model.I_C_Tax;
@@ -53,6 +60,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -91,6 +99,7 @@ public class CreatePOSTerminalCommandTest
 	private MasterdataContext context;
 	private DocTypeId salesOrderDocTypeId;
 	private TaxCategoryId normalTaxCategoryId;
+	private HashMap<String, String> previousSysconfigs;
 
 	@BeforeEach
 	public void init()
@@ -101,6 +110,7 @@ public class CreatePOSTerminalCommandTest
 		productPriceRepository = new ProductPriceRepository(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		mobileApplicationInfoRepository = new MobileApplicationInfoRepository();
 		context = new MasterdataContext();
+		previousSysconfigs = new HashMap<>();
 
 		salesOrderDocTypeId = createSalesOrderDocType();
 		normalTaxCategoryId = createNormalTaxCategory();
@@ -169,7 +179,9 @@ public class CreatePOSTerminalCommandTest
 				.mobileApplicationInfoRepository(mobileApplicationInfoRepository)
 				.posTerminalRepository(new POSTerminalRepository())
 				.priceListVersionRepository(new PriceListVersionRepository())
-				.context(context);
+				.chargeRepository(new ChargeRepository())
+				.context(context)
+				.previousSysconfigsCollector(previousSysconfigs);
 	}
 
 	private ProductId createProduct(final String identifier)
@@ -248,6 +260,7 @@ public class CreatePOSTerminalCommandTest
 		final I_C_POS posRecord = InterfaceWrapperHelper.load(response.getId(), I_C_POS.class);
 		assertThat(posRecord).isNotNull();
 		assertThat(posRecord.isActive()).isTrue();
+		assertThat(posRecord.getName()).isEqualTo(response.getName());
 		assertThat(posRecord.getCashLastBalance()).isEqualByComparingTo(BigDecimal.ZERO);
 		assertThat(posRecord.getC_BP_BankAccount_ID()).isEqualTo(response.getBankAccountId().getRepoId());
 		assertThat(posRecord.getC_BPartnerCashTrx_ID()).isEqualTo(response.getWalkInBPartnerId().getRepoId());
@@ -455,5 +468,89 @@ public class CreatePOSTerminalCommandTest
 				.anyMatch();
 
 		assertThat(granted).isTrue();
+	}
+
+	@Test
+	public void execute_withCashWithdrawalCategories_shouldCreateUniquelyNamedChargesOfOneChargeTypeAndOfferThem()
+	{
+		// given
+		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
+				.priceListCurrency(CurrencyCode.EUR)
+				.isTaxIncluded(true)
+				.cashWithdrawalCategories(ImmutableList.of("Reisekosten AN", "Porto"))
+				.build();
+
+		// when
+		final JsonPOSTerminalResponse response = commandBuilder()
+				.request(request)
+				.identifier(Identifier.ofString("T_WITHDRAWAL"))
+				.build()
+				.execute();
+
+		// then
+		assertThat(response.getCashWithdrawalCategories()).containsOnlyKeys("Reisekosten AN", "Porto");
+		final JsonPOSTerminalResponse.CashWithdrawalCategory travelCosts = response.getCashWithdrawalCategories().get("Reisekosten AN");
+		final JsonPOSTerminalResponse.CashWithdrawalCategory postage = response.getCashWithdrawalCategories().get("Porto");
+		// charge names are unique per client, so every run needs its own names
+		assertThat(travelCosts.getName()).startsWith("Reisekosten AN_");
+		assertThat(postage.getName()).startsWith("Porto_");
+
+		final I_C_Charge travelCostsCharge = InterfaceWrapperHelper.load(travelCosts.getChargeId(), I_C_Charge.class);
+		final I_C_Charge postageCharge = InterfaceWrapperHelper.load(postage.getChargeId(), I_C_Charge.class);
+		assertThat(travelCostsCharge.getName()).isEqualTo(travelCosts.getName());
+		assertThat(postageCharge.getName()).isEqualTo(postage.getName());
+		assertThat(travelCostsCharge.getAD_Org_ID()).isEqualTo(MasterdataContext.ORG_ID.getRepoId());
+		assertThat(postageCharge.getC_ChargeType_ID()).isEqualTo(travelCostsCharge.getC_ChargeType_ID()).isGreaterThan(0);
+
+		// POSCashWithdrawalService offers the active charges of the charge type in this sysconfig
+		final int sysconfigChargeTypeId = Services.get(ISysConfigBL.class).getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1);
+		assertThat(sysconfigChargeTypeId).isEqualTo(travelCostsCharge.getC_ChargeType_ID());
+	}
+
+	@Test
+	public void execute_withCashWithdrawalCategories_shouldReportThePreviousSysconfigValue()
+	{
+		// given
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		sysConfigBL.setValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, "12345", ClientId.SYSTEM, OrgId.ANY);
+
+		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
+				.priceListCurrency(CurrencyCode.EUR)
+				.isTaxIncluded(true)
+				.cashWithdrawalCategories(ImmutableList.of("Porto"))
+				.build();
+
+		// when
+		commandBuilder()
+				.request(request)
+				.identifier(Identifier.ofString("T_WITHDRAWAL_PREV"))
+				.build()
+				.execute();
+
+		// then
+		assertThat(previousSysconfigs).containsEntry(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, "12345");
+		assertThat(sysConfigBL.getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1)).isNotEqualTo(12345);
+	}
+
+	@Test
+	public void execute_withoutCashWithdrawalCategories_shouldNotTouchTheCategoriesSysconfig()
+	{
+		// given
+		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
+				.priceListCurrency(CurrencyCode.EUR)
+				.isTaxIncluded(true)
+				.build();
+
+		// when
+		final JsonPOSTerminalResponse response = commandBuilder()
+				.request(request)
+				.identifier(Identifier.ofString("T_NO_WITHDRAWAL"))
+				.build()
+				.execute();
+
+		// then
+		assertThat(response.getCashWithdrawalCategories()).isEmpty();
+		assertThat(previousSysconfigs).isEmpty();
+		assertThat(ChargeTypeId.ofRepoIdOrNull(Services.get(ISysConfigBL.class).getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1))).isNull();
 	}
 }

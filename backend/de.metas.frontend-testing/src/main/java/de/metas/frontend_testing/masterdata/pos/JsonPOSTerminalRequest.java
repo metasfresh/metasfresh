@@ -54,6 +54,16 @@ public class JsonPOSTerminalRequest
 	@Builder.Default
 	@NonNull List<POSPaymentMethod> paymentMethods = ImmutableList.of(POSPaymentMethod.CASH);
 
+	/**
+	 * Labels of the cash withdrawal categories to offer at this terminal. Each label becomes a {@code C_Charge} of a
+	 * fresh {@code C_ChargeType}, named with a per-run unique suffix (charge names are unique per client); the actual
+	 * names are returned in {@link JsonPOSTerminalResponse#getCashWithdrawalCategories()}. Sysconfig
+	 * {@code de.metas.pos.CashWithdrawal.C_ChargeType_ID} is pointed at that charge type, so it is global: at most one
+	 * terminal per request may declare categories.
+	 */
+	@Builder.Default
+	@NonNull List<String> cashWithdrawalCategories = ImmutableList.of();
+
 	@Value
 	@Builder
 	@Jacksonized
