@@ -202,14 +202,8 @@ public class ScriptedImportConversionLocalFileRouteBuilder extends AbstractScrip
 		final byte[] rawPayload = exchange.getIn().getBody(byte[].class);
 		if (rawPayload == null)
 		{
-			// getBody(byte[].class) returns null rather than throwing when no converter applies (e.g. the
-			// file vanished between poll and read) -- silently continuing would let the consumer commit
-			// the delete with no copy anywhere and no error raised: silent payload loss. Throw so the
-			// failure is visible via the route's onException handling instead. This throw happens before
-			// PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD is set below, so archiveLocally (see the base
-			// class) still has no bytes to write and the input file is deleted with no archive copy on
-			// this path -- acceptable because there is nothing to archive; the thrown exception is what
-			// makes the loss visible instead of silent.
+			// A null body here (e.g. the file vanished between poll and read) must fail loudly -- not be
+			// swallowed into a silent delete-with-no-archive-copy.
 			throw new RuntimeCamelException("No body could be read for polled local file " + incomingFileName);
 		}
 
