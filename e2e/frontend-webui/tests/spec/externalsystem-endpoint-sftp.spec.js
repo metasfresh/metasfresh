@@ -102,7 +102,9 @@ async function openNewEndpoint(page) {
 }
 
 /**
- * The record id the WebUI put in the URL once the draft was given one.
+ * The record id the WebUI put in the URL once the draft was given one. A NEW record is given one
+ * even while it is invalid, so the id alone does not prove the row persisted — assert that via the
+ * WebAPI.
  */
 async function savedRecordId(page) {
   await page.waitForURL(
@@ -405,11 +407,6 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     await fillTextField(page, 'ProcessedDirectory', '/inbound/processed');
     await fillTextField(page, 'ErrorDirectory', '/inbound/error');
 
-    // Every field above was handed to the server and its response awaited, so the record is as
-    // complete as this scenario makes it. The URL leaving /NEW is the WebUI's own statement that the
-    // draft was given a record id.
-    // The URL change alone does not prove persistence (a NEW record gets a cached id even when invalid).
-    // Assert the record is actually valid/saved via the WebAPI.
     const sftpRecordId = await savedRecordId(page);
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, sftpRecordId, 'after saving the SFTP endpoint');
 
@@ -512,9 +509,6 @@ OAuthTokenUrl is accepted and the record persists).
     await fillTextField(page, 'LoginUsername', 'svc-user');
     await fillPasswordField(page, 'svc-secret');
 
-    // URL changes from /NEW to a record ID => saved (mandatory logic satisfied)
-    // A NEW record is assigned a cached id (URL leaves /NEW) even when validStatus.valid=false, so the
-    // URL change alone does NOT prove the row persisted. Assert real persistence via the WebAPI.
     const oauthRecordId = await savedRecordId(page);
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, oauthRecordId, 'after saving the OAuth2 HTTP endpoint');
 
