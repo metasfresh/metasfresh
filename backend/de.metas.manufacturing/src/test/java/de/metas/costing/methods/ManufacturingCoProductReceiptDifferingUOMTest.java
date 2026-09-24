@@ -127,7 +127,7 @@ class ManufacturingCoProductReceiptDifferingUOMTest
 	private I_C_UOM uomStueck;
 	private I_C_UOM uomKg;
 	private ProductId mainProductId;
-	private ProductId issueProductId;
+	private ProductId rawProductId;
 	private ProductId coProductId;
 
 	private CostElementRepository costElementRepo;
@@ -193,7 +193,7 @@ class ManufacturingCoProductReceiptDifferingUOMTest
 		uomKg = BusinessTestHelper.createUOM("Kg", X_C_UOM.UOMTYPE_Weigth, 3);
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		mainProductId = BusinessTestHelper.createProductId("main product", uomStueck);
-		issueProductId = BusinessTestHelper.createProductId("input material", uomStueck);
+		rawProductId = BusinessTestHelper.createProductId("raw product", uomStueck);
 		// the co-product is a product whose BOM-line UOM is kg but whose stock/cost UOM is Stück
 		coProductId = BusinessTestHelper.createProductId("co-product", uomStueck);
 
@@ -304,7 +304,7 @@ class ManufacturingCoProductReceiptDifferingUOMTest
 	{
 		final PPOrderCost materialIssue = PPOrderCost.builder()
 				.trxType(PPOrderCostTrxType.MaterialIssue)
-				.costSegmentAndElement(utils.extractCostSegmentAndElement(receiptRequest().withProductId(issueProductId)))
+				.costSegmentAndElement(utils.extractCostSegmentAndElement(receiptRequest().withProductId(rawProductId)))
 				.price(costPriceKg("0"))
 				.accumulatedAmount(CostAmount.of(new BigDecimal(TOTAL_INBOUND_COSTS_AMOUNT), currencyId))
 				.accumulatedQty(Quantity.zero(uomKg))
