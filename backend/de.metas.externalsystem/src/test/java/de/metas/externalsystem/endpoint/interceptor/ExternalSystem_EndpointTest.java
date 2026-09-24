@@ -87,17 +87,13 @@ public class ExternalSystem_EndpointTest
 
 	/**
 	 * Same as {@link #assertAllHttpFieldsCleared(I_ExternalSystem_Endpoint)}, for the switch-to-SFTP case
-	 * specifically, where two of the HTTP-set columns are NOT actually HTTP-only:
+	 * specifically, where two of the HTTP-set columns are NOT actually HTTP-only — SFTP owns them too, so
+	 * they must survive the switch (must NOT be cleared):
 	 * <ul>
-	 * <li>{@code IsArrayFanOut} is also read by the SFTP outbound dispatch, so SFTP owns it too and it must
-	 * survive the switch (must NOT be cleared) — this is the one behavioural difference from
-	 * {@link #assertAllHttpFieldsCleared(I_ExternalSystem_Endpoint)}.</li>
-	 * <li>{@code Password} is left un-asserted here on purpose: the production code still clears it on this
-	 * switch (pre-existing, unchanged by this method), but a fixture with {@code SftpAuthType=PASSWORD}
-	 * needs a password for SFTP password auth to work at all, so asserting the clear here would read as an
-	 * endorsement of a valid-looking-but-broken SFTP config. Switching a saved endpoint to SFTP therefore
-	 * leaves it permanently invalid until a password is re-entered; that is pre-existing behaviour and is
-	 * deliberately not changed here.</li>
+	 * <li>{@code IsArrayFanOut} is also read by the SFTP outbound dispatch.</li>
+	 * <li>{@code Password} is also read by SFTP password auth (the inbound scripted-import polling config
+	 * and the outbound {@code SftpDeliveryProcessor}), so a saved endpoint switched to SFTP keeps the
+	 * password it needs for password auth instead of being left permanently invalid.</li>
 	 * </ul>
 	 */
 	private static void assertHttpFieldsClearedForSftpSwitch(final I_ExternalSystem_Endpoint endpoint)
@@ -116,6 +112,8 @@ public class ExternalSystem_EndpointTest
 		assertThat(endpoint.isFileUpload()).isFalse();
 		// SFTP owns IsArrayFanOut too (the outbound dispatch reads it regardless of transport) — must survive
 		assertThat(endpoint.isArrayFanOut()).isTrue();
+		// SFTP owns Password too (password auth reads it) — must survive
+		assertThat(endpoint.getPassword()).isEqualTo("secret");
 	}
 
 	private static void assertAllHttpFieldsPreserved(final I_ExternalSystem_Endpoint endpoint)
@@ -234,7 +232,7 @@ public class ExternalSystem_EndpointTest
 		}
 
 		@Test
-		void switchToSftp_clearsHttpOnlyAndLocalFileFields_keepsSftpFieldsAndSharedArrayFanOut()
+		void switchToSftp_clearsHttpOnlyAndLocalFileFields_keepsSftpFieldsAndSharedArrayFanOutAndPassword()
 		{
 			// given: an HTTP/OAuth endpoint carrying its own HTTP settings plus stale local-file settings
 			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
@@ -250,8 +248,8 @@ public class ExternalSystem_EndpointTest
 			setAllSftpFields(endpoint);
 			interceptor.resetTransportSpecificFields(endpoint);
 
-			// then: every HTTP-only field is cleared, but IsArrayFanOut survives -- SFTP owns it too (see
-			// assertHttpFieldsClearedForSftpSwitch) ...
+			// then: every HTTP-only field is cleared, but IsArrayFanOut and Password survive -- SFTP owns
+			// both too (see assertHttpFieldsClearedForSftpSwitch) ...
 			assertHttpFieldsClearedForSftpSwitch(endpoint);
 			// ... every LOCAL_FILE-specific field is cleared too ...
 			assertAllLocalFileFieldsCleared(endpoint);
