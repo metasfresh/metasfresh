@@ -163,8 +163,7 @@ public class ExternalSystem_Endpoint
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpFilenamePattern, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpFilenamePattern(null)),
 				// the plain int setter here, unlike SftpPort above and Frequency below: this column carries
-				// no MandatoryLogic, and ExternalSystemEndpointRepository screens a 0 out, so DOWNSTREAM a
-				// stored 0 and SQL NULL say the same thing. The window still renders the 0
+				// no MandatoryLogic, so a stored 0 cannot make the window call a poll-less endpoint valid
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpPollingIntervalMs(0)),
 				// SFTP authentication
