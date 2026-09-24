@@ -37,12 +37,9 @@ const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
 const OAUTH_V1 = 'OAuth';
 
 /**
- * The save-status bar the WebUI renders under the header (`Indicator`): the element carries
- * `bar pending` while a field PATCH is in flight and `bar saved` / `bar error` once it settles.
- * `patch(...)` sets `pending` before the request and clears it with `indicatorState(SAVED)` from its
- * `finally`, which this spec only ever reaches after the response has been merged into the form's
- * data. So the class leaving `pending` is the DOM proof of that merge, not merely that the bytes
- * arrived.
+ * The WebUI's save-status bar. It leaves `pending` only once the PATCH response has been merged into
+ * the form, so it is the DOM proof of that merge — except on a record that is already persisted and
+ * currently invalid, where the bar reads `error` throughout and this selector matches at once.
  */
 const SAVE_SETTLED = '.window-indicator-container .bar:not(.pending)';
 
@@ -65,14 +62,10 @@ function endpointFieldPatch(page, fieldName) {
 }
 
 /**
- * Run `commit` — the action that makes the WebUI send `fieldName`'s value — and return only once the
- * server has answered AND the answer has been rendered.
- *
- * Both halves are load-bearing. A PATCH response replaces the document data the whole form renders
- * from, so a value typed into the NEXT field while one is still in flight is overwritten by the
- * arriving response before React ever sees it: no `onChange`, no cached value, and therefore no
- * PATCH for that field at all — the value is silently lost. Committing every field and waiting the
- * round-trip out means no input is ever typed while a response is on its way.
+ * Run `commit` — the action that makes the WebUI send `fieldName`'s value — and return once the
+ * server has answered and, as far as {@link SAVE_SETTLED} can prove it, the answer has been merged.
+ * A value typed while the previous response is still in flight is re-rendered away before React sees
+ * it and is then never patched at all, so no field is entered until the one before it is through.
  */
 async function commitField(page, fieldName, commit) {
   const patched = endpointFieldPatch(page, fieldName);
