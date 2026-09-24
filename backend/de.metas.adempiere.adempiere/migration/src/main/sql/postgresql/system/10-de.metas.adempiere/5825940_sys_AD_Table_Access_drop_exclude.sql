@@ -1,15 +1,18 @@
--- AD_Table_Access: drop IsExclude and restore IsReadOnly / IsCanReport / IsCanExport to NOT NULL
--- Yes-No with non-restricting defaults. This is a NEW script; the committed migrations 5825480 /
--- 5825490 / 5825500 / 5825620 are pushed and are not edited or reverted here.
+-- AD_Table_Access: drop IsExclude and align the AD_Column dictionary defaults for
+-- IsReadOnly / IsCanReport / IsCanExport.
 --
 -- WHY
--- AD_Table_Access is redefined as four NOT NULL flags that each SUBTRACT one access from the
+-- AD_Table_Access is defined as four NOT NULL flags that each SUBTRACT one access from the
 -- role's default access set (IsReadOnly='Y' removes WRITE; IsCanReport/IsCanExport/
 -- IsCanCreateNewRecords='N' remove REPORT/EXPORT/CREATE). A flag left at its non-restricting default
 -- removes nothing, so a row at its defaults is indistinguishable from no row at all. IsExclude has
 -- no role in that shape (there is no longer an "exclude the whole table" concept — a deliberate
 -- capability removal, not an oversight) and is dropped outright. AccessTypeRule is already gone
--- (5825500, stands).
+-- (5825500, stands). IsCanCreateNewRecords is introduced final in 5825490.
+--
+-- The physical IsReadOnly / IsCanReport / IsCanExport columns are NOT touched here: they are already
+-- NOT NULL Yes-No with the non-restricting DB defaults ('N' / 'Y' / 'Y') and their CHECK constraints
+-- at base — see step 3.
 --
 -- IsExclude'S ELEMENT (2079) — KEEP, do not delete the element row.
 -- AD_Column rows bound to AD_Element_ID=2079, queried live before this script: 8846
@@ -46,9 +49,8 @@
 -- functions. de_DE/de_CH/fr_CH/en_GB/it_CH rows are untouched (en_GB/it_CH/fr_CH pre-existing content
 -- gaps are out of scope, per 5825710/5825760's standing exclusions).
 --
--- Table verified empty (0 rows) on this stack before writing this script, so no data backfill is
--- needed for the NOT NULL restoration — still backed up defensively (business-adjacent AD_*
--- operator data).
+-- Table verified empty (0 rows) on this stack before writing this script — still backed up
+-- defensively (business-adjacent AD_* operator data) before dropping the IsExclude column.
 
 -- =================================================================================================
 -- 1. Backup (AD_Table_Access holds operator-configured permission data).
@@ -104,17 +106,16 @@ DELETE FROM AD_Column WHERE AD_Column_ID=8844;
 SELECT db_alter_table('AD_Table_Access', 'ALTER TABLE public.AD_Table_Access DROP COLUMN IsExclude');
 
 -- =================================================================================================
--- 3. Restore IsReadOnly / IsCanReport / IsCanExport to NOT NULL Yes-No with non-restricting
---    defaults. Table verified empty (0 rows), so no backfill statement is needed.
+-- 3. IsReadOnly / IsCanReport / IsCanExport — physical columns are left UNTOUCHED. In this
+--    collapsed sequence they were never made three-state (the tri-state script was dropped), so at
+--    base they are already NOT NULL CHAR(1) with the non-restricting DB defaults 'N' / 'Y' / 'Y'
+--    and their CHECK ('Y','N') constraints — exactly the target shape. Re-declaring them would be a
+--    no-op at best and, for the CHECK constraints, a hard "already exists" failure.
+--    Only the application-dictionary side is changed: set AD_Column.DefaultValue to match the
+--    physical default (base left it empty — a pre-existing AD-vs-physical inconsistency) and pin the
+--    List/Yes-No reference to Yes-No(20). IsMandatory / AD_Reference_ID already hold these values at
+--    base, so these UPDATEs only actually move DefaultValue.
 -- =================================================================================================
-INSERT INTO t_alter_column values('AD_Table_Access','IsReadOnly','CHAR(1)','NOT NULL','N');
-INSERT INTO t_alter_column values('AD_Table_Access','IsCanReport','CHAR(1)','NOT NULL','Y');
-INSERT INTO t_alter_column values('AD_Table_Access','IsCanExport','CHAR(1)','NOT NULL','Y');
-
-SELECT db_alter_table('AD_Table_Access', 'ALTER TABLE public.AD_Table_Access ADD CONSTRAINT ad_table_access_isreadonly_check CHECK (IsReadOnly IN (''Y'',''N''))');
-SELECT db_alter_table('AD_Table_Access', 'ALTER TABLE public.AD_Table_Access ADD CONSTRAINT ad_table_access_iscanreport_check CHECK (IsCanReport IN (''Y'',''N''))');
-SELECT db_alter_table('AD_Table_Access', 'ALTER TABLE public.AD_Table_Access ADD CONSTRAINT ad_table_access_iscanexport_check CHECK (IsCanExport IN (''Y'',''N''))');
-
 UPDATE AD_Column
    SET AD_Reference_ID       = 20,
        AD_Reference_Value_ID = NULL,

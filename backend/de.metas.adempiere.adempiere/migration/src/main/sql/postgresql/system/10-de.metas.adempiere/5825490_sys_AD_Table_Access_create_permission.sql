@@ -1,17 +1,17 @@
 -- 2026-09-21
 -- AD_Table_Access.IsCanCreateNewRecords — the per-table "may create new records" permission.
 --
--- Same three-state shape as the four flags converted in 5825480: a nullable CHAR(1) column with
--- no DB default and no CHECK constraint, exposed as AD_Reference_ID=17 (List) over
--- AD_Reference_Value_ID=319 (_YesNo).
---   NULL      = the role expresses no opinion — no restriction from this role
---   'Y' / 'N' = the opinion was set explicitly
--- No CHECK constraint is added: PO.set_Value validates a List column's value against its
--- AD_Ref_List on save, so the two-state invariant is already enforced on the application path.
--- AD_Column.IsMandatory must always match the physical NOT NULL — both stay off here.
+-- Introduced directly in its FINAL shape: a NOT NULL Yes-No (AD_Reference_ID=20) column with a
+-- non-restricting DB default ('Y') and a CHECK ('Y','N') constraint. It SUBTRACTS the CREATE access
+-- from the role's default access set: IsCanCreateNewRecords='N' removes CREATE, 'Y' removes nothing,
+-- so a row left at its default is indistinguishable from no row at all — the same shape as the other
+-- three flags (IsReadOnly / IsCanReport / IsCanExport). There is no nullable / three-state stage:
+-- AD_Table_Access carries no third state on any column.
+-- AD_Column.IsMandatory matches the physical NOT NULL — both on.
 --
--- The Description carries what a role administrator needs to know, because the WebUI renders
--- Description but never Help.
+-- The Description (rewritten in step "§3.2c" below) carries what a role administrator needs to know,
+-- because the WebUI renders Description but never Help. CUSTOMER-VISIBLE WORDING — first draft, flag
+-- for human review before UAT.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-21:
 --   AD_Element 585478 (IsCanCreateNewRecords)
@@ -84,11 +84,10 @@ WHERE AD_Element_ID=585478 AND AD_Language='en_US'
 ;
 
 -- Column: AD_Table_Access.IsCanCreateNewRecords
--- AD_Table_ID=565 (AD_Table_Access), AD_Reference_ID=17 (List) over AD_Reference_Value_ID=319 (_YesNo).
--- DefaultValue stays NULL: a default would give every new row an opinion, which is exactly what
--- the third state exists to avoid.
+-- AD_Table_ID=565 (AD_Table_Access), AD_Reference_ID=20 (Yes-No), mandatory, DB default 'Y'
+-- (non-restricting). Introduced final — no nullable List/_YesNo stage.
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,Description,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,PersonalDataCategory,Version)
-VALUES (0,593636 /*From ID Server*/,585478,0,17,319,565,'XX','IsCanCreateNewRecords',TO_TIMESTAMP('2026-09-21 10:00:04','YYYY-MM-DD HH24:MI:SS'),100,'N',NULL,'D',0,1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,
+VALUES (0,593636 /*From ID Server*/,585478,0,20,NULL,565,'XX','IsCanCreateNewRecords',TO_TIMESTAMP('2026-09-21 10:00:04','YYYY-MM-DD HH24:MI:SS'),100,'N','Y','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,
         'Neue Datensätze anlegen',
         'Legt fest, ob diese Rolle in dieser Tabelle neue Datensätze anlegen darf. Nicht gesetzt = keine Einschränkung durch die Rolle.',
         0,0,TO_TIMESTAMP('2026-09-21 10:00:04','YYYY-MM-DD HH24:MI:SS'),100,'NP',0)
@@ -104,6 +103,37 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 /* DDL */  select update_Column_Translation_From_AD_Element(585478)
 ;
 
--- Physical column: nullable CHAR(1), no default, no CHECK — the three-state shape.
-/* DDL */ SELECT public.db_alter_table('AD_Table_Access','ALTER TABLE public.AD_Table_Access ADD COLUMN IsCanCreateNewRecords CHAR(1)')
+-- Physical column: NOT NULL CHAR(1) DEFAULT 'Y' with a CHECK ('Y','N') — the final Yes-No shape.
+/* DDL */ SELECT public.db_alter_table('AD_Table_Access','ALTER TABLE public.AD_Table_Access ADD COLUMN IsCanCreateNewRecords CHAR(1) NOT NULL DEFAULT ''Y''')
 ;
+/* DDL */ SELECT public.db_alter_table('AD_Table_Access','ALTER TABLE public.AD_Table_Access ADD CONSTRAINT ad_table_access_iscancreatenewrecords_check CHECK (IsCanCreateNewRecords IN (''Y'',''N''))')
+;
+
+-- =================================================================================================
+-- §3.2c — rewrite the Description to the final wording (per REQUIREMENTS.md AC16 as amended). The
+-- earlier "Nicht gesetzt = keine Einschränkung" text described a third state that this column never
+-- has; the final wording states what the setting GUARANTEES (desktop-WebUI-scoped) and carries the
+-- AC16 role-inclusion-chain warning. Own element (585478), not shared — mutated directly here.
+-- de_DE/de_CH/en_US only; fr_CH keeps the seeded German base text (IsTranslated='N'), authoring
+-- French is outside this task. Later timestamps than the seed above so the propagation guard fires.
+-- =================================================================================================
+UPDATE AD_Element_Trl
+   SET Description = 'Bei ''Nein'' bietet die Desktop-WebUI für diese Rolle in dieser Tabelle das Anlegen neuer Datensätze nicht an und akzeptiert es nicht. Achtung: Ein Datensatz, der einer eingeschlossenen Rolle aus einem anderen Grund hinzugefügt wird, hat hier standardmäßig den Wert ''Ja'' und kann so in einer Rollen-Einschlusskette die Einschränkung einer anderen Rolle aufheben.',
+       IsTranslated = 'Y',
+       Updated = TO_TIMESTAMP('2026-09-22 16:02:00','YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy = 100
+ WHERE AD_Element_ID=585478 AND AD_Language IN ('de_DE','de_CH');
+
+UPDATE AD_Element_Trl
+   SET Description = 'When set to No, the desktop WebUI will not offer or accept creating a new record for this role in this table. Warning: a row added to an included role for an unrelated reason defaults to Yes here and can, in a role-inclusion chain, lift another role''s restriction.',
+       IsTranslated = 'Y',
+       Updated = TO_TIMESTAMP('2026-09-22 16:02:10','YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy = 100
+ WHERE AD_Element_ID=585478 AND AD_Language='en_US';
+
+/* DDL */ SELECT update_ad_element_on_ad_element_trl_update(585478, 'de_DE');
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585478, 'de_DE');
+/* DDL */ SELECT update_ad_element_on_ad_element_trl_update(585478, 'de_CH');
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585478, 'de_CH');
+/* DDL */ SELECT update_ad_element_on_ad_element_trl_update(585478, 'en_US');
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585478, 'en_US');
