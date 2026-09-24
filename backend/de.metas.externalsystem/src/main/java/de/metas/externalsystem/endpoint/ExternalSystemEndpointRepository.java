@@ -93,7 +93,7 @@ public class ExternalSystemEndpointRepository
 				.id(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
 				.value(endpointRecord.getValue())
 				.transportType(TransportType.ofCode(endpointRecord.getTransportType()))
-				// HTTP transport fields (nullable — only set for HTTP transport)
+				// HTTP transport fields
 				.endpointUrl(endpointRecord.getHttpEndPoint())
 				.method(parseHttpMethod(endpointRecord.getOutboundHttpMethod()))
 				.contentType(parseMediaType(endpointRecord.getContentType()))
@@ -105,7 +105,7 @@ public class ExternalSystemEndpointRepository
 				.user(endpointRecord.getLoginUsername())
 				.password(endpointRecord.getPassword())
 				.sasSignature(endpointRecord.getSasSignature())
-				// SFTP transport fields (nullable — only set for SFTP transport)
+				// SFTP transport fields
 				.sftpHost(endpointRecord.getSftpHost())
 				.sftpPort(endpointRecord.getSftpPort() > 0 ? endpointRecord.getSftpPort() : null)
 				.sftpUsername(endpointRecord.getSftpUsername())
@@ -114,7 +114,7 @@ public class ExternalSystemEndpointRepository
 				.sftpRemotePath(endpointRecord.getSftpRemotePath())
 				.sftpFilenamePattern(endpointRecord.getSftpFilenamePattern())
 				.sftpPollingIntervalMs(endpointRecord.getSftpPollingIntervalMs() > 0 ? endpointRecord.getSftpPollingIntervalMs() : null)
-				// LOCAL_FILE transport fields (nullable — only set for LOCAL_FILE transport)
+				// LOCAL_FILE transport fields
 				.localRootLocation(endpointRecord.getLocalRootLocation())
 				.frequency(endpointRecord.getFrequency() > 0 ? endpointRecord.getFrequency() : null)
 				.importFileNamePattern(endpointRecord.getImportFileNamePattern())

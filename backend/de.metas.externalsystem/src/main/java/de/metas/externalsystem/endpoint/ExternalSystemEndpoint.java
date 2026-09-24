@@ -42,14 +42,14 @@ public class ExternalSystemEndpoint
 
 	@NonNull TransportType transportType;
 
-	// HTTP transport fields (null unless transportType == HTTP)
+	// HTTP transport fields
 	@Nullable String endpointUrl;
 
 	@Nullable HttpMethod method;
 
 	@Nullable MediaType contentType;
 
-	// HTTP authentication fields (null unless transportType == HTTP)
+	// HTTP authentication fields
 	@Nullable EndpointAuthType authType;
 
 	@Nullable String clientId;
@@ -64,7 +64,7 @@ public class ExternalSystemEndpoint
 
 	@Nullable String sasSignature;
 
-	// SFTP transport fields (null when transportType == HTTP)
+	// SFTP transport fields
 	@Nullable String sftpHost;
 
 	// null when no port is configured. Boxed, like sftpPollingIntervalMs and frequency below, so that
@@ -84,7 +84,7 @@ public class ExternalSystemEndpoint
 	// SFTP inbound-polling settings (poll interval -- SFTP-only).
 	@Nullable Integer sftpPollingIntervalMs;
 
-	// LOCAL_FILE transport fields (null when transportType != LOCAL_FILE)
+	// LOCAL_FILE transport fields
 	@Nullable String localRootLocation;
 
 	@Nullable Integer frequency;
@@ -98,8 +98,8 @@ public class ExternalSystemEndpoint
 
 	/**
 	 * If TRUE and the upstream scripted-adapter conversion returns a JSON array, the downstream
-	 * Camel route dispatches one HTTP/SFTP request per array element. Default FALSE — endpoint
-	 * runs once with the whole payload, matching existing behaviour.
+	 * Camel route dispatches one HTTP/SFTP request per array element. FALSE: one request carries the
+	 * whole payload.
 	 */
 	@Default boolean isArrayFanOut = false;
 
