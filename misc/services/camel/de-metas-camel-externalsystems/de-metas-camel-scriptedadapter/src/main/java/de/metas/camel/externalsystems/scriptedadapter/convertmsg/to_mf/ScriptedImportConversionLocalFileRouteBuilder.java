@@ -133,7 +133,7 @@ public class ScriptedImportConversionLocalFileRouteBuilder extends RouteBuilder 
 		final String routeKey = requireRouteKey(params);
 
 		// Tear down any poller already running under this stable key BEFORE (re)creating it.
-		// addRoutes() below would replace a same-id route on its own (CamelContext.addRouteDefinitions
+		// addRoutes() below would replace a same-id route on its own (ModelCamelContext.addRouteDefinitions
 		// removes the existing definitions first), but only once the new route BUILDS: a re-enable whose
 		// endpoint no longer yields a usable file:// URI fails inside addRoutes and would otherwise leave
 		// the PREVIOUS poller running on a directory the endpoint no longer names, while the operator is
