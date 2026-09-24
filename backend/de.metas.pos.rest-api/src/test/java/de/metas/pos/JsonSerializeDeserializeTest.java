@@ -5,9 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.costing.ChargeId;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentDetail;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentMethodSummary;
+import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
+import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrderLine;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
@@ -26,6 +29,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -127,6 +131,50 @@ class JsonSerializeDeserializeTest
 										))
 										.build()
 						))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonCashWithdrawalRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonCashWithdrawalRequest.builder()
+						.posTerminalId(POSTerminalId.ofRepoId(1))
+						.chargeId(ChargeId.ofRepoId(2))
+						.amount(new BigDecimal("50.00"))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonCashWithdrawalResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonCashWithdrawalResponse.builder()
+						.documentNo("PAY-001")
+						.category("Travel expenses")
+						.amount(new BigDecimal("50.00"))
+						.date(Instant.parse("2026-09-24T10:15:30Z"))
+						.cashier("John Cashier")
+						.terminal("Terminal 1")
+						.journal(JsonCashJournalSummary.builder()
+								.closed(false)
+								.currencySymbol("€")
+								.currencyPrecision(2)
+								.paymentMethods(ImmutableList.of(
+										JsonPaymentMethodSummary.builder()
+												.paymentMethod(POSPaymentMethod.CASH)
+												.amount(new BigDecimal("123.45"))
+												.details(ImmutableList.of(
+														JsonPaymentDetail.builder()
+																.type(JsonCashJournalSummary.JsonPaymentDetailType.OPENING_BALANCE)
+																.amount(new BigDecimal("100.00"))
+																.build()
+												))
+												.build()
+								))
+								.build())
 						.build()
 		);
 	}
