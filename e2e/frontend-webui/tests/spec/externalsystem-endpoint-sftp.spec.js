@@ -1,8 +1,10 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { assertRecordIsValid } from '../utils/WebAPIValidation';
+import { FRONTEND_BASE_URL, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { assertRecordIsValid, getRecordData, getValidationStatus } from '../utils/WebAPIValidation';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
 /**
  * ExternalSystem_Endpoint — SFTP Transport Type E2E test suite.
@@ -23,6 +25,9 @@ const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
  * Select a value from a List dropdown widget (AD_Reference_ID=17).
  * List widgets render a readonly input — we must click the container to open
  * the dropdown, then click the matching option.
+ *
+ * An option renders as "<AD_Ref_List.Value>_<localized name>", so pass a RegExp on the Value
+ * (e.g. /SSH_KEY/) to stay language-independent; a localized name only matches on the one language.
  */
 async function selectListValue(page, fieldName, optionText) {
   const container = page.locator(`.form-field-${fieldName}`);
@@ -33,6 +38,45 @@ async function selectListValue(page, fieldName, optionText) {
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await option.click();
   await page.waitForTimeout(1000);
+}
+
+/**
+ * Directory the per-transport stills are written to, on top of being attached to the Allure
+ * report. Left unset (the default, and always so in CI) only the Allure attachment is produced;
+ * point it at a directory to also collect the stills as files for a review.
+ */
+const STILLS_DIR = process.env.WINDOW_EVIDENCE_DIR || '';
+
+/**
+ * Capture the rendered window as a still: always attached to the Allure report, and additionally
+ * written to STILLS_DIR when that is configured.
+ */
+async function saveStill(page, filename) {
+  const buffer = await page.screenshot({ fullPage: false });
+  allure.attachment(filename, buffer, 'image/png');
+
+  if (STILLS_DIR) {
+    fs.mkdirSync(STILLS_DIR, { recursive: true });
+    fs.writeFileSync(path.join(STILLS_DIR, filename), buffer);
+  }
+}
+
+/**
+ * True when a WebAPI field value means "not set". The endpoint's columns clear to different empty
+ * representations depending on their type — null/absent for the strings, 0 for the numerics, and a
+ * list field clears to a null lookup value — so all of those count as cleared.
+ */
+function emptyish(value) {
+  if (value === null || value === undefined || value === '') {
+    return true;
+  }
+  if (typeof value === 'number') {
+    return value === 0;
+  }
+  if (typeof value === 'object') {
+    return value.key === null || value.key === undefined || value.key === '';
+  }
+  return false;
 }
 
 /**
@@ -170,7 +214,7 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
     await selectListValue(page, 'TransportType', 'SFTP');
 
     // --- Test: Set SftpAuthType = PASSWORD ---
-    await selectListValue(page, 'SftpAuthType', 'Password');
+    await selectListValue(page, 'SftpAuthType', /PASSWORD/);
 
     // Password field should be visible
     const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
@@ -180,7 +224,7 @@ and SftpAuthType=SSH_KEY shows the SshPrivateKey field.
     await expect(page.locator('.form-field-SshPrivateKey')).toBeHidden({ timeout: 3000 });
 
     // --- Test: Switch to SftpAuthType = SSH_KEY ---
-    await selectListValue(page, 'SftpAuthType', 'SSH Key');
+    await selectListValue(page, 'SftpAuthType', /SSH_KEY/);
 
     // SshPrivateKey should now be visible
     await expect(page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
@@ -225,7 +269,7 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     await fillTextField(page, 'SftpUsername', 'testuser');
 
     // Set SftpAuthType = PASSWORD (mandatory when SFTP)
-    await selectListValue(page, 'SftpAuthType', 'Password');
+    await selectListValue(page, 'SftpAuthType', /PASSWORD/);
 
     // Fill password (mandatory when SFTP + SftpAuthType=PASSWORD)
     const passwordField = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
@@ -389,5 +433,217 @@ OAuthTokenUrl is accepted and the record persists).
     // Saved OAuth2 values persist
     await expect(page.locator('.form-field-OAuthTokenUrl input[type="text"]')).toHaveValue('https://dw.example.com/DocuWare/Platform/Identity/connect/token');
     await expect(page.locator('.form-field-OAuthScope input[type="text"]')).toHaveValue('docuware.platform');
+  });
+
+  test('TransportType=LOCAL_FILE reveals root location, frequency and filename pattern; HTTP and SFTP hide them', async ({ page }) => {
+    allure.epic('E1500: External Systems');
+    allure.tag('F15010: External System Endpoint');
+    allure.story('TransportType LOCAL_FILE display logic');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — TransportType=LOCAL_FILE Display Logic
+
+The three local-file fields are gated by DisplayLogic on TransportType, so they must be
+visible for LOCAL_FILE and hidden for every other transport.
+
+1. New record, TransportType=LOCAL_FILE -> LocalRootLocation, Frequency, ImportFileNamePattern visible
+2. Frequency carries its column default instead of coming up empty
+3. TransportType=HTTP -> all three hidden, the HTTP fields visible
+4. TransportType=SFTP -> all three hidden, the SFTP fields visible
+5. Back to LOCAL_FILE -> all three visible again
+    `);
+
+    test.setTimeout(180000);
+
+    await test.step('Open a new External System Endpoint', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    });
+
+    await test.step('Select transport Local File — the three local-file fields appear', async () => {
+      await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+
+      await expect(page.locator('.form-field-LocalRootLocation input[type="text"]')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      await expect(page.locator('.form-field-Frequency input')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+      await expect(page.locator('.form-field-ImportFileNamePattern input[type="text"]')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+    });
+
+    await test.step('Polling frequency comes up pre-filled with its default, not empty', async () => {
+      // Frequency defaults from AD_Column.DefaultValue rather than coming up empty
+      // (integer widget — tolerate any locale grouping separator between "60" and "000").
+      await expect(page.locator('.form-field-Frequency input')).toHaveValue(/^60[.,\s ]?000$/);
+      await saveStill(page, 'endpoint-window-transport-LOCAL_FILE.png');
+    });
+
+    await test.step('Switch to transport HTTP — the local-file fields disappear', async () => {
+      await selectListValue(page, 'TransportType', 'HTTP');
+
+      await expect(page.locator('.form-field-LocalRootLocation')).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+      await expect(page.locator('.form-field-Frequency')).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+      await expect(page.locator('.form-field-ImportFileNamePattern')).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+      // ...and the HTTP fields are the ones on screen
+      await expect(page.locator('.form-field-HttpEndPoint')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+
+      await saveStill(page, 'endpoint-window-transport-HTTP.png');
+    });
+
+    await test.step('Switch to transport SFTP — the local-file fields stay hidden', async () => {
+      await selectListValue(page, 'TransportType', 'SFTP');
+
+      await expect(page.locator('.form-field-LocalRootLocation')).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+      await expect(page.locator('.form-field-Frequency')).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+      await expect(page.locator('.form-field-ImportFileNamePattern')).toBeHidden({ timeout: FAST_ACTION_TIMEOUT });
+      await expect(page.locator('.form-field-SftpHost')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+
+      await saveStill(page, 'endpoint-window-transport-SFTP.png');
+    });
+
+    await test.step('Back to Local File — the three fields are shown again', async () => {
+      await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+
+      await expect(page.locator('.form-field-LocalRootLocation input[type="text"]')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      await expect(page.locator('.form-field-Frequency input')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+      await expect(page.locator('.form-field-ImportFileNamePattern input[type="text"]')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+    });
+  });
+
+  test('LOCAL_FILE root location is mandatory — the endpoint stays unsaved until it is filled', async ({ page }) => {
+    allure.epic('E1500: External Systems');
+    allure.tag('F15010: External System Endpoint');
+    allure.story('LOCAL_FILE mandatory logic');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — LocalRootLocation MandatoryLogic
+
+LocalRootLocation carries MandatoryLogic @TransportType/X@='LOCAL_FILE', so a local-file
+endpoint with no directory to poll must not become a valid, saved record.
+
+1. New record, TransportType=LOCAL_FILE, LocalRootLocation left empty -> the WebAPI reports
+   the document invalid and names the missing field
+2. Fill LocalRootLocation -> the record becomes valid and persists
+    `);
+
+    test.setTimeout(180000);
+
+    await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
+    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+
+    // Tab out without filling the mandatory root location
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(2000);
+
+    const recordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+
+    // The document must NOT be valid — the mandatory root location is missing.
+    const invalidStatus = await getValidationStatus(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+    expect(invalidStatus.valid, `expected the LOCAL_FILE endpoint to be invalid while LocalRootLocation is empty, got: ${JSON.stringify(invalidStatus)}`).toBe(false);
+    expect(invalidStatus.missingFields.map((missing) => missing.field)).toContain('LocalRootLocation');
+
+    await saveStill(page, 'endpoint-window-LOCAL_FILE-missing-root-location.png');
+
+    // Filling it makes the record valid and saved.
+    await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel');
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(2000);
+
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after filling the mandatory LocalRootLocation');
+    await expect(page.locator('.form-field-LocalRootLocation input[type="text"]')).toHaveValue('/var/metasfresh/import/packzettel');
+
+    await saveStill(page, 'endpoint-window-LOCAL_FILE-saved.png');
+  });
+
+  test('Switching transport away and back leaves no foreign transport values behind', async ({ page }) => {
+    allure.epic('E1500: External Systems');
+    allure.tag('F15010: External System Endpoint');
+    allure.story('TransportType switch clears foreign transport fields');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — switching TransportType clears the other transports' fields
+
+A saved endpoint that is switched from one transport to another must not keep the previous
+transport's configuration around: it is invisible in the window, so it would be a silent
+stale configuration on the record.
+
+1. Save a complete LOCAL_FILE endpoint (root location, frequency, filename pattern)
+2. Switch to SFTP and fill its mandatory fields -> the LOCAL_FILE values are gone from the record
+3. Switch back to LOCAL_FILE and re-fill the root location -> the SFTP values are gone
+    `);
+
+    test.setTimeout(240000);
+
+    await test.step('Save a complete Local File endpoint', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+      await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel');
+      await fillTextField(page, 'ImportFileNamePattern', '{filename}_{timestamp}');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(2000);
+    });
+
+    const recordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after saving the LOCAL_FILE endpoint');
+
+    const localFileRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+    expect(localFileRecord.fieldsByName.LocalRootLocation.value).toBe('/var/metasfresh/import/packzettel');
+    expect(localFileRecord.fieldsByName.ImportFileNamePattern.value).toBe('{filename}_{timestamp}');
+
+    await test.step('Switch the saved endpoint to SFTP and configure it', async () => {
+      await selectListValue(page, 'TransportType', 'SFTP');
+      await fillTextField(page, 'SftpHost', 'sftp.example.com');
+      await fillNumericField(page, 'SftpPort', '22');
+      await fillTextField(page, 'SftpUsername', 'testuser');
+      // SSH-key auth on purpose: Password is NOT among the columns SFTP owns, so switching an existing
+      // endpoint to SFTP clears it in the same save — a pre-existing dead end (Password is mandatory for
+      // SFTP + PASSWORD auth, so such a record can never be made valid through this window). SshPrivateKey
+      // IS SFTP-owned, so SSH-key auth exercises the switch without depending on that.
+      await selectListValue(page, 'SftpAuthType', /SSH_KEY/);
+      const sshPrivateKey = page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input');
+      await sshPrivateKey.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await sshPrivateKey.fill('-----BEGIN OPENSSH PRIVATE KEY-----');
+      await page.waitForTimeout(300);
+      await fillTextField(page, 'SftpRemotePath', '/outbound/edi');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(2000);
+    });
+
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint to SFTP');
+
+    const sftpRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+    expect(sftpRecord.fieldsByName.TransportType.value.key).toBe('SFTP');
+    expect(emptyish(sftpRecord.fieldsByName.LocalRootLocation.value), 'LocalRootLocation must be cleared when the endpoint leaves LOCAL_FILE').toBe(true);
+    expect(emptyish(sftpRecord.fieldsByName.ImportFileNamePattern.value), 'ImportFileNamePattern must be cleared when the endpoint leaves LOCAL_FILE').toBe(true);
+    expect(emptyish(sftpRecord.fieldsByName.Frequency.value), 'Frequency must be cleared when the endpoint leaves LOCAL_FILE').toBe(true);
+
+    await saveStill(page, 'endpoint-window-switched-LOCAL_FILE-to-SFTP.png');
+
+    await test.step('Switch back to Local File and re-enter its settings', async () => {
+      await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+      await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel2');
+      // Frequency is NOT re-defaulted on a transport switch (the column default only applies when the
+      // document is created), and it is mandatory under LOCAL_FILE — so it has to be entered again.
+      await fillNumericField(page, 'Frequency', '60000');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(2000);
+    });
+
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint back to LOCAL_FILE');
+
+    const backToLocalFileRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+    expect(backToLocalFileRecord.fieldsByName.TransportType.value.key).toBe('LOCAL_FILE');
+    expect(backToLocalFileRecord.fieldsByName.LocalRootLocation.value).toBe('/var/metasfresh/import/packzettel2');
+    expect(emptyish(backToLocalFileRecord.fieldsByName.SftpHost.value), 'SftpHost must be cleared when the endpoint leaves SFTP').toBe(true);
+    expect(emptyish(backToLocalFileRecord.fieldsByName.SftpUsername.value), 'SftpUsername must be cleared when the endpoint leaves SFTP').toBe(true);
+    expect(emptyish(backToLocalFileRecord.fieldsByName.SftpRemotePath.value), 'SftpRemotePath must be cleared when the endpoint leaves SFTP').toBe(true);
+    expect(emptyish(backToLocalFileRecord.fieldsByName.SftpAuthType.value), 'SftpAuthType must be cleared when the endpoint leaves SFTP').toBe(true);
+    expect(emptyish(backToLocalFileRecord.fieldsByName.SshPrivateKey.value), 'SshPrivateKey must be cleared when the endpoint leaves SFTP').toBe(true);
+
+    await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE.png');
   });
 });
