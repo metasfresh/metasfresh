@@ -42,14 +42,14 @@ public class ExternalSystemEndpoint
 
 	@NonNull TransportType transportType;
 
-	// HTTP transport fields (null when transportType == SFTP)
+	// HTTP transport fields (null unless transportType == HTTP)
 	@Nullable String endpointUrl;
 
 	@Nullable HttpMethod method;
 
 	@Nullable MediaType contentType;
 
-	// HTTP authentication fields (null when transportType == SFTP)
+	// HTTP authentication fields (null unless transportType == HTTP)
 	@Nullable EndpointAuthType authType;
 
 	@Nullable String clientId;
@@ -89,7 +89,7 @@ public class ExternalSystemEndpoint
 
 	@Nullable String importFileNamePattern;
 
-	// Local, transport-agnostic archive folders (used by both SFTP and REST import).
+	// Local, transport-agnostic archive folders (used across all three transports: HTTP, SFTP, and LOCAL_FILE).
 	@Nullable String processedDirectory;
 
 	@Nullable String errorDirectory;
@@ -98,7 +98,6 @@ public class ExternalSystemEndpoint
 	 * If TRUE and the upstream scripted-adapter conversion returns a JSON array, the downstream
 	 * Camel route dispatches one HTTP/SFTP request per array element. Default FALSE — endpoint
 	 * runs once with the whole payload, matching existing behaviour.
-	 * See me03#29231, PLAN_ARRAY_MODE.md §3.1.
 	 */
 	@Default boolean isArrayFanOut = false;
 
@@ -112,8 +111,9 @@ public class ExternalSystemEndpoint
 	@Default boolean isFileUpload = false;
 
 	/**
-	 * Converts this endpoint to a JSON DTO.
-	 * Supports both HTTP and SFTP transport types.
+	 * Converts this endpoint to a JSON DTO. The transport type (HTTP, SFTP, or LOCAL_FILE) is always
+	 * included; only the HTTP and SFTP outbound-dispatch fields are carried, as LOCAL_FILE endpoints
+	 * have no outbound-relevant fields to serialize.
 	 */
 	@NonNull
 	public JsonExternalSystemEndpoint toJson()

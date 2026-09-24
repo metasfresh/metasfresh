@@ -38,7 +38,7 @@ public class JsonExternalSystemEndpoint
 	@NonNull String value;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String transportType;  // "HTTP" or "SFTP"
+	String transportType;  // "HTTP", "SFTP", or "LOCAL_FILE"
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String endpointUrl;

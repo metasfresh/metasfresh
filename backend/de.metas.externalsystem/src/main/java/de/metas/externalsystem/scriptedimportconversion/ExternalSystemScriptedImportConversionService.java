@@ -148,8 +148,8 @@ public class ExternalSystemScriptedImportConversionService
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, token.getAuthToken());
 
-		// LOCAL, transport-agnostic archive dirs — used by BOTH the SFTP and the REST import flow for
-		// local done/error archiving, so these are not gated on TransportType.SFTP.
+		// LOCAL, transport-agnostic archive dirs — used by the SFTP, LOCAL_FILE, and REST import flows for
+		// local done/error archiving, so these are not gated on any single TransportType.
 		if (endpoint.getProcessedDirectory() != null)
 		{
 			parameters.put(PARAM_PROCESSED_DIR, endpoint.getProcessedDirectory());

@@ -31,8 +31,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Archives an imported scripted-import payload (the raw SFTP file content, or the raw REST POST body)
- * to a LOCAL, transport-agnostic processed/error folder — see
+ * Archives an imported scripted-import payload (the raw SFTP file content, the polled LOCAL_FILE
+ * content, or the raw REST POST body) to a LOCAL, transport-agnostic processed/error folder — see
  * {@code ExternalSystem_Endpoint.ProcessedDirectory}/{@code ErrorDirectory}.
  * <p>
  * This class never touches any remote resource. For SFTP, the remote file's own fate (consumed by

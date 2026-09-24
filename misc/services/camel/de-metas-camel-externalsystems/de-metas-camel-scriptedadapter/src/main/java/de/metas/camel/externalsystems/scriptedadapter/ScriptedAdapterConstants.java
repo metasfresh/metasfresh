@@ -39,7 +39,7 @@ public interface ScriptedAdapterConstants
 	 * scripted transform runs, so it can be archived LOCALLY on both the success and the error path
 	 * (see {@code ScriptedImportConversionLocalArchiver}). Always a {@code byte[]} — a text-shaped
 	 * writer must encode explicitly (UTF-8) rather than rely on implicit type conversion. Shared between
-	 * the SFTP and the REST dynamic route builders.
+	 * the SFTP, LOCAL_FILE, and REST dynamic route builders.
 	 */
 	String PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD = "ScriptedImportConversion-originalPayload";
 
