@@ -5,10 +5,11 @@ import { getUserFullnameFromState } from '../../../reducers/appHandler';
 import './Header.scss';
 
 import { usePOSTerminal } from '../actions/posTerminal';
-import { MODAL_POSTerminalSelect, MODAL_SelectOrders, showModalAction } from '../actions/ui';
+import { MODAL_CashWithdrawal, MODAL_POSTerminalSelect, MODAL_SelectOrders, showModalAction } from '../actions/ui';
 import { useOpenOrdersArray } from '../actions/orders';
 import { trl } from '../../../utils/translations';
 import { useAuth } from '../../../hooks/useAuth';
+import { useCashWithdrawalCategories } from './cash_withdrawal/useCashWithdrawalCategories';
 
 const _ = (key) => trl(`pos.header.${key}`);
 
@@ -19,9 +20,18 @@ const Header = () => {
   const userFullname = useSelector(getUserFullnameFromState);
   const openOrders = useOpenOrdersArray();
   const avatarLetter = userFullname ? userFullname.charAt(0).toUpperCase() : '';
+  const isCashJournalOpen = !!posTerminal?.cashJournalOpen;
+  // withdrawals are offered only when categories are configured
+  const cashWithdrawalCategories = useCashWithdrawalCategories({
+    posTerminalId: posTerminal.id,
+    enabled: isCashJournalOpen,
+  });
 
   const onCloseJournalClicked = () => {
     posTerminal.changeStatusToClosing();
+  };
+  const onCashWithdrawalClicked = () => {
+    dispatch(showModalAction({ modal: MODAL_CashWithdrawal }));
   };
   const onOrdersClicked = () => {
     dispatch(showModalAction({ modal: MODAL_SelectOrders }));
@@ -39,13 +49,18 @@ const Header = () => {
         <img src={logoImage} alt="metasfresh mobile" />
       </div>
       <div className="center">
-        {posTerminal?.cashJournalOpen && (
+        {isCashJournalOpen && (
           <div
             className="pos-header-button"
             data-testid="pos-close-cash-journal-button"
             onClick={onCloseJournalClicked}
           >
             <span className="text">{_('closeCashJournal')}</span>
+          </div>
+        )}
+        {isCashJournalOpen && cashWithdrawalCategories.length > 0 && (
+          <div className="pos-header-button" data-testid="pos-cash-withdrawal-button" onClick={onCashWithdrawalClicked}>
+            <span className="text">{_('cashWithdrawal')}</span>
           </div>
         )}
       </div>
