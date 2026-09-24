@@ -257,7 +257,13 @@ public class M_Warehouse_StepDef
 
 					final boolean isInTransit = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsInTransit).orElse(false);
 					final boolean isQuarantineWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse).orElse(false);
+
 					final boolean isQualityReturnWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse).orElse(false);
+					if (isQualityReturnWarehouse)
+					{ // HUWarehouseDAO.retrieveFirstQualityReturnWarehouseId() picks an arbitrary one when several are active, so make sure that all other WHs are not quality-return warehouses
+						final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, false);
+						queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true).addEqualsFilter(COLUMNNAME_IsActive, true).create().updateDirectly(updater);
+					}
 
 					warehouseRecord.setValue(valueAndName.getValue());
 					warehouseRecord.setName(valueAndName.getName());

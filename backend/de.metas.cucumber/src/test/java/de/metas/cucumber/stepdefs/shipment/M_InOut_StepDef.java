@@ -1298,47 +1298,39 @@ public class M_InOut_StepDef
 		});
 	}
 
-	@Then("process single receipt response")
-	public void process_receipts_response(@NonNull final DataTable table) throws JsonProcessingException
-	{
-		final JsonCreateReceiptsResponse receiptsResponse = mapper.readValue(restTestContext.getApiResponse().getContent(), JsonCreateReceiptsResponse.class);
-		assertThat(receiptsResponse).isNotNull();
-
-		final List<JsonMetasfreshId> createdReceiptIdList = receiptsResponse.getCreatedReceiptIdList();
-		assertThat(createdReceiptIdList.size()).isEqualTo(1);
-
-		final I_M_InOut receiptRecord = inOutDAO.getById(InOutId.ofRepoId(createdReceiptIdList.get(0).getValue()));
-		assertThat(receiptRecord).isNotNull();
-
-		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), receiptRecord);
-	}
-
 	/**
-	 * Reads the {@code createdReturnIdList} of a {@code POST /api/v2/receipts} response (the
-	 * {@code returnList} half of the payload) and loads the resulting customer return M_InOut.
+	 * Reads a {@code POST /api/v2/receipts} response and loads the single created document — either
+	 * the {@code createdReceiptIdList} (the {@code receiptList} half of the payload) or the
+	 * {@code createdReturnIdList} (the {@code returnList} half), selected by the matched step text.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier) alias to store the found customer return<br>
+	 * @cucumber.columns <b>M_InOut_ID</b> — (required, identifier) alias to store the found receipt/return<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData
 	 * @cucumber.example <pre>
+	 * Then process single receipt response
+	 *   | M_InOut_ID |
+	 *   | receipt_1  |
+	 *
 	 * Then process single return response
 	 *   | M_InOut_ID |
 	 *   | return_1   |
 	 * </pre>
 	 */
-	@Then("process single return response")
-	public void process_return_response(@NonNull final DataTable table) throws JsonProcessingException
+	@Then("^process single (receipt|return) response$")
+	public void process_receipt_or_return_response(@NonNull final String receiptOrReturn, @NonNull final DataTable table) throws JsonProcessingException
 	{
 		final JsonCreateReceiptsResponse receiptsResponse = mapper.readValue(restTestContext.getApiResponse().getContent(), JsonCreateReceiptsResponse.class);
 		assertThat(receiptsResponse).isNotNull();
 
-		final List<JsonMetasfreshId> createdReturnIdList = receiptsResponse.getCreatedReturnIdList();
-		assertThat(createdReturnIdList.size()).isEqualTo(1);
+		final List<JsonMetasfreshId> createdIdList = "receipt".equals(receiptOrReturn)
+				? receiptsResponse.getCreatedReceiptIdList()
+				: receiptsResponse.getCreatedReturnIdList();
+		assertThat(createdIdList.size()).isEqualTo(1);
 
-		final I_M_InOut returnRecord = inOutDAO.getById(InOutId.ofRepoId(createdReturnIdList.get(0).getValue()));
-		assertThat(returnRecord).isNotNull();
+		final I_M_InOut record = inOutDAO.getById(InOutId.ofRepoId(createdIdList.get(0).getValue()));
+		assertThat(record).isNotNull();
 
-		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), returnRecord);
+		inoutTable.putOrReplace(DataTableRow.singleRow(table).getAsIdentifier(COLUMNNAME_M_InOut_ID), record);
 	}
 
 	/**

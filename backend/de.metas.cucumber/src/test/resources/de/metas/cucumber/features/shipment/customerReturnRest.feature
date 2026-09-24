@@ -1,6 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0110_Sales
 @allure.label.feature:F00200_Sales_Order
+@allure.label.feature:F18030_POS_Checkout
 @ghActions:run_on_executor6
 Feature: Customer Return via REST API
 ## Verifies that POST /api/v2/receipts creates a customer return even when the
@@ -33,6 +34,7 @@ Feature: Customer Return via REST API
   @from:cucumber
   @allure.label.epic:E0110_Sales
   @allure.label.feature:F00200_Sales_Order
+  @allure.label.feature:F18030_POS_Checkout
   @Id:S28210_TC6
   Scenario: Customer return via REST with no shipment and no sales order
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/receipts' and fulfills with '200' status code
@@ -52,8 +54,8 @@ Feature: Customer Return via REST API
       | return_CRR |
 
     And validate the created material receipt
-      | M_InOut_ID | DocStatus | M_Warehouse_ID | MovementType |
-      | return_CRR | CO        | wh_CRR         | C+           |
+      | M_InOut_ID | C_BPartner_ID | DocStatus | M_Warehouse_ID | MovementType |
+      | return_CRR | bpartner_CRR  | CO        | wh_CRR         | C+           |
 
     And validate the created material receipt lines
       | M_InOut_ID | M_Product_ID | movementqty | processed |

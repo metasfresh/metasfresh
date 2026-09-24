@@ -103,7 +103,6 @@ public class CustomerReturnsWithoutHUsProducer
 		final Map<CustomerReturnLineGroupingKey, List<CustomerReturnLineCandidate>> returnLineCandidatesByGroupingKey = new HashMap<>();
 
 		returnLineCandidateList
-				.stream()
 				.forEach(returnLineCandidate -> {
 					final List<CustomerReturnLineCandidate> returnLineCandidates = new ArrayList<>();
 					returnLineCandidates.add(returnLineCandidate);
