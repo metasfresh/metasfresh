@@ -706,7 +706,8 @@ A saved endpoint that is switched from one transport to another must not keep th
 transport's configuration around: it is invisible in the window, so it would be a silent
 stale configuration on the record.
 
-1. Save a complete LOCAL_FILE endpoint (root location, polling interval, filename pattern)
+1. Save a complete LOCAL_FILE endpoint (root location and filename pattern; the polling interval
+   comes from the column's default)
 2. Switch to SFTP and fill its mandatory fields -> the LOCAL_FILE values are gone from the record
 3. Switch back to LOCAL_FILE and re-fill the root location -> the record is invalid, because the
    polling interval the switch to SFTP cleared is unset and mandatory for LOCAL_FILE
