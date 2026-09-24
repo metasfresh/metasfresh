@@ -157,8 +157,8 @@ async function saveStill(page, filename) {
 
 /**
  * True when a WebAPI field value means "not set". The endpoint's columns clear to different empty
- * representations depending on their type — null/absent for the strings, 0 for the numerics, and a
- * list field clears to a null lookup value — so all of those count as cleared.
+ * representations — null/absent for the strings, a null lookup value for a list field, SQL NULL for
+ * SftpPort and Frequency, and 0 for SftpPollingIntervalMs — so all of those count as cleared.
  */
 function emptyish(value) {
   if (value === null || value === undefined || value === '') {
