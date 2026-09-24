@@ -1,19 +1,16 @@
 -- Show the Password field for HTTP endpoints authenticating with OAuth (v1).
 --
--- The scripted-adapter route that prepares an OAuth request builds the token request from client id,
--- client secret, username AND password, so an HTTP + OAuth endpoint needs a password. The window did
--- not show the field for that combination: the condition covered HTTP + Basic, SFTP + PASSWORD and
--- HTTP + OAuth2, but not HTTP + OAuth. LoginUsername, ClientId and ClientSecret already list OAuth,
--- so Password was the only one of the four missing it.
+-- The scripted-adapter route builds its OAuth token request from client id, client secret, username AND
+-- password; LoginUsername, ClientId and ClientSecret already list OAuth, Password did not.
 --
--- Parentheses around every term, and the sub-conditions joined with | only: the existing terms were
--- parenthesised for exactly that reason, because operator precedence is off by default and the
--- expression is evaluated left to right.
+-- Every term is parenthesised and the terms joined with | only: operator precedence is off by default, so
+-- the expression is evaluated left to right.
 --
--- AD_Column.MandatoryLogic is deliberately NOT extended. The token request omits any of the four
--- credentials that is blank rather than failing, so an OAuth endpoint may legitimately authenticate
--- without a password; making it mandatory would block saving those. Shown-and-optional is the state
--- this needs.
+-- AD_Column.MandatoryLogic is deliberately NOT extended -- the token request omits a blank credential
+-- rather than failing, so making Password mandatory would reject configurations this client can send.
+--
+-- IDs allocated from idserver.metas.de on 2026-09-24:
+--   AD_MigrationScript 5826280 (this script)
 
 UPDATE AD_Field
 SET DisplayLogic = '(@TransportType/X@=''HTTP'' & @AuthType/X@=''Basic'') | (@TransportType/X@=''SFTP'' & @SftpAuthType/X@=''PASSWORD'') | (@TransportType/X@=''HTTP'' & @AuthType/X@=''OAuth2'') | (@TransportType/X@=''HTTP'' & @AuthType/X@=''OAuth'')',

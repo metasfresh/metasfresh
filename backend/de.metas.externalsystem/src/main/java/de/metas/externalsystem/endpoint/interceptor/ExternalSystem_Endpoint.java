@@ -55,29 +55,23 @@ import java.util.function.Consumer;
  * Keeps an endpoint record free of values the window no longer shows.
  * <p>
  * An endpoint's transport type and the two authentication types decide which of its fields the window
- * renders. Whenever one of them changes, every field that the resulting configuration HIDES must end up
- * without a value: a value nobody can see is a value nobody can correct, and every column listed in
- * {@link #createHideableColumns()} is one {@code ExternalSystemEndpointRepository#fromRecord} hands to the
- * outbound/inbound dispatch -- a stale host or credential would otherwise keep being sent.
+ * renders. Whenever one of them changes, every field the resulting configuration HIDES must end up without
+ * a value: a value nobody can see is a value nobody can correct, and {@code ExternalSystemEndpointRepository}
+ * keeps handing every one of these columns to the outbound/inbound dispatch.
  * <p>
- * <b>Scope: only columns whose {@code AD_Field} is active.</b> A column whose field is
- * {@code IsActive='N'} is rendered under no configuration at all, so no configuration can be said to hide
- * it; clearing it would destroy a value that has no field left to restore it from. {@code Type} is the case
- * in point: its {@code AD_Field} and {@code AD_UI_Element} were both deactivated, it is the one endpoint
- * column {@code ExternalSystemEndpointRepository#fromRecord} does not read, and its
- * {@code AD_Column.MandatoryLogic} is {@code @TransportType/X@='HTTP'} -- so clearing it would leave every
- * HTTP endpoint unsaveable with no field to fix it in. Retiring such a column means dropping the column, a
- * change of its own.
+ * <b>Scope: only columns whose {@code AD_Field} is active.</b> A column no configuration renders is hidden
+ * by none either, and clearing it would destroy a value that has no field left to restore it from.
+ * {@code Type} is the case in point: its {@code AD_Field} and {@code AD_UI_Element} are both
+ * {@code IsActive='N'}, and its {@code AD_Column.MandatoryLogic} is {@code @TransportType/X@='HTTP'} -- so
+ * clearing it would leave every HTTP endpoint unsaveable. Retiring such a column means dropping the column,
+ * a change of its own.
  * <p>
  * <b>Assumption: this never runs on a half-configured transport.</b> The rules read the record as it is
- * about to be stored, so a half-finished state would be read as a finished one -- {@code TransportType=SFTP}
- * with {@code SftpAuthType} still unset says "SFTP, and not password authentication", and the password would
- * go. What rules that state out is {@code AD_Column.MandatoryLogic}: {@code SftpHost}, {@code SftpPort},
- * {@code SftpUsername}, {@code SftpRemotePath} and {@code SftpAuthType} each carry
- * {@code @TransportType/X@='SFTP'}, so picking SFTP alone cannot be saved -- the authentication type is
- * filled in by the same save that switches the transport. Whoever relaxes one of those five
- * {@code MandatoryLogic} values takes this assumption away. The unit tests call the handler directly and so
- * bypass the dictionary entirely; they assemble the finished state themselves.
+ * about to be stored, so {@code TransportType=SFTP} with {@code SftpAuthType} still unset would read as
+ * "SFTP, and not password authentication" and take the password away. What rules that state out is
+ * {@code AD_Column.MandatoryLogic}: {@code SftpHost}, {@code SftpPort}, {@code SftpUsername},
+ * {@code SftpRemotePath} and {@code SftpAuthType} each carry {@code @TransportType/X@='SFTP'}, so picking
+ * SFTP alone cannot be saved. Whoever relaxes one of those five takes this assumption away.
  */
 @Interceptor(I_ExternalSystem_Endpoint.class)
 @Component
@@ -101,21 +95,15 @@ public class ExternalSystem_Endpoint
 
 	/**
 	 * Every column this endpoint's window can hide, together with the condition under which it is shown and
-	 * how to take its value away.
-	 * <p>
-	 * Each {@code displayLogic} is a <b>verbatim copy</b> of that field's {@code AD_Field.DisplayLogic}, and
-	 * it is evaluated by the very same compiler/evaluator the window uses, so the two cannot drift in
-	 * MEANING — only in TEXT, which a reviewer can check by grepping the string. Whoever changes a
-	 * {@code DisplayLogic} in a migration script changes the matching string here.
+	 * how to take its value away. Each {@code displayLogic} is a <b>verbatim copy</b> of that field's
+	 * {@code AD_Field.DisplayLogic}; whoever changes one in a migration script changes the string here.
 	 * <p>
 	 * A column with no display logic at all is always visible and therefore does not belong here:
-	 * {@code IsArrayFanOut} is the case in point — both the HTTP and the SFTP dispatch read it, the window
-	 * shows it for every transport, and so no transport switch may clear it.
+	 * {@code IsArrayFanOut} is the case in point — every transport shows it, so no transport switch may
+	 * clear it.
 	 * <p>
 	 * Lazily built: compiling a logic expression asks the sysconfig that turns operator precedence on or
 	 * off, which is not necessarily answerable while this bean is being constructed.
-	 * <p>
-	 * Package-private so {@code ExternalSystem_EndpointTest.VisibilityRules} can walk the rules.
 	 */
 	@VisibleForTesting
 	final Supplier<ImmutableList<HideableColumn>> hideableColumns = Suppliers.memoize(this::createHideableColumns);
@@ -176,8 +164,7 @@ public class ExternalSystem_Endpoint
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpFilenamePattern, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpFilenamePattern(null)),
 				// the plain int setter here, unlike SftpPort above and Frequency below: this column carries
-				// no MandatoryLogic to satisfy, and ExternalSystemEndpointRepository already reads a stored
-				// 0 as "no polling interval", so 0 and SQL NULL say the same thing downstream
+				// no MandatoryLogic, so a stored 0 and SQL NULL say the same thing
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpPollingIntervalMs(0)),
 				// SFTP authentication
@@ -189,9 +176,8 @@ public class ExternalSystem_Endpoint
 				// LOCAL_FILE transport
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_LocalRootLocation, VISIBLE_FOR_LOCAL_FILE,
 						endpoint -> endpoint.setLocalRootLocation(null)),
-				// via setValue, for the same reason as SftpPort above: a stored 0 passes the column's
-				// MandatoryLogic while the repository reads it back as no frequency at all, so the endpoint
-				// would look configured and never poll
+				// via setValue, for the same reason as SftpPort above: a stored 0 satisfies this column's
+				// MandatoryLogic too
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, VISIBLE_FOR_LOCAL_FILE,
 						endpoint -> InterfaceWrapperHelper.setValue(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_ImportFileNamePattern, VISIBLE_FOR_LOCAL_FILE,
@@ -211,11 +197,8 @@ public class ExternalSystem_Endpoint
 	 * The {@code AD_Field.DisplayLogic} copy this class carries, per column it can hide.
 	 * <p>
 	 * Public for one reader only: the cucumber scenario in {@code externalSystemEndpointDisplayLogic.feature},
-	 * which holds these copies against the live dictionary. That scenario is what turns the "verbatim copy"
-	 * promised above from a convention a reviewer has to grep for into something the build checks; it lives in
-	 * {@code de.metas.cucumber} because that is the only test home with this branch's migration scripts applied
-	 * to a real database. It needs the strings, not the compiled expressions or the clear actions, so only the
-	 * strings leave this class.
+	 * which holds these copies against the live dictionary -- the only test home with this branch's migration
+	 * scripts applied to a real database.
 	 */
 	@VisibleForTesting
 	public ImmutableMap<String, String> getDisplayLogicByColumnName()
@@ -228,10 +211,8 @@ public class ExternalSystem_Endpoint
 	 * Takes the value away from every field the endpoint's new configuration hides.
 	 * <p>
 	 * One handler for all three governing columns on purpose: a save may change more than one of them at
-	 * once (switching to SFTP <i>and</i> picking password authentication, say), and a field such as
-	 * {@code Password} is shown or hidden by a condition spanning all three. A handler keyed on a single
-	 * column would decide that field's fate from a part of the change only, and several handlers writing the
-	 * same field would decide it in an order nothing declares.
+	 * once, and a condition such as {@code Password}'s spans all three -- a handler keyed on a single column
+	 * would decide that field's fate from a part of the change only.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
 			I_ExternalSystem_Endpoint.COLUMNNAME_TransportType,
@@ -242,8 +223,7 @@ public class ExternalSystem_Endpoint
 		assertTransportTypeIsOneThisHandlerCovers(endpoint);
 
 		// ONE snapshot of the state the record is about to be stored in decides every field: clearing e.g.
-		// AuthType must not change the verdict already reached for Password, so what is visible is worked
-		// out before anything is taken away
+		// AuthType must not change the verdict already reached for Password
 		final Evaluatee newConfiguration = extractVisibilityGoverningValues(endpoint);
 
 		final ImmutableList<HideableColumn> hiddenColumns = hideableColumns.get().stream()
@@ -257,12 +237,10 @@ public class ExternalSystem_Endpoint
 	 * Refuses a transport code this handler carries no rules for.
 	 * <p>
 	 * Every condition in {@link #createHideableColumns()} is keyed on a transport, so an unrecognised one
-	 * satisfies none of them and the handler would take EVERY hideable column away in a single save --
-	 * silently, and with no way back. That is unreachable while the ref list holds exactly the three
-	 * transports this class covers, and becomes reachable the moment a fourth is added to the ref list
-	 * without a matching entry here. Failing the save instead is not an extra restriction: the record
-	 * would be unloadable anyway, because {@code ExternalSystemEndpointRepository#fromRecord} resolves the
-	 * very same {@link TransportType#ofCode(String)}.
+	 * satisfies none of them and the handler would take EVERY hideable column away in a single save. It
+	 * becomes reachable the moment a fourth transport is added to the ref list without a matching entry
+	 * here. Failing the save adds no restriction: {@code ExternalSystemEndpointRepository#fromRecord}
+	 * resolves the very same {@link TransportType#ofCode(String)}, so the record would be unloadable anyway.
 	 */
 	private static void assertTransportTypeIsOneThisHandlerCovers(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{

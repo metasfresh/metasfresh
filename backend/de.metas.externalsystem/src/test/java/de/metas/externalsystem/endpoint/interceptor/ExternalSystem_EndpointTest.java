@@ -708,10 +708,9 @@ public class ExternalSystem_EndpointTest
 		}
 
 		/**
-		 * Every variable falls back to a default, so no display logic can end up undecidable at save time.
-		 * That matters because an undecidable one is answered as NOT shown and the field is CLEARED -- see
-		 * {@link #anUndecidableDisplayLogicCountsAsHiddenJustAsTheWindowCountsIt()}. This test is what keeps
-		 * that case out of the table.
+		 * Every variable falls back to a default, so no display logic can end up undecidable at save time --
+		 * an undecidable one is answered as NOT shown and the field is CLEARED, see
+		 * {@link #anUndecidableDisplayLogicCountsAsHiddenJustAsTheWindowCountsIt()}.
 		 */
 		@Test
 		void everyDisplayLogicVariableHasADefaultValue()
