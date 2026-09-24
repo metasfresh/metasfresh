@@ -294,8 +294,8 @@ public class ExternalSystem_Endpoint
 			// Agrees with the window only while every rule stays inside the three governing columns and
 			// compares against a literal that is neither empty nor the variable's own CtxName default: on a
 			// ROOT tab an unset ref-list field reads as "" in the window (DocumentEvaluatee hands it back),
-			// while here the column is simply absent, so the default "X" wins. All three are pinned by
-			// ExternalSystem_EndpointTest.VisibilityRules.
+			// while here the column is simply absent, so the default "X" wins. All three conditions are
+			// pinned by ExternalSystem_EndpointTest.VisibilityRules.
 			final Boolean visible = visibleIf.evaluate(configuration, OnVariableNotFound.ReturnNoResult);
 			return Boolean.TRUE.equals(visible);
 		}
