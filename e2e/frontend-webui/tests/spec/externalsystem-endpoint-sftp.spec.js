@@ -700,7 +700,8 @@ stale configuration on the record.
    gone from the record, the polling interval back at the column default nobody typed
 3. Switch back to LOCAL_FILE and re-fill the root location -> the record is valid straight away: the
    polling interval is pre-filled with that same default, exactly as on a newly created endpoint
-4. Override the pre-filled polling interval -> it takes, and the SFTP values are gone
+4. Override the pre-filled polling interval -> it takes; the SFTP settings are gone, its port back at
+   the column default
     `);
 
     test.setTimeout(240000);
@@ -727,7 +728,9 @@ stale configuration on the record.
     await test.step('Switch the saved endpoint to SFTP and configure it', async () => {
       await selectListValue(page, 'TransportType', 'SFTP');
       await fillTextField(page, 'SftpHost', 'sftp.example.com');
-      await fillNumericField(page, 'SftpPort', '22');
+      // deliberately not the column default of 22: the 22 asserted after the switch back can only be
+      // the reset, where a typed 22 would read the same whether the reset ran or not
+      await fillNumericField(page, 'SftpPort', '2222');
       await fillTextField(page, 'SftpUsername', 'testuser');
       // SSH-key auth on purpose: it needs no field that HTTP also uses, so this step exercises the
       // transport switch on its own. (Password auth works too — the record keeps a password entered in
@@ -748,6 +751,7 @@ stale configuration on the record.
     // than clearing it: the 5-second interval typed above is gone, 60000 is what a new record would show.
     // 60000 here can only be the reset, never the typed value surviving.
     expect(sftpRecord.fieldsByName.Frequency.value, 'Frequency must be reset to its column default when the endpoint leaves LOCAL_FILE').toBe(60000);
+    expect(sftpRecord.fieldsByName.SftpPort.value, 'the port the operator typed must be on the record before the switch back').toBe(2222);
 
     await saveStill(page, 'endpoint-window-switched-LOCAL_FILE-to-SFTP.png');
 
@@ -781,6 +785,10 @@ stale configuration on the record.
     expect(emptyish(pollableAgainRecord.fieldsByName.SftpRemotePath.value), 'SftpRemotePath must be cleared when the endpoint leaves SFTP').toBe(true);
     expect(emptyish(pollableAgainRecord.fieldsByName.SftpAuthType.value), 'SftpAuthType must be cleared when the endpoint leaves SFTP').toBe(true);
     expect(emptyish(pollableAgainRecord.fieldsByName.SshPrivateKey.value), 'SshPrivateKey must be cleared when the endpoint leaves SFTP').toBe(true);
+    // SftpPort carries an AD_Column.DefaultValue, so leaving SFTP resets it to that value rather than
+    // clearing it: the 2222 typed above is gone, 22 is what a new record would show. Because 2222 is not
+    // the default, 22 here can only be the reset.
+    expect(pollableAgainRecord.fieldsByName.SftpPort.value, 'SftpPort must be reset to its column default when the endpoint leaves SFTP').toBe(22);
 
     await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE-interval-overridden.png');
   });
