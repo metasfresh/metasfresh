@@ -23,7 +23,8 @@ import * as fs from 'node:fs';
  * 6. TransportType=LOCAL_FILE -> root location, frequency and filename pattern visible; hidden for HTTP/SFTP
  * 7. LOCAL_FILE root location is mandatory -> the endpoint stays invalid/unsaved until it is filled
  * 8. Switching transport away and back (LOCAL_FILE <-> SFTP) leaves no foreign transport values behind
- * 9. The LOCAL_FILE field labels render in German and in English
+ * 9. Switching HTTP + Basic -> SFTP + PASSWORD keeps the password, because both configurations show it
+ * 10. The LOCAL_FILE field labels render in German and in English
  */
 
 const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
@@ -670,6 +671,97 @@ stale configuration on the record.
     expect(emptyish(pollableAgainRecord.fieldsByName.SshPrivateKey.value), 'SshPrivateKey must be cleared when the endpoint leaves SFTP').toBe(true);
 
     await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE-frequency-reentered.png');
+  });
+
+  test('Switching an HTTP endpoint to SFTP password authentication keeps the password', async ({ page }) => {
+    allure.epic('E1500: External Systems');
+    allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
+    allure.story('A field the new configuration still shows keeps its value');
+    allure.severity('critical');
+
+    allure.description(`
+## ExternalSystem_Endpoint — a still-visible field keeps its value across a transport switch
+
+Password is the one field shown by more than one transport: HTTP + Basic, HTTP + OAuth2, and
+SFTP + PASSWORD. Switching an endpoint between two of those configurations must therefore NOT take
+the password away — the operator can still see the field, and a value they cannot see is the only
+thing the clearing exists to prevent.
+
+1. Save a complete HTTP + Basic endpoint, password included
+2. Switch to SFTP and pick PASSWORD authentication, filling the SFTP settings
+3. The password is still on the record and the field is still on screen — the endpoint is usable
+4. Switch the SFTP authentication to SSH_KEY -> now the window hides the password, so it is cleared
+    `);
+
+    test.setTimeout(240000);
+
+    await test.step('Save a complete HTTP + Basic endpoint with a password', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      await selectListValue(page, 'TransportType', 'HTTP');
+      await selectListValue(page, 'AuthType', /Basic/);
+      await selectListValue(page, 'OutboundHttpMethod', 'POST');
+      await fillTextField(page, 'HttpEndPoint', 'https://example.com/api/orders');
+      await fillTextField(page, 'LoginUsername', 'svc-user');
+      const httpPassword = page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]');
+      await httpPassword.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await httpPassword.fill('shared-secret');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(2000);
+    });
+
+    const recordId = page.url().match(new RegExp(`/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/(\\d+)`))[1];
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after saving the HTTP + Basic endpoint');
+    expect((await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId)).fieldsByName.Password.value).toBe('shared-secret');
+
+    await test.step('Switch the saved endpoint to SFTP with password authentication', async () => {
+      await selectListValue(page, 'TransportType', 'SFTP');
+      await selectListValue(page, 'SftpAuthType', /PASSWORD/);
+      await fillTextField(page, 'SftpHost', 'sftp.example.com');
+      await fillNumericField(page, 'SftpPort', '22');
+      await fillTextField(page, 'SftpUsername', 'sftpuser');
+      await fillTextField(page, 'SftpRemotePath', '/outbound/edi');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(2000);
+    });
+
+    // The window still shows the password field under SFTP + PASSWORD ...
+    await expect(page.locator('.form-field-Password input[type="text"], .form-field-Password input[type="password"]'))
+      .toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    // ... so the value must still be there. Nobody re-typed it in this step.
+    const sftpRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+    expect(sftpRecord.fieldsByName.TransportType.value.key).toBe('SFTP');
+    expect(sftpRecord.fieldsByName.Password.value, 'the password must survive a switch into a configuration that still shows it').toBe('shared-secret');
+    // ... and with it the endpoint is complete, not left invalid pending a re-typed password
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint to SFTP + PASSWORD');
+    // the HTTP-only settings are gone, though
+    expect(emptyish(sftpRecord.fieldsByName.HttpEndPoint.value), 'HttpEndPoint must be cleared when the endpoint leaves HTTP').toBe(true);
+    expect(emptyish(sftpRecord.fieldsByName.AuthType.value), 'AuthType must be cleared when the endpoint leaves HTTP').toBe(true);
+    expect(emptyish(sftpRecord.fieldsByName.LoginUsername.value), 'LoginUsername must be cleared when the endpoint leaves HTTP').toBe(true);
+
+    await saveStill(page, 'endpoint-window-switched-HTTP-to-SFTP-password-kept.png');
+
+    // The SSH key has to be entered in this step: it is mandatory under SFTP + SSH_KEY, so without it
+    // the record is invalid, the WebUI never saves it, and the interceptor never runs at all.
+    await test.step('Switch the SFTP authentication to SSH key', async () => {
+      await selectListValue(page, 'SftpAuthType', /SSH_KEY/);
+      const sshPrivateKey = page.locator('.form-field-SshPrivateKey textarea, .form-field-SshPrivateKey input');
+      await sshPrivateKey.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await sshPrivateKey.fill('-----BEGIN OPENSSH PRIVATE KEY-----');
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(2000);
+    });
+
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint to SFTP + SSH_KEY');
+
+    // SFTP + SSH_KEY hides the password, so now — and only now — it is taken away
+    await expect(page.locator('.form-field-Password')).toBeHidden({ timeout: SLOW_ACTION_TIMEOUT });
+    const sshKeyRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+    expect(emptyish(sshKeyRecord.fieldsByName.Password.value), 'the password must be cleared once the window stops showing it').toBe(true);
+
+    await saveStill(page, 'endpoint-window-switched-SFTP-to-ssh-key.png');
   });
 });
 
