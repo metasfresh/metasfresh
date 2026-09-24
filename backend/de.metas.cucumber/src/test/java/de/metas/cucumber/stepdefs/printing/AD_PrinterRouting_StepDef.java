@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.printing;
 
 import de.metas.adempiere.model.I_AD_PrinterRouting;
-import de.metas.cache.CacheMgt;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -90,7 +89,6 @@ public class AD_PrinterRouting_StepDef
 		record.setIsActive(true);
 
 		InterfaceWrapperHelper.save(record);
-		CacheMgt.get().reset(I_AD_PrinterRouting.Table_Name);
 
 		row.getAsIdentifier().putOrReplace(printerRoutingTable, record);
 	}
@@ -116,7 +114,5 @@ public class AD_PrinterRouting_StepDef
 		{
 			InterfaceWrapperHelper.delete(routing);
 		}
-
-		CacheMgt.get().reset(I_AD_PrinterRouting.Table_Name);
 	}
 }
