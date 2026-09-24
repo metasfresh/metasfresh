@@ -107,6 +107,14 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	 * String→byte[] type conversion, whose default charset is not guaranteed. A {@code null} body
 	 * (e.g. nothing to process) leaves the property unset, matching the archiver's "nothing was
 	 * captured" contract in {@link #archiveLocally(Exchange, String)}.
+	 * <p>
+	 * This pins only the ENCODE half (String → bytes). The preceding {@code convertBodyTo(String.class)}
+	 * step (SFTP and REST call it before this method runs; see each route builder) is a DECODE (raw
+	 * transport bytes → String) whose charset this class does not control — so for those two transports,
+	 * the archived copy is only as faithful to the original transport bytes as that decode was. The
+	 * LOCAL_FILE transport does not go through this method at all: it reads and archives the polled file's
+	 * {@code byte[]} directly (see {@code ScriptedImportConversionLocalFileRouteBuilder}), which is the
+	 * only one of the three with a genuinely guaranteed byte-identical round trip.
 	 */
 	protected void captureOriginalPayloadAsUtf8Bytes(@NonNull final Exchange exchange)
 	{
