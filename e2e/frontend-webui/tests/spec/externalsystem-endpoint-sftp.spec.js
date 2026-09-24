@@ -400,7 +400,7 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     // Fill optional filename pattern
     await fillTextField(page, 'SftpFilenamePattern', 'export_{timestamp}.json');
 
-    // SFTP inbound-polling settings live on the endpoint.
+    // The SFTP polling interval, plus the transport-agnostic archive directories.
     await fillNumericField(page, 'SftpPollingIntervalMs', '30000');
     await fillTextField(page, 'ProcessedDirectory', '/inbound/processed');
     await fillTextField(page, 'ErrorDirectory', '/inbound/error');
@@ -424,7 +424,7 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     await expect(remotePathField).toHaveValue('/outbound/edi');
     await expect(filenamePatternField).toHaveValue('export_{timestamp}.json');
 
-    // The SFTP inbound-polling settings persist on the endpoint too.
+    // The polling interval and the transport-agnostic archive directories persist too.
     // (integer field — tolerate any locale grouping separator between "30" and "000")
     await expect(page.locator('.form-field-SftpPollingIntervalMs input')).toHaveValue(/^30[.,\s ]?000$/);
     await expect(page.locator('.form-field-ProcessedDirectory input[type="text"]')).toHaveValue('/inbound/processed');
