@@ -47,31 +47,35 @@ import java.util.TreeSet;
 import static org.assertj.core.api.Assertions.fail;
 
 /**
- * Holds the display-logic copies inside
- * {@link ExternalSystem_Endpoint} against the live application dictionary.
+ * Holds the display-logic copies inside {@link ExternalSystem_Endpoint} against the live application
+ * dictionary.
  * <p>
  * The interceptor decides which endpoint fields a new transport/authentication configuration hides by
  * evaluating a <b>verbatim string copy</b> of each field's {@code AD_Field.DisplayLogic}. A copy cannot see
  * the dictionary, so nothing in that module's plain-JUnit tests notices when a migration script changes a
  * condition -- or deactivates a field, which no string copy can express at all. This step is the only place
- * in the build where both sides are present at once: the branch's Java source, and the dictionary its
- * migration scripts produce.
+ * in the build where both sides are present at once.
  * <p>
- * What it asserts, in both directions:
- * <ul>
- *     <li>every rule's condition is byte-identical to that column's live {@code AD_Field.DisplayLogic};</li>
- *     <li>every column the window shows conditionally has a rule -- a missing one means the column keeps its
- *         value while nobody can see or correct it;</li>
- *     <li>no rule names a column the window does not show conditionally -- in particular none whose
- *         {@code AD_Field} is inactive, which is a rule that claims a field is "shown under X" when it is
- *         rendered under nothing at all.</li>
- * </ul>
+ * It asserts in both directions: every rule's condition is byte-identical to that column's live
+ * {@code AD_Field.DisplayLogic}, every column the window shows conditionally has a rule, and no rule names a
+ * column the window does not show conditionally (an inactive {@code AD_Field} included).
+ * <p>
+ * Gherkin usage -- no parameters, no DataTable:
+ * <pre>
+ *   Then the ExternalSystem_Endpoint interceptor's display logic is exactly the window's
+ * </pre>
  */
 public class ExternalSystem_Endpoint_DisplayLogic_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
+	/**
+	 * Reports every disagreement between the two sides in one failure, each naming the column and both
+	 * strings.
+	 *
+	 * @see ExternalSystem_Endpoint#getDisplayLogicByColumnName()
+	 */
 	@Then("the ExternalSystem_Endpoint interceptor's display logic is exactly the window's")
 	public void interceptorDisplayLogicIsExactlyTheWindows()
 	{
