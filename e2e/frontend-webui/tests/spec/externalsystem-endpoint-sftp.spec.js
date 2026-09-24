@@ -31,9 +31,8 @@ import * as fs from 'node:fs';
 const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
 
 /**
- * The AuthType AD_Ref_List value for OAuth version 1 — spelled out because "OAuth" and "OAuth2" sit
- * in the same list and the list renders OAuth2 first, so anything that matches loosely lands on
- * OAuth2 and silently runs the scenario on the other configuration.
+ * The AuthType AD_Ref_List value for OAuth version 1 — "OAuth" and "OAuth2" are two distinct values
+ * of that list, so naming this one keeps the scenario from being read as the OAuth2 one.
  */
 const OAUTH_V1 = 'OAuth';
 
