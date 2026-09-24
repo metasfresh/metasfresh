@@ -31,7 +31,7 @@ const POSCashJournalClosingModal = () => {
   };
 
   return (
-    <div className="modal is-active pos-journal-closing-panel">
+    <div className="modal is-active pos-journal-closing-panel" data-testid="pos-cash-journal-closing-modal">
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
@@ -140,9 +140,11 @@ const PaymentMethod = ({
 
   return (
     <>
-      <tr className="line-level1">
+      <tr className="line-level1" data-testid="pos-cash-journal-summary-row" data-payment-method={paymentMethod}>
         <td className="description-col">{getPaymentMethodCaption({ paymentMethod })}</td>
-        <td className="amt">{amountExpectedStr}</td>
+        <td className="amt" data-testid="pos-cash-journal-summary-booked-amount">
+          {amountExpectedStr}
+        </td>
         {isRenderCountedField && (
           <>
             <td className="amt">
@@ -191,7 +193,7 @@ const PaymentDetail = ({ type, description, amount, currency, precision }) => {
   const amountStr = formatAmountToHumanReadableStr({ amount, currency, precision });
   const descriptionEff = getPaymentDetailTypeCaption(type) + (description ? ' ' + description : '');
   return (
-    <tr className="line-level2">
+    <tr className="line-level2" data-testid="pos-cash-journal-summary-detail-row" data-detail-type={type}>
       <td className="description-col">{descriptionEff}</td>
       <td className="amt">{amountStr}</td>
     </tr>

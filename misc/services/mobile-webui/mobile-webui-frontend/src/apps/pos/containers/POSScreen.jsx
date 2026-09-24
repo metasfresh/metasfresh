@@ -8,10 +8,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateOrderFromBackendAction } from '../actions/orders';
 import POSTerminalSelectModal from './select_terminal/POSTerminalSelectModal';
 import { usePOSTerminal } from '../actions/posTerminal';
-import { MODAL_POSTerminalSelect, MODAL_SelectOrders } from '../actions/ui';
+import { MODAL_CashWithdrawal, MODAL_POSTerminalSelect, MODAL_SelectOrders } from '../actions/ui';
 import { getModalFromState } from '../reducers/uiUtils';
 import { POSContent } from './POSContent';
 import SelectOrderModal from './select_order/SelectOrderModal';
+import CashWithdrawalModal from './cash_withdrawal/CashWithdrawalModal';
+import { useCashWithdrawalCategories } from './cash_withdrawal/useCashWithdrawalCategories';
 
 const POSScreen = () => {
   const dispatch = useDispatch();
@@ -25,11 +27,17 @@ const POSScreen = () => {
     },
   });
 
-  const modal = useModal();
+  // loaded once here: the header offers withdrawals only when categories exist, the withdrawal modal lists them
+  const cashWithdrawalCategories = useCashWithdrawalCategories({
+    posTerminalId,
+    isEnabled: !!posTerminal.cashJournalOpen,
+  });
+
+  const modal = useModal({ cashWithdrawalCategories });
 
   return (
-    <div className="pos-screen">
-      <Header />
+    <div className="pos-screen" data-testid="pos-screen">
+      <Header cashWithdrawalCategories={cashWithdrawalCategories} />
       {modal}
       <POSContent disabled={!!modal} />
     </div>
@@ -54,7 +62,7 @@ const getCashJournalStatus = (posTerminal) => {
   }
 };
 
-const useModal = () => {
+const useModal = ({ cashWithdrawalCategories }) => {
   const posTerminal = usePOSTerminal();
   const modal = useSelector((globalState) => getModalFromState({ globalState }));
 
@@ -67,6 +75,8 @@ const useModal = () => {
       return <POSTerminalSelectModal allowCancel={true} />;
     } else if (modal === MODAL_SelectOrders) {
       return <SelectOrderModal />;
+    } else if (modal === MODAL_CashWithdrawal) {
+      return <CashWithdrawalModal categories={cashWithdrawalCategories} />;
     }
   }
 
