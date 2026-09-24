@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
@@ -206,6 +207,23 @@ public class ExternalSystem_Endpoint
 	{
 		final ILogicExpression visibleIf = expressionFactory.compile(displayLogic, ILogicExpression.class);
 		return new HideableColumn(columnName, displayLogic, visibleIf, clearAction);
+	}
+
+	/**
+	 * The {@code AD_Field.DisplayLogic} copy this class carries, per column it can hide.
+	 * <p>
+	 * Public for one reader only: the cucumber scenario in {@code externalSystemEndpointDisplayLogic.feature},
+	 * which holds these copies against the live dictionary. That scenario is what turns the "verbatim copy"
+	 * promised above from a convention a reviewer has to grep for into something the build checks; it lives in
+	 * {@code de.metas.cucumber} because that is the only test home with this branch's migration scripts applied
+	 * to a real database. It needs the strings, not the compiled expressions or the clear actions, so only the
+	 * strings leave this class.
+	 */
+	@VisibleForTesting
+	public ImmutableMap<String, String> getDisplayLogicByColumnName()
+	{
+		return hideableColumns.get().stream()
+				.collect(ImmutableMap.toImmutableMap(HideableColumn::getColumnName, HideableColumn::getDisplayLogic));
 	}
 
 	/**
