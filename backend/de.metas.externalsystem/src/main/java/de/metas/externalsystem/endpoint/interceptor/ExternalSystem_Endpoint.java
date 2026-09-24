@@ -27,7 +27,9 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -204,6 +206,8 @@ public class ExternalSystem_Endpoint
 			I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType })
 	public void clearFieldsHiddenByTheNewConfiguration(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{
+		assertTransportTypeIsOneThisHandlerCovers(endpoint);
+
 		// ONE snapshot of the state the record is about to be stored in decides every field: clearing e.g.
 		// AuthType must not change the verdict already reached for Password, so what is visible is worked
 		// out before anything is taken away
@@ -214,6 +218,27 @@ public class ExternalSystem_Endpoint
 				.collect(ImmutableList.toImmutableList());
 
 		hiddenColumns.forEach(column -> column.clear(endpoint));
+	}
+
+	/**
+	 * Refuses a transport code this handler carries no rules for.
+	 * <p>
+	 * Every condition in {@link #createHideableColumns()} is keyed on a transport, so an unrecognised one
+	 * satisfies none of them and the handler would take EVERY hideable column away in a single save --
+	 * silently, and with no way back. That is unreachable while the ref list holds exactly the three
+	 * transports this class covers, and becomes reachable the moment a fourth is added to the ref list
+	 * without a matching entry here. Failing the save instead is not an extra restriction: the record
+	 * would be unloadable anyway, because {@code ExternalSystemEndpointRepository#fromRecord} resolves the
+	 * very same {@link TransportType#ofCode(String)}.
+	 */
+	private static void assertTransportTypeIsOneThisHandlerCovers(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	{
+		final String transportTypeCode = Check.assumeNotEmpty(
+				endpoint.getTransportType(),
+				"TransportType must be set on {} -- it is a mandatory column",
+				I_ExternalSystem_Endpoint.Table_Name);
+
+		TransportType.ofCode(transportTypeCode);
 	}
 
 	/**

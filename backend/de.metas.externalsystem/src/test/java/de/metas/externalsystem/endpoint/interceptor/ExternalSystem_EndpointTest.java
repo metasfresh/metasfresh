@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Covers {@link ExternalSystem_Endpoint#clearFieldsHiddenByTheNewConfiguration(I_ExternalSystem_Endpoint)}:
@@ -405,6 +406,52 @@ public class ExternalSystem_EndpointTest
 
 			// then: the port is still unset, so the window keeps asking the operator for it
 			assertThat(sftpPortOf(endpoint)).isNull();
+		}
+	}
+
+	/**
+	 * A transport code this class carries no rules for. Every rule is keyed on a transport, so an
+	 * unrecognised one matches none of them.
+	 */
+	@Nested
+	class UnknownTransportType
+	{
+		@Test
+		void isRejected_ratherThanSilentlyClearingEveryColumn()
+		{
+			// given: a fully configured HTTP endpoint
+			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+			endpoint.setTransportType(TransportType.HTTP.getCode());
+			setAllHttpFields(endpoint);
+			InterfaceWrapperHelper.saveRecord(endpoint);
+
+			// when: the transport is switched to a code this class has no rules for -- what a fourth
+			// transport added to the ref list without a matching Java entry would look like
+			endpoint.setTransportType("CARRIER_PIGEON");
+
+			// then: the save is refused ...
+			assertThatThrownBy(() -> interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint))
+					.hasMessageContaining("CARRIER_PIGEON");
+
+			// ... and nothing was taken away on the way out
+			assertThat(endpoint.getHttpEndPoint()).isEqualTo("https://example.com/api");
+			assertThat(endpoint.getAuthType()).isEqualTo("Basic");
+			assertThat(endpoint.getPassword()).isEqualTo("secret");
+		}
+
+		@Test
+		void anUnsetTransportType_isRejectedToo()
+		{
+			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+			endpoint.setTransportType(TransportType.HTTP.getCode());
+			setAllHttpFields(endpoint);
+			InterfaceWrapperHelper.saveRecord(endpoint);
+
+			endpoint.setTransportType(null);
+
+			assertThatThrownBy(() -> interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint))
+					.hasMessageContaining("TransportType");
+			assertThat(endpoint.getHttpEndPoint()).isEqualTo("https://example.com/api");
 		}
 	}
 
