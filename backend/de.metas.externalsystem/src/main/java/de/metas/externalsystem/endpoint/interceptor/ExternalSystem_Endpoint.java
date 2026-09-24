@@ -191,10 +191,11 @@ public class ExternalSystem_Endpoint
 		});
 
 		// An endpoint that LEFT the local-file transport had its Frequency cleared to 0 by the loop above --
-		// 0 being the only "empty" the column's int setter can express. Coming back, the column's DefaultValue
-		// cannot help (it fires on record creation only), so the endpoint would land on a frequency the
-		// local-file import route rejects at enable time. Re-default it so the round trip ends on a working,
-		// visible configuration the operator can still override.
+		// 0 being the only "empty" the column's int setter can express, and the constant's javadoc above
+		// explains why the column's DefaultValue can't re-apply here. A frequency <= 0 is read back as no
+		// frequency at all (ExternalSystemEndpointRepository normalises it to null), so the endpoint could
+		// never be made pollable. Re-default it so the round trip ends on a working, visible configuration
+		// the operator can still override.
 		if (TransportType.LOCAL_FILE.getCode().equals(newTransportType) && endpoint.getFrequency() <= 0)
 		{
 			endpoint.setFrequency(DEFAULT_LOCAL_FILE_FREQUENCY_MS);

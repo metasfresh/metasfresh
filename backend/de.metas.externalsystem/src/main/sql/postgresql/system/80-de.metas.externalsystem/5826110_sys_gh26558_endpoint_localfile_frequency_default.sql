@@ -3,10 +3,10 @@
 -- 5814450_move_sftp_polling_fields_to_endpoint.sql).
 --
 -- Without a default, a LOCAL_FILE endpoint document can be saved with Frequency empty: the window's
--- validation accepts it (no MandatoryLogic on the column), but the persisted NULL is later mapped to
--- "not configured" and the LOCAL_FILE import route refuses to start polling, requiring a positive
--- frequency value. The operator sees no error anywhere and the endpoint never polls. Defaulting the
--- column to 60000 closes that gap for the common case (operator leaves the field blank).
+-- validation accepts it (no MandatoryLogic on the column yet -- see 5826120 below), and a frequency <= 0
+-- is read back as no frequency at all, so the endpoint can never be made pollable. The operator sees no
+-- error anywhere and the endpoint never polls. Defaulting the column to 60000 closes that gap for the
+-- common case (operator leaves the field blank).
 --
 -- The default covers record CREATION only (AD_Column.DefaultValue never re-fires on an existing row), so
 -- it does not help an endpoint that reaches LOCAL_FILE by a later transport switch: switching away from

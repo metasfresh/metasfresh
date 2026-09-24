@@ -293,8 +293,8 @@ public class ExternalSystem_EndpointTest
 		/**
 		 * Round trip LOCAL_FILE -&gt; another transport -&gt; LOCAL_FILE. Switching away clears Frequency to 0 —
 		 * the only "empty" its {@code int} setter can express — and the column's DefaultValue never re-fires
-		 * on an existing row, so without a re-default the endpoint comes back with a frequency the local-file
-		 * import route rejects at enable time.
+		 * on an existing row, so without a re-default the endpoint comes back with a frequency that reads
+		 * back as no frequency at all, leaving it unable to poll.
 		 */
 		@Test
 		void switchBackToLocalFile_afterFrequencyWasClearedBySwitchingAway_restoresTheDefaultFrequency()

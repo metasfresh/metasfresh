@@ -645,8 +645,8 @@ stale configuration on the record.
     expect(backToLocalFileRecord.fieldsByName.LocalRootLocation.value).toBe('/var/metasfresh/import/packzettel2');
     // Nobody typed a frequency in this step: the endpoint left LOCAL_FILE with its Frequency cleared to 0,
     // and the column's default cannot put it back (it only fires when a record is created). Coming back to
-    // LOCAL_FILE must therefore re-default it — otherwise the round trip yields a saveable endpoint that
-    // the local-file import route refuses to start, because 0 is not a positive polling frequency.
+    // LOCAL_FILE must therefore re-default it — otherwise the round trip yields an endpoint whose frequency
+    // reads back as unset, so it can never be made pollable.
     expect(
         backToLocalFileRecord.fieldsByName.Frequency.value,
         'Frequency must be re-defaulted when the endpoint switches back to LOCAL_FILE, so the round trip lands on a pollable configuration',
