@@ -22,14 +22,19 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
+import org.apache.camel.RuntimeCamelException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ScriptedImportConversionLocalArchiverTest
 {
@@ -73,6 +78,48 @@ class ScriptedImportConversionLocalArchiverTest
 		ScriptedImportConversionLocalArchiver.archive(nestedDir.toAbsolutePath().toString(), "file.bin", new byte[]{0x01, 0x02});
 
 		assertThat(Files.readAllBytes(nestedDir.resolve("file.bin"))).isEqualTo(new byte[]{0x01, 0x02});
+	}
+
+	/**
+	 * A scanner reusing an incoming file name (e.g. every scan lands as {@code scan001.pdf}) must never
+	 * cause the second archive call to destroy the first: with {@code ImportFileNamePattern} left blank
+	 * (the default -- an optional field), the raw incoming name is all {@code archiveFileName()} ever
+	 * produces, so this is the only thing standing between two scans and a silently overwritten original.
+	 * Both payloads must survive, under distinct names, with no byte lost.
+	 */
+	@Test
+	void archive_sameFileNameTwice_bothPayloadsSurviveDistinctly() throws Exception
+	{
+		final byte[] firstScan = {0x25, 0x50, 0x44, 0x46, 0x00, 0x01};
+		final byte[] secondScan = {0x25, 0x50, 0x44, 0x46, 0x02, 0x03};
+
+		ScriptedImportConversionLocalArchiver.archive(archiveDir.toAbsolutePath().toString(), "scan001.pdf", firstScan);
+		ScriptedImportConversionLocalArchiver.archive(archiveDir.toAbsolutePath().toString(), "scan001.pdf", secondScan);
+
+		final List<byte[]> archivedContents;
+		try (Stream<Path> files = Files.list(archiveDir))
+		{
+			archivedContents = files
+					.map(ScriptedImportConversionLocalArchiverTest::readAllBytesUnchecked)
+					.collect(Collectors.toList());
+		}
+
+		assertThat(archivedContents).hasSize(2);
+		assertThat(archivedContents).contains(firstScan, secondScan);
+	}
+
+	/**
+	 * {@code fileName} may derive from an operator-configured {@code ImportFileNamePattern}; a pattern
+	 * resolving to a name containing {@code ..} must not be allowed to write outside {@code directory}.
+	 */
+	@Test
+	void archive_fileNameEscapingDirectory_isRejected()
+	{
+		assertThatThrownBy(() ->
+				ScriptedImportConversionLocalArchiver.archive(archiveDir.toAbsolutePath().toString(), "../escaped.pdf", new byte[]{0x01}))
+				.isInstanceOf(RuntimeCamelException.class);
+
+		assertThat(archiveDir.getParent().resolve("escaped.pdf")).doesNotExist();
 	}
 
 	private static byte[] readAllBytesUnchecked(final Path path)
