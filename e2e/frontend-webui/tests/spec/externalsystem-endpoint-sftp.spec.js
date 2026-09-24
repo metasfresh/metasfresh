@@ -579,10 +579,11 @@ A saved endpoint that is switched from one transport to another must not keep th
 transport's configuration around: it is invisible in the window, so it would be a silent
 stale configuration on the record.
 
-1. Save a complete LOCAL_FILE endpoint (root location, frequency, filename pattern)
+1. Save a complete LOCAL_FILE endpoint (root location, polling interval, filename pattern)
 2. Switch to SFTP and fill its mandatory fields -> the LOCAL_FILE values are gone from the record
-3. Switch back to LOCAL_FILE and re-fill the root location -> the SFTP values are gone, and the
-   polling frequency the switch to SFTP cleared stays cleared until the operator re-enters it
+3. Switch back to LOCAL_FILE and re-fill the root location -> the record is invalid, because the
+   polling interval the switch to SFTP cleared is unset and mandatory for LOCAL_FILE
+4. Re-enter the polling interval -> the record is valid again and the SFTP values are gone
     `);
 
     test.setTimeout(240000);
@@ -641,33 +642,32 @@ stale configuration on the record.
       await page.waitForTimeout(2000);
     });
 
-    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint back to LOCAL_FILE');
-
-    const backToLocalFileRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
-    expect(backToLocalFileRecord.fieldsByName.TransportType.value.key).toBe('LOCAL_FILE');
-    expect(backToLocalFileRecord.fieldsByName.LocalRootLocation.value).toBe('/var/metasfresh/import/packzettel2');
-    // Nobody typed a frequency in this step: the endpoint left LOCAL_FILE with its Frequency cleared to 0,
-    // and switching back does not restore it -- the operator re-enters it, same as every other
-    // transport-specific field the switch cleared (e.g. LocalRootLocation, just above).
-    expect(emptyish(backToLocalFileRecord.fieldsByName.Frequency.value), 'Frequency stays cleared when the endpoint switches back to LOCAL_FILE, until the operator re-enters it').toBe(true);
-    expect(emptyish(backToLocalFileRecord.fieldsByName.SftpHost.value), 'SftpHost must be cleared when the endpoint leaves SFTP').toBe(true);
-    expect(emptyish(backToLocalFileRecord.fieldsByName.SftpUsername.value), 'SftpUsername must be cleared when the endpoint leaves SFTP').toBe(true);
-    expect(emptyish(backToLocalFileRecord.fieldsByName.SftpRemotePath.value), 'SftpRemotePath must be cleared when the endpoint leaves SFTP').toBe(true);
-    expect(emptyish(backToLocalFileRecord.fieldsByName.SftpAuthType.value), 'SftpAuthType must be cleared when the endpoint leaves SFTP').toBe(true);
-    expect(emptyish(backToLocalFileRecord.fieldsByName.SshPrivateKey.value), 'SshPrivateKey must be cleared when the endpoint leaves SFTP').toBe(true);
+    // Nobody typed a polling interval in this step: the switch to SFTP cleared Frequency to SQL NULL, and
+    // switching back does not restore it. Frequency is mandatory under LOCAL_FILE, so the record is
+    // invalid and the operator is asked for it -- exactly as for LocalRootLocation.
+    const backToLocalFileStatus = await getValidationStatus(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+    expect(backToLocalFileStatus.valid, `expected the endpoint to be invalid while Frequency is unset, got: ${JSON.stringify(backToLocalFileStatus)}`).toBe(false);
+    expect(backToLocalFileStatus.missingFields.map((missing) => missing.field)).toContain('Frequency');
 
     await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE.png');
 
-    await test.step('Re-enter the polling frequency the switch cleared', async () => {
+    await test.step('Re-enter the polling interval the switch cleared', async () => {
       await fillNumericField(page, 'Frequency', '60000');
       await page.keyboard.press('Tab');
       await page.waitForTimeout(2000);
     });
 
-    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after re-entering the polling frequency');
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after re-entering the polling interval');
 
     const pollableAgainRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+    expect(pollableAgainRecord.fieldsByName.TransportType.value.key).toBe('LOCAL_FILE');
+    expect(pollableAgainRecord.fieldsByName.LocalRootLocation.value).toBe('/var/metasfresh/import/packzettel2');
     expect(pollableAgainRecord.fieldsByName.Frequency.value).toBe(60000);
+    expect(emptyish(pollableAgainRecord.fieldsByName.SftpHost.value), 'SftpHost must be cleared when the endpoint leaves SFTP').toBe(true);
+    expect(emptyish(pollableAgainRecord.fieldsByName.SftpUsername.value), 'SftpUsername must be cleared when the endpoint leaves SFTP').toBe(true);
+    expect(emptyish(pollableAgainRecord.fieldsByName.SftpRemotePath.value), 'SftpRemotePath must be cleared when the endpoint leaves SFTP').toBe(true);
+    expect(emptyish(pollableAgainRecord.fieldsByName.SftpAuthType.value), 'SftpAuthType must be cleared when the endpoint leaves SFTP').toBe(true);
+    expect(emptyish(pollableAgainRecord.fieldsByName.SshPrivateKey.value), 'SshPrivateKey must be cleared when the endpoint leaves SFTP').toBe(true);
 
     await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE-frequency-reentered.png');
   });

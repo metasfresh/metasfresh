@@ -10,11 +10,10 @@
 --
 -- The default covers record CREATION only (AD_Column.DefaultValue never re-fires on an existing row), so
 -- it does not help an endpoint that reaches LOCAL_FILE by a later transport switch: switching away from
--- LOCAL_FILE clears Frequency to 0, and the default cannot put it back. That is expected -- the switch
--- deliberately clears every field owned by the transport being left, and the operator re-enters them on
--- the way back, same as for LocalRootLocation or any other transport-specific field. The companion
--- migration script additionally gates the column as mandatory under TransportType=LOCAL_FILE, which stops
--- the operator clearing the field out by hand (though not the 0 a transport switch itself leaves behind).
+-- LOCAL_FILE clears Frequency, and the default cannot put it back. That is expected -- the switch clears
+-- every field owned by the transport being left, and the operator re-enters them on the way back, same as
+-- for LocalRootLocation. The companion migration script gates the column as mandatory under
+-- TransportType=LOCAL_FILE, so the window asks for it on that way back.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-24:
 --   AD_MigrationScript 5826110 (this script)

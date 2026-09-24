@@ -26,6 +26,7 @@ import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -179,10 +180,20 @@ public class ExternalSystem_EndpointTest
 		endpoint.setImportFileNamePattern("{filename}_{timestamp}");
 	}
 
+	/**
+	 * The stored value, not the generated {@code int} getter: that getter answers 0 both for a stored 0 and
+	 * for SQL NULL, and only NULL trips the column's MandatoryLogic.
+	 */
+	@Nullable
+	private static Integer frequencyOf(final I_ExternalSystem_Endpoint endpoint)
+	{
+		return InterfaceWrapperHelper.getValueOrNull(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_Frequency);
+	}
+
 	private static void assertAllLocalFileFieldsCleared(final I_ExternalSystem_Endpoint endpoint)
 	{
 		assertThat(endpoint.getLocalRootLocation()).isNull();
-		assertThat(endpoint.getFrequency()).isZero();
+		assertThat(frequencyOf(endpoint)).isNull();
 		assertThat(endpoint.getImportFileNamePattern()).isNull();
 	}
 
@@ -288,6 +299,37 @@ public class ExternalSystem_EndpointTest
 			assertAllLocalFileFieldsPreserved(endpoint);
 			// ... and the transport-agnostic directories are untouched
 			assertDirectoriesPreserved(endpoint);
+		}
+
+		/**
+		 * Round trip LOCAL_FILE -&gt; another transport -&gt; LOCAL_FILE. The switch away must leave Frequency
+		 * unset rather than 0: the column's MandatoryLogic rejects only an unset value, so a 0 would end the
+		 * round trip on a record the window calls valid while
+		 * {@code ExternalSystemEndpointRepository} reads the frequency back as absent — an endpoint that
+		 * silently never polls. Unset, the operator is prompted for it, exactly as for LocalRootLocation.
+		 */
+		@Test
+		void switchBackToLocalFile_afterFrequencyWasClearedBySwitchingAway_leavesFrequencyUnset()
+		{
+			// given: a working LOCAL_FILE endpoint
+			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
+			setAllLocalFileFields(endpoint);
+			InterfaceWrapperHelper.saveRecord(endpoint);
+
+			// ... that is switched away to SFTP, which clears its local-file settings
+			endpoint.setTransportType(TransportType.SFTP.getCode());
+			setAllSftpFields(endpoint);
+			interceptor.resetTransportSpecificFields(endpoint);
+			assertThat(frequencyOf(endpoint)).isNull();
+
+			// when: switching back to LOCAL_FILE, re-entering only the root location
+			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
+			endpoint.setLocalRootLocation("/data/in2");
+			interceptor.resetTransportSpecificFields(endpoint);
+
+			// then: the frequency is still unset, so the window keeps asking the operator for it
+			assertThat(frequencyOf(endpoint)).isNull();
 		}
 	}
 }

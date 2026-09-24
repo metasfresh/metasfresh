@@ -32,6 +32,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -80,7 +81,11 @@ public class ExternalSystem_Endpoint
 					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs, endpoint -> endpoint.setSftpPollingIntervalMs(0))
 					// LOCAL_FILE transport
 					.put(I_ExternalSystem_Endpoint.COLUMNNAME_LocalRootLocation, endpoint -> endpoint.setLocalRootLocation(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, endpoint -> endpoint.setFrequency(0))
+					// via setValue, because the generated setFrequency(int) cannot express SQL NULL: a stored 0
+					// satisfies the column's MandatoryLogic while reading back as no frequency at all, so the
+					// endpoint would look configured and never poll
+					.put(I_ExternalSystem_Endpoint.COLUMNNAME_Frequency,
+							endpoint -> InterfaceWrapperHelper.setValue(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, null))
 					.put(I_ExternalSystem_Endpoint.COLUMNNAME_ImportFileNamePattern, endpoint -> endpoint.setImportFileNamePattern(null))
 					.build();
 
