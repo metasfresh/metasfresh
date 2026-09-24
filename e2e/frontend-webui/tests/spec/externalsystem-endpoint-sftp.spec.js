@@ -221,9 +221,9 @@ async function fillSshPrivateKeyField(page, value) {
 
 test.describe('ExternalSystem Endpoint — SFTP Transport', () => {
   test.beforeEach(async ({ page }) => {
-    // The ExternalSystem_Endpoint window (541967) is only accessible to the "WebUI"
-    // role; the default role (roles[0]) lacks read-write on it. Select the WebUI role
-    // explicitly at login so the form loads.
+    // The role the login defaults to (roles[0]) has no read-write access to the
+    // ExternalSystem_Endpoint window (541967), so pick the "WebUI" role explicitly and the form
+    // loads.
     await page.goto(`${FRONTEND_BASE_URL}/login`);
     await page.locator('.login-container').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await page.locator('input[name="username"]').fill('metasfresh');
