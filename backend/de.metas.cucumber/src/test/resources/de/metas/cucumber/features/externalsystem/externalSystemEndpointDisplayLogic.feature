@@ -1,9 +1,9 @@
 @from:cucumber
-@allure.label.epic:E1500_External_Systems
-@allure.label.feature:F15010_External_System_Endpoint
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00380_ExternalSystem_Scripted-Import-Processor
 @ghActions:run_on_executor5
 Feature: the endpoint interceptor's display logic is the window's own
-## F15010: External System Endpoint
+## F00380: ExternalSystem Scripted-Import-Processor
   The interceptor that clears the endpoint fields a new transport or authentication configuration hides
   carries each field's AD_Field.DisplayLogic as a verbatim string copy. A copy cannot see the dictionary:
   a migration script may change a condition, or deactivate a field, and leave the copy behind saying
@@ -16,7 +16,7 @@ Feature: the endpoint interceptor's display logic is the window's own
     Given infrastructure and metasfresh are running
 
   @from:cucumber
-  @allure.label.epic:E1500_External_Systems
-  @allure.label.feature:F15010_External_System_Endpoint
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00380_ExternalSystem_Scripted-Import-Processor
   Scenario: every rule repeats its field's condition, and every conditionally shown field has a rule
     Then the ExternalSystem_Endpoint interceptor's display logic is exactly the window's
