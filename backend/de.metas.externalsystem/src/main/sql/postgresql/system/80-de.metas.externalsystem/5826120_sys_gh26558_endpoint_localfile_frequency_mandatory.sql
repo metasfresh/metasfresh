@@ -1,9 +1,12 @@
--- Closes the round-trip hole the default alone (5826110) does not close: AD_Column.DefaultValue only
--- fires on record CREATION, never on an existing row, so an endpoint that goes
--- LOCAL_FILE -> (another transport, which clears Frequency to 0) -> LOCAL_FILE lands on 0, not 60000.
--- Gating Frequency as mandatory while TransportType=LOCAL_FILE makes that 0 unsaveable through the
--- window's normal save path (a loud validation error at enable time), mirroring LocalRootLocation's
--- own MandatoryLogic (AD_Column 593641, script 5826070).
+-- Gates Frequency as mandatory while TransportType=LOCAL_FILE, mirroring LocalRootLocation's own
+-- MandatoryLogic (AD_Column 593641, script 5826070): a local-file endpoint whose polling frequency the
+-- operator has cleared out is rejected by the window with "fill in mandatory fields" and cannot be saved.
+--
+-- What this does NOT cover is the 0 a transport switch leaves behind. Switching an endpoint away from
+-- LOCAL_FILE clears Frequency to 0 rather than to NULL -- 0 is the only "empty" an integer column can be
+-- set to on that path -- and mandatory validation rejects only an UNSET value, so 0 passes it and the
+-- record stays valid. That round trip is closed on the application side instead, by re-defaulting the
+-- frequency whenever an endpoint switches back to the local-file transport.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-24:
 --   AD_MigrationScript 5826120 (this script)

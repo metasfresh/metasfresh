@@ -8,12 +8,12 @@
 -- frequency value. The operator sees no error anywhere and the endpoint never polls. Defaulting the
 -- column to 60000 closes that gap for the common case (operator leaves the field blank).
 --
--- MandatoryLogic is intentionally NOT added on top of the default here, for symmetry with the SFTP
--- sibling column (592967), which ships default-only as well. The default only covers record CREATION
--- (AD_Column.DefaultValue never re-fires on an existing row), so a round trip through another transport
--- and back to LOCAL_FILE still lands on 0: switching away from LOCAL_FILE clears Frequency to 0 (see
--- ExternalSystem_Endpoint), and nothing re-defaults it on the way back. That gap is closed separately, by
--- MandatoryLogic gating Frequency on TransportType=LOCAL_FILE (see the companion migration script).
+-- The default covers record CREATION only (AD_Column.DefaultValue never re-fires on an existing row), so
+-- it does not help an endpoint that reaches LOCAL_FILE by a later transport switch: switching away from
+-- LOCAL_FILE clears Frequency to 0, and the default cannot put it back. That round trip is closed on the
+-- application side, by re-defaulting the frequency whenever an endpoint switches back to the local-file
+-- transport. The companion migration script additionally gates the column as mandatory under
+-- TransportType=LOCAL_FILE, which stops the operator clearing the field out by hand.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-24:
 --   AD_MigrationScript 5826110 (this script)
