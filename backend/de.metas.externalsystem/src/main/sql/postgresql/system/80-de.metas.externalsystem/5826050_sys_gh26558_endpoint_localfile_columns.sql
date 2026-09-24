@@ -1,6 +1,5 @@
 -- Packzettel Import — add LocalRootLocation, Frequency, ImportFileNamePattern columns
 -- Adds three columns to ExternalSystem_Endpoint for LOCAL_FILE transport: input directory, poll frequency, and filename pattern.
--- References: metasfresh issue #26558
 
 -- IDs allocated from idserver.metas.de on 2026-09-23:
 --   AD_Element 585487 /*From ID Server*/ (ImportFileNamePattern)

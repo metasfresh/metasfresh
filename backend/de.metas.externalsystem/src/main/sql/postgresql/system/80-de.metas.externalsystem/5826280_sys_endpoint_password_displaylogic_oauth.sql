@@ -1,7 +1,7 @@
 -- Show the Password field for HTTP endpoints authenticating with OAuth (v1).
 --
--- The scripted-adapter route builds its OAuth token request from client id, client secret, username AND
--- password; LoginUsername, ClientId and ClientSecret already list OAuth, Password did not.
+-- The scripted-adapter route can put client id, client secret, username AND password into its OAuth
+-- token request; LoginUsername, ClientId and ClientSecret already list OAuth, Password did not.
 --
 -- Every term is parenthesised and the terms joined with | only: operator precedence is off by default, so
 -- the expression is evaluated left to right.
