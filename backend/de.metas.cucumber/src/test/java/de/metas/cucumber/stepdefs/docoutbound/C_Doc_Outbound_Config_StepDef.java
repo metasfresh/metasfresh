@@ -26,6 +26,8 @@ import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.archive.config.DocOutboundConfigId;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.report.PrintFormatId;
@@ -182,11 +184,11 @@ public class C_Doc_Outbound_Config_StepDef
 			final I_C_Doc_Outbound_Config config = queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID, tableId)
-					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, row.getAsString(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType))
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, row.getAsEnum(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, DocBaseType.class))
 					.create()
 					.firstOnlyNotNull(I_C_Doc_Outbound_Config.class);
 			final DocOutboundConfigId configId = DocOutboundConfigId.ofRepoId(config.getC_Doc_Outbound_Config_ID());
-			final PrintFormatId printFormatId = retrievePrintFormatIdByName(row.getAsString("PrintFormat." + I_AD_PrintFormat.COLUMNNAME_Name));
+			final PrintFormatId printFormatId = StepDefUtil.getPrintFormatIdByName(row.getAsString("PrintFormat." + I_AD_PrintFormat.COLUMNNAME_Name));
 
 			// captured once per config per scenario: a second repoint in the same scenario must not overwrite
 			// the ALREADY-captured original with this scenario's own first write
@@ -195,19 +197,6 @@ public class C_Doc_Outbound_Config_StepDef
 			config.setAD_PrintFormat_ID(printFormatId.getRepoId());
 			InterfaceWrapperHelper.save(config);
 		});
-	}
-
-	/**
-	 * Resolves an active {@code AD_PrintFormat} by its exact {@code Name}; fails if there is none or more than one.
-	 */
-	public static PrintFormatId retrievePrintFormatIdByName(@NonNull final String printFormatName)
-	{
-		final I_AD_PrintFormat printFormat = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrintFormat.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_PrintFormat.COLUMNNAME_Name, printFormatName)
-				.create()
-				.firstOnlyNotNull(I_AD_PrintFormat.class);
-		return PrintFormatId.ofRepoId(printFormat.getAD_PrintFormat_ID());
 	}
 
 	/**

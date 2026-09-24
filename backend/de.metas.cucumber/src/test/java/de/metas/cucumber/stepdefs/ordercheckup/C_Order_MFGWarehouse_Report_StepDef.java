@@ -29,12 +29,12 @@ import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
-import de.metas.cucumber.stepdefs.docoutbound.C_Doc_Outbound_Config_StepDef;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.config.DocOutboundConfig;
@@ -434,7 +434,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 					.isEqualTo(expectedDocBaseType);
 
 			row.getAsOptionalString("PrintFormat." + I_AD_PrintFormat.COLUMNNAME_Name)
-					.map(C_Doc_Outbound_Config_StepDef::retrievePrintFormatIdByName)
+					.map(StepDefUtil::getPrintFormatIdByName)
 					.ifPresent(expectedPrintFormatId -> assertThat(config.getPrintFormatId())
 							.as("%s of the C_Doc_Outbound_Config resolved for %s (config=%s)", I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID, report, config)
 							.isEqualTo(expectedPrintFormatId));
