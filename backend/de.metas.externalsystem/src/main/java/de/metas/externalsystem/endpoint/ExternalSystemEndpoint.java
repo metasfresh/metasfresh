@@ -135,7 +135,8 @@ public class ExternalSystemEndpoint
 				.contentType(contentType != null ? contentType.toString() : null)
 				.sftpHost(sftpHost)
 				// boundary guard: JsonExternalSystemEndpoint.sftpPort is @JsonInclude(NON_NULL), so a 0 would go out
-				// as "sftpPort": 0 and the SFTP delivery would dial port 0 instead of falling back to the default 22.
+				// as "sftpPort": 0 -- a wrong value on the wire and in the delivery log. Camel happens to discard a
+				// zero port and keep 22, but no consumer is obliged to.
 				.sftpPort(sftpPort != null && sftpPort > 0 ? sftpPort : null)
 				.sftpUsername(sftpUsername)
 				.sftpAuthType(sftpAuthType != null ? sftpAuthType.getCode() : null)

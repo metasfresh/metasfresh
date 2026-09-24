@@ -176,8 +176,9 @@ class ExternalSystemEndpointTest
 
 	/**
 	 * A zero port must never reach the wire: {@code JsonExternalSystemEndpoint.sftpPort} is
-	 * {@code @JsonInclude(NON_NULL)}, so a {@code 0} would be serialized as {@code "sftpPort": 0} and the
-	 * downstream SFTP delivery would dial port 0 instead of falling back to the default 22.
+	 * {@code @JsonInclude(NON_NULL)}, so a {@code 0} would be serialized as {@code "sftpPort": 0} -- a wrong
+	 * value on the wire and in the delivery log. Camel happens to discard a zero port and keep 22, but no
+	 * consumer is obliged to.
 	 */
 	@Test
 	void toJson_sftpPortZero_isNotSerialized() throws Exception
