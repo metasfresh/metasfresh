@@ -315,13 +315,12 @@ public class ExternalSystem_Endpoint
 
 		boolean isVisible(@NonNull final Evaluatee configuration)
 		{
-			// Only TRUE means shown. A display logic that cannot be decided -- it would have to name a
-			// variable without a default, which ExternalSystem_EndpointTest.VisibilityRules rules out --
-			// counts as HIDDEN, because that is the answer the window gives it too:
-			// LogicExpressionEvaluator#evaluate collapses the undecided result to false, and the window's
-			// Document#updateFieldDisplayed falls back to LogicExpressionResult.FALSE. So a field this
-			// answers false for is a field the operator really cannot see, which is the whole premise of
-			// clearing it.
+			// Only TRUE means shown; anything else counts as HIDDEN, and the field is cleared. The window
+			// reaches the same verdict only because every rule stays inside the three governing columns
+			// (pinned by ExternalSystem_EndpointTest.VisibilityRules) and compares against a NON-EMPTY
+			// literal: an unset ref-list field resolves to "" in the window, whose DocumentEvaluatee is no
+			// Evaluatee2, and to the CtxName default "X" here, where Evaluatees.ofMap is one -- so a rule of
+			// the form @AuthType/X@='' would clear a field the operator can still see.
 			final Boolean visible = visibleIf.evaluate(configuration, OnVariableNotFound.ReturnNoResult);
 			return Boolean.TRUE.equals(visible);
 		}

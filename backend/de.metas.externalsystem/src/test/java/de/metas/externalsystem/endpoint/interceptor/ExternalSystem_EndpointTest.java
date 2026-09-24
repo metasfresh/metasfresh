@@ -731,11 +731,10 @@ public class ExternalSystem_EndpointTest
 		 * What {@code HideableColumn#isVisible} does with an expression it cannot decide -- one naming a
 		 * variable that has no value AND no default. It answers "not shown", so the field is cleared.
 		 * <p>
-		 * That is not a safety valve, it is the window's own answer: {@code LogicExpressionEvaluator#evaluate}
-		 * collapses the undecided result to {@code false}, and the window's {@code Document#updateFieldDisplayed}
-		 * falls back to {@code LogicExpressionResult.FALSE} as well. A field the interceptor clears here is
-		 * therefore a field the operator genuinely cannot see. The sibling test
-		 * {@link #everyDisplayLogicVariableHasADefaultValue()} keeps the case from arising at all.
+		 * The window answers FALSE too, but by a different route, so the two agree only while
+		 * {@link #everyDisplayLogicUsesOnlyTheColumnsTheInterceptorTriggersOn()} holds -- see the comment in
+		 * {@code HideableColumn#isVisible}. {@link #everyDisplayLogicVariableHasADefaultValue()} keeps the
+		 * case from arising at all.
 		 */
 		@Test
 		void anUndecidableDisplayLogicCountsAsHiddenJustAsTheWindowCountsIt()
