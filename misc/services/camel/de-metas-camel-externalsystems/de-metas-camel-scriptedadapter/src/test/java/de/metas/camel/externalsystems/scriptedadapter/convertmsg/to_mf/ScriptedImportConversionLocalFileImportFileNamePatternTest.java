@@ -80,7 +80,7 @@ public class ScriptedImportConversionLocalFileImportFileNamePatternTest extends 
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new ScriptedImportConversionLocalFileRouteBuilder(
+		return new ScriptedImportConversionLocalFileDynamicRouteBuilder(
 				"routeKey",
 				MOCK_ENDPOINT_NAME,
 				localInputDir.toAbsolutePath().toString(),
@@ -148,7 +148,7 @@ public class ScriptedImportConversionLocalFileImportFileNamePatternTest extends 
 	@Test
 	void archiveFileName_returnsExactlyWhatWasStashedByCapture() throws Exception
 	{
-		final ScriptedImportConversionLocalFileRouteBuilder routeBuilder = new ScriptedImportConversionLocalFileRouteBuilder(
+		final ScriptedImportConversionLocalFileDynamicRouteBuilder routeBuilder = new ScriptedImportConversionLocalFileDynamicRouteBuilder(
 				"routeKey",
 				MOCK_ENDPOINT_NAME,
 				localInputDir.toAbsolutePath().toString(),
@@ -164,7 +164,7 @@ public class ScriptedImportConversionLocalFileImportFileNamePatternTest extends 
 		// Reference the route builder's own key constant rather than duplicating its literal, so a rename
 		// is a compile error here instead of a test that silently stops asserting anything.
 		final Exchange exchange = new DefaultExchange(context);
-		exchange.setProperty(ScriptedImportConversionLocalFileRouteBuilder.EXCHANGE_PROPERTY_RESOLVED_ARCHIVE_FILE_NAME,
+		exchange.setProperty(ScriptedImportConversionLocalFileDynamicRouteBuilder.EXCHANGE_PROPERTY_RESOLVED_ARCHIVE_FILE_NAME,
 				"sentinel-resolved-name.pdf");
 
 		assertThat(routeBuilder.archiveFileName(exchange)).isEqualTo("sentinel-resolved-name.pdf");

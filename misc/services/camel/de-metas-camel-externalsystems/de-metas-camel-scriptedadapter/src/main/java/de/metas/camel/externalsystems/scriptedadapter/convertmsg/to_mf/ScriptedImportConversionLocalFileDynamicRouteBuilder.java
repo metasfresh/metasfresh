@@ -65,7 +65,7 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
  * {@link AbstractScriptedImportConversionArchivingRouteBuilder}), exactly like the SFTP transport's
  * remote {@code delete=true}. See {@link #buildFileUri()} for the read-lock / poller configuration.
  */
-public class ScriptedImportConversionLocalFileRouteBuilder extends AbstractScriptedImportConversionArchivingRouteBuilder
+public class ScriptedImportConversionLocalFileDynamicRouteBuilder extends AbstractScriptedImportConversionArchivingRouteBuilder
 {
 	/**
 	 * Exchange property stashing the resolved attachment/archive file name — written once in
@@ -81,7 +81,7 @@ public class ScriptedImportConversionLocalFileRouteBuilder extends AbstractScrip
 
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
-	public ScriptedImportConversionLocalFileRouteBuilder(
+	public ScriptedImportConversionLocalFileDynamicRouteBuilder(
 			@NonNull final String routeKey,
 			@NonNull final String endpointName,
 			@NonNull final String localRootLocation,

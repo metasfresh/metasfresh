@@ -61,7 +61,7 @@ import static org.mockito.ArgumentMatchers.eq;
  * envelope carries the original file name, and the source file ends up archived to the processed
  * directory and gone from the input directory.
  */
-public class ScriptedImportConversionLocalFileRouteTest extends CamelTestSupport
+public class ScriptedImportConversionLocalFileDynamicRouteTest extends CamelTestSupport
 {
 	private static final String MOCK_ENDPOINT_NAME = "mock:endpointName";
 	private static final String MOCK_SCRIPT_IDENTIFIER = "mock:scriptIdentifier";
@@ -94,7 +94,7 @@ public class ScriptedImportConversionLocalFileRouteTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new ScriptedImportConversionLocalFileRouteBuilder(
+		return new ScriptedImportConversionLocalFileDynamicRouteBuilder(
 				"routeKey",
 				MOCK_ENDPOINT_NAME,
 				localInputDir.toAbsolutePath().toString(),
@@ -218,7 +218,7 @@ public class ScriptedImportConversionLocalFileRouteTest extends CamelTestSupport
 	}
 
 	/**
-	 * Tests of {@link ScriptedImportConversionLocalFileRouteBuilder#buildFileUri()} -- a pure
+	 * Tests of {@link ScriptedImportConversionLocalFileDynamicRouteBuilder#buildFileUri()} -- a pure
 	 * configuration method, not a behavioural/timing one.
 	 */
 	@Nested
@@ -234,13 +234,13 @@ public class ScriptedImportConversionLocalFileRouteTest extends CamelTestSupport
 		 * suffix) -- so a future edit that silently drops or weakens any of them fails this test
 		 * immediately. A faithful slow-writer integration test (actually writing a file progressively and
 		 * asserting it is NOT picked up mid-write) would be disproportionate for this guard and
-		 * timing-fragile in CI -- see {@link ScriptedImportConversionLocalFileRouteBuilder#buildFileUri()}
+		 * timing-fragile in CI -- see {@link ScriptedImportConversionLocalFileDynamicRouteBuilder#buildFileUri()}
 		 * for why each option matters here specifically and how the values were chosen.
 		 */
 		@Test
 		void configuresReadLockAgainstPartiallyWrittenFiles()
 		{
-			final ScriptedImportConversionLocalFileRouteBuilder routeBuilder = new ScriptedImportConversionLocalFileRouteBuilder(
+			final ScriptedImportConversionLocalFileDynamicRouteBuilder routeBuilder = new ScriptedImportConversionLocalFileDynamicRouteBuilder(
 					"routeKey",
 					MOCK_ENDPOINT_NAME,
 					localInputDir.toAbsolutePath().toString(),
@@ -300,9 +300,9 @@ public class ScriptedImportConversionLocalFileRouteTest extends CamelTestSupport
 					.hasMessageContaining(ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS);
 		}
 
-		private ScriptedImportConversionLocalFileRouteBuilder newLocalFileRouteBuilder(final String rootLocation, final long frequencyMs)
+		private ScriptedImportConversionLocalFileDynamicRouteBuilder newLocalFileRouteBuilder(final String rootLocation, final long frequencyMs)
 		{
-			return new ScriptedImportConversionLocalFileRouteBuilder(
+			return new ScriptedImportConversionLocalFileDynamicRouteBuilder(
 					"routeKey",
 					MOCK_ENDPOINT_NAME,
 					rootLocation,
@@ -383,7 +383,7 @@ public class ScriptedImportConversionLocalFileRouteTest extends CamelTestSupport
 	 * A {@code null} body (e.g. the file vanished between poll and read) must fail loudly rather than
 	 * silently letting the consumer commit the delete with no copy anywhere and no error raised.
 	 * <p>
-	 * Drives {@link ScriptedImportConversionLocalFileRouteBuilder#captureRawPayloadAndBuildEnvelope(Exchange)}
+	 * Drives {@link ScriptedImportConversionLocalFileDynamicRouteBuilder#captureRawPayloadAndBuildEnvelope(Exchange)}
 	 * directly rather than through the route: a real {@code file://} consumer only ever reads bytes from
 	 * an existing file, so it cannot produce a {@code null} {@code byte[]} body -- there is no route-level
 	 * path that reaches this case.
@@ -391,7 +391,7 @@ public class ScriptedImportConversionLocalFileRouteTest extends CamelTestSupport
 	@Test
 	void nullBody_throwsInsteadOfSilentlyDroppingFile()
 	{
-		final ScriptedImportConversionLocalFileRouteBuilder routeBuilder = new ScriptedImportConversionLocalFileRouteBuilder(
+		final ScriptedImportConversionLocalFileDynamicRouteBuilder routeBuilder = new ScriptedImportConversionLocalFileDynamicRouteBuilder(
 				"routeKey",
 				MOCK_ENDPOINT_NAME,
 				localInputDir.toAbsolutePath().toString(),

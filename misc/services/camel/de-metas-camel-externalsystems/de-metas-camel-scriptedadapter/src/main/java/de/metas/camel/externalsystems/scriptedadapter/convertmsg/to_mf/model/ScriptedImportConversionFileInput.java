@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
  * <p>
  * Deliberately carries no {@code contentType}: nothing in this codebase derives a MIME type for an
  * arbitrary polled file (the {@code LOCAL_FILE} transport is not PDF-only — see
- * {@code ScriptedImportConversionLocalFileRouteBuilder}), so guessing one (e.g. hard-coding
+ * {@code ScriptedImportConversionLocalFileDynamicRouteBuilder}), so guessing one (e.g. hard-coding
  * {@code application/pdf}) would be wrong for any other file type. Add it back only once there is a real
  * source for the value.
  */
