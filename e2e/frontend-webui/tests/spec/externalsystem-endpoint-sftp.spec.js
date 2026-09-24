@@ -565,7 +565,7 @@ a blank credential rather than failing.
     await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, oauthV1RecordId, 'after configuring an HTTP + OAuth endpoint with no password');
 
     const oauthV1Record = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), oauthV1RecordId);
-    expect(oauthV1Record.fieldsByName.AuthType.value.key, 'the scenario must be running on OAuth v1, not OAuth2').toBe('OAuth');
+    expect(oauthV1Record.fieldsByName.AuthType.value.key, 'the scenario must be running on OAuth v1, not OAuth2').toBe(OAUTH_V1);
     expect(emptyish(oauthV1Record.fieldsByName.Password.value), 'no password was typed, so the record must carry none').toBe(true);
 
     await saveStill(page, 'endpoint-window-HTTP-OAuth-password-shown.png');
