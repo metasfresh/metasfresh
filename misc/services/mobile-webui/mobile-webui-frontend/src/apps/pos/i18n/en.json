@@ -1,7 +1,8 @@
 {
   "header": {
     "closeCashJournal": "Close register",
-    "orders": "Orders"
+    "orders": "Orders",
+    "cashWithdrawal": "Withdrawal"
   },
   "openCashJournal": {
     "title": "Open register",
@@ -30,6 +31,29 @@
     "actions": {
       "close": "Close",
       "cancel": "Cancel"
+    }
+  },
+  "cashWithdrawal": {
+    "title": "Cash withdrawal",
+    "category": "Category",
+    "amount": "Amount",
+    "actions": {
+      "ok": "Confirm",
+      "cancel": "Cancel"
+    },
+    "slip": {
+      "title": "Cash withdrawal",
+      "terminal": "Register",
+      "date": "Date",
+      "cashier": "Cashier",
+      "category": "Category",
+      "amount": "Amount",
+      "moneyReceived": "Money received",
+      "signature": "Recipient's signature",
+      "actions": {
+        "print": "Print",
+        "close": "Close"
+      }
     }
   },
   "selectTerminal": {

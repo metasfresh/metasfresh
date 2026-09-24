@@ -42,6 +42,8 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.AddProductPriceRequest;
 import de.metas.pricing.service.CopyProductPriceRequest;
+import de.metas.pricing.service.CreatePriceListRequest;
+import de.metas.pricing.service.CreatePricingSystemRequest;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.PriceListsCollection;
@@ -106,6 +108,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_PricingSystem, M_PriceList, M_PriceList_Version, M_ProductPrice, M_ProductScalePrice
+ * Repository Cluster: PriceListDAO, PlainPriceListDAO, PriceListVersionRepository, ProductPriceRepository, ProductPricePackingInstructionRepository
+ */
 public class PriceListDAO implements IPriceListDAO
 {
 	private static final Logger logger = LogManager.getLogger(PriceListDAO.class);
@@ -692,6 +698,36 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		final I_M_PriceList_Version priceListVersion = getPriceListVersionById(priceListVersionId);
 		return getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersion, date);
+	}
+
+	@Override
+	public PricingSystemId createPricingSystem(@NonNull final CreatePricingSystemRequest request)
+	{
+		final I_M_PricingSystem record = newInstance(I_M_PricingSystem.class);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setValue(request.getValue());
+		record.setName(request.getName());
+		saveRecord(record);
+
+		return PricingSystemId.ofRepoId(record.getM_PricingSystem_ID());
+	}
+
+	@Override
+	public PriceListId createPriceList(@NonNull final CreatePriceListRequest request)
+	{
+		final I_M_PriceList record = newInstance(I_M_PriceList.class);
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setM_PricingSystem_ID(request.getPricingSystemId().getRepoId());
+		record.setName(request.getName());
+		record.setC_Currency_ID(request.getCurrencyId().getRepoId());
+		record.setC_Country_ID(request.getCountryId().getRepoId());
+		record.setIsTaxIncluded(request.isTaxIncluded());
+		record.setIsSOPriceList(request.isSOPriceList());
+		record.setPricePrecision(request.getPricePrecision());
+		record.setIsActive(true);
+		saveRecord(record);
+
+		return PriceListId.ofRepoId(record.getM_PriceList_ID());
 	}
 
 	@Override

@@ -40,6 +40,9 @@ import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateCommand;
+import de.metas.frontend_testing.masterdata.pos.CreatePOSTerminalCommand;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalRequest;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalResponse;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
@@ -91,6 +94,7 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -107,13 +111,17 @@ public class CreateMasterdataCommand
 	@NonNull private final JsonCreateMasterdataRequest request;
 
 	private final MasterdataContext context = new MasterdataContext();
+	/**
+	 * Previous values of every sysconfig changed by this request (the request's own {@code sysconfigs} and those set by sub-commands).
+	 */
+	private final LinkedHashMap<String, String> previousSysconfigs = new LinkedHashMap<>();
 
 	public JsonCreateMasterdataResponse execute()
 	{
 		this.context.putFromJson(request.getContext());
 
 		// Apply sysconfigs early (before any masterdata creation)
-		final ImmutableMap<String, String> previousSysconfigs = applySysconfigs();
+		previousSysconfigs.putAll(applySysconfigs());
 
 		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
 		applyAdProcessFlags();
@@ -133,6 +141,9 @@ public class CreateMasterdataCommand
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
 		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
 		linkProductsToCompensationGroupSchemas();
+		// POS terminals: applied after bpartners (walk-in customer identifier) and products (priced into the
+		// terminal's own M_PriceList_Version).
+		final ImmutableMap<String, JsonPOSTerminalResponse> posTerminals = createPOSTerminals();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
@@ -168,7 +179,7 @@ public class CreateMasterdataCommand
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
-				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs)
+				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : ImmutableMap.copyOf(previousSysconfigs))
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
@@ -178,6 +189,7 @@ public class CreateMasterdataCommand
 				.productCategories(productCategories.isEmpty() ? null : productCategories)
 				.attributes(attributes.isEmpty() ? null : attributes)
 				.products(products)
+				.posTerminals(posTerminals.isEmpty() ? null : posTerminals)
 				.resources(resources)
 				.productPlannings(productPlannings)
 				.pickingSlots(pickingSlots)
@@ -235,6 +247,7 @@ public class CreateMasterdataCommand
 	{
 		return CreateBPartnerCommand.builder()
 				.currencyRepository(services.currencyRepository)
+				.priceListVersionRepository(services.priceListVersionRepository)
 				.context(context)
 				.request(request)
 				.identifier(identifier)
@@ -343,6 +356,33 @@ public class CreateMasterdataCommand
 		return CreateProductCommand.builder()
 				.productRepository(services.productRepository)
 				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPOSTerminalResponse> createPOSTerminals()
+	{
+		final Map<String, JsonPOSTerminalRequest> posTerminals = request.getPosTerminals();
+		if (posTerminals != null)
+		{
+			CreatePOSTerminalCommand.assertAtMostOneWithCashWithdrawalCategories(posTerminals.values());
+		}
+		return process(posTerminals, this::createPOSTerminal);
+	}
+
+	private JsonPOSTerminalResponse createPOSTerminal(final String identifier, final JsonPOSTerminalRequest request)
+	{
+		return CreatePOSTerminalCommand.builder()
+				.currencyRepository(services.currencyRepository)
+				.priceListVersionRepository(services.priceListVersionRepository)
+				.productPriceRepository(services.productPriceRepository)
+				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
+				.posTerminalRepository(services.posTerminalRepository)
+				.chargeRepository(services.chargeRepository)
+				.context(context)
+				.previousSysconfigsCollector(previousSysconfigs)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build()

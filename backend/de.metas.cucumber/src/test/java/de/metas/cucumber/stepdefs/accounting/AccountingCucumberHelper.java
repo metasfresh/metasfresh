@@ -99,6 +99,40 @@ public class AccountingCucumberHelper
 		});
 	}
 
+	/**
+	 * Waits until the given document's posting has completed with an error (neither still pending nor posted).
+	 * Fails immediately if the document gets posted.
+	 */
+	public static void waitUntilPostingFailed(@NonNull final TableRecordReference recordRef) throws InterruptedException
+	{
+		StepDefUtil.tryAndWait(60, 500, () -> {
+			final PostingInfo postingInfo = retrievePostingInfo(recordRef).orElse(null);
+			if (postingInfo == null)
+			{
+				return false; // document not found yet?
+			}
+
+			final PostingStatus postingStatus = postingInfo.getStatus();
+			if (postingStatus.isPosted())
+			{
+				throw new AdempiereException("Document " + recordRef + " was expected to fail posting, but it was posted");
+			}
+			return !postingStatus.isNotPosted();
+		});
+	}
+
+	/**
+	 * @return the document's current posting status, read from its {@code Posted} column (which the generated models
+	 * expose only as a boolean, losing error codes such as {@code E})
+	 */
+	@NonNull
+	public static PostingStatus retrievePostingStatus(@NonNull final TableRecordReference recordRef)
+	{
+		return retrievePostingInfo(recordRef)
+				.map(PostingInfo::getStatus)
+				.orElseThrow(() -> new AdempiereException("Document not found: " + recordRef));
+	}
+
 	private static Optional<PostingInfo> retrievePostingInfo(@NonNull final TableRecordReference recordRef)
 	{
 		return streamPostingInfo(TableRecordReferenceSet.of(recordRef))

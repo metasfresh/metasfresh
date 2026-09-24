@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
@@ -62,6 +63,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("customer1")
@@ -99,6 +101,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("vendor1")
@@ -134,6 +137,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("both1")
@@ -163,6 +167,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("bp2")
@@ -190,6 +195,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("bp3")
@@ -218,6 +224,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("bpLoc1")
@@ -252,6 +259,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("contextBP")
@@ -279,6 +287,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier("bpPS1")
@@ -311,6 +320,7 @@ public class CreateBPartnerCommandTest
 
 		final CreateBPartnerCommand command = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request)
 				.identifier(null)
@@ -350,6 +360,7 @@ public class CreateBPartnerCommandTest
 		// when
 		final JsonCreateBPartnerResponse response1 = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request1)
 				.identifier("unique1")
@@ -358,6 +369,7 @@ public class CreateBPartnerCommandTest
 
 		final JsonCreateBPartnerResponse response2 = CreateBPartnerCommand.builder()
 				.currencyRepository(currencyRepository)
+				.priceListVersionRepository(new PriceListVersionRepository())
 				.context(context)
 				.request(request2)
 				.identifier("unique2")

@@ -77,6 +77,29 @@ public class Fact_Acct_StepDef
 	}
 
 	/**
+	 * Waits until the posting of each given document has finished with a posting error (i.e. {@code Posted} is neither
+	 * pending nor {@code Y}); fails right away if a document gets posted. Assert the error itself afterwards, e.g. via
+	 * {@code validate payments}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then Wait until documents withdrawal fails to post
+	 * </pre>
+	 */
+	@And("^Wait until documents (.*) (fails|fail) to post$")
+	public void waitUntilPostingFailed(
+			@NonNull final String commaSeparatedIdentifiers,
+			@SuppressWarnings("unused") final String failsOrFail) throws InterruptedException
+	{
+		final ImmutableSet<TableRecordReference> recordRefs = identifiersResolver.getTableRecordReferencesOfCommaSeparatedIdentifiers(commaSeparatedIdentifiers);
+		for (final TableRecordReference recordRef : recordRefs)
+		{
+			AccountingCucumberHelper.waitUntilPostingFailed(recordRef);
+		}
+	}
+
+	/**
 	 * Matching philosophy:
 	 * not all fact_acct-records are checked, but instead, only fact accounts that match the record-ids are fetched and then matched against the given {@code table}.
 	 * Therefore, for table-rows with star: it's still important to set the {@code Record_ID}.

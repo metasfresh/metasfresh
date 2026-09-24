@@ -32,6 +32,7 @@ import de.metas.acct.api.impl.ElementValueId;
 import de.metas.costing.ChargeId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.elementvalue.ElementValue;
@@ -149,7 +150,7 @@ public class C_Charge_StepDef
 
 	/**
 	 * Sets the expense and revenue GL accounts of an existing {@code C_Charge_Acct} row (materialized
-	 * automatically, with empty accounts, when the {@code C_Charge} was created) for the current
+	 * automatically from the schema's {@code C_AcctSchema_Default} accounts when the {@code C_Charge} was created) for the current
 	 * client's default accounting schema. The accounts are given by {@code C_ElementValue.Value} and
 	 * resolved (get-or-create the natural-account {@code C_ValidCombination}) against that schema's
 	 * chart of accounts.
@@ -200,7 +201,7 @@ public class C_Charge_StepDef
 		}
 		else
 		{
-			// The C_Charge_Acct row is normally auto-materialized (with empty accounts) when the
+			// The C_Charge_Acct row is normally auto-materialized (with the schema default accounts) when the
 			// C_Charge is created; create it here as a fallback in case that materialization is absent.
 			recordToSave = InterfaceWrapperHelper.newInstance(I_C_Charge_Acct.class);
 			recordToSave.setC_Charge_ID(chargeId.getRepoId());
@@ -210,6 +211,35 @@ public class C_Charge_StepDef
 		recordToSave.setCh_Expense_Acct(expenseAccountId.getRepoId());
 		recordToSave.setCh_Revenue_Acct(revenueAccountId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(recordToSave);
+	}
+
+	/**
+	 * Deactivates the charge's {@code C_Charge_Acct} row of the current client's default accounting schema — as a user
+	 * does by unticking "Active" on the charge's accounting tab — so the charge has no account mapping and a document
+	 * posting against it fails.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends C_Charge_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the C_Charge_Acct of charge unmapped is deactivated
+	 * </pre>
+	 */
+	@And("^the C_Charge_Acct of charge (\\S+) is deactivated$")
+	public void deactivateC_Charge_Acct(@NonNull final String chargeIdentifier)
+	{
+		final ChargeId chargeId = chargeTable.getId(StepDefDataIdentifier.ofString(chargeIdentifier));
+		final AcctSchemaId acctSchemaId = acctSchemaDAO.getByClientAndOrg(Env.getCtx()).getId();
+
+		final I_C_Charge_Acct chargeAcctRecord = queryBL.createQueryBuilder(I_C_Charge_Acct.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Charge_Acct.COLUMNNAME_C_Charge_ID, chargeId)
+				.addEqualsFilter(I_C_Charge_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.create()
+				.firstOnlyNotNull(I_C_Charge_Acct.class);
+
+		chargeAcctRecord.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(chargeAcctRecord);
 	}
 
 	private AccountId resolveAccountId(

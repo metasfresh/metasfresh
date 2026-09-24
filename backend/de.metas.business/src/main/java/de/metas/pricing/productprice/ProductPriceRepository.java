@@ -37,6 +37,10 @@ import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: M_ProductPrice
+ * Repository Cluster: ProductPriceRepository, ProductPricePackingInstructionRepository, PriceListDAO
+ */
 @Repository
 public class ProductPriceRepository
 {
@@ -117,6 +121,11 @@ public class ProductPriceRepository
 		if (request.getSeqNo() != null)
 		{
 			record.setSeqNo(request.getSeqNo());
+		}
+
+		if (request.getInvoicableQtyBasedOn() != null)
+		{
+			record.setInvoicableQtyBasedOn(request.getInvoicableQtyBasedOn().getCode());
 		}
 
 		return record;
