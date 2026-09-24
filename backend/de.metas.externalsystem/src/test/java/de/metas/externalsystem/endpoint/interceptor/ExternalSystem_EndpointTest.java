@@ -781,6 +781,28 @@ public class ExternalSystem_EndpointTest
 			}
 		}
 
+		/**
+		 * Nor against a variable's own default. The window compares the unset field's {@code ""}, this
+		 * interceptor the {@link CtxName} default {@code "X"}, so a rule of the form {@code @AuthType/X@='X'}
+		 * would be TRUE here and FALSE for the window -- keeping a field the operator cannot see. This and
+		 * {@link #noDisplayLogicComparesAgainstTheEmptyLiteral()} together are what make every literal in the
+		 * rule table answered alike by both.
+		 */
+		@Test
+		void noDisplayLogicComparesAgainstItsVariablesOwnDefault()
+		{
+			for (final HideableColumn column : hideableColumns())
+			{
+				for (final CtxName parameter : column.getVisibleIf().getParameters())
+				{
+					assertThat(column.getDisplayLogic())
+							.as("display logic of %s, whose variable %s defaults to %s",
+									column.getColumnName(), parameter.getName(), parameter.getDefaultValue())
+							.doesNotContain("'" + parameter.getDefaultValue() + "'");
+				}
+			}
+		}
+
 		@Test
 		void everyColumnAppearsAtMostOnce()
 		{
