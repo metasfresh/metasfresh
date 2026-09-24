@@ -204,9 +204,9 @@ class ExternalSystemScriptedImportConversionServiceTest
 	@Test
 	void getParameters_sftpEndpointWithoutPort_omitsPortParameter()
 	{
-		// given: an SFTP endpoint whose SftpPort column was never set. PO.get_ValueAsInt cannot tell SQL
-		// NULL from a stored 0 -- both read back as 0 -- so an unconfigured port must not reach the camel
-		// poller, which would append it verbatim and dial sftp://host:0.
+		// given: an SFTP endpoint whose SftpPort column was never set. PO.get_ValueAsInt reads SQL NULL back
+		// as 0, and ScriptedImportConversionSftpRouteBuilder appends any non-empty port to the poller URI
+		// verbatim -- so a "0" here would key the camel endpoint on sftp://host:0.
 		final UserId userImportId = createUserId();
 		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
 				.userId(userImportId)

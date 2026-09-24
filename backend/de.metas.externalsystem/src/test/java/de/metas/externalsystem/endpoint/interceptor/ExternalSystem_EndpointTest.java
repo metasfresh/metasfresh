@@ -384,10 +384,8 @@ public class ExternalSystem_EndpointTest
 
 		/**
 		 * The same round trip for SftpPort, which has the identical shape: MandatoryLogic
-		 * {@code @TransportType/X@='SFTP'}, and a stored 0 passes it while
-		 * {@code ExternalSystemEndpointRepository} hands the 0 straight on as the port to connect to -- an
-		 * endpoint the window calls valid that dials {@code sftp://host:0}. Unset, the operator is prompted
-		 * for it, exactly as for SftpHost.
+		 * {@code @TransportType/X@='SFTP'}, and a stored 0 satisfies it, so the window would call a portless
+		 * endpoint valid. Unset, the operator is prompted for it, exactly as for SftpHost.
 		 */
 		@Test
 		void switchBackToSftp_afterSftpPortWasClearedBySwitchingAway_leavesSftpPortUnset()
