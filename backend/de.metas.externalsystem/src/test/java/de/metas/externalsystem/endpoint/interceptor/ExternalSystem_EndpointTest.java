@@ -767,8 +767,7 @@ public class ExternalSystem_EndpointTest
 		 * No rule may compare against the EMPTY literal. An unset ref-list field resolves to {@code ""} in
 		 * the window and to the {@link CtxName} default {@code "X"} here, so a rule of the form
 		 * {@code @AuthType/X@=''} would be TRUE for the window and FALSE for this interceptor -- clearing a
-		 * field the operator can still see. Every non-empty literal is answered alike by both, which is what
-		 * lets {@code HideableColumn#isVisible} stand in for the window's verdict.
+		 * field the operator can still see.
 		 */
 		@Test
 		void noDisplayLogicComparesAgainstTheEmptyLiteral()
