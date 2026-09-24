@@ -252,8 +252,9 @@ public class ExternalSystem_Endpoint
 
 	/**
 	 * The record's {@link #VISIBILITY_GOVERNING_COLUMN_NAMES} values, as the display logic expressions read
-	 * them. A column that holds no value is left out, so the expression falls back to its own default --
-	 * which matches none of the NON-EMPTY codes the rules compare against (see {@link HideableColumn#isVisible}).
+	 * them. A column that holds no value is left out, so the expression falls back to its own default "X" --
+	 * which no rule compares against, because {@code ExternalSystem_EndpointTest.VisibilityRules} forbids a
+	 * literal equal to the variable's own default (see {@link HideableColumn#isVisible}).
 	 */
 	private static Evaluatee extractVisibilityGoverningValues(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{
