@@ -146,9 +146,9 @@ async function saveStill(page, filename) {
 }
 
 /**
- * True when a WebAPI field value means "not set". Every column this is asked about clears to
- * null/absent — an empty string for the text fields, a null `key` for a list field — so all of those
- * count as cleared and anything else does not.
+ * True when a WebAPI field value means "not set". Every column this is asked about is cleared to SQL
+ * NULL, which reaches the test as null, absent, an empty string or a lookup with no `key` — those
+ * count as cleared, anything else does not.
  */
 function emptyish(value) {
   if (value === null || value === undefined || value === '') {
