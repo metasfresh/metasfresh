@@ -96,7 +96,7 @@ public class ExternalSystem_Endpoint_DisplayLogic_StepDef
 
 	private static final String HEADER = ""
 			+ "The " + I_ExternalSystem_Endpoint.Table_Name + " interceptor and the window it was copied from disagree.\n"
-			+ "  window : AD_Field.DisplayLogic, as this branch's migration scripts left it in the database\n"
+			+ "  window : AD_Field.DisplayLogic, as the migration scripts left it in the database\n"
 			+ "  code   : the verbatim copies in " + ExternalSystem_Endpoint.class.getName() + "#createHideableColumns()\n"
 			+ "One of the two is stale. Which one tells you what to fix -- each finding below says how to tell.";
 
