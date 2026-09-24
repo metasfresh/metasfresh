@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { useDispatch } from 'react-redux';
 import './CashWithdrawalModal.scss';
@@ -10,7 +11,6 @@ import { formatAmountToHumanReadableStr } from '../../../../utils/money';
 import { toastError } from '../../../../utils/toast';
 import { trl } from '../../../../utils/translations';
 import useEscapeKey from '../../../../hooks/useEscapeKey';
-import { useCashWithdrawalCategories } from './useCashWithdrawalCategories';
 import CashWithdrawalSlip from './CashWithdrawalSlip';
 
 const _ = (key) => trl(`pos.cashWithdrawal.${key}`);
@@ -19,14 +19,13 @@ const _ = (key) => trl(`pos.cashWithdrawal.${key}`);
  * Takes cash out of the till for an expense: the cashier picks the expense category and keys the amount; on confirm
  * the withdrawal is booked and its receipt slip is shown (and printed) for the recipient to sign.
  */
-const CashWithdrawalModal = () => {
+const CashWithdrawalModal = ({ categories }) => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
   const posTerminalId = posTerminal.id;
   const currency = posTerminal.currencySymbol;
   const precision = posTerminal.currencyPrecision ?? 2;
 
-  const categories = useCashWithdrawalCategories({ posTerminalId });
   const [chargeId, setChargeId] = useState(null);
   const [editingAmount, setEditingAmount] = useState(() => toEditingAmount({ value: 0, precision }));
   const [isSubmitting, setSubmitting] = useState(false);
@@ -123,6 +122,15 @@ const CashWithdrawalModal = () => {
       </div>
     </div>
   );
+};
+
+CashWithdrawalModal.propTypes = {
+  categories: PropTypes.arrayOf(
+    PropTypes.shape({
+      chargeId: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 };
 
 export default CashWithdrawalModal;

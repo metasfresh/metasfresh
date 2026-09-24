@@ -12,7 +12,7 @@ const PRINT_STYLE = `
   .slip-title { font-weight: bold; font-size: 14pt; margin-bottom: 4mm; }
   .slip-line { display: flex; justify-content: space-between; gap: 4mm; }
   .slip-caption { color: #555; flex-shrink: 0; }
-  .slip-value { min-width: 0; font-weight: bold; text-align: right; overflow-wrap: anywhere; }
+  .slip-value { min-width: 0; font-weight: bold; text-align: right; overflow-wrap: break-word; }
   .slip-blank-line { height: 12mm; }
   .slip-signature { border-top: 1px solid #000; margin-top: 14mm; padding-top: 1mm; font-size: 9pt; }
 `;

@@ -48,6 +48,7 @@
   .slip {
     max-width: 24em;
     margin: 0 auto;
+    font-size: 1rem;
 
     .slip-title {
       font-weight: bold;
@@ -70,7 +71,7 @@
         min-width: 0;
         font-weight: bold;
         text-align: right;
-        overflow-wrap: anywhere;
+        overflow-wrap: break-word;
       }
     }
 

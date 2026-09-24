@@ -5,11 +5,11 @@ import { toastError } from '../../../../utils/toast';
 /**
  * @returns the cash withdrawal categories offered at the terminal (`[{ chargeId, name }]`), empty while loading or when none are configured
  */
-export const useCashWithdrawalCategories = ({ posTerminalId, enabled = true }) => {
+export const useCashWithdrawalCategories = ({ posTerminalId, isEnabled = true }) => {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    if (!posTerminalId || !enabled) {
+    if (!posTerminalId || !isEnabled) {
       setCategories([]);
       return;
     }
@@ -26,7 +26,7 @@ export const useCashWithdrawalCategories = ({ posTerminalId, enabled = true }) =
     return () => {
       isCancelled = true;
     };
-  }, [posTerminalId, enabled]);
+  }, [posTerminalId, isEnabled]);
 
   return categories;
 };

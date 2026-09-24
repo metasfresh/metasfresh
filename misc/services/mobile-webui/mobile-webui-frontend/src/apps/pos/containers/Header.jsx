@@ -9,11 +9,11 @@ import { MODAL_CashWithdrawal, MODAL_POSTerminalSelect, MODAL_SelectOrders, show
 import { useOpenOrdersArray } from '../actions/orders';
 import { trl } from '../../../utils/translations';
 import { useAuth } from '../../../hooks/useAuth';
-import { useCashWithdrawalCategories } from './cash_withdrawal/useCashWithdrawalCategories';
+import PropTypes from 'prop-types';
 
 const _ = (key) => trl(`pos.header.${key}`);
 
-const Header = () => {
+const Header = ({ cashWithdrawalCategories }) => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
   const auth = useAuth();
@@ -21,11 +21,6 @@ const Header = () => {
   const openOrders = useOpenOrdersArray();
   const avatarLetter = userFullname ? userFullname.charAt(0).toUpperCase() : '';
   const isCashJournalOpen = !!posTerminal?.cashJournalOpen;
-  // withdrawals are offered only when categories are configured
-  const cashWithdrawalCategories = useCashWithdrawalCategories({
-    posTerminalId: posTerminal.id,
-    enabled: isCashJournalOpen,
-  });
 
   const onCloseJournalClicked = () => {
     posTerminal.changeStatusToClosing();
@@ -58,6 +53,7 @@ const Header = () => {
             <span className="text">{_('closeCashJournal')}</span>
           </div>
         )}
+        {/* withdrawals are offered only when categories are configured */}
         {isCashJournalOpen && cashWithdrawalCategories.length > 0 && (
           <div className="pos-header-button" data-testid="pos-cash-withdrawal-button" onClick={onCashWithdrawalClicked}>
             <span className="text">{_('cashWithdrawal')}</span>
@@ -92,6 +88,10 @@ const Header = () => {
       </div>
     </div>
   );
+};
+
+Header.propTypes = {
+  cashWithdrawalCategories: PropTypes.array.isRequired,
 };
 
 export default Header;

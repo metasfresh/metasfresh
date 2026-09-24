@@ -67,4 +67,58 @@
 
     }
   }
+
+  // phone-sized tills: the 70vw card and 2rem type push the amount columns past the screen edge
+  @media screen and (max-width: 768px) {
+    .modal-card {
+      width: calc(100vw - 16px);
+
+      .modal-card-body {
+        padding: 12px;
+
+        .payment-summary {
+          width: 100%;
+          table-layout: fixed;
+          font-size: 1.25rem;
+
+          th {
+            font-size: 0.8rem;
+            overflow-wrap: break-word;
+          }
+
+          .amt {
+            width: 22%;
+            max-width: 22%;
+            font-size: 1rem;
+          }
+
+          .line-level2 {
+            font-size: 1rem;
+
+            .description-col {
+              padding-left: 8px;
+              overflow-wrap: break-word;
+            }
+          }
+
+          input {
+            width: 100%;
+            font-size: 1rem;
+          }
+        }
+
+        .line {
+          padding: 8px 0;
+          font-size: 1.25rem;
+
+          .field {
+            input,
+            textarea {
+              font-size: 1.25rem;
+            }
+          }
+        }
+      }
+    }
+  }
 }

@@ -1,9 +1,9 @@
 package de.metas.frontend_testing.masterdata.pos;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPBankAccountDAO;
-import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
 import de.metas.costing.ChargeTypeId;
@@ -60,6 +60,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BP_BankAccount;
 
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -76,6 +77,7 @@ public class CreatePOSTerminalCommand
 {
 	private static final String POS_MOBILE_APPLICATION_VALUE = "pos";
 	static final String POS_LINE_LEVEL_TAX_CATEGORY_INTERNAL_NAME = "POS_LineLevelTest";
+	static final String NO_CHARGE_TYPE_ID = "-1";
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -154,8 +156,23 @@ public class CreatePOSTerminalCommand
 	}
 
 	/**
+	 * The cash withdrawal categories are configured by one global sysconfig, so a second terminal's categories would silently replace the first one's.
+	 */
+	public static void assertAtMostOneWithCashWithdrawalCategories(@NonNull final Collection<JsonPOSTerminalRequest> requests)
+	{
+		final long count = requests.stream()
+				.filter(request -> !request.getCashWithdrawalCategories().isEmpty())
+				.count();
+		if (count > 1)
+		{
+			throw new AdempiereException("At most one POS terminal per request may declare cashWithdrawalCategories, but got " + count);
+		}
+	}
+
+	/**
 	 * Creates one charge per requested label under a fresh charge type and offers that charge type's charges as the
-	 * terminals' cash withdrawal categories. Charge names are unique per client, hence the per-run unique names.
+	 * terminals' cash withdrawal categories. Charge names are unique per client, so each name gets the fresh charge
+	 * type's id as a short per-run suffix (e.g. {@code "Porto 1000003"}).
 	 */
 	private ImmutableMap<String, JsonPOSTerminalResponse.CashWithdrawalCategory> createCashWithdrawalCategories()
 	{
@@ -170,7 +187,7 @@ public class CreatePOSTerminalCommand
 		final ImmutableMap.Builder<String, JsonPOSTerminalResponse.CashWithdrawalCategory> result = ImmutableMap.builder();
 		for (final String label : labels)
 		{
-			final String name = Identifier.ofString(label).toUniqueString();
+			final String name = label + " " + chargeTypeId.getRepoId();
 			final ChargeId chargeId = chargeRepository.createCharge(name, chargeTypeId, orgId);
 			result.put(label, JsonPOSTerminalResponse.CashWithdrawalCategory.builder()
 					.chargeId(chargeId)
@@ -185,14 +202,13 @@ public class CreatePOSTerminalCommand
 
 	/**
 	 * Sets the sysconfig on system level ({@code AD_Client_ID=0, AD_Org_ID=0}), the level the cash withdrawal sysconfig is configured on.
+	 * An absent previous value is reported as {@value #NO_CHARGE_TYPE_ID}, which {@link POSCashWithdrawalService} reads as
+	 * "no categories", so restoring the reported value switches the categories off again.
 	 */
 	private void setSystemSysconfig(@NonNull final String name, @NonNull final String value)
 	{
 		final String previousValue = sysConfigBL.getValue(name);
-		if (previousValue != null)
-		{
-			previousSysconfigsCollector.putIfAbsent(name, previousValue);
-		}
+		previousSysconfigsCollector.putIfAbsent(name, previousValue != null ? previousValue : NO_CHARGE_TYPE_ID);
 
 		sysConfigBL.setValue(name, value, ClientId.SYSTEM, OrgId.ANY);
 	}

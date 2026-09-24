@@ -19,6 +19,7 @@ import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.mobile.application.repository.MobileApplicationInfoRepository;
+import de.metas.organization.OrgId;
 import de.metas.pos.POSPaymentMethod;
 import de.metas.pos.POSTerminalRepository;
 import de.metas.pos.withdrawal.POSCashWithdrawalService;
@@ -32,7 +33,6 @@ import de.metas.product.ProductRepository;
 import de.metas.security.RoleId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
-import de.metas.organization.OrgId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -492,8 +492,8 @@ public class CreatePOSTerminalCommandTest
 		final JsonPOSTerminalResponse.CashWithdrawalCategory travelCosts = response.getCashWithdrawalCategories().get("Reisekosten AN");
 		final JsonPOSTerminalResponse.CashWithdrawalCategory postage = response.getCashWithdrawalCategories().get("Porto");
 		// charge names are unique per client, so every run needs its own names
-		assertThat(travelCosts.getName()).startsWith("Reisekosten AN_");
-		assertThat(postage.getName()).startsWith("Porto_");
+		assertThat(travelCosts.getName()).startsWith("Reisekosten AN ");
+		assertThat(postage.getName()).startsWith("Porto ");
 
 		final I_C_Charge travelCostsCharge = InterfaceWrapperHelper.load(travelCosts.getChargeId(), I_C_Charge.class);
 		final I_C_Charge postageCharge = InterfaceWrapperHelper.load(postage.getChargeId(), I_C_Charge.class);
@@ -502,9 +502,15 @@ public class CreatePOSTerminalCommandTest
 		assertThat(travelCostsCharge.getAD_Org_ID()).isEqualTo(MasterdataContext.ORG_ID.getRepoId());
 		assertThat(postageCharge.getC_ChargeType_ID()).isEqualTo(travelCostsCharge.getC_ChargeType_ID()).isGreaterThan(0);
 
+		assertThat(postage.getName()).isEqualTo("Porto " + postageCharge.getC_ChargeType_ID());
+
 		// POSCashWithdrawalService offers the active charges of the charge type in this sysconfig
 		final int sysconfigChargeTypeId = Services.get(ISysConfigBL.class).getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1);
 		assertThat(sysconfigChargeTypeId).isEqualTo(travelCostsCharge.getC_ChargeType_ID());
+
+		// no sysconfig before: restoring the reported previous value must switch the categories off again
+		assertThat(previousSysconfigs).containsEntry(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, "-1");
+		assertThat(ChargeTypeId.ofRepoIdOrNull(Integer.parseInt(previousSysconfigs.get(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId)))).isNull();
 	}
 
 	@Test
@@ -552,5 +558,21 @@ public class CreatePOSTerminalCommandTest
 		assertThat(response.getCashWithdrawalCategories()).isEmpty();
 		assertThat(previousSysconfigs).isEmpty();
 		assertThat(ChargeTypeId.ofRepoIdOrNull(Services.get(ISysConfigBL.class).getIntValue(POSCashWithdrawalService.SYSCONFIG_ChargeTypeId, -1))).isNull();
+	}
+
+	@Test
+	public void assertAtMostOneWithCashWithdrawalCategories_shouldRejectTwoTerminalsWithCategories()
+	{
+		final JsonPOSTerminalRequest withCategories = JsonPOSTerminalRequest.builder()
+				.priceListCurrency(CurrencyCode.EUR)
+				.cashWithdrawalCategories(ImmutableList.of("Porto"))
+				.build();
+		final JsonPOSTerminalRequest withoutCategories = JsonPOSTerminalRequest.builder()
+				.priceListCurrency(CurrencyCode.EUR)
+				.build();
+
+		CreatePOSTerminalCommand.assertAtMostOneWithCashWithdrawalCategories(ImmutableList.of(withCategories, withoutCategories));
+		assertThatThrownBy(() -> CreatePOSTerminalCommand.assertAtMostOneWithCashWithdrawalCategories(ImmutableList.of(withCategories, withCategories)))
+				.isInstanceOf(AdempiereException.class);
 	}
 }

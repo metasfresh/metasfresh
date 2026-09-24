@@ -92,7 +92,6 @@ import de.metas.order.OrderId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -365,28 +364,12 @@ public class CreateMasterdataCommand
 
 	private ImmutableMap<String, JsonPOSTerminalResponse> createPOSTerminals()
 	{
-		assertAtMostOnePOSTerminalWithCashWithdrawalCategories();
-		return process(request.getPosTerminals(), this::createPOSTerminal);
-	}
-
-	/**
-	 * The cash withdrawal categories are configured by one global sysconfig, so a second terminal's categories would silently replace the first one's.
-	 */
-	private void assertAtMostOnePOSTerminalWithCashWithdrawalCategories()
-	{
 		final Map<String, JsonPOSTerminalRequest> posTerminals = request.getPosTerminals();
-		if (posTerminals == null)
+		if (posTerminals != null)
 		{
-			return;
+			CreatePOSTerminalCommand.assertAtMostOneWithCashWithdrawalCategories(posTerminals.values());
 		}
-
-		final long count = posTerminals.values().stream()
-				.filter(posTerminal -> !posTerminal.getCashWithdrawalCategories().isEmpty())
-				.count();
-		if (count > 1)
-		{
-			throw new AdempiereException("At most one POS terminal per request may declare cashWithdrawalCategories, but got " + count);
-		}
+		return process(posTerminals, this::createPOSTerminal);
 	}
 
 	private JsonPOSTerminalResponse createPOSTerminal(final String identifier, final JsonPOSTerminalRequest request)

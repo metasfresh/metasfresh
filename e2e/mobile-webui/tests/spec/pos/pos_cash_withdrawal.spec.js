@@ -17,16 +17,16 @@ test.afterEach(async () => {
 });
 
 // de_DE login: rendered amounts use comma decimals (see exactTextMatch in posText.js).
-const createMasterdata = async ({ cashierLastname }) => {
+const createMasterdata = async () => {
     const masterdata = await Backend.createMasterdata({
         language: 'de_DE',
         request: {
-            login: { user: { language: 'de_DE', firstname: 'Kasse', lastname: cashierLastname } },
+            login: { user: { language: 'de_DE', firstname: 'Anna', lastname: 'Muster' } },
             posTerminals: {
                 T1: {
                     priceListCurrency: 'EUR',
                     isTaxIncluded: true,
-                    // Charge names are unique per client: the masterdata returns the actual (per-run) names.
+                    // Charge names are unique per client: the masterdata returns the actual names, e.g. 'Porto 1000003'.
                     cashWithdrawalCategories: ['Reisekosten AN', 'Porto'],
                 },
             },
@@ -48,8 +48,7 @@ test('Cash taken out of the till for an expense is journaled and prints a receip
     allure.story('POS - Cash withdrawal with receipt slip');
     allure.severity('critical');
 
-    const cashierLastname = `Withdrawal${Date.now()}`;
-    const masterdata = await createMasterdata({ cashierLastname });
+    const masterdata = await createMasterdata();
     const terminal = masterdata.posTerminals.T1;
     const travelCosts = terminal.cashWithdrawalCategories['Reisekosten AN'];
     const postage = terminal.cashWithdrawalCategories['Porto'];
@@ -72,7 +71,7 @@ test('Cash taken out of the till for an expense is journaled and prints a receip
     await POSCashWithdrawalModal.expectSlip({
         terminal: terminal.name,
         date: today(),
-        cashier: cashierLastname,
+        cashier: 'Muster',
         category: travelCosts.name,
         amount: '12,00 €',
     });
