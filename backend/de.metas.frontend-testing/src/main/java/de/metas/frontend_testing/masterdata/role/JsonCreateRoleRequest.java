@@ -19,11 +19,7 @@ import java.util.List;
 @Jacksonized
 public class JsonCreateRoleRequest
 {
-	/**
-	 * Role name, defaulting to the section's identifier. Either way a per-run timestamp is appended, because
-	 * {@code AD_Role.Name} is unique over the active rows and the database is shared across runs.
-	 * The suffix is 19 characters and {@code AD_Role.Name} is {@code varchar(60)}, so at most 41 characters here.
-	 */
+	/** Role name; defaults to the section identifier. A per-run uniqueness suffix is appended either way. */
 	@Nullable String name;
 
 	/**
@@ -35,8 +31,9 @@ public class JsonCreateRoleRequest
 	@Nullable List<JsonRoleTableAccessRequest> tableAccess;
 
 	/**
-	 * The user to create for this role. It is bound to this role and to no other, so
-	 * {@code LoginRestController} completes its login without a role-selection step.
+	 * Fixture convenience: co-create a login user together with this role, bound to this role and to no other,
+	 * so a spec can log straight in without a role-selection step. Not a role-owns-user assignment - the one
+	 * request just mints both the role and its user in a single call.
 	 */
 	@Nullable JsonLoginUserRequest user;
 }
