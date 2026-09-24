@@ -46,6 +46,7 @@ import de.metas.rest_api.v2.util.JsonConverters;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
+import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
@@ -204,10 +205,22 @@ public class AttachmentRestService
 	{
 		final ImmutableList.Builder<TableRecordReference> tableRecordReferenceBuilder = ImmutableList.builder();
 
-		request.getTargets()
-				.stream()
-				.map(target -> extractTableRecordReference(request.getOrgCode(), target))
-				.forEach(tableRecordReferenceBuilder::add);
+		if (!request.getTargets().isEmpty())
+		{
+			// the org is needed to resolve an external reference, so it is mandatory on this path only.
+			final String orgCode = request.getOrgCode();
+			if (Check.isBlank(orgCode))
+			{
+				// the targets are given instead of the whole request on purpose: the request carries the
+				// attachment's base64 payload, which the exception would otherwise echo into the error response.
+				throw new MissingPropertyException("orgCode", request.getTargets());
+			}
+
+			request.getTargets()
+					.stream()
+					.map(target -> extractTableRecordReference(orgCode, target))
+					.forEach(tableRecordReferenceBuilder::add);
+		}
 
 		request.getReferences()
 				.stream()

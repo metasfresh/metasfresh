@@ -38,7 +38,11 @@ import java.util.List;
 @JsonDeserialize(builder = JsonAttachmentRequest.JsonAttachmentRequestBuilder.class)
 public class JsonAttachmentRequest
 {
-	@NonNull
+	/**
+	 * Mandatory only for the {@link #targets} path, where the org is needed to resolve an external reference.
+	 * A request that addresses its records directly via {@link #references} does not need it.
+	 */
+	@Nullable
 	@JsonProperty("orgCode")
 	String orgCode;
 
@@ -56,7 +60,7 @@ public class JsonAttachmentRequest
 
 	@Builder
 	public JsonAttachmentRequest(
-			@NonNull @JsonProperty("orgCode") final String orgCode,
+			@Nullable @JsonProperty("orgCode") final String orgCode,
 			@NonNull @JsonProperty("attachment") final JsonAttachment attachment,
 			@Nullable @JsonProperty("targets") final List<JsonExternalReferenceTarget> targets,
 			@Nullable @JsonProperty("references") @Singular final List<JsonTableRecordReference> references)
