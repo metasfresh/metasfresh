@@ -111,14 +111,9 @@ async function savedRecordId(page) {
 }
 
 /**
- * Select a value from a List dropdown widget (AD_Reference_ID=17) by its AD_Ref_List **Value**.
- * List widgets render a readonly input — we must click the container to open the dropdown, then
- * click the matching option.
- *
- * The option carries that Value verbatim as its test id (`SelectionDropdown#renderOption`, whose
- * `key` is the lookup's key column `AD_Ref_List.Value`). The rendered caption is unusable here: it
- * is localized, and it gains a `<Value>_` prefix wherever the server runs in developer mode — which
- * a from-source stack does and a deployed one does not.
+ * Select a value from a List dropdown by its AD_Ref_List **Value**: the input is readonly, so click
+ * the container to open the list, then the option carrying that Value as its test id. The rendered
+ * caption is unusable — it is localized, and a server in developer mode prefixes it with `<Value>_`.
  */
 async function selectListValue(page, fieldName, optionValue) {
   const container = page.locator(`.form-field-${fieldName}`);
@@ -854,13 +849,11 @@ they cannot see is the only thing the clearing exists to prevent.
 });
 
 /**
- * The captions the three LOCAL_FILE fields must render with, per language.
- *
- * "Abfrageintervall (ms)" / "Polling Interval (ms)": the value is a delay in milliseconds BETWEEN
- * two polls, so it is an interval, not a frequency -- and it matches the SFTP transport's sibling
- * field one column over. The caption comes from a dedicated AD_Element reached via
- * AD_Field.AD_Name_ID, so a missed AD_Element_Trl -> AD_Field_Trl propagation shows up here as the
- * other language's text (or the shared core element's "Häufigkeit" / "Frequency").
+ * The captions the three LOCAL_FILE fields must render with, per language. "Abfrageintervall (ms)" /
+ * "Polling Interval (ms)": the value is a delay in milliseconds between two polls, so it is an
+ * interval, not a frequency, and it matches the SFTP transport's sibling field one column over. That
+ * caption comes from a dedicated AD_Element via AD_Field.AD_Name_ID, so a missed translation
+ * propagation shows up here as the other language's text.
  */
 const LOCAL_FILE_LABEL_CASES = [
   {
