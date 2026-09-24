@@ -165,7 +165,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 	@Test
 	void getParameters_sftpPollingSettings_comeFromLinkedEndpoint()
 	{
-		// given: the SFTP polling settings live on the ENDPOINT (moved off the config)
+		// given: the SFTP polling settings live on the ENDPOINT
 		final UserId userImportId = createUserId();
 		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
 				.userId(userImportId)
@@ -236,9 +236,8 @@ class ExternalSystemScriptedImportConversionServiceTest
 		// when
 		final Map<String, String> parameters = service.getParameters(config);
 
-		// then: the port key is absent altogether -- the camel route builder skips the ":port" segment for an
-		// absent value and lets the SFTP component apply its own default, exactly as the outbound path does.
-		// The rest of the SFTP block is still emitted, so the absence is the port's alone.
+		// then: the port key is absent altogether. The rest of the SFTP block is still emitted, so the
+		// absence is the port's alone.
 		assertThat(parameters).doesNotContainKey(PARAM_SFTP_POLLING_ENDPOINT_PORT);
 		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_HOST)).isEqualTo("sftp.example.com");
 	}
@@ -290,14 +289,11 @@ class ExternalSystemScriptedImportConversionServiceTest
 	@Test
 	void getParameters_sftpEndpoint_doesNotIncludeLocalFileParameters()
 	{
-		// given: a fully-configured SFTP endpoint (regression guard: the SFTP branch's output must
-		// stay exactly what it was before the LOCAL_FILE branch was added) -- the three LOCAL_FILE
-		// columns are set here too, on purpose: they are stored per-endpoint regardless of transport
-		// (nothing in the schema stops an SFTP row from having a LocalRootLocation), so ONLY the
-		// service's own `transportType == LOCAL_FILE` guard keeps them out of the SFTP output. Leaving
-		// these columns unset (as this fixture used to) would make the assertions below pass even with
-		// that guard deleted -- PO.get_ValueAsString returns null for an unset column regardless, so the
-		// null-check inside each `if (endpoint.getXxx() != null)` would suppress the key on its own.
+		// given: a fully-configured SFTP endpoint. The three LOCAL_FILE columns are set on purpose:
+		// nothing in the schema stops an SFTP row from carrying a LocalRootLocation, so ONLY the
+		// service's own `transportType == LOCAL_FILE` guard keeps them out of the SFTP output. Left
+		// unset, each `if (endpoint.getXxx() != null)` would suppress its key on its own and the
+		// assertions below would pass with that guard deleted.
 		final UserId userImportId = createUserId();
 		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
 				.userId(userImportId)
