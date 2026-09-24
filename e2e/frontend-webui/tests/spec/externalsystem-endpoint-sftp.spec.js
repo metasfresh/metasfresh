@@ -797,10 +797,10 @@ stale configuration on the record.
     allure.description(`
 ## ExternalSystem_Endpoint — a still-visible field keeps its value across a transport switch
 
-Password is the one field shown by more than one transport: HTTP + Basic, HTTP + OAuth2, and
-SFTP + PASSWORD. Switching an endpoint between two of those configurations must therefore NOT take
-the password away — the operator can still see the field, and a value they cannot see is the only
-thing the clearing exists to prevent.
+Password is the one field shown by more than one transport: HTTP + Basic, HTTP + OAuth,
+HTTP + OAuth2 and SFTP + PASSWORD. Switching an endpoint between two of those configurations
+must therefore NOT take the password away — the operator can still see the field, and a value
+they cannot see is the only thing the clearing exists to prevent.
 
 1. Save a complete HTTP + Basic endpoint, password included
 2. Switch to SFTP and pick PASSWORD authentication, filling the SFTP settings
