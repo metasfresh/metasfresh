@@ -51,12 +51,15 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Keeps an endpoint record free of values the window no longer shows.
+ * Resets every endpoint field the window no longer shows to the value a newly created record would carry.
  * <p>
  * An endpoint's transport type and the two authentication types decide which of its fields the window
- * renders. Whenever one of them changes, every field the resulting configuration HIDES must end up without
- * a value: a value nobody can see is a value nobody can correct, and {@code ExternalSystemEndpointRepository}
- * keeps handing every one of these columns to the outbound/inbound dispatch.
+ * renders. Whenever one of them changes, every field the resulting configuration HIDES is set back to that
+ * column's {@code AD_Column.DefaultValue} -- which, for the columns that carry none, is no value at all. So
+ * whatever the operator had typed under the transport being left is gone, and a transport reached by a
+ * switch presents the same field values as one reached by creating the record: same window, same column,
+ * one behaviour. {@code AD_Column.DefaultValue} itself fires on record creation only, which is why this
+ * handler has to apply it.
  * <p>
  * <b>Scope: only columns whose {@code AD_Field} is active.</b> A column no configuration renders is hidden
  * by none either, and clearing it would destroy a value that has no field left to restore it from.
@@ -80,7 +83,7 @@ public class ExternalSystem_Endpoint
 	/**
 	 * The columns whose values decide what the window shows. Nothing else may appear in a
 	 * {@link HideableColumn#getDisplayLogic() display logic} here, because these three are exactly the
-	 * columns {@link #clearFieldsHiddenByTheNewConfiguration(I_ExternalSystem_Endpoint)} triggers on — a
+	 * columns {@link #resetFieldsHiddenByTheNewConfiguration(I_ExternalSystem_Endpoint)} triggers on — a
 	 * rule that depended on a fourth column would simply not be re-evaluated when that column changed.
 	 * {@code ExternalSystem_EndpointTest.VisibilityRules} pins this.
 	 */
@@ -94,8 +97,11 @@ public class ExternalSystem_Endpoint
 
 	/**
 	 * Every column this endpoint's window can hide, together with the condition under which it is shown and
-	 * how to take its value away. Each {@code displayLogic} is a <b>verbatim copy</b> of that field's
-	 * {@code AD_Field.DisplayLogic}; whoever changes one in a migration script changes the string here.
+	 * the value being hidden leaves behind. Each {@code displayLogic} is a <b>verbatim copy</b> of that
+	 * field's {@code AD_Field.DisplayLogic}, and each {@link #hideableWithColumnDefault} value a verbatim
+	 * copy of that column's {@code AD_Column.DefaultValue}; whoever changes either in a migration script
+	 * changes the copy here. {@code externalSystemEndpointDisplayLogic.feature} holds both against the live
+	 * dictionary.
 	 * <p>
 	 * A column with no display logic at all is always visible and therefore does not belong here:
 	 * {@code IsArrayFanOut} is the case in point — every transport shows it, so no transport switch may
@@ -120,10 +126,10 @@ public class ExternalSystem_Endpoint
 						endpoint -> endpoint.setHttpEndPoint(null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_OutboundHttpMethod, VISIBLE_FOR_HTTP,
 						endpoint -> endpoint.setOutboundHttpMethod(null)),
-				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_ContentType, VISIBLE_FOR_HTTP,
-						endpoint -> endpoint.setContentType(null)),
-				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_IsFileUpload, VISIBLE_FOR_HTTP,
-						endpoint -> endpoint.setIsFileUpload(false)),
+				hideableWithColumnDefault(I_ExternalSystem_Endpoint.COLUMNNAME_ContentType, VISIBLE_FOR_HTTP,
+						"application/json"),
+				hideableWithColumnDefault(I_ExternalSystem_Endpoint.COLUMNNAME_IsFileUpload, VISIBLE_FOR_HTTP,
+						false),
 				// HTTP authentication
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_AuthType, VISIBLE_FOR_HTTP,
 						endpoint -> endpoint.setAuthType(null)),
@@ -152,20 +158,16 @@ public class ExternalSystem_Endpoint
 				// SFTP transport
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpHost, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpHost(null)),
-				// via setValue, because the generated setSftpPort(int) cannot express SQL NULL, and a stored
-				// 0 satisfies this column's MandatoryLogic -- the window would call a portless endpoint valid
-				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort, VISIBLE_FOR_SFTP,
-						endpoint -> InterfaceWrapperHelper.setValue(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort, null)),
+				hideableWithColumnDefault(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort, VISIBLE_FOR_SFTP,
+						22),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpUsername, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpUsername(null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpRemotePath, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpRemotePath(null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpFilenamePattern, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpFilenamePattern(null)),
-				// the plain int setter here, unlike SftpPort above and Frequency below: this column carries
-				// no MandatoryLogic, so a stored 0 cannot make the window call a poll-less endpoint valid
-				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs, VISIBLE_FOR_SFTP,
-						endpoint -> endpoint.setSftpPollingIntervalMs(0)),
+				hideableWithColumnDefault(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs, VISIBLE_FOR_SFTP,
+						60_000),
 				// SFTP authentication
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpAuthType(null)),
@@ -175,21 +177,45 @@ public class ExternalSystem_Endpoint
 				// LOCAL_FILE transport
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_LocalRootLocation, VISIBLE_FOR_LOCAL_FILE,
 						endpoint -> endpoint.setLocalRootLocation(null)),
-				// via setValue, for the same reason as SftpPort above: a stored 0 satisfies this column's
-				// MandatoryLogic too
-				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, VISIBLE_FOR_LOCAL_FILE,
-						endpoint -> InterfaceWrapperHelper.setValue(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, null)),
+				hideableWithColumnDefault(I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, VISIBLE_FOR_LOCAL_FILE,
+						60_000),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_ImportFileNamePattern, VISIBLE_FOR_LOCAL_FILE,
 						endpoint -> endpoint.setImportFileNamePattern(null)));
 	}
 
+	/** A column with no {@code AD_Column.DefaultValue}: hiding it leaves it with no value. */
 	private HideableColumn hideable(
 			@NonNull final String columnName,
 			@NonNull final String displayLogic,
-			@NonNull final Consumer<I_ExternalSystem_Endpoint> clearAction)
+			@NonNull final Consumer<I_ExternalSystem_Endpoint> hiddenValueAction)
 	{
-		final ILogicExpression visibleIf = expressionFactory.compile(displayLogic, ILogicExpression.class);
-		return new HideableColumn(columnName, displayLogic, visibleIf, clearAction);
+		return new HideableColumn(columnName, displayLogic, compile(displayLogic), null, hiddenValueAction);
+	}
+
+	/**
+	 * A column that carries an {@code AD_Column.DefaultValue}: hiding it puts that value back, so the
+	 * operator finds the field exactly as a newly created record would present it.
+	 * <p>
+	 * {@code columnDefault} is the dictionary's value in the type the column stores -- {@code 22}, not
+	 * {@code "22"}, and {@code false} for a {@code DefaultValue} of {@code 'N'}. It is written through
+	 * {@link InterfaceWrapperHelper#setValue} rather than the generated setter, which for {@code SftpPort}
+	 * and {@code Frequency} takes an {@code int}: the one value that must never reach those two columns is
+	 * {@code 0}, because it satisfies their {@code MandatoryLogic} while
+	 * {@code ExternalSystemEndpointRepository} reads it as unconfigured -- the window would call a portless,
+	 * poll-less endpoint valid.
+	 */
+	private HideableColumn hideableWithColumnDefault(
+			@NonNull final String columnName,
+			@NonNull final String displayLogic,
+			@NonNull final Object columnDefault)
+	{
+		return new HideableColumn(columnName, displayLogic, compile(displayLogic), columnDefault,
+				endpoint -> InterfaceWrapperHelper.setValue(endpoint, columnName, columnDefault));
+	}
+
+	private ILogicExpression compile(@NonNull final String displayLogic)
+	{
+		return expressionFactory.compile(displayLogic, ILogicExpression.class);
 	}
 
 	/**
@@ -205,7 +231,21 @@ public class ExternalSystem_Endpoint
 	}
 
 	/**
-	 * Takes the value away from every field the endpoint's new configuration hides.
+	 * The {@code AD_Column.DefaultValue} copy this class carries, for the columns it restores one to. A
+	 * column absent from this map is one the rule table claims has no default -- a claim the same reader as
+	 * {@link #getDisplayLogicByColumnName()} holds against the live dictionary.
+	 */
+	@VisibleForTesting
+	public ImmutableMap<String, Object> getColumnDefaultByColumnName()
+	{
+		return hideableColumns.get().stream()
+				.filter(column -> column.getColumnDefault() != null)
+				.collect(ImmutableMap.toImmutableMap(HideableColumn::getColumnName, HideableColumn::getColumnDefault));
+	}
+
+	/**
+	 * Puts every field the endpoint's new configuration hides back to its column default -- for most of them
+	 * no value at all, for the five that carry an {@code AD_Column.DefaultValue} that value.
 	 * <p>
 	 * One handler for all three governing columns on purpose: a save may change more than one of them at
 	 * once, and a condition such as {@code Password}'s spans all three -- a handler keyed on a single column
@@ -215,7 +255,7 @@ public class ExternalSystem_Endpoint
 			I_ExternalSystem_Endpoint.COLUMNNAME_TransportType,
 			I_ExternalSystem_Endpoint.COLUMNNAME_AuthType,
 			I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType })
-	public void clearFieldsHiddenByTheNewConfiguration(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	public void resetFieldsHiddenByTheNewConfiguration(@NonNull final I_ExternalSystem_Endpoint endpoint)
 	{
 		assertTransportTypeIsAKnownCode(endpoint);
 
@@ -227,13 +267,13 @@ public class ExternalSystem_Endpoint
 				.filter(column -> !column.isVisible(newConfiguration))
 				.collect(ImmutableList.toImmutableList());
 
-		hiddenColumns.forEach(column -> column.clear(endpoint));
+		hiddenColumns.forEach(column -> column.applyHiddenValue(endpoint));
 	}
 
 	/**
 	 * Refuses a transport code {@link TransportType} has no constant for -- no condition in
-	 * {@link #createHideableColumns()} is keyed on it, so the handler would take EVERY hideable column away
-	 * in a single save. Refusing adds no restriction: {@code ExternalSystemEndpointRepository#fromRecord}
+	 * {@link #createHideableColumns()} is keyed on it, so the handler would reset EVERY hideable column in a
+	 * single save. Refusing adds no restriction: {@code ExternalSystemEndpointRepository#fromRecord}
 	 * resolves the very same {@link TransportType#ofCode(String)}, so the record would be unloadable anyway.
 	 * <p>
 	 * A code the enum DOES have a constant for but no rule is keyed on passes here; that is the separate
@@ -287,7 +327,14 @@ public class ExternalSystem_Endpoint
 
 		@NonNull ILogicExpression visibleIf;
 
-		@NonNull Consumer<I_ExternalSystem_Endpoint> clearAction;
+		/**
+		 * verbatim copy of this column's {@code AD_Column.DefaultValue}, in the type the column stores;
+		 * {@code null} where the dictionary gives the column no default
+		 */
+		@Nullable Object columnDefault;
+
+		/** writes {@link #columnDefault}, or takes the value away where there is none */
+		@NonNull Consumer<I_ExternalSystem_Endpoint> hiddenValueAction;
 
 		boolean isVisible(@NonNull final Evaluatee configuration)
 		{
@@ -300,9 +347,9 @@ public class ExternalSystem_Endpoint
 			return Boolean.TRUE.equals(visible);
 		}
 
-		void clear(@NonNull final I_ExternalSystem_Endpoint endpoint)
+		void applyHiddenValue(@NonNull final I_ExternalSystem_Endpoint endpoint)
 		{
-			clearAction.accept(endpoint);
+			hiddenValueAction.accept(endpoint);
 		}
 	}
 }

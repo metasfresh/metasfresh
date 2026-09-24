@@ -8,12 +8,13 @@
 -- and the local-file route refuses them. Defaulting the column to 60000 closes that gap for the common
 -- case (operator leaves the field blank).
 --
--- The default covers record CREATION only (AD_Column.DefaultValue never re-fires on an existing row), so
--- it does not help an endpoint that reaches LOCAL_FILE by a later transport switch: switching away from
--- LOCAL_FILE clears Frequency, and the default cannot put it back. That is expected -- the switch clears
--- every field owned by the transport being left, and the operator re-enters them on the way back, same as
--- for LocalRootLocation. The companion migration script gates the column as mandatory under
--- TransportType=LOCAL_FILE, so the window asks for it on that way back.
+-- AD_Column.DefaultValue fires on record CREATION only -- it never re-fires on an existing row, so it
+-- cannot serve an endpoint that reaches LOCAL_FILE by a later transport switch. The endpoint interceptor
+-- (de.metas.externalsystem.endpoint.interceptor.ExternalSystem_Endpoint) applies this same value on that
+-- path: whenever a switch hides Frequency it resets the column to its default, so an endpoint that comes
+-- back to LOCAL_FILE presents 60000 exactly as a newly created one does. The value below is therefore read
+-- by two mechanisms, and the interceptor carries a verbatim copy of it that
+-- externalSystemEndpointDisplayLogic.feature holds against this column.
 --
 -- IDs allocated from idserver.metas.de on 2026-09-24:
 --   AD_MigrationScript 5826110 (this script)

@@ -48,9 +48,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Covers {@link ExternalSystem_Endpoint#clearFieldsHiddenByTheNewConfiguration(I_ExternalSystem_Endpoint)}:
- * after a save, no field the window hides may still carry a value, and no field the window shows may have
- * lost one.
+ * Covers {@link ExternalSystem_Endpoint#resetFieldsHiddenByTheNewConfiguration(I_ExternalSystem_Endpoint)}:
+ * after a save, every field the window hides stands at its {@code AD_Column.DefaultValue} -- no value at
+ * all for the columns that have none -- and no field the window shows has lost one.
+ * <p>
+ * The five hideable columns that carry a default are {@code ContentType}, {@code IsFileUpload},
+ * {@code SftpPort}, {@code SftpPollingIntervalMs} and {@code Frequency}; that those copies match the
+ * live dictionary is {@code externalSystemEndpointDisplayLogic.feature}'s job, not this suite's.
  */
 public class ExternalSystem_EndpointTest
 {
@@ -71,7 +75,10 @@ public class ExternalSystem_EndpointTest
 	{
 		endpoint.setHttpEndPoint("https://example.com/api");
 		endpoint.setOutboundHttpMethod("POST");
-		endpoint.setContentType("application/json");
+		// deliberately NOT application/json, this column's AD_Column.DefaultValue: a fixture equal to the
+		// default would make "the window still shows it" and "the window hid it and it was reset"
+		// indistinguishable
+		endpoint.setContentType("application/xml");
 		endpoint.setAuthType("Basic");
 		endpoint.setAuthToken("token");
 		endpoint.setLoginUsername("user");
@@ -86,15 +93,18 @@ public class ExternalSystem_EndpointTest
 	}
 
 	/**
-	 * The HTTP-only columns, i.e. the ones no other transport shows. {@code Password} is NOT among them --
-	 * SFTP password authentication shows it too, so each test states its fate itself -- and neither is
-	 * {@code IsArrayFanOut}, which has no display logic at all (see {@link #assertArrayFanOutPreserved}).
+	 * The HTTP-only columns, i.e. the ones no other transport shows, each back at its
+	 * {@code AD_Column.DefaultValue} -- which for a column that has none is no value at all.
+	 * {@code Password} is NOT among them -- SFTP password authentication shows it too, so each test states
+	 * its fate itself -- and neither is {@code IsArrayFanOut}, which has no display logic at all (see
+	 * {@link #assertArrayFanOutPreserved}).
 	 */
-	private static void assertHttpOnlyFieldsCleared(final I_ExternalSystem_Endpoint endpoint)
+	private static void assertHttpOnlyFieldsResetToTheirColumnDefaults(final I_ExternalSystem_Endpoint endpoint)
 	{
 		assertThat(endpoint.getHttpEndPoint()).isNull();
 		assertThat(endpoint.getOutboundHttpMethod()).isNull();
-		assertThat(endpoint.getContentType()).isNull();
+		// ContentType and IsFileUpload are the two HTTP columns that DO carry an AD_Column.DefaultValue
+		assertThat(endpoint.getContentType()).isEqualTo("application/json");
 		assertThat(endpoint.getAuthType()).isNull();
 		assertThat(endpoint.getAuthToken()).isNull();
 		assertThat(endpoint.getLoginUsername()).isNull();
@@ -124,7 +134,7 @@ public class ExternalSystem_EndpointTest
 	{
 		assertThat(endpoint.getHttpEndPoint()).isEqualTo("https://example.com/api");
 		assertThat(endpoint.getOutboundHttpMethod()).isEqualTo("POST");
-		assertThat(endpoint.getContentType()).isEqualTo("application/json");
+		assertThat(endpoint.getContentType()).isEqualTo("application/xml");
 		assertThat(endpoint.getAuthType()).isEqualTo("Basic");
 		assertThat(endpoint.getLoginUsername()).isEqualTo("user");
 		assertThat(endpoint.getPassword()).isEqualTo("secret");
@@ -146,13 +156,15 @@ public class ExternalSystem_EndpointTest
 	private static void setAllSftpFields(final I_ExternalSystem_Endpoint endpoint)
 	{
 		endpoint.setSftpHost("sftp.example.com");
-		endpoint.setSftpPort(22);
+		// 2222 and 30_000 are deliberately NOT these columns' AD_Column.DefaultValue (22 / 60000), for the
+		// reason given in setAllHttpFields
+		endpoint.setSftpPort(2222);
 		endpoint.setSftpUsername("sftpuser");
 		endpoint.setSftpAuthType("PASSWORD");
 		endpoint.setSshPrivateKey("private-key");
 		endpoint.setSftpRemotePath("/upload");
 		endpoint.setSftpFilenamePattern("order_{date}.edi");
-		endpoint.setSftpPollingIntervalMs(60_000);
+		endpoint.setSftpPollingIntervalMs(30_000);
 	}
 
 	/** The stored value: the generated {@code int} getter answers 0 for a stored 0 and for SQL NULL alike. */
@@ -162,28 +174,33 @@ public class ExternalSystem_EndpointTest
 		return InterfaceWrapperHelper.getValueOrNull(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort);
 	}
 
-	private static void assertAllSftpFieldsCleared(final I_ExternalSystem_Endpoint endpoint)
+	/**
+	 * Every SFTP column back at its {@code AD_Column.DefaultValue} -- which for a column that has none is no
+	 * value at all.
+	 */
+	private static void assertAllSftpFieldsResetToTheirColumnDefaults(final I_ExternalSystem_Endpoint endpoint)
 	{
 		assertThat(endpoint.getSftpHost()).isNull();
-		assertThat(sftpPortOf(endpoint)).isNull();
+		// SftpPort and SftpPollingIntervalMs are the two SFTP columns that DO carry an AD_Column.DefaultValue
+		assertThat(sftpPortOf(endpoint)).isEqualTo(22);
 		assertThat(endpoint.getSftpUsername()).isNull();
 		assertThat(endpoint.getSftpAuthType()).isNull();
 		assertThat(endpoint.getSshPrivateKey()).isNull();
 		assertThat(endpoint.getSftpRemotePath()).isNull();
 		assertThat(endpoint.getSftpFilenamePattern()).isNull();
-		assertThat(endpoint.getSftpPollingIntervalMs()).isZero();
+		assertThat(endpoint.getSftpPollingIntervalMs()).isEqualTo(60_000);
 	}
 
 	/** The SFTP columns an {@code SftpAuthType='PASSWORD'} endpoint shows -- every one set by {@link #setAllSftpFields} except the SSH key. */
 	private static void assertPasswordAuthSftpFieldsPreserved(final I_ExternalSystem_Endpoint endpoint)
 	{
 		assertThat(endpoint.getSftpHost()).isEqualTo("sftp.example.com");
-		assertThat(endpoint.getSftpPort()).isEqualTo(22);
+		assertThat(endpoint.getSftpPort()).isEqualTo(2222);
 		assertThat(endpoint.getSftpUsername()).isEqualTo("sftpuser");
 		assertThat(endpoint.getSftpAuthType()).isEqualTo("PASSWORD");
 		assertThat(endpoint.getSftpRemotePath()).isEqualTo("/upload");
 		assertThat(endpoint.getSftpFilenamePattern()).isEqualTo("order_{date}.edi");
-		assertThat(endpoint.getSftpPollingIntervalMs()).isEqualTo(60_000);
+		assertThat(endpoint.getSftpPollingIntervalMs()).isEqualTo(30_000);
 	}
 
 	private static void setAllLocalFileFields(final I_ExternalSystem_Endpoint endpoint)
@@ -200,10 +217,15 @@ public class ExternalSystem_EndpointTest
 		return InterfaceWrapperHelper.getValueOrNull(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_Frequency);
 	}
 
-	private static void assertAllLocalFileFieldsCleared(final I_ExternalSystem_Endpoint endpoint)
+	/**
+	 * Every LOCAL_FILE column back at its {@code AD_Column.DefaultValue} -- which for a column that has none
+	 * is no value at all.
+	 */
+	private static void assertAllLocalFileFieldsResetToTheirColumnDefaults(final I_ExternalSystem_Endpoint endpoint)
 	{
 		assertThat(endpoint.getLocalRootLocation()).isNull();
-		assertThat(frequencyOf(endpoint)).isNull();
+		// Frequency is the one LOCAL_FILE column that DOES carry an AD_Column.DefaultValue
+		assertThat(frequencyOf(endpoint)).isEqualTo(60_000);
 		assertThat(endpoint.getImportFileNamePattern()).isNull();
 	}
 
@@ -241,11 +263,11 @@ public class ExternalSystem_EndpointTest
 			// when: switching the transport type to HTTP and filling in the new transport's own fields
 			endpoint.setTransportType(TransportType.HTTP.getCode());
 			setAllHttpFields(endpoint);
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			// then: every SFTP-specific and LOCAL_FILE-specific field is cleared ...
-			assertAllSftpFieldsCleared(endpoint);
-			assertAllLocalFileFieldsCleared(endpoint);
+			assertAllSftpFieldsResetToTheirColumnDefaults(endpoint);
+			assertAllLocalFileFieldsResetToTheirColumnDefaults(endpoint);
 			// ... the HTTP fields Basic authentication shows survive ...
 			assertBasicAuthHttpFieldsPreserved(endpoint);
 			// ... the HTTP fields it hides are taken away, although HTTP is the new transport ...
@@ -275,7 +297,7 @@ public class ExternalSystem_EndpointTest
 			// when: switching to a transport whose configuration would not show an HTTP-only field
 			endpoint.setTransportType(TransportType.SFTP.getCode());
 			setAllSftpFields(endpoint);
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			// then: the retired column keeps its value
 			assertThat(endpoint.getType()).isEqualTo("HTTP");
@@ -296,15 +318,15 @@ public class ExternalSystem_EndpointTest
 			// when: switching the transport type to SFTP and filling in the new transport's own fields
 			endpoint.setTransportType(TransportType.SFTP.getCode());
 			setAllSftpFields(endpoint);
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			// then: every HTTP-only field is cleared ...
-			assertHttpOnlyFieldsCleared(endpoint);
+			assertHttpOnlyFieldsResetToTheirColumnDefaults(endpoint);
 			// ... but the password survives: SFTP password authentication shows that very field, so the
 			// endpoint stays usable instead of ending up valid-looking and unable to log in ...
 			assertThat(endpoint.getPassword()).isEqualTo("secret");
 			// ... every LOCAL_FILE-specific field is cleared ...
-			assertAllLocalFileFieldsCleared(endpoint);
+			assertAllLocalFileFieldsResetToTheirColumnDefaults(endpoint);
 			// ... the SFTP fields password authentication shows survive ...
 			assertPasswordAuthSftpFieldsPreserved(endpoint);
 			// ... the SSH key it hides is taken away ...
@@ -329,14 +351,14 @@ public class ExternalSystem_EndpointTest
 			// when: switching the transport type to LOCAL_FILE and filling in the new transport's own fields
 			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
 			setAllLocalFileFields(endpoint);
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			// then: every HTTP-specific field is cleared ...
-			assertHttpOnlyFieldsCleared(endpoint);
+			assertHttpOnlyFieldsResetToTheirColumnDefaults(endpoint);
 			// ... the password too: no LOCAL_FILE configuration shows it ...
 			assertThat(endpoint.getPassword()).isNull();
 			// ... every SFTP-specific field is cleared ...
-			assertAllSftpFieldsCleared(endpoint);
+			assertAllSftpFieldsResetToTheirColumnDefaults(endpoint);
 			// ... the just-entered LOCAL_FILE fields survive ...
 			assertAllLocalFileFieldsPreserved(endpoint);
 			// ... and the always-visible / transport-agnostic fields are untouched
@@ -345,63 +367,66 @@ public class ExternalSystem_EndpointTest
 		}
 
 		/**
-		 * Round trip LOCAL_FILE -&gt; another transport -&gt; LOCAL_FILE. The switch away must leave Frequency
-		 * unset rather than 0: the column's MandatoryLogic rejects only an unset value, so a 0 would end the
-		 * round trip on a record the window calls valid while {@code ExternalSystemEndpointRepository} reads
-		 * the frequency back as absent. Unset, the operator is prompted for it, exactly as for
-		 * LocalRootLocation.
+		 * Round trip LOCAL_FILE -&gt; another transport -&gt; LOCAL_FILE. Frequency carries an
+		 * {@code AD_Column.DefaultValue} of 60000, so that is what the switch away leaves behind and what the
+		 * operator finds on the way back -- the same value a newly created LOCAL_FILE endpoint is pre-filled
+		 * with. Never 0: {@code ExternalSystemEndpointRepository} reads a frequency &lt;= 0 as no frequency at
+		 * all, while the column's MandatoryLogic accepts it, which would end the round trip on a record the
+		 * window calls valid and the dispatch cannot poll.
 		 */
 		@Test
-		void switchBackToLocalFile_afterFrequencyWasClearedBySwitchingAway_leavesFrequencyUnset()
+		void switchBackToLocalFile_afterSwitchingAway_findsTheFrequencyAtItsColumnDefault()
 		{
-			// given: a working LOCAL_FILE endpoint
+			// given: a working LOCAL_FILE endpoint polling every 5 seconds, not the column's default
 			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
 			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
 			setAllLocalFileFields(endpoint);
 			InterfaceWrapperHelper.saveRecord(endpoint);
 
-			// ... that is switched away to SFTP, which clears its local-file settings
+			// ... that is switched away to SFTP, which resets its local-file settings
 			endpoint.setTransportType(TransportType.SFTP.getCode());
 			setAllSftpFields(endpoint);
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
-			assertThat(frequencyOf(endpoint)).isNull();
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
+			assertThat(frequencyOf(endpoint)).isEqualTo(60_000);
 
 			// when: switching back to LOCAL_FILE, re-entering only the root location
 			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
 			endpoint.setLocalRootLocation("/data/in2");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
-			// then: the frequency is still unset, so the window keeps asking the operator for it
-			assertThat(frequencyOf(endpoint)).isNull();
+			// then: the frequency stands at its column default, so the record is complete without the
+			// operator retyping a value the window would have pre-filled on a new record
+			assertThat(frequencyOf(endpoint)).isEqualTo(60_000);
 		}
 
 		/**
-		 * The same round trip for SftpPort, which has the identical shape: MandatoryLogic
-		 * {@code @TransportType/X@='SFTP'}, and a stored 0 satisfies it, so the window would call a portless
-		 * endpoint valid. Unset, the operator is prompted for it, exactly as for SftpHost.
+		 * The same round trip for SftpPort, which has the identical shape: an {@code AD_Column.DefaultValue}
+		 * of 22 and MandatoryLogic {@code @TransportType/X@='SFTP'}. Never 0, for the reason given on
+		 * {@link #switchBackToLocalFile_afterSwitchingAway_findsTheFrequencyAtItsColumnDefault()}.
 		 */
 		@Test
-		void switchBackToSftp_afterSftpPortWasClearedBySwitchingAway_leavesSftpPortUnset()
+		void switchBackToSftp_afterSwitchingAway_findsThePortAtItsColumnDefault()
 		{
-			// given: a working SFTP endpoint
+			// given: a working SFTP endpoint on port 2222, not the column's default
 			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
 			endpoint.setTransportType(TransportType.SFTP.getCode());
 			setAllSftpFields(endpoint);
 			InterfaceWrapperHelper.saveRecord(endpoint);
 
-			// ... that is switched away to LOCAL_FILE, which clears its SFTP settings
+			// ... that is switched away to LOCAL_FILE, which resets its SFTP settings
 			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
 			setAllLocalFileFields(endpoint);
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
-			assertThat(sftpPortOf(endpoint)).isNull();
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
+			assertThat(sftpPortOf(endpoint)).isEqualTo(22);
 
 			// when: switching back to SFTP, re-entering only the host
 			endpoint.setTransportType(TransportType.SFTP.getCode());
 			endpoint.setSftpHost("sftp.example.com");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
-			// then: the port is still unset, so the window keeps asking the operator for it
-			assertThat(sftpPortOf(endpoint)).isNull();
+			// then: the port stands at its column default, the value 2222 the operator had entered gone with
+			// the transport that showed it
+			assertThat(sftpPortOf(endpoint)).isEqualTo(22);
 		}
 	}
 
@@ -427,7 +452,7 @@ public class ExternalSystem_EndpointTest
 			endpoint.setTransportType("CARRIER_PIGEON");
 
 			// then: the save is refused ...
-			assertThatThrownBy(() -> interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint))
+			assertThatThrownBy(() -> interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint))
 					.hasMessageContaining("CARRIER_PIGEON");
 
 			// ... and nothing was taken away on the way out
@@ -446,7 +471,7 @@ public class ExternalSystem_EndpointTest
 
 			endpoint.setTransportType(null);
 
-			assertThatThrownBy(() -> interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint))
+			assertThatThrownBy(() -> interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint))
 					.hasMessageContaining("TransportType");
 			assertThat(endpoint.getHttpEndPoint()).isEqualTo("https://example.com/api");
 		}
@@ -473,7 +498,7 @@ public class ExternalSystem_EndpointTest
 			endpoint.setTransportType(TransportType.SFTP.getCode());
 			setAllSftpFields(endpoint);
 			endpoint.setPassword("sftp-secret");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			// then: the record ends up SFTP + PASSWORD, a state in which the window SHOWS the password
 			// field, so the value the operator just entered must still be there
@@ -493,7 +518,7 @@ public class ExternalSystem_EndpointTest
 			endpoint.setTransportType(TransportType.SFTP.getCode());
 			setAllSftpFields(endpoint);
 			endpoint.setSftpAuthType("SSH_KEY");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			// then: SFTP + SSH_KEY hides the password and shows the key
 			assertThat(endpoint.getPassword()).isNull();
@@ -520,7 +545,7 @@ public class ExternalSystem_EndpointTest
 			final I_ExternalSystem_Endpoint endpoint = newSavedBasicAuthEndpoint();
 
 			endpoint.setAuthType("Token");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			assertThat(endpoint.getLoginUsername()).isNull();
 			assertThat(endpoint.getPassword()).isNull();
@@ -533,7 +558,7 @@ public class ExternalSystem_EndpointTest
 			final I_ExternalSystem_Endpoint endpoint = newSavedBasicAuthEndpoint();
 
 			endpoint.setAuthType("SAS");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			assertThat(endpoint.getLoginUsername()).isNull();
 			assertThat(endpoint.getPassword()).isNull();
@@ -548,14 +573,14 @@ public class ExternalSystem_EndpointTest
 		{
 			final I_ExternalSystem_Endpoint endpoint = newSavedBasicAuthEndpoint();
 			endpoint.setAuthType("SAS");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 			InterfaceWrapperHelper.saveRecord(endpoint);
 
 			// when: back to Basic, which does not show the SAS signature
 			endpoint.setAuthType("Basic");
 			endpoint.setLoginUsername("user");
 			endpoint.setPassword("secret");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			assertThat(endpoint.getSasSignature()).isNull();
 			assertThat(endpoint.getLoginUsername()).isEqualTo("user");
@@ -574,7 +599,7 @@ public class ExternalSystem_EndpointTest
 			final I_ExternalSystem_Endpoint endpoint = newSavedBasicAuthEndpoint();
 
 			endpoint.setAuthType("OAuth");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			assertThat(endpoint.getPassword()).isEqualTo("secret");
 			assertThat(endpoint.getLoginUsername()).isEqualTo("user");
@@ -598,7 +623,7 @@ public class ExternalSystem_EndpointTest
 			final I_ExternalSystem_Endpoint endpoint = newSavedBasicAuthEndpoint();
 
 			endpoint.setAuthType("OAuth2");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			assertThat(endpoint.getLoginUsername()).isEqualTo("user");
 			assertThat(endpoint.getPassword()).isEqualTo("secret");
@@ -626,7 +651,7 @@ public class ExternalSystem_EndpointTest
 			InterfaceWrapperHelper.saveRecord(endpoint);
 
 			endpoint.setSftpAuthType("SSH_KEY");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			assertThat(endpoint.getPassword()).isNull();
 			assertThat(endpoint.getSshPrivateKey()).isEqualTo("private-key");
@@ -643,7 +668,7 @@ public class ExternalSystem_EndpointTest
 
 			endpoint.setSftpAuthType("PASSWORD");
 			endpoint.setPassword("sftp-secret");
-			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			interceptor.resetFieldsHiddenByTheNewConfiguration(endpoint);
 
 			assertThat(endpoint.getSshPrivateKey()).isNull();
 			assertThat(endpoint.getPassword()).isEqualTo("sftp-secret");
@@ -694,7 +719,7 @@ public class ExternalSystem_EndpointTest
 		void theInterceptorTriggersOnExactlyTheVisibilityGoverningColumns() throws NoSuchMethodException
 		{
 			final Method handler = ExternalSystem_Endpoint.class
-					.getMethod("clearFieldsHiddenByTheNewConfiguration", I_ExternalSystem_Endpoint.class);
+					.getMethod("resetFieldsHiddenByTheNewConfiguration", I_ExternalSystem_Endpoint.class);
 
 			assertThat(handler.getAnnotation(ModelChange.class).ifColumnsChanged())
 					.containsExactlyInAnyOrderElementsOf(ExternalSystem_Endpoint.VISIBILITY_GOVERNING_COLUMN_NAMES);
@@ -737,6 +762,7 @@ public class ExternalSystem_EndpointTest
 					"SomeColumn",
 					displayLogicNamingAVariableWithoutADefault,
 					undecidable,
+					null,
 					endpoint -> {});
 
 			assertThat(column.isVisible(Evaluatees.ofMap(ImmutableMap.of()))).isFalse();
