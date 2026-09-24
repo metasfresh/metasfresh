@@ -583,6 +583,7 @@ public class C_Invoice_Candidate_StepDef
 	 *   <li>{@code InvoiceRule_Override} (optional, null-allowed) — expected invoice-rule override; pass {@code null} to assert that no override is set</li>
 	 *   <li>{@code IsFreightCost} (optional) — expected freight-cost flag, derived from the product's ProductType</li>
 	 *   <li>{@code DeliveryDate} (optional) — expected delivery date</li>
+	 *   <li>{@code PriceEntered_Override} (optional) — expected override price</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -746,6 +747,9 @@ public class C_Invoice_Candidate_StepDef
 
 						row.getAsOptionalLocalDate(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
 								.ifPresent(deliveryDate -> softly.assertThat(TimeUtil.asLocalDate(finalInvoiceCandidate.getDeliveryDate())).as("DeliveryDate").isEqualTo(deliveryDate));
+
+						row.getAsOptionalBigDecimal(COLUMNNAME_PriceEntered_Override)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getPriceEntered_Override()).as("PriceEntered_Override").isEqualByComparingTo(expected));
 
 						softly.assertAll();
 					}
@@ -1025,6 +1029,12 @@ public class C_Invoice_Candidate_StepDef
 	 * <ul>
 	 *   <li>{@code OPT.M_Product_ID.Identifier} – when present, filters ICs by this product; required when
 	 *       the return generates multiple ICs (e.g. packing-material lines alongside the product line)</li>
+	 *   <li>{@code OPT.M_InOutLine_ID.Identifier} – when present, narrows the lookup to the ICs of this specific
+	 *       return line (registered via {@code OPT.M_InOutLine_ID.Identifier} on the "validate the created
+	 *       material receipt lines" step); required (instead of {@code OPT.M_Product_ID.Identifier}) when the
+	 *       return has several lines of the SAME product (e.g. two different batches returned in one visit) —
+	 *       {@code QtyDelivered}/{@code QtyOrdered} cannot disambiguate them because they are only populated by
+	 *       the candidate's own async recompute, not at creation time</li>
 	 * </ul>
 	 *
 	 * @return {@code true} if exactly one matching IC was found and stored; {@code false} if none found yet
@@ -1033,20 +1043,28 @@ public class C_Invoice_Candidate_StepDef
 	{
 		final int returnInOutId = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(shipmentTable).getM_InOut_ID();
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, returnInOutId);
+		// narrows to exactly this return line's own ICs when given (reliable even before the async qty recompute
+		// lands); otherwise falls back to a M_InOut(+product)-scoped query
+		final List<I_C_Invoice_Candidate> matchingCandidates = row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID)
+				.map(inoutLineTable::get)
+				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
+				.orElseGet(() -> {
+					final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+							.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, returnInOutId);
 
-		// Optional product filter — required when the return generates multiple ICs (packing-material lines alongside the product IC)
-		row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
-				.map(productIdentifier -> productIdentifier.lookupNotNullIn(productTable))
-				.ifPresent(product -> queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID()));
+					// Optional product filter — required when the return generates multiple ICs (packing-material lines alongside the product IC)
+					row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+							.map(productIdentifier -> productIdentifier.lookupNotNullIn(productTable))
+							.ifPresent(product -> queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID()));
 
-		// firstOnlyOptional throws when >1 IC matches: pass OPT.M_Product_ID.Identifier to narrow the lookup
-		// whenever the return generates several ICs (e.g. HU packing-material lines alongside the product line).
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder
-				.create()
-				.firstOnlyOptional(I_C_Invoice_Candidate.class);
+					return queryBuilder.create().list();
+				});
 
+		// pass OPT.M_InOutLine_ID.Identifier / OPT.M_Product_ID.Identifier to narrow the lookup whenever the
+		// return generates several ICs (e.g. HU packing-material lines alongside the product line)
+		assertThat(matchingCandidates).as("invoice candidates for row %s", row).hasSizeLessThanOrEqualTo(1);
+
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = matchingCandidates.stream().findFirst();
 		if (!invoiceCandidate.isPresent())
 		{
 			return false;

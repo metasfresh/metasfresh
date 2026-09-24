@@ -202,6 +202,8 @@ public class M_InOut_StepDef
 	 * <b>ExternalId</b> — (optional) expected external ID<br>
 	 * <b>M_Warehouse_ID</b> — (optional, identifier-ref) expected warehouse<br>
 	 * <b>MovementType</b> — (optional) expected movement type code (e.g. {@code C+} for a customer return)<br>
+	 * <b>OPT.C_Order_ID.Identifier</b> — (optional, identifier-ref, null-allowed) expected sales order; pass
+	 *   {@code null} to assert the shipment/receipt carries no order (e.g. a POS return, which is order-less)<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example <pre>
 	 * And validate the created shipments
@@ -285,6 +287,12 @@ public class M_InOut_StepDef
 
 		row.getAsOptionalString(I_M_InOut.COLUMNNAME_MovementType)
 				.ifPresent(movementType -> softly.assertThat(inout.getMovementType()).as("MovementType").isEqualTo(movementType));
+
+		row.getAsOptionalIdentifier(COLUMNNAME_C_Order_ID)
+				.ifPresent(orderIdentifier -> {
+					final int expectedOrderId = orderIdentifier.isNullPlaceholder() ? 0 : orderTable.get(orderIdentifier.getAsString()).getC_Order_ID();
+					softly.assertThat(inout.getC_Order_ID()).as("C_Order_ID").isEqualTo(expectedOrderId);
+				});
 
 		softly.assertAll();
 	}

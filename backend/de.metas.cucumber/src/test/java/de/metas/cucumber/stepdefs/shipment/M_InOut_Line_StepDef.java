@@ -100,6 +100,33 @@ public class M_InOut_Line_StepDef
 	private final M_AttributeSetInstance_StepDefData asiTable;
 	private final C_Project_StepDefData projectTable;
 
+	/**
+	 * Validates fields on the {@code M_InOutLine} of a previously created shipment/receipt, located by
+	 * {@code M_InOut_ID} (+ optional filters).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment/receipt<br>
+	 *   <b>OPT.M_Product_ID</b> — (optional, identifier-ref) narrows the lookup to this product's line<br>
+	 *   <b>OPT.C_OrderLine_ID</b> — (optional, identifier-ref) narrows the lookup to this order line's shipment line<br>
+	 *   <b>OPT.QualityDiscountPercent</b> — (optional) narrows the lookup by this quality-discount percent<br>
+	 *   <b>OPT.MovementQty</b> — (optional) narrows the lookup by this movement qty, when several lines share a product<br>
+	 *   <b>processed</b> — (optional) expected {@code Processed} flag<br>
+	 *   <b>movementqty</b> — (optional) expected {@code MovementQty}<br>
+	 *   <b>ExternalId</b> — (optional) expected {@code ExternalId}<br>
+	 *   <b>C_Project_ID</b> — (optional, identifier-ref) expected project<br>
+	 *   <b>OPT.Return_Origin_InOutLine_ID.Identifier</b> — (optional, identifier-ref, null-allowed) expected origin
+	 *   shipment/receipt line; pass {@code null} to assert the line has no origin (e.g. a POS return line, which
+	 *   is a fresh receipt, never a match against a prior shipment line)<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_InOutLine_StepDefData, M_Product_StepDefData,
+	 * C_OrderLine_StepDefData, C_Project_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the created material receipt lines
+	 *   | M_InOut_ID | M_Product_ID | movementqty | OPT.Return_Origin_InOutLine_ID.Identifier |
+	 *   | return_1   | product      | 0.3         | null                                       |
+	 * </pre>
+	 */
 	@And("^validate the created (shipment|material receipt) lines$")
 	public void validate_created_M_InOutLines(@NonNull final String ignoredModel, @NonNull final DataTable table)
 	{
@@ -124,6 +151,18 @@ public class M_InOut_Line_StepDef
 					final I_C_Project project = projectTable.get(projectIdentifier);
 					softly.assertThat(inoutLine.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
 				});
+
+		// null-allowed: pass "null" to assert the line has no origin (e.g. a POS return line, which is a fresh
+		// receipt, never a match against a prior shipment line)
+		row.getAsOptionalIdentifier(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_Return_Origin_InOutLine_ID)
+				.ifPresent(returnOriginIdentifier -> {
+					final de.metas.inout.model.I_M_InOutLine inoutLineExt = InterfaceWrapperHelper.create(inoutLine, de.metas.inout.model.I_M_InOutLine.class);
+					final int expectedReturnOriginId = returnOriginIdentifier.isNullPlaceholder()
+							? 0
+							: inoutLineTable.get(returnOriginIdentifier.getAsString()).getM_InOutLine_ID();
+					softly.assertThat(inoutLineExt.getReturn_Origin_InOutLine_ID()).as("Return_Origin_InOutLine_ID").isEqualTo(expectedReturnOriginId);
+				});
+
 		softly.assertAll();
 	}
 
