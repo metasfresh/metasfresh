@@ -75,8 +75,8 @@ public class ExternalSystemScriptedImportConversionService
 	private final ExternalSystemConfigRepository externalSystemConfigRepo;
 
 	/**
-	 * Resolve the concrete camel command(s) for a Start/Stop run, per child, deriving REST vs SFTP
-	 * from each child's own endpoint transport.
+	 * Resolve the concrete camel command(s) for a Start/Stop run, per child, deriving the transport's
+	 * command from each child's own endpoint transport.
 	 *
 	 * @param parentId    the parent config whose active children to iterate (used when {@code childConfigId} is null)
 	 * @param childConfigId when non-null, resolve only this single child (parentId is ignored)
