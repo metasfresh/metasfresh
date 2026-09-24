@@ -193,7 +193,14 @@ public interface IUserRolePermissions
 	 **/
 	BooleanWithReason checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 
-	/** Full client/org/table write-access check for creating a record; unrelated to {@link #isTableAccess(int, Access)} with {@code Access.CREATE}. */
+	/**
+	 * Full client/org/table write-access check for creating a record (uses {@code Access.WRITE}).
+	 * Distinct from (not a substitute for) the per-table CREATE restriction
+	 * {@link #isTableAccess(int, Access)} with {@code Access.CREATE}: both gate record creation, but
+	 * neither subsumes the other. This method performs the client/org/table write-access check and does
+	 * NOT apply the CREATE restriction (enforced separately, in the WebUI document layer); the CREATE
+	 * restriction does not perform this write-access check.
+	 */
 	BooleanWithReason checkCanCreateNewRecord(ClientId clientId, OrgId orgId, AdTableId adTableId);
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
