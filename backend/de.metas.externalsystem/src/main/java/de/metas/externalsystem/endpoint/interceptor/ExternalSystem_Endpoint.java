@@ -140,8 +140,12 @@ public class ExternalSystem_Endpoint
 				// SFTP transport
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpHost, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpHost(null)),
+				// via setValue, because the generated setSftpPort(int) cannot express SQL NULL: a stored 0
+				// satisfies the column's MandatoryLogic while ExternalSystemEndpointRepository hands it
+				// straight on as the port to connect to, so the endpoint would look configured and dial
+				// sftp://host:0
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort, VISIBLE_FOR_SFTP,
-						endpoint -> endpoint.setSftpPort(0)),
+						endpoint -> InterfaceWrapperHelper.setValue(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort, null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpUsername, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpUsername(null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpRemotePath, VISIBLE_FOR_SFTP,

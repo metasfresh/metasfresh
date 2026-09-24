@@ -148,10 +148,20 @@ public class ExternalSystem_EndpointTest
 		endpoint.setSftpPollingIntervalMs(60_000);
 	}
 
+	/**
+	 * The stored value, not the generated {@code int} getter: that getter answers 0 both for a stored 0 and
+	 * for SQL NULL, and only NULL trips the column's MandatoryLogic.
+	 */
+	@Nullable
+	private static Integer sftpPortOf(final I_ExternalSystem_Endpoint endpoint)
+	{
+		return InterfaceWrapperHelper.getValueOrNull(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort);
+	}
+
 	private static void assertAllSftpFieldsCleared(final I_ExternalSystem_Endpoint endpoint)
 	{
 		assertThat(endpoint.getSftpHost()).isNull();
-		assertThat(endpoint.getSftpPort()).isZero();
+		assertThat(sftpPortOf(endpoint)).isNull();
 		assertThat(endpoint.getSftpUsername()).isNull();
 		assertThat(endpoint.getSftpAuthType()).isNull();
 		assertThat(endpoint.getSshPrivateKey()).isNull();
@@ -340,6 +350,36 @@ public class ExternalSystem_EndpointTest
 			assertThat(frequencyOf(endpoint)).isNull();
 		}
 
+		/**
+		 * The same round trip for SftpPort, which has the identical shape: MandatoryLogic
+		 * {@code @TransportType/X@='SFTP'}, and a stored 0 passes it while
+		 * {@code ExternalSystemEndpointRepository} hands the 0 straight on as the port to connect to -- an
+		 * endpoint the window calls valid that dials {@code sftp://host:0}. Unset, the operator is prompted
+		 * for it, exactly as for SftpHost.
+		 */
+		@Test
+		void switchBackToSftp_afterSftpPortWasClearedBySwitchingAway_leavesSftpPortUnset()
+		{
+			// given: a working SFTP endpoint
+			final I_ExternalSystem_Endpoint endpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
+			endpoint.setTransportType(TransportType.SFTP.getCode());
+			setAllSftpFields(endpoint);
+			InterfaceWrapperHelper.saveRecord(endpoint);
+
+			// ... that is switched away to LOCAL_FILE, which clears its SFTP settings
+			endpoint.setTransportType(TransportType.LOCAL_FILE.getCode());
+			setAllLocalFileFields(endpoint);
+			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+			assertThat(sftpPortOf(endpoint)).isNull();
+
+			// when: switching back to SFTP, re-entering only the host
+			endpoint.setTransportType(TransportType.SFTP.getCode());
+			endpoint.setSftpHost("sftp.example.com");
+			interceptor.clearFieldsHiddenByTheNewConfiguration(endpoint);
+
+			// then: the port is still unset, so the window keeps asking the operator for it
+			assertThat(sftpPortOf(endpoint)).isNull();
+		}
 	}
 
 	/**
