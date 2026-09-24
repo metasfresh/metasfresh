@@ -5,6 +5,8 @@ Field <de.metas.process.ProcessInfoLogRequest$ProcessInfoLogRequestBuilder.pDate
 Field <de.metas.process.ProcessInfoLogRequest.pDate> has raw type java.sql.Timestamp in (ProcessInfoLogRequest.java:0)
 Field <de.metas.tax.api.Tax$TaxBuilder.validFrom> has raw type java.sql.Timestamp in (Tax.java:0)
 Field <de.metas.tax.api.Tax.validFrom> has raw type java.sql.Timestamp in (Tax.java:0)
+Field <de.metas.tax.api.TaxQuery$TaxQueryBuilder.dateOfInterest> has raw type java.sql.Timestamp in (TaxQuery.java:0)
+Field <de.metas.tax.api.TaxQuery.dateOfInterest> has raw type java.sql.Timestamp in (TaxQuery.java:0)
 Field <org.compiere.FA.ImportAsset.m_DateValue> has raw type java.sql.Timestamp in (ImportAsset.java:0)
 Field <org.compiere.model.DataStatusEvent.created> has raw type java.sql.Timestamp in (DataStatusEvent.java:0)
 Field <org.compiere.model.DataStatusEvent.updated> has raw type java.sql.Timestamp in (DataStatusEvent.java:0)

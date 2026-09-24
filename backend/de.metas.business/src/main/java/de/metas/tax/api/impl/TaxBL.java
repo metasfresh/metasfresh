@@ -70,20 +70,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	{
 		if (taxCategoryId != null)
 		{
-			final CountryId countryFromId = Optional.ofNullable(warehouseId)
-					.map(warehouseBL::getCountryId)
-					.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
-							.orElseGet(countryDAO::getDefaultCountryId));
+			final TaxQuery query = buildTaxQuery(taxCategoryId, shipDate, orgId, warehouseId, shipBPartnerLocationId, soTrx);
 
-			final Tax tax = taxDAO.getBy(TaxQuery.builder()
-					.fromCountryId(countryFromId)
-					.orgId(orgId)
-					.bPartnerLocationId(shipBPartnerLocationId)
-					.dateOfInterest(shipDate)
-					.taxCategoryId(taxCategoryId)
-					.warehouseId(warehouseId)
-					.soTrx(soTrx)
-					.build());
+			final Tax tax = taxDAO.getBy(query);
 
 			if (tax != null)
 			{
@@ -109,6 +98,44 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// If we got here, it means that no tax was found to satisfy the conditions
 		// In this case, the Tax_Not_Found placeholder will be returned
 		return TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND);
+	}
+
+	/**
+	 * Builds the {@link TaxQuery} used by {@link #getTaxNotNull(Object, TaxCategoryId, int, Timestamp, OrgId, WarehouseId, BPartnerLocationAndCaptureId, SOTrx)}
+	 * to resolve the applicable {@code C_Tax}, including the origin-country derivation (warehouse country, falling back to the org's country,
+	 * falling back to the system default country).
+	 */
+	@Override
+	@NonNull
+	public TaxQuery buildTaxQuery(
+			@NonNull final TaxCategoryId taxCategoryId,
+			@NonNull final Timestamp shipDate,
+			@NonNull final OrgId orgId,
+			@Nullable final WarehouseId warehouseId,
+			@NonNull final BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			@NonNull final SOTrx soTrx)
+	{
+		final CountryId countryFromId = Optional.ofNullable(warehouseId)
+				.map(warehouseBL::getCountryId)
+				.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
+						.orElseGet(countryDAO::getDefaultCountryId));
+
+		return TaxQuery.builder()
+				.fromCountryId(countryFromId)
+				.orgId(orgId)
+				.bPartnerLocationId(shipBPartnerLocationId)
+				.dateOfInterest(shipDate)
+				.taxCategoryId(taxCategoryId)
+				.warehouseId(warehouseId)
+				.soTrx(soTrx)
+				.build();
+	}
+
+	@Override
+	@NonNull
+	public Optional<Tax> getByIfPresent(@NonNull final TaxQuery taxQuery)
+	{
+		return taxDAO.getByIfPresent(taxQuery);
 	}
 
 	public CalculateTaxResult calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
@@ -195,14 +222,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	@NonNull
 	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_TaxCategory.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
-				.create()
-				.firstOnlyOptional(I_C_TaxCategory.class)
-				.map(I_C_TaxCategory::getC_TaxCategory_ID)
-				.map(TaxCategoryId::ofRepoId);
+		return taxDAO.getTaxCategoryIdByInternalName(internalName);
+	}
+
+	@Override
+	@NonNull
+	public Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull final TaxCategoryId taxCategoryId)
+	{
+		return taxDAO.getActiveTaxCategoryIdById(taxCategoryId);
 	}
 
 	@Override
