@@ -176,6 +176,9 @@ public class ExternalSystem_Endpoint
 						endpoint -> endpoint.setSftpRemotePath(null)),
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpFilenamePattern, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpFilenamePattern(null)),
+				// the plain int setter here, unlike SftpPort above and Frequency below: this column carries
+				// no MandatoryLogic to satisfy, and ExternalSystemEndpointRepository already reads a stored
+				// 0 as "no polling interval", so 0 and SQL NULL say the same thing downstream
 				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs, VISIBLE_FOR_SFTP,
 						endpoint -> endpoint.setSftpPollingIntervalMs(0)),
 				// SFTP authentication

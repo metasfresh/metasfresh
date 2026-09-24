@@ -666,8 +666,12 @@ public class ExternalSystem_EndpointTest
 		}
 
 		/**
-		 * ... and the triggering columns are declared in exactly one place, so the set above cannot say one
-		 * thing while the annotation the framework reads says another.
+		 * ... and the two places that spell those columns out stay equal. They cannot be reduced to one:
+		 * {@code VISIBILITY_GOVERNING_COLUMN_NAMES} is an {@code ImmutableSet} built at runtime, while
+		 * {@code @ModelChange(ifColumnsChanged = ...)} is an annotation and takes compile-time constants
+		 * only, so it has to list the same names again. This test does not remove that duplication -- it
+		 * pins the two copies to each other, so a column added to one and forgotten in the other fails
+		 * here instead of silently leaving a rule un-triggered.
 		 */
 		@Test
 		void theInterceptorTriggersOnExactlyTheVisibilityGoverningColumns() throws NoSuchMethodException
