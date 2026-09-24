@@ -30,8 +30,9 @@ import org.adempiere.ad.table.api.AdTableId;
  */
 
 /**
- * Creates one {@code AD_Table_Access} row. Each flag is nullable here: {@code null} means the row says
- * nothing about that aspect, so the column keeps its own (non-restricting) default.
+ * Creates one {@code AD_Table_Access} row. Every flag is a plain {@code boolean} defaulting (via the
+ * builder) to its {@code AD_Table_Access} column's own non-restricting value, so a request that overrides
+ * nothing produces a row equivalent to no row at all; flip a flag to restrict that aspect.
  */
 @Value
 @Builder
