@@ -100,7 +100,7 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 			try
 			{
 				// Record the expected status (Active/Inactive) FIRST -- it is the source of truth the startup
-				// reconciler acts on -- then trigger the concrete route (enable/disable REST or SFTP polling).
+				// reconciler acts on -- then trigger the concrete route for this child's transport.
 				externalServices.handleStatusUpdateIfRequired(parentId, command);
 				externalSystemMessageSender.send(buildRequest(parentConfig, child, command));
 
