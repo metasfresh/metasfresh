@@ -7,16 +7,20 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 
 /**
- * ExternalSystem_Endpoint — SFTP Transport Type E2E test suite.
+ * ExternalSystem_Endpoint — Transport Type E2E test suite.
  *
  * Tests the TransportType field display/mandatory logic on the
- * ExternalSystem_Endpoint window (AD_Window_ID=541967):
+ * ExternalSystem_Endpoint window (AD_Window_ID=541967), across the HTTP, SFTP
+ * and LOCAL_FILE transports:
  *
- * 1. TransportType=HTTP -> SFTP fields hidden, HTTP fields visible
- * 2. TransportType=SFTP -> SFTP fields visible, HTTP fields hidden
- * 3. SftpAuthType=PASSWORD -> Password field visible
- * 4. SftpAuthType=SSH_KEY -> SshPrivateKey field visible
- * 5. Create and save a full SFTP endpoint configuration
+ * 1. TransportType=HTTP -> SFTP fields hidden, HTTP fields visible; and vice versa
+ * 2. SftpAuthType=PASSWORD -> Password field visible; SftpAuthType=SSH_KEY -> SshPrivateKey field visible
+ * 3. Create and save a full SFTP endpoint configuration
+ * 4. AuthType=OAuth2 -> OAuth2 token URL + scope + credential fields visible
+ * 5. Create and save a full OAuth2 HTTP endpoint configuration
+ * 6. TransportType=LOCAL_FILE -> root location, frequency and filename pattern visible; hidden for HTTP/SFTP
+ * 7. LOCAL_FILE root location is mandatory -> the endpoint stays invalid/unsaved until it is filled
+ * 8. Switching transport away and back (LOCAL_FILE <-> SFTP) leaves no foreign transport values behind
  */
 
 const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
@@ -438,6 +442,7 @@ OAuthTokenUrl is accepted and the record persists).
   test('TransportType=LOCAL_FILE reveals root location, frequency and filename pattern; HTTP and SFTP hide them', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
     allure.story('TransportType LOCAL_FILE display logic');
     allure.severity('critical');
 
@@ -462,7 +467,7 @@ visible for LOCAL_FILE and hidden for every other transport.
     });
 
     await test.step('Select transport Local File — the three local-file fields appear', async () => {
-      await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
 
       await expect(page.locator('.form-field-LocalRootLocation input[type="text"]')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       await expect(page.locator('.form-field-Frequency input')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
@@ -500,7 +505,7 @@ visible for LOCAL_FILE and hidden for every other transport.
     });
 
     await test.step('Back to Local File — the three fields are shown again', async () => {
-      await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
 
       await expect(page.locator('.form-field-LocalRootLocation input[type="text"]')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       await expect(page.locator('.form-field-Frequency input')).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
@@ -511,6 +516,7 @@ visible for LOCAL_FILE and hidden for every other transport.
   test('LOCAL_FILE root location is mandatory — the endpoint stays unsaved until it is filled', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
     allure.story('LOCAL_FILE mandatory logic');
     allure.severity('critical');
 
@@ -530,7 +536,7 @@ endpoint with no directory to poll must not become a valid, saved record.
     await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
     await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-    await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+    await selectListValue(page, 'TransportType', /LOCAL_FILE/);
 
     // Tab out without filling the mandatory root location
     await page.keyboard.press('Tab');
@@ -559,6 +565,7 @@ endpoint with no directory to poll must not become a valid, saved record.
   test('Switching transport away and back leaves no foreign transport values behind', async ({ page }) => {
     allure.epic('E1500: External Systems');
     allure.tag('F15010: External System Endpoint');
+    allure.tag('F15010');
     allure.story('TransportType switch clears foreign transport fields');
     allure.severity('critical');
 
@@ -571,7 +578,8 @@ stale configuration on the record.
 
 1. Save a complete LOCAL_FILE endpoint (root location, frequency, filename pattern)
 2. Switch to SFTP and fill its mandatory fields -> the LOCAL_FILE values are gone from the record
-3. Switch back to LOCAL_FILE and re-fill the root location -> the SFTP values are gone
+3. Switch back to LOCAL_FILE and re-fill the root location -> the SFTP values are gone, and the
+   polling frequency the switch to SFTP cleared is back at its default without anyone re-typing it
     `);
 
     test.setTimeout(240000);
@@ -580,7 +588,7 @@ stale configuration on the record.
       await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
       await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-      await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
       await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel');
       await fillTextField(page, 'ImportFileNamePattern', '{filename}_{timestamp}');
       await page.keyboard.press('Tab');
@@ -623,12 +631,9 @@ stale configuration on the record.
 
     await saveStill(page, 'endpoint-window-switched-LOCAL_FILE-to-SFTP.png');
 
-    await test.step('Switch back to Local File and re-enter its settings', async () => {
-      await selectListValue(page, 'TransportType', /Lokale Datei|Local File/);
+    await test.step('Switch back to Local File and re-enter only the root location', async () => {
+      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
       await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel2');
-      // Frequency is NOT re-defaulted on a transport switch (the column default only applies when the
-      // document is created), and it is mandatory under LOCAL_FILE — so it has to be entered again.
-      await fillNumericField(page, 'Frequency', '60000');
       await page.keyboard.press('Tab');
       await page.waitForTimeout(2000);
     });
@@ -638,6 +643,14 @@ stale configuration on the record.
     const backToLocalFileRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
     expect(backToLocalFileRecord.fieldsByName.TransportType.value.key).toBe('LOCAL_FILE');
     expect(backToLocalFileRecord.fieldsByName.LocalRootLocation.value).toBe('/var/metasfresh/import/packzettel2');
+    // Nobody typed a frequency in this step: the endpoint left LOCAL_FILE with its Frequency cleared to 0,
+    // and the column's default cannot put it back (it only fires when a record is created). Coming back to
+    // LOCAL_FILE must therefore re-default it — otherwise the round trip yields a saveable endpoint that
+    // the local-file import route refuses to start, because 0 is not a positive polling frequency.
+    expect(
+        backToLocalFileRecord.fieldsByName.Frequency.value,
+        'Frequency must be re-defaulted when the endpoint switches back to LOCAL_FILE, so the round trip lands on a pollable configuration',
+    ).toBe(60000);
     expect(emptyish(backToLocalFileRecord.fieldsByName.SftpHost.value), 'SftpHost must be cleared when the endpoint leaves SFTP').toBe(true);
     expect(emptyish(backToLocalFileRecord.fieldsByName.SftpUsername.value), 'SftpUsername must be cleared when the endpoint leaves SFTP').toBe(true);
     expect(emptyish(backToLocalFileRecord.fieldsByName.SftpRemotePath.value), 'SftpRemotePath must be cleared when the endpoint leaves SFTP').toBe(true);
