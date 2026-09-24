@@ -328,7 +328,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 		// when
 		final Map<String, String> parameters = service.getParameters(config);
 
-		// then: SFTP parameters are present as before, and none of the LOCAL_FILE keys leak in
+		// then: the SFTP parameters are present, and none of the LOCAL_FILE keys leak in
 		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_HOST)).isEqualTo("sftp.example.com");
 		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_PORT)).isEqualTo("2222");
 		assertThat(parameters.get(PARAM_SFTP_POLLING_INTERVAL_MS)).isEqualTo("30000");
@@ -341,7 +341,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 	void getParameters_processedErrorDirs_includedRegardlessOfTransport()
 	{
 		// given: an HTTP (REST) endpoint with the LOCAL processed/error dirs set — these are
-		// transport-agnostic (used by both SFTP and REST local archiving), not SFTP-only
+		// transport-agnostic (the SFTP, LOCAL_FILE and REST import flows all archive locally), not SFTP-only
 		final UserId userImportId = createUserId();
 		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
 				.userId(userImportId)
