@@ -48,7 +48,6 @@
   .slip {
     max-width: 24em;
     margin: 0 auto;
-    font-size: 1rem;
 
     .slip-title {
       font-weight: bold;
@@ -84,6 +83,13 @@
       margin-top: 2em;
       padding-top: 0.25em;
       font-size: 0.8em;
+    }
+  }
+
+  // phone-sized tills: the app's large base font would wrap every slip value
+  @media screen and (max-width: 768px) {
+    .slip {
+      font-size: 1rem;
     }
   }
 }

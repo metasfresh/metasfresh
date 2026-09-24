@@ -82,18 +82,22 @@
           font-size: 1.25rem;
 
           th {
-            font-size: 0.8rem;
-            overflow-wrap: break-word;
+            font-size: 0.75rem;
+          }
+
+          th.amt {
+            padding-left: 2px;
+            padding-right: 2px;
           }
 
           .amt {
-            width: 22%;
-            max-width: 22%;
+            width: 20%;
+            max-width: 20%;
             font-size: 1rem;
           }
 
           .line-level2 {
-            font-size: 1rem;
+            font-size: 0.875rem;
 
             .description-col {
               padding-left: 8px;
