@@ -12,6 +12,7 @@ import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnInOutRecordFactory;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnsWithoutHUsProducer;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.CountryId;
@@ -28,6 +29,7 @@ import de.metas.pricing.PricingSystemAndListId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,6 +42,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,6 +56,8 @@ class POSReturnServiceTest
 {
 	private static final AdMessageKey MSG_NoLines = AdMessageKey.of("de.metas.pos.Return.NoLines");
 	private static final AdMessageKey MSG_QtyMustBePositive = AdMessageKey.of("de.metas.pos.Return.QtyMustBePositive");
+	private static final AdMessageKey MSG_PriceUomMismatch = AdMessageKey.of("de.metas.pos.Return.PriceUomMismatch");
+	private static final AdMessageKey MSG_CurrencyMismatch = AdMessageKey.of("de.metas.pos.Return.CurrencyMismatch");
 
 	private static final CurrencyId CURRENCY_ID = CurrencyId.ofRepoId(102);
 	private static final CurrencyId OTHER_CURRENCY_ID = CurrencyId.ofRepoId(103);
@@ -75,7 +80,7 @@ class POSReturnServiceTest
 		final ReturnsServiceFacade returnsServiceFacade = new ReturnsServiceFacade(
 				new CustomerReturnsWithoutHUsProducer(new CustomerReturnInOutRecordFactory()));
 
-		service = new POSReturnService(posTerminalService, new POSTerminalRepository(), returnsServiceFacade, new POSReturnRepository());
+		service = new POSReturnService(posTerminalService, returnsServiceFacade, new POSReturnRepository());
 	}
 
 	@Test
@@ -108,9 +113,7 @@ class POSReturnServiceTest
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		ic.setPrice_UOM_ID(UomId.ofRepoId(999).getRepoId());
 
-		assertThatThrownBy(() -> service.assertPriceUomMatchesCandidate(line, ic))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("price UOM");
+		assertThrowsWithKey(() -> service.assertPriceUomMatchesCandidate(line, ic), MSG_PriceUomMismatch);
 	}
 
 	/**
@@ -130,9 +133,7 @@ class POSReturnServiceTest
 		final I_C_Invoice_Candidate ic = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		ic.setC_Currency_ID(OTHER_CURRENCY_ID.getRepoId());
 
-		assertThatThrownBy(() -> service.assertCurrencyMatchesCandidate(line, ic))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("currency");
+		assertThrowsWithKey(() -> service.assertCurrencyMatchesCandidate(line, ic), MSG_CurrencyMismatch);
 	}
 
 	@Test
@@ -196,12 +197,21 @@ class POSReturnServiceTest
 				.build();
 	}
 
+	/**
+	 * {@link AdempiereException#getErrorCode()} resolves to the {@code AD_Message.ErrorCode} column when the
+	 * message has one, falling back to the {@link AdMessageKey} itself otherwise (mirrors the exact resolution
+	 * {@code AdempiereException}'s own constructor does) — so the expected value here must be resolved the same
+	 * way rather than assumed to always be the key, which would only hold before the AD_Message row exists.
+	 */
 	private static void assertThrowsWithKey(@NonNull final ThrowableAssert.ThrowingCallable code, @NonNull final AdMessageKey expectedKey)
 	{
+		final String expectedErrorCode = Optional.ofNullable(Services.get(IMsgBL.class).getErrorCode(expectedKey))
+				.orElseGet(expectedKey::toAD_Message);
+
 		assertThatThrownBy(code)
 				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode())
 						.as("AD_Message of the exception")
-						.isEqualTo(expectedKey.toAD_Message()));
+						.isEqualTo(expectedErrorCode));
 	}
 
 	/**
@@ -213,7 +223,7 @@ class POSReturnServiceTest
 
 		FixedPOSTerminalService()
 		{
-			super(new CurrencyRepository());
+			super(new CurrencyRepository(), new POSTerminalRepository());
 		}
 
 		@Override

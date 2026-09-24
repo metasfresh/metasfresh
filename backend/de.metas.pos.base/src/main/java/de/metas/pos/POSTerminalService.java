@@ -51,6 +51,7 @@ public class POSTerminalService
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final POSTerminalRepository posTerminalRepository;
 
 	private final CCache<POSTerminalId, POSTerminal> cache = CCache.<POSTerminalId, POSTerminal>builder()
 			.tableName(I_C_POS.Table_Name)
@@ -62,6 +63,16 @@ public class POSTerminalService
 	public POSTerminal getPOSTerminalById(final POSTerminalId posTerminalId)
 	{
 		return cache.getOrLoad(posTerminalId, this::retrievePOSTerminalById);
+	}
+
+	/**
+	 * Locks the terminal's {@code C_POS} row for the rest of the caller's transaction, serializing two concurrent
+	 * callers against the SAME terminal (e.g. two in-flight requests carrying the same idempotency key) — the
+	 * second blocks here until the first commits, by which point its result already exists for the second to find.
+	 */
+	public void lockForUpdate(@NonNull final POSTerminalId posTerminalId)
+	{
+		posTerminalRepository.lockForUpdate(posTerminalId);
 	}
 
 	public Collection<POSTerminal> getPOSTerminals()

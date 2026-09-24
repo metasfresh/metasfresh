@@ -22,6 +22,7 @@ import de.metas.pos.POSCashJournalService;
 import de.metas.pos.POSShipFrom;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.POSTerminalRepository;
 import de.metas.pos.POSTerminalService;
 import de.metas.pricing.PricingSystemAndListId;
 import de.metas.user.UserId;
@@ -245,7 +246,7 @@ class POSCashWithdrawalServiceTest
 
 		FixedPOSTerminalService()
 		{
-			super(new CurrencyRepository());
+			super(new CurrencyRepository(), new POSTerminalRepository());
 		}
 
 		@Override

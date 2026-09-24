@@ -30,6 +30,8 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.money.Money;
 import de.metas.pos.POSProduct;
 import de.metas.pos.POSService;
@@ -58,6 +60,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,9 +99,10 @@ public class POS_Return_StepDef
 	 *   <b>UOM</b> — (required) {@code X12DE355} code the quantity is expressed in (e.g. {@code KGM})<br>
 	 *   <b>OPT.M_InOut_ID</b> — (optional, first row only, identifier) alias for the resulting customer-return
 	 *   {@code M_InOut}<br>
-	 *   <b>OPT.ExternalId</b> — (optional, first row only) an arbitrary token, mapped deterministically to a UUID;
-	 *   pass the SAME token on a later call to simulate a retried request (idempotency: resolves to the SAME
-	 *   return document instead of creating a second one). Defaults to a fresh random UUID per call.<br>
+	 *   <b>OPT.ExternalId</b> — (optional, first row only) an arbitrary token, mapped to a random UUID the first
+	 *   time this scenario sees it and to that SAME UUID on every later call; pass the SAME token on a later call
+	 *   to simulate a retried request (idempotency: resolves to the SAME return document instead of creating a
+	 *   second one). Defaults to a fresh random UUID per call.<br>
 	 * @cucumber.depends StepDefData: C_POS_StepDefData, M_Product_StepDefData, M_InOut_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -150,9 +154,16 @@ public class POS_Return_StepDef
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
 		final POSReturnRequest request = buildRequest(terminalIdentifier, userLogin, rows);
 
+		// AdempiereException#getErrorCode() resolves to AD_Message.ErrorCode when the message has one, falling
+		// back to the AdMessageKey itself otherwise (the exact resolution AdempiereException's own constructor
+		// does) — resolve the expectation the same way rather than assuming it is always the bare key
+		final AdMessageKey expectedKey = AdMessageKey.of(expectedAdMessage);
+		final String expectedErrorCode = Optional.ofNullable(Services.get(IMsgBL.class).getErrorCode(expectedKey))
+				.orElseGet(expectedKey::toAD_Message);
+
 		assertThatThrownBy(() -> posService.createReturn(request))
 				.as("POS return must be rejected")
-				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedAdMessage));
+				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedErrorCode));
 	}
 
 	/**

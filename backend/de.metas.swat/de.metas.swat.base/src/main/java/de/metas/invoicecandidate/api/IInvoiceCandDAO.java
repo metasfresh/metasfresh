@@ -23,11 +23,13 @@
 package de.metas.invoicecandidate.api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -308,6 +310,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @see #retrieveInvoiceCandidatesForInOutLineQuery(I_M_InOutLine)
 	 */
 	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLine(I_M_InOutLine inOutLine);
+
+	/**
+	 * Batch form of {@link #retrieveInvoiceCandidatesForInOutLine(I_M_InOutLine)} for several lines at once —
+	 * same match semantics per line (direct AD_Table_ID/Record_ID, C_OrderLine_ID, and IC-IOL association),
+	 * grouped by the line's own {@link InOutLineId}.
+	 */
+	ImmutableListMultimap<InOutLineId, I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLines(Collection<InOutLineId> inOutLineIds);
 
 	/**
 	 * Retrieves those invoice candidates that belong to the given <code>inOutLine</code> by:

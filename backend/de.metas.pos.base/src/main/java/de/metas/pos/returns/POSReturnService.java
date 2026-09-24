@@ -9,6 +9,7 @@ import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineCandidate
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -18,7 +19,6 @@ import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.pos.POSTerminal;
-import de.metas.pos.POSTerminalRepository;
 import de.metas.pos.POSTerminalService;
 import de.metas.tax.api.Tax;
 import de.metas.uom.UomId;
@@ -49,6 +49,8 @@ public class POSReturnService
 	private static final AdMessageKey MSG_QtyMustBePositive = AdMessageKey.of("de.metas.pos.Return.QtyMustBePositive");
 	private static final AdMessageKey MSG_InvoiceCandidateError = AdMessageKey.of("de.metas.pos.Return.InvoiceCandidateError");
 	private static final AdMessageKey MSG_NoTaxFound = AdMessageKey.of("de.metas.pos.Return.NoTaxFound");
+	private static final AdMessageKey MSG_PriceUomMismatch = AdMessageKey.of("de.metas.pos.Return.PriceUomMismatch");
+	private static final AdMessageKey MSG_CurrencyMismatch = AdMessageKey.of("de.metas.pos.Return.CurrencyMismatch");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -57,7 +59,6 @@ public class POSReturnService
 	@NonNull private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	@NonNull private final POSTerminalService posTerminalService;
-	@NonNull private final POSTerminalRepository posTerminalRepository;
 	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
 	@NonNull private final POSReturnRepository returnRepository;
 
@@ -85,7 +86,7 @@ public class POSReturnService
 		// serializes two concurrent requests against the same terminal (e.g. two in-flight retries carrying the
 		// same idempotency key): the second blocks here until the first commits, by which point findReturnIdByExternalId
 		// below finds its result instead of racing to create a second document
-		posTerminalRepository.lockForUpdate(request.getPosTerminalId());
+		posTerminalService.lockForUpdate(request.getPosTerminalId());
 
 		final POSTerminal terminal = posTerminalService.getPOSTerminalById(request.getPosTerminalId());
 		final OrgId orgId = terminal.getOrgId();
@@ -112,8 +113,8 @@ public class POSReturnService
 					.setParameter("requestLines", request.getLines().size());
 		}
 
-		final ImmutableListMultimap<Integer, I_C_Invoice_Candidate> candidatesByLineId = returnRepository.findInvoiceCandidatesByInOutLineId(
-				returnLines.stream().map(I_M_InOutLine::getM_InOutLine_ID).collect(ImmutableList.toImmutableList()));
+		final ImmutableListMultimap<InOutLineId, I_C_Invoice_Candidate> candidatesByLineId = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLines(
+				returnLines.stream().map(line -> InOutLineId.ofRepoId(line.getM_InOutLine_ID())).collect(ImmutableList.toImmutableList()));
 
 		final ImmutableList.Builder<I_C_Invoice_Candidate> pricedCandidates = ImmutableList.builder();
 		for (int i = 0; i < request.getLines().size(); i++)
@@ -121,7 +122,7 @@ public class POSReturnService
 			final POSReturnLine line = request.getLines().get(i);
 			final I_M_InOutLine returnLine = returnLines.get(i);
 
-			for (final I_C_Invoice_Candidate ic : candidatesByLineId.get(returnLine.getM_InOutLine_ID()))
+			for (final I_C_Invoice_Candidate ic : candidatesByLineId.get(InOutLineId.ofRepoId(returnLine.getM_InOutLine_ID())))
 			{
 				// checked first: a candidate with no tax is left in a degraded state (e.g. no Price_UOM_ID yet),
 				// so a UOM/currency check below would fail on that symptom instead of the real cause
@@ -216,7 +217,7 @@ public class POSReturnService
 		final UomId candidatePriceUomId = UomId.ofRepoIdOrNull(ic.getPrice_UOM_ID());
 		if (!line.getPriceUomId().equals(candidatePriceUomId))
 		{
-			throw new AdempiereException("POS return line price UOM must match the invoice candidate's price UOM")
+			throw new AdempiereException(MSG_PriceUomMismatch)
 					.setParameter("C_Invoice_Candidate_ID", ic.getC_Invoice_Candidate_ID())
 					.setParameter("M_Product_ID", line.getProductId())
 					.setParameter("candidatePriceUomId", candidatePriceUomId)
@@ -237,7 +238,7 @@ public class POSReturnService
 		final CurrencyId lineCurrencyId = line.getPrice().getCurrencyId();
 		if (!candidateCurrencyId.equals(lineCurrencyId))
 		{
-			throw new AdempiereException("POS return line price currency must match the invoice candidate's currency")
+			throw new AdempiereException(MSG_CurrencyMismatch)
 					.setParameter("C_Invoice_Candidate_ID", ic.getC_Invoice_Candidate_ID())
 					.setParameter("candidateCurrencyId", candidateCurrencyId)
 					.setParameter("lineCurrencyId", lineCurrencyId);
