@@ -151,11 +151,11 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		System.clearProperty(PROPERTY_SCRIPT_REPO_BASE_DIR);
 	}
 
-	/** LOCAL processed-folder archive target (REST has no remote file — see AC5 runtime-fixes refinement). */
+	/** LOCAL processed-folder archive target: the REST path has no remote file to move, so it archives the POST payload itself. */
 	@TempDir
 	Path localProcessedDir;
 
-	/** LOCAL error-folder archive target (REST has no remote file — see AC5 runtime-fixes refinement). */
+	/** LOCAL error-folder archive target: the REST path has no remote file to move, so it archives the POST payload itself. */
 	@TempDir
 	Path localErrorDir;
 
@@ -337,8 +337,8 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		final Integer httpResponseCode = responseExchange.getMessage().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
 		assertThat(httpResponseCode).isEqualTo(200);
 
-		// And: the raw POST payload was archived to the LOCAL processed folder (REST has no remote file
-		// to consume — see AC5 runtime-fixes refinement)
+		// And: the raw POST payload was archived to the LOCAL processed folder (the REST path has no remote
+		// file to consume, so the payload itself is what gets archived)
 		final List<Path> processedFiles;
 		try (var files = Files.list(localProcessedDir))
 		{
