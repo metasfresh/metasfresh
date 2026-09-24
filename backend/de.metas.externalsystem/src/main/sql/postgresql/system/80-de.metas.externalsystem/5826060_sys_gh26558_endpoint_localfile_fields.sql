@@ -5,6 +5,12 @@
 -- column 549282): a dedicated AD_UI_Column (SeqNo=30) holding one AD_UI_ElementGroup named 'LOCAL_FILE'
 -- (SeqNo=10), both new — not the existing SFTP group.
 --
+-- SUPERSEDED IN PART: that placement is what THIS script did, not where the group sits today.
+-- 5826130_sys_gh26558_endpoint_localfile_group_into_existing_column.sql later moved the LOCAL_FILE
+-- group (555778) into the section's existing first column (549281, SeqNo=20) and deactivated the
+-- dedicated column (549759), because a third column narrowed the pre-existing HTTP and SFTP groups
+-- enough to truncate their labels.
+--
 -- IDs allocated from idserver.metas.de on 2026-09-23:
 --   AD_UI_Column      549759 (new column, SeqNo=30, under section 547602 "Transport")
 --   AD_UI_ElementGroup 555778 (new group "LOCAL_FILE", SeqNo=10, under column 549759)
