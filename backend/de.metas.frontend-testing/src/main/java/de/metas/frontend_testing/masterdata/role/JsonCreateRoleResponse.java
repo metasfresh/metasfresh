@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.role;
 
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
+import de.metas.security.RoleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -13,7 +14,7 @@ import javax.annotation.Nullable;
 @Jacksonized
 public class JsonCreateRoleResponse
 {
-	int roleId;
+	@NonNull RoleId roleId;
 
 	@NonNull String name;
 

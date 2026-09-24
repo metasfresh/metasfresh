@@ -77,7 +77,7 @@ public class CreateRoleCommand
 		createTableAccessRecords(roleId);
 
 		return JsonCreateRoleResponse.builder()
-				.roleId(roleId.getRepoId())
+				.roleId(roleId)
 				.name(name)
 				.user(createUser(roleId))
 				.build();
