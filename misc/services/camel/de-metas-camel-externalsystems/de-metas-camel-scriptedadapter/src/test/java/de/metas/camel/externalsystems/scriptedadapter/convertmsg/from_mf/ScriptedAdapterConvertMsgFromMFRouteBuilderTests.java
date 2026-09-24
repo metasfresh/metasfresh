@@ -343,11 +343,11 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilderTests extends CamelTestS
 	}
 
 	// ========================================================================================
-	// ARRAY-MODE C6: fan-out unit-test matrix per PLAN_ARRAY_MODE.md §4.2.
-	// The 7 tests below cover the splitOnArrayIfRequested + per-element split branch:
-	//   - arrayFanOut=null (disabled) — payload is single object OR array (backward-compat path)
-	//   - arrayFanOut=true  — single-object/empty-array (no-op + WARN log) / multi-element happy path
-	//                       / multi-element with partial downstream failure / all-failed (aggregate throws)
+	// Fan-out matrix for the isFanOutEnabled + per-element split branch (see
+	// ScriptedAdapterConvertMsgFromMFRouteBuilder#isFanOutEnabled / #splitOnArrayIfRequested): the 7
+	// tests below cross arrayFanOut={null (disabled), true} with the transform's result shape (single
+	// object, array) and, for the enabled+array case, with the per-element outcome (all succeed, one
+	// fails, all fail).
 	// ========================================================================================
 
 	@Test
