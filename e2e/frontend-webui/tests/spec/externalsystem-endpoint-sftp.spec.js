@@ -3,6 +3,8 @@ import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { FRONTEND_BASE_URL, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { assertRecordIsValid, getRecordData, getValidationStatus } from '../utils/WebAPIValidation';
+import { Backend } from '../utils/Backend';
+import { LoginPage } from '../utils/pages/LoginPage';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 
@@ -21,6 +23,7 @@ import * as fs from 'node:fs';
  * 6. TransportType=LOCAL_FILE -> root location, frequency and filename pattern visible; hidden for HTTP/SFTP
  * 7. LOCAL_FILE root location is mandatory -> the endpoint stays invalid/unsaved until it is filled
  * 8. Switching transport away and back (LOCAL_FILE <-> SFTP) leaves no foreign transport values behind
+ * 9. The LOCAL_FILE field labels render in German and in English
  */
 
 const EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID = 541967;
@@ -667,5 +670,78 @@ stale configuration on the record.
     expect(pollableAgainRecord.fieldsByName.Frequency.value).toBe(60000);
 
     await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE-frequency-reentered.png');
+  });
+});
+
+/**
+ * The captions the three LOCAL_FILE fields must render with, per language.
+ *
+ * "Abfrageintervall (ms)" / "Polling Interval (ms)": the value is a delay in milliseconds BETWEEN
+ * two polls, so it is an interval, not a frequency -- and it matches the SFTP transport's sibling
+ * field one column over. The caption comes from a dedicated AD_Element reached via
+ * AD_Field.AD_Name_ID, so a missed AD_Element_Trl -> AD_Field_Trl propagation shows up here as the
+ * other language's text (or the shared core element's "Häufigkeit" / "Frequency").
+ */
+const LOCAL_FILE_LABEL_CASES = [
+  {
+    language: 'de_DE',
+    label: 'German',
+    captions: {
+      LocalRootLocation: 'Lokales Stammverzeichnis',
+      Frequency: 'Abfrageintervall (ms)',
+      ImportFileNamePattern: 'Import-Dateinamensmuster',
+    },
+  },
+  {
+    language: 'en_US',
+    label: 'English',
+    captions: {
+      LocalRootLocation: 'Local Root Location',
+      Frequency: 'Polling Interval (ms)',
+      ImportFileNamePattern: 'Import Filename Pattern',
+    },
+  },
+];
+
+test.describe('ExternalSystem Endpoint — LOCAL_FILE field labels per language', () => {
+  LOCAL_FILE_LABEL_CASES.forEach(({ language, label, captions }) => {
+    test(`LOCAL_FILE fields render their ${label} labels`, async ({ page }) => {
+      allure.epic('E1500: External Systems');
+      allure.tag('F15010: External System Endpoint');
+      allure.tag('F15010');
+      allure.story('TransportType field display logic');
+      allure.severity('normal');
+
+      allure.description(`
+## ExternalSystem_Endpoint — LOCAL_FILE field captions (${label})
+
+Selecting TransportType=LOCAL_FILE reveals the root location, polling interval and filename
+pattern. This asserts each one renders with its ${label} caption, so a missing or half-applied
+translation is caught instead of being eyeballed on a screenshot.
+      `);
+
+      // A fresh single-role user carries the language on its own record, which is what the
+      // WebUI session reads -- there is no live language switch.
+      const masterdata = await Backend.createMasterdata({
+        request: { login: { user: { language } } },
+      });
+
+      await LoginPage.goto();
+      await LoginPage.login(masterdata.login.user);
+      await LoginPage.expectLoggedIn();
+
+      await page.goto(`${FRONTEND_BASE_URL}/window/${EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID}/NEW`);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      await selectListValue(page, 'TransportType', /LOCAL_FILE/);
+
+      for (const [fieldName, caption] of Object.entries(captions)) {
+        const fieldLabel = page.locator(`.form-field-${fieldName} label.form-control-label`);
+        await fieldLabel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(fieldLabel, `${fieldName} caption in ${language}`).toHaveText(caption);
+      }
+
+      await saveStill(page, `endpoint-window-transport-LOCAL_FILE-${language}.png`);
+    });
   });
 });
