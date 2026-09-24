@@ -29,14 +29,14 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SftpFilenameResolverTest
+class FilenamePatternResolverTest
 {
 	@Test
 	void resolve_withDocumentnoAndTimestamp()
 	{
 		final String pattern = "DESADV_{documentno}_{timestamp}.json";
 		final Map<String, String> variables = Map.of("documentno", "12345");
-		final String result = SftpFilenameResolver.resolve(pattern, variables);
+		final String result = FilenamePatternResolver.resolve(pattern, variables);
 		assertThat(result).startsWith("DESADV_12345_").endsWith(".json");
 		assertThat(result).doesNotContain("{documentno}").doesNotContain("{timestamp}");
 		// Verify timestamp format: yyyyMMdd_HHmmss (8 digits, underscore, 6 digits)
@@ -52,21 +52,21 @@ class SftpFilenameResolverTest
 				"table", "M_InOut",
 				"recordid", "42"
 		);
-		final String result = SftpFilenameResolver.resolve(pattern, variables);
+		final String result = FilenamePatternResolver.resolve(pattern, variables);
 		assertThat(result).matches("M_InOut_SHIP-001_42_\\d{8}_\\d{6}\\.json");
 	}
 
 	@Test
 	void resolve_withNoPlaceholders()
 	{
-		final String result = SftpFilenameResolver.resolve("fixed-name.json", Map.of());
+		final String result = FilenamePatternResolver.resolve("fixed-name.json", Map.of());
 		assertThat(result).isEqualTo("fixed-name.json");
 	}
 
 	@Test
 	void resolve_withUnknownPlaceholder_leavesItAsIs()
 	{
-		final String result = SftpFilenameResolver.resolve("file_{unknown}.json", Map.of());
+		final String result = FilenamePatternResolver.resolve("file_{unknown}.json", Map.of());
 		assertThat(result).isEqualTo("file_{unknown}.json");
 	}
 
@@ -75,7 +75,7 @@ class SftpFilenameResolverTest
 	{
 		final Map<String, String> variables = new HashMap<>();
 		variables.put("documentno", null);
-		final String result = SftpFilenameResolver.resolve("file_{documentno}.json", variables);
+		final String result = FilenamePatternResolver.resolve("file_{documentno}.json", variables);
 		assertThat(result).isEqualTo("file_{documentno}.json");
 	}
 
@@ -84,14 +84,14 @@ class SftpFilenameResolverTest
 	{
 		final String pattern = "{documentno}_{documentno}.json";
 		final Map<String, String> variables = Map.of("documentno", "DOC1");
-		final String result = SftpFilenameResolver.resolve(pattern, variables);
+		final String result = FilenamePatternResolver.resolve(pattern, variables);
 		assertThat(result).isEqualTo("DOC1_DOC1.json");
 	}
 
 	@Test
 	void resolve_timestampOnly()
 	{
-		final String result = SftpFilenameResolver.resolve("{timestamp}.json", Map.of());
+		final String result = FilenamePatternResolver.resolve("{timestamp}.json", Map.of());
 		assertThat(result).matches("\\d{8}_\\d{6}\\.json");
 	}
 }

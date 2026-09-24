@@ -53,7 +53,7 @@ import java.util.Map;
  * </pre>
  */
 @UtilityClass
-public class SftpFilenameResolver
+public class FilenamePatternResolver
 {
 	private static final String TIMESTAMP_PLACEHOLDER = "{timestamp}";
 	private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");

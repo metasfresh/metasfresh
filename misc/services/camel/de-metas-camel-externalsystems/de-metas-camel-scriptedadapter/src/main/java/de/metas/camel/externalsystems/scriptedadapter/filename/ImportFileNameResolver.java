@@ -33,7 +33,7 @@ import java.util.Map;
 
 /**
  * Resolves the attachment filename for an inbound (import-side) file, given an optional {@code pattern}
- * that may reference the incoming file's base name via {@code {filename}} (see {@link SftpFilenameResolver}
+ * that may reference the incoming file's base name via {@code {filename}} (see {@link FilenamePatternResolver}
  * for the full placeholder syntax, e.g. {@code {timestamp}}).
  *
  * <p>A blank {@code pattern} leaves {@code incomingFileName} unchanged. Otherwise the incoming name is
@@ -61,7 +61,7 @@ public class ImportFileNameResolver
 
 		final Map<String, String> variables = new HashMap<>();
 		variables.put(FILENAME_PLACEHOLDER, baseName);
-		final String resolved = SftpFilenameResolver.resolve(pattern, variables);
+		final String resolved = FilenamePatternResolver.resolve(pattern, variables);
 
 		if (extension.isEmpty() || resolved.toLowerCase(Locale.ROOT).endsWith(extension.toLowerCase(Locale.ROOT)))
 		{
