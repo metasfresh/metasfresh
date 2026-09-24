@@ -35,7 +35,6 @@ import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.document.DocTypeId;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
@@ -46,7 +45,6 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.archive.ArchiveId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -312,10 +310,10 @@ public class C_Printing_Queue_StepDef
 			final String sysConfigName = row.getAsString("SysConfigName");
 
 			final de.metas.document.archive.model.I_AD_Archive printOut = InterfaceWrapperHelper.load(
-					ArchiveId.ofRepoId(queueItem.getAD_Archive_ID()), de.metas.document.archive.model.I_AD_Archive.class);
+					queueItem.getAD_Archive_ID(), de.metas.document.archive.model.I_AD_Archive.class);
 
 			final int actualCopies = orderCheckupBL.getNumberOfCopies(queueItem, printOut);
-			final int expectedCopies = sysConfigBL.getIntValue(sysConfigName, 1, ClientAndOrgId.ofClientAndOrg(queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID()));
+			final int expectedCopies = sysConfigBL.getIntValue(sysConfigName, 1, queueItem.getAD_Client_ID(), queueItem.getAD_Org_ID());
 
 			assertThat(actualCopies)
 					.as("Number of copies for %s must equal the live sys config %s", queueItem, sysConfigName)

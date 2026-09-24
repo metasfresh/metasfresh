@@ -26,11 +26,11 @@ import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.document.DocBaseType;
 import de.metas.document.archive.config.DocOutboundConfigId;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.report.PrintFormatId;
+import de.metas.report.PrintFormatRepository;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
@@ -43,6 +43,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_AD_Table;
 
@@ -58,6 +59,7 @@ public class C_Doc_Outbound_Config_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final PrintFormatRepository printFormatRepository = SpringContextHolder.instance.getBean(PrintFormatRepository.class);
 
 	@NonNull private final C_Doc_Outbound_Config_StepDefData docOutboundConfigTable;
 
@@ -188,7 +190,7 @@ public class C_Doc_Outbound_Config_StepDef
 					.create()
 					.firstOnlyNotNull(I_C_Doc_Outbound_Config.class);
 			final DocOutboundConfigId configId = DocOutboundConfigId.ofRepoId(config.getC_Doc_Outbound_Config_ID());
-			final PrintFormatId printFormatId = StepDefUtil.getPrintFormatIdByName(row.getAsString("PrintFormat." + I_AD_PrintFormat.COLUMNNAME_Name));
+			final PrintFormatId printFormatId = printFormatRepository.getIdByName(row.getAsString("PrintFormat." + I_AD_PrintFormat.COLUMNNAME_Name));
 
 			// captured once per config per scenario: a second repoint in the same scenario must not overwrite
 			// the ALREADY-captured original with this scenario's own first write

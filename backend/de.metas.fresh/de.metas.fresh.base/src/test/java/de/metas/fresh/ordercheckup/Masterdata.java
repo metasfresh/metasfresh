@@ -24,7 +24,6 @@ package de.metas.fresh.ordercheckup;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
@@ -85,7 +84,7 @@ public class Masterdata
 			Assertions.assertNotNull(report, "Plant report exists for " + plant.getName());
 			Assertions.assertEquals(plant.getS_Resource_ID(), report.getPP_Plant_ID(), "Plant");
 			Assertions.assertNull(WarehouseId.ofRepoIdOrNull(report.getM_Warehouse_ID()), "Warehouse");
-			Assertions.assertEquals(DocTypeId.ofRepoId(docTypeOffice.getC_DocType_ID()), DocTypeId.ofRepoIdOrNull(report.getC_DocType_ID()), "C_DocType");
+			Assertions.assertEquals(docTypeOffice.getC_DocType_ID(), report.getC_DocType_ID(), "C_DocType");
 			Assertions.assertEquals(responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID(), "Responsible");
 			Assertions.assertTrue(report.isProcessed(), "Processed");
 			Assertions.assertTrue(report.isActive(), "Active");
@@ -124,7 +123,7 @@ public class Masterdata
 				Assertions.assertNotNull(report, "Warehouse report exists for " + warehouse.getName());
 				Assertions.assertEquals(warehouse.getPP_Plant_ID(), report.getPP_Plant_ID(), "Plant");
 				Assertions.assertEquals(warehouse.getM_Warehouse_ID(), report.getM_Warehouse_ID(), "Warehouse");
-				Assertions.assertEquals(DocTypeId.ofRepoId(docTypeProduction.getC_DocType_ID()), DocTypeId.ofRepoIdOrNull(report.getC_DocType_ID()), "C_DocType");
+				Assertions.assertEquals(docTypeProduction.getC_DocType_ID(), report.getC_DocType_ID(), "C_DocType");
 				Assertions.assertEquals(responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID(), "Responsible");
 				Assertions.assertTrue(report.isProcessed(), "Processed");
 				Assertions.assertTrue(report.isActive(), "Active");

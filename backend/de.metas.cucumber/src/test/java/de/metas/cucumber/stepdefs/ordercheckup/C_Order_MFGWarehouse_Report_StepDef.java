@@ -29,7 +29,6 @@ import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
@@ -48,6 +47,7 @@ import de.metas.fresh.ordercheckup.OrderCheckupDocumentType;
 import de.metas.fresh.ordercheckup.OrderCheckupReportId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
+import de.metas.report.PrintFormatRepository;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
@@ -90,6 +90,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
 	private final DocOutboundConfigService docOutboundConfigService = SpringContextHolder.instance.getBean(DocOutboundConfigService.class);
+	private final PrintFormatRepository printFormatRepository = SpringContextHolder.instance.getBean(PrintFormatRepository.class);
 
 	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData reportTable;
 	@NonNull private final C_Order_StepDefData orderTable;
@@ -434,7 +435,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 					.isEqualTo(expectedDocBaseType);
 
 			row.getAsOptionalString("PrintFormat." + I_AD_PrintFormat.COLUMNNAME_Name)
-					.map(StepDefUtil::getPrintFormatIdByName)
+					.map(printFormatRepository::getIdByName)
 					.ifPresent(expectedPrintFormatId -> assertThat(config.getPrintFormatId())
 							.as("%s of the C_Doc_Outbound_Config resolved for %s (config=%s)", I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID, report, config)
 							.isEqualTo(expectedPrintFormatId));
@@ -512,7 +513,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 				.create()
 				.list();
 
-		final long noDocTypeCount = allReports.stream().filter(report -> DocTypeId.ofRepoIdOrNull(report.getC_DocType_ID()) == null).count();
+		final long noDocTypeCount = allReports.stream().filter(report -> report.getC_DocType_ID() <= 0).count();
 		assertThat(noDocTypeCount)
 				.as("C_Order_MFGWarehouse_Report rows with no C_DocType_ID, out of %s total rows", allReports.size())
 				.isZero();
@@ -541,7 +542,7 @@ public class C_Order_MFGWarehouse_Report_StepDef
 				.isEqualTo(expectedDocTypeId));
 
 		final List<I_C_Order_MFGWarehouse_Report> reportsOfThisDocType = allReports.stream()
-				.filter(report -> expectedDocTypeId.equals(DocTypeId.ofRepoIdOrNull(report.getC_DocType_ID())))
+				.filter(report -> expectedDocTypeId.getRepoId() == report.getC_DocType_ID())
 				.collect(Collectors.toList());
 		softly.assertThat(reportsOfThisDocType)
 				.as("C_Order_MFGWarehouse_Report rows with %s=%s (must exist for this check to prove anything)", I_C_Order_MFGWarehouse_Report.COLUMNNAME_C_DocType_ID, expectedDocTypeId)

@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
-import de.metas.report.PrintFormatId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
@@ -39,12 +38,10 @@ import de.metas.util.StringUtils;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_PrintFormat;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
@@ -110,20 +107,6 @@ public class StepDefUtil
 				.orElseThrow(() -> new AdempiereException("AD_User with login=" + userLogin
 						+ " (AD_User_ID=" + userId.getRepoId() + ") has no AD_Role with name " + roleName
 						+ "; assigned roles: " + userRoles.stream().map(Role::getName).collect(Collectors.joining(", "))));
-	}
-
-	/**
-	 * @return the active {@code AD_PrintFormat} with the given {@code Name}; fails if there is none or more than one.
-	 */
-	@NonNull
-	public static PrintFormatId getPrintFormatIdByName(@NonNull final String printFormatName)
-	{
-		final I_AD_PrintFormat printFormat = Services.get(IQueryBL.class).createQueryBuilder(I_AD_PrintFormat.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_PrintFormat.COLUMNNAME_Name, printFormatName)
-				.create()
-				.firstOnlyNotNull(I_AD_PrintFormat.class);
-		return PrintFormatId.ofRepoId(printFormat.getAD_PrintFormat_ID());
 	}
 
 	/**
