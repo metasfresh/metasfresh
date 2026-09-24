@@ -152,9 +152,12 @@ async function saveStill(page, filename) {
 }
 
 /**
- * True when a WebAPI field value means "not set". Every column this is asked about is cleared to SQL
- * NULL, which reaches the test as null, absent, an empty string or a lookup with no `key` — those
- * count as cleared, anything else does not.
+ * True when a WebAPI field value means "not set", i.e. null, absent, an empty string or a lookup with
+ * no `key`; anything else does not count as cleared.
+ *
+ * Ask it only about a column with no `AD_Column.DefaultValue`. Hiding such a column is what clears it
+ * to SQL NULL; hiding one that HAS a default puts that default back instead, which is an equality
+ * check against the value, not this.
  */
 function emptyish(value) {
   if (value === null || value === undefined || value === '') {
@@ -691,12 +694,13 @@ A saved endpoint that is switched from one transport to another must not keep th
 transport's configuration around: it is invisible in the window, so it would be a silent
 stale configuration on the record.
 
-1. Save a complete LOCAL_FILE endpoint (root location and filename pattern; the polling interval
-   comes from the column's default)
-2. Switch to SFTP and fill its mandatory fields -> the LOCAL_FILE values are gone from the record
-3. Switch back to LOCAL_FILE and re-fill the root location -> the record is invalid, because the
-   polling interval the switch to SFTP cleared is unset and mandatory for LOCAL_FILE
-4. Re-enter the polling interval -> the record is valid again and the SFTP values are gone
+1. Save a complete LOCAL_FILE endpoint: root location, filename pattern, and a 5-second polling
+   interval the operator types over the column's default
+2. Switch to SFTP and fill its mandatory fields -> the values the operator typed under LOCAL_FILE are
+   gone from the record, the polling interval back at the column default nobody typed
+3. Switch back to LOCAL_FILE and re-fill the root location -> the record is valid straight away: the
+   polling interval is pre-filled with that same default, exactly as on a newly created endpoint
+4. Override the pre-filled polling interval -> it takes, and the SFTP values are gone
     `);
 
     test.setTimeout(240000);
@@ -707,6 +711,9 @@ stale configuration on the record.
       await selectListValue(page, 'TransportType', 'LOCAL_FILE');
       await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel');
       await fillTextField(page, 'ImportFileNamePattern', '{filename}_{timestamp}');
+      // over the 60000 the column default pre-filled, so that what the transport switch leaves behind
+      // below can only be the default and not this value left untouched
+      await fillNumericField(page, 'Frequency', '5000');
     });
 
     const recordId = await savedRecordId(page);
@@ -715,6 +722,7 @@ stale configuration on the record.
     const localFileRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
     expect(localFileRecord.fieldsByName.LocalRootLocation.value).toBe('/var/metasfresh/import/packzettel');
     expect(localFileRecord.fieldsByName.ImportFileNamePattern.value).toBe('{filename}_{timestamp}');
+    expect(localFileRecord.fieldsByName.Frequency.value).toBe(5000);
 
     await test.step('Switch the saved endpoint to SFTP and configure it', async () => {
       await selectListValue(page, 'TransportType', 'SFTP');
@@ -736,7 +744,10 @@ stale configuration on the record.
     expect(sftpRecord.fieldsByName.TransportType.value.key).toBe('SFTP');
     expect(emptyish(sftpRecord.fieldsByName.LocalRootLocation.value), 'LocalRootLocation must be cleared when the endpoint leaves LOCAL_FILE').toBe(true);
     expect(emptyish(sftpRecord.fieldsByName.ImportFileNamePattern.value), 'ImportFileNamePattern must be cleared when the endpoint leaves LOCAL_FILE').toBe(true);
-    expect(emptyish(sftpRecord.fieldsByName.Frequency.value), 'Frequency must be cleared when the endpoint leaves LOCAL_FILE').toBe(true);
+    // Frequency carries an AD_Column.DefaultValue, so leaving LOCAL_FILE resets it to that value rather
+    // than clearing it: the 5-second interval typed above is gone, 60000 is what a new record would show.
+    // 60000 here can only be the reset, never the typed value surviving.
+    expect(sftpRecord.fieldsByName.Frequency.value, 'Frequency must be reset to its column default when the endpoint leaves LOCAL_FILE').toBe(60000);
 
     await saveStill(page, 'endpoint-window-switched-LOCAL_FILE-to-SFTP.png');
 
@@ -745,32 +756,33 @@ stale configuration on the record.
       await fillTextField(page, 'LocalRootLocation', '/var/metasfresh/import/packzettel2');
     });
 
-    // Nobody typed a polling interval in this step: the switch to SFTP cleared Frequency to SQL NULL, and
-    // switching back does not restore it. Frequency is mandatory under LOCAL_FILE, so the record is
-    // invalid and the operator is asked for it -- exactly as for LocalRootLocation.
-    const backToLocalFileStatus = await getValidationStatus(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
-    expect(backToLocalFileStatus.valid, `expected the endpoint to be invalid while Frequency is unset, got: ${JSON.stringify(backToLocalFileStatus)}`).toBe(false);
-    expect(backToLocalFileStatus.missingFields.map((missing) => missing.field)).toContain('Frequency');
+    // Nobody typed a polling interval in this step, and none is asked for: Frequency stands at the
+    // AD_Column.DefaultValue the switch to SFTP put back, which is also what the window pre-fills on a
+    // newly created LOCAL_FILE endpoint. Its MandatoryLogic is therefore already satisfied.
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after switching the endpoint back to LOCAL_FILE');
+    const backToLocalFileRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
+    expect(backToLocalFileRecord.fieldsByName.Frequency.value, 'Frequency must come back pre-filled with its column default').toBe(60000);
+    await expect(page.locator('.form-field-Frequency input')).toHaveValue(/^60[.,\s ]?000$/);
 
     await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE.png');
 
-    await test.step('Re-enter the polling interval the switch cleared', async () => {
-      await fillNumericField(page, 'Frequency', '60000');
+    await test.step('Override the pre-filled polling interval', async () => {
+      await fillNumericField(page, 'Frequency', '30000');
     });
 
-    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after re-entering the polling interval');
+    await assertRecordIsValid(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID, recordId, 'after overriding the polling interval');
 
     const pollableAgainRecord = await getRecordData(String(EXTERNAL_SYSTEM_ENDPOINT_WINDOW_ID), recordId);
     expect(pollableAgainRecord.fieldsByName.TransportType.value.key).toBe('LOCAL_FILE');
     expect(pollableAgainRecord.fieldsByName.LocalRootLocation.value).toBe('/var/metasfresh/import/packzettel2');
-    expect(pollableAgainRecord.fieldsByName.Frequency.value).toBe(60000);
+    expect(pollableAgainRecord.fieldsByName.Frequency.value, 'a pre-filled default must still be overridable by the operator').toBe(30000);
     expect(emptyish(pollableAgainRecord.fieldsByName.SftpHost.value), 'SftpHost must be cleared when the endpoint leaves SFTP').toBe(true);
     expect(emptyish(pollableAgainRecord.fieldsByName.SftpUsername.value), 'SftpUsername must be cleared when the endpoint leaves SFTP').toBe(true);
     expect(emptyish(pollableAgainRecord.fieldsByName.SftpRemotePath.value), 'SftpRemotePath must be cleared when the endpoint leaves SFTP').toBe(true);
     expect(emptyish(pollableAgainRecord.fieldsByName.SftpAuthType.value), 'SftpAuthType must be cleared when the endpoint leaves SFTP').toBe(true);
     expect(emptyish(pollableAgainRecord.fieldsByName.SshPrivateKey.value), 'SshPrivateKey must be cleared when the endpoint leaves SFTP').toBe(true);
 
-    await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE-interval-reentered.png');
+    await saveStill(page, 'endpoint-window-switched-back-to-LOCAL_FILE-interval-overridden.png');
   });
 
   test('Switching an HTTP endpoint to SFTP password authentication keeps the password', async ({ page }) => {
