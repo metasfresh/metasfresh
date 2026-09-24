@@ -36,8 +36,7 @@ VALUES (585488 /*From ID Server*/, 0, 0, 'Y',
     TO_TIMESTAMP('2026-09-23 12:00:10', 'YYYY-MM-DD HH24:MI:SS'), 100,
     NULL, 'Abfragefrequenz (ms)', 'Abfragefrequenz (ms)',
     'Wie oft das lokale Verzeichnis auf neue Dateien geprüft wird, in Millisekunden.',
-    'de.metas.externalsystem')
-ON CONFLICT (AD_Element_ID) DO NOTHING;
+    'de.metas.externalsystem');
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description, IsTranslated,
     AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy)

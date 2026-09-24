@@ -24,8 +24,7 @@ INSERT INTO AD_UI_Column (AD_Client_ID, AD_Org_ID, IsActive,
 VALUES (0, 0, 'Y',
     TO_TIMESTAMP('2026-09-23 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-23 11:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    549759 /*From ID Server*/, 547602, 30)
-ON CONFLICT (AD_UI_Column_ID) DO NOTHING;
+    549759 /*From ID Server*/, 547602, 30);
 
 -- ============================================================
 -- 2. AD_UI_ElementGroup (555778): "LOCAL_FILE", SeqNo=10, under column 549759
@@ -36,8 +35,7 @@ INSERT INTO AD_UI_ElementGroup (AD_Client_ID, AD_Org_ID, IsActive,
 VALUES (0, 0, 'Y',
     TO_TIMESTAMP('2026-09-23 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
     TO_TIMESTAMP('2026-09-23 11:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    555778 /*From ID Server*/, 549759, 10, NULL, 'LOCAL_FILE')
-ON CONFLICT (AD_UI_ElementGroup_ID) DO NOTHING;
+    555778 /*From ID Server*/, 549759, 10, NULL, 'LOCAL_FILE');
 
 -- ============================================================
 -- 3. AD_Field: LocalRootLocation (785059) on tab 548506
@@ -54,8 +52,7 @@ VALUES (0, 0, 'Y',
     785059 /*From ID Server*/, 548506, 593641,
     'Lokales Stammverzeichnis', 'Stammverzeichnis des lokalen Rechners.', NULL,
     'Y', 'N', 'N', 'N',
-    0, 0, '@TransportType/X@=''LOCAL_FILE''', 'de.metas.externalsystem', 'N')
-ON CONFLICT (AD_Field_ID) DO NOTHING;
+    0, 0, '@TransportType/X@=''LOCAL_FILE''', 'de.metas.externalsystem', 'N');
 
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Name, Description, Help, IsTranslated,
     AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
@@ -85,8 +82,7 @@ VALUES (0, 0, 'Y',
     785060 /*From ID Server*/, 548506, 593642,
     'Häufigkeit', 'Häufigkeit von Ereignissen', NULL,
     'Y', 'N', 'N', 'N',
-    0, 0, '@TransportType/X@=''LOCAL_FILE''', 'de.metas.externalsystem', 'N')
-ON CONFLICT (AD_Field_ID) DO NOTHING;
+    0, 0, '@TransportType/X@=''LOCAL_FILE''', 'de.metas.externalsystem', 'N');
 
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Name, Description, Help, IsTranslated,
     AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
@@ -118,8 +114,7 @@ VALUES (0, 0, 'Y',
     'Ändert den resultierenden Namen einer importierten Datei — für den Anhang am Datensatz und für die Kopie im Verzeichnis für bearbeitete bzw. fehlerhafte Dateien. Platzhalter: {filename} (Dateiname ohne Endung), {timestamp} (yyyyMMdd_HHmmss); die Endung der Quelldatei wird automatisch angehängt. Leer: Name bleibt unverändert.',
     NULL,
     'Y', 'N', 'N', 'N',
-    0, 0, '@TransportType/X@=''LOCAL_FILE''', 'de.metas.externalsystem', 'N')
-ON CONFLICT (AD_Field_ID) DO NOTHING;
+    0, 0, '@TransportType/X@=''LOCAL_FILE''', 'de.metas.externalsystem', 'N');
 
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Name, Description, Help, IsTranslated,
     AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
@@ -148,8 +143,7 @@ VALUES (0, 785059, 0, 548506, 555778,
     'N', 'N', 'Y', 'N',
     'N', 'N', 0,
     'Lokales Stammverzeichnis', 10, 0, 0,
-    TO_TIMESTAMP('2026-09-23 11:00:40', 'YYYY-MM-DD HH24:MI:SS'), 100)
-ON CONFLICT (AD_UI_Element_ID) DO NOTHING;
+    TO_TIMESTAMP('2026-09-23 11:00:40', 'YYYY-MM-DD HH24:MI:SS'), 100);
 
 -- ============================================================
 -- 7. AD_UI_Element: Frequency (654800) in group 555778, SeqNo=20
@@ -165,8 +159,7 @@ VALUES (0, 785060, 0, 548506, 555778,
     'N', 'N', 'Y', 'N',
     'N', 'N', 0,
     'Häufigkeit', 20, 0, 0,
-    TO_TIMESTAMP('2026-09-23 11:00:50', 'YYYY-MM-DD HH24:MI:SS'), 100)
-ON CONFLICT (AD_UI_Element_ID) DO NOTHING;
+    TO_TIMESTAMP('2026-09-23 11:00:50', 'YYYY-MM-DD HH24:MI:SS'), 100);
 
 -- ============================================================
 -- 8. AD_UI_Element: ImportFileNamePattern (654801) in group 555778, SeqNo=30
@@ -182,5 +175,4 @@ VALUES (0, 785061, 0, 548506, 555778,
     'N', 'N', 'Y', 'N',
     'N', 'N', 0,
     'Import-Dateinamensmuster', 30, 0, 0,
-    TO_TIMESTAMP('2026-09-23 11:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100)
-ON CONFLICT (AD_UI_Element_ID) DO NOTHING;
+    TO_TIMESTAMP('2026-09-23 11:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100);
