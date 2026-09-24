@@ -1,6 +1,6 @@
 -- Two follow-up corrections to the LOCAL_FILE endpoint window fields added by
--- 5826060_sys_gh26558_endpoint_localfile_fields.sql (that script is already applied and, per migration
--- script immutability, is not edited here — this is an additive follow-up).
+-- 5826060_sys_gh26558_endpoint_localfile_fields.sql (that script has already been applied, so an edit to
+-- its statements would not re-run — this is an additive follow-up).
 --
 -- 1. LocalRootLocation (AD_Column 593641) had no MandatoryLogic, unlike the analogous
 --    target-location field of every other transport (HttpEndPoint / SftpHost / SftpRemotePath all
