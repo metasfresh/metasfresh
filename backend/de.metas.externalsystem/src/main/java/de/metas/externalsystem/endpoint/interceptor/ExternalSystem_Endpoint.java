@@ -22,184 +22,246 @@
 
 package de.metas.externalsystem.endpoint.interceptor;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.externalsystem.endpoint.EndpointAuthType;
-import de.metas.externalsystem.endpoint.SftpAuthType;
-import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Keeps an endpoint record free of values the window no longer shows.
+ * <p>
+ * An endpoint's transport type and the two authentication types decide which of its fields the window
+ * renders. Whenever one of them changes, every field that the resulting configuration HIDES must end up
+ * without a value: a value nobody can see is a value nobody can correct, and it is still read by the
+ * outbound/inbound dispatch.
+ */
 @Interceptor(I_ExternalSystem_Endpoint.class)
 @Component
 @RequiredArgsConstructor
 public class ExternalSystem_Endpoint
 {
 	/**
-	 * Every column this interceptor knows how to clear, together with how to clear it. This is the single
-	 * source of truth for "what does transport X own" — {@link #resetTransportSpecificFields(I_ExternalSystem_Endpoint)}
-	 * derives each transport's owned columns from {@link #OWNED_COLUMN_NAMES_BY_TRANSPORT_CODE} and clears
-	 * every column here that the new transport does NOT own. Ownership only ever means "do not clear on
-	 * switch to this transport", so a column may be owned by more than one transport (e.g.
-	 * {@code IsArrayFanOut}, read by both the HTTP and SFTP outbound dispatch) — it is simply listed in
-	 * every owning transport's set below. A newly added transport-specific column only needs to be added
-	 * HERE and to each set that owns it — never to N per-transport clearing lists.
+	 * The columns whose values decide what the window shows. Nothing else may appear in a
+	 * {@link HideableColumn#getDisplayLogic() display logic} here, because these three are exactly the
+	 * columns {@link #clearFieldsHiddenByTheNewConfiguration(I_ExternalSystem_Endpoint)} triggers on — a
+	 * rule that depended on a fourth column would simply not be re-evaluated when that column changed.
+	 * {@code ExternalSystem_EndpointTest.VisibilityRules} pins this.
 	 */
-	private static final ImmutableMap<String, Consumer<I_ExternalSystem_Endpoint>> CLEAR_ACTIONS_BY_COLUMN_NAME =
-			ImmutableMap.<String, Consumer<I_ExternalSystem_Endpoint>>builder()
-					// HTTP transport + HTTP authentication (incl. OAuth2)
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_HttpEndPoint, endpoint -> endpoint.setHttpEndPoint(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_OutboundHttpMethod, endpoint -> endpoint.setOutboundHttpMethod(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_ContentType, endpoint -> endpoint.setContentType(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_AuthType, endpoint -> endpoint.setAuthType(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_AuthToken, endpoint -> endpoint.setAuthToken(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_LoginUsername, endpoint -> endpoint.setLoginUsername(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_Password, endpoint -> endpoint.setPassword(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_ClientId, endpoint -> endpoint.setClientId(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_ClientSecret, endpoint -> endpoint.setClientSecret(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SasSignature, endpoint -> endpoint.setSasSignature(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_OAuthTokenUrl, endpoint -> endpoint.setOAuthTokenUrl(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_OAuthScope, endpoint -> endpoint.setOAuthScope(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_IsFileUpload, endpoint -> endpoint.setIsFileUpload(false))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_IsArrayFanOut, endpoint -> endpoint.setIsArrayFanOut(false))
-					// SFTP transport
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SftpHost, endpoint -> endpoint.setSftpHost(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort, endpoint -> endpoint.setSftpPort(0))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SftpUsername, endpoint -> endpoint.setSftpUsername(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType, endpoint -> endpoint.setSftpAuthType(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SshPrivateKey, endpoint -> endpoint.setSshPrivateKey(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SftpRemotePath, endpoint -> endpoint.setSftpRemotePath(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SftpFilenamePattern, endpoint -> endpoint.setSftpFilenamePattern(null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs, endpoint -> endpoint.setSftpPollingIntervalMs(0))
-					// LOCAL_FILE transport
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_LocalRootLocation, endpoint -> endpoint.setLocalRootLocation(null))
-					// via setValue, because the generated setFrequency(int) cannot express SQL NULL: a stored 0
-					// satisfies the column's MandatoryLogic while reading back as no frequency at all, so the
-					// endpoint would look configured and never poll
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_Frequency,
-							endpoint -> InterfaceWrapperHelper.setValue(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, null))
-					.put(I_ExternalSystem_Endpoint.COLUMNNAME_ImportFileNamePattern, endpoint -> endpoint.setImportFileNamePattern(null))
-					.build();
-
-	private static final ImmutableSet<String> HTTP_OWNED_COLUMN_NAMES = ImmutableSet.of(
-			I_ExternalSystem_Endpoint.COLUMNNAME_HttpEndPoint,
-			I_ExternalSystem_Endpoint.COLUMNNAME_OutboundHttpMethod,
-			I_ExternalSystem_Endpoint.COLUMNNAME_ContentType,
+	@VisibleForTesting
+	static final ImmutableSet<String> VISIBILITY_GOVERNING_COLUMN_NAMES = ImmutableSet.of(
+			I_ExternalSystem_Endpoint.COLUMNNAME_TransportType,
 			I_ExternalSystem_Endpoint.COLUMNNAME_AuthType,
-			I_ExternalSystem_Endpoint.COLUMNNAME_AuthToken,
-			I_ExternalSystem_Endpoint.COLUMNNAME_LoginUsername,
-			I_ExternalSystem_Endpoint.COLUMNNAME_Password,
-			I_ExternalSystem_Endpoint.COLUMNNAME_ClientId,
-			I_ExternalSystem_Endpoint.COLUMNNAME_ClientSecret,
-			I_ExternalSystem_Endpoint.COLUMNNAME_SasSignature,
-			I_ExternalSystem_Endpoint.COLUMNNAME_OAuthTokenUrl,
-			I_ExternalSystem_Endpoint.COLUMNNAME_OAuthScope,
-			I_ExternalSystem_Endpoint.COLUMNNAME_IsFileUpload,
-			I_ExternalSystem_Endpoint.COLUMNNAME_IsArrayFanOut);
+			I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType);
 
-	private static final ImmutableSet<String> SFTP_OWNED_COLUMN_NAMES = ImmutableSet.of(
-			I_ExternalSystem_Endpoint.COLUMNNAME_SftpHost,
-			I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort,
-			I_ExternalSystem_Endpoint.COLUMNNAME_SftpUsername,
-			I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType,
-			I_ExternalSystem_Endpoint.COLUMNNAME_SshPrivateKey,
-			I_ExternalSystem_Endpoint.COLUMNNAME_SftpRemotePath,
-			I_ExternalSystem_Endpoint.COLUMNNAME_SftpFilenamePattern,
-			I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs,
-			// transport-agnostic, also HTTP-owned below: the SFTP outbound dispatch reads it too (see
-			// ScriptedAdapterConvertMsgFromMFRouteBuilder#isFanOutEnabled), so switching to SFTP must not
-			// clear it
-			I_ExternalSystem_Endpoint.COLUMNNAME_IsArrayFanOut);
+	/**
+	 * Every column this endpoint's window can hide, together with the condition under which it is shown and
+	 * how to take its value away.
+	 * <p>
+	 * Each {@code displayLogic} is a <b>verbatim copy</b> of that field's {@code AD_Field.DisplayLogic}, and
+	 * it is evaluated by the very same compiler/evaluator the window uses, so the two cannot drift in
+	 * MEANING — only in TEXT, which a reviewer can check by grepping the string. Whoever changes a
+	 * {@code DisplayLogic} in a migration script changes the matching string here.
+	 * <p>
+	 * A column with no display logic at all is always visible and therefore does not belong here:
+	 * {@code IsArrayFanOut} is the case in point — both the HTTP and the SFTP dispatch read it, the window
+	 * shows it for every transport, and so no transport switch may clear it.
+	 * <p>
+	 * Lazily built: compiling a logic expression asks a sysconfig, which is not necessarily answerable while
+	 * this class is being loaded.
+	 */
+	private static final Supplier<ImmutableList<HideableColumn>> HIDEABLE_COLUMNS =
+			Suppliers.memoize(ExternalSystem_Endpoint::createHideableColumns);
 
-	private static final ImmutableSet<String> LOCAL_FILE_OWNED_COLUMN_NAMES = ImmutableSet.of(
-			I_ExternalSystem_Endpoint.COLUMNNAME_LocalRootLocation,
-			I_ExternalSystem_Endpoint.COLUMNNAME_Frequency,
-			I_ExternalSystem_Endpoint.COLUMNNAME_ImportFileNamePattern);
+	private static final String VISIBLE_FOR_HTTP = "@TransportType/X@='HTTP'";
+	private static final String VISIBLE_FOR_SFTP = "@TransportType/X@='SFTP'";
+	private static final String VISIBLE_FOR_LOCAL_FILE = "@TransportType/X@='LOCAL_FILE'";
+	private static final String VISIBLE_FOR_HTTP_OAUTH2 = "@TransportType/X@='HTTP' & @AuthType/X@='OAuth2'";
 
-	/** Maps each transport's DB code to the set of columns it owns (a column may appear in more than one set). */
-	private static final ImmutableMap<String, ImmutableSet<String>> OWNED_COLUMN_NAMES_BY_TRANSPORT_CODE = ImmutableMap.of(
-			TransportType.HTTP.getCode(), HTTP_OWNED_COLUMN_NAMES,
-			TransportType.SFTP.getCode(), SFTP_OWNED_COLUMN_NAMES,
-			TransportType.LOCAL_FILE.getCode(), LOCAL_FILE_OWNED_COLUMN_NAMES);
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_AuthType)
-	public void resetHttpCredentials(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	private static ImmutableList<HideableColumn> createHideableColumns()
 	{
-		final EndpointAuthType newAuthType = EndpointAuthType.ofNullableCode(endpoint.getAuthType());
-		if (newAuthType == null)
-		{
-			return;
-		}
+		return ImmutableList.of(
+				// HTTP transport
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_HttpEndPoint, VISIBLE_FOR_HTTP,
+						endpoint -> endpoint.setHttpEndPoint(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_OutboundHttpMethod, VISIBLE_FOR_HTTP,
+						endpoint -> endpoint.setOutboundHttpMethod(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_ContentType, VISIBLE_FOR_HTTP,
+						endpoint -> endpoint.setContentType(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_Type, VISIBLE_FOR_HTTP,
+						endpoint -> endpoint.setType(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_IsFileUpload, VISIBLE_FOR_HTTP,
+						endpoint -> endpoint.setIsFileUpload(false)),
+				// HTTP authentication
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_AuthType, VISIBLE_FOR_HTTP,
+						endpoint -> endpoint.setAuthType(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_AuthToken,
+						"@TransportType/X@='HTTP' & @AuthType/X@='Token'",
+						endpoint -> endpoint.setAuthToken(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_LoginUsername,
+						"@TransportType/X@='HTTP' & (@AuthType/X@='OAuth' | @AuthType/X@='Basic' | @AuthType/X@='OAuth2')",
+						endpoint -> endpoint.setLoginUsername(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_Password,
+						"(@TransportType/X@='HTTP' & @AuthType/X@='Basic') | (@TransportType/X@='SFTP' & @SftpAuthType/X@='PASSWORD') | (@TransportType/X@='HTTP' & @AuthType/X@='OAuth2')",
+						endpoint -> endpoint.setPassword(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_ClientId,
+						"@TransportType/X@='HTTP' & (@AuthType/X@='OAuth' | @AuthType/X@='OAuth2')",
+						endpoint -> endpoint.setClientId(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_ClientSecret,
+						"@TransportType/X@='HTTP' & (@AuthType/X@='OAuth' | @AuthType/X@='OAuth2')",
+						endpoint -> endpoint.setClientSecret(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SasSignature,
+						"@TransportType/X@='HTTP' & @AuthType/X@='SAS'",
+						endpoint -> endpoint.setSasSignature(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_OAuthTokenUrl, VISIBLE_FOR_HTTP_OAUTH2,
+						endpoint -> endpoint.setOAuthTokenUrl(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_OAuthScope, VISIBLE_FOR_HTTP_OAUTH2,
+						endpoint -> endpoint.setOAuthScope(null)),
+				// SFTP transport
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpHost, VISIBLE_FOR_SFTP,
+						endpoint -> endpoint.setSftpHost(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPort, VISIBLE_FOR_SFTP,
+						endpoint -> endpoint.setSftpPort(0)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpUsername, VISIBLE_FOR_SFTP,
+						endpoint -> endpoint.setSftpUsername(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpRemotePath, VISIBLE_FOR_SFTP,
+						endpoint -> endpoint.setSftpRemotePath(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpFilenamePattern, VISIBLE_FOR_SFTP,
+						endpoint -> endpoint.setSftpFilenamePattern(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpPollingIntervalMs, VISIBLE_FOR_SFTP,
+						endpoint -> endpoint.setSftpPollingIntervalMs(0)),
+				// SFTP authentication
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType, VISIBLE_FOR_SFTP,
+						endpoint -> endpoint.setSftpAuthType(null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_SshPrivateKey,
+						"@TransportType/X@='SFTP' & @SftpAuthType/X@='SSH_KEY'",
+						endpoint -> endpoint.setSshPrivateKey(null)),
+				// LOCAL_FILE transport
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_LocalRootLocation, VISIBLE_FOR_LOCAL_FILE,
+						endpoint -> endpoint.setLocalRootLocation(null)),
+				// via setValue, for the same reason as SftpPort above: a stored 0 passes the column's
+				// MandatoryLogic while the repository reads it back as no frequency at all, so the endpoint
+				// would look configured and never poll
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, VISIBLE_FOR_LOCAL_FILE,
+						endpoint -> InterfaceWrapperHelper.setValue(endpoint, I_ExternalSystem_Endpoint.COLUMNNAME_Frequency, null)),
+				hideable(I_ExternalSystem_Endpoint.COLUMNNAME_ImportFileNamePattern, VISIBLE_FOR_LOCAL_FILE,
+						endpoint -> endpoint.setImportFileNamePattern(null)));
+	}
 
-		switch (newAuthType)
+	private static HideableColumn hideable(
+			@NonNull final String columnName,
+			@NonNull final String displayLogic,
+			@NonNull final Consumer<I_ExternalSystem_Endpoint> clearAction)
+	{
+		final ILogicExpression visibleIf = Services.get(IExpressionFactory.class).compile(displayLogic, ILogicExpression.class);
+		return new HideableColumn(columnName, displayLogic, visibleIf, clearAction);
+	}
+
+	/**
+	 * Takes the value away from every field the endpoint's new configuration hides.
+	 * <p>
+	 * One handler for all three governing columns on purpose: a save may change more than one of them at
+	 * once (switching to SFTP <i>and</i> picking password authentication, say), and a field such as
+	 * {@code Password} is shown or hidden by a condition spanning all three. A handler keyed on a single
+	 * column would decide that field's fate from a part of the change only, and several handlers writing the
+	 * same field would decide it in an order nothing declares.
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
+			I_ExternalSystem_Endpoint.COLUMNNAME_TransportType,
+			I_ExternalSystem_Endpoint.COLUMNNAME_AuthType,
+			I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType })
+	public void clearFieldsHiddenByTheNewConfiguration(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	{
+		// ONE snapshot of the state the record is about to be stored in decides every field: clearing e.g.
+		// AuthType must not change the verdict already reached for Password, so what is visible is worked
+		// out before anything is taken away
+		final Evaluatee newConfiguration = extractVisibilityGoverningValues(endpoint);
+
+		final ImmutableList<HideableColumn> hiddenColumns = HIDEABLE_COLUMNS.get().stream()
+				.filter(column -> !column.isVisible(newConfiguration))
+				.collect(ImmutableList.toImmutableList());
+
+		hiddenColumns.forEach(column -> column.clear(endpoint));
+	}
+
+	/**
+	 * The record's {@link #VISIBILITY_GOVERNING_COLUMN_NAMES} values, as the display logic expressions read
+	 * them. A column that holds no value is left out, so the expression falls back to its own default and
+	 * simply matches none of the codes it compares against.
+	 */
+	private static Evaluatee extractVisibilityGoverningValues(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	{
+		final Map<String, String> values = new HashMap<>();
+		putIfNotNull(values, I_ExternalSystem_Endpoint.COLUMNNAME_TransportType, endpoint.getTransportType());
+		putIfNotNull(values, I_ExternalSystem_Endpoint.COLUMNNAME_AuthType, endpoint.getAuthType());
+		putIfNotNull(values, I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType, endpoint.getSftpAuthType());
+		return Evaluatees.ofMap(values);
+	}
+
+	private static void putIfNotNull(
+			@NonNull final Map<String, String> values,
+			@NonNull final String columnName,
+			@Nullable final String value)
+	{
+		if (value != null)
 		{
-			case Basic:
-				endpoint.setAuthToken(null);
-				endpoint.setClientId(null);
-				endpoint.setClientSecret(null);
-				break;
-			case Token:
-				endpoint.setLoginUsername(null);
-				endpoint.setPassword(null);
-				endpoint.setClientId(null);
-				endpoint.setClientSecret(null);
-				break;
-			case OAuth:
-				endpoint.setLoginUsername(null);
-				endpoint.setPassword(null);
-				endpoint.setAuthToken(null);
-				break;
-			case SAS:
-				endpoint.setLoginUsername(null);
-				endpoint.setPassword(null);
-				endpoint.setAuthToken(null);
-				endpoint.setClientId(null);
-				endpoint.setClientSecret(null);
-				break;
+			values.put(columnName, value);
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_TransportType)
-	public void resetTransportSpecificFields(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	@VisibleForTesting
+	static ImmutableList<HideableColumn> getHideableColumns()
 	{
-		final String newTransportType = endpoint.getTransportType();
-		final ImmutableSet<String> ownedColumnNames = OWNED_COLUMN_NAMES_BY_TRANSPORT_CODE.get(newTransportType);
-		if (ownedColumnNames == null)
-		{
-			// unset/unrecognized transport type: nothing to clear, mirrors the previous no-op behaviour
-			return;
-		}
-
-		// clear every OTHER transport's fields: the complement of this transport's own columns within
-		// CLEAR_ACTIONS_BY_COLUMN_NAME. Transport-agnostic columns (e.g. ProcessedDirectory/ErrorDirectory)
-		// never appear in CLEAR_ACTIONS_BY_COLUMN_NAME, so they are never touched here.
-		CLEAR_ACTIONS_BY_COLUMN_NAME.forEach((columnName, clearAction) -> {
-			if (!ownedColumnNames.contains(columnName))
-			{
-				clearAction.accept(endpoint);
-			}
-		});
+		return HIDEABLE_COLUMNS.get();
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_ExternalSystem_Endpoint.COLUMNNAME_SftpAuthType)
-	public void resetSftpCredentials(@NonNull final I_ExternalSystem_Endpoint endpoint)
+	/** A column the window hides under some configurations, and what "hidden" must leave behind. */
+	@Value
+	@VisibleForTesting
+	static class HideableColumn
 	{
-		final String newSftpAuthType = endpoint.getSftpAuthType();
-		if (SftpAuthType.PASSWORD.getCode().equals(newSftpAuthType))
+		@NonNull String columnName;
+
+		/** verbatim copy of this column's field's {@code AD_Field.DisplayLogic} */
+		@NonNull String displayLogic;
+
+		@NonNull ILogicExpression visibleIf;
+
+		@NonNull Consumer<I_ExternalSystem_Endpoint> clearAction;
+
+		boolean isVisible(@NonNull final Evaluatee configuration)
 		{
-			endpoint.setSshPrivateKey(null);
+			final Boolean visible = visibleIf.evaluate(configuration, OnVariableNotFound.ReturnNoResult);
+
+			// A display logic that cannot be decided -- it would have to name a variable without a default,
+			// which ExternalSystem_EndpointTest.VisibilityRules rules out -- must not cost the operator the
+			// values they entered, so an undecidable field counts as shown and is left alone.
+			return !Boolean.FALSE.equals(visible);
 		}
-		else if (SftpAuthType.SSH_KEY.getCode().equals(newSftpAuthType))
+
+		void clear(@NonNull final I_ExternalSystem_Endpoint endpoint)
 		{
-			endpoint.setPassword(null);
+			clearAction.accept(endpoint);
 		}
 	}
 }
