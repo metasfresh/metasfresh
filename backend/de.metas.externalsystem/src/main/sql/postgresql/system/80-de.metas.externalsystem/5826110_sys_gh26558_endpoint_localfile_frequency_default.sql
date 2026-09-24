@@ -9,9 +9,11 @@
 -- column to 60000 closes that gap for the common case (operator leaves the field blank).
 --
 -- MandatoryLogic is intentionally NOT added on top of the default here, for symmetry with the SFTP
--- sibling column (592967), which ships default-only as well: the default already makes the broken
--- (unset) state unreachable through the window's normal save path, and requiring the operator to type a
--- value they would otherwise get for free adds friction without closing any additional gap.
+-- sibling column (592967), which ships default-only as well. The default only covers record CREATION
+-- (AD_Column.DefaultValue never re-fires on an existing row), so a round trip through another transport
+-- and back to LOCAL_FILE still lands on 0: switching away from LOCAL_FILE clears Frequency to 0 (see
+-- ExternalSystem_Endpoint), and nothing re-defaults it on the way back. That gap is closed separately, by
+-- MandatoryLogic gating Frequency on TransportType=LOCAL_FILE (see the companion migration script).
 --
 -- IDs allocated from idserver.metas.de on 2026-09-24:
 --   AD_MigrationScript 5826110 (this script)
