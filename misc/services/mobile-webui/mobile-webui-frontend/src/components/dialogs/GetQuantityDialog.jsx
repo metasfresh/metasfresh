@@ -13,7 +13,7 @@ import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
 import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/qrCode/hu';
-import { toastErrorFromObj } from '../../utils/toast';
+import { toastError, toastErrorFromObj } from '../../utils/toast';
 import { doFinally } from '../../utils';
 import YesNoDialog from './YesNoDialog';
 import DialogButton from './DialogButton';
@@ -102,7 +102,7 @@ const GetQuantityDialog = ({
 
   // Serial numbers: one per picked unit (required count = entered qty). Captured via a live
   // multi-scan screen (chips + "X of N"), mirroring the GRAI scan UX. Manual entry is the
-  // BarcodeScannerComponent fallback; duplicate scans are silently deduped.
+  // BarcodeScannerComponent fallback; duplicate scans are deduped with an error toast.
   const serialNoRequiredCount = computeSerialNoRequiredCount(qtyInfo);
   const {
     serialNos,
@@ -115,9 +115,12 @@ const GetQuantityDialog = ({
   const [showSerialNoScanner, setShowSerialNoScanner] = useState(false);
   const onSerialNoScanned = (result) => {
     const scanned = result?.scannedBarcode ?? '';
-    if (scanned) {
-      addSerialNos([scanned]);
+    if (!scanned) return;
+    if (serialNos.includes(scanned)) {
+      toastError({ messageKey: 'activities.picking.serialNoAlreadyScanned' });
+      return;
     }
+    addSerialNos([scanned]);
     // stay in the scan view to keep accumulating (live multi-scan); operator taps Done to return
   };
 
