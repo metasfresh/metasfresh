@@ -2,6 +2,7 @@ package de.metas.pos;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
@@ -177,6 +178,33 @@ class JsonSerializeDeserializeTest
 								.build())
 						.build()
 		);
+	}
+
+	/**
+	 * The REST API's object mapper writes dates as timestamps (epoch seconds); the slip needs a date the client can parse as-is.
+	 */
+	@Test
+	void test_JsonCashWithdrawalResponse_dateIsISO8601_evenWhenTheMapperWritesDatesAsTimestamps() throws JsonProcessingException
+	{
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper()
+				.enable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+		final String json = jsonObjectMapper.writeValueAsString(JsonCashWithdrawalResponse.builder()
+				.documentNo("PAY-001")
+				.category("Travel expenses")
+				.amount(new BigDecimal("50.00"))
+				.date(Instant.parse("2026-09-24T10:15:30Z"))
+				.cashier("John Cashier")
+				.terminal("Terminal 1")
+				.journal(JsonCashJournalSummary.builder()
+						.closed(false)
+						.currencySymbol("€")
+						.currencyPrecision(2)
+						.paymentMethods(ImmutableList.of())
+						.build())
+				.build());
+
+		assertThat(json).contains("\"date\":\"2026-09-24T10:15:30Z\"");
 	}
 
 	@Test

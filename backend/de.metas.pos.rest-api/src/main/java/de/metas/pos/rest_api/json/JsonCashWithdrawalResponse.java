@@ -1,5 +1,6 @@
 package de.metas.pos.rest_api.json;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.pos.withdrawal.POSCashWithdrawalResult;
 import lombok.Builder;
 import lombok.NonNull;
@@ -25,6 +26,10 @@ public class JsonCashWithdrawalResponse
 	@NonNull String category;
 
 	@NonNull BigDecimal amount;
+	/**
+	 * ISO-8601 (e.g. {@code 2026-09-24T10:15:30Z}), independent of whether the object mapper writes dates as timestamps.
+	 */
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
 	@NonNull Instant date;
 	@NonNull String cashier;
 	@NonNull String terminal;
