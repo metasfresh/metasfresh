@@ -78,7 +78,8 @@ public interface IADWindowDAO extends ISingletonService
 	String getFirstTabWhereClause(@NonNull AdWindowId adWindowId);
 
 	/**
-	 * @return the table of the window's top-level ({@code TabLevel=0}) tab with the lowest {@code SeqNo}, or {@code null} if there is none
+	 * @return the table of the window's first tab (lowest {@code SeqNo}), or {@code null} if there is none.
+	 * Resolved via {@link #retrieveFirstTab(AdWindowId)}; header-tab ({@code TabLevel=0}) awareness is a follow-up.
 	 */
 	@Nullable
 	AdTableId getMainTableId(@NonNull AdWindowId adWindowId);

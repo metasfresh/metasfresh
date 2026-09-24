@@ -411,20 +411,11 @@ public class ADWindowDAO implements IADWindowDAO
 	@Nullable
 	public AdTableId getMainTableId(@NonNull final AdWindowId adWindowId)
 	{
-		final I_AD_Tab mainTab = queryBL
-				.createQueryBuilder(I_AD_Tab.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, adWindowId)
-				.addEqualsFilter(I_AD_Tab.COLUMNNAME_TabLevel, 0)
-				.addInSubQueryFilter(I_AD_Tab.COLUMNNAME_AD_Table_ID, I_AD_Table.COLUMNNAME_AD_Table_ID,
-						queryBL.createQueryBuilder(I_AD_Table.class)
-								.addOnlyActiveRecordsFilter()
-								.create())
-				.orderBy(I_AD_Tab.COLUMNNAME_SeqNo)
-				.create()
-				.first(I_AD_Tab.class);
-
-		return mainTab != null ? AdTableId.ofRepoIdOrNull(mainTab.getAD_Table_ID()) : null;
+		// Reuse the single retrieveFirstTab query (the window's first / lowest-SeqNo tab) rather than a
+		// second, divergent one. Making that shared query header-aware (TabLevel=0) and handling headerless
+		// windows correctly is a tracked follow-up improvement.
+		final I_AD_Tab firstTab = retrieveFirstTab(adWindowId);
+		return firstTab != null ? AdTableId.ofRepoIdOrNull(firstTab.getAD_Table_ID()) : null;
 	}
 
 	@Override
