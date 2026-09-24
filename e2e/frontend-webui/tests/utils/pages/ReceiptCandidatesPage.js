@@ -894,16 +894,25 @@ export class ReceiptCandidatesPage {
           // that usually has no zoom target, so the menu opens WITHOUT a Zoom Into item
           // and the wait times out — intermittently, depending on which cell the centre
           // happened to hit. M_InOut_ID is a Search reference to the receipt document,
-          // so its cell reliably offers "Zoom Into" -> the Material Receipt (window 184);
-          // and zoom-into resolution (getZoomIntoWindow -> window.open _blank) needs the
-          // row selected first.
+          // so its cell reliably offers "Zoom Into" -> the Material Receipt (window 184).
+          // (Zoom-into resolution, getZoomIntoWindow -> window.open _blank, reads the
+          // selected row; right-click already auto-selects, but we still select up-front
+          // below to avoid racing that auto-select.)
           await tabTableRow.scrollIntoViewIfNeeded().catch(() => {});
           await tabTableRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
           // Grid cells expose data-cy="cell-<ColumnName>"; target the zoom-capable
           // M_InOut_ID cell, falling back to the whole row if it is not rendered.
           const zoomCell = tabTableRow.locator('[data-cy="cell-M_InOut_ID"]').first();
-          const rightClickTarget = (await zoomCell.count()) > 0 ? zoomCell : tabTableRow;
+          const hasZoomCell = (await zoomCell.count()) > 0;
+          if (!hasZoomCell) {
+            // Diagnostic: the fallback reverts to the old row-centre right-click, which
+            // is the behaviour the flake fix avoids — surface it if it ever happens.
+            console.log(
+              'M_InOut_ID cell not found in allocation row; falling back to row-centre right-click'
+            );
+          }
+          const rightClickTarget = hasZoomCell ? zoomCell : tabTableRow;
 
           const contextMenu = page.locator('.context-menu');
 
@@ -919,11 +928,12 @@ export class ReceiptCandidatesPage {
           // present. Re-open within this same attempt if it is not, dismissing any
           // stale/half-open menu first.
           const MENU_OPEN_ATTEMPTS = 2;
-          let menuReady = false;
+          let isMenuReady = false;
           for (let menuAttempt = 1; menuAttempt <= MENU_OPEN_ATTEMPTS; menuAttempt++) {
-            // Left-click the row to select it (zoom-into resolution needs a selected
-            // row) and confirm the selection registered (row gains 'row-selected') so
-            // the right-click does not race an in-flight re-render.
+            // Left-click the row to select it up-front and confirm the selection
+            // registered (row gains 'row-selected'). Right-click already auto-selects,
+            // but doing it explicitly first avoids racing that auto-select / an
+            // in-flight re-render before the menu opens.
             await tabTableRow.click();
             await expect(tabTableRow)
               .toHaveClass(/row-selected/, { timeout: SLOW_ACTION_TIMEOUT })
@@ -937,7 +947,7 @@ export class ReceiptCandidatesPage {
               console.log('Context menu opened');
 
               await zoomIntoItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-              menuReady = true;
+              isMenuReady = true;
               break;
             } catch (menuError) {
               console.log(
@@ -949,7 +959,7 @@ export class ReceiptCandidatesPage {
             }
           }
 
-          if (!menuReady) {
+          if (!isMenuReady) {
             throw new Error('Context menu did not present the Zoom Into item after re-opening');
           }
 
