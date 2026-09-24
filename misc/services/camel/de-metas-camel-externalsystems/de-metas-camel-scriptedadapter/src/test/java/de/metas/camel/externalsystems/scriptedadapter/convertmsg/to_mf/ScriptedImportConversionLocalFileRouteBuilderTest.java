@@ -36,6 +36,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
@@ -120,84 +121,145 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 		}
 	}
 
-	@Test
-	void enable_createsAndStartsTheDynamicPollRouteOnTheEndpointsDirectory() throws Exception
+	@Nested
+	class Enable
 	{
-		final MockStoreExternalStatusEP mockStoreExternalStatusEP = interceptStatusEndpoint(
-				ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID,
-				ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID);
+		@Test
+		void createsAndStartsTheDynamicPollRouteOnTheEndpointsDirectory() throws Exception
+		{
+			final MockStoreExternalStatusEP mockStoreExternalStatusEP = interceptStatusEndpoint(
+					ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID,
+					ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID);
 
-		context.start();
-		assertThat(context.getRoute(ROUTE_KEY)).as("no poller before enable").isNull();
+			context.start();
+			assertThat(context.getRoute(ROUTE_KEY)).as("no poller before enable").isNull();
 
-		template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params()));
+			template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params()));
 
-		// The poller exists, is running, and polls THIS endpoint's directory at THIS endpoint's frequency
-		// — i.e. the endpoint's settings reached the route, not just "some route was created".
-		assertThat(context.getRoute(ROUTE_KEY)).as("poller for the child's stable route key").isNotNull();
-		assertThat(context.getRouteController().getRouteStatus(ROUTE_KEY).isStarted()).isTrue();
-		assertThat(context.getRoute(ROUTE_KEY).getEndpoint().getEndpointUri())
-				.contains(localInputDir.toAbsolutePath().toString())
-				.contains("delay=250");
+			// The poller exists, is running, and polls THIS endpoint's directory at THIS endpoint's frequency
+			// — i.e. the endpoint's settings reached the route, not just "some route was created".
+			assertThat(context.getRoute(ROUTE_KEY)).as("poller for the child's stable route key").isNotNull();
+			assertThat(context.getRouteController().getRouteStatus(ROUTE_KEY).isStarted()).isTrue();
+			assertThat(context.getRoute(ROUTE_KEY).getEndpoint().getEndpointUri())
+					.contains(localInputDir.toAbsolutePath().toString())
+					.contains("delay=250");
 
-		assertThat(mockStoreExternalStatusEP.lastStatus).isEqualTo(JsonExternalStatus.Active);
-		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
+			assertThat(mockStoreExternalStatusEP.lastStatus).isEqualTo(JsonExternalStatus.Active);
+			assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
+		}
+
+		@Test
+		void withoutFrequency_fallsBackToTheTransportWideDefault() throws Exception
+		{
+			interceptStatusEndpoint(
+					ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID,
+					ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID);
+
+			context.start();
+
+			// getParameters() omits the key entirely when the endpoint carries no frequency, so this is the
+			// map a pre-mandatory-Frequency endpoint produces — it must poll, not NPE on a blind parseLong.
+			final Map<String, String> params = params();
+			params.remove(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS);
+
+			template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params));
+
+			assertThat(context.getRoute(ROUTE_KEY).getEndpoint().getEndpointUri()).contains("delay=60000");
+		}
+
+		@Test
+		void withoutRootLocation_failsNamingTheParameter() throws Exception
+		{
+			captureErrorRoute();
+			context.start();
+
+			final Map<String, String> params = params();
+			params.remove(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION);
+
+			assertThatThrownBy(() -> template.sendBody(
+					"direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params)))
+					.isInstanceOf(CamelExecutionException.class)
+					.rootCause()
+					.hasMessageContaining(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION);
+
+			assertThat(context.getRoute(ROUTE_KEY)).as("no half-built poller left behind").isNull();
+		}
+
+		@Test
+		void withoutRouteKey_failsNamingTheParameter() throws Exception
+		{
+			captureErrorRoute();
+			context.start();
+
+			final Map<String, String> params = params();
+			params.remove(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY);
+
+			assertThatThrownBy(() -> template.sendBody(
+					"direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params)))
+					.isInstanceOf(CamelExecutionException.class)
+					.rootCause()
+					.hasMessageContaining(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY);
+		}
 	}
 
-	@Test
-	void reEnable_afterTheEndpointChanged_pollsTheNewDirectory() throws Exception
+	@Nested
+	class ReEnable
 	{
-		interceptStatusEndpoint(
-				ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID,
-				ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID);
+		@Test
+		void afterTheEndpointChanged_pollsTheNewDirectory() throws Exception
+		{
+			interceptStatusEndpoint(
+					ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID,
+					ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID);
 
-		context.start();
+			context.start();
 
-		template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params()));
+			template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params()));
 
-		// The operator edits the endpoint and presses Start again. The route key is the child's, so it is
-		// unchanged — the second enable must therefore land on the NEW directory rather than be swallowed
-		// as a duplicate route id.
-		final Map<String, String> movedEndpoint = params();
-		movedEndpoint.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION, movedInputDir.toAbsolutePath().toString());
-		template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, movedEndpoint));
+			// The operator edits the endpoint and presses Start again. The route key is the child's, so it is
+			// unchanged — the second enable must therefore land on the NEW directory rather than be swallowed
+			// as a duplicate route id.
+			final Map<String, String> movedEndpoint = params();
+			movedEndpoint.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION, movedInputDir.toAbsolutePath().toString());
+			template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, movedEndpoint));
 
-		assertThat(context.getRoutes().stream().filter(route -> ROUTE_KEY.equals(route.getRouteId())).count())
-				.as("exactly one poller per child — a second one on the same input would double-import")
-				.isEqualTo(1);
-		assertThat(context.getRouteController().getRouteStatus(ROUTE_KEY).isStarted()).isTrue();
-		assertThat(context.getRoute(ROUTE_KEY).getEndpoint().getEndpointUri())
-				.contains(movedInputDir.toAbsolutePath().toString());
-	}
+			assertThat(context.getRoutes().stream().filter(route -> ROUTE_KEY.equals(route.getRouteId())).count())
+					.as("exactly one poller per child — a second one on the same input would double-import")
+					.isEqualTo(1);
+			assertThat(context.getRouteController().getRouteStatus(ROUTE_KEY).isStarted()).isTrue();
+			assertThat(context.getRoute(ROUTE_KEY).getEndpoint().getEndpointUri())
+					.contains(movedInputDir.toAbsolutePath().toString());
+		}
 
-	@Test
-	void reEnable_ontoAnUnusableDirectory_leavesNothingPollingTheOldOne() throws Exception
-	{
-		interceptStatusEndpoint(
-				ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID,
-				ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID);
-		captureErrorRoute();
-		context.start();
+		@Test
+		void ontoAnUnusableDirectory_leavesNothingPollingTheOldOne() throws Exception
+		{
+			interceptStatusEndpoint(
+					ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID,
+					ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID);
+			captureErrorRoute();
+			context.start();
 
-		template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params()));
-		assertThat(context.getRoute(ROUTE_KEY)).isNotNull();
+			template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params()));
+			assertThat(context.getRoute(ROUTE_KEY)).isNotNull();
 
-		// A directory the dynamic route builder rejects while building its file:// URI — non-blank, so it
-		// passes this service's own parameter check and only blows up inside addRoutes().
-		final Map<String, String> unusableEndpoint = params();
-		unusableEndpoint.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION, localInputDir.toAbsolutePath() + "&inbox");
+			// A directory the dynamic route builder rejects while building its file:// URI — non-blank, so it
+			// passes this service's own parameter check and only blows up inside addRoutes().
+			final Map<String, String> unusableEndpoint = params();
+			unusableEndpoint.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION, localInputDir.toAbsolutePath() + "&inbox");
 
-		assertThatThrownBy(() -> template.sendBody(
-				"direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, unusableEndpoint)))
-				.isInstanceOf(CamelExecutionException.class);
+			assertThatThrownBy(() -> template.sendBody(
+					"direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, unusableEndpoint)))
+					.isInstanceOf(CamelExecutionException.class);
 
-		// This is what the pre-clean in enable buys, and the only thing it buys: Camel replaces a same-id
-		// route by itself, but only once the new one BUILDS. A re-enable that fails mid-build would
-		// otherwise leave the previous poller running on a directory the endpoint no longer names, while
-		// the operator is told the start failed.
-		assertThat(context.getRoute(ROUTE_KEY))
-				.as("stale poller left running by a re-enable that failed to build")
-				.isNull();
+			// This is what the pre-clean in enable buys, and the only thing it buys: Camel replaces a same-id
+			// route by itself, but only once the new one BUILDS. A re-enable that fails mid-build would
+			// otherwise leave the previous poller running on a directory the endpoint no longer names, while
+			// the operator is told the start failed.
+			assertThat(context.getRoute(ROUTE_KEY))
+					.as("stale poller left running by a re-enable that failed to build")
+					.isNull();
+		}
 	}
 
 	@Test
@@ -221,59 +283,6 @@ public class ScriptedImportConversionLocalFileRouteBuilderTest extends CamelTest
 
 		assertThat(context.getRoute(ROUTE_KEY)).isNull();
 		assertThat(mockStoreExternalStatusEP.lastStatus).isEqualTo(JsonExternalStatus.Inactive);
-	}
-
-	@Test
-	void enable_withoutFrequency_fallsBackToTheTransportWideDefault() throws Exception
-	{
-		interceptStatusEndpoint(
-				ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID,
-				ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID);
-
-		context.start();
-
-		// getParameters() omits the key entirely when the endpoint carries no frequency, so this is the
-		// map a pre-mandatory-Frequency endpoint produces — it must poll, not NPE on a blind parseLong.
-		final Map<String, String> params = params();
-		params.remove(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS);
-
-		template.sendBody("direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params));
-
-		assertThat(context.getRoute(ROUTE_KEY).getEndpoint().getEndpointUri()).contains("delay=60000");
-	}
-
-	@Test
-	void enable_withoutRootLocation_failsNamingTheParameter() throws Exception
-	{
-		captureErrorRoute();
-		context.start();
-
-		final Map<String, String> params = params();
-		params.remove(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION);
-
-		assertThatThrownBy(() -> template.sendBody(
-				"direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params)))
-				.isInstanceOf(CamelExecutionException.class)
-				.rootCause()
-				.hasMessageContaining(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION);
-
-		assertThat(context.getRoute(ROUTE_KEY)).as("no half-built poller left behind").isNull();
-	}
-
-	@Test
-	void enable_withoutRouteKey_failsNamingTheParameter() throws Exception
-	{
-		captureErrorRoute();
-		context.start();
-
-		final Map<String, String> params = params();
-		params.remove(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY);
-
-		assertThatThrownBy(() -> template.sendBody(
-				"direct:" + ScriptedImportConversionLocalFileRouteBuilder.ENABLE_LOCAL_FILE_POLLING_ROUTE_ID, newRequest(ENABLE_COMMAND, params)))
-				.isInstanceOf(CamelExecutionException.class)
-				.rootCause()
-				.hasMessageContaining(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY);
 	}
 
 	/**
