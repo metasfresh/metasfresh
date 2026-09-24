@@ -3,9 +3,9 @@
 --
 -- WHY
 -- AccessTypeRule separated a role's rows for one table into three permission sets (Accessing /
--- Reporting / Exporting). With every flag on the table now three-state (5825480), a row that has
--- nothing to say about an aspect simply says nothing, so the rule type no longer separates anything
--- and the key collapses to one row per role and table.
+-- Reporting / Exporting). With every flag now a plain subtractive Yes/No -- a row that leaves a flag
+-- at its non-restricting default says nothing about that aspect -- the rule type no longer separates
+-- anything and the key collapses to one row per role and table.
 --
 -- WHAT
 --   * removes the AccessTypeRule AD_Column (8844-series id 10009), its AD_Element (2225), its field

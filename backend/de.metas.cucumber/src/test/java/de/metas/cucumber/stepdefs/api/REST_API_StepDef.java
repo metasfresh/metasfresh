@@ -29,7 +29,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.role.AD_Role_StepDefData;
-import org.compiere.model.I_AD_Role;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -41,6 +40,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.compiere.model.I_AD_Role;
 import org.compiere.util.Evaluatees;
 import org.json.JSONException;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -74,6 +74,7 @@ public class REST_API_StepDef
 	 * known to the feature text.
 	 *
 	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: AD_Role_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And the existing user with login 'metasfresh' receives a random a API token for the existing role with identifier 'restrictedRole'

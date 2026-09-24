@@ -13,6 +13,7 @@ import de.metas.security.permissions.ResourceAsPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
@@ -207,6 +208,15 @@ public interface IUserRolePermissions
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, Access access);
 
 	boolean isTableAccess(int AD_Table_ID, Access access);
+
+	/**
+	 * Typed overload of {@link #isTableAccess(int, Access)}: unwraps the repo-id once here so callers pass the
+	 * typed {@link AdTableId} instead of {@code .getRepoId()} at every site.
+	 */
+	default boolean isTableAccess(@NonNull final AdTableId adTableId, final Access access)
+	{
+		return isTableAccess(adTableId.getRepoId(), access);
+	}
 
 	boolean isCanExport(int AD_Table_ID);
 

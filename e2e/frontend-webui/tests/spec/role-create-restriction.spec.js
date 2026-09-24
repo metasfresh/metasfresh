@@ -120,21 +120,21 @@ testCases.forEach(({ language, label }) => {
 
             // The webapi documentView payload carries the per-role create-restriction reason key — this is
             // what the frontend renders as the greyed "New" action's data-testid; used as an AC2 precondition.
-            let restrictionKeyDelivered = false;
+            let isRestrictionKeyDelivered = false;
             // AC5: while a create is attempted, the server must reject it (an error response on the window
             // endpoint) — captured explicitly rather than inferred from a timeout.
-            let expectingCreate = false;
-            let serverRejectedCreate = false;
+            let isExpectingCreate = false;
+            let hasServerRejectedCreate = false;
             page.on('response', async (r) => {
                 try {
                     const url = r.url();
                     if (url.includes(`/documentView/${BUSINESS_PARTNER_WINDOW_ID}/`)) {
                         if ((r.headers()['content-type'] || '').includes('json') && (await r.text()).includes(CREATE_RESTRICTION_MSG_KEY)) {
-                            restrictionKeyDelivered = true;
+                            isRestrictionKeyDelivered = true;
                         }
                     }
-                    if (expectingCreate && url.includes(`/window/${BUSINESS_PARTNER_WINDOW_ID}`) && r.status() >= 400) {
-                        serverRejectedCreate = true;
+                    if (isExpectingCreate && url.includes(`/window/${BUSINESS_PARTNER_WINDOW_ID}`) && r.status() >= 400) {
+                        hasServerRejectedCreate = true;
                     }
                 } catch (e) { /* response body not readable — ignore */ }
             });
@@ -173,7 +173,7 @@ testCases.forEach(({ language, label }) => {
             // Step 4 (AC2): the create restriction reaches the WebUI (precondition), and the "New" record
             // action is actually rendered GREYED, carrying the restriction message KEY in its data-testid.
             await expect
-                .poll(() => restrictionKeyDelivered, {
+                .poll(() => isRestrictionKeyDelivered, {
                     timeout: VERY_SLOW_ACTION_TIMEOUT,
                     message: `the documentView payload must carry the create-restriction key ${CREATE_RESTRICTION_MSG_KEY}`,
                 })
@@ -188,14 +188,14 @@ testCases.forEach(({ language, label }) => {
 
             // Step 5 (AC1/AC5): a create must be REFUSED — the server rejects it (error response) and no
             // persisted record results (the URL never resolves to /window/123/<numericId>).
-            expectingCreate = true;
+            isExpectingCreate = true;
             await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
             await page.waitForTimeout(3000);
             const urlAfterNew = page.url();
-            console.log(`[${language}] URL after direct /NEW: ${urlAfterNew} ; serverRejectedCreate=${serverRejectedCreate}`);
-            expect(serverRejectedCreate, 'the server must reject the create request for a restricted role').toBe(true);
+            console.log(`[${language}] URL after direct /NEW: ${urlAfterNew} ; hasServerRejectedCreate=${hasServerRejectedCreate}`);
+            expect(hasServerRejectedCreate, 'the server must reject the create request for a restricted role').toBe(true);
             expect(isNewRecordUrl(urlAfterNew), `a restricted role must not obtain a new C_BPartner record (url=${urlAfterNew})`).toBe(false);
-            expectingCreate = false;
+            isExpectingCreate = false;
 
             // Step 6 (AC1): Alt+N must NOT create a new record either — the URL stays on the list view.
             await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
@@ -310,12 +310,12 @@ testCases.forEach(({ language, label }) => {
             allure.tag(language);
             test.setTimeout(120000);
 
-            let restrictionKeyDelivered = false;
+            let isRestrictionKeyDelivered = false;
             page.on('response', async (r) => {
                 try {
                     if (!(r.headers()['content-type'] || '').includes('json')) return;
                     if (!r.url().includes(`/documentView/${BUSINESS_PARTNER_WINDOW_ID}/`)) return;
-                    if ((await r.text()).includes(CREATE_RESTRICTION_MSG_KEY)) restrictionKeyDelivered = true;
+                    if ((await r.text()).includes(CREATE_RESTRICTION_MSG_KEY)) isRestrictionKeyDelivered = true;
                 } catch (e) { /* ignore */ }
             });
 
@@ -337,7 +337,7 @@ testCases.forEach(({ language, label }) => {
             const recordId = page.url().split('/').pop().split('?')[0];
             console.log(`[${language}] unrestricted role created C_BPartner record ${recordId}`);
             expect(isNewRecordUrl(page.url()), 'an unrestricted role must obtain a new C_BPartner record').toBe(true);
-            expect(restrictionKeyDelivered, 'no create-restriction key must be delivered for an unrestricted role').toBe(false);
+            expect(isRestrictionKeyDelivered, 'no create-restriction key must be delivered for an unrestricted role').toBe(false);
             console.log(`[${language}] PASS — unrestricted role creates C_BPartner normally`);
         });
     });
@@ -591,12 +591,12 @@ testCases.forEach(({ language, label }) => {
                 allure.tag(language);
                 test.setTimeout(120000);
 
-                let restrictionKeyDelivered = false;
+                let isRestrictionKeyDelivered = false;
                 page.on('response', async (r) => {
                     try {
                         if (!(r.headers()['content-type'] || '').includes('json')) return;
                         if (!r.url().includes(`/documentView/${BUSINESS_PARTNER_WINDOW_ID}/`)) return;
-                        if ((await r.text()).includes(CREATE_RESTRICTION_MSG_KEY)) restrictionKeyDelivered = true;
+                        if ((await r.text()).includes(CREATE_RESTRICTION_MSG_KEY)) isRestrictionKeyDelivered = true;
                     } catch (e) { /* ignore */ }
                 });
 
@@ -612,7 +612,7 @@ testCases.forEach(({ language, label }) => {
                     await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
                     await page.locator('.document-list-wrapper, .document-list').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
                     await expect
-                        .poll(() => restrictionKeyDelivered, { timeout: VERY_SLOW_ACTION_TIMEOUT, message: 'the union must resolve to RESTRICTED (create key delivered)' })
+                        .poll(() => isRestrictionKeyDelivered, { timeout: VERY_SLOW_ACTION_TIMEOUT, message: 'the union must resolve to RESTRICTED (create key delivered)' })
                         .toBe(true);
                     const greyedNew = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
                     await ensureSubheaderOpen(page, greyedNew);
@@ -622,7 +622,7 @@ testCases.forEach(({ language, label }) => {
                     await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
                     await page.waitForURL((u) => isNewRecordUrl(u.toString()), { timeout: VERY_SLOW_ACTION_TIMEOUT });
                     expect(isNewRecordUrl(page.url()), 'union allowed → a new C_BPartner record is created').toBe(true);
-                    expect(restrictionKeyDelivered, 'no restriction key when the union resolves to ALLOWED').toBe(false);
+                    expect(isRestrictionKeyDelivered, 'no restriction key when the union resolves to ALLOWED').toBe(false);
                     console.log(`[${language}] PASS — union ALLOWED (${caseLabel})`);
                 }
             });

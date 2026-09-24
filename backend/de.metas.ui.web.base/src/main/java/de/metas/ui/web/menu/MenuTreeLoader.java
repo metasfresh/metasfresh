@@ -288,7 +288,7 @@ final class MenuTreeLoader
 			return true;
 		}
 
-		return getUserRolePermissions().isTableAccess(adTableId.getRepoId(), Access.CREATE);
+		return getUserRolePermissions().isTableAccess(adTableId, Access.CREATE);
 	}
 
 	private MTreeNode retrieveRootNodeModel()

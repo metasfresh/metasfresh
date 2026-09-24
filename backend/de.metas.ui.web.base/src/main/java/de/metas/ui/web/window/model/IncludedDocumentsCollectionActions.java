@@ -208,7 +208,7 @@ public final class IncludedDocumentsCollectionActions
 			return true;
 		}
 
-		return UserSession.getCurrentPermissions().isTableAccess(adTableId.getRepoId(), Access.CREATE);
+		return UserSession.getCurrentPermissions().isTableAccess(adTableId, Access.CREATE);
 	}
 
 	public LogicExpressionResult getAllowDeleteDocument()

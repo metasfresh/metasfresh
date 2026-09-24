@@ -15,6 +15,7 @@ import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import de.metas.util.web.security.UserAuthTokenService;
 import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
@@ -47,7 +48,6 @@ public class CreateRoleCommand
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	@NonNull private final RoleRepository roleRepository = new RoleRepository();
 
 	@NonNull private final UserAuthTokenService userAuthTokenService;
 	@NonNull private final WorkplaceService workplaceService;
@@ -85,16 +85,16 @@ public class CreateRoleCommand
 
 	private RoleId createRole(@NonNull final String name)
 	{
-		final RoleId roleId = roleRepository.createRole(name);
+		final RoleId roleId = roleDAO.createRole(name);
 
 		userRolePermissionsDAO.createOrgAccess(roleId, MasterdataContext.ORG_ID);
 
-		int seqNo = 10;
+		SeqNo seqNo = SeqNo.first();
 		for (final RoleId includedRoleId : getIncludedRoleIds())
 		{
-			roleRepository.createRoleInclusion(roleId, includedRoleId, seqNo);
+			roleDAO.createRoleInclusion(roleId, includedRoleId, seqNo);
 
-			seqNo += 10;
+			seqNo = seqNo.next();
 		}
 
 		return roleId;

@@ -2,7 +2,6 @@
 @ghActions:run_on_executor3
 @allure.label.epic:E0390_Business_Partner
 @allure.label.feature:F33020_Roles
-@F33020
 Feature: A role's WebUI create-restriction does not affect the REST API
 
   ## F33020: Roles

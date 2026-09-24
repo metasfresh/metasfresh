@@ -122,7 +122,15 @@ UPDATE AD_Element_Trl
        IsTranslated = 'Y',
        Updated = TO_TIMESTAMP('2026-09-22 16:02:00','YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy = 100
- WHERE AD_Element_ID=585478 AND AD_Language IN ('de_DE','de_CH');
+ WHERE AD_Element_ID=585478 AND AD_Language='de_DE';
+
+-- de_CH follows the Swiss convention (ss, never ß): "standardmässig".
+UPDATE AD_Element_Trl
+   SET Description = 'Bei ''Nein'' bietet die Desktop-WebUI für diese Rolle in dieser Tabelle das Anlegen neuer Datensätze nicht an und akzeptiert es nicht. Achtung: Ein Datensatz, der einer eingeschlossenen Rolle aus einem anderen Grund hinzugefügt wird, hat hier standardmässig den Wert ''Ja'' und kann so in einer Rollen-Einschlusskette die Einschränkung einer anderen Rolle aufheben.',
+       IsTranslated = 'Y',
+       Updated = TO_TIMESTAMP('2026-09-22 16:02:05','YYYY-MM-DD HH24:MI:SS'),
+       UpdatedBy = 100
+ WHERE AD_Element_ID=585478 AND AD_Language='de_CH';
 
 UPDATE AD_Element_Trl
    SET Description = 'When set to No, the desktop WebUI will not offer or accept creating a new record for this role in this table. Warning: a row added to an included role for an unrelated reason defaults to Yes here and can, in a role-inclusion chain, lift another role''s restriction.',
