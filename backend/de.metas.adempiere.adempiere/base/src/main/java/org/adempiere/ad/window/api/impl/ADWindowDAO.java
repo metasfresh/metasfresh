@@ -413,7 +413,7 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		// Reuse the single retrieveFirstTab query (the window's first / lowest-SeqNo tab) rather than a
 		// second, divergent one. Making that shared query header-aware (TabLevel=0) and handling headerless
-		// windows correctly is a tracked follow-up improvement.
+		// windows correctly is a follow-up improvement.
 		final I_AD_Tab firstTab = retrieveFirstTab(adWindowId);
 		return firstTab != null ? AdTableId.ofRepoIdOrNull(firstTab.getAD_Table_ID()) : null;
 	}
