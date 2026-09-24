@@ -828,6 +828,19 @@ export class ReceiptCandidatesPage {
             console.log('Navigated to detail view:', page.url());
           }
 
+          // On the first attempt, force a fresh fetch of the detail view + its tabs.
+          // Opening the detail view from the list is client-side SPA navigation that can
+          // reuse window state cached before the receipt (and its M_ReceiptSchedule_Alloc
+          // row) existed, so the Allocated tab would render "no detail rows". A hard reload
+          // re-fetches from the server. (Later attempts are already reloaded by the retry
+          // handler below, so only the first needs this.)
+          if (attempt === 1 && page.url().match(/\/window\/540196\/\d+/)) {
+            await page.reload({ timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+            await page
+              .waitForLoadState('domcontentloaded', { timeout: SLOW_ACTION_TIMEOUT })
+              .catch(() => {});
+          }
+
           // Wait for detail view to fully load (spinners to disappear)
           await page.locator('.rotating, .indicator-pending, .loader')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
@@ -872,25 +885,73 @@ export class ReceiptCandidatesPage {
           const rowCount = await allTabRows.count();
           console.log(`Found ${rowCount} allocation row(s) in tab, selecting ${rowDescription}`);
 
-          // Step 3: First left-click to select the row, then right-click for context menu
-          await tabTableRow.click();
-          await tabTableRow.click({ button: 'right' });
+          // Step 3: Select the row, then right-click a ZOOM-CAPABLE cell.
+          // ROOT CAUSE of the CI flake: the "Zoom Into" context-menu item is rendered
+          // only when the CELL that was right-clicked belongs to a field that supports
+          // zoom-into (frontend TableContextMenu.js: `isShowZoomIntoOption =
+          // contextMenu.supportZoomInto`, sourced from the right-clicked TableCell).
+          // Right-clicking the row *centre* (the old code) lands on an arbitrary cell
+          // that usually has no zoom target, so the menu opens WITHOUT a Zoom Into item
+          // and the wait times out — intermittently, depending on which cell the centre
+          // happened to hit. M_InOut_ID is a Search reference to the receipt document,
+          // so its cell reliably offers "Zoom Into" -> the Material Receipt (window 184);
+          // and zoom-into resolution (getZoomIntoWindow -> window.open _blank) needs the
+          // row selected first.
+          await tabTableRow.scrollIntoViewIfNeeded().catch(() => {});
+          await tabTableRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-          // Wait for context menu to appear
+          // Grid cells expose data-cy="cell-<ColumnName>"; target the zoom-capable
+          // M_InOut_ID cell, falling back to the whole row if it is not rendered.
+          const zoomCell = tabTableRow.locator('[data-cy="cell-M_InOut_ID"]').first();
+          const rightClickTarget = (await zoomCell.count()) > 0 ? zoomCell : tabTableRow;
+
           const contextMenu = page.locator('.context-menu');
-          await contextMenu.waitFor({ state: 'visible', timeout: 5000 });
 
-          console.log('Context menu opened');
-
-          // Step 4: Click "Zoom Into" option
-          // LANGUAGE-INDEPENDENT: Use icon class 'meta-icon-share' instead of text
-          // The menu item has icon="meta-icon-share" which is stable across languages
-          // IMPORTANT: Zoom Into opens in a NEW TAB (window.open with _blank)
+          // Step 4 target: the "Zoom Into" menu item.
+          // LANGUAGE-INDEPENDENT: filter by icon class 'meta-icon-share' (stable across
+          // languages). IMPORTANT: Zoom Into opens the Material Receipt in a NEW TAB
+          // (window.open with _blank).
           const zoomIntoItem = contextMenu.locator('.context-menu-item').filter({
             has: page.locator('.meta-icon-share'),
           }).first();
 
-          await zoomIntoItem.waitFor({ state: 'visible', timeout: 5000 });
+          // Open the context menu on the zoom cell and confirm the Zoom Into item is
+          // present. Re-open within this same attempt if it is not, dismissing any
+          // stale/half-open menu first.
+          const MENU_OPEN_ATTEMPTS = 2;
+          let menuReady = false;
+          for (let menuAttempt = 1; menuAttempt <= MENU_OPEN_ATTEMPTS; menuAttempt++) {
+            // Left-click the row to select it (zoom-into resolution needs a selected
+            // row) and confirm the selection registered (row gains 'row-selected') so
+            // the right-click does not race an in-flight re-render.
+            await tabTableRow.click();
+            await expect(tabTableRow)
+              .toHaveClass(/row-selected/, { timeout: SLOW_ACTION_TIMEOUT })
+              .catch(() => {});
+
+            await rightClickTarget.scrollIntoViewIfNeeded().catch(() => {});
+            await rightClickTarget.click({ button: 'right' });
+
+            try {
+              await contextMenu.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+              console.log('Context menu opened');
+
+              await zoomIntoItem.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+              menuReady = true;
+              break;
+            } catch (menuError) {
+              console.log(
+                `Zoom Into item not ready on menu-open attempt ${menuAttempt}/${MENU_OPEN_ATTEMPTS}: ${menuError.message}`
+              );
+              // Dismiss any stale/half-open menu so the re-open starts clean.
+              await page.keyboard.press('Escape').catch(() => {});
+              await contextMenu.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+            }
+          }
+
+          if (!menuReady) {
+            throw new Error('Context menu did not present the Zoom Into item after re-opening');
+          }
 
           // Set up listener for the popup BEFORE clicking
           const popupPromise = page.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
@@ -901,6 +962,10 @@ export class ReceiptCandidatesPage {
           // Step 5: Wait for new tab to open
           const newPage = await popupPromise;
           console.log('New tab opened:', newPage.url());
+
+          // The popup may open blank and navigate to the target window a moment later;
+          // wait for the Material Receipt URL (best-effort) before verifying it.
+          await newPage.waitForURL(/\/window\/184\//, { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
           // Wait for the new page to load
           await newPage.waitForLoadState('networkidle', {
@@ -927,12 +992,28 @@ export class ReceiptCandidatesPage {
           lastError = error;
           console.log(`Attempt ${attempt}/${maxRetries} failed: ${error.message}`);
 
-          // Press Escape to close any open menus before retrying
-          await page.keyboard.press('Escape');
-          await page.waitForTimeout(200);
+          // Reliably dismiss any stale/half-open context menu before retrying,
+          // waiting until it is actually gone rather than a fixed short pause.
+          await page.keyboard.press('Escape').catch(() => {});
+          await page.locator('.context-menu')
+            .waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT })
+            .catch(() => {});
 
           if (attempt < maxRetries) {
             await page.waitForTimeout(2000 * attempt);
+
+            // If we are already on the Receipt Candidate detail view, RELOAD it so the
+            // next attempt re-fetches the Allocated Material Receipt tab from the server.
+            // The M_ReceiptSchedule_Alloc row is created when the receipt completes, and
+            // the tab can be fetched a moment too early (rendering "There are no detail
+            // rows"). Re-clicking the already-active tab does NOT re-query, so without a
+            // reload the tab stays empty and every retry repeats the same timeout.
+            if (page.url().match(/\/window\/540196\/\d+/)) {
+              await page.reload({ timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+              await page
+                .waitForLoadState('domcontentloaded', { timeout: SLOW_ACTION_TIMEOUT })
+                .catch(() => {});
+            }
           }
         }
       }
