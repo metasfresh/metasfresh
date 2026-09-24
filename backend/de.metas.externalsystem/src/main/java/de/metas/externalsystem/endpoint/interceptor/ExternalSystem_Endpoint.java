@@ -197,12 +197,9 @@ public class ExternalSystem_Endpoint
 	 * operator finds the field exactly as a newly created record would present it.
 	 * <p>
 	 * {@code columnDefault} is the dictionary's value in the type the column stores -- {@code 22}, not
-	 * {@code "22"}, and {@code false} for a {@code DefaultValue} of {@code 'N'}. It is written through
-	 * {@link InterfaceWrapperHelper#setValue} rather than the generated setter, which for {@code SftpPort}
-	 * and {@code Frequency} takes an {@code int}: the one value that must never reach those two columns is
-	 * {@code 0}, because it satisfies their {@code MandatoryLogic} while
-	 * {@code ExternalSystemEndpointRepository} reads it as unconfigured -- the window would call a portless,
-	 * poll-less endpoint valid.
+	 * {@code "22"}, and {@code false} for a {@code DefaultValue} of {@code 'N'}. Because that type varies
+	 * per column -- {@code String}, {@code Boolean}, {@code Integer} -- the value is written through
+	 * {@link InterfaceWrapperHelper#setValue}: no typed setter can be selected from an {@code Object}.
 	 */
 	private HideableColumn hideableWithColumnDefault(
 			@NonNull final String columnName,
