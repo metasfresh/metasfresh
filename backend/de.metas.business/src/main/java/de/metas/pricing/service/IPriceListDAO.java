@@ -199,6 +199,10 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(PriceListVersionId priceListVersionId, ZonedDateTime date);
 
+	PricingSystemId createPricingSystem(@NonNull CreatePricingSystemRequest request);
+
+	PriceListId createPriceList(@NonNull CreatePriceListRequest request);
+
 	ProductPriceId addProductPrice(AddProductPriceRequest request);
 
 	ProductPriceId copyProductPrice(CopyProductPriceRequest request);

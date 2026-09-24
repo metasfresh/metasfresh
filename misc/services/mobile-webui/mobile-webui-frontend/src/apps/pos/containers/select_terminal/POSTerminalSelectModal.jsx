@@ -45,7 +45,7 @@ const POSTerminalSelectModal = ({ allowCancel }) => {
   if (posTerminals == null) return null;
 
   return (
-    <div className="modal is-active pos-select-terminal">
+    <div className="modal is-active pos-select-terminal" data-testid="pos-terminal-select-modal">
       <div className="modal-background"></div>
       <div className="modal-card">
         <header className="modal-card-head">
@@ -54,7 +54,13 @@ const POSTerminalSelectModal = ({ allowCancel }) => {
         </header>
         <section className="modal-card-body">
           {posTerminals.map((posTerminal) => (
-            <button className="button is-large" key={posTerminal.id} onClick={() => onTerminalSelected(posTerminal.id)}>
+            <button
+              className="button is-large"
+              data-testid="pos-terminal-button"
+              data-terminal-id={posTerminal.id}
+              key={posTerminal.id}
+              onClick={() => onTerminalSelected(posTerminal.id)}
+            >
               <span className="icon is-small">
                 <i className={cx('fas', { 'fa-check': posTerminal.id === currentTerminal.id })}></i>
               </span>

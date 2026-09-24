@@ -40,6 +40,9 @@ import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateCommand;
+import de.metas.frontend_testing.masterdata.pos.CreatePOSTerminalCommand;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalRequest;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalResponse;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
@@ -133,6 +136,9 @@ public class CreateMasterdataCommand
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
 		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
 		linkProductsToCompensationGroupSchemas();
+		// POS terminals: applied after bpartners (walk-in customer identifier) and products (priced into the
+		// terminal's own M_PriceList_Version).
+		final ImmutableMap<String, JsonPOSTerminalResponse> posTerminals = createPOSTerminals();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
@@ -178,6 +184,7 @@ public class CreateMasterdataCommand
 				.productCategories(productCategories.isEmpty() ? null : productCategories)
 				.attributes(attributes.isEmpty() ? null : attributes)
 				.products(products)
+				.posTerminals(posTerminals.isEmpty() ? null : posTerminals)
 				.resources(resources)
 				.productPlannings(productPlannings)
 				.pickingSlots(pickingSlots)
@@ -235,6 +242,7 @@ public class CreateMasterdataCommand
 	{
 		return CreateBPartnerCommand.builder()
 				.currencyRepository(services.currencyRepository)
+				.priceListVersionRepository(services.priceListVersionRepository)
 				.context(context)
 				.request(request)
 				.identifier(identifier)
@@ -342,6 +350,26 @@ public class CreateMasterdataCommand
 	{
 		return CreateProductCommand.builder()
 				.productRepository(services.productRepository)
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPOSTerminalResponse> createPOSTerminals()
+	{
+		return process(request.getPosTerminals(), this::createPOSTerminal);
+	}
+
+	private JsonPOSTerminalResponse createPOSTerminal(final String identifier, final JsonPOSTerminalRequest request)
+	{
+		return CreatePOSTerminalCommand.builder()
+				.currencyRepository(services.currencyRepository)
+				.priceListVersionRepository(services.priceListVersionRepository)
+				.productPriceRepository(services.productPriceRepository)
+				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
+				.posTerminalRepository(services.posTerminalRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

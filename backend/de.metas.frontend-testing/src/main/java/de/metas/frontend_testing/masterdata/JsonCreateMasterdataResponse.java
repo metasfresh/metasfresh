@@ -12,6 +12,7 @@ import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
 import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
+import de.metas.frontend_testing.masterdata.pos.JsonPOSTerminalResponse;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
 import de.metas.frontend_testing.masterdata.product.JsonProductCategoryResponse;
@@ -52,6 +53,7 @@ public class JsonCreateMasterdataResponse
 	@Nullable Map<String, JsonProductCategoryResponse> productCategories;
 	@Nullable Map<String, JsonCreateAttributeResponse> attributes;
 	@NonNull Map<String, JsonCreateProductResponse> products;
+	@Nullable Map<String, JsonPOSTerminalResponse> posTerminals;
 	@Nullable Map<String, JsonCreateResourceResponse> resources;
 	@NonNull Map<String, JsonCreateProductPlanningResponse> productPlannings;
 	@NonNull Map<String, JsonPickingSlotCreateResponse> pickingSlots;

@@ -7,11 +7,11 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.RandomGLNGenerator;
 import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.frontend_testing.masterdata.PricingSetupHelper;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -21,8 +21,8 @@ import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
-import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -35,22 +35,16 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class CreateBPartnerCommand
 {
 	@NonNull private final RandomGLNGenerator randomGLNGenerator = new RandomGLNGenerator();
 	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final PriceListVersionRepository priceListVersionRepository;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull final JsonCreateBPartnerRequest request;
@@ -64,11 +58,13 @@ public class CreateBPartnerCommand
 	@Builder
 	private CreateBPartnerCommand(
 			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final PriceListVersionRepository priceListVersionRepository,
 			@NonNull final MasterdataContext context,
 			@NonNull final JsonCreateBPartnerRequest request,
 			@Nullable final String identifier)
 	{
 		this.currencyRepository = currencyRepository;
+		this.priceListVersionRepository = priceListVersionRepository;
 		this.context = context;
 		this.request = request;
 
@@ -404,43 +400,22 @@ public class CreateBPartnerCommand
 		}
 
 		final Identifier pricingSystemIdentifier = Identifier.unique("PS");
-		final String value = pricingSystemIdentifier.getAsString();
-
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.EUR);
-		final Instant validFrom = MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant();
 
-		final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
-		pricingSystem.setValue(value);
-		pricingSystem.setName(value);
-		pricingSystem.setAD_Org_ID(orgId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(pricingSystem);
+		final PricingSetupHelper.PricingSetupResult setup = PricingSetupHelper.createPricingSystemAndPriceList(
+				priceListVersionRepository,
+				PricingSetupHelper.PricingSetupRequest.builder()
+						.orgId(orgId)
+						.value(pricingSystemIdentifier.getAsString())
+						.currencyId(currencyId)
+						.countryId(countryId)
+						.isTaxIncluded(false)
+						.isSoPriceList(request.isSoPriceList())
+						.build());
 
-		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
-		context.putIdentifier(pricingSystemIdentifier, pricingSystemId);
+		context.putIdentifier(pricingSystemIdentifier, setup.getPricingSystemId());
+		context.putIdentifier(Identifier.unique("PLV"), setup.getPriceListVersionId());
 
-		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
-		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
-		priceList.setAD_Org_ID(pricingSystem.getAD_Org_ID());
-		priceList.setM_PricingSystem_ID(pricingSystemId.getRepoId());
-		priceList.setC_Currency_ID(currencyId.getRepoId());
-		priceList.setName(value);
-		priceList.setIsTaxIncluded(false);
-		priceList.setPricePrecision(2);
-		priceList.setIsActive(true);
-		priceList.setIsSOPriceList(request.isSoPriceList());
-		priceList.setC_Country_ID(countryId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(priceList);
-
-		final I_M_PriceList_Version plv = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
-		plv.setM_PriceList_ID(priceList.getM_PriceList_ID());
-		plv.setAD_Org_ID(priceList.getAD_Org_ID());
-		plv.setM_PriceList_ID(priceList.getM_PriceList_ID());
-		plv.setValidFrom(Timestamp.from(validFrom));
-		saveRecord(plv);
-
-		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
-		context.putIdentifier(Identifier.unique("PLV"), priceListVersionId);
-
-		return pricingSystemId;
+		return setup.getPricingSystemId();
 	}
 }

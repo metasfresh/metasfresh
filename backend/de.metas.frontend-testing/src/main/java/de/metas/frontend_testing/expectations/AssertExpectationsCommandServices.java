@@ -20,6 +20,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.inout.IInOutDAO;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -30,12 +31,20 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.pos.POSOrder;
+import de.metas.pos.POSOrderQuery;
+import de.metas.pos.POSOrdersRepository;
+import de.metas.pos.POSTerminalId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import de.metas.adempiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderId;
@@ -60,9 +69,11 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final POSOrdersRepository posOrdersRepository;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -170,5 +181,24 @@ public class AssertExpectationsCommandServices
 	public List<I_M_InOutLine> getProcessedShipmentLinesByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
 	{
 		return inOutDAO.retrieveProcessedLinesForOrderLineIds(orderLineIds);
+	}
+
+	public POSOrder getSinglePOSOrder(@NonNull final POSTerminalId posTerminalId, @NonNull final UserId cashierId)
+	{
+		final List<POSOrder> posOrders = posOrdersRepository.list(POSOrderQuery.builder()
+				.posTerminalId(posTerminalId)
+				.cashierId(cashierId)
+				.build());
+		return CollectionUtils.singleElement(posOrders);
+	}
+
+	public I_C_Order getOrderById(@NonNull final OrderId orderId)
+	{
+		return orderDAO.getById(orderId);
+	}
+
+	public List<I_C_Invoice> getInvoicesByOrderId(@NonNull final OrderId orderId)
+	{
+		return invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(orderId));
 	}
 }
