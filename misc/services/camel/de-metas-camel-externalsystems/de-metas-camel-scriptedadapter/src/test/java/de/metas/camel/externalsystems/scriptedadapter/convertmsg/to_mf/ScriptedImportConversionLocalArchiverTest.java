@@ -122,6 +122,25 @@ class ScriptedImportConversionLocalArchiverTest
 		assertThat(archiveDir.getParent().resolve("escaped.pdf")).doesNotExist();
 	}
 
+	/**
+	 * Same escape guard as {@link #archive_fileNameEscapingDirectory_isRejected()}, but for the case where
+	 * the escaped path resolves all the way up to the filesystem root: {@code Path.getParent()} returns
+	 * {@code null} there (a root has no parent), so a naive {@code !resolved.getParent().equals(dirPath)}
+	 * check NPEs instead of throwing the intended {@link RuntimeCamelException}. {@code archive()} catches
+	 * only {@link java.io.IOException}, so that NPE would propagate unwrapped. The filesystem root itself
+	 * always exists, so {@code Files.createDirectories} on it is a safe no-op -- no special permissions
+	 * needed.
+	 */
+	@Test
+	void archive_fileNameEscapingToFilesystemRoot_isRejectedNotNPE()
+	{
+		final Path root = archiveDir.getRoot();
+
+		assertThatThrownBy(() -> ScriptedImportConversionLocalArchiver.archive(root.toString(), "..", new byte[]{0x01}))
+				.isInstanceOf(RuntimeCamelException.class)
+				.hasMessageContaining("escapes the archive directory");
+	}
+
 	private static byte[] readAllBytesUnchecked(final Path path)
 	{
 		try

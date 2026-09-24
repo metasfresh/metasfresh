@@ -117,7 +117,7 @@ class ScriptedImportConversionLocalArchiver
 	private static Path resolveWithinDirectory(@NonNull final Path dirPath, @NonNull final String fileName)
 	{
 		final Path resolved = dirPath.resolve(fileName).normalize();
-		if (!resolved.getParent().equals(dirPath))
+		if (!dirPath.equals(resolved.getParent()))
 		{
 			throw new RuntimeCamelException("Refusing to archive outside " + dirPath + ": resolved file name '" + fileName + "' escapes the archive directory");
 		}
