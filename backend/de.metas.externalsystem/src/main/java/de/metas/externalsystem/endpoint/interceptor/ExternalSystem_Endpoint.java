@@ -111,8 +111,8 @@ public class ExternalSystem_Endpoint
 	 * {@code IsArrayFanOut} is the case in point — both the HTTP and the SFTP dispatch read it, the window
 	 * shows it for every transport, and so no transport switch may clear it.
 	 * <p>
-	 * Lazily built: compiling a logic expression asks a sysconfig ({@code LogicExpressionCompiler
-	 * #isUseOperatorPrecedence}), which is not necessarily answerable while this bean is being constructed.
+	 * Lazily built: compiling a logic expression asks the sysconfig that turns operator precedence on or
+	 * off, which is not necessarily answerable while this bean is being constructed.
 	 * <p>
 	 * Package-private so {@code ExternalSystem_EndpointTest.VisibilityRules} can walk the rules.
 	 */
