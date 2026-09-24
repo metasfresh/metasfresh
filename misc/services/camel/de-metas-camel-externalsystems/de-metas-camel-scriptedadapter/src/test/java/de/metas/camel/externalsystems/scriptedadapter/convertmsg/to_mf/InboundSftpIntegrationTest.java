@@ -118,11 +118,19 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	@TempDir
 	Path scriptRepoDir;
 
-	/** LOCAL processed-folder archive target (never a remote dir — see AC5 runtime-fixes refinement). */
+	/**
+	 * Archive target for a successfully processed payload: a directory on the machine running the adapter,
+	 * handed to the route as {@code PARAM_PROCESSED_DIR}. Never a directory on the SFTP server — the remote
+	 * file is consumed by delete, and the route creates no remote {@code .done} folder.
+	 */
 	@TempDir
 	Path localProcessedDir;
 
-	/** LOCAL error-folder archive target (never a remote dir — see AC5 runtime-fixes refinement). */
+	/**
+	 * Archive target for a payload the transform failed on, handed to the route as {@code PARAM_ERROR_DIR}.
+	 * Local for the same reason as {@link #localProcessedDir}, and the reason it exists at all: without it a
+	 * file that cannot be transformed would be deleted from the SFTP server and lost.
+	 */
 	@TempDir
 	Path localErrorDir;
 
