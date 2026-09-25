@@ -47,6 +47,8 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
+
+import javax.annotation.Nullable;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -162,7 +164,18 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			//
 			// Add order line to per Manufacturing warehouse report
 			{
-				final UserId responsibleUserId = routing != null ? routing.getUserInChargeId() : null;
+				// The Warehouse (Produktion) report takes its print user from the routing's Betreuer
+				// (AD_User_InCharge_ID). That field only accepts employees (val rule 164), so it is often
+				// empty; when it is, fall back to the plant resource's user - exactly what the Plant branch
+				// below already does - so the print job is not cancelled for lack of a print user
+				// (OrderCheckupPrintingQueueHandler).
+				// A routing with no Betreuer yields UserId.SYSTEM (repoId 0), not null - and the printing
+				// handler cancels a report whose responsible user is <= 0. So fall back to the plant user
+				// unless the routing carries a *regular* (non-system) Betreuer.
+				final UserId routingUserId = routing != null ? routing.getUserInChargeId() : null;
+				final UserId responsibleUserId = routingUserId != null && routingUserId.isRegularUser()
+						? routingUserId
+						: plantResponsibleUserId(plantId);
 				final OrderCheckupReportIdentity reportIdentity = OrderCheckupReportIdentity.of(
 						orderId,
 						OrderCheckupDocumentType.Warehouse,
@@ -231,6 +244,18 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		}
 
 		return reportBuilders;
+	}
+
+	/** The plant resource's responsible user, or {@code null} when the plant or its user is unset. Mirrors the Plant branch's source. */
+	@Nullable
+	private UserId plantResponsibleUserId(@Nullable final ResourceId plantId)
+	{
+		if (plantId == null)
+		{
+			return null;
+		}
+		final I_S_Resource plant = Services.get(IResourceDAO.class).getById(plantId);
+		return UserId.ofRegularUserRepoIdOrNull(plant.getAD_User_ID());
 	}
 
 	private Optional<ProductPlanning> getMfgProductPlanning(final I_C_OrderLine orderLine)

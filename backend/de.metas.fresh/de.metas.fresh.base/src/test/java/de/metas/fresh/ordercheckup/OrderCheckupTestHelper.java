@@ -136,6 +136,30 @@ public class OrderCheckupTestHelper
 		return product;
 	}
 
+	/**
+	 * A product whose manufacturing routing has NO Betreuer ({@code AD_User_InCharge_ID}). Used to prove that
+	 * the Warehouse (Produktion) report then falls back to the plant resource's user, mirroring the Plant branch.
+	 */
+	public I_M_Product createProductWithoutRoutingUserInCharge(final String name, final I_M_Warehouse mfgWarehouse)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, ITrx.TRXNAME_None);
+		product.setValue(name);
+		product.setName(name);
+		InterfaceWrapperHelper.save(product);
+
+		final I_AD_Workflow workflow = createManufacturingRouting((Integer)null);
+		productPlanningDAO.save(ProductPlanning.builder()
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(mfgWarehouse.getM_Warehouse_ID()))
+				.orgId(OrgId.ofRepoId(mfgWarehouse.getAD_Org_ID()))
+				.plantId(ResourceId.ofRepoIdOrNull(mfgWarehouse.getPP_Plant_ID()))
+				.isManufactured(true)
+				.workflowId(PPRoutingId.ofRepoId(workflow.getAD_Workflow_ID()))
+				.build());
+
+		return product;
+	}
+
 	public void createManufacturingProductPlanning(final I_M_Product product, final I_M_Warehouse warehouse, final I_AD_User responsibleUser)
 	{
 		final I_AD_Workflow workflow = createManufacturingRouting(responsibleUser);
@@ -152,9 +176,17 @@ public class OrderCheckupTestHelper
 
 	private I_AD_Workflow createManufacturingRouting(final I_AD_User responsibleUser)
 	{
+		return createManufacturingRouting((Integer)(responsibleUser == null ? null : responsibleUser.getAD_User_ID()));
+	}
+
+	private I_AD_Workflow createManufacturingRouting(final Integer userInChargeId)
+	{
 		final I_AD_Workflow workflow = newInstance(I_AD_Workflow.class);
 		workflow.setValue("wf");
-		workflow.setAD_User_InCharge_ID(responsibleUser.getAD_User_ID());
+		if (userInChargeId != null)
+		{
+			workflow.setAD_User_InCharge_ID(userInChargeId);
+		}
 		workflow.setDurationUnit(X_AD_Workflow.DURATIONUNIT_Hour);
 		save(workflow);
 

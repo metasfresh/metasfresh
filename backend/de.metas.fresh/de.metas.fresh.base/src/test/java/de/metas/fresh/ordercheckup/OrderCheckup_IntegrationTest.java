@@ -23,12 +23,18 @@ package de.metas.fresh.ordercheckup;
  */
 
 
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-
-import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test case:
@@ -86,6 +92,35 @@ public class OrderCheckup_IntegrationTest
 		masterdata.plant01.assertPlantReportOrderLines(ol1, ol2, ol3, ol4, ol5, ol6, ol7, ol8);
 		masterdata.plant02.warehouse01.assertWarehouseReportOrderLines(ol5, ol6);
 		masterdata.plant02.warehouse02.assertWarehouseReportOrderLines(ol7, ol8);
+	}
+
+	/**
+	 * AC-P1: a Warehouse (Produktion) report whose manufacturing routing has no Betreuer
+	 * (AD_User_InCharge_ID) must fall back to the plant resource's user, so its printing-queue item
+	 * stays active instead of being cancelled for lack of a print user.
+	 */
+	@Test
+	public void warehouseReport_fallsBackToPlantUser_whenRoutingHasNoBetreuer()
+	{
+		final I_AD_User plantUser = helper.createAD_User("plantUser");
+		final I_S_Resource plant = helper.createPlant("plantWithUser", plantUser);
+		final I_M_Warehouse warehouse = helper.createWarehouse("whNoBetreuer", plant);
+		final I_M_Product product = helper.createProductWithoutRoutingUserInCharge("prodNoBetreuer", warehouse);
+
+		final I_C_Order order = helper.createSalesOrder(warehouse);
+		helper.createOrderLine(order, product);
+
+		Services.get(IOrderCheckupBL.class).generateReportsIfEligible(order);
+
+		final I_C_Order_MFGWarehouse_Report whReport =
+				helper.retrieveReport(OrderCheckupDocumentType.Warehouse, warehouse, plant);
+		assertThat(whReport).as("Warehouse report exists").isNotNull();
+		assertThat(whReport.getAD_User_Responsible_ID())
+				.as("Warehouse report should fall back to the plant user when the routing has no Betreuer")
+				.isEqualTo(plantUser.getAD_User_ID());
+
+		// and it must actually stay active in the printing queue (recipient = the fallback user)
+		helper.enqueueToPrinting(order);
 	}
 
 }
