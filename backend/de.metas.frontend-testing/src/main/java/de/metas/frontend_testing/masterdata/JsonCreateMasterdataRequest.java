@@ -66,8 +66,9 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonLoginUserRequest> login;
 
 	/**
-	 * Purpose-built roles (each with its bound user), applied right after {@code login} so later-created
-	 * masterdata can be viewed through them. See {@link de.metas.frontend_testing.masterdata.role.CreateRoleCommand}.
+	 * Purpose-built roles, applied BEFORE {@code login} so a login user can reference one by identifier
+	 * ({@link de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest#getRole()}); later-created
+	 * masterdata may then be reachable through that role. See {@link de.metas.frontend_testing.masterdata.role.CreateRoleCommand}.
 	 */
 	@Nullable Map<String, JsonCreateRoleRequest> roles;
 

@@ -122,10 +122,10 @@ public class CreateMasterdataCommand
 		applyAdProcessFlags();
 
 		// IMPORTANT: the order is very important
-		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
-		// Roles come right after the login users: a role brings its own single-role user along, and everything
-		// created below may have to be reachable through that role.
+		// Roles come BEFORE login: a login user may reference a role by identifier (JsonLoginUserRequest.role),
+		// which must already exist in the context. Everything created below may then be reachable through that role.
 		final ImmutableMap<String, JsonCreateRoleResponse> roles = createRoles();
+		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonMailboxResponse> mailboxes = createMailboxes();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		configureOrgSeller();
@@ -241,8 +241,6 @@ public class CreateMasterdataCommand
 	private JsonCreateRoleResponse createRole(final String identifier, final JsonCreateRoleRequest request)
 	{
 		return CreateRoleCommand.builder()
-				.userAuthTokenService(services.userAuthTokenService)
-				.workplaceService(services.workplaceService)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

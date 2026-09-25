@@ -145,18 +145,17 @@ testCases.forEach(({ language, label }) => {
             // only to that role (so login skips role selection).
             const masterdata = await Backend.createMasterdata({
                 request: {
-                    login: { user: { language } },
+                    login: { user: { language, role: 'restricted' } },
                     roles: {
                         restricted: {
                             name: `CreateRestricted_${language}`,
                             tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }],
-                            user: { language },
                         },
                     },
                 },
             });
             allure.attachment('Masterdata', JSON.stringify(masterdata, null, 2), 'application/json');
-            const roleUser = masterdata.roles.restricted.user;
+            const roleUser = masterdata.login.user;
             expect(roleUser, 'masterdata must return the restricted role user').toBeTruthy();
             console.log(`[${language}] restricted role user: ${roleUser.username}, role=${masterdata.roles.restricted.name}`);
 
@@ -234,17 +233,16 @@ testCases.forEach(({ language, label }) => {
 
             const masterdata = await Backend.createMasterdata({
                 request: {
-                    login: { user: { language } },
+                    login: { user: { language, role: 'restricted' } },
                     roles: {
                         restricted: {
                             name: `QICreateRestricted_${language}`,
                             tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }],
-                            user: { language },
                         },
                     },
                 },
             });
-            const roleUser = masterdata.roles.restricted.user;
+            const roleUser = masterdata.login.user;
             const roleName = masterdata.roles.restricted.name;
             expect(roleUser, 'masterdata must return the restricted role user').toBeTruthy();
 
@@ -279,11 +277,11 @@ testCases.forEach(({ language, label }) => {
 
             const masterdata = await Backend.createMasterdata({
                 request: {
-                    login: { user: { language } },
-                    roles: { open: { name: `QIUnrestricted_${language}`, user: { language } } },
+                    login: { user: { language, role: 'open' } },
+                    roles: { open: { name: `QIUnrestricted_${language}` } },
                 },
             });
-            const roleUser = masterdata.roles.open.user;
+            const roleUser = masterdata.login.user;
             expect(roleUser, 'masterdata must return the unrestricted role user').toBeTruthy();
 
             await LoginPage.goto();
@@ -323,11 +321,11 @@ testCases.forEach(({ language, label }) => {
 
             const masterdata = await Backend.createMasterdata({
                 request: {
-                    login: { user: { language } },
-                    roles: { open: { name: `Unrestricted_${language}`, user: { language } } },
+                    login: { user: { language, role: 'open' } },
+                    roles: { open: { name: `Unrestricted_${language}` } },
                 },
             });
-            const roleUser = masterdata.roles.open.user;
+            const roleUser = masterdata.login.user;
             expect(roleUser, 'masterdata must return the unrestricted role user').toBeTruthy();
 
             await LoginPage.goto();
@@ -361,18 +359,17 @@ testCases.forEach(({ language, label }) => {
 
             const masterdata = await Backend.createMasterdata({
                 request: {
-                    login: { user: { language } },
+                    login: { user: { language, role: 'restricted' } },
                     bpartners: { bp1: {} },
                     roles: {
                         restricted: {
                             name: `CreateRestrictedRW_${language}`,
                             tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }],
-                            user: { language },
                         },
                     },
                 },
             });
-            const roleUser = masterdata.roles.restricted.user;
+            const roleUser = masterdata.login.user;
             expect(roleUser, 'masterdata must return the restricted role user').toBeTruthy();
             const recordId = String(masterdata.bpartners.bp1.id);
 
@@ -415,18 +412,17 @@ testCases.forEach(({ language, label }) => {
 
             const masterdata = await Backend.createMasterdata({
                 request: {
-                    login: { user: { language } },
+                    login: { user: { language, role: 'readonly' } },
                     bpartners: { bp1: {} },
                     roles: {
                         readonly: {
                             name: `ReadOnlyBP_${language}`,
                             tableAccess: [{ tableName: 'C_BPartner', readOnly: true }],
-                            user: { language },
                         },
                     },
                 },
             });
-            const roleUser = masterdata.roles.readonly.user;
+            const roleUser = masterdata.login.user;
             expect(roleUser, 'masterdata must return the read-only role user').toBeTruthy();
             const recordId = String(masterdata.bpartners.bp1.id);
 
@@ -474,18 +470,17 @@ testCases.forEach(({ language, label }) => {
 
             const masterdata = await Backend.createMasterdata({
                 request: {
-                    login: { user: { language } },
+                    login: { user: { language, role: 'restricted' } },
                     bpartners: { bp1: {} },
                     roles: {
                         restricted: {
                             name: `AddrRestricted_${language}`,
                             tableAccess: [{ tableName: 'C_BPartner_Location', canCreateNewRecords: false }],
-                            user: { language },
                         },
                     },
                 },
             });
-            const roleUser = masterdata.roles.restricted.user;
+            const roleUser = masterdata.login.user;
             expect(roleUser, 'masterdata must return the restricted role user').toBeTruthy();
             const recordId = String(masterdata.bpartners.bp1.id);
 
@@ -530,12 +525,12 @@ testCases.forEach(({ language, label }) => {
                 allure.tag(language);
                 test.setTimeout(120000);
 
-                const role = { name: `TabBlock_${key}_${language}`, user: { language } };
+                const role = { name: `TabBlock_${key}_${language}` };
                 if (tableAccess) role.tableAccess = tableAccess;
                 const masterdata = await Backend.createMasterdata({
-                    request: { login: { user: { language } }, bpartners: { bp1: {} }, roles: { r: role } },
+                    request: { login: { user: { language, role: 'r' } }, bpartners: { bp1: {} }, roles: { r: role } },
                 });
-                const roleUser = masterdata.roles.r.user;
+                const roleUser = masterdata.login.user;
                 expect(roleUser, 'masterdata must return the role user').toBeTruthy();
                 const recordId = String(masterdata.bpartners.bp1.id);
 
@@ -572,7 +567,7 @@ testCases.forEach(({ language, label }) => {
             key: 'forbid-propagates', caseLabel: 'forbid on an included role propagates', expectRestricted: true,
             roles: {
                 base: { name: `UnionBase_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] },
-                chain: { name: `UnionChain_${language}`, includedRoles: ['base'], user: { language } },
+                chain: { name: `UnionChain_${language}`, includedRoles: ['base'] },
             },
         },
         {
@@ -581,13 +576,13 @@ testCases.forEach(({ language, label }) => {
                 base: { name: `UnionFbase_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] },
                 // Every flag left at its default => IsCanCreateNewRecords='Y': the exact row support.ad_role_ensure_table_access writes.
                 granter: { name: `UnionGrant_${language}`, tableAccess: [{ tableName: 'C_BPartner' }] },
-                chain: { name: `UnionAllow_${language}`, includedRoles: ['base', 'granter'], user: { language } },
+                chain: { name: `UnionAllow_${language}`, includedRoles: ['base', 'granter'] },
             },
         },
         {
             key: 'no-row-anywhere', caseLabel: 'no row anywhere in the chain is unaffected', expectRestricted: false,
             roles: {
-                chain: { name: `UnionNorow_${language}`, user: { language } },
+                chain: { name: `UnionNorow_${language}` },
             },
         },
     ];
@@ -613,8 +608,8 @@ testCases.forEach(({ language, label }) => {
                     } catch (e) { /* ignore */ }
                 });
 
-                const masterdata = await Backend.createMasterdata({ request: { login: { user: { language } }, roles } });
-                const roleUser = masterdata.roles.chain.user;
+                const masterdata = await Backend.createMasterdata({ request: { login: { user: { language, role: 'chain' } }, roles } });
+                const roleUser = masterdata.login.user;
                 expect(roleUser, 'masterdata must return the chain role user').toBeTruthy();
 
                 await LoginPage.goto();
@@ -665,12 +660,12 @@ testCases.forEach(({ language, label }) => {
                 test.setTimeout(120000);
 
                 const role = restricted
-                    ? { name: `CloneRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }], user: { language } }
-                    : { name: `CloneOpen_${language}`, user: { language } };
+                    ? { name: `CloneRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] }
+                    : { name: `CloneOpen_${language}` };
                 const masterdata = await Backend.createMasterdata({
-                    request: { login: { user: { language } }, bpartners: { bp1: {} }, roles: { r: role } },
+                    request: { login: { user: { language, role: 'r' } }, bpartners: { bp1: {} }, roles: { r: role } },
                 });
-                const roleUser = masterdata.roles.r.user;
+                const roleUser = masterdata.login.user;
                 expect(roleUser, 'masterdata must return the role user').toBeTruthy();
                 const roleName = masterdata.roles.r.name;
                 const recordId = String(masterdata.bpartners.bp1.id);
@@ -740,14 +735,17 @@ testCases.forEach(({ language, label }) => {
 
             const md = await Backend.createMasterdata({
                 request: {
-                    login: { user: { language } },
+                    login: {
+                        openUser: { language, role: 'open' },
+                        restrictedUser: { language, role: 'restricted' },
+                    },
                     roles: {
-                        open: { name: `MenuOpen_${language}`, user: { language } },
-                        restricted: { name: `MenuRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }], user: { language } },
+                        open: { name: `MenuOpen_${language}` },
+                        restricted: { name: `MenuRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] },
                     },
                 },
             });
-            expect(md.roles.open.user && md.roles.restricted.user, 'masterdata must return both role users').toBeTruthy();
+            expect(md.login.openUser && md.login.restrictedUser, 'masterdata must return both role users').toBeTruthy();
 
             // Collect the set of newRecord-node window ids in a role's full menu tree. Clears cookies first so
             // the second login starts from a clean session (otherwise the login form never appears).
@@ -770,8 +768,8 @@ testCases.forEach(({ language, label }) => {
                 return ids;
             };
 
-            const openIds = await newRecordWindowIds(md.roles.open.user);
-            const restrictedIds = await newRecordWindowIds(md.roles.restricted.user);
+            const openIds = await newRecordWindowIds(md.login.openUser);
+            const restrictedIds = await newRecordWindowIds(md.login.restrictedUser);
             console.log(`[${language}] newRecord window ids: open=${JSON.stringify([...openIds])} restricted=${JSON.stringify([...restrictedIds])}`);
 
             const removed = [...openIds].filter((id) => !restrictedIds.has(id));
@@ -810,13 +808,13 @@ testCases.forEach(({ language, label }) => {
                 test.setTimeout(120000);
 
                 const role = restricted
-                    ? { name: `QuickRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }], user: { language } }
-                    : { name: `QuickOpen_${language}`, user: { language } };
-                const md = await Backend.createMasterdata({ request: { login: { user: { language } }, roles: { r: role } } });
-                expect(md.roles.r.user, 'masterdata must return the role user').toBeTruthy();
+                    ? { name: `QuickRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] }
+                    : { name: `QuickOpen_${language}` };
+                const md = await Backend.createMasterdata({ request: { login: { user: { language, role: 'r' } }, roles: { r: role } } });
+                expect(md.login.user, 'masterdata must return the role user').toBeTruthy();
 
                 await LoginPage.goto();
-                await LoginPage.login(md.roles.r.user);
+                await LoginPage.login(md.login.user);
                 await DashboardPage.expectVisible();
 
                 // Reach a C_BPartner lookup on a new Invoice, then type a no-match string.
@@ -874,11 +872,14 @@ testCases.forEach(({ language, label }) => {
 
             const md = await Backend.createMasterdata({
                 request: {
-                    login: { user: { language } },
-                    roles: { restricted: { name: `LiftRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }], user: { language } } },
+                    login: {
+                        user: { language },
+                        restrictedUser: { language, role: 'restricted' },
+                    },
+                    roles: { restricted: { name: `LiftRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] } },
                 },
             });
-            const restrictedUser = md.roles.restricted.user;
+            const restrictedUser = md.login.restrictedUser;
             const roleId = md.roles.restricted.roleId;
             const adminUser = md.login.user; // WebUI role — has write access to the Roles window (111)
             expect(restrictedUser && roleId && adminUser, 'masterdata must return the restricted user, role id, and admin user').toBeTruthy();
