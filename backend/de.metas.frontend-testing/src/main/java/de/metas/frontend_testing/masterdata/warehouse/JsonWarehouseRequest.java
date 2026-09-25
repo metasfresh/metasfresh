@@ -35,6 +35,18 @@ public class JsonWarehouseRequest
 	boolean autoDistributionOrder;
 
 	/**
+	 * Marks this warehouse as THE quality-return warehouse ({@code M_Warehouse.IsQualityReturnWarehouse}) —
+	 * where a POS/customer return receives goods (see {@code ReturnedGoodsWarehouseType.QUALITY_ISSUE},
+	 * resolved DB-wide, not per-org, by {@code IHUWarehouseDAO#retrieveFirstQualityReturnWarehouseId()}).
+	 * Since that resolution is DB-wide and takes the first match, this is a find-or-create: if an active
+	 * quality-return warehouse already exists (from an earlier run against the same shared DB), THAT one is
+	 * reused under this request's identifier instead of creating a second one — a second one would leave the
+	 * production code still resolving the original, while this request's identifier pointed at a warehouse the
+	 * return never actually uses.
+	 */
+	boolean isQualityReturnWarehouse;
+
+	/**
 	 * Makes this warehouse the target of its own {@code DD_NetworkDistribution}, carrying a single line whose source is
 	 * {@link Replenishment#getFromWarehouse()} — this is how the picking-replenishment service resolves the warehouse to
 	 * pick from. Applied after the {@code shippers} and {@code warehouses} sections, both of which it references.

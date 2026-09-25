@@ -3,6 +3,7 @@ package de.metas.frontend_testing.masterdata.warehouse;
 import com.google.common.collect.ImmutableMap;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -21,6 +22,7 @@ import org.compiere.model.I_M_Locator;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -28,6 +30,7 @@ public class WarehouseCommand
 {
 	// services
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 
 	// params
 	@NonNull private final MasterdataContext context;
@@ -86,12 +89,26 @@ public class WarehouseCommand
 
 	private void createWarehouse()
 	{
+		if (request.isQualityReturnWarehouse())
+		{
+			final Optional<WarehouseId> existingQualityWarehouseId = huWarehouseDAO.retrieveQualityReturnWarehouseIdIfExists();
+			if (existingQualityWarehouseId.isPresent())
+			{
+				// Reuse the ONE warehouse the production code will actually resolve (DB-wide, first match) —
+				// see the field's Javadoc on JsonWarehouseRequest#isQualityReturnWarehouse.
+				this.warehouseRecord = InterfaceWrapperHelper.load(existingQualityWarehouseId.get(), I_M_Warehouse.class);
+				context.putIdentifier(identifier, existingQualityWarehouseId.get());
+				return;
+			}
+		}
+
 		this.warehouseRecord = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
 		warehouseRecord.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
 		warehouseRecord.setValue(warehouseCode);
 		warehouseRecord.setName(warehouseCode);
 		warehouseRecord.setSeparator("*");
 		warehouseRecord.setIsInTransit(request.isInTransit());
+		warehouseRecord.setIsQualityReturnWarehouse(request.isQualityReturnWarehouse());
 		warehouseRecord.setC_BPartner_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_LOCATION_ID.getBpartnerId().getRepoId());
 		warehouseRecord.setC_BPartner_Location_ID(MasterdataContext.METASFRESH_ORG_BPARTNER_LOCATION_ID.getRepoId());
 

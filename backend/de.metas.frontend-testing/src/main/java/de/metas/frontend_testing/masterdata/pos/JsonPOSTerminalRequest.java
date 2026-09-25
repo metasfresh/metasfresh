@@ -72,5 +72,14 @@ public class JsonPOSTerminalRequest
 		@NonNull BigDecimal price;
 		@Nullable X12DE355 uom;
 		@Nullable InvoicableQtyBasedOn invoicableQtyBasedOn;
+
+		/**
+		 * Overrides the tax rate this product is priced under on the terminal (percentage, e.g. {@code 7} for
+		 * 7&nbsp;%). POS order lines need a LINE-level tax (see {@link CreatePOSTerminalCommand}'s own Javadoc on
+		 * {@code getTaxCategoryId}), so every rate used here gets its own dedicated line-level tax category —
+		 * created once per rate and reused across runs, the same find-or-create shape as the default 19&nbsp;%
+		 * category. {@code null} keeps the pre-existing default (19&nbsp;%).
+		 */
+		@Nullable BigDecimal taxRatePercent;
 	}
 }

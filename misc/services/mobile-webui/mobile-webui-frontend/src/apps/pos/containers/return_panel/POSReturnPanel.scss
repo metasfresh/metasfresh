@@ -1,0 +1,93 @@
+.pos-screen {
+  .pos-return-panel {
+    display: flex;
+    flex-flow: row nowrap;
+
+    .current-return {
+      min-width: 500px;
+      background-color: #ffffff;
+      font-size: 1rem;
+
+      flex-grow: 0;
+      margin-right: 1px;
+      display: flex;
+      flex-flow: column nowrap;
+
+      .lines-container {
+        flex-grow: 1;
+
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-gutter: stable;
+
+        .line {
+          padding: 8px;
+          cursor: pointer;
+
+          .main {
+            font-weight: bold;
+
+            display: flex;
+            flex-direction: row;
+
+            .productName {
+              flex-grow: 1;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            .amount {
+              flex-grow: 0;
+              white-space: nowrap;
+            }
+          }
+
+          .description {
+            padding-left: 10px;
+          }
+        }
+      }
+
+      .summary {
+        flex-grow: 0;
+        padding: 8px;
+        display: flex;
+        flex-flow: column;
+        justify-content: flex-end;
+
+        .summary-line {
+          font-weight: bold;
+          text-align: right;
+        }
+
+        .totalAmt {
+          font-size: 2em;
+        }
+      }
+
+      .actions {
+        flex-grow: 0;
+
+        display: flex;
+        flex-flow: row nowrap;
+        background-color: #a0a0a0;
+        border: 1px solid #a0a0a0;
+
+        button {
+          flex-grow: 1;
+          font-size: 1.5rem;
+          border: 0;
+          padding: 10px;
+        }
+
+        button:focus {
+          outline: none;
+        }
+      }
+    }
+
+    .products-container {
+      flex-grow: 1;
+    }
+  }
+}

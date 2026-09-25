@@ -118,23 +118,28 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	@NonNull
 	public WarehouseId retrieveFirstQualityReturnWarehouseId()
 	{
-		final Set<WarehouseId> warehouseIds = retrieveQualityReturnWarehouseIds();
-		return warehouseIds.iterator().next();
-	}
-
-	private Set<WarehouseId> retrieveQualityReturnWarehouseIds()
-	{
-		final Set<WarehouseId> warehouseIds = queryBL.createQueryBuilderOutOfTrx(de.metas.handlingunits.model.I_M_Warehouse.class)
-				.addEqualsFilter(de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.idsAsSet(WarehouseId::ofRepoId);
-
+		final Set<WarehouseId> warehouseIds = retrieveQualityReturnWarehouseIdsOrEmpty();
 		if (warehouseIds.isEmpty())
 		{
 			throw new AdempiereException(MSG_NoQualityWarehouse);
 		}
 
-		return warehouseIds;
+		return warehouseIds.iterator().next();
+	}
+
+	@Override
+	@NonNull
+	public Optional<WarehouseId> retrieveQualityReturnWarehouseIdIfExists()
+	{
+		return retrieveQualityReturnWarehouseIdsOrEmpty().stream().findFirst();
+	}
+
+	private Set<WarehouseId> retrieveQualityReturnWarehouseIdsOrEmpty()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(de.metas.handlingunits.model.I_M_Warehouse.class)
+				.addEqualsFilter(de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.idsAsSet(WarehouseId::ofRepoId);
 	}
 }

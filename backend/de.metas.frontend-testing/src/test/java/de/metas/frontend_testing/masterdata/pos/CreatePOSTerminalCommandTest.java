@@ -329,6 +329,55 @@ public class CreatePOSTerminalCommandTest
 	}
 
 	@Test
+	public void execute_withTaxRatePercentOverride_shouldPriceUnderALineLevelTaxCategoryOfThatExactRate()
+	{
+		// given: two products, each with its own overridden rate — a POS return credit-memo line must carry
+		// EACH product's own tax rate, not one shared rate for the whole terminal.
+		final ProductId product7 = createProduct("P7");
+		final ProductId product19override = createProduct("P19");
+
+		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
+				.priceListCurrency(CurrencyCode.EUR)
+				.isTaxIncluded(false)
+				.products(ImmutableMap.of(
+						"P7", JsonPOSTerminalRequest.ProductPrice.builder()
+								.price(new BigDecimal("15.50"))
+								.taxRatePercent(new BigDecimal("7"))
+								.build(),
+						"P19", JsonPOSTerminalRequest.ProductPrice.builder()
+								.price(new BigDecimal("9.90"))
+								.taxRatePercent(new BigDecimal("19"))
+								.build()))
+				.build();
+
+		// when
+		final JsonPOSTerminalResponse response = commandBuilder()
+				.request(request)
+				.identifier(Identifier.ofString("T_TAXRATE"))
+				.build()
+				.execute();
+
+		// then
+		final I_C_POS posRecord = InterfaceWrapperHelper.load(response.getId(), I_C_POS.class);
+		final I_M_ProductPrice price7 = getProductPrice(posRecord.getM_PriceList_ID(), product7);
+		final I_M_ProductPrice price19 = getProductPrice(posRecord.getM_PriceList_ID(), product19override);
+
+		assertThat(price7.getC_TaxCategory_ID()).isNotEqualTo(price19.getC_TaxCategory_ID());
+		assertThat(getLineLevelTaxRate(price7.getC_TaxCategory_ID())).isEqualByComparingTo("7");
+		assertThat(getLineLevelTaxRate(price19.getC_TaxCategory_ID())).isEqualByComparingTo("19");
+	}
+
+	/** @return the (single, line-level) rate of the given tax category, as created by {@link CreatePOSTerminalCommand}'s line-level tax categories. */
+	private BigDecimal getLineLevelTaxRate(final int taxCategoryId)
+	{
+		final I_C_Tax tax = queryBL.createQueryBuilder(I_C_Tax.class)
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategoryId)
+				.create()
+				.firstOnlyNotNull(I_C_Tax.class);
+		return tax.getRate();
+	}
+
+	@Test
 	public void execute_withCatchWeightProductPrice_shouldPricePerKg()
 	{
 		// given

@@ -50,4 +50,11 @@ public interface IHUWarehouseDAO extends ISingletonService
 
 	@NonNull
 	WarehouseId retrieveFirstQualityReturnWarehouseId();
+
+	/**
+	 * Same lookup as {@link #retrieveFirstQualityReturnWarehouseId()}, but never throws when none is
+	 * configured yet — used by test-masterdata provisioning to find-or-create the quality-return warehouse.
+	 */
+	@NonNull
+	Optional<WarehouseId> retrieveQualityReturnWarehouseIdIfExists();
 }
