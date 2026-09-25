@@ -93,6 +93,15 @@ Feature: Bestellkontrolle document type
       | warehouseRpt                   | BKP         |
       | plantRpt                       | BKB         |
 
+    # The generic configuration (no document base type) is retired: the two specific ones carry its
+    # IsDirectEnqueue / IsDirectProcessQueueItem / IsAutoSendDocument flags and stay active, the generic one
+    # is inactive -- so nothing can silently fall back to it any more.
+    And validate C_Doc_Outbound_Config:
+      | TableName                   | DocBaseType | IsActive | IsDirectEnqueue | IsDirectProcessQueueItem | IsAutoSendDocument |
+      | C_Order_MFGWarehouse_Report | BKP         | true     | true            | false                    | false              |
+      | C_Order_MFGWarehouse_Report | BKB         | true     | true            | false                    | false              |
+      | C_Order_MFGWarehouse_Report |             | false    | true            | false                    | false              |
+
     # Both configurations ship pointing at the same print format by design. Repointing just one of them proves
     # the customer's pending decision (splitting the two reports) is a single field edit, nothing more.
     When update C_Doc_Outbound_Config print format:
