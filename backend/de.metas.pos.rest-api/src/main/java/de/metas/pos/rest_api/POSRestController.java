@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
+import de.metas.money.Money;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderExternalId;
@@ -18,6 +19,9 @@ import de.metas.pos.POSTerminalCloseJournalRequest;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalOpenJournalRequest;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
+import de.metas.pos.rest_api.json.JsonCashWithdrawalCategory;
+import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
+import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
 import de.metas.pos.rest_api.json.JsonChangeOrderStatusRequest;
 import de.metas.pos.rest_api.json.JsonContext;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
@@ -27,8 +31,16 @@ import de.metas.pos.rest_api.json.JsonPOSPaymentRefundRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonPOSTerminalCloseJournalRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminalOpenJournalRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonProduct;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
+import de.metas.pos.returns.POSReturnRequestedLine;
+import de.metas.pos.returns.POSReturnResult;
+import de.metas.pos.returns.POSReturnService;
+import de.metas.pos.withdrawal.POSCashWithdrawalRequest;
+import de.metas.pos.withdrawal.POSCashWithdrawalResult;
+import de.metas.pos.withdrawal.POSCashWithdrawalService;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
@@ -62,6 +74,8 @@ public class POSRestController
 {
 	@NonNull private final POSService posService;
 	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final POSCashWithdrawalService posCashWithdrawalService;
+	@NonNull private final POSReturnService posReturnService;
 
 	private String getADLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
@@ -145,6 +159,53 @@ public class POSRestController
 		final POSCashJournal cashJournal = posService.getCurrentCashJournal(posTerminalId)
 				.orElseThrow(() -> new AdempiereException("No open cash journal found"));
 		return JsonCashJournalSummary.of(cashJournal, newJsonContext());
+	}
+
+	@GetMapping("/cashWithdrawal/categories")
+	public List<JsonCashWithdrawalCategory> getCashWithdrawalCategories(@RequestParam("posTerminalId") @NonNull String posTerminalIdStr)
+	{
+		final POSTerminalId posTerminalId = POSTerminalId.ofString(posTerminalIdStr);
+		return posCashWithdrawalService.getCategories(posTerminalId)
+				.stream()
+				.map(JsonCashWithdrawalCategory::of)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@PostMapping("/cashWithdrawal")
+	public JsonCashWithdrawalResponse withdrawCash(@RequestBody final JsonCashWithdrawalRequest request)
+	{
+		final POSTerminal posTerminal = posService.getPOSTerminalById(request.getPosTerminalId());
+
+		final POSCashWithdrawalResult result = posCashWithdrawalService.withdraw(
+				POSCashWithdrawalRequest.builder()
+						.posTerminalId(request.getPosTerminalId())
+						.cashierId(getLoggedUserId())
+						.chargeId(request.getChargeId())
+						.amount(Money.of(request.getAmount(), posTerminal.getCurrencyId()))
+						.build()
+		);
+
+		return JsonCashWithdrawalResponse.of(result, newJsonContext());
+	}
+
+	@PostMapping("/returns")
+	public JsonPOSReturnResponse createReturn(@RequestBody final JsonPOSReturnRequest request)
+	{
+		final List<POSReturnRequestedLine> requestedLines = request.getLines()
+				.stream()
+				.map(line -> POSReturnRequestedLine.builder()
+						.productId(line.getProductId())
+						.qty(line.getQty())
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		final POSReturnResult result = posReturnService.createReturnFromTillPrices(
+				request.getPosTerminalId(),
+				request.getExternalId(),
+				getLoggedUserId(),
+				requestedLines);
+
+		return JsonPOSReturnResponse.of(result, newJsonContext());
 	}
 
 	@GetMapping("/products")

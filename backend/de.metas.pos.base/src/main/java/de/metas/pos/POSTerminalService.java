@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 @Service
@@ -51,6 +52,7 @@ public class POSTerminalService
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final CurrencyRepository currencyRepository;
+	@NonNull private final POSTerminalRepository posTerminalRepository;
 
 	private final CCache<POSTerminalId, POSTerminal> cache = CCache.<POSTerminalId, POSTerminal>builder()
 			.tableName(I_C_POS.Table_Name)
@@ -62,6 +64,46 @@ public class POSTerminalService
 	public POSTerminal getPOSTerminalById(final POSTerminalId posTerminalId)
 	{
 		return cache.getOrLoad(posTerminalId, this::retrievePOSTerminalById);
+	}
+
+	/**
+	 * Locks the terminal's {@code C_POS} row for the rest of the caller's transaction, serializing two concurrent
+	 * callers against the SAME terminal (e.g. two in-flight requests carrying the same idempotency key) — the
+	 * second blocks here until the first commits, by which point its result already exists for the second to find.
+	 */
+	public void lockForUpdate(@NonNull final POSTerminalId posTerminalId)
+	{
+		posTerminalRepository.lockForUpdate(posTerminalId);
+	}
+
+	/**
+	 * Runs {@code action} while holding a Postgres advisory lock keyed on the given POS terminal, for the WHOLE
+	 * duration of {@code action} — even across separate top-level transactions {@code action} opens internally,
+	 * unlike {@link #lockForUpdate} which only lasts until the caller's OWN transaction commits. Used by
+	 * {@code POSReturnService#createReturn} to serialize its three separate top-level transactions (goods
+	 * receipt/pricing, credit-memo generation, cash settlement) end to end against the same terminal, so two
+	 * concurrent callers (e.g. two in-flight retries) can never interleave into each other's phases.
+	 * <p>
+	 * BOUNDED: polls to acquire the lock for at most {@code timeoutMillis} before giving up — never blocks
+	 * indefinitely, so a single stuck caller (e.g. {@code action} hanging on a slow async wait) cannot freeze every
+	 * OTHER caller for the same terminal. On giving up, throws the {@link RuntimeException} {@code onTimeout}
+	 * supplies — the caller decides what that means (e.g. a user-facing rejection message); this method's own
+	 * job stops at "did we get the lock in time, yes or no". On success, returns whatever {@code action} itself
+	 * returns, VERBATIM — including {@code null} — with no wrapping in between, so a timeout can never be
+	 * confused with {@code action} legitimately returning {@code null} (the ambiguity an {@code Optional<T>}
+	 * return type would have).
+	 *
+	 * @throws RuntimeException the one {@code onTimeout} supplies, if the lock could not be acquired within
+	 * {@code timeoutMillis}
+	 */
+	@NonNull
+	public <T> T runWithCrossTransactionLock(
+			@NonNull final POSTerminalId posTerminalId,
+			final long timeoutMillis,
+			@NonNull final Supplier<T> action,
+			@NonNull final Supplier<? extends RuntimeException> onTimeout)
+	{
+		return posTerminalRepository.runWithCrossTransactionLock(posTerminalId, timeoutMillis, action, onTimeout);
 	}
 
 	public Collection<POSTerminal> getPOSTerminals()

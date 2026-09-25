@@ -1,7 +1,9 @@
 {
   "header": {
     "closeCashJournal": "Close register",
-    "orders": "Orders"
+    "orders": "Orders",
+    "cashWithdrawal": "Withdrawal",
+    "return": "Return"
   },
   "openCashJournal": {
     "title": "Open register",
@@ -30,6 +32,29 @@
     "actions": {
       "close": "Close",
       "cancel": "Cancel"
+    }
+  },
+  "cashWithdrawal": {
+    "title": "Cash withdrawal",
+    "category": "Category",
+    "amount": "Amount",
+    "actions": {
+      "ok": "Confirm",
+      "cancel": "Cancel"
+    },
+    "slip": {
+      "title": "Cash withdrawal",
+      "terminal": "Register",
+      "date": "Date",
+      "cashier": "Cashier",
+      "category": "Category",
+      "amount": "Amount",
+      "moneyReceived": "Money received",
+      "signature": "Recipient's signature",
+      "actions": {
+        "print": "Print",
+        "close": "Close"
+      }
     }
   },
   "selectTerminal": {
@@ -110,6 +135,33 @@
     "actions": {
       "close": "Close",
       "print": "Print receipt"
+    }
+  },
+  "return": {
+    "line": {
+      "at": "at"
+    },
+    "totalAmt": "Refund",
+    "actions": {
+      "payout": "Pay out",
+      "cancel": "Cancel"
+    },
+    "qtyModal": {
+      "title": "Quantity",
+      "actions": {
+        "ok": "OK",
+        "cancel": "Cancel"
+      }
+    },
+    "confirmModal": {
+      "title": "Confirm return",
+      "totalAmt": "Refund",
+      "payCash": "Pay cash",
+      "success": "Credit memo %(docNo)s · %(amount)s paid out",
+      "actions": {
+        "cancel": "Cancel",
+        "close": "Close"
+      }
     }
   }
 }

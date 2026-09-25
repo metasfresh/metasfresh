@@ -2,6 +2,13 @@ package de.metas.pos;
 
 import de.metas.money.Money;
 import de.metas.pos.remote.RemotePOSOrder;
+import de.metas.pos.returns.POSReturnRequest;
+import de.metas.pos.returns.POSReturnResult;
+import de.metas.pos.returns.POSReturnService;
+import de.metas.pos.withdrawal.POSCashWithdrawalCategory;
+import de.metas.pos.withdrawal.POSCashWithdrawalRequest;
+import de.metas.pos.withdrawal.POSCashWithdrawalResult;
+import de.metas.pos.withdrawal.POSCashWithdrawalService;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +31,8 @@ public class POSService
 	@NonNull private final POSCashJournalService posJournalService;
 	@NonNull private final POSProductsService productsService;
 	@NonNull private final POSOrdersService ordersService;
+	@NonNull private final POSCashWithdrawalService cashWithdrawalService;
+	@NonNull private final POSReturnService returnService;
 
 	@NonNull
 	public POSTerminal getPOSTerminalById(final POSTerminalId posTerminalId) {return posTerminalService.getPOSTerminalById(posTerminalId);}
@@ -77,6 +86,16 @@ public class POSService
 		return cashJournalId != null
 				? Optional.of(posJournalService.getById(cashJournalId))
 				: Optional.empty();
+	}
+
+	public List<POSCashWithdrawalCategory> getCashWithdrawalCategories(@NonNull final POSTerminalId posTerminalId)
+	{
+		return cashWithdrawalService.getCategories(posTerminalId);
+	}
+
+	public POSCashWithdrawalResult withdrawCash(@NonNull final POSCashWithdrawalRequest request)
+	{
+		return cashWithdrawalService.withdraw(request);
 	}
 
 	public POSProductsSearchResult getProducts(
@@ -133,6 +152,11 @@ public class POSService
 	public Optional<Resource> getReceiptPdf(@NonNull final POSOrderExternalId externalId)
 	{
 		return ordersService.getReceiptPdf(externalId);
+	}
+
+	public POSReturnResult createReturn(@NonNull final POSReturnRequest request)
+	{
+		return returnService.createReturn(request);
 	}
 }
 

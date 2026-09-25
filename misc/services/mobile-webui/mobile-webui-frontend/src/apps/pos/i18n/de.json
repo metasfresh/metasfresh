@@ -1,7 +1,9 @@
 {
   "header": {
     "closeCashJournal": "Kasse schließen",
-    "orders": "Aufträge"
+    "orders": "Aufträge",
+    "cashWithdrawal": "Entnahme",
+    "return": "Rücknahme"
   },
   "openCashJournal": {
     "title": "Kasse öffnen",
@@ -30,6 +32,29 @@
     "actions": {
       "close": "Schließen",
       "cancel": "Abbrechen"
+    }
+  },
+  "cashWithdrawal": {
+    "title": "Entnahme",
+    "category": "Kategorie",
+    "amount": "Betrag",
+    "actions": {
+      "ok": "Bestätigen",
+      "cancel": "Abbrechen"
+    },
+    "slip": {
+      "title": "Kassenentnahme",
+      "terminal": "Kasse",
+      "date": "Datum",
+      "cashier": "Kassierer",
+      "category": "Kategorie",
+      "amount": "Betrag",
+      "moneyReceived": "Geld erhalten",
+      "signature": "Unterschrift Empfänger",
+      "actions": {
+        "print": "Drucken",
+        "close": "Schließen"
+      }
     }
   },
   "selectTerminal": {
@@ -111,6 +136,33 @@
     "actions": {
       "close": "Schließen",
       "print": "Kassenbon drucken"
+    }
+  },
+  "return": {
+    "line": {
+      "at": "à"
+    },
+    "totalAmt": "Rückerstattung",
+    "actions": {
+      "payout": "Auszahlen",
+      "cancel": "Abbrechen"
+    },
+    "qtyModal": {
+      "title": "Menge",
+      "actions": {
+        "ok": "OK",
+        "cancel": "Abbrechen"
+      }
+    },
+    "confirmModal": {
+      "title": "Rücknahme bestätigen",
+      "totalAmt": "Rückerstattung",
+      "payCash": "Bar auszahlen",
+      "success": "Gutschrift %(docNo)s · %(amount)s ausgezahlt",
+      "actions": {
+        "cancel": "Abbrechen",
+        "close": "Schließen"
+      }
     }
   }
 }
