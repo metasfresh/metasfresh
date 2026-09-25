@@ -208,7 +208,7 @@ public interface IUserRolePermissions
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, Access access);
 
 	/** Whether the role has {@code access} to the table. */
-	boolean isTableAccess(@NonNull AdTableId adTableId, Access access);
+	boolean isTableAccess(@NonNull AdTableId adTableId, @NonNull Access access);
 
 	boolean isCanExport(int AD_Table_ID);
 

@@ -197,16 +197,6 @@ public class UserAuthTokenService
 		return userAuthTokenRepo.getOrCreateNew(request);
 	}
 
-	/**
-	 * Deletes every auth token of the given user. A token carries the role it was issued for, and the
-	 * authentication reads that role off the token instead of off the user's current {@code AD_User_Roles},
-	 * so a token left behind keeps authenticating as a role the user no longer has.
-	 */
-	public void deleteTokensByUserId(@NonNull final UserId userId)
-	{
-		userAuthTokenRepo.deleteUserAuthTokenByUserId(userId);
-	}
-
 	private UserInfo getUserInfo(@NonNull final UserId userId)
 	{
 		return userInfoById.getOrLoad(userId, this::retrieveUserInfo);

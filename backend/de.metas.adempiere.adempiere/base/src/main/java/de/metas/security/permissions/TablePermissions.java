@@ -29,7 +29,7 @@ public final class TablePermissions extends AbstractPermissions<TablePermission>
 		return TablePermission.NONE;
 	}
 
-	public final boolean hasAccess(@NonNull final AdTableId adTableId, final Access access)
+	public final boolean hasAccess(@NonNull final AdTableId adTableId, @NonNull final Access access)
 	{
 		// TableResource is the int-keyed resource model (ANY_TABLE is the default); unwrap once here at that boundary.
 		final TableResource resource = TableResource.ofAD_Table_ID(adTableId.getRepoId());
