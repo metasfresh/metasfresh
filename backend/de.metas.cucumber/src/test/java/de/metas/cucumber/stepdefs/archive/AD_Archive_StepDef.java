@@ -547,8 +547,12 @@ public class AD_Archive_StepDef
 
 	/**
 	 * Asserts that the archived PDF prints a Code39 barcode which, when scanned, reads back
-	 * {@code <AD_Table_ID>-<Record_ID>} of the record named by {@code referencedRecordIdentifier} -- the form
-	 * the scanned-file import parses to decide which record a sheet belongs to.
+	 * {@code <AD_Table_ID>-<Record_ID>} of the record named by {@code referencedRecordIdentifier}.
+	 * <p>
+	 * That form is what makes a scanned sheet routable: the scanner names the scan file after the code it
+	 * read, and the import then resolves the record from that file name. No parser for it lives in this
+	 * repository -- the consuming transform is deployed alongside the customer's scanning setup -- so this
+	 * step pins the PRODUCING half of that contract only.
 	 * <p>
 	 * TWO identifiers on purpose. The document is archived against one record and the barcode points at
 	 * another: a production order-checkup sheet hangs off the checkup-report row but prints the ORDER's
@@ -565,19 +569,22 @@ public class AD_Archive_StepDef
 	 * with 0 image XObjects and an empty extracted-text layer, while the rasterise-and-decode path below
 	 * returns the code.
 	 * <p>
-	 * On {@value #BARCODE_SCAN_DPI} DPI: measured for a 100x30 report element, a 14-character code (the
-	 * length a six-digit table id and a seven-digit record id produce) decodes at 300, 400 and 600 DPI but
-	 * NOT at 200 -- so 200 is already the failing step and the margin here is upwards only. 300 holds to
-	 * about a 20-character code, well past anything an {@code AD_Table_ID}/{@code Record_ID} pair reaches.
-	 * Raising it is not free: an A4 page at 600 DPI is a ~35 MPixel greyscale raster.
+	 * On {@value #BARCODE_SCAN_DPI} DPI: the step is generic over {@code AD_Table_ID}, so the resolution is
+	 * picked for the worst case rather than for any one call site. Measured for a 100x30 report element:
+	 * a 14-character code (six-digit table id, seven-digit record id) decodes at 300, 400 and 600 but NOT
+	 * at 200, while 300 still holds at about 20 characters -- past anything a table-id/record-id pair
+	 * reaches. A short code has more room than that: a three-digit table id with a seven-digit record id
+	 * (11 characters) decodes at 200 as well, so a call site asserting one of those is not near the edge.
+	 * Raising the DPI is not free: an A4 page at 600 DPI is a ~35 MPixel greyscale raster.
 	 * <p>
 	 * "Exactly one" is bounded, and the bound is worth knowing before you rely on it.
 	 * {@link GenericMultipleBarcodeReader} is used rather than a plain {@code decode} (which returns the
 	 * first barcode it finds and would stay green on a second one), but it dedups its results BY DECODED
-	 * TEXT, so two barcodes carrying the same content on the SAME page collapse into one result. Across
-	 * pages they do not: each page is decoded separately and the results concatenated. So this step catches
-	 * a second barcode with different content anywhere, and a duplicate of the same content on another page
-	 * -- but not a duplicate of the same content side by side on one page.
+	 * TEXT, so two barcodes carrying the same content anywhere on the SAME page collapse into one result --
+	 * position is irrelevant, side by side and stacked both collapse. Across pages they do not: each page is
+	 * decoded separately and the results concatenated. So this step catches a second barcode with different
+	 * content anywhere, and a duplicate of the same content on another page -- but not a duplicate of the
+	 * same content anywhere on one page.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
@@ -635,8 +642,9 @@ public class AD_Archive_StepDef
 
 		final EnumMap<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
 		// Restricted to CODE_39 for SPEED, not correctness: measured, an unrestricted read returns the same
-		// single result, but takes ~1120ms per barcode-bearing page against ~335ms restricted, because zxing
-		// tries every 1D symbology it knows. Note the trade this makes -- if the report ever switches
+		// single result, but takes roughly 2-3x as long per barcode-bearing page (~310ms vs ~850ms on a
+		// minimal page here), because zxing tries every 1D symbology it knows. Note the trade this makes --
+		// if the report ever switches
 		// symbology, a CODE_39-only reader finds nothing and the assertion still fails (correctly), but it
 		// reports "expected [...] but was []" rather than naming the code it actually found.
 		hints.put(DecodeHintType.POSSIBLE_FORMATS, Arrays.asList(BarcodeFormat.CODE_39));
