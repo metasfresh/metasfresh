@@ -148,6 +148,30 @@
             <version>2.0.27</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <!--
+                Used by AD_Archive_StepDef to DECODE a barcode printed in an archived document, by
+                rasterising the PDF page and reading the code back out of the pixels. That is the only
+                way to assert a Barcode4J barcode's content: JasperReports renders it as SVG by default
+                (net.sf.jasperreports.components.barcode4j.image.producer=svg), so it reaches the PDF as
+                vector drawing operations: no image XObject to count, and its human-readable line is
+                drawn as outlines, not glyphs, so no text-extraction step can see it either.
+                Pinned explicitly, like pdfbox above: this module's parent is de.metas.parent.general,
+                NOT backend/pom.xml, so backend/pom.xml's zxing.version dependencyManagement does not
+                reach here. 2.3.0 is the version backend/pom.xml pins, kept in step with it on purpose.
+            -->
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>2.3.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- BufferedImageLuminanceSource, the bridge from the rasterised page to zxing core. -->
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>2.3.0</version>
+            <scope>test</scope>
+        </dependency>
 
         <!-- JUnit 5 and Cucumber JUnit Platform Engine -->
         <dependency>
