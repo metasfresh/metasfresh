@@ -33,7 +33,7 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'verworfen',
-    Qty: 'Qty',
+    Qty: 'Menge',
     QtyTU: 'Gebindemenge',
     CatchWeight: 'Gewicht',
     PackingItemName: 'Packvorschrift',

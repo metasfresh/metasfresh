@@ -30,6 +30,11 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId(testId)).toContainText(expectedValue);
     }),
 
+    // The caption shown in front of the qty input (the <th> of the row holding #qty-input).
+    expectQtyCaption: async (expected) => await test.step(`${NAME} - Expect qty caption '${expected}'`, async () => {
+        await expect(containerElement().locator('tr:has(#qty-input) > th')).toHaveText(expected);
+    }),
+
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
         await page.locator('#qty-input').fill(`${qty}`);
     }),

@@ -14,11 +14,11 @@ import { generateEAN13 } from '../../utils/ean13';
 // and persists it on the picked HU. The product's own attribute set is irrelevant — the picked HU's
 // ability to store the SerialNo comes from the PI wiring (M_HU_PI_Attribute on the virtual PI),
 // not from the product attribute set. So a serial-no product needs no `attributeSetName`.
-const createMasterdata = async ({ orderQty = 1 } = {}) => {
+const createMasterdata = async ({ orderQty = 1, language = "en_US" } = {}) => {
     return await Backend.createMasterdata({
-        language: "en_US",
+        language,
         request: {
-            login: { user: { language: "en_US" } },
+            login: { user: { language } },
             // Serial-no scanning is a hardware-scanner task — disable camera mode so the scan
             // view shows only the hardware prompt (no camera toggle), matching the demo UX.
             sysconfigs: {
@@ -209,5 +209,22 @@ test('Serial-no product with NO attribute set: checkbox alone still prompts, ser
         hus: {
             vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { SerialNo: serial } },
         }
+    });
+});
+
+test('German user: the qty dialog labels the quantity input "Menge", not the English "Qty"', async ({ page: _page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Qty dialog caption localization');
+    allure.severity('minor');
+
+    const masterdata = await createMasterdata({ orderQty: 1, language: 'de_DE' });
+    await startPickingJob(masterdata);
+
+    await test.step("Open the qty dialog as a German user and check the qty caption", async () => {
+        await BarcodeScannerComponent.type(masterdata.products.P1.gtin);
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.expectQtyCaption('Menge');
     });
 });
