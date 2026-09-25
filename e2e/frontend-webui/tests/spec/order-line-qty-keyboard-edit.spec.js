@@ -397,6 +397,8 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
     });
 
     await test.step('grid, and after reload grid + persisted QtyEntered, are 5', async () => {
+      // keep the grid in view for the recording before reading it
+      await gridRows(page).first().scrollIntoViewIfNeeded();
       expect(await gridQtys(page)).toEqual([5, 5, 5]);
       await page.reload();
       await page
@@ -405,10 +407,17 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
       await expect(gridRows(page)).toHaveCount(PRODUCT_KEYS.length, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
+      // page.reload() resets scroll to the top; bring the grid back into view so the
+      // recording shows the reloaded, persisted grid rather than just the header
+      await gridRows(page).first().scrollIntoViewIfNeeded();
       expect(await gridQtys(page)).toEqual([5, 5, 5]);
       expect(await savedQtys(recordId)).toEqual([5, 5, 5]);
       const record = await getRecordData(SALES_ORDER_WINDOW_ID, recordId);
       expect(record.fieldsByName?.DocStatus?.value?.key).toBe('CO');
+
+      // recording aid: hold the final frame so the video shows the completed order
+      // with the persisted grid, not the header alone
+      await page.waitForTimeout(1500);
     });
   });
 });
