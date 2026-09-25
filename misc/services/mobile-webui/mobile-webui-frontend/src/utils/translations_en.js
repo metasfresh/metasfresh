@@ -152,6 +152,7 @@ const translations = {
       scanSerialNoAgain: 'Scan again',
       serialNoCount: '%(scanned)s of %(total)s scanned',
       serialNoCountExtra: '(%(extra)s too many)',
+      serialNoAlreadyScanned: 'Serial number already scanned',
       serialNoScanDone: 'Done',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
