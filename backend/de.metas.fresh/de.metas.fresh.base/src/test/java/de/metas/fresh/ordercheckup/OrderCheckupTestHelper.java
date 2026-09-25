@@ -13,6 +13,16 @@ import de.metas.organization.OrgId;
 import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.api.IPrintJobBL;
+import de.metas.printing.api.IPrintingQueueQuery;
+import de.metas.printing.api.IPrintingQueueSource;
+import de.metas.printing.model.I_AD_Printer;
+import de.metas.printing.model.I_AD_PrinterHW;
+import de.metas.printing.model.I_AD_Printer_Config;
+import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_AD_PrinterRouting;
+import de.metas.printing.OutputType;
+import de.metas.user.UserId;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
@@ -261,6 +271,64 @@ public class OrderCheckupTestHelper
 	{
 		Services.get(IOrderCheckupBL.class).generateReportsIfEligible(order);
 		enqueueToPrinting(order);
+	}
+
+	/**
+	 * Minimal printer wiring so {@code PrintJobBL.createPrintJobs} can resolve a hardware printer for a queue
+	 * item printed to {@code printUserId}: logical printer + hardware + a per-user config/matching + a
+	 * doctype-scoped routing. Enough to prove the active Produktion queue item flows through to a C_Print_Job.
+	 */
+	/** Sets the ctx logged-in user, so records created afterwards (the printing-queue item) carry it as CreatedBy - which is the user the print-routing resolution prints to. */
+	public void setLoggedInUser(final UserId userId)
+	{
+		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, userId.getRepoId());
+	}
+
+	public void createPrinterMatchingAndRouting(final String printerName, final int docTypeId, final UserId printUserId)
+	{
+		final I_AD_Printer printer = newInstance(I_AD_Printer.class);
+		printer.setPrinterName(printerName);
+		save(printer);
+
+		final I_AD_PrinterHW hw = newInstance(I_AD_PrinterHW.class);
+		hw.setName(printerName + "_HW");
+		hw.setOutputType(OutputType.Queue.getCode());
+		save(hw);
+
+		final I_AD_Printer_Config config = newInstance(I_AD_Printer_Config.class);
+		config.setConfigHostKey("test-host");
+		config.setAD_User_PrinterMatchingConfig_ID(printUserId.getRepoId());
+		save(config);
+
+		final I_AD_Printer_Matching matching = newInstance(I_AD_Printer_Matching.class);
+		matching.setAD_Printer_Config(config);
+		matching.setAD_Printer_ID(printer.getAD_Printer_ID());
+		matching.setAD_PrinterHW(hw);
+		save(matching);
+
+		final I_AD_PrinterRouting routing = newInstance(I_AD_PrinterRouting.class);
+		routing.setAD_Org_ID(0);
+		routing.setAD_Printer_ID(printer.getAD_Printer_ID());
+		if (docTypeId > 0)
+		{
+			routing.setC_DocType_ID(docTypeId);
+		}
+		routing.setRoutingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange);
+		save(routing);
+	}
+
+	/** Drains every active printing-queue item into C_Print_Jobs, mirroring the printing client. */
+	public void createAllPrintJobs(final UserId printUserId)
+	{
+		final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
+		final IPrintJobBL printJobBL = Services.get(IPrintJobBL.class);
+		final IPrintingQueueQuery query = printingQueueBL.createPrintingQueueQuery();
+		query.setFilterByProcessedQueueItems(false);
+		query.setAD_User_ID(printUserId.getRepoId());
+		for (final IPrintingQueueSource source : printingQueueBL.createPrintingQueueSources(ctx, query))
+		{
+			printJobBL.createPrintJobs(source);
+		}
 	}
 
 	public void enqueueToPrinting(final I_C_Order order)

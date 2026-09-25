@@ -26,6 +26,9 @@ package de.metas.fresh.ordercheckup;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.document.engine.DocStatus;
+import de.metas.printing.model.I_C_Print_Job;
+import de.metas.user.UserId;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import de.metas.document.engine.DocumentWrapper;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
@@ -147,6 +150,42 @@ public class OrderCheckup_IntegrationTest
 				.as("wrapping the report through its handler must expose the record's DocStatus")
 				.isEqualTo(DocStatus.Completed);
 		assertThat(doc.getSummary()).as("summary must not throw").isNotBlank();
+	}
+
+	/**
+	 * AC-P3: with a printer routing + matching configured, an ACTIVE Produktion queue item (kept active by the
+	 * plant-user fallback) flows all the way through PrintJobBL.createPrintJobs to a real C_Print_Job. This is
+	 * the end-to-end proof that, once the printer is configured, the Produktion sheet actually prints -- the
+	 * customer's original "nothing comes out" symptom. The per-instance AD_PrinterRouting stays customer config.
+	 */
+	@Test
+	public void activeProduktionQueueItem_withPrinterConfigured_producesPrintJob()
+	{
+		final I_AD_User plantUser = helper.createAD_User("plantUser");
+		final I_S_Resource plant = helper.createPlant("plantWithUser", plantUser);
+		final I_M_Warehouse warehouse = helper.createWarehouse("whPrintJob", plant);
+		final I_M_Product product = helper.createProductWithoutRoutingUserInCharge("prodPrintJob", warehouse);
+
+		final I_C_Order order = helper.createSalesOrder(warehouse);
+		helper.createOrderLine(order, product);
+
+		// a printer routing + matching for the plant user and the Produktion doctype
+		helper.createPrinterMatchingAndRouting("printer01", masterdata.docTypeProduction.getC_DocType_ID(),
+				UserId.ofRepoId(plantUser.getAD_User_ID()));
+
+		// the print routing prints to the queue item's creator, so create it as the plant user
+		helper.setLoggedInUser(UserId.ofRepoId(plantUser.getAD_User_ID()));
+
+		// generate the reports and enqueue -> the Produktion queue item stays active (plant-user fallback)
+		helper.generateReportsAndEnqueueToPrinting(order);
+
+		helper.createAllPrintJobs(UserId.ofRepoId(plantUser.getAD_User_ID()));
+
+		final java.util.List<I_C_Print_Job> printJobs =
+				POJOLookupMap.get().getRecords(I_C_Print_Job.class);
+		assertThat(printJobs)
+				.as("an active Produktion queue item with a configured printer must produce a C_Print_Job")
+				.isNotEmpty();
 	}
 
 }
