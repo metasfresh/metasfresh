@@ -115,7 +115,7 @@ const ReturnConfirmModal = ({
 };
 
 ReturnConfirmModal.propTypes = {
-  posTerminalId: PropTypes.string,
+  posTerminalId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   externalId: PropTypes.string.isRequired,
   lines: PropTypes.arrayOf(
     PropTypes.shape({

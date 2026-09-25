@@ -38,11 +38,12 @@ public class JsonWarehouseRequest
 	 * Marks this warehouse as THE quality-return warehouse ({@code M_Warehouse.IsQualityReturnWarehouse}) —
 	 * where a POS/customer return receives goods (see {@code ReturnedGoodsWarehouseType.QUALITY_ISSUE},
 	 * resolved DB-wide, not per-org, by {@code IHUWarehouseDAO#retrieveFirstQualityReturnWarehouseId()}).
-	 * Since that resolution is DB-wide and takes the first match, this is a find-or-create: if an active
+	 * Since that resolution is DB-wide and takes the lowest {@code M_Warehouse_ID}, this is a find-or-create: if an active
 	 * quality-return warehouse already exists (from an earlier run against the same shared DB), THAT one is
 	 * reused under this request's identifier instead of creating a second one — a second one would leave the
 	 * production code still resolving the original, while this request's identifier pointed at a warehouse the
-	 * return never actually uses.
+	 * return never actually uses. A reused warehouse is left untouched: its default locator keeps its code and
+	 * {@link #pickingGroup} is not applied to it.
 	 */
 	boolean isQualityReturnWarehouse;
 

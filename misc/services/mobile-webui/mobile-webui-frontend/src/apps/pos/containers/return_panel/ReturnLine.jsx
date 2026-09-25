@@ -7,13 +7,20 @@ import { trl } from '../../../../utils/translations';
 const _ = (key) => trl(`pos.return.line.${key}`);
 
 /** One returned-product line of the return cart — qty × the till's own current price for that product. */
-export const ReturnLine = ({ productName, qty, uom, price, currencySymbol, currencyPrecision, onClick }) => {
+export const ReturnLine = ({
+  productName,
+  qty,
+  uom,
+  price,
+  currencySymbol,
+  pricePrecision,
+  currencyPrecision,
+  onClick,
+}) => {
   const amount = qty * price;
   const qtyStr = formatQtyToHumanReadableStr({ qty, uom });
   const priceStr =
-    formatAmountToHumanReadableStr({ amount: price, currency: currencySymbol, precision: currencyPrecision }) +
-    '/' +
-    uom;
+    formatAmountToHumanReadableStr({ amount: price, currency: currencySymbol, precision: pricePrecision }) + '/' + uom;
   const amountStr = formatAmountToHumanReadableStr({ amount, currency: currencySymbol, precision: currencyPrecision });
 
   return (
@@ -39,6 +46,7 @@ ReturnLine.propTypes = {
   uom: PropTypes.string.isRequired,
   price: PropTypes.number.isRequired,
   currencySymbol: PropTypes.string,
+  pricePrecision: PropTypes.number,
   currencyPrecision: PropTypes.number,
   onClick: PropTypes.func.isRequired,
 };

@@ -29,6 +29,7 @@ const extractPriceUom = (product) => product.catchWeightUomSymbol ?? product.uom
 const POSReturnPanel = ({ disabled }) => {
   const dispatch = useDispatch();
   const posTerminal = usePOSTerminal();
+  const pricePrecision = posTerminal?.pricePrecision ?? 2;
   const currencyPrecision = posTerminal?.currencyPrecision ?? 2;
 
   const [externalId] = useState(() => uuidv4());
@@ -87,6 +88,7 @@ const POSReturnPanel = ({ disabled }) => {
               uom={line.uom}
               price={line.price}
               currencySymbol={line.currencySymbol}
+              pricePrecision={pricePrecision}
               currencyPrecision={currencyPrecision}
               onClick={() => isEnabled && setEditingLineIndex(index)}
             />

@@ -7,8 +7,8 @@ import { trl } from '../../../../utils/translations';
 
 const _ = (key) => trl(`pos.return.qtyModal.${key}`);
 
-// A weight-like UOM needs 3 decimals (grams), everything else here is keyed as a whole quantity.
-const getQtyEditPrecision = (uom) => (uom === 'kg' || uom === 'kilogram' ? 3 : 0);
+// The POS product carries no UOM precision, so kg is keyed with 3 decimals (grams) and everything else as a whole quantity.
+const getQtyEditPrecision = (uom) => (uom === 'kg' ? 3 : 0);
 
 /**
  * Lets the cashier correct a return line's quantity on the on-screen keypad — e.g. when the returned

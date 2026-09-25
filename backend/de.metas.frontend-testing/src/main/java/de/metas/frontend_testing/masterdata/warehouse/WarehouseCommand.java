@@ -16,6 +16,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Locator;
@@ -30,6 +31,7 @@ public class WarehouseCommand
 {
 	// services
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 
 	// params
@@ -40,6 +42,11 @@ public class WarehouseCommand
 
 	// state
 	private I_M_Warehouse warehouseRecord;
+	/**
+	 * {@code true} when an already existing, shared quality-return warehouse was reused instead of creating one.
+	 * Such a warehouse (and its default locator) belongs to every run against the same DB, so this command must not change it.
+	 */
+	private boolean isReusedWarehouse;
 
 	@Builder
 	private WarehouseCommand(
@@ -58,7 +65,10 @@ public class WarehouseCommand
 	public JsonWarehouseResponse execute()
 	{
 		createWarehouse();
-		assignPickingGroup();
+		if (!isReusedWarehouse)
+		{
+			assignPickingGroup();
+		}
 
 		final JsonWarehouseResponse.JsonWarehouseResponseBuilder responseBuilder = JsonWarehouseResponse.builder()
 				.warehouseId(warehouseRecord.getM_Warehouse_ID())
@@ -71,7 +81,7 @@ public class WarehouseCommand
 
 		if (locators.isEmpty() || !Check.isBlank(request.getLocatorCode()))
 		{
-			final I_M_Locator defaultLocator = createDefaultLocator();
+			final I_M_Locator defaultLocator = getOrCreateDefaultLocator();
 			responseBuilder
 					.locatorId(defaultLocator.getM_Locator_ID())
 					.locatorCode(defaultLocator.getValue())
@@ -91,12 +101,15 @@ public class WarehouseCommand
 	{
 		if (request.isQualityReturnWarehouse())
 		{
+			// Find-or-create is check-then-act without a lock: it relies on the masterdata requests being sent one at a time,
+			// which holds because the mobile Playwright suite runs with a single worker (e2e/mobile-webui/playwright.config.js).
 			final Optional<WarehouseId> existingQualityWarehouseId = huWarehouseDAO.retrieveQualityReturnWarehouseIdIfExists();
 			if (existingQualityWarehouseId.isPresent())
 			{
-				// Reuse the ONE warehouse the production code will actually resolve (DB-wide, first match) —
+				// Reuse the ONE warehouse the production code will actually resolve (DB-wide, lowest ID) —
 				// see the field's Javadoc on JsonWarehouseRequest#isQualityReturnWarehouse.
-				this.warehouseRecord = InterfaceWrapperHelper.load(existingQualityWarehouseId.get(), I_M_Warehouse.class);
+				this.warehouseRecord = warehouseDAO.getById(existingQualityWarehouseId.get(), I_M_Warehouse.class);
+				this.isReusedWarehouse = true;
 				context.putIdentifier(identifier, existingQualityWarehouseId.get());
 				return;
 			}
@@ -165,11 +178,26 @@ public class WarehouseCommand
 		return response;
 	}
 
+	private I_M_Locator getOrCreateDefaultLocator()
+	{
+		return isReusedWarehouse ? getExistingDefaultLocator() : createDefaultLocator();
+	}
+
 	private I_M_Locator createDefaultLocator()
 	{
 		final I_M_Locator defaultLocator = warehouseBL.getOrCreateDefaultLocator(getWarehouseId());
 		defaultLocator.setValue(StringUtils.trimBlankToOptional(request.getLocatorCode()).orElseGet(() -> warehouseCode + "_Locator"));
 		saveRecord(defaultLocator);
+		context.putIdentifier(identifier, LocatorId.ofRecord(defaultLocator));
+		return defaultLocator;
+	}
+
+	/**
+	 * The reused warehouse's default locator, as it is — its code is shared by every run and must not be overwritten.
+	 */
+	private I_M_Locator getExistingDefaultLocator()
+	{
+		final I_M_Locator defaultLocator = warehouseBL.getOrCreateDefaultLocator(getWarehouseId());
 		context.putIdentifier(identifier, LocatorId.ofRecord(defaultLocator));
 		return defaultLocator;
 	}

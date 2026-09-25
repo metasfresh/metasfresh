@@ -29,6 +29,7 @@ import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,5 +88,29 @@ public class WarehouseCommandTest
 		assertThat(second.getWarehouseId()).isEqualTo(first.getWarehouseId());
 		assertThat(Services.get(IHUWarehouseDAO.class).retrieveFirstQualityReturnWarehouseId())
 				.isEqualTo(WarehouseId.ofRepoId(first.getWarehouseId()));
+	}
+
+	@Test
+	public void isQualityReturnWarehouse_reuse_doesNotMutateTheSharedWarehouseOrItsDefaultLocator()
+	{
+		final JsonWarehouseResponse first = commandBuilder(Identifier.ofString("quality1"), JsonWarehouseRequest.builder().isQualityReturnWarehouse(true).build())
+				.build()
+				.execute();
+		final String firstLocatorValue = InterfaceWrapperHelper.load(first.getLocatorId(), I_M_Locator.class).getValue();
+		final int firstPickingGroupId = InterfaceWrapperHelper.load(first.getWarehouseId(), I_M_Warehouse.class).getM_Warehouse_PickingGroup_ID();
+
+		// A later run (fresh context, different identifier, even naming a picking group) reuses the shared warehouse.
+		final JsonWarehouseResponse second = WarehouseCommand.builder()
+				.context(new MasterdataContext())
+				.request(JsonWarehouseRequest.builder().isQualityReturnWarehouse(true).pickingGroup("someGroup").build())
+				.identifier(Identifier.ofString("quality2"))
+				.build()
+				.execute();
+
+		assertThat(second.getWarehouseId()).isEqualTo(first.getWarehouseId());
+		assertThat(second.getLocatorId()).isEqualTo(first.getLocatorId());
+		assertThat(second.getLocatorCode()).isEqualTo(firstLocatorValue);
+		assertThat(InterfaceWrapperHelper.load(first.getLocatorId(), I_M_Locator.class).getValue()).isEqualTo(firstLocatorValue);
+		assertThat(InterfaceWrapperHelper.load(first.getWarehouseId(), I_M_Warehouse.class).getM_Warehouse_PickingGroup_ID()).isEqualTo(firstPickingGroupId);
 	}
 }

@@ -71,6 +71,26 @@ public class HUWarehouseDAOTest
 		assertThat(huWarehouseDAO.retrieveFirstQualityReturnWarehouseId()).isEqualTo(qualityWarehouseId);
 	}
 
+	@Test
+	public void qualityReturnWarehouse_lowestIdWins_whenSeveralAreConfigured()
+	{
+		// the higher ID is stored first, so an unordered scan would return it first
+		createWarehouse(true, 200);
+		final WarehouseId lowerId = createWarehouse(true, 100);
+
+		assertThat(huWarehouseDAO.retrieveQualityReturnWarehouseIdIfExists()).contains(lowerId);
+		assertThat(huWarehouseDAO.retrieveFirstQualityReturnWarehouseId()).isEqualTo(lowerId);
+	}
+
+	private static WarehouseId createWarehouse(final boolean isQualityReturnWarehouse, final int warehouseRepoId)
+	{
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setM_Warehouse_ID(warehouseRepoId);
+		warehouse.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
+		saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
+	}
+
 	private static WarehouseId createWarehouse(final boolean isQualityReturnWarehouse)
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);

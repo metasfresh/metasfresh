@@ -31,6 +31,10 @@ import org.compiere.model.I_M_Warehouse;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository Tables: M_Warehouse, M_Locator
+ * Repository Cluster: HUWarehouseDAO, WarehouseDAO, WarehouseRepository
+ */
 public interface IHUWarehouseDAO extends ISingletonService
 {
 	I_M_Warehouse getById(WarehouseId warehouseId);
@@ -48,12 +52,15 @@ public interface IHUWarehouseDAO extends ISingletonService
 	 */
 	Optional<LocatorId> suggestAfterPickingLocatorId(int locatorRepoId);
 
+	/**
+	 * @return the active quality-return warehouse with the lowest {@code M_Warehouse_ID}, so the choice is deterministic when several are configured
+	 */
 	@NonNull
 	WarehouseId retrieveFirstQualityReturnWarehouseId();
 
 	/**
 	 * Same lookup as {@link #retrieveFirstQualityReturnWarehouseId()}, but never throws when none is
-	 * configured yet — used by test-masterdata provisioning to find-or-create the quality-return warehouse.
+	 * configured yet (same lowest-ID ordering) — used by test-masterdata provisioning to find-or-create the quality-return warehouse.
 	 */
 	@NonNull
 	Optional<WarehouseId> retrieveQualityReturnWarehouseIdIfExists();
