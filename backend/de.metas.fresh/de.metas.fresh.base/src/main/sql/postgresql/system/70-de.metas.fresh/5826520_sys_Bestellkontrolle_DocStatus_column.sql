@@ -8,7 +8,7 @@
 
 -- AD metadata: the DocStatus column (element 289 "Belegstatus", List reference 131 "_Document Status")
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,PersonalDataCategory,Updated,UpdatedBy,Version)
-SELECT 0,593646 /*From ID Server*/,289,0,17,131,540683,'DocStatus',TO_TIMESTAMP('2026-09-25 12:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'CO','Der aktuelle Status des Belegs','de.metas.fresh',2,'Der Belegstatus zeigt den aktuellen Status eines Belegs an. Bestellkontrollen werden mit Status ''Fertig gestellt'' (CO) erzeugt.','Y','Y','N','N','N','N','N','N','N','N','N','Belegstatus','NP',TO_TIMESTAMP('2026-09-25 12:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0
+SELECT 0,593646 /*From ID Server*/,289,0,17,131,540683,'DocStatus',TO_TIMESTAMP('2026-09-25 12:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'CO','Der aktuelle Status des Belegs','de.metas.fresh',2,'Der Belegstatus zeigt den aktuellen Status eines Belegs an. Bestellkontrollen werden mit Status ''Fertig gestellt'' (CO) erzeugt.','Y','Y','N','N','N','N','N','N','N','N','Y','Belegstatus','NP',TO_TIMESTAMP('2026-09-25 12:00:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0
 WHERE NOT EXISTS (SELECT 1 FROM AD_Column c WHERE c.AD_Column_ID=593646)
 ;
 
@@ -19,12 +19,5 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_Order_MFGWarehouse_Report','ALTER TABLE public.C_Order_MFGWarehouse_Report ADD COLUMN DocStatus CHAR(2) DEFAULT ''CO''')
 ;
 
--- Backfill: make the intent explicit for any row the ADD COLUMN default did not cover.
-UPDATE C_Order_MFGWarehouse_Report
-SET DocStatus = 'CO',
-    Updated = TO_TIMESTAMP('2026-09-25 12:00:01', 'YYYY-MM-DD HH24:MI:SS'),
-    UpdatedBy = 99
-WHERE DocStatus IS NULL
-;
 
 SELECT add_missing_translations();
