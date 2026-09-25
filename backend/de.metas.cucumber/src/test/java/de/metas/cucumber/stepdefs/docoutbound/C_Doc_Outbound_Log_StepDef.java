@@ -27,9 +27,11 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.ordercheckup.C_Order_MFGWarehouse_Report_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -77,6 +79,7 @@ public class C_Doc_Outbound_Log_StepDef
 	private final C_Order_StepDefData orderTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final M_InOut_StepDefData inOutTable;
+	private final C_Order_MFGWarehouse_Report_StepDefData mfgWarehouseReportTable;
 
 	public C_Doc_Outbound_Log_StepDef(
 			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
@@ -84,7 +87,8 @@ public class C_Doc_Outbound_Log_StepDef
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final M_InOut_StepDefData inOutTable)
+			@NonNull final M_InOut_StepDefData inOutTable,
+			@NonNull final C_Order_MFGWarehouse_Report_StepDefData mfgWarehouseReportTable)
 	{
 		this.docOutboundLogTable = docOutboundLogTable;
 		this.docOutboundLogLineTable = docOutboundLogLineTable;
@@ -92,6 +96,7 @@ public class C_Doc_Outbound_Log_StepDef
 		this.orderTable = orderTable;
 		this.invoiceTable = invoiceTable;
 		this.inOutTable = inOutTable;
+		this.mfgWarehouseReportTable = mfgWarehouseReportTable;
 	}
 
 	@And("^after not more than (.*)s validate C_Doc_Outbound_Log:$")
@@ -203,6 +208,13 @@ public class C_Doc_Outbound_Log_StepDef
 			assertThat(inOut).isNotNull();
 
 			return TableRecordReference.of(inOut);
+		}
+		else if (I_C_Order_MFGWarehouse_Report.Table_Name.equals(tableName))
+		{
+			final I_C_Order_MFGWarehouse_Report report = mfgWarehouseReportTable.get(recordIdentifier);
+			assertThat(report).isNotNull();
+
+			return TableRecordReference.of(report);
 		}
 		else
 		{

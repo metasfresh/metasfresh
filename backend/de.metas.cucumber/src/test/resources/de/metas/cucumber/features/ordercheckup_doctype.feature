@@ -317,6 +317,30 @@ Feature: Bestellkontrolle document type
     # restore.
 
 
+  @Id:S32265_TC7
+  Scenario: Each kind's Bestellkontrolle doc-outbound log carries DocStatus CO
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | order7     | true    | bpartner      | 2026-01-12  | warehouse      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine7 | order7     | product      | 5          |
+
+    When the order identified by order7 is completed
+
+    And C_Order_MFGWarehouse_Report is located:
+      | Identifier    | C_Order_ID | DocumentType | M_Warehouse_ID | PP_Plant_ID |
+      | warehouseRpt7 | order7     | WH           | warehouse      | plant       |
+      | plantRpt7     | order7     | PL           |                | plant       |
+
+    # Each Bestellkontrolle is created already completed (DocStatus 'CO'); the document handler makes the
+    # record wrap-able, so the document engine copies that status onto its doc-outbound log.
+    Then after not more than 60s validate C_Doc_Outbound_Log:
+      | C_Doc_Outbound_Log_ID.Identifier | Record_ID.Identifier | AD_Table.Name               | OPT.DocStatus |
+      | warehouseOutboundLog             | warehouseRpt7        | C_Order_MFGWarehouse_Report | CO            |
+      | plantOutboundLog                 | plantRpt7            | C_Order_MFGWarehouse_Report | CO            |
+
+
 # ####################################################################################################################
 # ####################################################################################################################
   Scenario: reset settings to default
