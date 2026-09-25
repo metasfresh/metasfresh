@@ -19,10 +19,22 @@ export const RawMaterialIssueLineScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
-    scanQRCode: async ({ qrCode, expectQtyEntered, expectQtyTarget, expectQtyRemaining, qtyEntered }) => await test.step(`${NAME} - Scan QR code`, async () => {
+    // expectOnTheFlyCall: when true, asserts POST issueSchedule/createOnTheFly is actually invoked
+    // and succeeds for this scan — i.e. the scanned HU was genuinely NOT part of the job's pre-planned
+    // steps, so this really is an on-the-fly issue-schedule creation and not a locally-matched step
+    // (which never calls the backend at all). Without this, a test can pass for the wrong reason: it
+    // would look identical whether the scan hit a pre-planned step or the on-the-fly endpoint.
+    scanQRCode: async ({ qrCode, expectQtyEntered, expectQtyTarget, expectQtyRemaining, qtyEntered, expectOnTheFlyCall = false }) => await test.step(`${NAME} - Scan QR code`, async () => {
         await page.getByTestId('scanQRCode-button').tap();
         await RawMaterialIssueLineScanScreen.waitForScreen();
+        const onTheFlyResponsePromise = expectOnTheFlyCall
+            ? page.waitForResponse((r) => r.url().includes('/issueSchedule/createOnTheFly'), { timeout: SLOW_ACTION_TIMEOUT })
+            : null;
         await RawMaterialIssueLineScanScreen.typeQRCode(qrCode);
+        if (onTheFlyResponsePromise != null) {
+            const onTheFlyResponse = await onTheFlyResponsePromise;
+            expect(onTheFlyResponse.ok()).toBeTruthy();
+        }
         if (expectQtyTarget != null) {
             await GetQuantityDialog.expectUserInfoValue({ captionKey: 'general.QtyToPick_Total', expectedValue: expectQtyTarget });
         }
@@ -58,6 +70,23 @@ export const RawMaterialIssueLineScreen = {
             // On error (after fix): dialog stays open → waitToClose hangs → toast wins.
         });
         await GetQuantityDialog.waitForDialog(); // dialog still open — worker was not navigated away
+    }),
+
+    // For a code the resolver cannot identify at all (no local step, and the backend on-the-fly
+    // lookup fails too) — the error fires DURING resolution, before the quantity dialog ever opens,
+    // unlike scanQRCodeExpectError() above which is for the over-issue case (dialog opens fine, the
+    // error comes from confirming the entered qty).
+    scanQRCodeExpectResolveError: async ({ qrCode, expectedToastText }) => await test.step(`${NAME} - Scan QR code (expect resolve error)`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+        await RawMaterialIssueLineScanScreen.waitForScreen();
+        await expectErrorToast(`${NAME} unresolved code rejected`, async () => {
+            await RawMaterialIssueLineScanScreen.typeQRCode(qrCode);
+        }, expectedToastText != null ? ({ textContent }) => {
+            expect(textContent).toContain(expectedToastText);
+        } : undefined);
+        // Resolution failed before the qty dialog ever opened — the scan screen is still armed so the
+        // operator can simply rescan.
+        await RawMaterialIssueLineScanScreen.expectVisible();
     }),
 
     retypeQtyAndConfirm: async ({ qtyEntered }) => await test.step(`${NAME} - Retype qty=${qtyEntered} and confirm`, async () => {

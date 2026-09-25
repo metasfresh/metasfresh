@@ -4,7 +4,9 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleServic
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobStepId;
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.scannable_code.ScannedCode;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -18,6 +20,7 @@ public class DistributionJobUnpickCommand
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	@NonNull private final DistributionHUService huService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	// Params
 	@NonNull private final DistributionJob job;
@@ -32,6 +35,7 @@ public class DistributionJobUnpickCommand
 			@NonNull final ITrxManager trxManager,
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final DistributionHUService huService,
+			@NonNull final HUQRCodesService huQRCodesService,
 			//
 			@NonNull final DistributionJob job,
 			@NonNull final DistributionJobStepId stepId,
@@ -40,6 +44,7 @@ public class DistributionJobUnpickCommand
 		this.trxManager = trxManager;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.huService = huService;
+		this.huQRCodesService = huQRCodesService;
 		this.job = job;
 		this.stepId = stepId;
 		this.unpickToTargetQRCode = unpickToTargetQRCode;
@@ -62,7 +67,18 @@ public class DistributionJobUnpickCommand
 	{
 		try (final IAutoCloseable ignored = huService.newContext())
 		{
-			ddOrderMoveScheduleService.unpick(stepId.toScheduleId(), HUQRCode.fromNullableGlobalQRCodeJsonString(unpickToTargetQRCode));
+			// Any supported HU label may identify the unpick target - a metasfresh global QR code, or the
+			// plain M_HU.Value / ExternalBarcode printed on the unit. Resolving through the shared bridge
+			// keeps this in step with the picking module's unpack target, which accepts the same two
+			// kinds (every other scanned-code type identifies goods or an intent rather than one specific
+			// unit, and is rejected). A skipped target scan stays legal (unpick to the floor), so the
+			// blank-tolerant Optional chain is preserved.
+			ddOrderMoveScheduleService.unpick(
+					stepId.toScheduleId(),
+					StringUtils.trimBlankToOptional(unpickToTargetQRCode)
+							.map(ScannedCode::ofString)
+							.map(huQRCodesService::getQRCodeByScannedCode)
+							.orElse(null));
 			return changedJob.removeStep(stepId);
 		}
 	}

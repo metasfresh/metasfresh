@@ -65,6 +65,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.movement.MoveHURequestItem;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
@@ -381,10 +382,33 @@ public class HandlingUnitsService
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * Accepts either a metasfresh global HU QR code or the plain {@code M_HU.Value} / {@code ExternalBarcode}
+	 * label printed on the unit - never a {@code PickOnTheFlyQRCode}, {@code LMQRCode}, {@code CustomHUQRCode}
+	 * (a configured scannable code format), {@code GS1HUQRCode} or {@code EAN13HUQRCode}.
+	 * <p>
+	 * This is a read path, so a legacy label is resolved WITHOUT ever generating a QR code for an HU that
+	 * has none - see {@link #resolveHuIdsForLegacyLabel(JsonGetByQRCodeRequest, HuId)}.
+	 */
 	@NonNull
 	public List<JsonHU> getHUsByQrCode(@NonNull final JsonGetByQRCodeRequest request, @NonNull final String adLanguage)
 	{
-		return getByIds(resolveHuIds(request), adLanguage, HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()));
+		final ScannedCode scannedCode = ScannedCode.ofString(request.getQrCode());
+		final HUQRCode huQRCode = HUQRCode.parse(scannedCode).orElse(null);
+		if (huQRCode != null)
+		{
+			return getByIds(resolveHuIdsForQRCode(request, huQRCode), adLanguage, huQRCode);
+		}
+
+		// legacy M_HU.Value / ExternalBarcode - identifies exactly one unit; never generates a QR code
+		final HuId huId = handlingUnitsBL.getHUIdByValueOrExternalBarcode(scannedCode).orElse(null);
+		if (huId == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final HUQRCode existingQRCode = huQRCodeService.getFirstQRCodeByHuIdIfExists(huId).orElse(null);
+		return getByIds(resolveHuIdsForLegacyLabel(request, huId), adLanguage, existingQRCode);
 	}
 
 	@NonNull
@@ -790,11 +814,7 @@ public class HandlingUnitsService
 
 		if (Check.isNotBlank((jsonHuIdentifier.getQrCode())))
 		{
-			final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(jsonHuIdentifier.getQrCode());
-			final HuId huId = huQRCodeService.getHuIdByQRCode(huQRCode);
-
-			return HUTransformService.newInstance()
-					.extractIfAggregatedByQRCode(huId, huQRCode);
+			return resolveHUIdExtractingIfAggregated(ScannedCode.ofString(jsonHuIdentifier.getQrCode()));
 		}
 
 		throw new AdempiereException("MetasfreshId or QRCode must be provided!")
@@ -802,11 +822,56 @@ public class HandlingUnitsService
 				.setParameter("huIdentifier", jsonHuIdentifier);
 	}
 
+	/**
+	 * Accepts the same code kinds as {@link #getHUsByQrCode(JsonGetByQRCodeRequest, String)} (see there for
+	 * the accepted/rejected list), and splits the unit out of an aggregate HU exactly as
+	 * {@link HUTransformService#extractIfAggregatedByQRCode} does for a scanned QR code.
+	 * <p>
+	 * This call already mutates (it can split an HU), but must still never generate a QR code as a side
+	 * effect: a legacy-labelled HU that turns out to be an aggregate but carries no QR code of its own cannot
+	 * be split this way - {@code extractIfAggregatedByQRCode} needs a real, HU-assigned code to move onto the
+	 * split-out unit - so that narrow case is rejected with an operator-facing message instead of silently
+	 * generating one.
+	 */
 	@NonNull
-	private Set<HuId> resolveHuIds(@NonNull final JsonGetByQRCodeRequest request)
+	private HuId resolveHUIdExtractingIfAggregated(@NonNull final ScannedCode scannedCode)
+	{
+		final HUQRCode huQRCode = HUQRCode.parse(scannedCode).orElse(null);
+		if (huQRCode != null)
+		{
+			final HuId huId = huQRCodeService.getHuIdByQRCode(huQRCode);
+			return HUTransformService.newInstance().extractIfAggregatedByQRCode(huId, huQRCode);
+		}
+
+		// legacy M_HU.Value / ExternalBarcode
+		final HuId huId = handlingUnitsBL.getHUIdByValueOrExternalBarcode(scannedCode)
+				.orElseThrow(() -> new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND)
+						.setParameter("scannedCode", scannedCode.getAsString()));
+
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		if (!handlingUnitsBL.isAggregateHU(hu))
+		{
+			return huId;
+		}
+
+		final HUQRCode existingQRCode = huQRCodeService.getFirstQRCodeByHuIdIfExists(huId).orElse(null);
+		if (existingQRCode == null)
+		{
+			throw new AdempiereException(MobileQRCodeMessages.HU_CANNOT_SPLIT_NO_QR_CODE)
+					.markAsUserValidationError()
+					.appendParametersToMessage()
+					.setParameter("huId", huId)
+					.setParameter("scannedCode", scannedCode.getAsString());
+		}
+
+		return HUTransformService.newInstance().extractIfAggregatedByQRCode(huId, existingQRCode);
+	}
+
+	@NonNull
+	private Set<HuId> resolveHuIdsForQRCode(@NonNull final JsonGetByQRCodeRequest request, @NonNull final HUQRCode huQRCode)
 	{
 		final HUQRCodeAssignment huqrCodeAssignment = huQRCodeService
-				.getHUAssignmentByQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()))
+				.getHUAssignmentByQRCode(huQRCode)
 				.orElse(null);
 
 		if (huqrCodeAssignment == null)
@@ -819,19 +884,35 @@ public class HandlingUnitsService
 			return huqrCodeAssignment.getHuIds();
 		}
 
-		return resolveHuIdsBy(GlobalQRCode.ofString(request.getUpperLevelLocatingQrCode()), huqrCodeAssignment);
+		return resolveHuIdsBy(GlobalQRCode.ofString(request.getUpperLevelLocatingQrCode()), huqrCodeAssignment.getHuIds());
+	}
+
+	/**
+	 * Legacy {@code M_HU.Value} / {@code ExternalBarcode} counterpart of {@link #resolveHuIdsForQRCode}. The
+	 * label already identifies exactly one handling unit (no generation, no DB write), so it is passed straight
+	 * through to the shared upper-level locating filter ({@link #resolveHuIdsBy}).
+	 */
+	@NonNull
+	private Set<HuId> resolveHuIdsForLegacyLabel(@NonNull final JsonGetByQRCodeRequest request, @NonNull final HuId huId)
+	{
+		if (request.getUpperLevelLocatingQrCode() == null)
+		{
+			return ImmutableSet.of(huId);
+		}
+
+		return resolveHuIdsBy(GlobalQRCode.ofString(request.getUpperLevelLocatingQrCode()), ImmutableSet.of(huId));
 	}
 
 	@NonNull
-	private Set<HuId> resolveHuIdsBy(@NonNull final GlobalQRCode locatingQrCode, @NonNull final HUQRCodeAssignment huqrCodeAssignment)
+	private Set<HuId> resolveHuIdsBy(@NonNull final GlobalQRCode locatingQrCode, @NonNull final Set<HuId> huIds)
 	{
 		if (HUQRCode.isTypeMatching(locatingQrCode))
 		{
-			return resolveHuIdsByParentHUQr(HUQRCode.fromGlobalQRCode(locatingQrCode), huqrCodeAssignment);
+			return resolveHuIdsByParentHUQr(HUQRCode.fromGlobalQRCode(locatingQrCode), huIds);
 		}
 		else if (LocatorQRCode.isTypeMatching(locatingQrCode))
 		{
-			return resolveHuIdsByLocator(LocatorQRCode.ofGlobalQRCode(locatingQrCode), huqrCodeAssignment);
+			return resolveHuIdsByLocator(LocatorQRCode.ofGlobalQRCode(locatingQrCode), huIds);
 		}
 		else
 		{
@@ -842,17 +923,17 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	private ImmutableSet<HuId> resolveHuIdsByLocator(@NonNull final LocatorQRCode locatorQRCode, @NonNull final HUQRCodeAssignment targetQrCodeAssignment)
+	private ImmutableSet<HuId> resolveHuIdsByLocator(@NonNull final LocatorQRCode locatorQRCode, @NonNull final Set<HuId> huIds)
 	{
 		return handlingUnitsDAO.createHUQueryBuilder()
-				.addOnlyHUIds(targetQrCodeAssignment.getHuIds())
+				.addOnlyHUIds(huIds)
 				.addOnlyInLocatorId(locatorQRCode.getLocatorId())
 				.setOnlyTopLevelHUs(false)
 				.listIds();
 	}
 
 	@NonNull
-	private ImmutableSet<HuId> resolveHuIdsByParentHUQr(@NonNull final HUQRCode parentHUQrCode, @NonNull final HUQRCodeAssignment targetQrCodeAssignment)
+	private ImmutableSet<HuId> resolveHuIdsByParentHUQr(@NonNull final HUQRCode parentHUQrCode, @NonNull final Set<HuId> targetHuIds)
 	{
 		final HUQRCodeAssignment parentQrCodeAssignment = huQRCodeService
 				.getHUAssignmentByQRCode(parentHUQrCode)
@@ -877,7 +958,7 @@ public class HandlingUnitsService
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
-				.filter(targetQrCodeAssignment::isAssignedToHuId)
+				.filter(targetHuIds::contains)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 

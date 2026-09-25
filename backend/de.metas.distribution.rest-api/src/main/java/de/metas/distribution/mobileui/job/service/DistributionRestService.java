@@ -27,6 +27,7 @@ import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromL
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
@@ -56,6 +57,7 @@ public class DistributionRestService
 	@NonNull private final DistributionJobHUReservationService distributionJobHUReservationService;
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final DistributionHUService huService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionProductService productService;
 	@NonNull private final NextPickFromLocatorResolver nextPickFromLocatorResolver;
@@ -184,6 +186,7 @@ public class DistributionRestService
 					.trxManager(trxManager)
 					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 					.huService(huService)
+					.huQRCodesService(huQRCodesService)
 					.job(job)
 					.stepId(Check.assumeNotNull(event.getDistributionStepId(), "stepId must be set when unpicking"))
 					.unpickToTargetQRCode(Check.assumeNotNull(event.getUnpick(), "unpick must be set").getUnpickToTargetQRCode())
