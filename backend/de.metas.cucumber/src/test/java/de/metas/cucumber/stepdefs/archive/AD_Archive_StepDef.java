@@ -551,8 +551,9 @@ public class AD_Archive_StepDef
 	 * <p>
 	 * That form is what makes a scanned sheet routable: the scanner names the scan file after the code it
 	 * read, and the import then resolves the record from that file name. No parser for it lives in this
-	 * repository -- the consuming transform is deployed alongside the customer's scanning setup -- so this
-	 * step pins the PRODUCING half of that contract only.
+	 * repository -- the consuming transform is a hand-deployed script, never wired into a build -- so this
+	 * step pins the PRODUCING half of that contract only. Change the format and the consumer has to be
+	 * changed with it.
 	 * <p>
 	 * TWO identifiers on purpose. The document is archived against one record and the barcode points at
 	 * another: a production order-checkup sheet hangs off the checkup-report row but prints the ORDER's
@@ -641,12 +642,14 @@ public class AD_Archive_StepDef
 		final BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(pageImage)));
 
 		final EnumMap<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
-		// Restricted to CODE_39 for SPEED, not correctness: measured, an unrestricted read returns the same
-		// single result, but takes roughly 2-3x as long per barcode-bearing page (~310ms vs ~850ms on a
-		// minimal page here), because zxing tries every 1D symbology it knows. Note the trade this makes --
-		// if the report ever switches
-		// symbology, a CODE_39-only reader finds nothing and the assertion still fails (correctly), but it
-		// reports "expected [...] but was []" rather than naming the code it actually found.
+		// Restricted to CODE_39 for SPEED, not correctness: measured at this element's geometry, an
+		// unrestricted read returns the same single result but takes roughly 2-3x as long per
+		// barcode-bearing page, because zxing tries every 1D symbology it knows. Absolute figures are left
+		// out deliberately -- they move by ~40% between a warmed JVM and the single cold decode this step
+		// actually performs, so any number quoted here would mislead whichever way it was measured. Note
+		// the trade this makes: if the report ever switches symbology, a CODE_39-only reader finds nothing
+		// and the assertion still fails (correctly), but it reports "expected [...] but was []" rather than
+		// naming the code it actually found.
 		hints.put(DecodeHintType.POSSIBLE_FORMATS, Arrays.asList(BarcodeFormat.CODE_39));
 		hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
 
