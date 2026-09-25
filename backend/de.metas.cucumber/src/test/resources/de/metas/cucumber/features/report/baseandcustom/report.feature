@@ -225,6 +225,72 @@ Feature: Jasper Report Tests
       | Value                         | Record_ID              |
       | Delivery instructions(Jasper) | deliveryInstruction_di |
 
+  @S0471_400
+  @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  # Guards the 'WH' (Warehouse) order-checkup document: OrderCheckupBL#createReportBuilders builds it per
+  # order line only when the product resolves a manufacturing/trading PP_Product_Planning that carries a
+  # workflow/routing (getMfgProductPlanning -> retrieveManufacturingOrTradingPlanning). The order's own
+  # warehouse also carries a PP_Plant_ID here -- needed only because "the order-checkup reports are
+  # generated" always requires the 'PL' (Plant) document to build too; the 'WH' one is what this scenario
+  # asserts and removing the PP_Product_Plannings row below is what must make it fail. Scenario-scoped
+  # fixtures only, so the shared Background 'wh'/'product' -- which carry neither prerequisite -- stay
+  # untouched for the sibling scenarios above.
+  Scenario: Order Checkup Warehouse Report Test
+    Given create S_Resource:
+      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID   | PP_Plant_ID  |
+      | checkupWarehouse | checkupPlant |
+    And metasfresh contains PP_Product_Plannings
+      | M_Product_ID | S_Resource_ID | IsManufactured | IsTraded |
+      | product      | checkupPlant  | true           | false    |
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID   |
+      | checkupOrderWh | true    | customer      | 2025-04-01  | checkupWarehouse |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID     | M_Product_ID | QtyEntered |
+      | checkupOrderWhL1 | checkupOrderWh | product      | 10         |
+    And the order identified by checkupOrderWh is completed
+    And the order-checkup reports are generated for the order identified by "checkupOrderWh"
+    And The jasper process is run
+      | Value                       | Record_ID                 |
+      | C_Order_MFGWarehouse_Report | checkupOrderWh_checkup_WH |
+    Then an AD_Archive exists for the record identified by "checkupOrderWh_checkup_WH"
+
+  @S0471_500
+  @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
+  # Guards the 'PL' (Plant) order-checkup document: OrderCheckupBL#createReportBuilders builds it whenever
+  # the order's OWN M_Warehouse resolves a PP_Plant_ID -- independent of any PP_Product_Planning (no
+  # manufacturing/trading planning is set up for 'product' here on purpose, to prove that). Scenario-scoped
+  # warehouse+plant, so the shared Background 'wh' (no PP_Plant_ID) stays untouched for the sibling
+  # scenarios above.
+  Scenario: Order Checkup Plant Report Test
+    Given create S_Resource:
+      | Identifier   | S_ResourceType_ID | IsManufacturingResource | ManufacturingResourceType | PlanningHorizon |
+      | checkupPlant | 1000000           | Y                       | PT                        | 999             |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID   | PP_Plant_ID  |
+      | checkupWarehouse | checkupPlant |
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID   |
+      | checkupOrderPl | true    | customer      | 2025-04-01  | checkupWarehouse |
+    And metasfresh contains C_OrderLines:
+      | Identifier       | C_Order_ID     | M_Product_ID | QtyEntered |
+      | checkupOrderPlL1 | checkupOrderPl | product      | 10         |
+    And the order identified by checkupOrderPl is completed
+    And the order-checkup reports are generated for the order identified by "checkupOrderPl"
+    And The jasper process is run
+      | Value                       | Record_ID              |
+      | C_Order_MFGWarehouse_Report | checkupOrderPl_checkup |
+    Then an AD_Archive exists for the record identified by "checkupOrderPl_checkup"
+
   @from:cucumber
 @allure.label.epic:E0191_System_Reporting
 @allure.label.feature:F00400_System_Reporting
