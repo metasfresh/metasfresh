@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { BUSINESS_PARTNER_WINDOW_ID, SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
+import { BUSINESS_PARTNER_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { assertRecordIsValid, getFieldData, getTabInfo, getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
@@ -214,9 +214,11 @@ testCases.forEach(({ language, label }) => {
     });
 
     // TC-QI (AC1/AC5, server enforcement) — the "create new BPartner via Quick Input" path must be refused
-    // SERVER-SIDE for a restricted role. The WebUI hides the quick-input "New" option (TC14), but the option
-    // being hidden does not protect the endpoint: a direct/replayed POST to /window/540327/{doc}/processNewRecord
-    // must still be refused. This drives the exact server sequence the frontend uses (createBPartnerViaQuickInput)
+    // SERVER-SIDE for a restricted role. This is the ENDPOINT-ENFORCEMENT backstop; the VIDEO-VISIBLE counterpart
+    // of this case is TC14 (the restricted role never sees the "new business partner" option in the lookup). The
+    // option being hidden does not by itself protect the endpoint, so a direct/replayed POST to
+    // /window/540327/{doc}/processNewRecord must still be refused. This drives the exact server sequence the
+    // frontend uses (createBPartnerViaQuickInput)
     // and asserts the server REJECTS it (non-2xx + the role-create-not-allowed reason naming the role) and creates
     // NO C_BPartner. Language-invariant: asserts on the HTTP status and the generated role-name token (the reason's
     // {0}), never localized text.
@@ -263,7 +265,8 @@ testCases.forEach(({ language, label }) => {
     });
 
     // TC-QI control — an UNRESTRICTED role creates a BPartner through the very same Quick Input endpoint, proving
-    // the gate is scoped to the restriction and does not block everyone.
+    // the gate is scoped to the restriction and does not block everyone. Its video-visible counterpart is
+    // TC14-unrestricted (the option is offered and the New Business Partner dialog opens on-screen).
     test.describe(`Role create restriction — Quick Input create allowed for unrestricted role (${label})`, () => {
         test(`unrestricted role creates a business partner via processNewRecord (${label})`, async ({ page }) => {
             allure.epic('E0390: Business Partner');
@@ -387,6 +390,23 @@ testCases.forEach(({ language, label }) => {
             expect(name2, 'the restricted role must still READ the partner fields').toBeTruthy();
             expect(name2.readonly, 'a create-restricted role must still be able to EDIT (WRITE not removed)').toBe(false);
 
+            // EDIT (visible + end result): actually type a new Name2 in the UI, blur to save, await the PATCH,
+            // and confirm it PERSISTED. The recording shows the restricted role editing an existing partner
+            // (WRITE is not removed by the create restriction).
+            const newName2 = `Edited ${Date.now()}`;
+            const name2Input = page.locator('.form-field-Name2 input').first();
+            await name2Input.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+            const patchDone = page.waitForResponse(
+                (r) => r.url().includes(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`) && r.request().method() === 'PATCH',
+                { timeout: VERY_SLOW_ACTION_TIMEOUT },
+            );
+            await name2Input.fill(newName2);
+            await name2Input.blur();
+            await patchDone;
+            const name2After = await getFieldData(BUSINESS_PARTNER_WINDOW_ID, recordId, 'Name2');
+            expect(name2After.value, "the restricted role's edit must persist (WRITE not removed)").toBe(newName2);
+            console.log(`[${language}] restricted role edited Name2 -> "${newName2}" (persisted)`);
+
             // THIRD (AC9 — no leak to other tables): a row maps ONLY to its own table under the direct
             // mapping (§ 3.2c). The role restricts C_BPartner only; C_BPartner_Location has no row for it,
             // so creating an address stays allowed. This is the exact discriminator against the included-tab
@@ -439,6 +459,12 @@ testCases.forEach(({ language, label }) => {
             // EDIT-NO: WRITE is subtracted, so the loaded record's field is read-only.
             expect(name2.readonly, 'a read-only role must NOT be able to edit (WRITE removed by the subtract)').toBe(true);
 
+            // EDIT-NO (visible): the Name2 field renders non-editable in the UI — the recording shows the greyed,
+            // read-only field the read-only role cannot type into (WRITE removed).
+            const name2Input = page.locator('.form-field-Name2 input').first();
+            await name2Input.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await expect(name2Input, 'a read-only role must see the Name2 field as non-editable').not.toBeEditable();
+
             // CREATE-NO: "WRITE exclusion includes no CREATE, but not the other way around" — creating a
             // record is a write, so removing WRITE also removes CREATE. The read-only role's "New" action is
             // therefore greyed with the same create-restriction key, though no IsCanCreateNewRecords flag was
@@ -488,14 +514,26 @@ testCases.forEach(({ language, label }) => {
             await LoginPage.login(roleUser);
             await DashboardPage.expectVisible();
 
-            // Open the role's own existing partner and read the Adresse included-tab info.
+            // Open the role's own existing partner and SELECT the Adresse (Location) included tab — the tab
+            // header is language-invariant (data-testid="tab-AD_Tab-222"). Selecting the tab renders its toolbar,
+            // where the "Add new" button appears greyed for the restricted role (the disabled add-button carries
+            // data-testid="disabledReasonKey-<key>", the same reason-key handle as the main New action). The
+            // recording therefore shows the address tab open with its greyed "Add new" button.
             await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`);
             await page.waitForURL(new RegExp(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+            const adresseTab = page.getByTestId(`tab-${ADRESSE_TAB_ID}`);
+            await adresseTab.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await adresseTab.click();
+            const greyedAddAddress = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
+            await expect(greyedAddAddress, 'the address tab "Add new" button must be greyed with the role restriction key for the restricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await expect(greyedAddAddress, 'the greyed address "Add new" button must carry the disabled class').toHaveClass(/subheader-item-disabled/);
+            console.log(`[${language}] address tab "Add new" is greyed with key ${CREATE_RESTRICTION_MSG_KEY}`);
+
+            // Backstop (language-invariant): the tab's create permission is false AND attributed to the ROLE.
+            // Opening an EXISTING partner rules out "parent is new", so the reason key proves it is the role restriction.
             const tabInfo = await getTabInfo(BUSINESS_PARTNER_WINDOW_ID, recordId, ADRESSE_TAB_ID);
             console.log(`[${language}] Adresse tabInfo: ${JSON.stringify(tabInfo)}`);
             expect(tabInfo.allowCreateNew, 'the address included tab must forbid creating a new address for the restricted role').toBe(false);
-            // The block must be attributed to the ROLE (not a parent-is-new or tab-readonly reason): opening an
-            // EXISTING partner rules out "parent is new", so the reason key proves it is the role restriction.
             expect(tabInfo.allowCreateNewReasonKey, 'the address tab must be disabled with the role restriction reason key').toBe(CREATE_RESTRICTION_MSG_KEY);
             console.log(`[${language}] PASS — restricted role cannot add an address (allowCreateNew=false, reasonKey=${tabInfo.allowCreateNewReasonKey})`);
         });
@@ -541,11 +579,25 @@ testCases.forEach(({ language, label }) => {
                 await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`);
                 await page.waitForURL(new RegExp(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
 
+                // SELECT the Vorgänge (Request) tab in the UI — it forbids insert structurally (IsInsertRecord='N'),
+                // so its toolbar offers NO "Add new" button at all, and (crucially, AC4) NO role-restriction reason
+                // ever surfaces there, whatever the role's own R_Request row says. The recording shows the tab open
+                // with no create option and no "role not allowed" marker.
+                const vorgTab = page.getByTestId(`tab-${VORGAENGE_TAB_ID}`);
+                await vorgTab.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await vorgTab.click();
+                // No role-restriction greyed button may appear on this tab in ANY of the three role states.
+                await expect(
+                    page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`),
+                    `no role-restriction reason may surface on a tab-forbidden insert (${stateLabel})`,
+                ).toHaveCount(0);
+                console.log(`[${language}] Vorgänge tab shows no role-restriction reason (${stateLabel})`);
+
+                // Backstop (language-invariant): the tab forbids create structurally → allowCreateNew=false with a
+                // reason that is NEVER the role key, regardless of the role row (AC3/AC4).
                 const tab = await getTabInfo(BUSINESS_PARTNER_WINDOW_ID, recordId, VORGAENGE_TAB_ID);
                 console.log(`[${language}] Vorgänge tabInfo (${stateLabel}): ${JSON.stringify(tab)}`);
-                // The tab forbids insert structurally → creation is not allowed regardless of the role row (AC3/AC4).
                 expect(tab.allowCreateNew, `a tab that forbids insert must not allow create (${stateLabel})`).toBe(false);
-                // The block is the TAB's, never the role's — no role reason key surfaces on it.
                 expect(tab.allowCreateNewReasonKey ?? null, `no role reason may surface on a tab-forbidden insert (${stateLabel})`).not.toBe(CREATE_RESTRICTION_MSG_KEY);
                 console.log(`[${language}] PASS — tab-forbidden insert unchanged, no role reason (${stateLabel})`);
             });
@@ -678,15 +730,25 @@ testCases.forEach(({ language, label }) => {
                 await page.waitForURL(new RegExp(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
                 await assertRecordIsValid(BUSINESS_PARTNER_WINDOW_ID, recordId, 'clone test opens the partner');
 
-                // Discriminating enforcement: the server-computed standardActions set the WebUI builds the
+                // Open the ⋮ actions menu and observe the Clone action, located by its language-invariant icon
+                // class (meta-icon-duplicate). Clone is present for an unrestricted role and REMOVED for a
+                // restricted one (JSONDocumentPermissions.getStandardActions it.remove() when create is not
+                // allowed). The recording shows the actions menu WITH / WITHOUT the Clone action. The advanced-edit
+                // action (meta-icon-edit) is always present, so it is the anchor used to open the menu when Clone
+                // is absent.
+                const cloneItem = page.locator('.js-subheader-item:has(i.meta-icon-duplicate)');
+                const advEditItem = page.locator('.js-subheader-item:has(i.meta-icon-edit)');
+                await ensureSubheaderOpen(page, restricted ? advEditItem : cloneItem);
+
+                // Discriminating enforcement backstop: the server-computed standardActions set the WebUI builds the
                 // action menu from. Clone is REMOVED from it for a restricted role and KEPT for an unrestricted
-                // one (JSONDocumentPermissions.getStandardActions it.remove() when create is not allowed).
-                // Language-invariant (the action's internalName 'clone'), and independent of menu rendering.
+                // one. Language-invariant (the action's internalName 'clone'), and independent of menu rendering.
                 const record = await getRecordData(BUSINESS_PARTNER_WINDOW_ID, recordId);
                 const standardActions = record.standardActions || [];
                 console.log(`[${language}] standardActions (${key}) = ${JSON.stringify(standardActions)}`);
 
                 if (restricted) {
+                    await expect(cloneItem, 'the Clone action must be absent from the actions menu for a restricted role').toHaveCount(0);
                     expect(standardActions, 'Clone must be removed from the standard actions for a restricted role').not.toContain('clone');
                     // Defense in depth: the /duplicate endpoint itself rejects, blocked at the role permission
                     // check BEFORE any DB write (a plain AdempiereException, never reaching the DB layer). The
@@ -707,25 +769,27 @@ testCases.forEach(({ language, label }) => {
                     expect(dupBody, 'the restricted clone must be blocked at the permission gate, never reaching the DB').not.toContain('DBUniqueConstraint');
                     console.log(`[${language}] PASS — clone blocked (no 'clone' standard action; /duplicate permission-rejected ${dupResp.status()})`);
                 } else {
+                    await expect(cloneItem, 'the Clone action must be visible in the actions menu for an unrestricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
                     expect(standardActions, 'Clone must be available in the standard actions for an unrestricted role').toContain('clone');
-                    console.log(`[${language}] PASS — clone available (standard action present)`);
+                    console.log(`[${language}] PASS — clone available (standard action visible in menu)`);
                 }
             });
         });
     });
 
-    // TC16 — the menu new-record node is hidden (AC18). A C_BPartner window menu node with IsCreateNew='Y'
-    // (the "Neuer Geschäftspartner" node) produces a newRecord menu node ONLY when the role may create
-    // C_BPartner (MenuTreeLoader.createNewRecordNode returns null otherwise). The desktop menu exposes NO
-    // language-invariant per-node DOM handle, so this is asserted on the menu REST tree (type:"newRecord").
-    // The node's elementId is deployment-dependent — the core Business Partner window on core CI, the
-    // customer override window on the customer stack — so instead of hardcoding a window id, this compares
-    // the newRecord-node set of an unrestricted role with that of a role restricted ONLY on C_BPartner:
-    // restricting create must STRICTLY REMOVE node(s) (the business-partner one) and ADD none.
-    test.describe(`Role create restriction — menu new-record node hidden (${label})`, () => {
-        test(`restricting C_BPartner create removes the business-partner new-record menu node (${label})`, async ({ page }) => {
+    // TC16 — the menu "new business partner" entry is hidden for a restricted role (AC18). A C_BPartner
+    // window menu node with IsCreateNew='Y' produces a newRecord menu entry ("New Business Partner" /
+    // "Neuer Geschäftspartner") ONLY when the role may create C_BPartner (MenuTreeLoader.createNewRecordNode
+    // returns null otherwise). Driven through the REAL menu OVERLAY SEARCH the user performs: open the menu
+    // (top-left menu icon), type "partner" (a substring of the entry in BOTH en_US and de_DE), and observe the
+    // results — so the recording shows the search and the entry appearing / not appearing. Primary assertion is
+    // language-invariant (the /menu/queryPaths response's newRecord leaf, keyed on its elementId — deployment-
+    // agnostic, no hardcoded window id); the entry's on-screen presence/absence is additionally asserted, located
+    // by the caption the RESPONSE itself carries (derived at runtime, never a hardcoded localized string).
+    test.describe(`Role create restriction — menu new-partner entry hidden (${label})`, () => {
+        test(`the menu search offers "new business partner" only for an unrestricted role (${label} UI)`, async ({ page }) => {
             allure.epic('E0390: Business Partner');
-            allure.story('Role create restriction — the new-record menu node is hidden for a restricted role');
+            allure.story('Role create restriction — the new-record menu entry is hidden for a restricted role');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
             allure.severity('critical');
@@ -747,49 +811,64 @@ testCases.forEach(({ language, label }) => {
             });
             expect(md.login.openUser && md.login.restrictedUser, 'masterdata must return both role users').toBeTruthy();
 
-            // Collect the set of newRecord-node window ids in a role's full menu tree. Clears cookies first so
-            // the second login starts from a clean session (otherwise the login form never appears).
-            const newRecordWindowIds = async (user) => {
+            // A /menu/queryPaths response is a tree; its leaves map 1:1 (in order) to the rendered .js-menu-item
+            // rows — same reduction MenuActions.js applies. A leaf with type==='newRecord' is a "new <window>" entry.
+            const collectLeaves = (node) => (node.children ? node.children.flatMap(collectLeaves) : [node]);
+
+            // Log in, open the menu overlay (top-left menu icon), type the search term, and return the
+            // /menu/queryPaths leaves. Leaves the overlay open with results rendered so the caller can assert on
+            // the visible DOM. Clears cookies first so the second login starts from a clean session.
+            const menuSearch = async (user, term) => {
                 await page.context().clearCookies();
                 await LoginPage.goto();
                 await LoginPage.login(user);
                 await DashboardPage.expectVisible();
-                const resp = await page.request.get(`${WEBAPI_BASE_URL}/menu/root?depth=50&childrenLimit=0`, { headers: { 'Content-Type': 'application/json' } });
-                expect(resp.ok(), 'the menu tree must load').toBe(true);
-                // Parse + recursively walk the tree (robust to JSON field ordering) collecting newRecord elementIds.
-                const tree = JSON.parse(await resp.text());
-                const ids = new Set();
-                const walk = (node) => {
-                    if (!node || typeof node !== 'object') return;
-                    if (node.type === 'newRecord' && node.elementId != null) ids.add(String(node.elementId));
-                    (node.children || []).forEach(walk);
-                };
-                walk(tree);
-                return ids;
+                const menuBtn = page.locator('.header-item-container-static').first();
+                await menuBtn.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await menuBtn.click();
+                const searchInput = page.locator('.menu-overlay-query input.input-field');
+                await searchInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                const [resp] = await Promise.all([
+                    page.waitForResponse((r) => r.url().includes('/menu/queryPaths'), { timeout: VERY_SLOW_ACTION_TIMEOUT }),
+                    searchInput.fill(term),
+                ]);
+                return collectLeaves(await resp.json());
             };
 
-            const openIds = await newRecordWindowIds(md.login.openUser);
-            const restrictedIds = await newRecordWindowIds(md.login.restrictedUser);
-            console.log(`[${language}] newRecord window ids: open=${JSON.stringify([...openIds])} restricted=${JSON.stringify([...restrictedIds])}`);
+            // UNRESTRICTED: searching "partner" returns the business-partner "new record" entry AND it renders
+            // in the menu (the recording shows the entry present).
+            const openLeaves = await menuSearch(md.login.openUser, 'partner');
+            const openNewRecords = openLeaves.filter((l) => l.type === 'newRecord' && l.elementId != null);
+            console.log(`[${language}] open newRecord entries: ${JSON.stringify(openNewRecords.map((n) => ({ caption: n.caption, elementId: n.elementId })))}`);
+            expect(openNewRecords.length, 'an unrestricted role must be offered a "new record" menu entry for the business partner window').toBeGreaterThanOrEqual(1);
+            const bpNewRecord = openNewRecords[0];
+            // On-screen (video): the entry is visible in the rendered menu, located by the caption the response
+            // carries (runtime-derived, so language-independent — never a hardcoded localized string).
+            const openEntry = page.locator('.menu-overlay-query .js-menu-item', { hasText: bpNewRecord.caption });
+            await expect(openEntry.first(), 'the "new business partner" entry must be visible in the menu for an unrestricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
 
-            const removed = [...openIds].filter((id) => !restrictedIds.has(id));
-            const added = [...restrictedIds].filter((id) => !openIds.has(id));
-            // Restricting ONLY C_BPartner create is per-table, so the ONLY newRecord node(s) that may vanish
-            // are the C_BPartner window's — the business-partner "new record" menu entry. It must vanish, and
-            // nothing may be added. Environment-independent: no window id is hardcoded.
-            expect(added, 'restricting create must not ADD any new-record menu node').toEqual([]);
-            expect(removed.length, 'restricting C_BPartner create must remove the business-partner new-record menu node').toBeGreaterThanOrEqual(1);
-            console.log(`[${language}] PASS — restricted menu removed new-record node(s) ${JSON.stringify(removed)}, added none`);
+            // RESTRICTED: the same search returns NO newRecord entry for that business-partner window, and the
+            // entry is absent from the rendered menu (the recording shows the search WITHOUT the entry). Keyed on
+            // the elementId the unrestricted run captured — deployment-agnostic, no hardcoded window id.
+            const restrictedLeaves = await menuSearch(md.login.restrictedUser, 'partner');
+            const restrictedBpNewRecords = restrictedLeaves.filter((l) => l.type === 'newRecord' && String(l.elementId) === String(bpNewRecord.elementId));
+            console.log(`[${language}] restricted newRecord entries for elementId ${bpNewRecord.elementId}: ${restrictedBpNewRecords.length}`);
+            expect(restrictedBpNewRecords.length, 'a restricted role must NOT be offered the business-partner "new record" menu entry').toBe(0);
+            const restrictedEntry = page.locator('.menu-overlay-query .js-menu-item', { hasText: bpNewRecord.caption });
+            await expect(restrictedEntry, 'the "new business partner" entry must be absent from the menu for a restricted role').toHaveCount(0);
+            console.log(`[${language}] PASS — menu offers "new business partner" only for the unrestricted role`);
         });
     });
 
-    // TC14 — the quick-input "new business partner" entry in a C_BPartner lookup is hidden (AC18). Typing a
-    // no-match string in a C_BPartner lookup offers the "Neuer Geschäftspartner" entry (data-testid option-NEW)
-    // for an unrestricted role and nothing for a role restricted on C_BPartner. The option is gated by
+    // TC14 — the quick-input "new business partner" entry in a C_BPartner lookup is hidden (AC18). On a new
+    // Sales Order, typing a NON-EXISTING partner name into the C_BPartner (Kunde) lookup offers a
+    // "New Business Partner" / "Neuer Geschäftspartner" entry (data-testid option-NEW) for an unrestricted role
+    // and nothing for a role restricted on C_BPartner — so the recording shows, side by side across the two
+    // cases, how the option normally appears and how the restriction removes it. The option is gated by
     // newRecordCaption, nulled when create is not allowed (JSONDocumentLayoutElementField → isTableAccess
-    // CREATE). Driven through the RENDERED dropdown. The lookup is reached on a new Invoice (the role is
-    // restricted only on C_BPartner, so it may still create an invoice); identical steps for both roles, so
-    // the only variable is the create restriction.
+    // CREATE). Driven through the RENDERED dropdown. The lookup is reached on a new Sales Order (the role is
+    // restricted only on C_BPartner, so it may still create an order); identical steps for both roles, so the
+    // only variable is the create restriction.
     const TC14_CASES = [
         { key: 'restricted', restricted: true },
         { key: 'unrestricted', restricted: false },
@@ -817,8 +896,8 @@ testCases.forEach(({ language, label }) => {
                 await LoginPage.login(md.login.user);
                 await DashboardPage.expectVisible();
 
-                // Reach a C_BPartner lookup on a new Invoice, then type a no-match string.
-                await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_INVOICE_WINDOW_ID}/NEW`);
+                // Reach the C_BPartner (Kunde) lookup on a new Sales Order, then type a non-existing partner name.
+                await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/NEW`);
                 const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
                 await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
                 await bpInput.click();
@@ -844,7 +923,12 @@ testCases.forEach(({ language, label }) => {
                     console.log(`[${language}] PASS — quick-input new-partner hidden`);
                 } else {
                     await expect(optionNew, 'the new-partner quick-input entry must be offered for an unrestricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-                    console.log(`[${language}] PASS — quick-input new-partner offered`);
+                    // Click it to open the New Business Partner quick-input dialog — the recording shows the
+                    // create-new-partner flow actually starting for the unrestricted role (the visible counterpart
+                    // to the server-side create-refused test for a restricted role).
+                    await optionNew.click();
+                    await expect(page.locator('.panel-modal-content'), 'the New Business Partner quick-input dialog must open for an unrestricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    console.log(`[${language}] PASS — quick-input new-partner offered and dialog opens`);
                 }
             });
         });
