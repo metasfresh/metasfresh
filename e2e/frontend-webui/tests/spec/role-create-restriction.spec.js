@@ -110,7 +110,7 @@ async function createBPartnerViaQuickInput(page) {
 testCases.forEach(({ language, label }) => {
     test.describe(`Role create restriction — C_BPartner (${label})`, () => {
         test(`restricted role cannot create a business partner (${label} UI)`, async ({ page }) => {
-            allure.epic('E0390: Business Partner');
+            allure.epic('E0180: System Administration');
             allure.story('Role create restriction — New is greyed for a restricted role');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
@@ -234,7 +234,7 @@ testCases.forEach(({ language, label }) => {
     // {0}), never localized text.
     test.describe(`Role create restriction — Quick Input create refused server-side (${label})`, () => {
         test(`restricted role is refused at processNewRecord (${label})`, async ({ page }) => {
-            allure.epic('E0390: Business Partner');
+            allure.epic('E0180: System Administration');
             allure.story('Role create restriction — the BPartner Quick Input create endpoint enforces the role restriction');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
@@ -279,7 +279,7 @@ testCases.forEach(({ language, label }) => {
     // TC14-unrestricted (the option is offered and the New Business Partner dialog opens on-screen).
     test.describe(`Role create restriction — Quick Input create allowed for unrestricted role (${label})`, () => {
         test(`unrestricted role creates a business partner via processNewRecord (${label})`, async ({ page }) => {
-            allure.epic('E0390: Business Partner');
+            allure.epic('E0180: System Administration');
             allure.story('Role create restriction — the BPartner Quick Input create endpoint stays open for an unrestricted role');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
@@ -314,7 +314,7 @@ testCases.forEach(({ language, label }) => {
     // exactly as before. Proves the block is specific to the restriction, not the harness.
     test.describe(`Role create restriction — unrestricted control (${label})`, () => {
         test(`role without the restriction creates a business partner (${label} UI)`, async ({ page }) => {
-            allure.epic('E0390: Business Partner');
+            allure.epic('E0180: System Administration');
             allure.story('Role create restriction — unrestricted role is unaffected');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
@@ -361,7 +361,7 @@ testCases.forEach(({ language, label }) => {
     // discriminating counterpart to the read-only role's readonly=true on the same field.
     test.describe(`Role create restriction — neutral row keeps read+edit (${label})`, () => {
         test(`restricted role still reads and can edit an existing partner (${label} UI)`, async ({ page }) => {
-            allure.epic('E0390: Business Partner');
+            allure.epic('E0180: System Administration');
             allure.story('Role create restriction — read, edit, and other-table access are unaffected by the create block');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
@@ -431,7 +431,7 @@ testCases.forEach(({ language, label }) => {
     // (creating is a write). Distinguishes the subtract contract from the old replace encoding.
     test.describe(`Role read-only table access — read yes, edit no, create no (${label})`, () => {
         test(`read-only role reads but cannot edit or create a partner (${label} UI)`, async ({ page }) => {
-            allure.epic('E0390: Business Partner');
+            allure.epic('E0180: System Administration');
             allure.story('Role table access — read-only flag removes WRITE, and CREATE with it (subtract contract)');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
@@ -495,7 +495,7 @@ testCases.forEach(({ language, label }) => {
     // restriction, discriminating from an unrestricted role (allowCreateNew=true).
     test.describe(`Role create restriction — included address tab disabled (${label})`, () => {
         test(`restricted role cannot add an address on an existing partner (${label} UI)`, async ({ page }) => {
-            allure.epic('E0390: Business Partner');
+            allure.epic('E0180: System Administration');
             allure.story('Role create restriction — included address tab disabled with the reason');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
@@ -563,7 +563,7 @@ testCases.forEach(({ language, label }) => {
     TC3_STATES.forEach(({ key, stateLabel, tableAccess }) => {
         test.describe(`Role create restriction — tab-forbidden insert unchanged, ${stateLabel} (${label})`, () => {
             test(`tab-forbidden insert stays blocked with no role reason — ${stateLabel} (${label} UI)`, async ({ page }) => {
-                allure.epic('E0390: Business Partner');
+                allure.epic('E0180: System Administration');
                 allure.story('Role create restriction — a tab that forbids insert is unchanged by the role setting');
                 allure.tag('F33020: Roles');
                 allure.tag('F33020');
@@ -651,7 +651,7 @@ testCases.forEach(({ language, label }) => {
     TC8_CASES.forEach(({ key, caseLabel, expectRestricted, roles }) => {
         test.describe(`Role create restriction — inclusion resolves by union, ${caseLabel} (${label})`, () => {
             test(`union: ${caseLabel} (${label} UI)`, async ({ page }) => {
-                allure.epic('E0390: Business Partner');
+                allure.epic('E0180: System Administration');
                 allure.story('Role create restriction — inclusion resolves the create permission by union');
                 allure.tag('F33020: Roles');
                 allure.tag('F33020');
@@ -712,7 +712,7 @@ testCases.forEach(({ language, label }) => {
     TC15_CASES.forEach(({ key, restricted }) => {
         test.describe(`Role create restriction — clone ${restricted ? 'blocked' : 'allowed'} (${label})`, () => {
             test(`clone ${restricted ? 'rejected for a restricted role' : 'works for an unrestricted role'} (${label} UI)`, async ({ page }) => {
-                allure.epic('E0390: Business Partner');
+                allure.epic('E0180: System Administration');
                 allure.story('Role create restriction — clone is closed for a restricted role');
                 allure.tag('F33020: Roles');
                 allure.tag('F33020');
@@ -806,7 +806,7 @@ testCases.forEach(({ language, label }) => {
     // by the caption the RESPONSE itself carries (derived at runtime, never a hardcoded localized string).
     test.describe(`Role create restriction — menu new-partner entry hidden (${label})`, () => {
         test(`the menu search offers "new business partner" only for an unrestricted role (${label} UI)`, async ({ page }) => {
-            allure.epic('E0390: Business Partner');
+            allure.epic('E0180: System Administration');
             allure.story('Role create restriction — the new-record menu entry is hidden for a restricted role');
             allure.tag('F33020: Roles');
             allure.tag('F33020');
@@ -894,7 +894,7 @@ testCases.forEach(({ language, label }) => {
     TC14_CASES.forEach(({ key, restricted }) => {
         test.describe(`Role create restriction — quick-input new-partner ${restricted ? 'hidden' : 'offered'} (${label})`, () => {
             test(`the C_BPartner lookup ${restricted ? 'hides' : 'offers'} the new-partner entry (${label} UI)`, async ({ page }) => {
-                allure.epic('E0390: Business Partner');
+                allure.epic('E0180: System Administration');
                 allure.story('Role create restriction — the lookup quick-input new-partner entry is hidden for a restricted role');
                 allure.tag('F33020: Roles');
                 allure.tag('F33020');
@@ -963,7 +963,7 @@ testCases.forEach(({ language, label }) => {
     const C_BPARTNER_AD_TABLE_ID = '291';
     test.describe(`Role create restriction — administrator lifts it (${label})`, () => {
         test(`clearing the restriction re-enables creation without a restart (${label} UI)`, async ({ page }) => {
-            allure.epic('E0390: Business Partner');
+            allure.epic('E0180: System Administration');
             allure.story('Role create restriction — an administrator can lift it, no restart needed');
             allure.tag('F33020: Roles');
             allure.tag('F33020');

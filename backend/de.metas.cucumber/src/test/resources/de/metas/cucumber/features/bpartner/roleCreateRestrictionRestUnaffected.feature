@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor3
-@allure.label.epic:E0390_Business_Partner
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F33020_Roles
 Feature: A role's WebUI create-restriction does not affect the REST API
 
