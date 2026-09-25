@@ -8,6 +8,6 @@
 -- using Search (30) with the column-name convention (AD_Table_ID -> AD_Table), whose fields likewise
 -- inherit the reference.
 UPDATE AD_Column
-SET AD_Reference_ID = 30, Updated = now(), UpdatedBy = 100
+SET AD_Reference_ID = 30, Updated = TO_TIMESTAMP('2026-09-25', 'YYYY-MM-DD'), UpdatedBy = 100
 WHERE AD_Column_ID = 8574          -- AD_Table_Access.AD_Table_ID
   AND AD_Reference_ID = 19;
