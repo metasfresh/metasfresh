@@ -101,9 +101,9 @@ public class JSONDocumentPermissions
 			@NonNull final LogicExpressionResult allowCreateNew,
 			@NonNull final String adLanguage)
 	{
-		final String roleReasonKey = DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message();
-		if (allowCreateNew.isFalse() && roleReasonKey.equals(allowCreateNew.getName()))
+		if (isRoleCreateRestrictionRefusal(allowCreateNew))
 		{
+			final String roleReasonKey = DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message();
 			final String reason = DocumentPermissionsHelper.roleCreateNotAllowedReason(permissions).translate(adLanguage);
 			jsonIncludedTabInfo.setAllowCreateNew(false, reason, roleReasonKey);
 		}
@@ -111,6 +111,17 @@ public class JSONDocumentPermissions
 		{
 			jsonIncludedTabInfo.setAllowCreateNew(allowCreateNew.booleanValue(), allowCreateNew.getName());
 		}
+	}
+
+	/**
+	 * Whether this refusal is the role's per-table create restriction. It is the one {@code allowCreateNew=false}
+	 * whose (technical) name is the shared {@link DocumentPermissionsHelper#MSG_ROLE_CREATE_NOT_ALLOWED} key —
+	 * that key is what marks it out from every other refusal, and is why it gets the role-named translated reason.
+	 */
+	private static boolean isRoleCreateRestrictionRefusal(@NonNull final LogicExpressionResult allowCreateNew)
+	{
+		return allowCreateNew.isFalse()
+				&& DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message().equals(allowCreateNew.getName());
 	}
 
 	private boolean isReadonly(@NonNull final Document document)

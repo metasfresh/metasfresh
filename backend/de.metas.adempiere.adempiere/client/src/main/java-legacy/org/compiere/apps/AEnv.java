@@ -702,15 +702,15 @@ public final class AEnv
 		if (s_workflow == null)
 		{
 			s_workflow = Boolean.FALSE;
-			int AD_Table_ID = 645;    // AD_WF_Process
-			if (Env.getUserRolePermissions().isTableAccess(AdTableId.ofRepoId(AD_Table_ID), Access.READ))
+			AdTableId tableId = AdTableId.ofRepoId(645);    // AD_WF_Process
+			if (Env.getUserRolePermissions().isTableAccess(tableId, Access.READ))
 			{
 				s_workflow = Boolean.TRUE;
 			}
 			else
 			{
-				AD_Table_ID = 644;    // AD_WF_Activity
-				if (Env.getUserRolePermissions().isTableAccess(AdTableId.ofRepoId(AD_Table_ID), Access.READ))
+				tableId = AdTableId.ofRepoId(644);    // AD_WF_Activity
+				if (Env.getUserRolePermissions().isTableAccess(tableId, Access.READ))
 				{
 					s_workflow = Boolean.TRUE;
 				}
@@ -720,7 +720,7 @@ public final class AEnv
 			{
 				s_workflow_Window_ID = AdWindowId.ofRepoIdOrNull(DB.getSQLValue(
 						ITrx.TRXNAME_None,
-						"SELECT AD_Window_ID FROM AD_Table WHERE AD_Table_ID=?", AD_Table_ID));
+						"SELECT AD_Window_ID FROM AD_Table WHERE AD_Table_ID=?", tableId.getRepoId()));
 				if (s_workflow_Window_ID == null)
 				{
 					s_workflow_Window_ID = AdWindowId.ofRepoId(297);    // fallback HARDCODED
