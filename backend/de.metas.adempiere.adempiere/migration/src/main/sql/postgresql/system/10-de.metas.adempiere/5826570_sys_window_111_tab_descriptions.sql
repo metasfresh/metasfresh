@@ -29,8 +29,12 @@ UPDATE AD_Element_Trl SET Description='Roles whose permissions are included in t
 /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(573425, 'en_US');
 
 -- 576597  tab 541756 "Datensatz-Zugriff (Konfiguration)" (AD_Role_Record_Access_Config) -
-UPDATE AD_Element_Trl SET Description='Aktiviert die datensatzbezogene Zugriffssteuerung dieser Rolle - je Tabelle (Typ "Tabelle") oder entlang der Geschäftspartner-Hierarchie (Typ "Geschäftspartner-Hierarchie").', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-25 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=576597 AND AD_Language IN ('de_DE','de_CH');
-UPDATE AD_Element_Trl SET Description='Enables record-level access control for this role - per table (type "Table") or along the business partner hierarchy (type "Business Partner Hierarchy").', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-25 12:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=576597 AND AD_Language='en_US';
+-- Describe the two modes WITHOUT quoting the Type option labels: the Type field's list (AD_Reference
+-- 540987) is untranslated English in every language ("Table" / "Business Partner Hierarchy"), so a
+-- German-quoted label would point at text not on screen. Same fix 5825770 applied to element 585484.
+-- (12:00:01 so this reworded row re-propagates over the already-applied 12:00:00.)
+UPDATE AD_Element_Trl SET Description='Aktiviert die datensatzbezogene Zugriffssteuerung dieser Rolle - je Tabelle oder entlang der Geschäftspartner-Hierarchie.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-25 12:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=576597 AND AD_Language IN ('de_DE','de_CH');
+UPDATE AD_Element_Trl SET Description='Enables record-level access control for this role - per table or along the business partner hierarchy.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-09-25 12:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Element_ID=576597 AND AD_Language='en_US';
 /* DDL */ SELECT update_ad_element_on_ad_element_trl_update(576597, 'de_DE');
 /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(576597, 'de_DE');
 /* DDL */ SELECT update_ad_element_on_ad_element_trl_update(576597, 'de_CH');
