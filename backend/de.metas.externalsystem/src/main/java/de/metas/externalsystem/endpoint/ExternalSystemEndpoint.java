@@ -42,14 +42,14 @@ public class ExternalSystemEndpoint
 
 	@NonNull TransportType transportType;
 
-	// HTTP transport fields (null when transportType == SFTP)
+	// HTTP transport fields
 	@Nullable String endpointUrl;
 
 	@Nullable HttpMethod method;
 
 	@Nullable MediaType contentType;
 
-	// HTTP authentication fields (null when transportType == SFTP)
+	// HTTP authentication fields
 	@Nullable EndpointAuthType authType;
 
 	@Nullable String clientId;
@@ -64,10 +64,12 @@ public class ExternalSystemEndpoint
 
 	@Nullable String sasSignature;
 
-	// SFTP transport fields (null when transportType == HTTP)
+	// SFTP transport fields
 	@Nullable String sftpHost;
 
-	int sftpPort;
+	// null when no port is configured. Boxed, like sftpPollingIntervalMs and frequency below, so that
+	// "not configured" survives the trip out of PO.get_ValueAsInt, which collapses SQL NULL onto 0.
+	@Nullable Integer sftpPort;
 
 	@Nullable String sftpUsername;
 
@@ -82,16 +84,22 @@ public class ExternalSystemEndpoint
 	// SFTP inbound-polling settings (poll interval -- SFTP-only).
 	@Nullable Integer sftpPollingIntervalMs;
 
-	// Local, transport-agnostic archive folders (used by both SFTP and REST import).
+	// LOCAL_FILE transport fields
+	@Nullable String localRootLocation;
+
+	@Nullable Integer frequency;
+
+	@Nullable String importFileNamePattern;
+
+	// Local, transport-agnostic archive folders (used across all three transports: HTTP, SFTP, and LOCAL_FILE).
 	@Nullable String processedDirectory;
 
 	@Nullable String errorDirectory;
 
 	/**
 	 * If TRUE and the upstream scripted-adapter conversion returns a JSON array, the downstream
-	 * Camel route dispatches one HTTP/SFTP request per array element. Default FALSE — endpoint
-	 * runs once with the whole payload, matching existing behaviour.
-	 * See me03#29231, PLAN_ARRAY_MODE.md §3.1.
+	 * Camel route dispatches one HTTP/SFTP request per array element. FALSE: one request carries the
+	 * whole payload.
 	 */
 	@Default boolean isArrayFanOut = false;
 
@@ -105,8 +113,9 @@ public class ExternalSystemEndpoint
 	@Default boolean isFileUpload = false;
 
 	/**
-	 * Converts this endpoint to a JSON DTO.
-	 * Supports both HTTP and SFTP transport types.
+	 * Converts this endpoint to a JSON DTO. The transport type (HTTP, SFTP, or LOCAL_FILE) is always
+	 * included; only the HTTP and SFTP outbound-dispatch fields are carried, as LOCAL_FILE endpoints
+	 * have no outbound-relevant fields to serialize.
 	 */
 	@NonNull
 	public JsonExternalSystemEndpoint toJson()
@@ -125,7 +134,10 @@ public class ExternalSystemEndpoint
 				.sasSignature(sasSignature)
 				.contentType(contentType != null ? contentType.toString() : null)
 				.sftpHost(sftpHost)
-				.sftpPort(sftpPort > 0 ? sftpPort : null)
+				// boundary guard: JsonExternalSystemEndpoint.sftpPort is @JsonInclude(NON_NULL), so a 0 would go out
+				// as "sftpPort": 0 -- a wrong value on the wire and in the delivery log. Camel happens to discard a
+				// zero port and keep 22, but no consumer is obliged to.
+				.sftpPort(sftpPort != null && sftpPort > 0 ? sftpPort : null)
 				.sftpUsername(sftpUsername)
 				.sftpAuthType(sftpAuthType != null ? sftpAuthType.getCode() : null)
 				.sshPrivateKey(sshPrivateKey)

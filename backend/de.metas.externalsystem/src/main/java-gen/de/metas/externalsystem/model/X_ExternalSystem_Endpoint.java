@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements I_ExternalSystem_Endpoint, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 272284119L;
+	private static final long serialVersionUID = 1992019459L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Endpoint (final Properties ctx, final int ExternalSystem_Endpoint_ID, @Nullable final String trxName)
@@ -160,6 +160,18 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setFrequency (final int Frequency)
+	{
+		set_Value (COLUMNNAME_Frequency, Frequency);
+	}
+
+	@Override
+	public int getFrequency() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Frequency);
+	}
+
+	@Override
 	public void setHttpEndPoint (final @Nullable java.lang.String HttpEndPoint)
 	{
 		set_Value (COLUMNNAME_HttpEndPoint, HttpEndPoint);
@@ -169,6 +181,18 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	public java.lang.String getHttpEndPoint() 
 	{
 		return get_ValueAsString(COLUMNNAME_HttpEndPoint);
+	}
+
+	@Override
+	public void setImportFileNamePattern (final @Nullable java.lang.String ImportFileNamePattern)
+	{
+		set_Value (COLUMNNAME_ImportFileNamePattern, ImportFileNamePattern);
+	}
+
+	@Override
+	public java.lang.String getImportFileNamePattern() 
+	{
+		return get_ValueAsString(COLUMNNAME_ImportFileNamePattern);
 	}
 
 	@Override
@@ -193,6 +217,18 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	public boolean isFileUpload() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFileUpload);
+	}
+
+	@Override
+	public void setLocalRootLocation (final @Nullable java.lang.String LocalRootLocation)
+	{
+		set_Value (COLUMNNAME_LocalRootLocation, LocalRootLocation);
+	}
+
+	@Override
+	public java.lang.String getLocalRootLocation() 
+	{
+		return get_ValueAsString(COLUMNNAME_LocalRootLocation);
 	}
 
 	@Override
@@ -416,6 +452,8 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	public static final String TRANSPORTTYPE_HTTP = "HTTP";
 	/** SFTP = SFTP */
 	public static final String TRANSPORTTYPE_SFTP = "SFTP";
+	/** LOCAL_FILE = LOCAL_FILE */
+	public static final String TRANSPORTTYPE_LOCAL_FILE = "LOCAL_FILE";
 	@Override
 	public void setTransportType (final java.lang.String TransportType)
 	{

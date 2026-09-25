@@ -6,10 +6,16 @@ import * as IndicatorState from '../../constants/IndicatorState';
 /**
  * @file Indicator is a component that shows the save status to user in form of a save progress
  * line beneath the Header.
+ *
+ * The bar's colour comes from `indicator`, which reads error for as long as a persisted document is
+ * invalid. `rawIndicator` is the stored save state before that fold, published as `data-save-state`
+ * so automation can wait on a save rather than on a colour. It is one slot per scope, written by
+ * view fetches as well as by field PATCHes — not a per-request flag.
  * @module Indicator
  */
 const Indicator = ({
   indicator: indicatorParam,
+  rawIndicator,
   isDocumentNotSaved,
   error,
   exception,
@@ -41,7 +47,7 @@ const Indicator = ({
   const indicator = isDocumentNotSaved ? IndicatorState.ERROR : indicatorParam;
 
   return (
-    <div className="window-indicator-container">
+    <div className="window-indicator-container" data-save-state={rawIndicator}>
       <div className={cx('bar', indicator)} />
       {indicator === IndicatorState.ERROR && error ? (
         <div className="container-fluid message-bar" title={error}>
@@ -64,6 +70,7 @@ const Indicator = ({
 
 Indicator.propTypes = {
   indicator: PropTypes.string.isRequired,
+  rawIndicator: PropTypes.string,
   isDocumentNotSaved: PropTypes.bool,
   error: PropTypes.string,
   exception: PropTypes.object,

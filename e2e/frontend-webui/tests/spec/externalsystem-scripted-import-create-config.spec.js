@@ -61,7 +61,7 @@ function escapeRegExp(value) {
  * Select a value from a List dropdown widget (click the container to open, then
  * click the matching option). Works for Type / TransportType / SftpAuthType /
  * ExternalSystem_Config_ID / ExternalSystem_Endpoint_ID (all List widgets).
- * Mirrored from externalsystem-endpoint-sftp.spec.js — do not modify that file.
+ * Mirrored from externalsystem-endpoint.spec.js — do not modify that file.
  */
 async function selectListValue(page, fieldName, optionText, { exact = false } = {}) {
   const container = page.locator(`.form-field-${fieldName}`);
@@ -103,7 +103,7 @@ async function selectLookupValue(page, fieldName, searchText) {
 
 /**
  * Fill a text input field by column name using the form-field CSS class pattern.
- * Mirrored from externalsystem-endpoint-sftp.spec.js — do not modify that file.
+ * Mirrored from externalsystem-endpoint.spec.js — do not modify that file.
  */
 async function fillTextField(page, fieldName, value) {
   const field = page.locator(`.form-field-${fieldName} input[type="text"]`);
@@ -116,7 +116,7 @@ async function fillTextField(page, fieldName, value) {
 
 /**
  * Fill a numeric input field by column name.
- * Mirrored from externalsystem-endpoint-sftp.spec.js — do not modify that file.
+ * Mirrored from externalsystem-endpoint.spec.js — do not modify that file.
  */
 async function fillNumericField(page, fieldName, value) {
   const field = page.locator(`.form-field-${fieldName} input`);

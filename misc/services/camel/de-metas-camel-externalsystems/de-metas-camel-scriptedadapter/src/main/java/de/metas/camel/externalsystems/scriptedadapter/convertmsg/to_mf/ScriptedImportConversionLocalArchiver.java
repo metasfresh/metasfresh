@@ -27,13 +27,14 @@ import lombok.experimental.UtilityClass;
 import org.apache.camel.RuntimeCamelException;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 /**
- * Archives an imported scripted-import payload (the raw SFTP file content, or the raw REST POST body)
- * to a LOCAL, transport-agnostic processed/error folder — see
+ * Archives an imported scripted-import payload (the raw SFTP file content, the polled LOCAL_FILE
+ * content, or the raw REST POST body) to a LOCAL, transport-agnostic processed/error folder — see
  * {@code ExternalSystem_Endpoint.ProcessedDirectory}/{@code ErrorDirectory}.
  * <p>
  * This class never touches any remote resource. For SFTP, the remote file's own fate (consumed by
@@ -44,20 +45,82 @@ import java.nio.file.Path;
 class ScriptedImportConversionLocalArchiver
 {
 	/**
-	 * Writes {@code content} to {@code directory}/{@code fileName}, creating {@code directory}
-	 * (and any missing parents) if needed.
+	 * Writes {@code content}'s raw bytes to {@code directory}/{@code fileName} (creating missing parent
+	 * dirs), never decoding/re-encoding them -- byte-identical to the ORIGINAL source only as far as the
+	 * caller's own capture was (see {@code AbstractScriptedImportConversionArchivingRouteBuilder}).
+	 * <p>
+	 * Never overwrites: a name collision (e.g. a scanner reusing {@code scan001.pdf}) gets a numeric
+	 * suffix and a retried write, with {@link StandardOpenOption#CREATE_NEW} closing the check-then-write
+	 * race atomically.
+	 *
+	 * @throws RuntimeCamelException if {@code fileName} would resolve outside {@code directory}, or the
+	 * write fails for any other reason.
 	 */
-	void archive(@NonNull final String directory, @NonNull final String fileName, @NonNull final String content)
+	void archive(@NonNull final String directory, @NonNull final String fileName, @NonNull final byte[] content)
 	{
 		try
 		{
-			final Path dirPath = Path.of(directory);
+			final Path dirPath = Path.of(directory).toAbsolutePath().normalize();
 			Files.createDirectories(dirPath);
-			Files.writeString(dirPath.resolve(fileName), content, StandardCharsets.UTF_8);
+			writeWithoutOverwriting(dirPath, fileName, content);
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeCamelException("Failed to locally archive payload to " + directory + "/" + fileName, e);
 		}
+	}
+
+	/**
+	 * Resolves {@code fileName} under {@code dirPath} and writes {@code content} without ever truncating an
+	 * existing file: {@link StandardOpenOption#CREATE_NEW} makes file creation itself the collision check
+	 * (no separate "does it exist" step that a second, concurrent archiver could race past), and each
+	 * collision is retried under a distinct, incrementing suffix until one succeeds.
+	 */
+	private static void writeWithoutOverwriting(@NonNull final Path dirPath, @NonNull final String fileName, @NonNull final byte[] content) throws IOException
+	{
+		final Path resolved = resolveWithinDirectory(dirPath, fileName);
+		int collisionCount = 0;
+		Path candidate = resolved;
+		while (true)
+		{
+			try
+			{
+				Files.write(candidate, content, StandardOpenOption.CREATE_NEW);
+				return;
+			}
+			catch (final FileAlreadyExistsException e)
+			{
+				collisionCount++;
+				candidate = resolveWithinDirectory(dirPath, disambiguate(fileName, collisionCount));
+			}
+		}
+	}
+
+	/** Inserts a numeric suffix before the last {@code '.'} extension (or at the end, if there is none). */
+	@NonNull
+	private static String disambiguate(@NonNull final String fileName, final int collisionCount)
+	{
+		final int extensionSeparatorIndex = fileName.lastIndexOf('.');
+		final boolean hasExtension = extensionSeparatorIndex > 0;
+		final String baseName = hasExtension ? fileName.substring(0, extensionSeparatorIndex) : fileName;
+		final String extension = hasExtension ? fileName.substring(extensionSeparatorIndex) : "";
+		return baseName + "_" + collisionCount + extension;
+	}
+
+	/**
+	 * Rejects a {@code fileName} that would resolve outside {@code dirPath} (e.g. containing {@code ..} or
+	 * a path separator) instead of silently writing there. {@code fileName} may be operator-controlled (a
+	 * customer-authored {@code ImportFileNamePattern}), so this is a defensive check, not a case this
+	 * codebase's own callers are known to trigger.
+	 */
+	@NonNull
+	private static Path resolveWithinDirectory(@NonNull final Path dirPath, @NonNull final String fileName)
+	{
+		final Path resolved = dirPath.resolve(fileName).normalize();
+		if (!dirPath.equals(resolved.getParent()))
+		{
+			throw new RuntimeCamelException("Refusing to archive outside " + dirPath + ": resolved file name '" + fileName + "' escapes the archive directory");
+		}
+		return resolved;
 	}
 }

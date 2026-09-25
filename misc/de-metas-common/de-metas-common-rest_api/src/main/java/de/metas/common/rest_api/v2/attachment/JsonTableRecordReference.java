@@ -22,24 +22,58 @@
 
 package de.metas.common.rest_api.v2.attachment;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
+/**
+ * Addresses a metasfresh record, either by its table's name or by its {@code AD_Table_ID}.
+ * Exactly one of the two has to be given; supplying both or neither is rejected.
+ */
 @Value
-@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = JsonTableRecordReference.JsonTableRecordReferenceBuilder.class)
 public class JsonTableRecordReference
 {
-	@NonNull
+	@Nullable
 	@JsonProperty("tableName")
 	String tableName;
+
+	@Nullable
+	@JsonProperty("adTableId")
+	Integer adTableId;
 
 	@NonNull
 	@JsonProperty("recordId")
 	JsonMetasfreshId recordId;
+
+	@Builder
+	public JsonTableRecordReference(
+			@Nullable @JsonProperty("tableName") final String tableName,
+			@Nullable @JsonProperty("adTableId") final Integer adTableId,
+			@NonNull @JsonProperty("recordId") final JsonMetasfreshId recordId)
+	{
+		// note that a blank tableName counts as "not given"; otherwise it would slip through to the
+		// record-reference lookup, which then fails with a much less helpful error.
+		final boolean hasTableName = !Check.isBlank(tableName);
+		final boolean hasAdTableId = adTableId != null;
+
+		if (hasTableName == hasAdTableId)
+		{
+			throw Check.mkEx("Exactly one of tableName and adTableId needs to be provided;"
+					+ " tableName=" + tableName + ", adTableId=" + adTableId);
+		}
+
+		this.tableName = hasTableName ? tableName : null;
+		this.adTableId = adTableId;
+		this.recordId = recordId;
+	}
 }
 

@@ -35,7 +35,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class ScriptedImportConversionDynamicRouteBuilder extends AbstractScriptedImportConversionArchivingRouteBuilder
@@ -69,7 +68,8 @@ public class ScriptedImportConversionDynamicRouteBuilder extends AbstractScripte
 				.routeId(getRouteId())
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.convertBodyTo(String.class)
-				.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, body())
+				.process(this::captureOriginalPayloadAsUtf8Bytes)
+				.process(this::initFailedItemCount)
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo)).id(SCRIPTED_IMPORT_CONVERSION_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
@@ -81,7 +81,7 @@ public class ScriptedImportConversionDynamicRouteBuilder extends AbstractScripte
 						.end()
 					.endChoice()
 				.end()
-				.process(this::archiveLocallyOnSuccess);
+				.process(this::archiveLocallyByItemOutcome);
 		//@formatter:on
 	}
 

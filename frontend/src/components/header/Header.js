@@ -683,6 +683,7 @@ class Header extends PureComponent {
       handleEditModeToggle,
       plugins,
       indicator,
+      rawIndicator,
       saveStatus,
       isShowComments,
       hasComments,
@@ -907,6 +908,7 @@ class Header extends PureComponent {
           {showIndicator && (
             <Indicator
               indicator={indicator}
+              rawIndicator={rawIndicator}
               error={saveStatus?.error ? saveStatus?.reason : ''}
               exception={saveStatus?.error ? saveStatus?.exception : null}
             />
@@ -1038,6 +1040,7 @@ Header.propTypes = {
   docStatus: PropTypes.any,
   docSummaryData: PropTypes.any,
   indicator: PropTypes.string,
+  rawIndicator: PropTypes.string,
   saveStatus: PropTypes.object,
   isShowComments: PropTypes.bool,
   hasComments: PropTypes.bool,
@@ -1068,6 +1071,11 @@ const mapStateToProps = (state, ownProps) => {
     docSummaryData: getDocSummaryDataFromState(state),
     isShowComments: isShowCommentsMarker(state),
     indicator,
+    // The stored save state, before computeSaveStatusFlags folds the document's validity into it
+    // (`indicator` reads error for as long as a persisted document is invalid, whether or not a
+    // save is in flight). One slot per scope, written by view fetches as well as by field
+    // PATCHes — not a per-request flag.
+    rawIndicator: master.indicator,
     saveStatus,
     selected,
     standardActionsAllowed: getStandardActions({

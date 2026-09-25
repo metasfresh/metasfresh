@@ -73,8 +73,8 @@ public class ExternalSystemScriptedImportConversionHouseKeepingTask implements I
 
 		for (final ExternalSystemParentConfig config : parentConfigList)
 		{
-			// Fire the Start intent per child; the process derives the concrete command (REST vs SFTP
-			// enable) from the child's own endpoint transport.
+			// Fire the Start intent per child; the process derives the concrete enable command from the
+			// child's own endpoint transport.
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " (Start) for ScriptedImportConversion config " + config.getChildConfig().getId());
 			ProcessInfo.builder()
 					.setAD_Process_ID(processId)

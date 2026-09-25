@@ -228,7 +228,13 @@ public class ExternalSystemConstants
 	public static final String PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE = "sftpAuthType";
 	public static final String PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH = "sftpRemotePath";
 	public static final String PARAM_SFTP_POLLING_INTERVAL_MS = "sftpPollingIntervalMs";
-	// Local, transport-agnostic archive folders (used by both SFTP and REST import).
+
+	// LOCAL_FILE polling parameters (for ScriptedImportConversion inbound polling)
+	public static final String PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION = "localRootLocation";
+	public static final String PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN = "importFileNamePattern";
+	public static final String PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS = "frequency";
+
+	// Local, transport-agnostic archive folders (used by the SFTP, LOCAL_FILE, and REST import flows).
 	public static final String PARAM_PROCESSED_DIR = "processedDirectory";
 	public static final String PARAM_ERROR_DIR = "errorDirectory";
 

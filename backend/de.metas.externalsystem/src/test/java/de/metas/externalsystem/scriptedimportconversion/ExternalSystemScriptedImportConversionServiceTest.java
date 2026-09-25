@@ -49,7 +49,12 @@ import org.adempiere.exceptions.AdempiereException;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIR;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_DIR;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -160,7 +165,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 	@Test
 	void getParameters_sftpPollingSettings_comeFromLinkedEndpoint()
 	{
-		// given: the SFTP polling settings live on the ENDPOINT (moved off the config)
+		// given: the SFTP polling settings live on the ENDPOINT
 		final UserId userImportId = createUserId();
 		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
 				.userId(userImportId)
@@ -197,10 +202,146 @@ class ExternalSystemScriptedImportConversionServiceTest
 	}
 
 	@Test
+	void getParameters_sftpEndpointWithoutPort_omitsPortParameter()
+	{
+		// given: an SFTP endpoint whose SftpPort column was never set. PO.get_ValueAsInt reads SQL NULL back
+		// as 0, and ScriptedImportConversionSftpRouteBuilder appends any non-empty port to the poller URI
+		// verbatim -- so a "0" here would key the camel endpoint on sftp://host:0.
+		final UserId userImportId = createUserId();
+		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
+				.userId(userImportId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.MAIN)
+				.roleId(RoleId.WEBUI)
+				.build());
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("eddyson-sftp");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
+		endpointRecord.setSftpHost("sftp.example.com");
+		endpointRecord.setSftpUsername("sftpuser");
+		endpointRecord.setSftpAuthType(X_ExternalSystem_Endpoint.SFTPAUTHTYPE_PASSWORD);
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when
+		final Map<String, String> parameters = service.getParameters(config);
+
+		// then: the port key is absent altogether. The rest of the SFTP block is still emitted, so the
+		// absence is the port's alone.
+		assertThat(parameters).doesNotContainKey(PARAM_SFTP_POLLING_ENDPOINT_PORT);
+		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_HOST)).isEqualTo("sftp.example.com");
+	}
+
+	@Test
+	void getParameters_localFileEndpoint_producesLocalFileParameters()
+	{
+		// given: the LOCAL_FILE polling settings live on the ENDPOINT
+		final UserId userImportId = createUserId();
+		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
+				.userId(userImportId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.MAIN)
+				.roleId(RoleId.WEBUI)
+				.build());
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("packzettel-local-file");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_LOCAL_FILE);
+		endpointRecord.setLocalRootLocation("/data/packzettel/watch");
+		endpointRecord.setFrequency(15000);
+		endpointRecord.setImportFileNamePattern("Packzettel_{filename}_{timestamp}");
+		endpointRecord.setProcessedDirectory("/data/packzettel/processed");
+		endpointRecord.setErrorDirectory("/data/packzettel/error");
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when
+		final Map<String, String> parameters = service.getParameters(config);
+
+		// then: the local-file root location, polling frequency and import filename pattern are
+		// sourced from the endpoint, plus the transport-agnostic processed/error dirs
+		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION)).isEqualTo("/data/packzettel/watch");
+		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS)).isEqualTo("15000");
+		assertThat(parameters.get(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN)).isEqualTo("Packzettel_{filename}_{timestamp}");
+		assertThat(parameters.get(PARAM_PROCESSED_DIR)).isEqualTo("/data/packzettel/processed");
+		assertThat(parameters.get(PARAM_ERROR_DIR)).isEqualTo("/data/packzettel/error");
+	}
+
+	@Test
+	void getParameters_sftpEndpoint_doesNotIncludeLocalFileParameters()
+	{
+		// given: a fully-configured SFTP endpoint. The three LOCAL_FILE columns are set on purpose:
+		// nothing in the schema stops an SFTP row from carrying a LocalRootLocation, so ONLY the
+		// service's own `transportType == LOCAL_FILE` guard keeps them out of the SFTP output. Left
+		// unset, each `if (endpoint.getXxx() != null)` would suppress its key on its own and the
+		// assertions below would pass with that guard deleted.
+		final UserId userImportId = createUserId();
+		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
+				.userId(userImportId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.MAIN)
+				.roleId(RoleId.WEBUI)
+				.build());
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("eddyson-sftp");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
+		endpointRecord.setSftpHost("sftp.example.com");
+		endpointRecord.setSftpPort(2222);
+		endpointRecord.setSftpPollingIntervalMs(30000);
+		endpointRecord.setProcessedDirectory("/inbound/processed");
+		endpointRecord.setErrorDirectory("/inbound/error");
+		endpointRecord.setLocalRootLocation("/data/should-not-leak/watch");
+		endpointRecord.setImportFileNamePattern("should-not-leak_{filename}");
+		endpointRecord.setFrequency(15000);
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when
+		final Map<String, String> parameters = service.getParameters(config);
+
+		// then: the SFTP parameters are present, and none of the LOCAL_FILE keys leak in
+		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_HOST)).isEqualTo("sftp.example.com");
+		assertThat(parameters.get(PARAM_SFTP_POLLING_ENDPOINT_PORT)).isEqualTo("2222");
+		assertThat(parameters.get(PARAM_SFTP_POLLING_INTERVAL_MS)).isEqualTo("30000");
+		assertThat(parameters).doesNotContainKey(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION);
+		assertThat(parameters).doesNotContainKey(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN);
+		assertThat(parameters).doesNotContainKey(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS);
+	}
+
+	@Test
 	void getParameters_processedErrorDirs_includedRegardlessOfTransport()
 	{
 		// given: an HTTP (REST) endpoint with the LOCAL processed/error dirs set — these are
-		// transport-agnostic (used by both SFTP and REST local archiving), not SFTP-only
+		// transport-agnostic (the SFTP, LOCAL_FILE and REST import flows all archive locally), not SFTP-only
 		final UserId userImportId = createUserId();
 		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
 				.userId(userImportId)

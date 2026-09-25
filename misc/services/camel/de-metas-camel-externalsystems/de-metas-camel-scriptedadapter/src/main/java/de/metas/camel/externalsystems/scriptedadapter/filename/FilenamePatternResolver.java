@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
+package de.metas.camel.externalsystems.scriptedadapter.filename;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -37,11 +37,13 @@ import java.util.Map;
  *   <li>{@code {timestamp}} — current local date/time in {@code yyyyMMdd_HHmmss} format (e.g. {@code 20260328_143022})</li>
  * </ul>
  *
- * <p>Context-dependent placeholders (populated by {@link SftpDeliveryProcessor}):
+ * <p>Context-dependent placeholders (populated by the caller):
  * <ul>
  *   <li>{@code {documentno}} — document number of the exported record (e.g. shipment number)</li>
  *   <li>{@code {table}} — table name of the exported record (e.g. {@code M_InOut})</li>
  *   <li>{@code {recordid}} — database record ID of the exported record</li>
+ *   <li>{@code {filename}} — base name of the incoming file, import-side only
+ *       (see {@link ImportFileNameResolver})</li>
  * </ul>
  *
  * <p>Unknown placeholders are left unchanged.
@@ -53,7 +55,7 @@ import java.util.Map;
  * </pre>
  */
 @UtilityClass
-public class SftpFilenameResolver
+public class FilenamePatternResolver
 {
 	private static final String TIMESTAMP_PLACEHOLDER = "{timestamp}";
 	private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");

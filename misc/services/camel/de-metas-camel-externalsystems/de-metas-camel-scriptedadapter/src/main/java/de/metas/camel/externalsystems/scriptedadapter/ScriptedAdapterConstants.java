@@ -35,10 +35,11 @@ public interface ScriptedAdapterConstants
 	String EXCEPTION_PREFIX = "Exception - ";
 
 	/**
-	 * Exchange property holding the original (pre-transform) payload string, captured before the
+	 * Exchange property holding the original (pre-transform) payload as raw bytes, captured before the
 	 * scripted transform runs, so it can be archived LOCALLY on both the success and the error path
-	 * (see {@code ScriptedImportConversionLocalArchiver}). Shared between the SFTP and the REST dynamic
-	 * route builders.
+	 * (see {@code ScriptedImportConversionLocalArchiver}). Always a {@code byte[]} — a text-shaped
+	 * writer must encode explicitly (UTF-8) rather than rely on implicit type conversion. Shared between
+	 * the SFTP, LOCAL_FILE, and REST dynamic route builders.
 	 */
 	String PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD = "ScriptedImportConversion-originalPayload";
 

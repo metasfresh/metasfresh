@@ -34,9 +34,9 @@ import javax.annotation.Nullable;
  * {@code External_Request} = {@code AD_Reference 541998}): whether to START or STOP the import
  * processor(s) of a parent config.
  * <p>
- * The concrete camel command (REST vs SFTP) is NOT chosen by the user: a parent config can have
- * several import children with different transports, so the command is derived per child from that
- * child's endpoint transport — see
+ * The concrete camel command is NOT chosen by the user: a parent config can have several import
+ * children with different transports, so the command is derived per child from that child's
+ * endpoint transport — see
  * {@link ScriptedImportConversionCommand#ofIntentAndTransport(ScriptedImportConversionIntent, de.metas.externalsystem.endpoint.TransportType)}.
  */
 @AllArgsConstructor

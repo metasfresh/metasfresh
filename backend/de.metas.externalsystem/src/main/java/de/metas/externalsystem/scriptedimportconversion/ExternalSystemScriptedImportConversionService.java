@@ -56,6 +56,9 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_DIR;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIR;
 
 @Service
@@ -72,8 +75,8 @@ public class ExternalSystemScriptedImportConversionService
 	private final ExternalSystemConfigRepository externalSystemConfigRepo;
 
 	/**
-	 * Resolve the concrete camel command(s) for a Start/Stop run, per child, deriving REST vs SFTP
-	 * from each child's own endpoint transport.
+	 * Resolve the concrete camel command(s) for a Start/Stop run, per child, deriving the transport's
+	 * command from each child's own endpoint transport.
 	 *
 	 * @param parentId    the parent config whose active children to iterate (used when {@code childConfigId} is null)
 	 * @param childConfigId when non-null, resolve only this single child (parentId is ignored)
@@ -137,7 +140,7 @@ public class ExternalSystemScriptedImportConversionService
 
 		final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
 
-		// Stable per-child identity for the camel SFTP poll-route id. Keyed on the child config id (never on
+		// Stable per-child identity for the camel poll-route id. Keyed on the child config id (never on
 		// the endpoint Value/host), so changing this child's endpoint later still lets Stop/disable find and
 		// tear down the previously-started poller instead of orphaning it. endpointName stays for display.
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY, "ScriptedImportConversion-" + config.getId().getRepoId());
@@ -145,8 +148,8 @@ public class ExternalSystemScriptedImportConversionService
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, token.getAuthToken());
 
-		// LOCAL, transport-agnostic archive dirs — used by BOTH the SFTP and the REST import flow for
-		// local done/error archiving, so these are not gated on TransportType.SFTP.
+		// LOCAL, transport-agnostic archive dirs — used by the SFTP, LOCAL_FILE, and REST import flows for
+		// local done/error archiving, so these are not gated on any single TransportType.
 		if (endpoint.getProcessedDirectory() != null)
 		{
 			parameters.put(PARAM_PROCESSED_DIR, endpoint.getProcessedDirectory());
@@ -160,7 +163,10 @@ public class ExternalSystemScriptedImportConversionService
 		if (endpoint.getTransportType() == TransportType.SFTP)
 		{
 			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_HOST, endpoint.getSftpHost());
-			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(endpoint.getSftpPort()));
+			if (endpoint.getSftpPort() != null)
+			{
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(endpoint.getSftpPort()));
+			}
 			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_USERNAME, endpoint.getSftpUsername());
 			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE, endpoint.getSftpAuthType() != null ? endpoint.getSftpAuthType().getCode() : null);
 			if (endpoint.getPassword() != null)
@@ -178,6 +184,23 @@ public class ExternalSystemScriptedImportConversionService
 			if (endpoint.getSftpPollingIntervalMs() != null)
 			{
 				parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(endpoint.getSftpPollingIntervalMs()));
+			}
+		}
+
+		// Add LOCAL_FILE endpoint parameters if endpoint uses LOCAL_FILE transport
+		if (endpoint.getTransportType() == TransportType.LOCAL_FILE)
+		{
+			if (endpoint.getLocalRootLocation() != null)
+			{
+				parameters.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_ROOT_LOCATION, endpoint.getLocalRootLocation());
+			}
+			if (endpoint.getImportFileNamePattern() != null)
+			{
+				parameters.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FILE_NAME_PATTERN, endpoint.getImportFileNamePattern());
+			}
+			if (endpoint.getFrequency() != null)
+			{
+				parameters.put(PARAM_LOCAL_FILE_POLLING_ENDPOINT_FREQUENCY_MS, String.valueOf(endpoint.getFrequency()));
 			}
 		}
 

@@ -42,20 +42,27 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 
 /**
- * Shared archiving + dispatch behaviour for the two ScriptedImportConversion transports (SFTP polling
- * and REST POST): split the transform's response into items, dispatch each item to the resolved Camel
- * endpoint, and archive the original payload to a LOCAL, transport-agnostic processed/error folder — see
- * {@code ExternalSystem_Endpoint.ProcessedDirectory}/{@code ErrorDirectory}.
+ * Shared archiving + dispatch behaviour for the ScriptedImportConversion transports (SFTP polling, local
+ * file polling and REST POST): split the transform's response into items, dispatch each item to the
+ * resolved Camel endpoint, and archive the original payload to a LOCAL, transport-agnostic
+ * processed/error folder — see {@code ExternalSystem_Endpoint.ProcessedDirectory}/{@code ErrorDirectory}.
+ * <p>
+ * Every item is attempted even after an earlier one was rejected, and each item's outcome — its response
+ * or its extracted error message — ends up in the aggregated response the caller sees. Which of the two
+ * folders the payload lands in is a separate, per-RUN verdict: see
+ * {@link #archiveLocallyByItemOutcome(Exchange)}.
  * <p>
  * The one behavioural difference between transports is the archive file name: a subclass derives it via
  * {@link #archiveFileName(Exchange)} (the real remote file name for SFTP, a synthesized name for REST,
@@ -64,6 +71,18 @@ import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterCons
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends RouteBuilder
 {
+	/**
+	 * Exchange property holding the number of items whose dispatch was rejected, as an
+	 * {@link AtomicInteger} the route arms via {@link #initFailedItemCount(Exchange)} BEFORE the item
+	 * split.
+	 * <p>
+	 * The split gives each item a COPY of the exchange, so a property WRITE on a copy never reaches the
+	 * original -- only the shared {@link AtomicInteger} OBJECT does, which is why it must be armed before
+	 * the split, not lazily from inside it.
+	 */
+	@VisibleForTesting
+	static final String EXCHANGE_PROPERTY_FAILED_ITEM_COUNT = "ScriptedImportConversion-failedItemCount";
+
 	@NonNull protected final String endpointName;
 	@NonNull protected final String scriptIdentifier;
 	@NonNull protected final JavaScriptRepo javaScriptRepo;
@@ -78,6 +97,56 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	/** Derives the archive file name for {@code exchange} — the one difference between transports. */
 	protected abstract String archiveFileName(@NonNull Exchange exchange);
 
+	/**
+	 * Captures the current (already {@code convertBodyTo(String.class)}-ed) message body as the
+	 * {@link de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants#PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD}
+	 * exchange property, explicitly UTF-8-encoded to bytes — never relying on Camel's implicit
+	 * String→byte[] type conversion, whose default charset is not guaranteed. A {@code null} body
+	 * (e.g. nothing to process) leaves the property unset, matching the archiver's "nothing was
+	 * captured" contract in {@link #archiveLocally(Exchange, String)}.
+	 * <p>
+	 * Pins only the encode half -- SFTP and REST reach this after their own upstream
+	 * {@code convertBodyTo(String.class)} decode, so their archived copy is only as faithful as that
+	 * decode was. LOCAL_FILE skips this method and archives raw bytes directly, so it alone is guaranteed
+	 * byte-identical.
+	 */
+	protected void captureOriginalPayloadAsUtf8Bytes(@NonNull final Exchange exchange)
+	{
+		final String bodyAsString = exchange.getIn().getBody(String.class);
+		if (bodyAsString != null)
+		{
+			exchange.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, bodyAsString.getBytes(StandardCharsets.UTF_8));
+		}
+	}
+
+	/**
+	 * Arms the per-item dispatch-failure tally for this exchange. MUST run before the item split — see
+	 * {@link #EXCHANGE_PROPERTY_FAILED_ITEM_COUNT} for why it cannot be armed lazily from inside the split.
+	 */
+	protected void initFailedItemCount(@NonNull final Exchange exchange)
+	{
+		exchange.setProperty(EXCHANGE_PROPERTY_FAILED_ITEM_COUNT, new AtomicInteger());
+	}
+
+	/**
+	 * The run's verdict, and the trailing step of every transport's route: the payload is filed under
+	 * {@code processedDir} only if EVERY item was dispatched successfully, and under {@code errorDir}
+	 * otherwise. A partially-imported payload counts as an error — the source has already been consumed,
+	 * so filing it under processed would tell the operator the whole payload was imported when part of it
+	 * was rejected, with no copy left anywhere to retry from.
+	 */
+	protected void archiveLocallyByItemOutcome(@NonNull final Exchange exchange)
+	{
+		if (getFailedItemCount(exchange).get() > 0)
+		{
+			archiveLocallyOnError(exchange);
+		}
+		else
+		{
+			archiveLocallyOnSuccess(exchange);
+		}
+	}
+
 	protected void archiveLocallyOnSuccess(@NonNull final Exchange exchange)
 	{
 		archiveLocally(exchange, processedDir);
@@ -85,12 +154,29 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 
 	protected void archiveLocallyOnError(@NonNull final Exchange exchange)
 	{
+		// By design, this file IS the operator's rejection notification for the polling transports
+		// (SFTP, LOCAL_FILE) -- there is no synchronous caller to answer, unlike REST's HTTP response.
 		archiveLocally(exchange, errorDir);
+	}
+
+	@NonNull
+	private static AtomicInteger getFailedItemCount(@NonNull final Exchange exchange)
+	{
+		final AtomicInteger failedItemCount = exchange.getProperty(EXCHANGE_PROPERTY_FAILED_ITEM_COUNT, AtomicInteger.class);
+		if (failedItemCount == null)
+		{
+			// A route reusing handleItemInList without the initFailedItemCount step would otherwise have
+			// no record of its failures left, and would file every rejected import under processed — the
+			// exact defect this tally exists to prevent. Fail loudly on the route's first run instead.
+			throw new RuntimeCamelException("Missing exchange property '" + EXCHANGE_PROPERTY_FAILED_ITEM_COUNT
+					+ "': the route must run initFailedItemCount before splitting the items");
+		}
+		return failedItemCount;
 	}
 
 	private void archiveLocally(@NonNull final Exchange exchange, @NonNull final String directory)
 	{
-		final String payload = exchange.getProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, String.class);
+		final byte[] payload = exchange.getProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, byte[].class);
 		if (payload == null)
 		{
 			// nothing was ever read from the source (failure occurred before the body was captured)
@@ -115,8 +201,12 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 		}
 		catch (final Exception e)
 		{
+			// Swallowed on purpose, not lost: stopOnException() would otherwise cancel items 2..N the
+			// moment one fails, and the tally here is what archiveLocallyByItemOutcome later reads to
+			// route the whole payload to the error folder.
 			log.warn("Exception caught when handling request: {}", request, e);
 			exchange.getMessage().setBody(getErrorMessage(e));
+			getFailedItemCount(exchange).incrementAndGet();
 		}
 	}
 
