@@ -13,6 +13,7 @@ import de.metas.security.permissions.ResourceAsPermission;
 import de.metas.security.permissions.UserMenuInfo;
 import de.metas.security.permissions.UserPreferenceLevelConstraint;
 import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
@@ -193,16 +194,33 @@ public interface IUserRolePermissions
 	 **/
 	BooleanWithReason checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 
+	/**
+	 * Full client/org/table write-access check for creating a record (uses {@code Access.WRITE}).
+	 * Distinct from (not a substitute for) the per-table CREATE restriction
+	 * {@link #isCanCreateNewRecords(AdTableId)}: both gate record creation, but neither subsumes the
+	 * other. This method performs the client/org/table write-access check and does NOT apply the CREATE
+	 * restriction (enforced separately, in the WebUI document layer); the CREATE restriction does not
+	 * perform this client/org/table write-access check.
+	 */
 	BooleanWithReason checkCanCreateNewRecord(ClientId clientId, OrgId orgId, AdTableId adTableId);
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, Access access);
 
-	boolean isTableAccess(int AD_Table_ID, Access access);
+	/** Whether the role has {@code access} to the table. */
+	boolean isTableAccess(@NonNull AdTableId adTableId, @NonNull Access access);
 
 	boolean isCanExport(int AD_Table_ID);
 
 	boolean isCanReport(int AD_Table_ID);
+
+	/**
+	 * The role's per-table permission to create new records (mirrors {@link #isCanReport(int)} /
+	 * {@link #isCanExport(int)}). Creating a record is a write, so a table whose WRITE is removed
+	 * (IsReadOnly='Y') also loses CREATE; removing CREATE alone leaves WRITE - and editing - intact
+	 * ("WRITE exclusion includes no CREATE, but not the other way around").
+	 */
+	boolean isCanCreateNewRecords(@NonNull AdTableId adTableId);
 
 	boolean isOrgAccess(OrgId OrgId, String tableName, Access access);
 

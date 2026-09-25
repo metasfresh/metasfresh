@@ -48,6 +48,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -222,7 +223,7 @@ public class GridTabVO implements Evaluatee, Serializable
 					return false;
 				}    //	Used by MField.getDefault
 
-				if (!role.isTableAccess(vo.AD_Table_ID, Access.READ))
+				if (!role.isTableAccess(AdTableId.ofRepoId(vo.AD_Table_ID), Access.READ))
 				{
 					vo.addLoadErrorMessage("No Table Access (AD_Table_ID=" + vo.AD_Table_ID + ")"); // 01934
 					logger.debug("No Table Access - AD_Tab_ID={}", vo.adTabId);

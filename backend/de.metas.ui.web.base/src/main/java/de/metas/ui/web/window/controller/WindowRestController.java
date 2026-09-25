@@ -67,6 +67,8 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.ui.web.window.descriptor.NewRecordDescriptor;
 import de.metas.ui.web.window.descriptor.NewRecordDescriptor.ProcessNewRecordDocumentRequest;
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
@@ -94,6 +96,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -916,13 +919,29 @@ public class WindowRestController
 
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
+			final NewRecordDescriptor newRecordDescriptor = newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor());
+
+			// Gate the role's per-table CREATE permission on the TARGET table (e.g. C_BPartner), not the
+			// quick-input template's own table (C_BPartner_QuickInput). The standard "New" path and the WebUI
+			// both enforce this, but this endpoint did not, so a replayed/direct POST created the record
+			// fail-open for a role with WRITE but IsCanCreateNewRecords='N'. checkCanCreateNewRecord (WRITE-only)
+			// stays untouched because it is shared with the REST path (PermissionService.assertCanCreateOrUpdate).
+			final AdTableId targetTableId = AdTableId.ofRepoIdOrNull(adTableDAO.retrieveTableId(newRecordDescriptor.getTableName()));
+			final BooleanWithReason roleCanCreateNewRecord = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(
+					targetTableId,
+					userSession.getUserRolePermissions());
+			if (roleCanCreateNewRecord.isFalse())
+			{
+				throw new AdempiereException(roleCanCreateNewRecord.getReason());
+			}
+
 			document.saveIfValidAndHasChanges();
 			if (document.hasChangesRecursivelly())
 			{
 				throw new AdempiereException("Not saved");
 			}
 
-			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
+			return newRecordDescriptor
 					.getProcessor()
 					.processNewRecordDocument(ProcessNewRecordDocumentRequest.builder()
 							.document(document)

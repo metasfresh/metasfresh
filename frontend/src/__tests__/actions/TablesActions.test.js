@@ -26,6 +26,7 @@ import {
   updateTabTable,
 } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
+import { DocumentAction } from '../../constants/DocumentAction';
 import { flattenRows } from '../../utils/documentListHelper';
 
 import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
@@ -559,5 +560,69 @@ describe('TableActions tab', () => {
         }
       }
     );
+  });
+});
+
+describe('TableActions new-document permission wiring', () => {
+  const windowId = '123';
+  const viewId = 'view-1';
+  const tableId = getTableId({ windowId, viewId });
+  const newRefusedByRole = {
+    action: DocumentAction.NEW_DOCUMENT,
+    reason: 'because the role says so',
+    reasonKey: 'de.metas.ui.web.RoleCreateNotAllowed',
+  };
+
+  it('keeps the disabled standard actions the server transmitted', () => {
+    const tableData = createTableData({
+      windowId,
+      viewId,
+      allowNew: false,
+      disabledStandardActions: [newRefusedByRole],
+    });
+
+    expect(tableData.allowNew).toBe(false);
+    expect(tableData.disabledStandardActions).toEqual([newRefusedByRole]);
+  });
+
+  it('states an empty list when the response carries a permission but no disabled action', () => {
+    const tableData = createTableData({ windowId, viewId, allowNew: true });
+
+    expect(tableData.disabledStandardActions).toEqual([]);
+  });
+
+  it('states no permission at all when the response transmitted none', () => {
+    const tableData = createTableData({ windowId, viewId });
+
+    expect(tableData.allowNew).toBeNull();
+    expect(tableData.disabledStandardActions).toBeNull();
+  });
+
+  it('clears a stored disabled action on a later page fetch that carries none', () => {
+    const withEntry = tablesHandler(undefined, {
+      type: ACTION_TYPES.CREATE_TABLE,
+      payload: {
+        id: tableId,
+        data: createTableData({
+          windowId,
+          viewId,
+          allowNew: false,
+          disabledStandardActions: [newRefusedByRole],
+        }),
+      },
+    });
+    expect(withEntry[tableId].disabledStandardActions).toEqual([
+      newRefusedByRole,
+    ]);
+
+    const afterPageFetch = tablesHandler(withEntry, {
+      type: ACTION_TYPES.UPDATE_TABLE,
+      payload: {
+        id: tableId,
+        data: createTableData({ windowId, viewId, allowNew: true }),
+      },
+    });
+
+    expect(afterPageFetch[tableId].disabledStandardActions).toEqual([]);
   });
 });

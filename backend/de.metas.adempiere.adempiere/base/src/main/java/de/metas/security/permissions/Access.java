@@ -28,7 +28,9 @@ public class Access implements ReferenceListAwareEnum
 	public static final Access WRITE = new Access("WRITE", X_AD_User_Record_Access.ACCESS_Write);
 	public static final Access REPORT = new Access("REPORT", X_AD_User_Record_Access.ACCESS_Report);
 	public static final Access EXPORT = new Access("EXPORT", X_AD_User_Record_Access.ACCESS_Export);
-	private static final ImmutableSet<Access> ALL_ACCESSES = ImmutableSet.of(LOGIN, READ, WRITE, REPORT, EXPORT);
+	/** Whether new records may be created for a table. Literal code, following the {@link #LOGIN} precedent: no {@code X_AD_User_Record_Access} constant, no ref-list entry. */
+	public static final Access CREATE = new Access("CREATE", "C");
+	private static final ImmutableSet<Access> ALL_ACCESSES = ImmutableSet.of(LOGIN, READ, WRITE, REPORT, EXPORT, CREATE);
 
 	private static final ImmutableMap<String, Access> accessesByCode = Maps.uniqueIndex(ALL_ACCESSES, Access::getCode);
 

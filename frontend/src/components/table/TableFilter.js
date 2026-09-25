@@ -30,6 +30,7 @@ const TableFilter = ({
   quickInputSupport,
   newRecordInputMode,
   allowCreateNew,
+  createNewDisabled,
   openTableModal,
   pending,
 }) => {
@@ -150,6 +151,16 @@ const TableFilter = ({
     allowCreateNew && // we are allowed to create a new record
     !fullScreen; // included tab is not in full screen mode
 
+  // creation is refused for a reason the user shall see: render the button disabled with that reason
+  // instead of leaving the tab without any affordance. Covers both input modes which would otherwise
+  // have offered one.
+  const shouldShowDisabledNewButton =
+    (newRecordInputMode === 'ALL_METHODS' ||
+      newRecordInputMode === 'QUICK_INPUT_ONLY') &&
+    !allowCreateNew &&
+    !!createNewDisabled &&
+    !isBatchEntryActive;
+
   return (
     <div className="table-filter-line">
       <div className="form-flex-align">
@@ -163,6 +174,22 @@ const TableFilter = ({
             >
               {counterpart.translate('window.addNew.caption')}
             </button>
+          )}
+          {shouldShowDisabledNewButton && (
+            <button
+              className="btn btn-meta-outline-secondary btn-distance btn-sm subheader-item-disabled"
+              onClick={null}
+              disabled
+              tabIndex={tabIndex}
+              data-testid={`disabledReasonKey-${createNewDisabled.reasonKey}`}
+            >
+              {counterpart.translate('window.addNew.caption')}
+            </button>
+          )}
+          {shouldShowDisabledNewButton && createNewDisabled.reason && (
+            <p className="one-line">
+              <small>({createNewDisabled.reason})</small>
+            </p>
           )}
           {showBatchEntryButton && (
             <button
@@ -253,6 +280,7 @@ TableFilter.propTypes = {
   quickInputSupport: PropTypes.object,
   newRecordInputMode: PropTypes.string,
   allowCreateNew: PropTypes.bool,
+  createNewDisabled: PropTypes.object,
   openTableModal: PropTypes.func,
   pending: PropTypes.bool,
 };
