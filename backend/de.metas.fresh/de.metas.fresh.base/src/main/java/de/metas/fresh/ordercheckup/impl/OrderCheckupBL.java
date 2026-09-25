@@ -47,9 +47,9 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 
 import javax.annotation.Nullable;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
@@ -167,9 +167,9 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			{
 				// The Warehouse (Produktion) report takes its print user from the routing's Betreuer
 				// (AD_User_InCharge_ID). That field only accepts employees (val rule 164), so it is often
-				// empty; when it is, fall back to the plant resource's user - exactly what the Plant branch
-				// below already does - so the print job is not cancelled for lack of a print user
-				// (OrderCheckupPrintingQueueHandler).
+				// empty; when it is, fall back to the plant resource's user via plantResponsibleUserId
+				// (similar to the Plant branch below, but only a *regular* plant user) - so the print job
+				// is not cancelled for lack of a print user (OrderCheckupPrintingQueueHandler).
 				// A routing with no Betreuer yields UserId.SYSTEM (repoId 0), not null - and the printing
 				// handler cancels a report whose responsible user is <= 0. So fall back to the plant user
 				// unless the routing carries a *regular* (non-system) Betreuer.
@@ -247,7 +247,12 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		return reportBuilders;
 	}
 
-	/** The plant resource's responsible user, or {@code null} when the plant or its user is unset. Mirrors the Plant branch's source. */
+	/**
+	 * The plant resource's <em>regular</em> responsible user, or {@code null} when the plant is unset or its
+	 * user is not a regular user (i.e. SYSTEM/none). Deliberately stricter than the Plant branch's
+	 * {@code UserId.ofRepoIdOrNull}: a non-regular plant user is treated as no print user, so the caller
+	 * falls through to the printing-queue cancellation rather than printing under the SYSTEM user.
+	 */
 	@Nullable
 	private UserId plantResponsibleUserId(@Nullable final ResourceId plantId)
 	{

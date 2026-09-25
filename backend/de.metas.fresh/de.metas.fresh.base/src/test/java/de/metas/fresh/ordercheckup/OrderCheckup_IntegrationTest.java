@@ -29,6 +29,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.user.UserId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.document.engine.DocumentWrapper;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
@@ -40,6 +41,7 @@ import org.compiere.model.I_S_Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -140,9 +142,9 @@ public class OrderCheckup_IntegrationTest
 	@Test
 	public void documentHandler_exposesTheRecordDocStatus()
 	{
-		final I_C_Order_MFGWarehouse_Report report = org.adempiere.model.InterfaceWrapperHelper.newInstance(I_C_Order_MFGWarehouse_Report.class);
+		final I_C_Order_MFGWarehouse_Report report = InterfaceWrapperHelper.newInstance(I_C_Order_MFGWarehouse_Report.class);
 		report.setDocStatus("CO");
-		org.adempiere.model.InterfaceWrapperHelper.save(report);
+		InterfaceWrapperHelper.save(report);
 
 		final IDocument doc = DocumentWrapper.wrapModelUsingHandler(report, new OrderCheckupReportDocumentHandler());
 
@@ -181,7 +183,7 @@ public class OrderCheckup_IntegrationTest
 
 		helper.createAllPrintJobs(UserId.ofRepoId(plantUser.getAD_User_ID()));
 
-		final java.util.List<I_C_Print_Job> printJobs =
+		final List<I_C_Print_Job> printJobs =
 				POJOLookupMap.get().getRecords(I_C_Print_Job.class);
 		assertThat(printJobs)
 				.as("an active Produktion queue item with a configured printer must produce a C_Print_Job")

@@ -31,8 +31,8 @@ import de.metas.cucumber.stepdefs.ordercheckup.C_Order_MFGWarehouse_Report_StepD
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.printing.PrintOutputFacade;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.api.impl.PrintArchiveParameters;
@@ -43,6 +43,7 @@ import io.cucumber.datatable.DataTable;
 import org.compiere.model.I_C_Invoice;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveDAO;
@@ -65,6 +66,7 @@ import static de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line.COLUMNNA
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class C_Doc_Outbound_Log_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -73,31 +75,13 @@ public class C_Doc_Outbound_Log_StepDef
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final PrintOutputFacade printOutputFacade = SpringContextHolder.instance.getBean(PrintOutputFacade.class);
 
-	private final C_Doc_Outbound_Log_StepDefData docOutboundLogTable;
-	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final C_Order_StepDefData orderTable;
-	private final C_Invoice_StepDefData invoiceTable;
-	private final M_InOut_StepDefData inOutTable;
-	private final C_Order_MFGWarehouse_Report_StepDefData mfgWarehouseReportTable;
-
-	public C_Doc_Outbound_Log_StepDef(
-			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
-			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Order_StepDefData orderTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final M_InOut_StepDefData inOutTable,
-			@NonNull final C_Order_MFGWarehouse_Report_StepDefData mfgWarehouseReportTable)
-	{
-		this.docOutboundLogTable = docOutboundLogTable;
-		this.docOutboundLogLineTable = docOutboundLogLineTable;
-		this.bpartnerTable = bpartnerTable;
-		this.orderTable = orderTable;
-		this.invoiceTable = invoiceTable;
-		this.inOutTable = inOutTable;
-		this.mfgWarehouseReportTable = mfgWarehouseReportTable;
-	}
+	@NonNull private final C_Doc_Outbound_Log_StepDefData docOutboundLogTable;
+	@NonNull private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_Invoice_StepDefData invoiceTable;
+	@NonNull private final M_InOut_StepDefData inOutTable;
+	@NonNull private final C_Order_MFGWarehouse_Report_StepDefData mfgWarehouseReportTable;
 
 	@And("^after not more than (.*)s validate C_Doc_Outbound_Log:$")
 	public void validate_C_Doc_Outbound_Log(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
