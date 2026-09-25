@@ -22,25 +22,25 @@
 
 package de.metas.cucumber.stepdefs.printing;
 
-import de.metas.adempiere.model.I_AD_PrinterRouting;
+import de.metas.adempiere.model.I_AD_Printer;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
-import de.metas.printing.PrinterRoutingId;
+import de.metas.printing.LogicalPrinterId;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class AD_PrinterRouting_StepDefData extends StepDefData<I_AD_PrinterRouting>
-		implements StepDefDataGetIdAware<PrinterRoutingId, I_AD_PrinterRouting>
+public class AD_Printer_StepDefData extends StepDefData<I_AD_Printer>
+		implements StepDefDataGetIdAware<LogicalPrinterId, I_AD_Printer>
 {
-	public AD_PrinterRouting_StepDefData()
+	public AD_Printer_StepDefData()
 	{
-		super(I_AD_PrinterRouting.class);
+		super(I_AD_Printer.class);
 	}
 
 	@Override
-	public PrinterRoutingId extractIdFromRecord(final I_AD_PrinterRouting record)
+	public LogicalPrinterId extractIdFromRecord(final I_AD_Printer record)
 	{
-		return PrinterRoutingId.ofRepoId(record.getAD_PrinterRouting_ID());
+		return LogicalPrinterId.ofRepoId(record.getAD_Printer_ID());
 	}
 }
