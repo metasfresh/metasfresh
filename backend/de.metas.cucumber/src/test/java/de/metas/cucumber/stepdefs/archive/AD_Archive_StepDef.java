@@ -495,6 +495,7 @@ public class AD_Archive_StepDef
 	 * default ({@code net.sf.jasperreports.components.barcode4j.image.producer=svg}, default.jasperreports
 	 * .properties), so they reach the PDF as vector drawing operations and contribute ZERO image XObjects.
 	 * Assert those with {@link #assert_archived_pdf_barcode_encodes_record_reference} instead.
+	 * <p>
 	 * Counts DISTINCT image XObjects per page (one entry per page's XObject resource dictionary), not
 	 * {@code Do} draw operations: an image object drawn more than once on the same page from the same
 	 * resource entry is counted once, not once per draw. In this report every article row's barcode is its
@@ -545,9 +546,14 @@ public class AD_Archive_StepDef
 	}
 
 	/**
-	 * Asserts that the archived PDF prints EXACTLY ONE Code39 barcode and that a scanner reading it gets
-	 * back the record's own {@link TableRecordReference} -- {@code <AD_Table_ID>-<Record_ID>}, the form the
-	 * scanned-file import parses to decide which record a sheet belongs to.
+	 * Asserts that the archived PDF prints a Code39 barcode which, when scanned, reads back
+	 * {@code <AD_Table_ID>-<Record_ID>} of the record named by {@code referencedRecordIdentifier} -- the form
+	 * the scanned-file import parses to decide which record a sheet belongs to.
+	 * <p>
+	 * TWO identifiers on purpose. The document is archived against one record and the barcode points at
+	 * another: a production order-checkup sheet hangs off the checkup-report row but prints the ORDER's
+	 * reference, because the order is what the import must resolve. Collapsing them into one identifier
+	 * silently asserts the wrong table.
 	 * <p>
 	 * It really does scan it: the page is rasterised at {@value #BARCODE_SCAN_DPI} DPI and zxing decodes the
 	 * pixels, so this asserts the printed barcode's CONTENT, not merely that some graphic rendered. Nothing
@@ -559,30 +565,39 @@ public class AD_Archive_StepDef
 	 * with 0 image XObjects and an empty extracted-text layer, while the rasterise-and-decode path below
 	 * returns the code.
 	 * <p>
-	 * {@value #BARCODE_SCAN_DPI} DPI is chosen with margin on both sides, not tuned to just-pass: for a
-	 * 100x30 report element the same code decodes at 200, 300, 400 and 600 DPI. A higher
-	 * resolution is not free -- an A4 page at 600 DPI is a ~35 MPixel greyscale raster.
+	 * On {@value #BARCODE_SCAN_DPI} DPI: measured for a 100x30 report element, a 14-character code (the
+	 * length a six-digit table id and a seven-digit record id produce) decodes at 300, 400 and 600 DPI but
+	 * NOT at 200 -- so 200 is already the failing step and the margin here is upwards only. 300 holds to
+	 * about a 20-character code, well past anything an {@code AD_Table_ID}/{@code Record_ID} pair reaches.
+	 * Raising it is not free: an A4 page at 600 DPI is a ~35 MPixel greyscale raster.
 	 * <p>
-	 * Uses {@link GenericMultipleBarcodeReader} rather than a single decode so that "exactly one" is an
-	 * assertion and not an artifact: a plain {@code decode} returns the first barcode it finds and would
-	 * stay green if the report started printing a second one.
+	 * "Exactly one" is bounded, and the bound is worth knowing before you rely on it.
+	 * {@link GenericMultipleBarcodeReader} is used rather than a plain {@code decode} (which returns the
+	 * first barcode it finds and would stay green on a second one), but it dedups its results BY DECODED
+	 * TEXT, so two barcodes carrying the same content on the SAME page collapse into one result. Across
+	 * pages they do not: each page is decoded separately and the results concatenated. So this step catches
+	 * a second barcode with different content anywhere, and a duplicate of the same content on another page
+	 * -- but not a duplicate of the same content side by side on one page.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.example
 	 * <pre>
-	 * Then the PDF archived for the record identified by "order_checkup" prints exactly one barcode encoding that record's reference
+	 * Then the PDF archived for the record identified by "order_checkup_WH" prints exactly one barcode encoding the reference of the record identified by "order"
 	 * </pre>
 	 */
-	@Then("the PDF archived for the record identified by {string} prints exactly one barcode encoding that record's reference")
-	public void assert_archived_pdf_barcode_encodes_record_reference(@NonNull final String recordIdentifier)
+	@Then("the PDF archived for the record identified by {string} prints exactly one barcode encoding the reference of the record identified by {string}")
+	public void assert_archived_pdf_barcode_encodes_record_reference(
+			@NonNull final String archivedRecordIdentifier,
+			@NonNull final String referencedRecordIdentifier)
 	{
-		final TableRecordReference recordRef = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(recordIdentifier));
-		final String expectedCode = recordRef.getAD_Table_ID() + "-" + recordRef.getRecord_ID();
+		final TableRecordReference referencedRecord = identifiersResolver.getTableRecordReference(StepDefDataIdentifier.ofString(referencedRecordIdentifier));
+		final String expectedCode = referencedRecord.getAD_Table_ID() + "-" + referencedRecord.getRecord_ID();
 
-		final List<String> decodedCodes = decodeCode39Barcodes(recordIdentifier);
+		final List<String> decodedCodes = decodeCode39Barcodes(archivedRecordIdentifier);
 
 		assertThat(decodedCodes)
-				.as("Code39 barcodes scanned out of the PDF archived for record %s", recordIdentifier)
+				.as("Code39 barcodes scanned out of the PDF archived for record %s (expecting the reference of %s)",
+						archivedRecordIdentifier, referencedRecordIdentifier)
 				.containsExactly(expectedCode);
 	}
 
@@ -619,9 +634,11 @@ public class AD_Archive_StepDef
 		final BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(pageImage)));
 
 		final EnumMap<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
-		// Restricted to CODE_39 deliberately: left open, zxing also tries the other 1D symbologies and a run
-		// of bars can satisfy more than one of them, so an unrestricted read can return a second, phantom
-		// "barcode" for the same ink -- which would break the containsExactly above for no real reason.
+		// Restricted to CODE_39 for SPEED, not correctness: measured, an unrestricted read returns the same
+		// single result, but takes ~1120ms per barcode-bearing page against ~335ms restricted, because zxing
+		// tries every 1D symbology it knows. Note the trade this makes -- if the report ever switches
+		// symbology, a CODE_39-only reader finds nothing and the assertion still fails (correctly), but it
+		// reports "expected [...] but was []" rather than naming the code it actually found.
 		hints.put(DecodeHintType.POSSIBLE_FORMATS, Arrays.asList(BarcodeFormat.CODE_39));
 		hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
 
