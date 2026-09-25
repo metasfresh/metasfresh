@@ -41,6 +41,7 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -195,7 +196,7 @@ public class PPOrderCostDifferenceDistributor
 		}
 
 		final CurrentCost currentCost = utils.getCurrentCostForUpdate(request);
-		final CostAmountDetailed split = computeSplit(residual, mainProductCost, currentCost);
+		final CostAmountDetailed split = computeSplit(residual, mainProductCost, currentCost, utils.getQuantityUOMConverter());
 
 		final CostDetailCreateResult mainResult = utils.createCostDetailRecordNoCostsChanged(
 				request.withAmountAndType(split.getMainAmt(), CostAmountType.MAIN),
@@ -312,7 +313,7 @@ public class PPOrderCostDifferenceDistributor
 			}
 
 			final CurrentCost currentCost = utils.getCurrentCostForUpdate(coProductCost.getCostSegmentAndElement());
-			final CostAmountDetailed split = computeSplit(residual, coProductCost, currentCost);
+			final CostAmountDetailed split = computeSplit(residual, coProductCost, currentCost, utils.getQuantityUOMConverter());
 
 			final CostDetailCreateRequest coProductRequest = request.withProductIdAndQty(coProductCost.getProductId(), request.getQty().toZero());
 
@@ -379,10 +380,14 @@ public class PPOrderCostDifferenceDistributor
 	static CostAmountDetailed computeSplit(
 			@NonNull final CostAmount residual,
 			@NonNull final PPOrderCost productCost,
-			@NonNull final CurrentCost currentCost)
+			@NonNull final CurrentCost currentCost,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		final CurrencyId currencyId = currentCost.getCurrencyId();
-		final Quantity manufacturedQty = productCost.getAccumulatedQty();
+		// The accumulated qty is in the product's document/BOM UOM (e.g. kg), which can differ from the cost/stock
+		// UOM the current cost is kept in (e.g. Stk); convert it so every op below compares like with like.
+		final Quantity manufacturedQty = uomConverter.convertQuantityTo(
+				productCost.getAccumulatedQty(), productCost.getProductId(), currentCost.getUomId());
 		// Negative on-hand cannot capitalize into stock, so the whole residual is period cost (COGS).
 		final Quantity qtyInStock = currentCost.getCurrentQty().toZeroIfNegative().min(manufacturedQty);
 

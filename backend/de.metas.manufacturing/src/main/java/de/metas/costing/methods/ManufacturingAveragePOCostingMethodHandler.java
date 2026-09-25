@@ -217,7 +217,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			requestEffective = request.withAmountAndQty(amt, qty);
 			// Snapshot the price on non-reversal receipts only. A reversal leaves the old snapshot in place
 			// harmlessly: nothing reads PP_Order_Cost.price before the next receipt overwrites it.
-			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price);
+			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price, utils.getCostPriceUOMConverter());
 		}
 		else
 		{
