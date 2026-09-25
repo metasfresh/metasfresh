@@ -1,6 +1,7 @@
 package de.metas.fresh.ordercheckup;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.document.DocBaseType;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
@@ -32,6 +33,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
@@ -74,6 +76,22 @@ public class OrderCheckupTestHelper
 	public Masterdata createMasterdata()
 	{
 		return new Masterdata(this);
+	}
+
+	/**
+	 * Creates one of the two {@code C_DocType}s that {@code OrderCheckupBuilder} resolves per report kind.
+	 * Mirrors what migration {@code 5825540_sys_gh32265_DocTypes.sql} ships at runtime: one doctype per
+	 * {@link DocBaseType}, with no {@code DocSubType} - which is what {@code DocTypeQuery.DOCSUBTYPE_NONE}
+	 * matches on. Created from the same {@code ctx} as the order, so client and org match the lookup.
+	 */
+	public I_C_DocType createDocType(@NonNull final DocBaseType docBaseType, @NonNull final String name)
+	{
+		final I_C_DocType docType = InterfaceWrapperHelper.create(ctx, I_C_DocType.class, ITrx.TRXNAME_None);
+		docType.setName(name);
+		docType.setDocBaseType(docBaseType.getCode());
+		docType.setDocSubType(null);
+		InterfaceWrapperHelper.save(docType);
+		return docType;
 	}
 
 	public I_AD_User createAD_User(final String name)
