@@ -191,10 +191,16 @@ testCases.forEach(({ language, label }) => {
             // persisted record results (the URL never resolves to /window/123/<numericId>).
             isExpectingCreate = true;
             await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
-            await page.waitForTimeout(3000);
+            // Await the server rejection deterministically (the response listener sets hasServerRejectedCreate) —
+            // never a fixed sleep, which under CI load can be read before the round trip settles.
+            await expect
+                .poll(() => hasServerRejectedCreate, {
+                    timeout: VERY_SLOW_ACTION_TIMEOUT,
+                    message: 'the server must reject the create request for a restricted role',
+                })
+                .toBe(true);
             const urlAfterNew = page.url();
             console.log(`[${language}] URL after direct /NEW: ${urlAfterNew} ; hasServerRejectedCreate=${hasServerRejectedCreate}`);
-            expect(hasServerRejectedCreate, 'the server must reject the create request for a restricted role').toBe(true);
             expect(isNewRecordUrl(urlAfterNew), `a restricted role must not obtain a new C_BPartner record (url=${urlAfterNew})`).toBe(false);
             isExpectingCreate = false;
 
@@ -204,6 +210,10 @@ testCases.forEach(({ language, label }) => {
             await page.locator('body').click();
             await page.waitForTimeout(200);
             await page.keyboard.press('Alt+N');
+            // Negative outcome: give the Alt+N shortcut a fixed settle window to (not) navigate, then confirm the
+            // URL stayed on the list. A poll is wrong here — it would resolve on the first non-new-record reading
+            // and never give a broken shortcut time to reveal itself; the deterministic wait for a POSITIVE
+            // create is used above (expect.poll on hasServerRejectedCreate).
             await page.waitForTimeout(2000);
             const urlAfterAltN = page.url();
             console.log(`[${language}] URL after Alt+N: ${urlAfterAltN}`);
@@ -540,7 +550,7 @@ testCases.forEach(({ language, label }) => {
     });
 
     // TC3 — tab-level insert block unchanged (AC3, AC4). On a tab that ALREADY forbids insert — Vorgänge
-    // (R_Request), included tab 540829 of window 123, IsInsertRecord='N' on the customer stack — creation
+    // (R_Request), included tab 540829 of window 123, IsInsertRecord='N' in core (migration 5463810) — creation
     // stays blocked and NO role reason ever surfaces, whatever the role's own R_Request row says. Three role
     // states prove it: no row; an ALLOWING row (AC4: setting "allowed" never enables what the tab forbids);
     // and a FORBIDDING row (the tab's block, not the role's, is what shows). No AD metadata is changed — the
@@ -968,18 +978,27 @@ testCases.forEach(({ language, label }) => {
             const adminUser = md.login.user; // WebUI role — has write access to the Roles window (111)
             expect(restrictedUser && roleId && adminUser, 'masterdata must return the restricted user, role id, and admin user').toBeTruthy();
 
-            const canCreate = async (user) => {
+            // Whether the user obtains a new C_BPartner after opening /NEW. For the POSITIVE expectation, wait
+            // DETERMINISTICALLY for the new-record URL — never a blind sleep, since the permission-cache
+            // invalidation + create round trip can exceed a fixed window under CI load. For the NEGATIVE, use a
+            // bounded settle window then confirm the URL stayed on the list (a poll would resolve on the first
+            // non-new-record reading and never let a broken gate reveal itself).
+            const canCreate = async (user, { expectCreate }) => {
                 await page.context().clearCookies();
                 await LoginPage.goto();
                 await LoginPage.login(user);
                 await DashboardPage.expectVisible();
                 await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
+                if (expectCreate) {
+                    await page.waitForURL((u) => isNewRecordUrl(u.toString()), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    return true;
+                }
                 await page.waitForTimeout(3000);
                 return isNewRecordUrl(page.url());
             };
 
             // BEFORE: the restricted user cannot create a C_BPartner.
-            expect(await canCreate(restrictedUser), 'before lifting: the restricted role must NOT obtain a new record').toBe(false);
+            expect(await canCreate(restrictedUser, { expectCreate: false }), 'before lifting: the restricted role must NOT obtain a new record').toBe(false);
 
             // ADMIN lifts it: delete the role's C_BPartner table-access row via the Roles window (111).
             await page.context().clearCookies();
@@ -996,7 +1015,7 @@ testCases.forEach(({ language, label }) => {
             expect(delResp.ok(), 'the administrator must be able to clear the restriction row').toBe(true);
 
             // AFTER: the restricted user, in a NEW session, can now create — no app restart.
-            expect(await canCreate(restrictedUser), 'after lifting: the role can create a new record (no restart)').toBe(true);
+            expect(await canCreate(restrictedUser, { expectCreate: true }), 'after lifting: the role can create a new record (no restart)').toBe(true);
             console.log(`[${language}] PASS — administrator lifted the restriction; creation re-enabled without restart`);
         });
     });
