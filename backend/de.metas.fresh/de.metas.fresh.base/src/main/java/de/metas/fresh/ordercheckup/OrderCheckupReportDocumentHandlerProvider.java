@@ -1,0 +1,48 @@
+package de.metas.fresh.ordercheckup;
+
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import de.metas.document.engine.DocumentHandler;
+import de.metas.document.engine.DocumentHandlerProvider;
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import org.springframework.stereotype.Component;
+
+/**
+ * Registers {@link OrderCheckupReportDocumentHandler} for the {@code C_Order_MFGWarehouse_Report} table,
+ * which is what makes the document engine treat the record as a document and read its {@code DocStatus}.
+ */
+@Component
+public class OrderCheckupReportDocumentHandlerProvider implements DocumentHandlerProvider
+{
+	@Override
+	public String getHandledTableName()
+	{
+		return I_C_Order_MFGWarehouse_Report.Table_Name;
+	}
+
+	@Override
+	public DocumentHandler provideForDocument(final Object model)
+	{
+		return new OrderCheckupReportDocumentHandler();
+	}
+}

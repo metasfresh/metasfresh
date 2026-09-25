@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Order_MFGWarehouse_Report extends org.compiere.model.PO implements I_C_Order_MFGWarehouse_Report, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -385631367L;
+	private static final long serialVersionUID = -429853687L;
 
     /** Standard Constructor */
     public X_C_Order_MFGWarehouse_Report (final Properties ctx, final int C_Order_MFGWarehouse_Report_ID, @Nullable final String trxName)
@@ -119,6 +119,47 @@ public class X_C_Order_MFGWarehouse_Report extends org.compiere.model.PO impleme
 	public int getC_Order_MFGWarehouse_Report_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_MFGWarehouse_Report_ID);
+	}
+
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	@Override
+	public void setDocStatus (final @Nullable java.lang.String DocStatus)
+	{
+		set_ValueNoCheck (COLUMNNAME_DocStatus, DocStatus);
+	}
+
+	@Override
+	public java.lang.String getDocStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	/** 
