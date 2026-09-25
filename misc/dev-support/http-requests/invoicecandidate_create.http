@@ -1,12 +1,46 @@
-PUT {{baseURL}}/api/v2/invoices/createCandidates
+POST {{baseURL}}/api/v2/invoices/createCandidates
 Authorization: {{authToken}}
 Content-Type: application/json;charset=UTF-8
 accept: application/json;charset=UTF-8
 
 {
-  "externalHeaderId": "1",
-  "inputDataSourceName": "int-DEST.de.metas.ordercandidate",
-  "ship": false,
-  "invoice": false,
-  "closeOrder": false
+  "items": [
+    {
+      "orgCode": "DE06",
+      "externalHeaderId": "31985_TC13_H",
+      "externalLineId": "31985_TC13_L1",
+      "billPartnerIdentifier": "val-1409298",
+      "productIdentifier": "val-1120001120",
+      "dateOrdered": "2026-09-24",
+      "qtyOrdered": 1,
+      "qtyDelivered": 1,
+      "invoiceRuleOverride": "Immediate",
+      "soTrx": "PURCHASE",
+      "paymentTerm": "val-1000003",
+      "taxOverride": { "rate": 19, "taxCategoryIdentifier": "int-Normal" }
+    }
+  ]
+}
+
+> {%
+    client.global.set("externalHeaderId", response.body.responseItems[0].externalHeaderId);
+    client.global.set("externalLineId", response.body.responseItems[0].externalLineId);
+%}
+
+### enqueue the invoice candidate created above
+
+POST {{baseURL}}/api/v2/invoices/enqueueForInvoicing
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+accept: application/json;charset=UTF-8
+
+{
+  "invoiceCandidates": [
+    {
+      "orgCode": "DE06",
+      "externalHeaderId": "{{externalHeaderId}}"
+    }
+  ],
+  "ignoreInvoiceSchedule": true,
+  "completeInvoices": true
 }
