@@ -190,7 +190,7 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 			// (updatePostCalculationAmountsForCostElement reads only accumulatedAmount/postCalculationAmount,
 			// and Doc_PPCostCollector posts from M_CostDetail, never from PP_Order_Cost.price); the next
 			// non-reversal receipt overwrites it.
-			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price);
+			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price, utils.getCostPriceUOMConverter());
 		}
 		else
 		{
