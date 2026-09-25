@@ -146,7 +146,6 @@ public class JSONDocumentPermissions
 
 		Boolean allowWindowEdit = null;
 		Boolean allowDocumentEdit = null;
-		Boolean allowCreateNewRecords = null;
 
 		for (final Iterator<DocumentStandardAction> it = standardActions.iterator(); it.hasNext(); )
 		{
@@ -183,33 +182,26 @@ public class JSONDocumentPermissions
 					continue;
 				}
 			}
-
-			if (action.isCreateNewRecordPermissionRequired())
-			{
-				if (allowCreateNewRecords == null)
-				{
-					allowCreateNewRecords = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(document.getEntityDescriptor(), permissions).isTrue();
-				}
-
-				if (!allowCreateNewRecords)
-				{
-					it.remove();
-					//noinspection UnnecessaryContinue
-					continue;
-				}
-			}
 		}
 
 		//
-		// The role may be forbidden to create new records in this table. Unlike the removals above, that
-		// refusal is explained to the user, so the action stays in the list and is transmitted as disabled.
-		if (standardActions.contains(DocumentStandardAction.New))
+		// New and Clone both produce a new record, so both are gated by the role's per-table create permission
+		// ({@link DocumentStandardAction#isCreateNewRecordAction()}). When the role may not create, they are NOT
+		// removed: each stays in the list and is transmitted as disabled-with-a-reason, so the user sees WHY the
+		// action is unavailable (the same treatment for New and Clone alike).
+		final BooleanWithReason roleCanCreate = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(document.getEntityDescriptor(), permissions);
+		if (roleCanCreate.isFalse())
 		{
-			final BooleanWithReason roleCanCreate = DocumentPermissionsHelper.checkRoleCanCreateNewRecords(document.getEntityDescriptor(), permissions);
-			final JSONDisabledStandardAction newRefused = JSONDisabledStandardAction.newRefusedByRole(roleCanCreate, adLanguage);
-			if (newRefused != null)
+			for (final DocumentStandardAction action : standardActions)
 			{
-				disabledActions.add(newRefused);
+				if (action.isCreateNewRecordAction())
+				{
+					final JSONDisabledStandardAction refused = JSONDisabledStandardAction.refusedByRole(action, roleCanCreate, adLanguage);
+					if (refused != null)
+					{
+						disabledActions.add(refused);
+					}
+				}
 			}
 		}
 

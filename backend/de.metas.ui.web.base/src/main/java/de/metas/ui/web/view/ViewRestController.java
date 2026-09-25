@@ -68,6 +68,7 @@ import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import de.metas.ui.web.window.model.DocumentStandardAction;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -311,11 +312,11 @@ public class ViewRestController
 
 			// checkNewDocumentAllowed short-circuits to a reasonless FALSE for the window-level refusals (write-access,
 			// allowCreateNewLogic) and only reaches the role check -- which alone carries a reason -- once those pass.
-			// JSONDisabledStandardAction.newRefusedByRole only returns null for a TRUE input, not for a reasonless FALSE,
+			// JSONDisabledStandardAction.refusedByRole only returns null for a TRUE input, not for a reasonless FALSE,
 			// so gate on the reason here to let the window-level refusal win with no role message.
 			if (!TranslatableStrings.isBlank(allowNew.getReason()))
 			{
-				final JSONDisabledStandardAction newRefused = JSONDisabledStandardAction.newRefusedByRole(allowNew, adLanguage);
+				final JSONDisabledStandardAction newRefused = JSONDisabledStandardAction.refusedByRole(DocumentStandardAction.New, allowNew, adLanguage);
 				if (newRefused != null)
 				{
 					json.setDisabledStandardActions(ImmutableList.of(newRefused));

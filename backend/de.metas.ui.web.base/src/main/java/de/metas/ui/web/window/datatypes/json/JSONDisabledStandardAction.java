@@ -53,11 +53,16 @@ public class JSONDisabledStandardAction
 	@NonNull String reasonKey;
 
 	/**
+	 * Builds the disabled entry for a create-producing standard action ({@link DocumentStandardAction#New} or
+	 * {@link DocumentStandardAction#Clone}) that the role may not create.
+	 *
+	 * @param action                  the create-producing action to mark disabled (New or Clone)
 	 * @param roleCanCreateNewRecords the answer of {@link DocumentPermissionsHelper#checkRoleCanCreateNewRecords}
-	 * @return the disabled {@link DocumentStandardAction#New}, or null if the role may create records
+	 * @return the disabled {@code action}, or null if the role may create records
 	 */
 	@Nullable
-	public static JSONDisabledStandardAction newRefusedByRole(
+	public static JSONDisabledStandardAction refusedByRole(
+			@NonNull final DocumentStandardAction action,
 			@NonNull final BooleanWithReason roleCanCreateNewRecords,
 			@NonNull final String adLanguage)
 	{
@@ -67,7 +72,7 @@ public class JSONDisabledStandardAction
 		}
 
 		return builder()
-				.action(DocumentStandardAction.New)
+				.action(action)
 				.reason(roleCanCreateNewRecords.getReason().translate(adLanguage))
 				.reasonKey(DocumentPermissionsHelper.MSG_ROLE_CREATE_NOT_ALLOWED.toAD_Message())
 				.build();

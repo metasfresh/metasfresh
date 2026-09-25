@@ -699,11 +699,12 @@ testCases.forEach(({ language, label }) => {
         });
     });
 
-    // TC15 — clone cannot bypass the restriction (AC18). A restricted role opens an existing partner: a
-    // clone request against the /duplicate endpoint is rejected, and the Clone action is not rendered.
-    // An unrestricted role clones normally. The endpoint is the real enforcement boundary
-    // (DocumentCollection.duplicateDocumentInTrx → checkRoleCanCreateNewRecords); the DOM check confirms
-    // the Clone standard action is removed (JSONDocumentPermissions drops it from standardActions).
+    // TC15 — clone cannot bypass the restriction (AC18). A restricted role opens an existing partner: the Clone
+    // action is shown DISABLED WITH THE ROLE REASON (greyed, not removed — the same treatment as New), and a
+    // clone request against the /duplicate endpoint is still rejected server-side. An unrestricted role clones
+    // normally. The endpoint is the real enforcement boundary (DocumentCollection.duplicateDocumentInTrx →
+    // checkRoleCanCreateNewRecords); the DOM check confirms Clone is greyed-with-reason (JSONDocumentPermissions
+    // adds it to disabledStandardActions via isCreateNewRecordAction), never silently dropped.
     const TC15_CASES = [
         { key: 'restricted', restricted: true },
         { key: 'unrestricted', restricted: false },
@@ -741,28 +742,33 @@ testCases.forEach(({ language, label }) => {
                 await assertRecordIsValid(BUSINESS_PARTNER_WINDOW_ID, recordId, 'clone test opens the partner');
 
                 // Open the ⋮ actions menu and observe the Clone action, located by its language-invariant icon
-                // class (meta-icon-duplicate). Clone is present for an unrestricted role and REMOVED for a
-                // restricted one (JSONDocumentPermissions.getStandardActions it.remove() when create is not
-                // allowed). The recording shows the actions menu WITH / WITHOUT the Clone action. The advanced-edit
-                // action (meta-icon-edit) is always present, so it is the anchor used to open the menu when Clone
-                // is absent.
+                // class (meta-icon-duplicate). Clone is present in BOTH cases; for a restricted role it is shown
+                // DISABLED WITH THE REASON (greyed, carrying the role restriction key) — the same treatment as New —
+                // and for an unrestricted role it is enabled. The recording shows the actions menu with Clone
+                // greyed / enabled.
                 const cloneItem = page.locator('.js-subheader-item:has(i.meta-icon-duplicate)');
-                const advEditItem = page.locator('.js-subheader-item:has(i.meta-icon-edit)');
-                await ensureSubheaderOpen(page, restricted ? advEditItem : cloneItem);
+                await ensureSubheaderOpen(page, cloneItem);
 
-                // Discriminating enforcement backstop: the server-computed standardActions set the WebUI builds the
-                // action menu from. Clone is REMOVED from it for a restricted role and KEPT for an unrestricted
-                // one. Language-invariant (the action's internalName 'clone'), and independent of menu rendering.
+                // Backstop (language-invariant): the server-computed standard actions. Clone stays PRESENT in the
+                // set (that is what lets the client grey it) and, for a restricted role, appears in
+                // disabledStandardActions with the role restriction reason key; for an unrestricted role it is
+                // absent from disabledStandardActions.
                 const record = await getRecordData(BUSINESS_PARTNER_WINDOW_ID, recordId);
                 const standardActions = record.standardActions || [];
-                console.log(`[${language}] standardActions (${key}) = ${JSON.stringify(standardActions)}`);
+                const disabledStandardActions = record.disabledStandardActions || [];
+                const cloneDisabled = disabledStandardActions.find((d) => d.action === 'clone') ?? null;
+                console.log(`[${language}] standardActions (${key}) = ${JSON.stringify(standardActions)} ; clone disabled = ${JSON.stringify(cloneDisabled)}`);
 
                 if (restricted) {
-                    await expect(cloneItem, 'the Clone action must be absent from the actions menu for a restricted role').toHaveCount(0);
-                    expect(standardActions, 'Clone must be removed from the standard actions for a restricted role').not.toContain('clone');
+                    // Clone is present but greyed with the role restriction key (like New) — NOT removed.
+                    await expect(cloneItem, 'the Clone action must be visible (greyed) for a restricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    await expect(cloneItem, 'the Clone action must be rendered disabled for a restricted role').toHaveClass(/subheader-item-disabled/);
+                    expect(standardActions, 'Clone stays in the standard actions set so the client can grey it').toContain('clone');
+                    expect(cloneDisabled, 'Clone must appear in disabledStandardActions for a restricted role').toBeTruthy();
+                    expect(cloneDisabled.reasonKey, 'the disabled Clone must carry the role create-restriction reason key').toBe(CREATE_RESTRICTION_MSG_KEY);
                     // Defense in depth: the /duplicate endpoint itself rejects, blocked at the role permission
                     // check BEFORE any DB write (a plain AdempiereException, never reaching the DB layer). The
-                    // message is localized, so assert on the language-invariant exception class, not the text.
+                    // message is localized, so assert on the language-invariant generated role-name token, not the text.
                     const dupResp = await page.request.post(
                         `${WEBAPI_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}/duplicate`,
                         { headers: { 'Content-Type': 'application/json' } },
@@ -777,11 +783,13 @@ testCases.forEach(({ language, label }) => {
                     // naming the role. The role name is a generated, language-invariant token (the message's {0}).
                     expect(dupBody, 'the /duplicate refusal must be the role create-restriction (names the role), not a cloning/window error').toContain(roleName);
                     expect(dupBody, 'the restricted clone must be blocked at the permission gate, never reaching the DB').not.toContain('DBUniqueConstraint');
-                    console.log(`[${language}] PASS — clone blocked (no 'clone' standard action; /duplicate permission-rejected ${dupResp.status()})`);
+                    console.log(`[${language}] PASS — clone greyed-with-reason (disabledStandardActions incl. clone; /duplicate permission-rejected ${dupResp.status()})`);
                 } else {
                     await expect(cloneItem, 'the Clone action must be visible in the actions menu for an unrestricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    await expect(cloneItem, 'the Clone action must NOT be disabled for an unrestricted role').not.toHaveClass(/subheader-item-disabled/);
                     expect(standardActions, 'Clone must be available in the standard actions for an unrestricted role').toContain('clone');
-                    console.log(`[${language}] PASS — clone available (standard action visible in menu)`);
+                    expect(cloneDisabled, 'Clone must NOT be in disabledStandardActions for an unrestricted role').toBeNull();
+                    console.log(`[${language}] PASS — clone enabled (not disabled)`);
                 }
             });
         });

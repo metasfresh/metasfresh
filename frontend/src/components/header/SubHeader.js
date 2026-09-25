@@ -327,6 +327,12 @@ const useDisabledStandardAction = ({
   );
 };
 
+const useDisabledStandardActions = ({ windowId, documentId, viewId }) => {
+  return useSelector((state) =>
+    getDisabledStandardActions({ state, windowId, documentId, viewId })
+  );
+};
+
 //
 //
 //
@@ -354,6 +360,12 @@ const MenuNavigationColumn = ({
     documentId: dataId,
     viewId,
     action: DocumentAction.NEW_DOCUMENT,
+  });
+
+  const disabledStandardActions = useDisabledStandardActions({
+    windowId,
+    documentId: dataId,
+    viewId,
   });
 
   let currentNode = elementPath;
@@ -416,6 +428,7 @@ const MenuNavigationColumn = ({
       />
       <DocumentStandardActionMenuItems
         enabledActions={standardActions}
+        disabledActions={disabledStandardActions}
         onAction={onAction}
         visible={!!windowId && !!dataId}
       />
@@ -494,27 +507,39 @@ const STANDARD_ACTIONS_AVAILABLE = [
 
 const DocumentStandardActionMenuItems = ({
   enabledActions,
+  disabledActions = [],
   visible = true,
   onAction,
 }) => {
-  if (!visible || !enabledActions || enabledActions.length <= 0) return null;
+  if (!visible) return null;
+  const enabled = enabledActions ?? [];
+  if (enabled.length <= 0 && disabledActions.length <= 0) return null;
 
   return STANDARD_ACTIONS_AVAILABLE.map(
-    ({ action, icon, captionKey, hotkey }) => (
-      <MenuItem
-        key={action}
-        action={action}
-        captionKey={captionKey}
-        icon={icon}
-        hotkey={hotkey}
-        visible={enabledActions.includes(action)}
-        onAction={onAction}
-      />
-    )
+    ({ action, icon, captionKey, hotkey }) => {
+      // An action the role may not perform (e.g. Clone when create is denied) is transmitted as disabled
+      // with a reason so the user sees WHY, rather than silently dropped — same treatment as New.
+      const disabled = disabledActions.find((d) => d.action === action) ?? null;
+      return (
+        <MenuItem
+          key={action}
+          action={action}
+          captionKey={captionKey}
+          icon={icon}
+          hotkey={hotkey}
+          visible={enabled.includes(action) || !!disabled}
+          disabled={!!disabled}
+          disabledReason={disabled?.reason}
+          disabledReasonKey={disabled?.reasonKey}
+          onAction={onAction}
+        />
+      );
+    }
   );
 };
 DocumentStandardActionMenuItems.propTypes = {
   enabledActions: PropTypes.array,
+  disabledActions: PropTypes.array,
   visible: PropTypes.bool,
   onAction: PropTypes.func.isRequired,
 };

@@ -70,11 +70,15 @@ public enum DocumentStandardAction
 	}
 
 	/**
-	 * Cloning produces a new record, so it needs the role's per-table create permission.
-	 * {@link #New} is deliberately not listed: its refusal is transmitted as disabled-with-a-reason instead of removed.
+	 * Whether this action produces a NEW record and so is gated by the role's per-table create permission.
+	 * <p>
+	 * Both {@link #New} and {@link #Clone} produce a new record; when the role may not create, both are shown
+	 * <b>disabled-with-a-reason</b> (not removed) so the user sees WHY the action is unavailable. This is the
+	 * single signal {@link de.metas.ui.web.window.datatypes.json.JSONDocumentPermissions} uses to decide which
+	 * standard actions get that treatment.
 	 */
-	public boolean isCreateNewRecordPermissionRequired()
+	public boolean isCreateNewRecordAction()
 	{
-		return Clone.equals(this);
+		return New.equals(this) || Clone.equals(this);
 	}
 }
