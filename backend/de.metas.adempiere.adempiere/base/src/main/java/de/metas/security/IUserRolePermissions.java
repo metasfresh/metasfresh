@@ -207,16 +207,8 @@ public interface IUserRolePermissions
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, Access access);
 
-	boolean isTableAccess(int AD_Table_ID, Access access);
-
-	/**
-	 * Typed overload of {@link #isTableAccess(int, Access)}: unwraps the repo-id once here so callers pass the
-	 * typed {@link AdTableId} instead of {@code .getRepoId()} at every site.
-	 */
-	default boolean isTableAccess(@NonNull final AdTableId adTableId, final Access access)
-	{
-		return isTableAccess(adTableId.getRepoId(), access);
-	}
+	/** Whether the role has {@code access} to the table. */
+	boolean isTableAccess(@NonNull AdTableId adTableId, Access access);
 
 	boolean isCanExport(int AD_Table_ID);
 

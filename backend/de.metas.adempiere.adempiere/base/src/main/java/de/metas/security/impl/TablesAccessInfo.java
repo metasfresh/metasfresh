@@ -1,6 +1,7 @@
 package de.metas.security.impl;
 
 import de.metas.security.TableAccessLevel;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
 import org.compiere.model.POInfo;
 
@@ -23,12 +24,12 @@ public class TablesAccessInfo
 	}
 
 	/**
-	 * @return table's access level or null if no table was found.
+	 * @return table's access level, or null if no such table was found.
 	 */
 	@Nullable
-	public final TableAccessLevel getTableAccessLevel(final int adTableId)
+	public final TableAccessLevel getTableAccessLevel(@NonNull final AdTableId adTableId)
 	{
-		return POInfo.getPOInfoIfPresent(AdTableId.ofRepoId(adTableId)).map(POInfo::getAccessLevel).orElse(null);
+		return POInfo.getPOInfoIfPresent(adTableId).map(POInfo::getAccessLevel).orElse(null);
 	}
 
 	public boolean isView(final String tableName)

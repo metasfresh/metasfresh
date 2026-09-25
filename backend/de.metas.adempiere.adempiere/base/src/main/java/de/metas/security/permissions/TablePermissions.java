@@ -1,6 +1,8 @@
 package de.metas.security.permissions;
 
 import de.metas.security.permissions.PermissionsBuilder.CollisionPolicy;
+import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 
 public final class TablePermissions extends AbstractPermissions<TablePermission>
 {
@@ -27,20 +29,21 @@ public final class TablePermissions extends AbstractPermissions<TablePermission>
 		return TablePermission.NONE;
 	}
 
-	public final boolean hasAccess(final int adTableId, final Access access)
+	public final boolean hasAccess(@NonNull final AdTableId adTableId, final Access access)
 	{
-		final TableResource resource = TableResource.ofAD_Table_ID(adTableId);
+		// TableResource is the int-keyed resource model (ANY_TABLE is the default); unwrap once here at that boundary.
+		final TableResource resource = TableResource.ofAD_Table_ID(adTableId.getRepoId());
 		return hasAccess(resource, access);
 	}
 
-	public boolean isCanReport(final int AD_Table_ID)
+	public boolean isCanReport(@NonNull final AdTableId adTableId)
 	{
-		return hasAccess(AD_Table_ID, Access.REPORT);
+		return hasAccess(adTableId, Access.REPORT);
 	}
 
-	public boolean isCanExport(final int AD_Table_ID)
+	public boolean isCanExport(@NonNull final AdTableId adTableId)
 	{
-		return hasAccess(AD_Table_ID, Access.EXPORT);
+		return hasAccess(adTableId, Access.EXPORT);
 	}
 
 	public static class Builder extends PermissionsBuilder<TablePermission, TablePermissions>

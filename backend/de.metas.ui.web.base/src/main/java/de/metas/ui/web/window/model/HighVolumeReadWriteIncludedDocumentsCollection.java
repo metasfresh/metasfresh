@@ -14,12 +14,11 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
-import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
@@ -103,7 +102,7 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	{
 		final String tableName = entityDescriptor.getTableNameOrNull();
 		return tableName != null
-				? AdTableId.ofRepoIdOrNull(Services.get(IADTableDAO.class).retrieveTableId(tableName))
+				? TableIdsCache.instance.getTableId(tableName).orElse(null)
 				: null;
 	}
 
