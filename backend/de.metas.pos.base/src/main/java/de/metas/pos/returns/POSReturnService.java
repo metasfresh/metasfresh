@@ -80,6 +80,7 @@ public class POSReturnService
 	private static final AdMessageKey MSG_CurrencyMismatch = AdMessageKey.of("de.metas.pos.Return.CurrencyMismatch");
 	private static final AdMessageKey MSG_NotACreditMemo = AdMessageKey.of("de.metas.pos.Return.NotACreditMemo");
 	private static final AdMessageKey MSG_TillBusy = AdMessageKey.of("de.metas.pos.Return.TillBusy");
+	private static final AdMessageKey MSG_NoTillPrice = AdMessageKey.of("de.metas.pos.Return.NoTillPrice");
 
 	/** How long {@link #createReturn} waits to acquire the terminal's cross-transaction lock before rejecting
 	 * with {@link #MSG_TillBusy} — see {@code 5826360_POS_Return_TillBusyMessageAndLockTimeout.sql}. */
@@ -153,14 +154,14 @@ public class POSReturnService
 	}
 
 	/**
-	 * Entry point for the {@code POST /api/v2/pos/returns} REST endpoint: the client sends product + qty only
-	 * (never a price — AC4e requires the credited amount to be "the till's current price for the returned
-	 * quantity", not whatever the client claims), so this resolves each line's price and price UOM from
+	 * Entry point for the {@code POST /api/v2/pos/returns} REST endpoint: the client sends product + qty only,
+	 * never a price — the credited amount per line must be the till's own current price for the returned
+	 * quantity, not whatever the client claims — so this resolves each line's price and price UOM from
 	 * {@link POSProductsService} before delegating to {@link #createReturn}.
 	 *
-	 * @throws AdempiereException {@link #MSG_NoLines} if {@code requestedLines} is empty, or if a requested
-	 * product has no till price (not on the terminal's price list) — plus everything {@link #createReturn} itself
-	 * throws.
+	 * @throws AdempiereException {@link #MSG_NoLines} if {@code requestedLines} is empty, {@link #MSG_NoTillPrice}
+	 * if a requested product is not on the terminal's current price list — plus everything {@link #createReturn}
+	 * itself throws.
 	 */
 	@NonNull
 	public POSReturnResult createReturnFromTillPrices(
@@ -188,7 +189,7 @@ public class POSReturnService
 			final POSProduct product = productsById.get(requested.getProductId());
 			if (product == null)
 			{
-				throw new AdempiereException("No till price found for product").setParameter("M_Product_ID", requested.getProductId());
+				throw new AdempiereException(MSG_NoTillPrice).setParameter("M_Product_ID", requested.getProductId());
 			}
 
 			final I_C_UOM priceUomRecord = uomDAO.getById(product.getPriceUom().getUomId());

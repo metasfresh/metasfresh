@@ -9,10 +9,10 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * {@link AssertPOSExpectationsCommand#assertQtyMatches}: a POS-return / credit-memo line's expected qty (AC4,
- * AC4b) must match BOTH the numeric value AND the UOM — a scale-insensitive value match ({@code 0.3} vs
- * {@code 0.300}) alone is not enough, since a qty stated in the wrong UOM (e.g. base UOM instead of the
- * catch-weight UOM) would silently pass a value-only check.
+ * {@link AssertPOSExpectationsCommand#assertQtyMatches}: a POS-return / credit-memo line's expected qty must
+ * match BOTH the numeric value AND the UOM — a scale-insensitive value match ({@code 0.3} vs {@code 0.300})
+ * alone is not enough, since a qty stated in the wrong UOM (e.g. base UOM instead of the catch-weight UOM)
+ * would silently pass a value-only check.
  */
 class AssertPOSExpectationsCommandTest
 {

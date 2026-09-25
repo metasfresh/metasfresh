@@ -11,9 +11,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Expectation for a single POS product-return flow (AC4/AC4b/AC4c/AC4e), and — the {@code invoices} field only
- * — for a plain invoice settlement (AC2/AC2b, consumed by Task 4.4; unrelated to a return, needs neither
- * {@code externalId} nor {@code posTerminal}).
+ * Expectation for a single POS product-return flow, and — the {@code invoices} field only — for a plain
+ * invoice settlement, unrelated to a return and needing neither {@code externalId} nor {@code posTerminal}.
  *
  * <p>Consumer-side JSON shape:
  * <pre>
@@ -34,6 +33,14 @@ import java.util.List;
  * value the client generated for the return and POSTed to the REST endpoint — is what scopes {@code returns} and
  * {@code creditMemos} to the one return this flow just created. {@code posTerminal} is separate because a
  * cash-journal line has no such externalId to key off; the terminal it belongs to is the only handle.
+ *
+ * <p><b>{@code cashJournalLines} scoping — read before using it.</b> It asserts the COMPLETE, ordered set of
+ * lines on the terminal's CURRENTLY-OPEN cash journal since it was opened — not just the lines a single action
+ * (e.g. one return) just added. A caller must therefore open a fresh journal (or otherwise start from a known-
+ * empty one) via its own masterdata immediately before the flow under test, and list every line the journal
+ * will carry by the time this expectation runs, in the order they were added. Reusing an already-active journal
+ * across scenarios, or a flow that adds other lines first (a sale, a withdrawal, an earlier settlement), makes
+ * this either false-fail on a size mismatch or — silently — compare against the wrong lines entirely.
  */
 @Value
 @Builder
@@ -59,7 +66,7 @@ public class JsonPOSExpectation
 		@Nullable String warehouse;
 	}
 
-	/** The credit memo the return produced (AC4b) — currently always exactly one per return. */
+	/** The credit memo the return produced — currently always exactly one per return. */
 	@Value
 	@Builder
 	@Jacksonized
@@ -68,7 +75,7 @@ public class JsonPOSExpectation
 		@Nullable List<JsonPOSCreditMemoLineExpectation> lines;
 	}
 
-	/** One line of the credit memo — each returned product priced at the till's price, with ITS OWN tax rate (AC4b). */
+	/** One line of the credit memo — each returned product priced at the till's price, with ITS OWN tax rate. */
 	@Value
 	@Builder
 	@Jacksonized
@@ -82,7 +89,7 @@ public class JsonPOSExpectation
 		@Nullable BigDecimal taxRate;
 	}
 
-	/** An arbitrary invoice (T4: a plain sales invoice settled in cash), by its masterdata/context identifier. */
+	/** An arbitrary invoice — e.g. a plain sales invoice settled in cash — by its masterdata/context identifier. */
 	@Value
 	@Builder
 	@Jacksonized

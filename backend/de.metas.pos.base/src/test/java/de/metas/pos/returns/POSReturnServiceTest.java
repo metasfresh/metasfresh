@@ -56,7 +56,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -73,6 +76,7 @@ class POSReturnServiceTest
 	private static final AdMessageKey MSG_QtyMustBePositive = AdMessageKey.of("de.metas.pos.Return.QtyMustBePositive");
 	private static final AdMessageKey MSG_PriceUomMismatch = AdMessageKey.of("de.metas.pos.Return.PriceUomMismatch");
 	private static final AdMessageKey MSG_CurrencyMismatch = AdMessageKey.of("de.metas.pos.Return.CurrencyMismatch");
+	private static final AdMessageKey MSG_NoTillPrice = AdMessageKey.of("de.metas.pos.Return.NoTillPrice");
 
 	private static final CurrencyId CURRENCY_ID = CurrencyId.ofRepoId(102);
 	private static final CurrencyId OTHER_CURRENCY_ID = CurrencyId.ofRepoId(103);
@@ -82,6 +86,8 @@ class POSReturnServiceTest
 	private static final UserId CASHIER_ID = UserId.ofRepoId(1);
 
 	private POSReturnService service;
+	private FixedPOSTerminalService posTerminalService;
+	private ReturnsServiceFacade returnsServiceFacade;
 	private OrgId orgId;
 
 	@BeforeEach
@@ -90,10 +96,10 @@ class POSReturnServiceTest
 		AdempiereTestHelper.get().init();
 		orgId = OrgId.ofRepoId(1);
 
-		final FixedPOSTerminalService posTerminalService = new FixedPOSTerminalService();
+		posTerminalService = new FixedPOSTerminalService();
 		posTerminalService.terminal = newTerminal();
 
-		final ReturnsServiceFacade returnsServiceFacade = new ReturnsServiceFacade(
+		returnsServiceFacade = new ReturnsServiceFacade(
 				new CustomerReturnsWithoutHUsProducer(new CustomerReturnInOutRecordFactory()));
 
 		service = new POSReturnService(
@@ -173,10 +179,10 @@ class POSReturnServiceTest
 
 	/**
 	 * {@link POSReturnService#toReturnLine} is what {@link POSReturnService#createReturnFromTillPrices} uses to
-	 * turn a client's product+qty (no price, no UOM) into a fully priced {@link POSReturnLine} — the REST
-	 * endpoint's whole reason for existing (AC4e: "the credited amount per line is the till's current price").
-	 * Exercised directly (pure, no DB) rather than through {@code createReturnFromTillPrices} itself, which
-	 * needs {@link POSProductsService}'s real, DB-backed price-list lookup — see {@code POSProductsLoader}.
+	 * turn a client's product+qty (no price, no UOM) into a fully priced {@link POSReturnLine}: the credited
+	 * amount per line must be the till's own current price, never a price the client sends. Exercised directly
+	 * (pure, no DB) rather than through {@code createReturnFromTillPrices} itself, which needs
+	 * {@link POSProductsService}'s real, DB-backed price-list lookup — see {@code POSProductsLoader}.
 	 */
 	@Test
 	void toReturnLine_pricesFromCatchWeightUom_whenProductIsPricedByCatchWeight()
@@ -242,6 +248,50 @@ class POSReturnServiceTest
 	void qtyNegative()
 	{
 		assertThrowsWithKey(() -> service.createReturn(newRequestWithQty(new BigDecimal("-0.3"))), MSG_QtyMustBePositive);
+	}
+
+	/**
+	 * {@link POSReturnService#createReturnFromTillPrices} rejects a requested product the till has no current
+	 * price for — a real, user-facing case (the till's price list doesn't cover an item a cashier scans), not an
+	 * internal invariant, so it gets the same {@code AdMessageKey} treatment as the other cashier-reachable
+	 * guards. A {@link POSProductsService} double that finds no products stands in for a real, empty price-list
+	 * lookup — the guard itself doesn't care why the product wasn't found.
+	 */
+	@Test
+	void noTillPriceForProduct()
+	{
+		final POSReturnService serviceWithNoTillPrices = new POSReturnService(
+				posTerminalService,
+				returnsServiceFacade,
+				new POSReturnRepository(),
+				newInvoiceService(),
+				new POSCashJournalService(new POSCashJournalRepository()),
+				new NoProductsPOSProductsService(posTerminalService));
+
+		final List<POSReturnRequestedLine> requestedLines = ImmutableList.of(POSReturnRequestedLine.builder()
+				.productId(PRODUCT_ID)
+				.qty(BigDecimal.ONE)
+				.build());
+
+		assertThrowsWithKey(
+				() -> serviceWithNoTillPrices.createReturnFromTillPrices(TERMINAL_ID, UUID.randomUUID(), CASHIER_ID, requestedLines),
+				MSG_NoTillPrice);
+	}
+
+	/** Finds no products, whatever is asked — stands in for a product missing from the till's price list. */
+	private static class NoProductsPOSProductsService extends POSProductsService
+	{
+		NoProductsPOSProductsService(@NonNull final POSTerminalService posTerminalService)
+		{
+			super(posTerminalService);
+		}
+
+		@Override
+		@NonNull
+		public List<POSProduct> getProductsByIds(@NonNull final POSTerminalId posTerminalId, @NonNull final Instant evalDate, @NonNull final Set<ProductId> productIds)
+		{
+			return ImmutableList.of();
+		}
 	}
 
 	private static POSReturnRequest newRequestWithQty(@NonNull final BigDecimal qty)

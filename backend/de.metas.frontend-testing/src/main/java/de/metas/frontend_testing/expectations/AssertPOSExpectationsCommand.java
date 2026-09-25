@@ -37,9 +37,10 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softlyPutContext;
 
 /**
- * Asserts a POS product return (AC4/AC4b/AC4c/AC4e: the return {@code M_InOut}, its credit memo, the credit
- * memo's allocated outbound payment, and the till's cash journal) and, separately via {@code invoices}, a plain
- * invoice settlement (AC2/AC2b — infrastructure only, consumed by Task 4.4).
+ * Asserts a POS product return: the return {@code M_InOut}, its credit memo, the credit memo's allocated
+ * outbound payment, and the till's cash journal. Separately, via {@code invoices}, asserts a plain invoice's
+ * paid / allocated-payment state — infrastructure with no POS-return artifact behind it, for a later flow that
+ * does not exist on this branch yet.
  *
  * <p>Consumer-side JSON shape: see {@link JsonPOSExpectation}'s own Javadoc.
  */
@@ -161,7 +162,7 @@ class AssertPOSExpectationsCommand
 
 	private void assertCreditMemo(@NonNull final JsonPOSCreditMemoExpectation expected, @NonNull final InvoiceId creditMemoId)
 	{
-		// AC4c: the credit memo is always settled by an outgoing payment allocated to it
+		// a POS return's credit memo is always settled synchronously by an outgoing payment allocated to it
 		assertThat(services.hasAllocatedPayment(creditMemoId))
 				.as("credit memo C_Invoice_ID=" + creditMemoId + " has an allocated outbound payment")
 				.isEqualTo(true);
