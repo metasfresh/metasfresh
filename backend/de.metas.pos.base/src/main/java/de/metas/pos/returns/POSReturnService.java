@@ -1,6 +1,7 @@
 package de.metas.pos.returns;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.inout.returns.ReturnedGoodsWarehouseType;
@@ -25,13 +26,20 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSCashJournalId;
 import de.metas.pos.POSCashJournalService;
+import de.metas.pos.POSProduct;
+import de.metas.pos.POSProductsService;
 import de.metas.pos.POSTerminal;
+import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalService;
 import de.metas.tax.api.Tax;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -43,14 +51,18 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Receives goods handed back at the till (a customer return, no HUs, no prior sales order) and prices the
@@ -83,12 +95,14 @@ public class POSReturnService
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
 	@NonNull private final POSReturnRepository returnRepository;
 	@NonNull private final InvoiceService invoiceService;
 	@NonNull private final POSCashJournalService posCashJournalService;
+	@NonNull private final POSProductsService posProductsService;
 
 	/**
 	 * Phase 1 (goods receipt + pricing the credit candidates), phase 2 (generating the credit memo) and phase 3
@@ -136,6 +150,90 @@ public class POSReturnService
 					return trxManager.callInThreadInheritedTrx(() -> ensureSettlement(request, phase1, creditMemoId));
 				},
 				() -> new AdempiereException(MSG_TillBusy).setParameter("C_POS_ID", request.getPosTerminalId()));
+	}
+
+	/**
+	 * Entry point for the {@code POST /api/v2/pos/returns} REST endpoint: the client sends product + qty only
+	 * (never a price — AC4e requires the credited amount to be "the till's current price for the returned
+	 * quantity", not whatever the client claims), so this resolves each line's price and price UOM from
+	 * {@link POSProductsService} before delegating to {@link #createReturn}.
+	 *
+	 * @throws AdempiereException {@link #MSG_NoLines} if {@code requestedLines} is empty, or if a requested
+	 * product has no till price (not on the terminal's price list) — plus everything {@link #createReturn} itself
+	 * throws.
+	 */
+	@NonNull
+	public POSReturnResult createReturnFromTillPrices(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final UUID externalId,
+			@NonNull final UserId cashierId,
+			@NonNull final List<POSReturnRequestedLine> requestedLines)
+	{
+		if (requestedLines.isEmpty())
+		{
+			throw new AdempiereException(MSG_NoLines);
+		}
+
+		final Instant evalDate = SystemTime.asInstant();
+		final ImmutableSet<ProductId> productIds = requestedLines.stream()
+				.map(POSReturnRequestedLine::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+		final Map<ProductId, POSProduct> productsById = indexById(posProductsService.getProductsByIds(posTerminalId, evalDate, productIds));
+
+		final CurrencyId currencyId = posTerminalService.getPOSTerminalById(posTerminalId).getCurrencyId();
+
+		final ImmutableList.Builder<POSReturnLine> lines = ImmutableList.builder();
+		for (final POSReturnRequestedLine requested : requestedLines)
+		{
+			final POSProduct product = productsById.get(requested.getProductId());
+			if (product == null)
+			{
+				throw new AdempiereException("No till price found for product").setParameter("M_Product_ID", requested.getProductId());
+			}
+
+			final I_C_UOM priceUomRecord = uomDAO.getById(product.getPriceUom().getUomId());
+			lines.add(toReturnLine(requested, product, currencyId, priceUomRecord));
+		}
+
+		return createReturn(POSReturnRequest.builder()
+				.posTerminalId(posTerminalId)
+				.externalId(externalId)
+				.cashierId(cashierId)
+				.lines(lines.build())
+				.build());
+	}
+
+	@NonNull
+	private static Map<ProductId, POSProduct> indexById(@NonNull final List<POSProduct> products)
+	{
+		final ImmutableMap.Builder<ProductId, POSProduct> builder = ImmutableMap.builder();
+		for (final POSProduct product : products)
+		{
+			builder.put(product.getId(), product);
+		}
+		return builder.build();
+	}
+
+	/**
+	 * Turns a client's product+qty (no price, no UOM) into a fully priced {@link POSReturnLine}: priced per
+	 * {@link POSProduct#getPriceUom()} — the catch-weight UOM (e.g. kg) when the product is priced by catch
+	 * weight, else the product's own UOM (see that method's own Javadoc). Package-private and pure (no DB access
+	 * of its own — {@code priceUomRecord} is passed in already resolved) so this mapping is unit-testable
+	 * without a real price list.
+	 */
+	@NonNull
+	static POSReturnLine toReturnLine(
+			@NonNull final POSReturnRequestedLine requested,
+			@NonNull final POSProduct product,
+			@NonNull final CurrencyId currencyId,
+			@NonNull final I_C_UOM priceUomRecord)
+	{
+		return POSReturnLine.builder()
+				.productId(requested.getProductId())
+				.qty(Quantity.of(requested.getQty(), priceUomRecord))
+				.price(Money.of(product.getPrice().getAsBigDecimal(), currencyId))
+				.priceUomId(product.getPriceUom().getUomId())
+				.build();
 	}
 
 	/** Phase 1 result: the material document plus the invoice candidates priced for its credit. */

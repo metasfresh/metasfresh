@@ -31,8 +31,13 @@ import de.metas.pos.rest_api.json.JsonPOSPaymentRefundRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonPOSTerminalCloseJournalRequest;
 import de.metas.pos.rest_api.json.JsonPOSTerminalOpenJournalRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonProduct;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
+import de.metas.pos.returns.POSReturnRequestedLine;
+import de.metas.pos.returns.POSReturnResult;
+import de.metas.pos.returns.POSReturnService;
 import de.metas.pos.withdrawal.POSCashWithdrawalRequest;
 import de.metas.pos.withdrawal.POSCashWithdrawalResult;
 import de.metas.pos.withdrawal.POSCashWithdrawalService;
@@ -70,6 +75,7 @@ public class POSRestController
 	@NonNull private final POSService posService;
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final POSCashWithdrawalService posCashWithdrawalService;
+	@NonNull private final POSReturnService posReturnService;
 
 	private String getADLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
@@ -180,6 +186,26 @@ public class POSRestController
 		);
 
 		return JsonCashWithdrawalResponse.of(result, newJsonContext());
+	}
+
+	@PostMapping("/returns")
+	public JsonPOSReturnResponse createReturn(@RequestBody final JsonPOSReturnRequest request)
+	{
+		final List<POSReturnRequestedLine> requestedLines = request.getLines()
+				.stream()
+				.map(line -> POSReturnRequestedLine.builder()
+						.productId(line.getProductId())
+						.qty(line.getQty())
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		final POSReturnResult result = posReturnService.createReturnFromTillPrices(
+				request.getPosTerminalId(),
+				request.getExternalId(),
+				getLoggedUserId(),
+				requestedLines);
+
+		return JsonPOSReturnResponse.of(result, newJsonContext());
 	}
 
 	@GetMapping("/products")

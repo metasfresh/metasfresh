@@ -19,7 +19,10 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
@@ -27,29 +30,45 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSOrder;
 import de.metas.pos.POSOrderQuery;
 import de.metas.pos.POSOrdersRepository;
+import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.returns.POSReturnRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -70,10 +89,16 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
 	@NonNull private final POSOrdersRepository posOrdersRepository;
+	@NonNull private final POSReturnRepository posReturnRepository;
+	@NonNull private final POSService posService;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -200,5 +225,105 @@ public class AssertExpectationsCommandServices
 	public List<I_C_Invoice> getInvoicesByOrderId(@NonNull final OrderId orderId)
 	{
 		return invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(orderId));
+	}
+
+	/**
+	 * Finds the {@code M_InOut} a POS return produced, by the SAME {@code ExternalId} convention
+	 * {@code POSReturnService#createReturn} uses ({@code "POSReturn-" + <the client's externalId>}) — the return
+	 * document carries no direct FK to its POS terminal, so the externalId the client generated for the return
+	 * (and passed to {@code POST /api/v2/pos/returns}) is the only handle back to it.
+	 */
+	@NonNull
+	public InOutId getPOSReturnInOutIdByExternalId(@NonNull final String externalId)
+	{
+		return posReturnRepository.findReturnIdByExternalId("POSReturn-" + externalId)
+				.orElseThrow(() -> new AdempiereException("No POS return found for externalId " + externalId));
+	}
+
+	public I_M_InOut getInOutById(@NonNull final InOutId inOutId)
+	{
+		return inOutDAO.getById(inOutId);
+	}
+
+	/**
+	 * Finds the credit memo a POS return's line was invoiced into, via its invoice candidate's own
+	 * {@code C_InvoiceLine} back-reference — the SAME chain {@code POSReturnService#ensureCreditMemo} itself
+	 * uses (a return line's {@code C_Invoice_Candidate} → the invoice line {@code InvoiceCandBLCreateInvoices}
+	 * created from it). Any one line of the return resolves to the SAME credit memo (a POS return is always its
+	 * own standalone, single-invoice document), so the first line with a resolvable invoice line wins.
+	 */
+	@NonNull
+	public InvoiceId getCreditMemoIdForPOSReturn(@NonNull final InOutId returnInOutId)
+	{
+		final I_M_InOut returnRecord = getInOutById(returnInOutId);
+		for (final I_M_InOutLine returnLine : inOutDAO.retrieveLines(returnRecord))
+		{
+			for (final I_C_Invoice_Candidate ic : invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(returnLine))
+			{
+				final InvoiceCandidateId icId = InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID());
+				for (final I_C_InvoiceLine il : invoiceCandDAO.retrieveIlForIc(icId))
+				{
+					return InvoiceId.ofRepoId(il.getC_Invoice_ID());
+				}
+			}
+		}
+		throw new AdempiereException("No credit memo found for POS return " + returnInOutId);
+	}
+
+	public org.compiere.model.I_C_Invoice getInvoiceById(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.getByIdInTrx(invoiceId);
+	}
+
+	public List<de.metas.adempiere.model.I_C_InvoiceLine> getInvoiceLines(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.retrieveLines(invoiceId);
+	}
+
+	@NonNull
+	public UomId getUomIdByX12DE355(@NonNull final X12DE355 x12de355)
+	{
+		return uomDAO.getUomIdByX12DE355(x12de355);
+	}
+
+	/**
+	 * The credit memo's already-completed outbound settlement payment(s), via {@code C_AllocationLine} — see
+	 * {@code POSReturnRepository#findSettlementPaymentIds}'s own Javadoc for why (never
+	 * {@code C_Payment.C_Invoice_ID} directly, per de.metas.business's payment-linking Golden Rule). Reused here
+	 * (not re-implemented) because this credit memo IS the POS-return flow's own artifact — the SAME repository
+	 * cluster this query already belongs to.
+	 */
+	public boolean hasAllocatedPayment(@NonNull final InvoiceId invoiceId)
+	{
+		return !posReturnRepository.findSettlementPaymentIds(invoiceId).isEmpty();
+	}
+
+	/**
+	 * Any payment (inbound or outbound) allocated to an ARBITRARY invoice — via the generic, already-existing
+	 * {@link IAllocationDAO#retrieveInvoicePayments}, NOT {@code POSReturnRepository}'s own finder (that one is
+	 * scoped to the POS-return flow's own credit memos; an invoice-settlement expectation, e.g. a plain sales
+	 * invoice from T4, is a different flow with no POS-return artifact behind it).
+	 */
+	public List<I_C_Payment> getAllocatedPayments(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		return allocationDAO.retrieveInvoicePayments(invoice);
+	}
+
+	@NonNull
+	public BigDecimal getTaxRate(@NonNull final TaxId taxId)
+	{
+		final Percent rate = taxDAO.getRateById(taxId);
+		return rate.toBigDecimal();
+	}
+
+	/**
+	 * The terminal's current cash journal — resolved fresh (not cached) so a just-added refund/withdrawal line is
+	 * visible to the assertion that follows it in the same request.
+	 */
+	@NonNull
+	public POSCashJournal getCurrentCashJournal(@NonNull final POSTerminalId posTerminalId)
+	{
+		return posService.getCurrentCashJournal(posTerminalId)
+				.orElseThrow(() -> new AdempiereException("No open cash journal for POS terminal " + posTerminalId));
 	}
 }

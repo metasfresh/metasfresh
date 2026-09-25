@@ -6,6 +6,7 @@ import de.metas.async.service.AsyncBatchObserver;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.currency.Amount;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
@@ -28,12 +29,16 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pos.POSCashJournalRepository;
 import de.metas.pos.POSCashJournalService;
+import de.metas.pos.POSProduct;
+import de.metas.pos.POSProduct.UomIdAndSymbol;
+import de.metas.pos.POSProductsService;
 import de.metas.pos.POSShipFrom;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalRepository;
 import de.metas.pos.POSTerminalService;
 import de.metas.pricing.PricingSystemAndListId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -96,7 +101,8 @@ class POSReturnServiceTest
 				returnsServiceFacade,
 				new POSReturnRepository(),
 				newInvoiceService(),
-				new POSCashJournalService(new POSCashJournalRepository()));
+				new POSCashJournalService(new POSCashJournalRepository()),
+				new POSProductsService(posTerminalService));
 	}
 
 	/**
@@ -134,7 +140,7 @@ class POSReturnServiceTest
 	{
 		final POSReturnLine line = POSReturnLine.builder()
 				.productId(PRODUCT_ID)
-				.qty(Quantity.of(BigDecimal.ONE, mockUom()))
+				.qty(Quantity.of(BigDecimal.ONE, mockUom(UOM_ID)))
 				.price(Money.of(BigDecimal.TEN, CURRENCY_ID))
 				.priceUomId(UOM_ID)
 				.build();
@@ -154,7 +160,7 @@ class POSReturnServiceTest
 	{
 		final POSReturnLine line = POSReturnLine.builder()
 				.productId(PRODUCT_ID)
-				.qty(Quantity.of(BigDecimal.ONE, mockUom()))
+				.qty(Quantity.of(BigDecimal.ONE, mockUom(UOM_ID)))
 				.price(Money.of(BigDecimal.TEN, CURRENCY_ID))
 				.priceUomId(UOM_ID)
 				.build();
@@ -163,6 +169,67 @@ class POSReturnServiceTest
 		ic.setC_Currency_ID(OTHER_CURRENCY_ID.getRepoId());
 
 		assertThrowsWithKey(() -> service.assertCurrencyMatchesCandidate(line, ic), MSG_CurrencyMismatch);
+	}
+
+	/**
+	 * {@link POSReturnService#toReturnLine} is what {@link POSReturnService#createReturnFromTillPrices} uses to
+	 * turn a client's product+qty (no price, no UOM) into a fully priced {@link POSReturnLine} — the REST
+	 * endpoint's whole reason for existing (AC4e: "the credited amount per line is the till's current price").
+	 * Exercised directly (pure, no DB) rather than through {@code createReturnFromTillPrices} itself, which
+	 * needs {@link POSProductsService}'s real, DB-backed price-list lookup — see {@code POSProductsLoader}.
+	 */
+	@Test
+	void toReturnLine_pricesFromCatchWeightUom_whenProductIsPricedByCatchWeight()
+	{
+		final UomIdAndSymbol uom = UomIdAndSymbol.of(UOM_ID, "Stk");
+		final UomIdAndSymbol catchWeightUom = UomIdAndSymbol.of(UomId.ofRepoId(2), "kg");
+		final POSProduct product = POSProduct.builder()
+				.id(PRODUCT_ID)
+				.name(TranslatableStrings.anyLanguage("product"))
+				.price(Amount.of(new BigDecimal("15.50"), CurrencyCode.EUR))
+				.currencySymbol(TranslatableStrings.anyLanguage("€"))
+				.uom(uom)
+				.catchWeightUom(catchWeightUom)
+				.taxCategoryId(TaxCategoryId.ofRepoId(1))
+				.build();
+
+		final POSReturnRequestedLine requested = POSReturnRequestedLine.builder()
+				.productId(PRODUCT_ID)
+				.qty(new BigDecimal("0.300"))
+				.build();
+
+		final POSReturnLine line = POSReturnService.toReturnLine(requested, product, CURRENCY_ID, mockUom(catchWeightUom.getUomId()));
+
+		assertThat(line.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(line.getPriceUomId()).as("priced per the catch-weight UOM, not the product's own UOM").isEqualTo(catchWeightUom.getUomId());
+		assertThat(line.getQty().getUomId()).isEqualTo(catchWeightUom.getUomId());
+		assertThat(line.getQty().getAsBigDecimal()).isEqualByComparingTo("0.300");
+		assertThat(line.getPrice()).isEqualTo(Money.of(new BigDecimal("15.50"), CURRENCY_ID));
+	}
+
+	@Test
+	void toReturnLine_pricesFromProductUom_whenProductHasNoCatchWeight()
+	{
+		final UomIdAndSymbol uom = UomIdAndSymbol.of(UOM_ID, "Stk");
+		final POSProduct product = POSProduct.builder()
+				.id(PRODUCT_ID)
+				.name(TranslatableStrings.anyLanguage("product"))
+				.price(Amount.of(new BigDecimal("2.00"), CurrencyCode.EUR))
+				.currencySymbol(TranslatableStrings.anyLanguage("€"))
+				.uom(uom)
+				.catchWeightUom(null)
+				.taxCategoryId(TaxCategoryId.ofRepoId(1))
+				.build();
+
+		final POSReturnRequestedLine requested = POSReturnRequestedLine.builder()
+				.productId(PRODUCT_ID)
+				.qty(BigDecimal.ONE)
+				.build();
+
+		final POSReturnLine line = POSReturnService.toReturnLine(requested, product, CURRENCY_ID, mockUom(UOM_ID));
+
+		assertThat(line.getPriceUomId()).isEqualTo(UOM_ID);
+		assertThat(line.getQty().getUomId()).isEqualTo(UOM_ID);
 	}
 
 	@Test
@@ -185,17 +252,17 @@ class POSReturnServiceTest
 				.cashierId(CASHIER_ID)
 				.lines(ImmutableList.of(POSReturnLine.builder()
 						.productId(PRODUCT_ID)
-						.qty(Quantity.of(qty, mockUom()))
+						.qty(Quantity.of(qty, mockUom(UOM_ID)))
 						.price(Money.of(BigDecimal.TEN, CURRENCY_ID))
 						.priceUomId(UOM_ID)
 						.build()))
 				.build();
 	}
 
-	private static I_C_UOM mockUom()
+	private static I_C_UOM mockUom(@NonNull final UomId uomId)
 	{
 		final I_C_UOM uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
-		uom.setC_UOM_ID(UOM_ID.getRepoId());
+		uom.setC_UOM_ID(uomId.getRepoId());
 		return uom;
 	}
 

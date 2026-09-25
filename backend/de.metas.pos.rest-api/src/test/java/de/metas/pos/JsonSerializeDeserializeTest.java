@@ -17,6 +17,9 @@ import de.metas.pos.rest_api.json.JsonPOSOrderLine;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSPayment;
 import de.metas.pos.rest_api.json.JsonPOSPaymentStatus;
+import de.metas.pos.rest_api.json.JsonPOSReturnLine;
+import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
+import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonPOSTerminal;
 import de.metas.pos.rest_api.json.JsonProduct;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
@@ -205,6 +208,51 @@ class JsonSerializeDeserializeTest
 				.build());
 
 		assertThat(json).contains("\"date\":\"2026-09-24T10:15:30Z\"");
+	}
+
+	@Test
+	void test_JsonPOSReturnRequest() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSReturnRequest.builder()
+						.posTerminalId(POSTerminalId.ofRepoId(1))
+						.externalId(UUID.randomUUID())
+						.lines(ImmutableList.of(
+								JsonPOSReturnLine.builder()
+										.productId(ProductId.ofRepoId(2))
+										.qty(new BigDecimal("0.300"))
+										.build()
+						))
+						.build()
+		);
+	}
+
+	@Test
+	void test_JsonPOSReturnResponse() throws JsonProcessingException
+	{
+		testSerializeDeserialize(
+				JsonPOSReturnResponse.builder()
+						.creditMemoDocumentNo("GS-001")
+						.refundAmount(new BigDecimal("4.65"))
+						.journal(JsonCashJournalSummary.builder()
+								.closed(false)
+								.currencySymbol("€")
+								.currencyPrecision(2)
+								.paymentMethods(ImmutableList.of(
+										JsonPaymentMethodSummary.builder()
+												.paymentMethod(POSPaymentMethod.CASH)
+												.amount(new BigDecimal("95.35"))
+												.details(ImmutableList.of(
+														JsonPaymentDetail.builder()
+																.type(JsonCashJournalSummary.JsonPaymentDetailType.OPENING_BALANCE)
+																.amount(new BigDecimal("100.00"))
+																.build()
+												))
+												.build()
+								))
+								.build())
+						.build()
+		);
 	}
 
 	@Test

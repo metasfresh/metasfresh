@@ -1,5 +1,7 @@
 package de.metas.pos;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
@@ -23,10 +25,21 @@ public enum POSCashJournalLineType implements ReferenceListAwareEnum
 	@NonNull private final String code;
 	private final boolean isCash;
 
+	@JsonCreator
 	public static POSCashJournalLineType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
+
+	/**
+	 * Explicit override of the Lombok-generated getter, so the wire form (e.g. {@code JsonPOSExpectation}'s
+	 * {@code cashJournalLines[].type}) is the DB code ({@code "CASH_INOUT"}), not the Java constant name
+	 * ({@code "CASH_IN_OUT"}) — mirrors {@link de.metas.document.engine.DocStatus#getCode()}'s own
+	 * {@code @JsonValue}.
+	 */
+	@Override
+	@JsonValue
+	public String getCode() {return code;}
 
 	public static POSCashJournalLineType ofPaymentMethod(@NonNull final POSPaymentMethod paymentMethod)
 	{
