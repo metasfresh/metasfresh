@@ -22,7 +22,14 @@
 
 package de.metas.cucumber.stepdefs.doctype;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -37,15 +44,15 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocTypeInvoice_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_C_DocType_Invoicing_Pool_ID;
-import static org.compiere.model.I_C_DocType_Invoicing_Pool.COLUMNNAME_Name;
 
 public class C_DocType_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final C_DocType_Invoicing_Pool_StepDefData invoicingPoolTable;
 	private final C_DocType_StepDefData docTypeTable;
@@ -68,27 +75,48 @@ public class C_DocType_StepDef
 		}
 	}
 
+	/**
+	 * Registers an existing {@code C_DocType} under an identifier, found either by its {@code Name} or by its
+	 * {@code DocBaseType} (+ optional {@code DocSubType}). The {@code DocBaseType} path goes through
+	 * {@link IDocTypeDAO#getDocTypeId(DocTypeQuery)} -- the same lookup production code uses -- so it resolves the
+	 * default document type of that base type for the standard client and org.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_DocType_ID</b> — (required) alias for cross-step reference<br>
+	 *   <b>Name</b> — (optional) exact {@code C_DocType.Name}; required when {@code DocBaseType} is omitted<br>
+	 *   <b>DocBaseType</b> — (optional) {@code C_DocType.DocBaseType} code; required when {@code Name} is omitted<br>
+	 *   <b>DocSubType</b> — (optional) {@code C_DocType.DocSubType} code, only with {@code DocBaseType};
+	 *       omitted means no sub type<br>
+	 * @cucumber.depends StepDefData: C_DocType_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And load C_DocType:
+	 *   | DocBaseType | C_DocType_ID      |
+	 *   | BKP         | docTypeProduktion |
+	 * </pre>
+	 */
 	@And("load C_DocType:")
 	public void load_C_DocType(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			loadDocType(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::loadDocType);
 	}
 
-	private void loadDocType(@NonNull final Map<String, String> tableRow)
+	private void loadDocType(@NonNull final DataTableRow tableRow)
 	{
-		final String name = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Name);
-		final I_C_DocType docTypeRecord = queryBL.createQueryBuilder(I_C_DocType.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, name)
-				.create()
-				.firstOnlyNotNull(I_C_DocType.class);
+		final I_C_DocType docTypeRecord = tableRow.getAsOptionalEnum(I_C_DocType.COLUMNNAME_DocBaseType, DocBaseType.class)
+				.map(docBaseType -> docTypeDAO.getById(docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+						.docBaseType(docBaseType)
+						.docSubType(tableRow.getAsOptionalEnum(I_C_DocType.COLUMNNAME_DocSubType, DocSubType.class).orElse(DocSubType.NONE))
+						.clientAndOrgId(StepDefConstants.CLIENT_ID, StepDefConstants.ORG_ID)
+						.build())))
+				.orElseGet(() -> queryBL.createQueryBuilder(I_C_DocType.class)
+						.addOnlyActiveRecordsFilter()
+						.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, tableRow.getAsString(I_C_DocType.COLUMNNAME_Name))
+						.create()
+						.firstOnlyNotNull(I_C_DocType.class));
 
-		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
-		docTypeTable.put(identifier, docTypeRecord);
+		tableRow.getAsIdentifier(COLUMNNAME_C_DocType_ID).put(docTypeTable, docTypeRecord);
 	}
 
 	private void updateDocType(@NonNull final Map<String, String> tableRow)
