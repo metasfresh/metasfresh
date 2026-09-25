@@ -29,25 +29,14 @@ import { waitForTabAllowsNew, getRecordData, getTabRows } from '../utils/WebAPIV
  * Expected: every line keeps Menge 5 — in the grid after completion, after a reload,
  * and as persisted QtyEntered read back from the WebAPI; DocStatus is CO.
  *
- * Measured locally 2026-09-23 with webui.quickinput.EnablePackingInstructionsField=Y (this
- * window's batch entry then shows a Packvorschrift field before Menge) — this local DB's
- * column set is NOT assumed identical elsewhere (e.g. core CI's preloaded image), so the
- * grid Tab-navigation below does not hardcode a Tab count; it Tabs one key at a time and
- * checks focus after each press (see tabToFirstRowQtyCell):
- * - the order-line grid carries several columns before Menge: Zeile Nr., Produkt,
- *   Verfügbare Menge, Verfügbar, Merkmale, Gebindemenge, Zusagbar (ATP), Packvorschrift,
- *   THEN Menge — 9 Tabs from <body> reached row 0's cell-QtyEntered on this local DB.
- * - in batch entry, pressing Enter on the resolved product moves focus into the
- *   (empty) Packvorschrift field (M_HU_PI_Item_Product_ID) rather than straight to
- *   Menge; Tab is the key that leaves that empty field and lands on Menge (same
- *   escape as tests/spec/quick-input.spec.js TEST 9's "Tab — the pre-existing escape
- *   that already worked").
- * - after Alt+Q closes batch entry, focus falls to <body>, and Tabbing from there
- *   reaches row 0's cell-QtyEntered by walking through: Line, M_Product_ID,
- *   QtyAvailableForSales, InsufficientQtyAvailableForSalesColor_ID,
- *   M_AttributeSetInstance_ID, QtyEnteredTU, Qty_AvailableToPromise,
- *   M_HU_PI_Item_Product_ID, QtyEntered (locally; the exact set/order may differ in
- *   another environment, which is why the count itself is not hardcoded).
+ * Keyboard path (with webui.quickinput.EnablePackingInstructionsField=Y, the core default):
+ * - in batch entry, Enter on the resolved product moves the focus into the empty Packvorschrift
+ *   field (M_HU_PI_Item_Product_ID); Tab leaves it and lands on Menge (the same escape as
+ *   tests/spec/quick-input.spec.js TEST 9).
+ * - after Alt+Q closes batch entry the focus is outside the grid; the grid has several columns
+ *   before Menge (Line, M_Product_ID, …, M_HU_PI_Item_Product_ID) whose set can differ between
+ *   environments, so the path Tabs one key at a time until row 0's cell-QtyEntered has the focus
+ *   (tabToFirstRowQtyCell) instead of using a fixed count.
  *
  * Keyboard shortcuts: metasfresh/frontend/src/shortcuts/keymap.js
  * (Alt+N NEW_DOCUMENT, Alt+Q TOGGLE_QUICK_INPUT, Alt+U COMPLETE_STATUS).
@@ -62,10 +51,7 @@ const ORDER_LINE_TAB_ID = 'AD_Tab-187';
 const PRODUCT_KEYS = ['P1', 'P2', 'P3'];
 const INITIAL_QTY = '4';
 const EDITED_QTY = '5';
-// Safety cap for tabToFirstRowQtyCell below — locally this window's grid needed 9 Tabs (see
-// file header), but the exact column set is not assumed stable across environments, so the
-// loop checks focus after every Tab instead of hardcoding a count; this only bounds the
-// give-up point.
+// Give-up point for tabToFirstRowQtyCell (the standard grid needs about 9 Tabs).
 const MAX_TABS_TO_FIRST_ROW_QTY_CELL = 20;
 
 // ---------------------------------------------------------------------------
@@ -195,7 +181,7 @@ async function createOrderAndOpenLinesTab(page, masterdata) {
  * Written inline rather than via SalesOrderPage.openQuickEntryAndSelectProduct /
  * submitQuickEntryLine: those helpers open batch entry with a mouse click on the toggle
  * button (not Alt+Q) and fill Menge with .fill() (not keyboard.type), so they leave a
- * different post-close focus target than the Alt+Q path this test measured, which is where
+ * different post-close focus target than the Alt+Q path, which is where
  * tabToFirstRowQtyCell starts; they also don't loop several products or skip the Packvorschrift
  * field the way this test needs.
  */
@@ -247,7 +233,7 @@ async function closeBatchEntryAndAssertFocusOutsideLines(page) {
     .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
   // Asserts that focus left the order-line grid: after Alt+Q the quick-input
   // container detaches (its focused input goes with it) and the browser falls
-  // back to a non-grid focus target (<body> — measured 2026-09-23), so the Tabs
+  // back to a non-grid focus target (<body>), so the Tabs
   // below start navigating the grid from outside it, not mid-row.
   await expectFocus(
     page,
@@ -319,7 +305,7 @@ async function editQtysKeyboardOnly(page, qty) {
       await page.keyboard.type(qty, { delay: 80 });
       await page.waitForTimeout(500);
       const typed = (await activeCellInfo(page)).value;
-      // soft: report every row, so the post-completion symptom is also observed
+      // soft: report every row, so a failing run still shows the state after completion
       expect.soft(typed, `row ${i}: typed value in the cell input`).toBe(qty);
 
       await page.keyboard.press('Tab'); // leave the cell -> QtyEntered PATCH fires
