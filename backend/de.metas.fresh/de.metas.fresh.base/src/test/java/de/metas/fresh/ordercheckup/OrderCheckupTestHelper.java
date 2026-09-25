@@ -65,6 +65,8 @@ public class OrderCheckupTestHelper
 		productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance);
+		// register the report document handler so the document engine can read DocStatus (AC-P2)
+		org.compiere.SpringContextHolder.registerJUnitBean(new OrderCheckupReportDocumentHandlerProvider());
 
 		SpringContextHolder.registerJUnitBean(new ExternalSystemsPrintingNotifier(new ArrayList<>()));
 

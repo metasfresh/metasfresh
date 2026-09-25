@@ -25,6 +25,9 @@ package de.metas.fresh.ordercheckup;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.DocumentWrapper;
+import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Order;
@@ -33,6 +36,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -121,6 +125,28 @@ public class OrderCheckup_IntegrationTest
 
 		// and it must actually stay active in the printing queue (recipient = the fallback user)
 		helper.enqueueToPrinting(order);
+	}
+
+	/**
+	 * AC-P2: the OrderCheckupReport document handler makes the record wrap-able as a document that exposes
+	 * its DocStatus column - which is what the document engine copies onto the C_Doc_Outbound_Log. The
+	 * provider-lookup itself only runs with a Spring context (AbstractDocumentBL short-circuits to an empty
+	 * map otherwise), so the end-to-end "log carries CO" is covered at integration/UAT level; here we pin
+	 * the unit-level contract: wrapping the record through the handler yields its DocStatus.
+	 */
+	@Test
+	public void documentHandler_exposesTheRecordDocStatus()
+	{
+		final I_C_Order_MFGWarehouse_Report report = org.adempiere.model.InterfaceWrapperHelper.newInstance(I_C_Order_MFGWarehouse_Report.class);
+		report.setDocStatus("CO");
+		org.adempiere.model.InterfaceWrapperHelper.save(report);
+
+		final IDocument doc = DocumentWrapper.wrapModelUsingHandler(report, new OrderCheckupReportDocumentHandler());
+
+		assertThat(DocStatus.ofNullableCode(doc.getDocStatus()))
+				.as("wrapping the report through its handler must expose the record's DocStatus")
+				.isEqualTo(DocStatus.Completed);
+		assertThat(doc.getSummary()).as("summary must not throw").isNotBlank();
 	}
 
 }
