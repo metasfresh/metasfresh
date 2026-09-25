@@ -383,8 +383,8 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
     });
 
     await test.step('grid, and after reload grid + persisted QtyEntered, are 5', async () => {
-      // keep the grid in view for the recording before reading it
-      await gridRows(page).first().scrollIntoViewIfNeeded();
+      // keep the Menge column in view for the recording before reading it
+      await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
       expect(await gridQtys(page)).toEqual([5, 5, 5]);
       await page.reload();
       await page
@@ -393,9 +393,9 @@ test.describe('Sales order — keyboard-only Menge edit after batch entry', () =
       await expect(gridRows(page)).toHaveCount(PRODUCT_KEYS.length, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
-      // page.reload() resets scroll to the top; bring the grid back into view so the
-      // recording shows the reloaded, persisted grid rather than just the header
-      await gridRows(page).first().scrollIntoViewIfNeeded();
+      // page.reload() resets the page and the grid to top-left; bring the Menge column back
+      // into view (vertically and horizontally) so the recording shows the persisted values
+      await qtyCellOfRow(page, 0).scrollIntoViewIfNeeded();
       expect(await gridQtys(page)).toEqual([5, 5, 5]);
       expect(await savedQtys(recordId)).toEqual([5, 5, 5]);
       const record = await getRecordData(SALES_ORDER_WINDOW_ID, recordId);
