@@ -1882,7 +1882,7 @@ jobs:
 
   mobile_test:
     name: mobile test
-    timeout-minutes: 60
+    timeout-minutes: 90
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
