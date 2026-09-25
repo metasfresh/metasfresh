@@ -411,14 +411,11 @@ public class ADWindowDAO implements IADWindowDAO
 	@Nullable
 	public AdTableId getMainTableId(@NonNull final AdWindowId adWindowId)
 	{
-		// The window's MAIN table is its header (TabLevel=0) tab's table, NOT simply its lowest-SeqNo tab — so
-		// retrieveFirstTab() must NOT be reused here. retrieveFirstTab orders by SeqNo alone, and a window can
-		// have a detail tab (TabLevel>0) sharing the header's SeqNo: e.g. window 123 "Business Partner" has the
-		// TabLevel-0 C_BPartner tab and a TabLevel-1 R_Request tab both at SeqNo=10. With no TabLevel filter and
-		// no unique tie-breaker the header is then picked only by chance of DB row order, so on some databases
-		// getMainTableId returned the R_Request table — silently breaking the per-table CREATE-permission gate
-		// (the "new Business Partner" menu node stayed visible for a role restricted from creating C_BPartner).
-		// Filter to the header tab and order deterministically (AD_Tab_ID tie-breaks header tabs sharing a SeqNo).
+		// The window's MAIN table is its header (TabLevel=0) tab's table, not simply its lowest-SeqNo tab, so
+		// retrieveFirstTab() must NOT be reused here: it orders by SeqNo across all tab levels with no unique
+		// tie-breaker, and a detail tab (TabLevel>0) may share the header tab's SeqNo, leaving the header picked
+		// only by chance of DB row order. Filter to the header tab and order deterministically (AD_Tab_ID
+		// tie-breaks header tabs sharing a SeqNo).
 		final I_AD_Tab mainTab = queryBL
 				.createQueryBuilder(I_AD_Tab.class)
 				.addOnlyActiveRecordsFilter()
