@@ -237,7 +237,7 @@ public class C_Doc_Outbound_Config_StepDef
 			// no active-records filter: a retired (inactive) configuration must be assertable as well
 			final I_C_Doc_Outbound_Config config = queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
 					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID, tableId)
-					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, docBaseType != null ? docBaseType.getCode() : null)
+					.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_DocBaseType, docBaseType)
 					.create()
 					.firstOnly(I_C_Doc_Outbound_Config.class);
 			assertThat(config).as("C_Doc_Outbound_Config for TableName=%s, DocBaseType=%s", tableName, docBaseType).isNotNull();

@@ -16,7 +16,7 @@ UPDATE AD_Field SET IsDisplayed='N', IsDisplayedGrid='N', SeqNo=0, SeqNoGrid=0, 
 ;
 
 -- Column: C_Order_MFGWarehouse_Report.DocumentType -- no longer offered as a filter
-UPDATE AD_Column SET IsSelectionColumn='N', Updated=TO_TIMESTAMP('2026-09-25 10:00:02.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Column_ID=552750
+UPDATE AD_Column SET IsSelectionColumn='N', SelectionColumnSeqNo=0, Updated=TO_TIMESTAMP('2026-09-25 10:00:02.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Column_ID=552750
 ;
 
 -- UI Element: Bestellkontrolle(540274,D) -> Bestellkontrolle(540703,D) -> main -> 10 -> default.Belegart (C_DocType_ID)
