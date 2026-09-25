@@ -2,10 +2,33 @@ import React, { PureComponent } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 
-import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
+import {
+  shouldRenderColumn,
+  getSizeClass,
+  COMBOBOX_MIN_WIDTH_PX,
+  COMBOBOX_WIDGET_TYPES,
+} from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
 
 const MIN_COLUMN_WIDTH = 50;
+
+/**
+ * @method clampColumnWidth
+ * @param {object} params
+ * @param {string} params.widgetType
+ * @param {number} params.px - the candidate drag width
+ * @summary Manual drag-resize floor: a combobox (Lookup/List) column cannot be dragged
+ * narrower than the combobox minimum-usable width, so its open dropdown editor always stays
+ * within the cell. Every other column keeps the flat `MIN_COLUMN_WIDTH` floor.
+ */
+export function clampColumnWidth({ widgetType, px }) {
+  const minWidth =
+    COMBOBOX_WIDGET_TYPES.indexOf(widgetType) > -1
+      ? COMBOBOX_MIN_WIDTH_PX
+      : MIN_COLUMN_WIDTH;
+
+  return Math.max(minWidth, px);
+}
 
 export default class TableHeader extends PureComponent {
   constructor(props) {
@@ -86,7 +109,7 @@ export default class TableHeader extends PureComponent {
     deselect();
   };
 
-  handleResizeStart = (e, fieldName) => {
+  handleResizeStart = (e, fieldName, widgetType) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -96,7 +119,7 @@ export default class TableHeader extends PureComponent {
     const startWidth = th.getBoundingClientRect().width;
 
     this.setState({
-      resizing: { fieldName, startX: e.clientX, startWidth },
+      resizing: { fieldName, widgetType, startX: e.clientX, startWidth },
     });
 
     document.addEventListener('mousemove', this.handleResizeMove);
@@ -111,7 +134,10 @@ export default class TableHeader extends PureComponent {
 
     const { onColumnResize } = this.props;
     const diff = e.clientX - resizing.startX;
-    const newWidth = Math.max(MIN_COLUMN_WIDTH, resizing.startWidth + diff);
+    const newWidth = clampColumnWidth({
+      widgetType: resizing.widgetType,
+      px: resizing.startWidth + diff,
+    });
 
     if (onColumnResize) {
       onColumnResize(resizing.fieldName, newWidth);
@@ -221,7 +247,9 @@ export default class TableHeader extends PureComponent {
                 <div
                   className="column-resize-handle"
                   data-testid={`resize-handle-${fieldName}`}
-                  onMouseDown={(e) => this.handleResizeStart(e, fieldName)}
+                  onMouseDown={(e) =>
+                    this.handleResizeStart(e, fieldName, item.widgetType)
+                  }
                   onDoubleClick={(e) =>
                     this.handleResizeDoubleClick(e, fieldName)
                   }

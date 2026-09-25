@@ -333,6 +333,74 @@
     top: 3px;
     left: 0;
   }
+
+  /*
+   * Entering edit mode swaps the static text wrapper for the full widget editor. Two artefacts
+   * of that editor's generic (non-grid) layout scaffolding exceed the cell's static box and force
+   * the row/column to grow the moment a cell is activated — pin them so activation stays
+   * pixel-stable in both dimensions. Scoped to `.table-cell` (a class only ever set on a grid
+   * `<td>`, never on a single-row/detail-form field) so single-row forms keep today's
+   * Bootstrap row/col layout untouched.
+   *
+   * Bootstrap's `.row` (form-group-table also carries `.row`) sets `margin: 0 -15px`; a grid
+   * cell renders no label column, so the `.col-sm-12` gutter that margin compensates for is
+   * pure overhead here — cancel both instead of letting the cell grow to fit them.
+   */
+  .form-group-table {
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
+
+    > .col-sm-12 {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    /*
+     * LongText's textarea legitimately needs more than one line of height — only single-line
+     * editors are pinned to the row's fixed content height (42px row - .5rem top/bottom padding).
+     */
+    &:not(.widgetType-LongText) {
+      height: 26px;
+    }
+  }
+
+  .input-primary,
+  .input-secondary,
+  .input-dropdown-container {
+    box-sizing: border-box;
+  }
+
+  /*
+   * The base `input { min-width: 50px; }` rule (inputs.scss) forces this editor's inline-block
+   * wrapper at least 50px + its own horizontal padding wide — wider than a short static value
+   * (e.g. a one-digit quantity) ever needed, so activation grows the column to fit it. A grid
+   * cell's already-rendered width is whatever the static value needed; let the input shrink to
+   * that instead of imposing its own floor (the combobox's ~210px floor is enforced separately,
+   * on its own wrapper, and is unaffected by the inner input's min-width).
+   */
+  input {
+    min-width: 0;
+  }
+
+  .form-group-table:not(.widgetType-LongText) {
+    .input-primary,
+    .input-secondary,
+    .input-dropdown-container {
+      height: 26px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+
+      /*
+       * The mandatory-emphasis border (2px solid, top+bottom) must still fit the same 26px
+       * box — absorb it by dropping the remaining vertical padding rather than growing the row.
+       */
+      &.input-mandatory {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+    }
+  }
 }
 
 .table-hide-property {
