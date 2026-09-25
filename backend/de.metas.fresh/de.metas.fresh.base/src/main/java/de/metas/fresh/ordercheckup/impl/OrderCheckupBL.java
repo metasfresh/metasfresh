@@ -85,6 +85,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@NonNull final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	@NonNull final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
@@ -219,7 +220,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			}
 			else
 			{
-				final I_S_Resource plant = Services.get(IResourceDAO.class).getById(plantId);
+				final I_S_Resource plant = resourceDAO.getById(plantId);
 				final UserId responsibleUserId = UserId.ofRepoIdOrNull(plant.getAD_User_ID());
 
 				final OrderCheckupBuilder reportBuilder = OrderCheckupBuilder.newBuilder()
@@ -254,7 +255,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		{
 			return null;
 		}
-		final I_S_Resource plant = Services.get(IResourceDAO.class).getById(plantId);
+		final I_S_Resource plant = resourceDAO.getById(plantId);
 		return UserId.ofRegularUserRepoIdOrNull(plant.getAD_User_ID());
 	}
 
