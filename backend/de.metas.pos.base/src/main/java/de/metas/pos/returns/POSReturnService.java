@@ -19,6 +19,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
@@ -36,7 +37,10 @@ import de.metas.pos.POSProductsService;
 import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalService;
+import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -97,6 +101,7 @@ public class POSReturnService
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	@NonNull private final POSTerminalService posTerminalService;
 	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
@@ -284,6 +289,14 @@ public class POSReturnService
 					.setParameter("requestLines", request.getLines().size());
 		}
 
+		// resolved from the TILL's own price list (not the walk-in customer's sales price list, which is what
+		// the candidate's own tax category was derived from and can lack a price row for a till-only-priced
+		// product) — keyed once for the whole request, same set of products as the return's own lines
+		final Map<ProductId, POSProduct> tillProductsById = indexById(posProductsService.getProductsByIds(
+				request.getPosTerminalId(),
+				SystemTime.asInstant(),
+				request.getLines().stream().map(POSReturnLine::getProductId).collect(ImmutableSet.toImmutableSet())));
+
 		// one query per line (not batched): the return's line count is small (single digits), and this reuses
 		// invoiceCandDAO's own canonical, full-semantics lookup (direct match, C_OrderLine_ID, IC-IOL association)
 		// rather than re-deriving a narrower query
@@ -296,11 +309,21 @@ public class POSReturnService
 			for (final I_C_Invoice_Candidate ic : invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(returnLine))
 			{
 				// checked first: a candidate with no tax is left in a degraded state (e.g. no Price_UOM_ID yet),
-				// so a UOM/currency check below would fail on that symptom instead of the real cause
+				// so a UOM/currency check below would fail on that symptom instead of the real cause. A
+				// not-found tax means the product's price row on the walk-in customer's own sales pricing
+				// system carries a tax category with no applicable C_Tax (e.g. it's priced there only for
+				// catalog/inventory reasons, never actually sold to a walk-in customer at that rate) — resolve
+				// the real tax the same way a normal sale/return of this product to this ship-to would, from
+				// the till's own price list, and pin it via C_Tax_Override_ID instead of rejecting the return.
 				final Tax taxEffective = invoiceCandBL.getTaxEffective(ic);
 				if (taxEffective.isTaxNotFound())
 				{
-					throw new AdempiereException(MSG_NoTaxFound).setParameter("C_Invoice_Candidate_ID", ic.getC_Invoice_Candidate_ID());
+					final TaxId resolvedCreditTaxId = resolveCreditTaxId(ic, tillProductsById, terminal, orgId);
+					// pins the tax the SAME way a normal sale/return of this product to this ship-to would
+					// resolve it — from the till's own price list, not the walk-in customer's — so the
+					// interceptor recompute triggered by this very save (and any later recompute) sees it via
+					// InvoiceCandBL#getTaxEffective (override checked first)
+					ic.setC_Tax_Override_ID(resolvedCreditTaxId.getRepoId());
 				}
 
 				assertPriceUomMatchesCandidate(line, ic);
@@ -335,6 +358,51 @@ public class POSReturnService
 		}
 
 		return new ReturnAndCandidates(returnId, invoiceCandidateIds.build());
+	}
+
+	/**
+	 * Resolves the tax for a credit candidate whose own {@code C_Tax_ID} came back not-found — the case for a
+	 * product priced ONLY on the till's pricing system: the candidate's tax was derived from the walk-in
+	 * customer's own sales pricing system (via the standard {@code M_InOutLine_Handler} invoice-candidate pricing),
+	 * which has no {@code M_ProductPrice} row (hence no tax category) for such a product.
+	 * <p>
+	 * Resolves it the same way a normal sale/return of that product to that ship-to would: by the product's OWN
+	 * tax category (read from the TILL's price list via {@code tillProductsById} — the price list this credit is
+	 * actually priced against), the return's org, the terminal's walk-in-customer ship-to location, "now", and
+	 * {@link SOTrx#SALES} (a customer return is priced as the sales-side leg of the transaction). Mirrors
+	 * {@code M_InOutLine_Handler#calculatePriceAndTax}'s own {@code ITaxBL#getTaxNotNull} call, just against the
+	 * till's price list's tax category instead of the walk-in customer's.
+	 *
+	 * @throws AdempiereException {@link #MSG_NoTaxFound} if even this explicit resolution comes back
+	 * not-found — a genuine tax-configuration gap (e.g. no {@code C_Tax} row covers the product's tax category
+	 * for this org/country/date), which the till cannot recover from on its own.
+	 */
+	@NonNull
+	private TaxId resolveCreditTaxId(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final Map<ProductId, POSProduct> tillProductsById,
+			@NonNull final POSTerminal terminal,
+			@NonNull final OrgId orgId)
+	{
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+		final POSProduct tillProduct = tillProductsById.get(productId);
+		final TaxCategoryId taxCategoryId = tillProduct != null ? tillProduct.getTaxCategoryId() : null;
+
+		final TaxId taxId = taxBL.getTaxNotNull(
+				ic,
+				taxCategoryId,
+				productId.getRepoId(),
+				SystemTime.asTimestamp(),
+				orgId,
+				null, // warehouseId: not needed here — getTaxNotNull only uses it as a country fallback, and the org's own country already covers that fallback chain
+				terminal.getWalkInCustomerShipToLocationId(),
+				SOTrx.SALES);
+
+		if (taxBL.getTaxById(taxId).isTaxNotFound())
+		{
+			throw new AdempiereException(MSG_NoTaxFound).setParameter("C_Invoice_Candidate_ID", ic.getC_Invoice_Candidate_ID());
+		}
+		return taxId;
 	}
 
 	@NonNull

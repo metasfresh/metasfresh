@@ -337,3 +337,34 @@ Feature: POS Product Return
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID | IsError |
       | releasedLockCand       | false   |
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC22
+  Scenario: A product whose walk-in price has no applicable tax still credits the till's own tax rate
+    Given metasfresh contains C_TaxCategory
+      | Identifier           |
+      | taxCategoryNoTaxTC22 |
+    And metasfresh contains M_Products:
+      | Identifier         | X12DE355 |
+      | productNoWalkInTax | KGM      |
+    And metasfresh contains M_ProductPrices
+      | Identifier                    | M_Product_ID       | M_PriceList_Version_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID     |
+      | productNoWalkInTaxPrice       | productNoWalkInTax | priceListVersion       | 12.00    | KGM      | taxCategory          |
+      | walkInProductNoWalkInTaxPrice | productNoWalkInTax | walkInPriceListVersion | 20.00    | KGM      | taxCategoryNoTaxTC22 |
+
+    When a product return is made at POS terminal till by metasfresh:
+      | M_Product_ID       | Qty | UOM | OPT.M_InOut_ID | OPT.C_Invoice_ID |
+      | productNoWalkInTax | 0.3 | KGM | return_11      | creditMemo11     |
+
+    Then after not more than 60s, credit memo candidates are found:
+      | M_InOut_ID | C_Invoice_Candidate_ID |
+      | return_11  | creditCand22           |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | IsError | C_Tax_Effective_ID |
+      | creditCand22           | false   | tax7               |
+    And validate created invoice lines
+      | C_Invoice_ID | M_Product_ID       | QtyInvoiced | PriceEntered | C_Tax_ID |
+      | creditMemo11 | productNoWalkInTax | 0.300       | 12.00 EUR    | tax7     |
