@@ -48,6 +48,8 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
@@ -83,6 +85,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	@NonNull final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	@NonNull final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 
 	private static final String SYSCONFIG_ORDERCHECKUP_CREATE_AND_ROUTE_JASPER_REPORTS_ON_SALES_ORDER_COMPLETE = "de.metas.fresh.ordercheckup.CreateAndRouteJasperReports.OnSalesOrderComplete";
 
@@ -162,7 +165,18 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			//
 			// Add order line to per Manufacturing warehouse report
 			{
-				final UserId responsibleUserId = routing != null ? routing.getUserInChargeId() : null;
+				// The Warehouse (Produktion) report takes its print user from the routing's Betreuer
+				// (AD_User_InCharge_ID). That field only accepts employees (val rule 164), so it is often
+				// empty; when it is, fall back to the plant resource's user via plantResponsibleUserId
+				// (similar to the Plant branch below, but only a *regular* plant user) - so the print job
+				// is not cancelled for lack of a print user (OrderCheckupPrintingQueueHandler).
+				// A routing with no Betreuer yields UserId.SYSTEM (repoId 0), not null - and the printing
+				// handler cancels a report whose responsible user is <= 0. So fall back to the plant user
+				// unless the routing carries a *regular* (non-system) Betreuer.
+				final UserId routingUserId = routing != null ? routing.getUserInChargeId() : null;
+				final UserId responsibleUserId = routingUserId != null && routingUserId.isRegularUser()
+						? routingUserId
+						: plantResponsibleUserId(plantId);
 				final OrderCheckupReportIdentity reportIdentity = OrderCheckupReportIdentity.of(
 						orderId,
 						OrderCheckupDocumentType.Warehouse,
@@ -206,7 +220,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			}
 			else
 			{
-				final I_S_Resource plant = Services.get(IResourceDAO.class).getById(plantId);
+				final I_S_Resource plant = resourceDAO.getById(plantId);
 				final UserId responsibleUserId = UserId.ofRepoIdOrNull(plant.getAD_User_ID());
 
 				final OrderCheckupBuilder reportBuilder = OrderCheckupBuilder.newBuilder()
@@ -231,6 +245,23 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		}
 
 		return reportBuilders;
+	}
+
+	/**
+	 * The plant resource's <em>regular</em> responsible user, or {@code null} when the plant is unset or its
+	 * user is not a regular user (i.e. SYSTEM/none). Deliberately stricter than the Plant branch's
+	 * {@code UserId.ofRepoIdOrNull}: a non-regular plant user is treated as no print user, so the caller
+	 * falls through to the printing-queue cancellation rather than printing under the SYSTEM user.
+	 */
+	@Nullable
+	private UserId plantResponsibleUserId(@Nullable final ResourceId plantId)
+	{
+		if (plantId == null)
+		{
+			return null;
+		}
+		final I_S_Resource plant = resourceDAO.getById(plantId);
+		return UserId.ofRegularUserRepoIdOrNull(plant.getAD_User_ID());
 	}
 
 	private Optional<ProductPlanning> getMfgProductPlanning(final I_C_OrderLine orderLine)

@@ -144,8 +144,6 @@ public class AD_SysConfig_StepDef
 		priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
 
 		setSysConfigIntValue(sysConfigName, value);
-
-		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 
 	/**
