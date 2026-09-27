@@ -185,7 +185,7 @@ public class WarehouseCommand
 
 	private I_M_Locator createDefaultLocator()
 	{
-		final I_M_Locator defaultLocator = warehouseBL.getOrCreateDefaultLocator(getWarehouseId());
+		final I_M_Locator defaultLocator = fetchOrCreateDefaultLocator();
 		defaultLocator.setValue(StringUtils.trimBlankToOptional(request.getLocatorCode()).orElseGet(() -> warehouseCode + "_Locator"));
 		saveRecord(defaultLocator);
 		context.putIdentifier(identifier, LocatorId.ofRecord(defaultLocator));
@@ -197,9 +197,14 @@ public class WarehouseCommand
 	 */
 	private I_M_Locator getExistingDefaultLocator()
 	{
-		final I_M_Locator defaultLocator = warehouseBL.getOrCreateDefaultLocator(getWarehouseId());
+		final I_M_Locator defaultLocator = fetchOrCreateDefaultLocator();
 		context.putIdentifier(identifier, LocatorId.ofRecord(defaultLocator));
 		return defaultLocator;
+	}
+
+	private I_M_Locator fetchOrCreateDefaultLocator()
+	{
+		return warehouseBL.getOrCreateDefaultLocator(getWarehouseId());
 	}
 
 	private JsonWarehouseResponse.Locator createLocator(@NonNull final String identifierStr, @NonNull final JsonWarehouseRequest.Locator locatorRequest)
