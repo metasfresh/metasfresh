@@ -398,7 +398,7 @@ public class POSReturnService
 				terminal.getWalkInCustomerShipToLocationId(),
 				SOTrx.SALES);
 
-		if (taxBL.getTaxById(taxId).isTaxNotFound())
+		if (taxId.isNoTaxId())
 		{
 			throw new AdempiereException(MSG_NoTaxFound).setParameter("C_Invoice_Candidate_ID", ic.getC_Invoice_Candidate_ID());
 		}
