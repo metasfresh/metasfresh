@@ -1858,10 +1858,22 @@ jobs:
           docker compose down
 
   mobile_test:
-    name: mobile test
+    name: mobile test (${{ matrix.shard }})
     timeout-minutes: 60
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend, db-apply-migrations ]
+    strategy:
+      max-parallel: 3
+      fail-fast: false
+      matrix:
+        shard: [ "1/3", "2/3", "3/3" ]
+        include:
+          - shard: "1/3"
+            shard_label: shard1
+          - shard: "2/3"
+            shard_label: shard2
+          - shard: "3/3"
+            shard_label: shard3
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1879,49 +1891,36 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           mfregistry: metasfresh
           dbqualifier: preloaded
+          PLAYWRIGHT_SHARD: ${{ matrix.shard }}
         run: |
           # Start stack and attach only to playwright container for clean logs
           docker compose --profile mobile up --attach playwright-mobile --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
           # Capture infrastructure logs separately for debugging
           docker compose --profile mobile logs --no-log-prefix db rabbitmq search app mobile > infra.log 2>&1 || true
-          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
           docker compose --profile mobile down
-      # ===== ALLURE REPORT GENERATION =====
-      - name: Generate Allure Report for Mobile
-        uses: ./.github/actions/generate-allure-report
-        with:
-          results-dir: docker-builds/e2e-tests/allure-results-mobile
-          output-dir: e2e/mobile-webui/allure-report
-          artifact-name: allure-report-mobile-webui
-          history-artifact-name: allure-history-mobile-webui
-          report-title: 'Playwright (Mobile WebUI)'
-      - name: Upload Mobile Allure report to server
+      # The merged mobile Allure report is built by the mobile_allure_report job from all shards
+      - name: Upload Allure results
+        uses: actions/upload-artifact@v6
         if: always()
-        uses: ./.github/actions/upload-report-to-server
         with:
-          report-dir: e2e/mobile-webui/allure-report
-          report-type: allure/mobile-webui
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
-          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
-          server-user: ${{ secrets.TESTREPORTS_USER }}
-          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
-          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
-      # ===== END ALLURE REPORT GENERATION =====
+          name: allure-results-mobile-${{ matrix.shard_label }}
+          path: docker-builds/e2e-tests/allure-results-mobile/
+          if-no-files-found: ignore
+          retention-days: 1
 
-      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}' >> $GITHUB_STEP_SUMMARY
       - name: assert success
         working-directory: docker-builds/e2e-tests/
         run: |
@@ -1929,7 +1928,7 @@ jobs:
       - uses: actions/upload-artifact@v6
         if: success() || failure() # upload the artifact even if is success because that artifact can contain valuable information about how to improve, optimize etc
         with:
-          name: playwright-mobile-report
+          name: playwright-mobile-report-${{ matrix.shard_label }}
           path: |
             docker-builds/e2e-tests/playwright-report-mobile/
             docker-builds/e2e-tests/test-results-mobile/
@@ -1939,11 +1938,10 @@ jobs:
         uses: actions/upload-artifact@v6
         if: always()
         with:
-          name: junit-results-playwright-mobile
+          name: junit-results-playwright-mobile-${{ matrix.shard_label }}
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 30
-      # Allure reports uploaded by publish-test-reports job
 
   frontend_webui_test:
     name: frontend webui test (${{ matrix.shard }})
