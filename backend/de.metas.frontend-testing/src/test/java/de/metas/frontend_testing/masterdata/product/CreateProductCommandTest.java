@@ -1,5 +1,9 @@
 package de.metas.frontend_testing.masterdata.product;
 
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.impl.CostElementRepository;
+import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.GTIN;
@@ -39,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CreateProductCommandTest
 {
 	private ProductRepository productRepository;
+	private ICurrentCostsRepository currentCostsRepository;
 	private MasterdataContext context;
 
 	@BeforeEach
@@ -46,6 +51,7 @@ public class CreateProductCommandTest
 	{
 		AdempiereTestHelper.get().init();
 		productRepository = new ProductRepository();
+		currentCostsRepository = new CurrentCostsRepository(new CostElementRepository(ADReferenceService.newMocked()));
 		context = new MasterdataContext();
 	}
 
@@ -60,6 +66,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("product1"))
@@ -95,6 +102,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("product2"))
@@ -119,6 +127,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("product3"))
@@ -144,6 +153,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("productDefault"))
@@ -173,6 +183,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("contextProduct"))
@@ -193,6 +204,7 @@ public class CreateProductCommandTest
 		// given & when
 		final JsonCreateProductResponse response1 = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(JsonCreateProductRequest.builder()
 						.value("UNIQUE_PROD_001")
@@ -204,6 +216,7 @@ public class CreateProductCommandTest
 
 		final JsonCreateProductResponse response2 = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(JsonCreateProductRequest.builder()
 						.value("UNIQUE_PROD_002")
@@ -233,6 +246,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("autoValueProduct"))
@@ -264,6 +278,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("gtinProduct"))
@@ -292,6 +307,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("ean13Product"))
@@ -319,6 +335,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("pricesProduct"))
@@ -344,6 +361,7 @@ public class CreateProductCommandTest
 
 		final CreateProductCommand command = CreateProductCommand.builder()
 				.productRepository(productRepository)
+				.currentCostsRepository(currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString("minimalProduct"))
