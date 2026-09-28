@@ -4,9 +4,10 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, VERY_SLOW_ACTION_TIMEOUT, getPage } from '../utils/common';
 import { BUSINESS_PARTNER_WINDOW_ID, SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { assertRecordIsValid, getFieldData, getTabInfo, getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { BooleanWidget } from '../utils/widgets/BooleanWidget';
 
 /**
  * Per-role "may create new records" restriction on C_BPartner.
@@ -31,6 +32,31 @@ const BPARTNER_QUICK_INPUT_WINDOW_ID = 540327; // "Neuer Geschäftspartner" — 
 const ADRESSE_TAB_ID = 'AD_Tab-222'; // C_BPartner_Location included tab in window 123
 const VORGAENGE_TAB_ID = 'AD_Tab-540829'; // R_Request included tab in window 123, IsInsertRecord='N' (forbids insert already)
 const isNewRecordUrl = (url) => /\/window\/\d+\/\d+(\?|$)/.test(url);
+
+// Log in as `user` and land on the dashboard, wrapped as a `test.step` so the delivered UAT video is
+// captioned: the playwright-video-delivery pipeline (gen-captions-from-trace.py) burns each test.step
+// title onto the frames as a timed on-screen caption, so the recording narrates WHO is acting — the
+// browser address bar is not captured by Playwright, so this is how a step is made "visible" in the clip.
+// `fresh` clears cookies (logs the previous user out); it does NOT touch the HTTP cache — a test that needs a
+// cache-bypassing reload calls clearHttpCache() explicitly (see the per-role / role-change checks below).
+const loginAs = async (who, user, { fresh = false } = {}) => await test.step(`Log in as the ${who}`, async () => {
+    if (fresh) await getPage().context().clearCookies();
+    await LoginPage.goto();
+    await LoginPage.login(user);
+    await DashboardPage.expectVisible();
+});
+
+// Clear the browser HTTP cache — the equivalent of a hard reload / fresh session. The window layout is served
+// with Cache-Control: max-age, so within that window the browser reuses a previously-fetched layout WITHOUT
+// revalidating; a role switch or a role-permission change is therefore only guaranteed to surface once the
+// cache is bypassed (a reload). The per-role / role-change checks below assert that reloaded state — reflecting
+// the change on a plain in-cache re-open is deliberately NOT required (a reload for a permission change is
+// acceptable behaviour). The server-side role-aware layout ETag (a revalidation returning the correct per-role
+// layout instead of a stale 304) is unit-tested in ETagResponseEntityBuilderRoleTest.
+const clearHttpCache = async () => {
+    const client = await getPage().context().newCDPSession(getPage());
+    await client.send('Network.clearBrowserCache');
+};
 
 const testCases = [
     { language: 'en_US', label: 'English' },
@@ -160,9 +186,7 @@ testCases.forEach(({ language, label }) => {
             console.log(`[${language}] restricted role user: ${roleUser.username}, role=${masterdata.roles.restricted.name}`);
 
             // Step 2: log in as the restricted role's user.
-            await LoginPage.goto();
-            await LoginPage.login(roleUser);
-            await DashboardPage.expectVisible();
+            await loginAs('restricted role', roleUser);
 
             // Step 3: open the Business Partner window (123).
             await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
@@ -173,35 +197,39 @@ testCases.forEach(({ language, label }) => {
 
             // Step 4 (AC2): the create restriction reaches the WebUI (precondition), and the "New" record
             // action is actually rendered GREYED, carrying the restriction message KEY in its data-testid.
-            await expect
-                .poll(() => isRestrictionKeyDelivered, {
-                    timeout: VERY_SLOW_ACTION_TIMEOUT,
-                    message: `the documentView payload must carry the create-restriction key ${CREATE_RESTRICTION_MSG_KEY}`,
-                })
-                .toBe(true);
-            const greyedNew = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
-            await ensureSubheaderOpen(page, greyedNew);
-            await expect(greyedNew, 'the "New" record action must be rendered greyed with the restriction key').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-            await expect(greyedNew, 'the greyed "New" action must carry the disabled class').toHaveClass(/subheader-item-disabled/);
-            console.log(`[${language}] "New" is greyed with key ${CREATE_RESTRICTION_MSG_KEY}`);
-            await page.keyboard.press('Escape');
-            await page.waitForTimeout(300);
+            await test.step('Confirm the New action is greyed for the restricted role', async () => {
+                await expect
+                    .poll(() => isRestrictionKeyDelivered, {
+                        timeout: VERY_SLOW_ACTION_TIMEOUT,
+                        message: `the documentView payload must carry the create-restriction key ${CREATE_RESTRICTION_MSG_KEY}`,
+                    })
+                    .toBe(true);
+                const greyedNew = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
+                await ensureSubheaderOpen(page, greyedNew);
+                await expect(greyedNew, 'the "New" record action must be rendered greyed with the restriction key').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await expect(greyedNew, 'the greyed "New" action must carry the disabled class').toHaveClass(/subheader-item-disabled/);
+                console.log(`[${language}] "New" is greyed with key ${CREATE_RESTRICTION_MSG_KEY}`);
+                await page.keyboard.press('Escape');
+                await page.waitForTimeout(300);
+            });
 
             // Step 5 (AC1/AC5): a create must be REFUSED — the server rejects it (error response) and no
             // persisted record results (the URL never resolves to /window/123/<numericId>).
             isExpectingCreate = true;
-            await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
-            // Await the server rejection deterministically (the response listener sets hasServerRejectedCreate) —
-            // never a fixed sleep, which under CI load can be read before the round trip settles.
-            await expect
-                .poll(() => hasServerRejectedCreate, {
-                    timeout: VERY_SLOW_ACTION_TIMEOUT,
-                    message: 'the server must reject the create request for a restricted role',
-                })
-                .toBe(true);
-            const urlAfterNew = page.url();
-            console.log(`[${language}] URL after direct /NEW: ${urlAfterNew} ; hasServerRejectedCreate=${hasServerRejectedCreate}`);
-            expect(isNewRecordUrl(urlAfterNew), `a restricted role must not obtain a new C_BPartner record (url=${urlAfterNew})`).toBe(false);
+            await test.step('Attempt to create a business partner via the New-record URL — the server refuses it', async () => {
+                await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
+                // Await the server rejection deterministically (the response listener sets hasServerRejectedCreate) —
+                // never a fixed sleep, which under CI load can be read before the round trip settles.
+                await expect
+                    .poll(() => hasServerRejectedCreate, {
+                        timeout: VERY_SLOW_ACTION_TIMEOUT,
+                        message: 'the server must reject the create request for a restricted role',
+                    })
+                    .toBe(true);
+                const urlAfterNew = page.url();
+                console.log(`[${language}] URL after direct /NEW: ${urlAfterNew} ; hasServerRejectedCreate=${hasServerRejectedCreate}`);
+                expect(isNewRecordUrl(urlAfterNew), `a restricted role must not obtain a new C_BPartner record (url=${urlAfterNew})`).toBe(false);
+            });
             isExpectingCreate = false;
 
             // Step 6 (AC1): Alt+N must NOT create a new record either — the URL stays on the list view.
@@ -258,9 +286,7 @@ testCases.forEach(({ language, label }) => {
             const roleName = masterdata.roles.restricted.name;
             expect(roleUser, 'masterdata must return the restricted role user').toBeTruthy();
 
-            await LoginPage.goto();
-            await LoginPage.login(roleUser);
-            await DashboardPage.expectVisible();
+            await loginAs('restricted role', roleUser);
 
             const result = await createBPartnerViaQuickInput(page);
             console.log(`[${language}] Quick Input processNewRecord (restricted) -> status=${result.status} createdId=${result.createdId} body=${result.body.slice(0, 200)}`);
@@ -297,9 +323,7 @@ testCases.forEach(({ language, label }) => {
             const roleUser = masterdata.login.user;
             expect(roleUser, 'masterdata must return the unrestricted role user').toBeTruthy();
 
-            await LoginPage.goto();
-            await LoginPage.login(roleUser);
-            await DashboardPage.expectVisible();
+            await loginAs('unrestricted role', roleUser);
 
             const result = await createBPartnerViaQuickInput(page);
             console.log(`[${language}] Quick Input processNewRecord (unrestricted) -> status=${result.status} createdId=${result.createdId}`);
@@ -341,17 +365,17 @@ testCases.forEach(({ language, label }) => {
             const roleUser = masterdata.login.user;
             expect(roleUser, 'masterdata must return the unrestricted role user').toBeTruthy();
 
-            await LoginPage.goto();
-            await LoginPage.login(roleUser);
-            await DashboardPage.expectVisible();
+            await loginAs('unrestricted role', roleUser);
 
-            await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
-            await page.waitForURL((u) => isNewRecordUrl(u.toString()), { timeout: VERY_SLOW_ACTION_TIMEOUT });
-            const recordId = page.url().split('/').pop().split('?')[0];
-            console.log(`[${language}] unrestricted role created C_BPartner record ${recordId}`);
-            expect(isNewRecordUrl(page.url()), 'an unrestricted role must obtain a new C_BPartner record').toBe(true);
-            expect(isRestrictionKeyDelivered, 'no create-restriction key must be delivered for an unrestricted role').toBe(false);
-            console.log(`[${language}] PASS — unrestricted role creates C_BPartner normally`);
+            await test.step('Create a new business partner as the unrestricted role', async () => {
+                await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
+                await page.waitForURL((u) => isNewRecordUrl(u.toString()), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+                const recordId = page.url().split('/').pop().split('?')[0];
+                console.log(`[${language}] unrestricted role created C_BPartner record ${recordId}`);
+                expect(isNewRecordUrl(page.url()), 'an unrestricted role must obtain a new C_BPartner record').toBe(true);
+                expect(isRestrictionKeyDelivered, 'no create-restriction key must be delivered for an unrestricted role').toBe(false);
+                console.log(`[${language}] PASS — unrestricted role creates C_BPartner normally`);
+            });
         });
     });
 
@@ -386,9 +410,7 @@ testCases.forEach(({ language, label }) => {
             expect(roleUser, 'masterdata must return the restricted role user').toBeTruthy();
             const recordId = String(masterdata.bpartners.bp1.id);
 
-            await LoginPage.goto();
-            await LoginPage.login(roleUser);
-            await DashboardPage.expectVisible();
+            await loginAs('restricted role', roleUser);
 
             // READ: open the role's own partner; it loads as a valid record.
             await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`);
@@ -403,16 +425,18 @@ testCases.forEach(({ language, label }) => {
             // EDIT (visible + end result): actually type a new Name2 in the UI, blur to save, await the PATCH,
             // and confirm it PERSISTED. The recording shows the restricted role editing an existing partner
             // (WRITE is not removed by the create restriction).
-            const newName2 = `Edited ${Date.now()}`;
-            const name2Input = page.locator('.form-field-Name2 input').first();
-            await name2Input.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-            const patchDone = page.waitForResponse(
-                (r) => r.url().includes(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`) && r.request().method() === 'PATCH',
-                { timeout: VERY_SLOW_ACTION_TIMEOUT },
-            );
-            await name2Input.fill(newName2);
-            await name2Input.blur();
-            await patchDone;
+            await test.step('Edit the business partner Name2 field and save (the restricted role may still edit)', async () => {
+                const newName2 = `Edited ${Date.now()}`;
+                const name2Input = page.locator('.form-field-Name2 input').first();
+                await name2Input.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                const patchDone = page.waitForResponse(
+                    (r) => r.url().includes(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`) && r.request().method() === 'PATCH',
+                    { timeout: VERY_SLOW_ACTION_TIMEOUT },
+                );
+                await name2Input.fill(newName2);
+                await name2Input.blur();
+                await patchDone;
+            });
             const name2After = await getFieldData(BUSINESS_PARTNER_WINDOW_ID, recordId, 'Name2');
             expect(name2After.value, "the restricted role's edit must persist (WRITE not removed)").toBe(newName2);
             console.log(`[${language}] restricted role edited Name2 -> "${newName2}" (persisted)`);
@@ -456,9 +480,7 @@ testCases.forEach(({ language, label }) => {
             expect(roleUser, 'masterdata must return the read-only role user').toBeTruthy();
             const recordId = String(masterdata.bpartners.bp1.id);
 
-            await LoginPage.goto();
-            await LoginPage.login(roleUser);
-            await DashboardPage.expectVisible();
+            await loginAs('read-only role', roleUser);
 
             // READ-YES: the record loads and its fields are readable.
             await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`);
@@ -479,12 +501,14 @@ testCases.forEach(({ language, label }) => {
             // record is a write, so removing WRITE also removes CREATE. The read-only role's "New" action is
             // therefore greyed with the same create-restriction key, though no IsCanCreateNewRecords flag was
             // set on it; reached via the WRITE subtract instead of the CREATE flag.
-            await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
-            await page.locator('.document-list-wrapper, .document-list').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-            const greyedNew = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
-            await ensureSubheaderOpen(page, greyedNew);
-            await expect(greyedNew, 'a read-only role must ALSO be create-blocked (WRITE exclusion removes CREATE)').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-            await expect(greyedNew, 'the greyed "New" action must carry the disabled class').toHaveClass(/subheader-item-disabled/);
+            await test.step('Confirm the New action is greyed for the read-only role', async () => {
+                await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
+                await page.locator('.document-list-wrapper, .document-list').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                const greyedNew = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
+                await ensureSubheaderOpen(page, greyedNew);
+                await expect(greyedNew, 'a read-only role must ALSO be create-blocked (WRITE exclusion removes CREATE)').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await expect(greyedNew, 'the greyed "New" action must carry the disabled class').toHaveClass(/subheader-item-disabled/);
+            });
             console.log(`[${language}] PASS — read-only role: read yes, edit no, create no (Name2.readonly=${name2.readonly})`);
         });
     });
@@ -520,9 +544,7 @@ testCases.forEach(({ language, label }) => {
             expect(roleUser, 'masterdata must return the restricted role user').toBeTruthy();
             const recordId = String(masterdata.bpartners.bp1.id);
 
-            await LoginPage.goto();
-            await LoginPage.login(roleUser);
-            await DashboardPage.expectVisible();
+            await loginAs('restricted role', roleUser);
 
             // Open the role's own existing partner and SELECT the Adresse (Location) included tab — the tab
             // header is language-invariant (data-testid="tab-AD_Tab-222"). Selecting the tab renders its toolbar,
@@ -531,12 +553,14 @@ testCases.forEach(({ language, label }) => {
             // recording therefore shows the address tab open with its greyed "Add new" button.
             await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`);
             await page.waitForURL(new RegExp(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
-            const adresseTab = page.getByTestId(`tab-${ADRESSE_TAB_ID}`);
-            await adresseTab.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-            await adresseTab.click();
-            const greyedAddAddress = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
-            await expect(greyedAddAddress, 'the address tab "Add new" button must be greyed with the role restriction key for the restricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-            await expect(greyedAddAddress, 'the greyed address "Add new" button must carry the disabled class').toHaveClass(/subheader-item-disabled/);
+            await test.step('Open the address tab — its Add-new button is greyed for the restricted role', async () => {
+                const adresseTab = page.getByTestId(`tab-${ADRESSE_TAB_ID}`);
+                await adresseTab.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await adresseTab.click();
+                const greyedAddAddress = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
+                await expect(greyedAddAddress, 'the address tab "Add new" button must be greyed with the role restriction key for the restricted role').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await expect(greyedAddAddress, 'the greyed address "Add new" button must carry the disabled class').toHaveClass(/subheader-item-disabled/);
+            });
             console.log(`[${language}] address tab "Add new" is greyed with key ${CREATE_RESTRICTION_MSG_KEY}`);
 
             // Backstop (language-invariant): the tab's create permission is false AND attributed to the ROLE.
@@ -582,9 +606,7 @@ testCases.forEach(({ language, label }) => {
                 expect(roleUser, 'masterdata must return the role user').toBeTruthy();
                 const recordId = String(masterdata.bpartners.bp1.id);
 
-                await LoginPage.goto();
-                await LoginPage.login(roleUser);
-                await DashboardPage.expectVisible();
+                await loginAs('role', roleUser);
 
                 await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`);
                 await page.waitForURL(new RegExp(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
@@ -593,14 +615,16 @@ testCases.forEach(({ language, label }) => {
                 // so its toolbar offers NO "Add new" button at all, and (crucially, AC4) NO role-restriction reason
                 // ever surfaces there, whatever the role's own R_Request row says. The recording shows the tab open
                 // with no create option and no "role not allowed" marker.
-                const vorgTab = page.getByTestId(`tab-${VORGAENGE_TAB_ID}`);
-                await vorgTab.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-                await vorgTab.click();
-                // No role-restriction greyed button may appear on this tab in ANY of the three role states.
-                await expect(
-                    page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`),
-                    `no role-restriction reason may surface on a tab-forbidden insert (${stateLabel})`,
-                ).toHaveCount(0);
+                await test.step(`Open the Vorgänge tab — it forbids insert with no role reason (${stateLabel})`, async () => {
+                    const vorgTab = page.getByTestId(`tab-${VORGAENGE_TAB_ID}`);
+                    await vorgTab.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    await vorgTab.click();
+                    // No role-restriction greyed button may appear on this tab in ANY of the three role states.
+                    await expect(
+                        page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`),
+                        `no role-restriction reason may surface on a tab-forbidden insert (${stateLabel})`,
+                    ).toHaveCount(0);
+                });
                 console.log(`[${language}] Vorgänge tab shows no role-restriction reason (${stateLabel})`);
 
                 // Backstop (language-invariant): the tab forbids create structurally → allowCreateNew=false with a
@@ -674,26 +698,28 @@ testCases.forEach(({ language, label }) => {
                 const roleUser = masterdata.login.user;
                 expect(roleUser, 'masterdata must return the chain role user').toBeTruthy();
 
-                await LoginPage.goto();
-                await LoginPage.login(roleUser);
-                await DashboardPage.expectVisible();
+                await loginAs('role', roleUser);
 
                 if (expectRestricted) {
-                    await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
-                    await page.locator('.document-list-wrapper, .document-list').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-                    await expect
-                        .poll(() => isRestrictionKeyDelivered, { timeout: VERY_SLOW_ACTION_TIMEOUT, message: 'the union must resolve to RESTRICTED (create key delivered)' })
-                        .toBe(true);
-                    const greyedNew = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
-                    await ensureSubheaderOpen(page, greyedNew);
-                    await expect(greyedNew, 'union restricted → the "New" action is greyed with the restriction key').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-                    console.log(`[${language}] PASS — union RESTRICTED (${caseLabel})`);
+                    await test.step('Open the Business Partner window — the New action is greyed (union resolves to restricted)', async () => {
+                        await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}`);
+                        await page.locator('.document-list-wrapper, .document-list').waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                        await expect
+                            .poll(() => isRestrictionKeyDelivered, { timeout: VERY_SLOW_ACTION_TIMEOUT, message: 'the union must resolve to RESTRICTED (create key delivered)' })
+                            .toBe(true);
+                        const greyedNew = page.getByTestId(`disabledReasonKey-${CREATE_RESTRICTION_MSG_KEY}`);
+                        await ensureSubheaderOpen(page, greyedNew);
+                        await expect(greyedNew, 'union restricted → the "New" action is greyed with the restriction key').toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+                        console.log(`[${language}] PASS — union RESTRICTED (${caseLabel})`);
+                    });
                 } else {
-                    await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
-                    await page.waitForURL((u) => isNewRecordUrl(u.toString()), { timeout: VERY_SLOW_ACTION_TIMEOUT });
-                    expect(isNewRecordUrl(page.url()), 'union allowed → a new C_BPartner record is created').toBe(true);
-                    expect(isRestrictionKeyDelivered, 'no restriction key when the union resolves to ALLOWED').toBe(false);
-                    console.log(`[${language}] PASS — union ALLOWED (${caseLabel})`);
+                    await test.step('Create a new business partner (union resolves to allowed)', async () => {
+                        await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
+                        await page.waitForURL((u) => isNewRecordUrl(u.toString()), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+                        expect(isNewRecordUrl(page.url()), 'union allowed → a new C_BPartner record is created').toBe(true);
+                        expect(isRestrictionKeyDelivered, 'no restriction key when the union resolves to ALLOWED').toBe(false);
+                        console.log(`[${language}] PASS — union ALLOWED (${caseLabel})`);
+                    });
                 }
             });
         });
@@ -733,9 +759,7 @@ testCases.forEach(({ language, label }) => {
                 const roleName = masterdata.roles.r.name;
                 const recordId = String(masterdata.bpartners.bp1.id);
 
-                await LoginPage.goto();
-                await LoginPage.login(roleUser);
-                await DashboardPage.expectVisible();
+                await loginAs(restricted ? 'restricted role' : 'unrestricted role', roleUser);
 
                 await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`);
                 await page.waitForURL(new RegExp(`/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`), { timeout: VERY_SLOW_ACTION_TIMEOUT });
@@ -747,7 +771,9 @@ testCases.forEach(({ language, label }) => {
                 // and for an unrestricted role it is enabled. The recording shows the actions menu with Clone
                 // greyed / enabled.
                 const cloneItem = page.locator('.js-subheader-item:has(i.meta-icon-duplicate)');
-                await ensureSubheaderOpen(page, cloneItem);
+                await test.step('Open the actions menu to check the Clone action', async () => {
+                    await ensureSubheaderOpen(page, cloneItem);
+                });
 
                 // Backstop (language-invariant): the server-computed standard actions. Clone stays PRESENT in the
                 // set (that is what lets the client grey it) and, for a restricted role, appears in
@@ -836,26 +862,25 @@ testCases.forEach(({ language, label }) => {
             // Log in, open the menu overlay (top-left menu icon), type the search term, and return the
             // /menu/queryPaths leaves. Leaves the overlay open with results rendered so the caller can assert on
             // the visible DOM. Clears cookies first so the second login starts from a clean session.
-            const menuSearch = async (user, term) => {
-                await page.context().clearCookies();
-                await LoginPage.goto();
-                await LoginPage.login(user);
-                await DashboardPage.expectVisible();
-                const menuBtn = page.locator('.header-item-container-static').first();
-                await menuBtn.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-                await menuBtn.click();
-                const searchInput = page.locator('.menu-overlay-query input.input-field');
-                await searchInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-                const [resp] = await Promise.all([
-                    page.waitForResponse((r) => r.url().includes('/menu/queryPaths'), { timeout: VERY_SLOW_ACTION_TIMEOUT }),
-                    searchInput.fill(term),
-                ]);
-                return collectLeaves(await resp.json());
+            const menuSearch = async (user, who, term) => {
+                await loginAs(who, user, { fresh: true });
+                return await test.step(`Open the menu overlay and search for "${term}"`, async () => {
+                    const menuBtn = page.locator('.header-item-container-static').first();
+                    await menuBtn.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    await menuBtn.click();
+                    const searchInput = page.locator('.menu-overlay-query input.input-field');
+                    await searchInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    const [resp] = await Promise.all([
+                        page.waitForResponse((r) => r.url().includes('/menu/queryPaths'), { timeout: VERY_SLOW_ACTION_TIMEOUT }),
+                        searchInput.fill(term),
+                    ]);
+                    return collectLeaves(await resp.json());
+                });
             };
 
             // UNRESTRICTED: searching "partner" returns the business-partner "new record" entry AND it renders
             // in the menu (the recording shows the entry present).
-            const openLeaves = await menuSearch(md.login.openUser, 'partner');
+            const openLeaves = await menuSearch(md.login.openUser, 'unrestricted role', 'partner');
             const openNewRecords = openLeaves.filter((l) => l.type === 'newRecord' && l.elementId != null);
             console.log(`[${language}] open newRecord entries: ${JSON.stringify(openNewRecords.map((n) => ({ caption: n.caption, elementId: n.elementId })))}`);
             expect(openNewRecords.length, 'an unrestricted role must be offered a "new record" menu entry for the business partner window').toBeGreaterThanOrEqual(1);
@@ -868,7 +893,7 @@ testCases.forEach(({ language, label }) => {
             // RESTRICTED: the same search returns NO newRecord entry for that business-partner window, and the
             // entry is absent from the rendered menu (the recording shows the search WITHOUT the entry). Keyed on
             // the elementId the unrestricted run captured — deployment-agnostic, no hardcoded window id.
-            const restrictedLeaves = await menuSearch(md.login.restrictedUser, 'partner');
+            const restrictedLeaves = await menuSearch(md.login.restrictedUser, 'restricted role', 'partner');
             const restrictedBpNewRecords = restrictedLeaves.filter((l) => l.type === 'newRecord' && String(l.elementId) === String(bpNewRecord.elementId));
             console.log(`[${language}] restricted newRecord entries for elementId ${bpNewRecord.elementId}: ${restrictedBpNewRecords.length}`);
             expect(restrictedBpNewRecords.length, 'a restricted role must NOT be offered the business-partner "new record" menu entry').toBe(0);
@@ -910,28 +935,28 @@ testCases.forEach(({ language, label }) => {
                 const md = await Backend.createMasterdata({ request: { login: { user: { language, role: 'r' } }, roles: { r: role } } });
                 expect(md.login.user, 'masterdata must return the role user').toBeTruthy();
 
-                await LoginPage.goto();
-                await LoginPage.login(md.login.user);
-                await DashboardPage.expectVisible();
+                await loginAs(restricted ? 'restricted role' : 'unrestricted role', md.login.user);
 
                 // Reach the C_BPartner (Kunde) lookup on a new Sales Order, then type a non-existing partner name.
-                await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/NEW`);
-                const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
-                await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-                await bpInput.click();
+                await test.step('Type a new customer name in the Sales Order customer lookup', async () => {
+                    await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/NEW`);
+                    const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
+                    await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    await bpInput.click();
 
-                // Synchronize on the actual typeahead HTTP response — race-free. A DOM-class wait cannot work
-                // here: the dropdown's loading spinner and its settled no-results header share the same class
-                // (SelectionDropdown.renderHeader), so a class wait can resolve DURING loading, before the
-                // round-trip completes — leaving the absence assertion vacuous. Waiting on the typeahead response
-                // guarantees the round-trip finished; option-NEW is layout-gated (newRecordCaption, nulled for a
-                // restricted role), so once the response is in, its presence/absence is settled.
-                const typeaheadDone = page.waitForResponse(
-                    (r) => r.url().includes('/field/C_BPartner_ID/typeahead') && r.status() === 200,
-                    { timeout: VERY_SLOW_ACTION_TIMEOUT },
-                );
-                await bpInput.fill(`ZZZ_NOMATCH_${Date.now()}`);
-                await typeaheadDone;
+                    // Synchronize on the actual typeahead HTTP response — race-free. A DOM-class wait cannot work
+                    // here: the dropdown's loading spinner and its settled no-results header share the same class
+                    // (SelectionDropdown.renderHeader), so a class wait can resolve DURING loading, before the
+                    // round-trip completes — leaving the absence assertion vacuous. Waiting on the typeahead response
+                    // guarantees the round-trip finished; option-NEW is layout-gated (newRecordCaption, nulled for a
+                    // restricted role), so once the response is in, its presence/absence is settled.
+                    const typeaheadDone = page.waitForResponse(
+                        (r) => r.url().includes('/field/C_BPartner_ID/typeahead') && r.status() === 200,
+                        { timeout: VERY_SLOW_ACTION_TIMEOUT },
+                    );
+                    await bpInput.fill(`ZZZ_NOMATCH_${Date.now()}`);
+                    await typeaheadDone;
+                });
 
                 const optionNew = page.getByTestId('option-NEW');
                 if (restricted) {
@@ -952,15 +977,166 @@ testCases.forEach(({ language, label }) => {
         });
     });
 
+    // TC14b — each role sees its OWN new-partner availability on a freshly reloaded Sales Order. Both roles run
+    // in ONE browser context (a sequential login switch, like one operator changing role), but before each check
+    // clearHttpCache() bypasses the layout's Cache-Control: max-age (a hard-reload / fresh-session equivalent).
+    // Reflecting a role difference on a plain IN-CACHE re-open is deliberately NOT required — a reload for a
+    // role/permission change is acceptable — so this asserts the RELOADED state: the open role, after a reload,
+    // sees option-NEW even though the restricted role opened the Sales Order first, i.e. the server computes the
+    // correct per-role layout and one role's layout is not permanently poisoned for another (the "only an app
+    // restart fixes it" symptom). The server-side role-aware ETag itself (a revalidation returning the correct
+    // per-role layout instead of a stale 304) is unit-tested in ETagResponseEntityBuilderRoleTest.
+    test.describe(`Role create restriction — new-partner availability is per role (${label})`, () => {
+        test(`each role sees its own new-partner availability on the Sales Order (${label} UI)`, async ({ page }) => {
+            allure.epic('E0180: System Administration');
+            allure.story('Role create restriction — each role sees its own new-partner availability, regardless of which role opened the Sales Order first');
+            allure.tag('F33020: Roles');
+            allure.tag('F33020');
+            allure.severity('critical');
+            allure.parameter('Language', language);
+            allure.tag(language);
+            test.setTimeout(150000);
+
+            const md = await Backend.createMasterdata({
+                request: {
+                    login: {
+                        restrictedUser: { language, role: 'restricted' },
+                        openUser: { language, role: 'open' },
+                    },
+                    roles: {
+                        restricted: { name: `XRoleRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] },
+                        open: { name: `XRoleOpen_${language}` },
+                    },
+                },
+            });
+            const restrictedUser = md.login.restrictedUser;
+            const openUser = md.login.openUser;
+            expect(restrictedUser && openUser, 'masterdata must return both the restricted and the open user').toBeTruthy();
+
+            // Log in as `user` on a FRESH session (loginAs clears cookies, then clearHttpCache bypasses the layout
+            // max-age = a hard reload), open a new Sales Order, type a non-existing partner, and report whether the
+            // reloaded layout offers the option-NEW (new-partner) entry for this role.
+            const optionNewOffered = async (user, who) => {
+                await loginAs(who, user, { fresh: true });
+                await clearHttpCache(); // hard-reload equivalent: bypass max-age so this role gets a fresh layout
+                return await test.step('Open a new Sales Order and type a new customer name to check the new-partner option', async () => {
+                    await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/NEW`);
+                    const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
+                    await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    await bpInput.click();
+                    // Unique query string per call -> the typeahead response is never itself cached (always 200).
+                    const typeaheadDone = page.waitForResponse(
+                        (r) => r.url().includes('/field/C_BPartner_ID/typeahead') && r.status() === 200,
+                        { timeout: VERY_SLOW_ACTION_TIMEOUT },
+                    );
+                    await bpInput.fill(`ZZZ_NOMATCH_${Date.now()}`);
+                    await typeaheadDone;
+                    return (await page.getByTestId('option-NEW').count()) > 0;
+                });
+            };
+
+            // 1) The restricted role opens the Sales Order FIRST -> option hidden (its layout is now cached in this
+            //    browser).
+            expect(await optionNewOffered(restrictedUser, 'restricted role'), 'restricted role: the new-partner entry must be hidden').toBe(false);
+            console.log(`[${language}] restricted role loaded the SO layout first (new-partner hidden)`);
+
+            // 2) The open role, in the SAME context but on a fresh reload (cache bypassed), MUST see the new-partner
+            //    entry — i.e. the server serves the correct per-role layout and the restricted role's earlier load
+            //    did not permanently poison it (the "only an app restart fixes it" symptom).
+            expect(await optionNewOffered(openUser, 'open role'), 'open role must see the new-partner entry after a reload, even though a restricted role opened the Sales Order first').toBe(true);
+            console.log(`[${language}] PASS — open role sees new-partner despite the restricted role's earlier layout load`);
+        });
+    });
+
+    // TC14c — the FULL real-life round-trip in ONE browser session: a restricted role's user is on a Sales
+    // Order and sees no new-partner entry; an administrator switches to the Roles window (111) and toggles the
+    // C_BPartner "allow create" flag back on; the user RELOADS the Sales Order (a fresh session — soOffersNewPartner
+    // clears cookies AND the HTTP cache, a hard-reload equivalent) and the new-partner entry is now there — no
+    // app restart. This is the flow the original bug broke: the option stayed gone until an APP RESTART, and even
+    // debug/cacheReset did not help. Requiring a page reload for a permission change is acceptable; requiring a
+    // restart was not. (The role-aware layout ETag — a revalidation returning the correct per-role layout rather
+    // than a stale 304 — is unit-tested in ETagResponseEntityBuilderRoleTest.)
+    const RW_ID = 111;
+    const RW_TABLE_ACCESS_TAB = 'AD_Tab-549493';
+    test.describe(`Role create restriction — a role change is reflected immediately (${label})`, () => {
+        test(`changing a role's create permission is directly reflected on the Sales Order (${label} UI)`, async ({ page }) => {
+            allure.epic('E0180: System Administration');
+            allure.story('Role create restriction — a change to a role is reflected immediately for its users, without an app restart');
+            allure.tag('F33020: Roles');
+            allure.tag('F33020');
+            allure.severity('critical');
+            allure.parameter('Language', language);
+            allure.tag(language);
+            test.setTimeout(180000);
+
+            const md = await Backend.createMasterdata({
+                request: {
+                    login: {
+                        user: { language }, // admin (WebUI role) — may edit the Roles window (111)
+                        restrictedUser: { language, role: 'restricted' },
+                    },
+                    roles: { restricted: { name: `FlagFlip_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] } },
+                },
+            });
+            const adminUser = md.login.user;
+            const restrictedUser = md.login.restrictedUser;
+            const roleId = md.roles.restricted.roleId;
+            expect(adminUser && restrictedUser && roleId, 'masterdata must return the admin user, the restricted user and the role id').toBeTruthy();
+
+            // Open a new Sales Order as `user`, type a non-existing partner, report whether option-NEW is offered.
+            const soOffersNewPartner = async (user) => {
+                await loginAs('restricted role', user, { fresh: true });
+                await clearHttpCache(); // hard-reload equivalent: bypass max-age so the reloaded layout is fresh
+                return await test.step('Open a new Sales Order and type a new customer name to check the new-partner option', async () => {
+                    await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/NEW`);
+                    const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
+                    await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                    await bpInput.click();
+                    const typeaheadDone = page.waitForResponse(
+                        (r) => r.url().includes('/field/C_BPartner_ID/typeahead') && r.status() === 200,
+                        { timeout: VERY_SLOW_ACTION_TIMEOUT },
+                    );
+                    await bpInput.fill(`ZZZ_NOMATCH_${Date.now()}`);
+                    await typeaheadDone;
+                    return (await page.getByTestId('option-NEW').count()) > 0;
+                });
+            };
+
+            // 1) BEFORE: the restricted user is on the Sales Order and sees no new-partner entry.
+            expect(await soOffersNewPartner(restrictedUser), 'before: the restricted role must NOT see the new-partner entry').toBe(false);
+            console.log(`[${language}] before: SO new-partner hidden for the restricted role`);
+
+            // 2) The administrator opens the Roles window (111), the Table Access tab, and toggles the C_BPartner
+            //    "Allow create new records" flag to Yes through the actual grid — the real admin action, and the
+            //    part the recording actually shows (the grid + the toggle), lifting the restriction.
+            await loginAs('administrator', adminUser, { fresh: true });
+            await test.step('Administrator opens the Roles window and toggles the C_BPartner create flag to Yes', async () => {
+                await page.goto(`${FRONTEND_BASE_URL}/window/${RW_ID}/${roleId}`); // open the Roles window for this role
+                await page.getByTestId(`tab-${RW_TABLE_ACCESS_TAB}`).click(); // open the Table Access tab
+                const accessRows = page.locator('.table-row');
+                await expect(accessRows, 'the restricted role has exactly one table-access row (its C_BPartner restriction)').toHaveCount(1, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await accessRows.first().dblclick(); // open the row's single-row view to edit its flags
+                await page.locator('.form-field-IsCanCreateNewRecords, #lookup_IsCanCreateNewRecords').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await BooleanWidget.setValue('IsCanCreateNewRecords', true, true); // N -> Y, awaits the save PATCH
+                console.log(`[${language}] admin toggled IsCanCreateNewRecords to Yes on the C_BPartner table-access row`);
+            });
+
+            // 3) AFTER: the restricted user RELOADS the Sales Order (fresh session, cache bypassed) — the new-partner
+            //    entry is now offered, with no app restart. (soOffersNewPartner clears cookies + the HTTP cache, so
+            //    this is the reload a real user would do; the original bug needed a full restart, not just a reload.)
+            expect(await soOffersNewPartner(restrictedUser), 'after lifting the flag, a reload must show the SO new-partner entry (no app restart)').toBe(true);
+            console.log(`[${language}] PASS — SO new-partner appeared after the flag change, no restart`);
+        });
+    });
+
     // TC6 — the administrator lifts the restriction (AC7). A restricted role's user cannot create; an
     // administrator clears the role's C_BPartner AD_Table_Access restriction in the Roles window (111); the
     // affected user, in a NEW session, can create again — no app restart (the permission cache invalidates on
     // the change). The "administrator" is the default login user (WebUI role, which has write access to window
-    // 111); it deletes the restricted role's C_BPartner (AD_Table 291) row on the Table Access tab (AD_Tab-549493),
-    // which returns the role to "no row" = allowed.
+    // 111); it toggles the restricted role's C_BPartner row (Table Access tab, AD_Tab-549493) "Allow create
+    // new records" flag back to Yes, which re-grants CREATE to the role.
     const ROLES_WINDOW_ID = 111;
     const TABLE_ACCESS_TAB_ID = 'AD_Tab-549493';
-    const C_BPARTNER_AD_TABLE_ID = '291';
     test.describe(`Role create restriction — administrator lifts it (${label})`, () => {
         test(`clearing the restriction re-enables creation without a restart (${label} UI)`, async ({ page }) => {
             allure.epic('E0180: System Administration');
@@ -992,35 +1168,35 @@ testCases.forEach(({ language, label }) => {
             // bounded settle window then confirm the URL stayed on the list (a poll would resolve on the first
             // non-new-record reading and never let a broken gate reveal itself).
             const canCreate = async (user, { expectCreate }) => {
-                await page.context().clearCookies();
-                await LoginPage.goto();
-                await LoginPage.login(user);
-                await DashboardPage.expectVisible();
-                await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
-                if (expectCreate) {
-                    await page.waitForURL((u) => isNewRecordUrl(u.toString()), { timeout: VERY_SLOW_ACTION_TIMEOUT });
-                    return true;
-                }
-                await page.waitForTimeout(3000);
-                return isNewRecordUrl(page.url());
+                await loginAs('restricted role', user, { fresh: true });
+                return await test.step('Attempt to create a new business partner (open the New record)', async () => {
+                    await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/NEW`);
+                    if (expectCreate) {
+                        await page.waitForURL((u) => isNewRecordUrl(u.toString()), { timeout: VERY_SLOW_ACTION_TIMEOUT });
+                        return true;
+                    }
+                    await page.waitForTimeout(3000);
+                    return isNewRecordUrl(page.url());
+                });
             };
 
             // BEFORE: the restricted user cannot create a C_BPartner.
             expect(await canCreate(restrictedUser, { expectCreate: false }), 'before lifting: the restricted role must NOT obtain a new record').toBe(false);
 
-            // ADMIN lifts it: delete the role's C_BPartner table-access row via the Roles window (111).
-            await page.context().clearCookies();
-            await LoginPage.goto();
-            await LoginPage.login(adminUser);
-            await DashboardPage.expectVisible();
-            const rowsResp = await page.request.get(`${WEBAPI_BASE_URL}/window/${ROLES_WINDOW_ID}/${roleId}/${TABLE_ACCESS_TAB_ID}`, { headers: { 'Content-Type': 'application/json' } });
-            expect(rowsResp.ok(), 'the admin must be able to read the role table-access rows').toBe(true);
-            const rows = (await rowsResp.json()).result || [];
-            const bpRow = rows.find((r) => String(r.fieldsByName?.AD_Table_ID?.value?.key) === C_BPARTNER_AD_TABLE_ID);
-            expect(bpRow, 'the role must have a C_BPartner (291) table-access row to clear').toBeTruthy();
-            const delResp = await page.request.delete(`${WEBAPI_BASE_URL}/window/${ROLES_WINDOW_ID}/${roleId}/${TABLE_ACCESS_TAB_ID}/${bpRow.rowId}`, { headers: { 'Content-Type': 'application/json' } });
-            console.log(`[${language}] admin DELETE table-access row ${bpRow.rowId} = ${delResp.status()}`);
-            expect(delResp.ok(), 'the administrator must be able to clear the restriction row').toBe(true);
+            // ADMIN lifts it via the Roles window (111): open the Table Access tab and toggle the C_BPartner
+            // "Allow create new records" flag to Yes through the actual grid — the real administrator action
+            // (what the recording shows), not a REST call.
+            await loginAs('administrator', adminUser, { fresh: true });
+            await test.step('Administrator opens the Roles window and toggles the C_BPartner create flag to Yes', async () => {
+                await page.goto(`${FRONTEND_BASE_URL}/window/${ROLES_WINDOW_ID}/${roleId}`);
+                await page.getByTestId(`tab-${TABLE_ACCESS_TAB_ID}`).click();
+                const accessRows = page.locator('.table-row');
+                await expect(accessRows, 'the restricted role has exactly one table-access row (its C_BPartner restriction)').toHaveCount(1, { timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await accessRows.first().dblclick();
+                await page.locator('.form-field-IsCanCreateNewRecords, #lookup_IsCanCreateNewRecords').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await BooleanWidget.setValue('IsCanCreateNewRecords', true, true);
+                console.log(`[${language}] admin toggled IsCanCreateNewRecords to Yes on the C_BPartner table-access row`);
+            });
 
             // AFTER: the restricted user, in a NEW session, can now create — no app restart.
             expect(await canCreate(restrictedUser, { expectCreate: true }), 'after lifting: the role can create a new record (no restart)').toBe(true);
