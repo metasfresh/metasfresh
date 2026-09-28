@@ -30,6 +30,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
@@ -45,23 +46,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * and ensures the {@code C_Year}/{@code C_Period} rows a transition's calendar needs (e.g. for a term whose
  * duration spans into the next year) exist.
  */
+@RequiredArgsConstructor
 public class C_Flatrate_Transition_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final C_Flatrate_Transition_StepDefData transitionTable;
-	private final C_Calendar_StepDefData calendarTable;
-
-	public C_Flatrate_Transition_StepDef(
-			@NonNull final C_Flatrate_Transition_StepDefData transitionTable,
-			@NonNull final C_Calendar_StepDefData calendarTable)
-	{
-		this.transitionTable = transitionTable;
-		this.calendarTable = calendarTable;
-	}
+	private final @NonNull C_Flatrate_Transition_StepDefData transitionTable;
 
 	/**
-	 * Creates {@link I_C_Flatrate_Transition} records.
+	 * Creates {@link I_C_Flatrate_Transition} records. The calendar is always the calendar of the seeded
+	 * {@link StepDefConstants#FLATRATE_TRANSITION_ID} transition (no step exists yet to create/load a named
+	 * {@code C_Calendar}, so a per-row calendar override is not offered).
 	 * <p>
 	 * DataTable columns:
 	 * <ul>
@@ -71,8 +66,6 @@ public class C_Flatrate_Transition_StepDef
 	 *     <li>{@code TermDurationUnit} (required) — {@code day}/{@code week}/{@code month}/{@code year}</li>
 	 *     <li>{@code OPT.TermOfNotice}, {@code OPT.TermOfNoticeUnit} (optional) — the notice period</li>
 	 *     <li>{@code OPT.ExtensionType} (optional) — {@code EA} (extend all) / {@code EO} (extend one)</li>
-	 *     <li>{@code OPT.C_Calendar_Contract_ID.Identifier} (optional) — the billing/delivery calendar;
-	 *         defaults to the calendar of the seeded {@link StepDefConstants#FLATRATE_TRANSITION_ID} transition</li>
 	 *     <li>{@code OPT.EnsurePeriodsForYears} (optional, comma-separated) — calendar years (e.g. {@code 2022,2023})
 	 *         for which a {@code C_Year} + its 12 standard {@code C_Period} rows are created on the transition's
 	 *         calendar, if not already there — needed for a term whose end date/notice date falls into a year that
@@ -88,9 +81,7 @@ public class C_Flatrate_Transition_StepDef
 	public void createTransitions(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
-			final I_C_Calendar calendar = row.getAsOptionalIdentifier(I_C_Flatrate_Transition.COLUMNNAME_C_Calendar_Contract_ID)
-					.map(identifier -> identifier.lookupNotNullIn(calendarTable))
-					.orElseGet(this::getDefaultCalendar);
+			final I_C_Calendar calendar = getDefaultCalendar();
 
 			final I_C_Flatrate_Transition record = newInstance(I_C_Flatrate_Transition.class);
 			record.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());

@@ -70,13 +70,13 @@ Feature: Compensation group contract fixtures — smoke coverage
       | compGroupTerm | compGroupConditions                 | contractBP                  | 2026-06-15 | 2026-12-31 | DR            | false         |
     And the C_Flatrate_Term identified by compGroupTerm is completed
     Then validate created C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.EndDate |
-      | compGroupTermChecked          | compGroupConditions                 | contractBP                  | contractProduct         | 2026-12-31  |
+      | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.EndDate | OPT.NoticeDate |
+      | compGroupTermChecked          | compGroupConditions                 | contractBP                  | contractProduct         | 2026-12-31  | 2026-12-31     |
 
     Given metasfresh contains C_Flatrate_Terms:
       | Identifier        | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
       | compGroupTermNext | compGroupConditions                 | contractBP                  | 2026-11-01 | 2027-01-31 | DR            | false         |
-    Then completing the C_Flatrate_Term identified by "compGroupTermNext" is rejected with message containing "überlappt"
+    Then the C_Flatrate_Term identified by compGroupTermNext cannot be completed because of error code de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm
 
   # ##############################################################################################
   # Cancel a completed term; order-level compensation-group wiring

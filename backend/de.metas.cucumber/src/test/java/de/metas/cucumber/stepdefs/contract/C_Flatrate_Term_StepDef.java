@@ -43,6 +43,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.PMM_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -356,6 +357,29 @@ public class C_Flatrate_Term_StepDef
 		assertThatThrownBy(() -> documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed))
 				.as("Completing C_Flatrate_Term with identifier %s", identifier)
 				.hasMessageContaining(expectedMessageFragment);
+	}
+
+	/**
+	 * Asserts that completing the given {@link I_C_Flatrate_Term} is REFUSED, and that it is refused for the
+	 * expected reason: the thrown {@link org.adempiere.exceptions.AdempiereException} must carry the given
+	 * error code. Locale-independent (unlike {@link #completing_C_Flatrate_Term_is_rejected}, which matches a
+	 * message substring) — mirrors {@code C_Order_StepDef#order_cannot_be_completed_because_of_error_code}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then the C_Flatrate_Term identified by contract_1 cannot be completed because of error code de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) cannot be completed because of error code (.*)$")
+	public void the_C_Flatrate_Term_cannot_be_completed_because_of_error_code(
+			@NonNull final String identifier,
+			@NonNull final String errorCode)
+	{
+		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
+		assertThat(flatrateTermRecord).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
+
+		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed));
 	}
 
 	@And("^the C_Flatrate_Term identified by (.*) has (.*) C_Flatrate_DataEntries.$")
