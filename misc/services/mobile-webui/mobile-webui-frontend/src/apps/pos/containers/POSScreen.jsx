@@ -8,12 +8,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateOrderFromBackendAction } from '../actions/orders';
 import POSTerminalSelectModal from './select_terminal/POSTerminalSelectModal';
 import { usePOSTerminal } from '../actions/posTerminal';
-import { MODAL_CashWithdrawal, MODAL_POSTerminalSelect, MODAL_SelectOrders } from '../actions/ui';
+import {
+  MODAL_CashWithdrawal,
+  MODAL_InvoiceSettlement,
+  MODAL_POSTerminalSelect,
+  MODAL_SelectOrders,
+} from '../actions/ui';
 import { getModalFromState } from '../reducers/uiUtils';
 import { POSContent } from './POSContent';
 import SelectOrderModal from './select_order/SelectOrderModal';
 import CashWithdrawalModal from './cash_withdrawal/CashWithdrawalModal';
 import { useCashWithdrawalCategories } from './cash_withdrawal/useCashWithdrawalCategories';
+import InvoiceSettlementModal from './invoice_settlement/InvoiceSettlementModal';
 
 const POSScreen = () => {
   const dispatch = useDispatch();
@@ -77,6 +83,8 @@ const useModal = ({ cashWithdrawalCategories }) => {
       return <SelectOrderModal />;
     } else if (modal === MODAL_CashWithdrawal) {
       return <CashWithdrawalModal categories={cashWithdrawalCategories} />;
+    } else if (modal === MODAL_InvoiceSettlement) {
+      return <InvoiceSettlementModal />;
     }
   }
 

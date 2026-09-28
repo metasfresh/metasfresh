@@ -61,6 +61,7 @@ import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Bank;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -241,6 +242,18 @@ public class CreatePOSTerminalCommand
 		bankAccount.setAD_Org_ID(orgId.getRepoId());
 		bankAccount.setC_Currency_ID(currencyId.getRepoId());
 		bankAccount.setIsActive(true);
+
+		// A "cash bank" (e.g. a POS till's own cashbook) is what makes MPayment#beforeSave force
+		// TenderType=Cash on any payment booked against it; without a linked C_Bank flagged IsCashBank,
+		// TenderType silently defaults to DirectDeposit regardless of what the caller requests (same gap,
+		// same fix, as C_BP_BankAccount_StepDef's cucumber sibling).
+		final I_C_Bank cashBank = InterfaceWrapperHelper.newInstance(I_C_Bank.class);
+		cashBank.setName("Cash");
+		cashBank.setRoutingNo("000000"); // mandatory column; a cash "bank" has no real routing number
+		cashBank.setIsCashBank(true);
+		InterfaceWrapperHelper.saveRecord(cashBank);
+		bankAccount.setC_Bank_ID(cashBank.getC_Bank_ID());
+
 		bpBankAccountDAO.save(bankAccount);
 		return BankAccountId.ofRepoId(bankAccount.getC_BP_BankAccount_ID());
 	}

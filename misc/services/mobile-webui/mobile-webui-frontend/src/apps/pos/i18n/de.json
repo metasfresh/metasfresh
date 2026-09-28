@@ -3,7 +3,8 @@
     "closeCashJournal": "Kasse schließen",
     "orders": "Aufträge",
     "cashWithdrawal": "Entnahme",
-    "return": "Rücknahme"
+    "return": "Rücknahme",
+    "invoiceSettlement": "Rechnung bezahlen"
   },
   "openCashJournal": {
     "title": "Kasse öffnen",
@@ -163,6 +164,18 @@
         "cancel": "Abbrechen",
         "close": "Schließen"
       }
+    }
+  },
+  "invoiceSettlement": {
+    "title": "Rechnung bezahlen",
+    "documentNo": "Rechnungsnummer",
+    "noResults": "Keine offene Rechnung gefunden",
+    "success": "Rechnung %(docNo)s bezahlt",
+    "actions": {
+      "search": "Suchen",
+      "back": "Zurück",
+      "cancel": "Abbrechen",
+      "close": "Schließen"
     }
   }
 }

@@ -23,7 +23,7 @@ import java.util.List;
  *     returns: [{ product: 'P1', qty: '0.300 KGM', warehouse: 'quality' }],
  *     creditMemos: [{ lines: [{ product: 'P1', qty: '0.300 KGM', price: '15.50', taxRate: 7 }] }],
  *     cashJournalLines: [{ type: 'CASH_INOUT', amount: '-4.65' }],
- *     invoices: [{ invoice: 'INV1', isPaid: true, hasAllocatedPayment: true }]
+ *     invoices: [{ invoice: 'INV1', isPaid: true, hasAllocatedPayment: true, allocatedPayments: [{ tenderType: 'X' }] }]
  *   }
  * });
  * </pre>
@@ -98,6 +98,23 @@ public class JsonPOSExpectation
 		@NonNull String invoice;
 		@Nullable Boolean isPaid;
 		@Nullable Boolean hasAllocatedPayment;
+
+		/**
+		 * The invoice's allocated payments, in no particular guaranteed order — asserted as a set: only the
+		 * SIZE and, per expected entry, that SOME actual payment has that {@code tenderType} (not a positional
+		 * match). {@code null} (the default) skips this check entirely.
+		 */
+		@Nullable List<JsonPOSAllocatedPaymentExpectation> allocatedPayments;
+	}
+
+	/** One payment allocated against an invoice (see {@link JsonPOSInvoiceExpectation#getAllocatedPayments()}). */
+	@Value
+	@Builder
+	@Jacksonized
+	public static class JsonPOSAllocatedPaymentExpectation
+	{
+		/** {@code C_Payment.TenderType} code, e.g. {@code 'X'} for cash. */
+		@Nullable String tenderType;
 	}
 
 	/** One line of the till's cash journal (e.g. the return's refund, {@code CASH_INOUT} negative). */

@@ -139,6 +139,10 @@ public class CreateBPartnerCommand
 		{
 			bpartner.setVATaxID(request.getVatTaxId());
 		}
+		if (request.getInvoiceRule() != null)
+		{
+			bpartner.setInvoiceRule(request.getInvoiceRule());
+		}
 
 		// Set pricing system based on vendor/customer flags
 		if (request.isCustomer())

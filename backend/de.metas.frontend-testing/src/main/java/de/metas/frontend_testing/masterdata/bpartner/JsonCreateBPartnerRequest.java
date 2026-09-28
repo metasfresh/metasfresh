@@ -53,6 +53,16 @@ public class JsonCreateBPartnerRequest
 	@Nullable String vatTaxId;
 
 	/**
+	 * Sets {@code C_BPartner.InvoiceRule} (e.g. {@code "I"} for Immediate). {@code null} (the default) leaves the
+	 * column unset, so the effective rule ({@code BPartnerEffectiveBL}) falls through to the BP-group's own
+	 * InvoiceRule and, since the "Standard" BP group carries none either, to the system default — After Delivery.
+	 * A flow that invoices this bpartner via the ordinary invoice-candidate pipeline WITHOUT ever creating a
+	 * shipment (e.g. settling an already-issued invoice at the till) needs {@code "I"} here, since After Delivery
+	 * leaves {@code C_Invoice_Candidate.QtyToInvoice=0} until something is delivered.
+	 */
+	@Nullable String invoiceRule;
+
+	/**
 	 * Contacts (AD_User records) to create for this business partner.
 	 * Each contact is linked to the business partner via C_BPartner_ID.
 	 */

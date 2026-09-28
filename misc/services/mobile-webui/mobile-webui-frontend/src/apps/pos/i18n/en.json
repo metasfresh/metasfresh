@@ -3,7 +3,8 @@
     "closeCashJournal": "Close register",
     "orders": "Orders",
     "cashWithdrawal": "Withdrawal",
-    "return": "Return"
+    "return": "Return",
+    "invoiceSettlement": "Pay invoice"
   },
   "openCashJournal": {
     "title": "Open register",
@@ -162,6 +163,18 @@
         "cancel": "Cancel",
         "close": "Close"
       }
+    }
+  },
+  "invoiceSettlement": {
+    "title": "Pay invoice",
+    "documentNo": "Invoice number",
+    "noResults": "No open invoice found",
+    "success": "Invoice %(docNo)s paid",
+    "actions": {
+      "search": "Search",
+      "back": "Back",
+      "cancel": "Cancel",
+      "close": "Close"
     }
   }
 }

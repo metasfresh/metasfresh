@@ -39,8 +39,8 @@ import static de.metas.frontend_testing.expectations.assertions.Assertions.softl
 /**
  * Asserts a POS product return: the return {@code M_InOut}, its credit memo, the credit memo's allocated
  * outbound payment, and the till's cash journal. Separately, via {@code invoices}, asserts a plain invoice's
- * paid / allocated-payment state — infrastructure with no POS-return artifact behind it, for a later flow that
- * does not exist on this branch yet.
+ * paid / allocated-payment state — used by the invoice-settlement flow ({@code POSInvoiceSettlementService})
+ * to prove a settled invoice is paid, allocated against a cash payment, and that payment's tender type.
  *
  * <p>Consumer-side JSON shape: see {@link JsonPOSExpectation}'s own Javadoc.
  */
@@ -281,7 +281,42 @@ class AssertPOSExpectationsCommand
 						.as("invoice C_Invoice_ID=" + invoiceId + " has an allocated payment")
 						.isEqualTo(expected.getHasAllocatedPayment());
 			}
+
+			if (expected.getAllocatedPayments() != null)
+			{
+				assertAllocatedPayments(invoiceId, expected.getAllocatedPayments());
+			}
 		});
+	}
+
+	/**
+	 * Asserts the SIZE of the invoice's allocated payments and, per expected entry, that SOME actual payment
+	 * carries the expected {@code tenderType} — a set-membership check, not a positional match: allocated
+	 * payments have no defined ordering to pin against.
+	 */
+	private void assertAllocatedPayments(
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final List<JsonPOSExpectation.JsonPOSAllocatedPaymentExpectation> expectedPayments)
+	{
+		final I_C_Invoice invoice = services.getInvoiceById(invoiceId);
+		final List<I_C_Payment> actualPayments = services.getAllocatedPayments(invoice);
+
+		softlyPutContext("allocatedPaymentExpectations", expectedPayments);
+		softlyPutContext("actualAllocatedPayments", actualPayments);
+
+		assertThat(actualPayments).as("allocated payments of invoice C_Invoice_ID=" + invoiceId).hasSameSize(expectedPayments);
+
+		final List<String> actualTenderTypes = actualPayments.stream().map(I_C_Payment::getTenderType).collect(Collectors.toList());
+		for (final JsonPOSExpectation.JsonPOSAllocatedPaymentExpectation expectedPayment : expectedPayments)
+		{
+			final String expectedTenderType = expectedPayment.getTenderType();
+			if (expectedTenderType != null)
+			{
+				assertThat(actualTenderTypes.contains(expectedTenderType))
+						.as("some allocated payment of invoice C_Invoice_ID=" + invoiceId + " has tenderType=" + expectedTenderType + "; actual tenderTypes=" + actualTenderTypes)
+						.isEqualTo(true);
+			}
+		}
 	}
 
 	private void assertQty(

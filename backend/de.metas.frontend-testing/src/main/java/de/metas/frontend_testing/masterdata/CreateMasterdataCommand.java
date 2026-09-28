@@ -653,6 +653,7 @@ public class CreateMasterdataCommand
 		return InvoiceCreateCommand.builder()
 				.context(context)
 				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}
