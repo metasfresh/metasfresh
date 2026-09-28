@@ -1,5 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
+import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.google.common.collect.ImmutableList;
@@ -49,7 +50,7 @@ class ShipmentPackingUnitProjectConflictDetectorTest
 	private static final ProjectId PROJECT_1 = ProjectId.ofRepoId(2000001);
 	private static final ProjectId PROJECT_2 = ProjectId.ofRepoId(2000002);
 
-	private ch.qos.logback.classic.Logger logbackLogger;
+	private Logger logbackLogger;
 	private ListAppender<ILoggingEvent> listAppender;
 
 	@BeforeEach
@@ -57,7 +58,7 @@ class ShipmentPackingUnitProjectConflictDetectorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		logbackLogger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(ShipmentPackingUnitProjectConflictDetector.class);
+		logbackLogger = (Logger)LoggerFactory.getLogger(ShipmentPackingUnitProjectConflictDetector.class);
 		listAppender = new ListAppender<>();
 		listAppender.start();
 		logbackLogger.addAppender(listAppender);
