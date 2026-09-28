@@ -434,8 +434,10 @@ public class C_OrderLine_StepDef
 	 * Required DataTable columns: {@code C_Order_ID.Identifier}, {@code M_Product_ID.Identifier}, {@code QtyOrdered}.
 	 * All other columns are optional per-row assertions handled by {@code validateOrderLine} — among them
 	 * {@code OPT.C_Flatrate_Conditions_ID.Identifier} (the threaded contract conditions),
-	 * {@code OPT.IsGroupCompensationLine} (asserts a compensation/discount line, {@code IsGroupCompensationLine=Y}) and
-	 * {@code OPT.GroupCompensationPercentage} (the compensation line's discount/surcharge percentage).
+	 * {@code OPT.IsGroupCompensationLine} (asserts a compensation/discount line, {@code IsGroupCompensationLine=Y}),
+	 * {@code OPT.GroupCompensationPercentage} (the compensation line's discount/surcharge percentage) and
+	 * {@code OPT.C_Order_CompensationGroup_ID.Identifier} (asserts the line is still in — or was moved into —
+	 * this specific compensation group; a record created earlier via {@code metasfresh contains C_Order_CompensationGroups:}).
 	 * <pre>
 	 * And validate the created order lines
 	 *   | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage |
@@ -1009,6 +1011,14 @@ public class C_OrderLine_StepDef
 			final I_C_Flatrate_Conditions flatrateConditions = flatrateConditionsTable.get(flatrateConditionsIdentifier);
 			softly.assertThat(orderLine.getC_Flatrate_Conditions_ID()).isEqualTo(flatrateConditions.getC_Flatrate_Conditions_ID());
 		}
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
+				.ifPresent(compGroupIdentifier -> {
+					final I_C_Order_CompensationGroup compGroup = compGroupTable.get(compGroupIdentifier);
+					softly.assertThat(orderLine.getC_Order_CompensationGroup_ID())
+							.as("C_Order_CompensationGroup_ID for Identifier=%s", identifierStr)
+							.isEqualTo(compGroup.getC_Order_CompensationGroup_ID());
+				});
 
 		final String x12de355StockCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
 		if (Check.isNotBlank(x12de355StockCode))

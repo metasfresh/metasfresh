@@ -584,11 +584,52 @@ public class C_Order_StepDef
 		StepDefUtil.assertRefusedWithErrorCode(errorCode, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
 	}
 
+	/**
+	 * Same intent as {@link #order_cannot_be_completed_because_of_error_code(String, String)}, for a refusal
+	 * whose {@link AdempiereException} has no stable {@code AD_Message.ErrorCode} to assert against — e.g. a
+	 * composed, multi-part message such as {@code ProductNotOnPriceListException}'s. Asserts the thrown
+	 * exception's message CONTAINS the given text instead.
+	 *
+	 * <pre>{@code
+	 * Then the order identified by order1 cannot be completed because the error message contains bonusWareDiscount
+	 * }</pre>
+	 */
+	@And("^the order identified by (.*) cannot be completed because the error message contains (.*)$")
+	public void order_cannot_be_completed_because_message_contains(
+			@NonNull final String orderIdentifier,
+			@NonNull final String expectedMessagePart)
+	{
+		StepDefUtil.assertRefusedWithMessageContaining(expectedMessagePart, () -> order_action(orderIdentifier, StepDefDocAction.completed.name()));
+	}
+
 	public void completeOrder(final I_C_Order order)
 	{
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		logger.info("Order {} was completed", order);
+	}
+
+	/**
+	 * Asserts the exact number of active {@code C_OrderLine} rows the given order has — e.g. to prove that NO
+	 * extra (e.g. a stray 0.00 discount) line was added beyond the expected ones.
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the order identified by order1 has 2 order lines
+	 * </pre>
+	 */
+	@And("^the order identified by (.*) has (\\d+) order lines$")
+	public void order_has_n_order_lines(@NonNull final String orderIdentifier, final int expectedLineCount)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		final long actualLineCount = queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.create()
+				.count();
+
+		assertThat(actualLineCount).as("Number of C_OrderLine records for order %s", orderIdentifier).isEqualTo(expectedLineCount);
 	}
 
 	/**
