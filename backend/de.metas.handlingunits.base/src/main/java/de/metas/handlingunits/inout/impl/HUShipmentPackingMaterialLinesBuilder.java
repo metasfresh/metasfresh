@@ -22,6 +22,9 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUConstants;
@@ -215,6 +218,27 @@ public class HUShipmentPackingMaterialLinesBuilder
 		// Deliberately NO IsTransferPackingMaterials filter (D8-corr, review B1): a TU shared by more than one line
 		// gets IsTransferPackingMaterials='Y' on only its first assignment (ShipmentLineBuilder.java:588), so a filtered
 		// query could never see the second line and the conflict would go undetected.
+		// One batched query for ALL lines (never one query per line; java-general.md §32 "No SQL N+1 queries"),
+		// then grouped by Record_ID (=M_InOutLine_ID, since every assignment here belongs to an I_M_InOutLine).
+		final ImmutableListMultimap<Integer, I_M_HU_Assignment> assignmentsByInOutLineId;
+		if (!inoutLines.isEmpty())
+		{
+			final List<Integer> inOutLineRecordIds = inoutLines.stream()
+					.map(InterfaceWrapperHelper::getId)
+					.collect(ImmutableList.toImmutableList());
+			final List<I_M_HU_Assignment> allAssignments = queryBL.createQueryBuilder(I_M_HU_Assignment.class, getM_InOut())
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getModelTableId(inoutLines.get(0)))
+					.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, inOutLineRecordIds)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.list();
+			assignmentsByInOutLineId = Multimaps.index(allAssignments, I_M_HU_Assignment::getRecord_ID);
+		}
+		else
+		{
+			assignmentsByInOutLineId = ImmutableListMultimap.of();
+		}
+
 		final Map<Integer, Integer> earliestInOutLineIdByLuHuId = new HashMap<>();
 		final List<LuOccurrence> luOccurrences = new ArrayList<>();
 		for (final I_M_InOutLine inoutLine : inoutLines)
@@ -222,14 +246,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final InOutLineId inOutLineId = InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID());
 			final ProjectId projectId = ProjectId.ofRepoIdOrNull(inoutLine.getC_Project_ID());
 
-			final List<I_M_HU_Assignment> assignments = queryBL.createQueryBuilder(I_M_HU_Assignment.class, inoutLine)
-					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getModelTableId(inoutLine))
-					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, InterfaceWrapperHelper.getId(inoutLine))
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.list();
-
-			for (final I_M_HU_Assignment assignment : assignments)
+			for (final I_M_HU_Assignment assignment : assignmentsByInOutLineId.get(InterfaceWrapperHelper.getId(inoutLine)))
 			{
 				if (assignment.getM_TU_HU_ID() > 0)
 				{
