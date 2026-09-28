@@ -199,6 +199,23 @@ public class GroupTests
 				.build();
 	}
 
+	private GroupCompensationLineCreateRequest newFixedAmountRequest(
+			@NonNull final BigDecimal price,
+			@NonNull final BigDecimal qtyEntered,
+			@Nullable final ProductCategoryId base)
+	{
+		return GroupCompensationLineCreateRequest.builder()
+				.type(GroupCompensationType.Discount)
+				.amtType(GroupCompensationAmtType.PriceAndQty)
+				.price(price)
+				.qtyEntered(qtyEntered)
+				.baseProductCategoryId(base)
+				// does not matter but needs to be filled
+				.productId(productId)
+				.uomId(uomId)
+				.build();
+	}
+
 	@Test
 	void additive_twoLinesSameBase_eachOnBase()
 	{
@@ -264,11 +281,53 @@ public class GroupTests
 				.regularLine(regularLine(200, ProductCategoryId.ofRepoId(20))) // Pfand, outside base
 				.build();
 		group.addNewCompensationLine(newPercentageDiscountRequest(3.0, goods));
+
+		// provisional amount computed by addNewCompensationLine alone, before updateAllCompensationLines recomputes it —
+		// this is the value C_Order_AddDiscountCompensationLine persists right after adding the line
+		assertThat(group.getCompensationLines().get(0).getLineNetAmt()).isEqualByComparingTo(new BigDecimal("-30.00"));
+
 		group.addNewCompensationLine(newPercentageDiscountRequest(0.6, goods));
 		group.updateAllCompensationLines();
 
 		assertThat(group.getCompensationLines()).extracting(GroupCompensationLine::getLineNetAmt)
 				.containsExactly(new BigDecimal("-30.00"), new BigDecimal("-5.82"));
+	}
+
+	@Test
+	void fixedAmount_underBase_unaffectedByBase()
+	{
+		final ProductCategoryId goods = ProductCategoryId.ofRepoId(10);
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(1000, goods))
+				.build();
+
+		group.addNewCompensationLine(newFixedAmountRequest(new BigDecimal("-5.00"), BigDecimal.ONE, goods));
+
+		final GroupCompensationLine compensationLine = group.getCompensationLines().get(0);
+		assertThat(compensationLine.getLineNetAmt()).isEqualByComparingTo(new BigDecimal("-5.00"));
+
+		// a base does not change a fixed-amount line's own value, whatever its baseAmt is
+		group.updateAllCompensationLines();
+		assertThat(compensationLine.getLineNetAmt()).isEqualByComparingTo(new BigDecimal("-5.00"));
+	}
+
+	@Test
+	void base_excludesAncestorCategoryOfADifferentLine()
+	{
+		final ProductCategoryId parent = ProductCategoryId.ofRepoId(10);
+		final ProductCategoryId child = ProductCategoryId.ofRepoId(11);
+
+		final Group group = Group.builder()
+				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
+				.pricePrecision(CurrencyPrecision.TWO).amountPrecision(CurrencyPrecision.TWO)
+				.soTrx(SOTrx.SALES)
+				.regularLine(regularLine(1000, parent)) // only the parent category, not the child
+				.build();
+
+		assertThat(group.getRegularLinesNetAmt(child)).isEqualByComparingTo(BigDecimal.ZERO);
 	}
 
 	@Test

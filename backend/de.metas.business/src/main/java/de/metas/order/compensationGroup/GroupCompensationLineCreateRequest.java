@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -49,5 +51,6 @@ public class GroupCompensationLineCreateRequest
 	GroupTemplateLineId groupTemplateLineId;
 
 	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
+	@Nullable
 	ProductCategoryId baseProductCategoryId;
 }
