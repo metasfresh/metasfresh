@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT, holdForCaptureIfEnabled } from "../../common";
+import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT, holdForVideo } from "../../common";
 import { DistributionJobScreen } from "./DistributionJobScreen";
 import { DistributionJobsListFiltersScreen } from "./DistributionJobsListFiltersScreen";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
@@ -23,12 +23,16 @@ export const DistributionJobsListScreen = {
         await page.locator('.loading').waitFor({ state: 'detached', timeout });
     }),
 
+    openFilters: async () => await test.step(`${NAME} - Open filters`, async () => {
+        await page.locator('#filter-button').tap();
+        await DistributionJobsListFiltersScreen.waitForScreen();
+    }),
+
     filterByFacetId: async ({
                                 facetId,
                                 expectHitCount
                             }) => await test.step(`${NAME} - Filter by facet "${facetId}"`, async () => {
-        await page.locator('#filter-button').tap();
-        await DistributionJobsListFiltersScreen.waitForScreen();
+        await DistributionJobsListScreen.openFilters();
         await DistributionJobsListFiltersScreen.filterByFacetId({ facetId, expectHitCount });
         await DistributionJobsListScreen.waitForScreen();
     }),
@@ -73,12 +77,17 @@ export const DistributionJobsListScreen = {
         });
 
         //
-        // Check it again to make sure all expected buttons are still there and there is one of each
+        // Check it again to make sure all expected buttons are still there and there is one of each.
+        // An expectation that names the job -- by testId, captionContains or caption -- is looked up BY
+        // that name, so the check does not depend on the jobs rendering in the same order the array
+        // lists them. An expectation that names nothing ("a button") is still looked up positionally.
         for (let i = 0; i < expectationsArray.length; i++) {
             const expectation = expectationsArray[i];
+            const identifiesTheJob = expectation.testId != null || expectation.captionContains != null
+                || expectation.caption != null;
             await expectJobButton({
                 name: `${i + 1}/${expectationsArray.length}`,
-                button: locateJobButtons({ index: i + 1 }),
+                button: identifiesTheJob ? locateJobButtons(expectation) : locateJobButtons({ index: i + 1 }),
                 expectation
             });
         }
@@ -88,10 +97,10 @@ export const DistributionJobsListScreen = {
         // NOTE: we do this at the end because expect does not wait for the elements to stabilize
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
 
-        // Nothing happens here unless a capture run asked for it (UAT_CAPTURE): the offered jobs are
-        // the result this screen exists to show, and the checks above can settle faster than the video
-        // recorder samples a frame, leaving them off the recording.
-        await holdForCaptureIfEnabled();
+        // The offered jobs are the result this screen exists to show, and the checks above settle
+        // within ~110-170ms -- two or three sampled frames out of the ~400 in a 16s recording -- so
+        // without this hold the list the test just proved is effectively unfindable in the video.
+        await holdForVideo();
     }),
 
     expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
@@ -160,13 +169,29 @@ export const DistributionJobsListScreen = {
 //
 //
 
-const locateJobButtons = ({ index, testId } = {}) => {
+// `captionContains` identifies a job by a STABLE substring of its caption (typically the product
+// name) for jobs that have no masterdata key to give them a testId -- e.g. the ones the replenishment
+// engine generates from `autoDistributionOrder`. Prefer `testId` whenever the fixture declares the
+// job; prefer this over `caption`, whose exact-text match also pins qty/locator/priority formatting
+// that the assertion does not care about.
+const locateJobButtons = ({ index, testId, captionContains, caption } = {}) => {
     let selector = '.wflauncher-button';
     if (testId != null) {
         selector += `[data-testid="${testId}"]`;
     }
 
     let locator = page.locator(selector);
+
+    if (captionContains != null) {
+        locator = locator.filter({ hasText: captionContains });
+    }
+
+    // `caption` is an EXACT-match expectation (expectJobButton asserts it with toHaveText), but as a
+    // locator it can only narrow by substring -- which is enough to pick the right button out of the
+    // list, with exactness still enforced downstream. Same split the picking screen uses.
+    if (caption != null) {
+        locator = locator.filter({ hasText: caption });
+    }
 
     if (index != null) {
         locator = locator.nth(index - 1);
@@ -185,6 +210,10 @@ const expectJobButton = async ({ name, button, expectation }) => await test.step
 
     if (expectation.caption != null) {
         await expect(button).toHaveText(expectation.caption);
+    }
+
+    if (expectation.captionContains != null) {
+        await expect(button).toContainText(expectation.captionContains);
     }
 
     if (expectation.disabled != null) {

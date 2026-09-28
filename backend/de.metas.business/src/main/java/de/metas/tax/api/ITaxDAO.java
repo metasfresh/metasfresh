@@ -64,6 +64,16 @@ public interface ITaxDAO extends ISingletonService
 
 	Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull String name);
 
+	/**
+	 * @return the id of the single active {@code C_TaxCategory} with that internal name, or empty if there is none.
+	 */
+	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull String internalName);
+
+	/**
+	 * @return the given tax category id, or empty if there is no {@code C_TaxCategory} record with that id, or if that record is inactive.
+	 */
+	Optional<TaxCategoryId> getActiveTaxCategoryIdById(@NonNull TaxCategoryId taxCategoryId);
+
 	Percent getRateById(@NonNull TaxId taxId);
 
 	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);

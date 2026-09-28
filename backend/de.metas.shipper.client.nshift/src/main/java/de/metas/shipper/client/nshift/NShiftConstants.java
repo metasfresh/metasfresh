@@ -33,6 +33,8 @@ public class NShiftConstants
 	public static final String MANUAL = "IsManual";
 	public static final String SELECTION_RULES = "IsSelectionRules";
 	public static final String IS_CREATE_DRAFT_SHIPMENT_ONLY = "IsCreateDraftShipmentOnly";
+	public static final String TEST_MODE = "IsTestMode";
+	public static final String TEST_MODE_ATTENTION = "TestMode_Attention";
 
 	// shipAdvises
 	public static final String PROD_CONCEPT_ID = "ProdConceptId";

@@ -26,7 +26,9 @@ import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonDetail;
@@ -125,21 +127,58 @@ public class NShiftUtil
 		return addressBuilder;
 	}
 
+	/**
+	 * The Attention to send instead of the mapping-resolved one.
+	 * <p>
+	 * {@code null} means test mode is OFF — the caller keeps the mapping-resolved Attention. Any non-null
+	 * result, <b>the empty string included</b>, means test mode is ON and that value IS the Attention.
+	 * <p>
+	 * Test mode on with no configured text therefore sends an EMPTY Attention, which nShift rejects
+	 * (Attention is mandatory there). That is deliberate: the alternative — falling back to the real
+	 * Attention — would silently book an unmarked shipment, the exact outcome test mode exists to prevent.
+	 * <p>
+	 * The null-vs-empty distinction is load-bearing: the Attention text column is nullable and the shipper-config
+	 * property map drops null column values, so a configured-but-empty text arrives as an absent property and
+	 * must NOT be read as "test mode off".
+	 */
+	@Nullable
+	public static String resolveTestModeAttention(@NonNull final JsonShipperConfig config)
+	{
+		if (!StringUtils.toBoolean(config.getAdditionalProperty(NShiftConstants.TEST_MODE), false))
+		{
+			return null; // test mode off
+		}
+		final String testModeAttention = config.getAdditionalProperty(NShiftConstants.TEST_MODE_ATTENTION);
+		return testModeAttention != null ? testModeAttention : "";
+	}
+
 	public static JsonAddress buildAddressWithAttentionFromMappings(
 			@NonNull final de.metas.common.delivery.v1.json.JsonAddress commonAddress,
 			@Nullable final JsonContact contact,
 			@NonNull final JsonAddressKind kind,
 			@NonNull final NShiftMappingConfigs mappingConfigs,
-			@NonNull final Function<String, String> valueProvider)
+			@NonNull final Function<String, String> valueProvider,
+			@Nullable final String testModeAttention)
 	{
 		final String role = kind.isSender() ? "Sender" : "Receiver";
 
-		final String attentionAttributeType = kind.isSender()
-				? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION
-				: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION;
-		final String attention = mappingConfigs.getSingleValue(attentionAttributeType, valueProvider);
-		Check.assumeNotEmpty(attention, IllegalStateException.class,
-				role + " Attention is mandatory but was not resolved from mapping configs.");
+		// null == test mode off. Any non-null value — the empty string included — IS the Attention: the configured
+		// text replaces the mapping's, so the mapping is not consulted for the Attention at all. An empty text is
+		// sent empty and rejected by nShift, which is the point — never book an unmarked shipment.
+		final String attention;
+		if (testModeAttention != null)
+		{
+			attention = testModeAttention;
+		}
+		else
+		{
+			final String attentionAttributeType = kind.isSender()
+					? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION
+					: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION;
+			attention = mappingConfigs.getSingleValue(attentionAttributeType, valueProvider);
+			Check.assumeNotEmpty(attention, IllegalStateException.class,
+					role + " Attention is mandatory but was not resolved from mapping configs.");
+		}
 		Check.assumeNotEmpty(contact != null ? contact.getPhone() : null, IllegalStateException.class,
 				role + " Phone is mandatory but is missing or blank.");
 		Check.assumeNotEmpty(contact != null ? contact.getEmailAddress() : null, IllegalStateException.class,

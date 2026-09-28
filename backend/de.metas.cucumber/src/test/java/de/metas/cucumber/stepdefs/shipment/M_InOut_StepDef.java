@@ -723,7 +723,9 @@ public class M_InOut_StepDef
 		assertThat(inOut).isNull();
 	}
 
-	/** Update fields on an existing M_InOut record (e.g. MovementDate before completion). */
+	/**
+	 * Update fields on an existing M_InOut record (e.g. MovementDate before completion).
+	 */
 	@And("update M_InOut:")
 	public void update_M_InOut(@NonNull final DataTable dataTable)
 	{

@@ -29,17 +29,24 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
+import de.metas.shipping.MPackageRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperTransportationDocSubTypeGuard;
 import de.metas.shipping.TransportDirection;
 import de.metas.shipping.model.ShipperTransportationId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,6 +65,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DeliveryPlanningCombineRejectionTest
 {
+	private static I_C_UOM uom;
+
 	private static int nextId = 1;
 
 	private DeliveryPlanningService deliveryPlanningService;
@@ -67,10 +76,22 @@ class DeliveryPlanningCombineRejectionTest
 	{
 		AdempiereTestHelper.get().init();
 
+		// The five quantity columns are AD_IsMandatory='Y', so a planning always has them - and a
+		// quantity needs a UOM. Stated here rather than relying on a mapper to omit them.
+		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		InterfaceWrapperHelper.save(uom);
+
+		final DeliveryPlanningRepository deliveryPlanningRepository = Mockito.mock(DeliveryPlanningRepository.class);
+		final DeliveryPlanningAllocRepository deliveryPlanningAllocRepository = new DeliveryPlanningAllocRepository();
+		final DeliveryInstructionRepository deliveryInstructionRepository = new DeliveryInstructionRepository(Mockito.mock(DimensionService.class));
+		final DeliveryInstructionService deliveryInstructionService = new DeliveryInstructionService(
+				deliveryPlanningRepository, deliveryPlanningAllocRepository, deliveryInstructionRepository, new MPackageRepository());
+
 		deliveryPlanningService = new DeliveryPlanningService(
 				Mockito.mock(ShipperRepository.class),
-				Mockito.mock(DeliveryPlanningRepository.class),
-				Mockito.mock(DeliveryStatusColorPaletteService.class),
+				deliveryPlanningRepository,
+				deliveryPlanningAllocRepository,
+				deliveryInstructionService,
 				Mockito.mock(DimensionService.class),
 				Mockito.mock(MeansOfTransportationService.class),
 				new ShipperTransportationDocSubTypeGuard());
@@ -82,7 +103,15 @@ class DeliveryPlanningCombineRejectionTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
 				.transportDirection(TransportDirection.Outgoing)
-				.shipperId(ShipperId.ofRepoId(540001));
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
+				.shipperId(ShipperId.ofRepoId(540001))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()));
 	}
 
 	/**
@@ -100,6 +129,8 @@ class DeliveryPlanningCombineRejectionTest
 	{
 		return adMessageKey.toAD_Message();
 	}
+
+	private static Quantity zeroQty() {return Quantity.of(BigDecimal.ZERO, uom);}
 
 	@Test
 	@DisplayName("a selection agreeing on every admissibility field is accepted")
@@ -175,24 +206,40 @@ class DeliveryPlanningCombineRejectionTest
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000000))
 				.transportDirection(TransportDirection.Outgoing)
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540001))
 				.incotermsId(IncotermsId.ofRepoId(540002))
 				.incotermLocation("Hamburg")
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoId(540003))
 				.loadingLocationId(BPartnerLocationId.ofRepoId(540004, 540005))
 				.deliveryLocationId(BPartnerLocationId.ofRepoId(540006, 540007))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.build();
 
 		final DeliveryPlanning row2 = DeliveryPlanning.builder()
 				.id(DeliveryPlanningId.ofRepoId(nextId++))
 				.orgId(OrgId.ofRepoId(1000001))
 				.transportDirection(TransportDirection.Incoming)
+				.qtyOrdered(zeroQty())
+				.plannedLoadedQty(zeroQty())
+				.actualLoadedQty(zeroQty())
+				.plannedDischargeQty(zeroQty())
+				.actualDischargeQty(zeroQty())
+				.qtyTotalOpen(zeroQty())
 				.shipperId(ShipperId.ofRepoId(540011))
 				.incotermsId(IncotermsId.ofRepoId(540012))
 				.incotermLocation("Rotterdam")
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoId(540013))
 				.loadingLocationId(BPartnerLocationId.ofRepoId(540014, 540015))
 				.deliveryLocationId(BPartnerLocationId.ofRepoId(540016, 540017))
+				.bpartnerId(BPartnerId.ofRepoId(2000000))
+				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.build();
 
 		final String rejectionText = rejectionTextOf(row1, row2);

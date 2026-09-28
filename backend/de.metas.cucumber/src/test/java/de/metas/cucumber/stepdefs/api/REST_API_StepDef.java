@@ -25,11 +25,14 @@ package de.metas.cucumber.stepdefs.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonTestResponse;
+import de.metas.common.rest_api.v2.JsonError;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -289,6 +292,40 @@ public class REST_API_StepDef
 	public void store_rest_endpointPath(@NonNull final String endpointPath)
 	{
 		testContext.setEndpointPath(resolveContextVariables(endpointPath));
+	}
+
+	/**
+	 * Asserts that the error message of the LAST response contains every value of the data table.
+	 *
+	 * <p>The counterpart for a {@code POST} of the error assertions that
+	 * {@code a PUT request with below payload is sent to metasfresh REST-API … containing …} makes inline:
+	 * it asserts nothing about the request, so it composes with any of the request steps above, and it
+	 * needs no {@code AD_Message} error code — an exception that carries none (e.g. a missing-property or
+	 * no-tax-found rejection) can still be pinned down by what its message says. Several rows are asserted
+	 * against the same single {@code JsonErrorItem}, which is how a message naming more than one thing
+	 * (a rate AND a category AND a scope) is checked. Values may use {@code @contextVariable@}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Value</b> — (required) substring the error message must contain<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the metasfresh REST-API error message contains:
+	 *   | Value             |
+	 *   | 19                |
+	 *   | int-Transport     |
+	 * </pre>
+	 */
+	@Then("the metasfresh REST-API error message contains:")
+	public void the_metasfresh_REST_API_error_message_contains(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final JsonError jsonError = testContext.getApiResponseBodyAs(JsonError.class);
+		final JsonErrorItem errorItem = CollectionUtils.singleElement(jsonError.getErrors());
+		final String actualMessage = errorItem.getMessage();
+
+		DataTableRows.of(dataTable).forEach(row -> assertThat(actualMessage)
+				.as(() -> "Error message of " + jsonError)
+				.contains(resolveContextVariables(row.getAsString("Value"))));
 	}
 
 	/**
