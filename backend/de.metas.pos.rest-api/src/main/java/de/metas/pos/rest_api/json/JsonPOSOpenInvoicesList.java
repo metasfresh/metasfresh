@@ -1,6 +1,7 @@
 package de.metas.pos.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -18,7 +19,7 @@ public class JsonPOSOpenInvoicesList
 {
 	@NonNull List<JsonPOSOpenInvoice> list;
 
-	public static JsonPOSOpenInvoicesList of(@NonNull final List<de.metas.pos.invoice_settlement.POSOpenInvoice> invoices)
+	public static JsonPOSOpenInvoicesList of(@NonNull final List<POSOpenInvoice> invoices)
 	{
 		return JsonPOSOpenInvoicesList.builder()
 				.list(invoices.stream()

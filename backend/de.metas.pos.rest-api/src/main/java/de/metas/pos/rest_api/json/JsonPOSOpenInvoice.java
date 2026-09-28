@@ -1,6 +1,7 @@
 package de.metas.pos.rest_api.json;
 
 import de.metas.invoice.InvoiceId;
+import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,7 +30,7 @@ public class JsonPOSOpenInvoice
 	/** Open amount, in the invoice's own currency. */
 	@NonNull BigDecimal openAmt;
 
-	public static JsonPOSOpenInvoice from(@NonNull final de.metas.pos.invoice_settlement.POSOpenInvoice invoice)
+	public static JsonPOSOpenInvoice from(@NonNull final POSOpenInvoice invoice)
 	{
 		return JsonPOSOpenInvoice.builder()
 				.invoiceId(invoice.getInvoiceId())
