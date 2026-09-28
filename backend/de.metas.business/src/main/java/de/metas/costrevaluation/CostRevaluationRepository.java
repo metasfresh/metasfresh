@@ -83,13 +83,11 @@ public class CostRevaluationRepository
 		for (final CurrentCost currentCost : currentCosts)
 		{
 			final CostRevaluationLineKey key = extractCostRevaluationLineKey(currentCost);
-			I_M_CostRevaluationLine existingRecord = existingRecords.remove(key);
+			final I_M_CostRevaluationLine existingRecord = existingRecords.remove(key);
 			if (existingRecord == null)
 			{
-				existingRecord = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
-				existingRecord.setM_CostRevaluation_ID(costRevaluationId.getRepoId());
-				existingRecord.setAD_Org_ID(key.getClientAndOrgId().getOrgId().getRepoId());
-				existingRecord.setIsRevaluated(false);
+				createLineForCurrentCost(costRevaluationId, currentCost);
+				continue;
 			}
 
 			// Skip evaluated lines
@@ -112,6 +110,33 @@ public class CostRevaluationRepository
 			deleteDetailsByLineIds(lineIds);
 			InterfaceWrapperHelper.deleteAll(linesToDelete);
 		}
+	}
+
+	/**
+	 * Creates a new, non-destructive {@link I_M_CostRevaluationLine} for the given {@link CurrentCost}.
+	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #existsLineForProduct(CostRevaluationId, ProductId)} first.
+	 */
+	public void createLineForCurrentCost(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final CurrentCost currentCost)
+	{
+		final CostRevaluationLineKey key = extractCostRevaluationLineKey(currentCost);
+
+		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
+		record.setM_CostRevaluation_ID(costRevaluationId.getRepoId());
+		record.setAD_Org_ID(key.getClientAndOrgId().getOrgId().getRepoId());
+		record.setIsRevaluated(false);
+
+		updateRecordFrom(record, currentCost);
+		InterfaceWrapperHelper.save(record);
+	}
+
+	public boolean existsLineForProduct(@NonNull final CostRevaluationId costRevaluationId, @NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_CostRevaluationLine.class)
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMN_M_CostRevaluation_ID, costRevaluationId)
+				.addEqualsFilter(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID, productId)
+				.anyMatch();
 	}
 
 	@NonNull
