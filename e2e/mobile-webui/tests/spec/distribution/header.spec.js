@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { expect } from '@playwright/test';
 import { Backend } from "../../utils/screens/Backend";
 import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -45,6 +46,7 @@ const createMasterdata = async ({ qtyToMove, captionFormat }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Header reflects the configured caption items (incl. Product Value and Name)', async ({ page }) => {
+    expect(1, 'TC4 deliberate failure').toBe(2);
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
