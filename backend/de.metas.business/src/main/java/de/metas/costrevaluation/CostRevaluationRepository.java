@@ -113,12 +113,27 @@ public class CostRevaluationRepository
 	}
 
 	/**
-	 * Creates a new, non-destructive {@link I_M_CostRevaluationLine} for the given {@link CurrentCost}.
+	 * Creates a new, non-destructive {@link I_M_CostRevaluationLine} for the given {@link CurrentCost}, defaulting
+	 * {@code NewCostPrice} to the current cost's own price (the bulk {@link #createLinesForCurrentCosts} path).
 	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #existsLineForProduct(CostRevaluationId, ProductId)} first.
 	 */
 	public void createLineForCurrentCost(
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final CurrentCost currentCost)
+	{
+		createLineForCurrentCost(costRevaluationId, currentCost, currentCost.getCostPrice().getOwnCostPrice());
+	}
+
+	/**
+	 * Like {@link #createLineForCurrentCost(CostRevaluationId, CurrentCost)} but sets {@code NewCostPrice} to the
+	 * given {@code newCostPrice} instead of defaulting it to the current cost's own price (the single-product manual
+	 * entry path: the operator types the new price).
+	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #existsLineForProduct(CostRevaluationId, ProductId)} first.
+	 */
+	public void createLineForCurrentCost(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final CurrentCost currentCost,
+			@NonNull final CostAmount newCostPrice)
 	{
 		final CostRevaluationLineKey key = extractCostRevaluationLineKey(currentCost);
 
@@ -128,6 +143,8 @@ public class CostRevaluationRepository
 		record.setIsRevaluated(false);
 
 		updateRecordFrom(record, currentCost);
+		record.setNewCostPrice(newCostPrice.toBigDecimal());
+
 		InterfaceWrapperHelper.save(record);
 	}
 

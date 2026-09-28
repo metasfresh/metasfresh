@@ -24,6 +24,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 @Service
 public class CostRevaluationService
 {
@@ -90,6 +92,55 @@ public class CostRevaluationService
 	private static boolean isMatching(@NonNull CurrentCost currentCost, @NonNull OrgId orgId)
 	{
 		return currentCost.getCostSegment().isMatching(orgId);
+	}
+
+	/**
+	 * Manual, single-product counterpart of {@link #createLines(CostRevaluationId)}: adds one line for {@code productId},
+	 * deriving its cost segment from the product's live {@link CurrentCost} (same derivation as the bulk path) and setting
+	 * {@code NewCostPrice} to the given {@code newCostPrice} instead of defaulting it to the live cost.
+	 * <p>
+	 * Additive only: never touches any other line of the revaluation.
+	 *
+	 * @throws AdempiereException if a line already exists for {@code productId} (duplicate guard), if the product has no
+	 * current cost for the revaluation's costing context, or if it has more than one (ambiguous multi-segment product).
+	 */
+	public void createLineForProduct(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final ProductId productId,
+			@NonNull final BigDecimal newCostPrice)
+	{
+		if (costRevaluationRepository.existsLineForProduct(costRevaluationId, productId))
+		{
+			throw new AdempiereException("A cost revaluation line already exists for product " + productId + " on " + costRevaluationId);
+		}
+
+		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
+		final OrgId orgId = costRevaluation.getOrgId();
+
+		final ImmutableList<CurrentCost> currentCosts = currentCostsRepo.stream(
+						CurrentCostQuery.builder()
+								.clientId(costRevaluation.getClientId())
+								// NOTE: don't filter by OrgId here because we don't know the costing level yet
+								.acctSchemaId(costRevaluation.getAcctSchemaId())
+								.costElementId(costRevaluation.getCostElementId())
+								.productId(productId)
+								.build()
+				)
+				.filter(currentCost -> isMatching(currentCost, orgId))
+				.collect(ImmutableList.toImmutableList());
+
+		if (currentCosts.isEmpty())
+		{
+			throw new AdempiereException("No current cost found for product " + productId);
+		}
+		if (currentCosts.size() > 1)
+		{
+			throw new AdempiereException("Ambiguous current cost for product " + productId + ": found " + currentCosts.size() + " matching cost segments");
+		}
+
+		final CurrentCost currentCost = currentCosts.get(0);
+		final CostAmount newCostAmount = CostAmount.of(newCostPrice, currentCost.getCurrencyId());
+		costRevaluationRepository.createLineForCurrentCost(costRevaluationId, currentCost, newCostAmount);
 	}
 
 	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)
