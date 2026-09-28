@@ -29,7 +29,9 @@ import de.metas.order.model.I_M_Product_Category;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,6 +43,7 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
@@ -158,8 +161,27 @@ public class CostRevaluationServiceTest
 
 	private AcctSchemaId createAcctSchema()
 	{
+		final AcctSchemaId acctSchemaId = createAcctSchemaRecord("Test AcctSchema");
+
+		// AD_ClientInfo makes this the client's primary acct schema, so the seed-cost path can resolve the client's
+		// accounting schemas via createDefaultProductCosts (mirrors production where AD_ClientInfo always exists).
+		final I_AD_ClientInfo clientInfo = newInstance(I_AD_ClientInfo.class);
+		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
+		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+		saveRecord(clientInfo);
+
+		return acctSchemaId;
+	}
+
+	/**
+	 * Creates a Client-level {@link I_C_AcctSchema} record (+ its GL and Default child records) for the METASFRESH
+	 * client, without touching AD_ClientInfo. Used both for the primary schema and for any additional schema — a
+	 * client with more than one C_AcctSchema is what exercises the seed-cost path's fan-out over ALL client schemas.
+	 */
+	private AcctSchemaId createAcctSchemaRecord(@NonNull final String name)
+	{
 		final I_C_AcctSchema acctSchemaRecord = newInstance(I_C_AcctSchema.class);
-		acctSchemaRecord.setName("Test AcctSchema");
+		acctSchemaRecord.setName(name);
 		acctSchemaRecord.setC_Currency_ID(euroCurrencyId.getRepoId());
 		acctSchemaRecord.setM_CostType_ID(costTypeId.getRepoId());
 		acctSchemaRecord.setCostingLevel(CostingLevel.Client.getCode());
@@ -186,14 +208,17 @@ public class CostRevaluationServiceTest
 		acctSchemaDefault.setUnrealizedLoss_Acct(1);
 		saveRecord(acctSchemaDefault);
 
-		// AD_ClientInfo makes this the client's primary acct schema, so the seed-cost path can resolve the client's
-		// accounting schemas via createDefaultProductCosts (mirrors production where AD_ClientInfo always exists).
-		final I_AD_ClientInfo clientInfo = newInstance(I_AD_ClientInfo.class);
-		clientInfo.setC_AcctSchema1_ID(acctSchemaRecord.getC_AcctSchema_ID());
-		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
-		saveRecord(clientInfo);
-
 		return AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
+	}
+
+	/** Registers a product-category accounting record (no explicit costing level ⇒ falls back to the schema's) for the given schema. */
+	private void createProductCategoryAcct(@NonNull final ProductId productId, @NonNull final AcctSchemaId schemaId)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.load(productId.getRepoId(), I_M_Product.class);
+		final I_M_Product_Category_Acct productCategoryAcct = newInstanceOutOfTrx(I_M_Product_Category_Acct.class);
+		productCategoryAcct.setM_Product_Category_ID(product.getM_Product_Category_ID());
+		productCategoryAcct.setC_AcctSchema_ID(schemaId.getRepoId());
+		saveRecord(productCategoryAcct);
 	}
 
 	private ProductId createProduct(@NonNull final String value)
@@ -345,6 +370,64 @@ public class CostRevaluationServiceTest
 		final I_M_CostRevaluationLine line = lines.get(0);
 		assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
 		assertThat(line.getM_Product_ID()).isEqualTo(productId.getRepoId());
+		assertThat(line.getCurrentQty()).isEqualByComparingTo("0"); // seeded at quantity 0
+		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("0"); // seeded row has no prior cost
+		assertThat(line.getNewCostPrice()).isEqualByComparingTo("10.00"); // the TYPED value
+	}
+
+	/**
+	 * Multi-acct-schema seed fan-out (characterization test — pins the DELIBERATE broad behavior; passes on current code).
+	 * <p>
+	 * When the client has TWO {@code C_AcctSchema} and a stocked product has NO {@code M_Cost} row, the seed-cost path
+	 * reuses {@code createDefaultProductCosts}, which materializes a zero-qty {@code M_Cost} row for EVERY client acct
+	 * schema (not only the revaluation's own schema A). This is intended: it reuses the standard product-creation creator
+	 * (per PLAN's "reuse, no bespoke writer" constraint) and the extra schema-B row is zero-cost/zero-qty = harmless.
+	 * <p>
+	 * Non-vacuousness / seed-path proof: the product starts with ZERO {@code M_Cost} rows (asserted), so the two rows
+	 * present afterwards can only have been created by the seed path; removing the seed block in
+	 * {@link CostRevaluationService#createLineForProduct} makes this test fail (the re-resolve stays empty → "No current
+	 * cost found"). The revaluation line is created for schema A only, at the seeded zero values.
+	 */
+	@Test
+	public void createLineForProduct_seedFansOutOverAllClientAcctSchemas_butLineIsForHeaderSchemaOnly()
+	{
+		// schema A is the primary (from beforeEach); add a second client acct schema B
+		final AcctSchemaId acctSchemaId_B = createAcctSchemaRecord("Test AcctSchema B");
+
+		final ProductId productId = createProduct("productWithoutCost_twoSchemas");
+		// product-category-acct for schema B too (schema A was wired by createProduct), so the seed's per-schema
+		// costing-level lookup resolves without hitting the DB-only insert_Accounting fallback in the in-memory harness.
+		createProductCategoryAcct(productId, acctSchemaId_B);
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		// Precondition proving the seed path is what creates the rows below: the product has NO cost rows yet.
+		assertThat(queryBL.createQueryBuilder(I_M_Cost.class)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.count())
+				.isZero();
+
+		final CostRevaluationId costRevaluationId = createHeader(); // header references schema A
+
+		final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("10.00"));
+
+		// The seed fanned out over BOTH client acct schemas: one zero-qty M_Cost row per schema.
+		final List<I_M_Cost> costRows = queryBL.createQueryBuilder(I_M_Cost.class)
+				.addEqualsFilter(I_M_Cost.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.list(I_M_Cost.class);
+		assertThat(costRows).hasSize(2);
+		assertThat(costRows).extracting(I_M_Cost::getC_AcctSchema_ID)
+				.containsExactlyInAnyOrder(acctSchemaId.getRepoId(), acctSchemaId_B.getRepoId());
+		assertThat(costRows).allSatisfy(costRow -> assertThat(costRow.getCurrentQty()).isEqualByComparingTo("0"));
+
+		// ...but exactly ONE revaluation line was created, for the header's schema A segment, at the seeded zero values.
+		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+		assertThat(lines).hasSize(1);
+		final I_M_CostRevaluationLine line = lines.get(0);
+		assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
+		assertThat(line.getM_Product_ID()).isEqualTo(productId.getRepoId());
+		assertThat(line.getC_AcctSchema_ID()).isEqualTo(acctSchemaId.getRepoId()); // header schema A, NOT schema B
 		assertThat(line.getCurrentQty()).isEqualByComparingTo("0"); // seeded at quantity 0
 		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("0"); // seeded row has no prior cost
 		assertThat(line.getNewCostPrice()).isEqualByComparingTo("10.00"); // the TYPED value
