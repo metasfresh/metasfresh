@@ -142,3 +142,213 @@ Feature: shipment packing material lines split per project
       | il_pm_P1         | invoice_1    | p_pm         | 2           | pm_line_P1     | P1                          |
       | il_pm_P2         | invoice_1    | p_pm         | 3           | pm_line_P2     | P2                          |
       | il_pm_P3         | invoice_1    | p_pm         | 4           | pm_line_P3     | P3                          |
+
+  # ####################################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0240_Project_Management
+  @allure.label.feature:F68020
+  Scenario: sales order lines for same project ship in one shipment with one packing material line for that project
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p_goods    |
+      | p_pm       |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_1                  | p_goods      | 10.0     | PCE      |
+      | plv_1                  | p_pm         | 1.0      | PCE      |
+    And metasfresh contains M_HU_PI:
+      | Identifier |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier | M_HU_PI_ID | HU_UnitType |
+      | huVersion  | huPI_TU    | TU          |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID |
+      | pm_1                    | p_pm         |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier | M_HU_PI_Version_ID | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPIItem   | huVersion          | 10  | PM       | pm_1                    |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier    | M_HU_PI_Item_ID | Qty | M_Product_ID | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsInvoiceable | OPT.M_Packing_Material_Product_ID |
+      | huItemProduct | huPIItem        | 10  | p_goods      | 2021-01-01 | false                  | true              | p_pm                              |
+
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | so_2       | true    | customer_1    | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_Project_ID |
+      | sol_4      | so_2       | p_goods      | 20         | P1           |
+      | sol_5      | so_2       | p_goods      | 30         | P1           |
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.M_HU_PI_Item_Product_ID |
+      | sol_4                     | huItemProduct               |
+      | sol_5                     | huItemProduct               |
+    And the order identified by so_2 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_4       | sol_4          | N             |
+      | ss_5       | sol_5          | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.C_Project_ID.Identifier |
+      | ss_4                  | P1                          |
+      | ss_5                  | P1                          |
+
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_4                  |
+      | ss_5                  |
+
+    Then the shipment schedules ss_4,ss_5 are shipped in exactly one M_InOut identified by shipment_2
+
+    And validate the created shipment lines
+      | M_InOut_ID | C_OrderLine_ID | C_Project_ID | movementqty |
+      | shipment_2 | sol_4          | P1           | 20          |
+      | shipment_2 | sol_5          | P1           | 30          |
+
+    And the packing material lines of shipment shipment_2 are exactly:
+      | Identifier | M_Product_ID | C_Project_ID | MovementQty |
+      | pm_line_2  | p_pm         | P1           | 5           |
+
+  # ####################################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0240_Project_Management
+  @allure.label.feature:F68020
+  Scenario: sales order lines without project ship in one shipment with one packing material line without project
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p_goods    |
+      | p_pm       |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_1                  | p_goods      | 10.0     | PCE      |
+      | plv_1                  | p_pm         | 1.0      | PCE      |
+    And metasfresh contains M_HU_PI:
+      | Identifier |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier | M_HU_PI_ID | HU_UnitType |
+      | huVersion  | huPI_TU    | TU          |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID |
+      | pm_1                    | p_pm         |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier | M_HU_PI_Version_ID | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPIItem   | huVersion          | 10  | PM       | pm_1                    |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier    | M_HU_PI_Item_ID | Qty | M_Product_ID | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsInvoiceable | OPT.M_Packing_Material_Product_ID |
+      | huItemProduct | huPIItem        | 10  | p_goods      | 2021-01-01 | false                  | true              | p_pm                              |
+
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | so_3       | true    | customer_1    | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | sol_6      | so_3       | p_goods      | 20         |
+      | sol_7      | so_3       | p_goods      | 30         |
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.M_HU_PI_Item_Product_ID |
+      | sol_6                     | huItemProduct               |
+      | sol_7                     | huItemProduct               |
+    And the order identified by so_3 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_6       | sol_6          | N             |
+      | ss_7       | sol_7          | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.C_Project_ID.Identifier |
+      | ss_6                  | null                        |
+      | ss_7                  | null                        |
+
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_6                  |
+      | ss_7                  |
+
+    Then the shipment schedules ss_6,ss_7 are shipped in exactly one M_InOut identified by shipment_3
+
+    And validate the created shipment lines
+      | M_InOut_ID | C_OrderLine_ID | movementqty |
+      | shipment_3 | sol_6          | 20          |
+      | shipment_3 | sol_7          | 30          |
+
+    And the packing material lines of shipment shipment_3 are exactly:
+      | Identifier | M_Product_ID | C_Project_ID | MovementQty |
+      | pm_line_3  | p_pm         | null         | 5           |
+
+  # ####################################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0240_Project_Management
+  @allure.label.feature:F68020
+  Scenario: switch is OFF - packing material lines aggregate to one line with null project
+    Given temporarily set sys config boolean value false for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p_goods    |
+      | p_pm       |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_1                  | p_goods      | 10.0     | PCE      |
+      | plv_1                  | p_pm         | 1.0      | PCE      |
+    And metasfresh contains M_HU_PI:
+      | Identifier |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier | M_HU_PI_ID | HU_UnitType |
+      | huVersion  | huPI_TU    | TU          |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID |
+      | pm_1                    | p_pm         |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier | M_HU_PI_Version_ID | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPIItem   | huVersion          | 10  | PM       | pm_1                    |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier    | M_HU_PI_Item_ID | Qty | M_Product_ID | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsInvoiceable | OPT.M_Packing_Material_Product_ID |
+      | huItemProduct | huPIItem        | 10  | p_goods      | 2021-01-01 | false                  | true              | p_pm                              |
+
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | so_8       | true    | customer_1    | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_Project_ID |
+      | sol_8      | so_8       | p_goods      | 20         | P1           |
+      | sol_9      | so_8       | p_goods      | 30         | P2           |
+      | sol_10     | so_8       | p_goods      | 40         | P3           |
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.M_HU_PI_Item_Product_ID |
+      | sol_8                     | huItemProduct               |
+      | sol_9                     | huItemProduct               |
+      | sol_10                    | huItemProduct               |
+    And the order identified by so_8 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_8       | sol_8          | N             |
+      | ss_9       | sol_9          | N             |
+      | ss_10      | sol_10         | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.C_Project_ID.Identifier |
+      | ss_8                  | P1                          |
+      | ss_9                  | P2                          |
+      | ss_10                 | P3                          |
+
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_8                  |
+      | ss_9                  |
+      | ss_10                 |
+
+    Then the shipment schedules ss_8,ss_9,ss_10 are shipped in exactly one M_InOut identified by shipment_8
+
+    And validate the created shipment lines
+      | M_InOut_ID | C_OrderLine_ID | C_Project_ID | movementqty |
+      | shipment_8 | sol_8          | P1           | 20          |
+      | shipment_8 | sol_9          | P2           | 30          |
+      | shipment_8 | sol_10         | P3           | 40          |
+
+    And the packing material lines of shipment shipment_8 are exactly:
+      | Identifier | M_Product_ID | C_Project_ID | MovementQty |
+      | pm_line_8  | p_pm         | null         | 9           |
