@@ -11,6 +11,7 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -198,6 +199,13 @@ public class HUPackingMaterialsCollectorTest
 	 * {@code isCollectAggregatedHUs} is set, key site {@code HUPackingMaterialsCollector.java:273}, Review Focus 3)
 	 * must ALSO be split per project, and give 2 candidates.
 	 * <p>
+	 * {@code LUTUProducerDestination} (the plain test producer used here and by {@link #test_AggregatedHU()}) never
+	 * wires the built HU's {@code M_HU_PI_Item_Product_ID} (unlike the production {@code HUBuilder}, which sets it
+	 * from the LU/TU configuration at {@code HUBuilder.java:437-438}) &mdash; only the real order/receipt producers
+	 * do, via {@code LUTUConfigurationFactory}. Key site {@code :273} is reached only when
+	 * {@code IHandlingUnitsBL.extractPIItemProductOrNull(hu)} is non-null, so the test stamps it directly on each
+	 * built aggregated HU, mirroring what {@code HUBuilder.java:438} does in production.
+	 * <p>
 	 * The second packing-material PI-item is added to {@code piTU_IFCO}'s PI version <b>after</b> both aggregated HUs
 	 * were already built, so it is never materialized as a real {@code M_HU_Item} on either built HU and can only be
 	 * reached through the "included packing material" lookup ({@code retrievePackingMaterials}) — isolating key site
@@ -208,6 +216,8 @@ public class HUPackingMaterialsCollectorTest
 	{
 		final I_M_HU luHU1 = createLU("1000");
 		final I_M_HU luHU2 = createLU("1000");
+		stampMaterialItemProductOnAggregatedHU(luHU1);
+		stampMaterialItemProductOnAggregatedHU(luHU2);
 
 		data.helper.createHU_PI_Item_PackingMaterial(data.piTU_IFCO, data.helper.pmBag);
 
@@ -263,6 +273,22 @@ public class HUPackingMaterialsCollectorTest
 
 		assertThat(candidates).hasSize(1);
 		assertThat(candidates.get(0).getUniqueProjectIdOrNull()).isEqualTo(PROJECT_P1);
+	}
+
+	/**
+	 * Stamps the aggregated HU included in {@code luHU} with the {@code M_HU_PI_Item_Product_ID} of the TU config
+	 * used to build it, mirroring what the production {@code HUBuilder} does at {@code HUBuilder.java:437-438}
+	 * (which the plain {@code LUTUProducerDestination} test producer does not wire up). Needed to reach
+	 * {@code HUPackingMaterialsCollector.java:273} (see test method's Javadoc).
+	 */
+	private void stampMaterialItemProductOnAggregatedHU(final I_M_HU luHU)
+	{
+		final List<I_M_HU> aggregatedHUs = handlingUnitsDAO.retrieveIncludedHUs(luHU);
+		assertThat(aggregatedHUs).hasSize(1);
+
+		final I_M_HU aggregatedHU = aggregatedHUs.get(0);
+		aggregatedHU.setM_HU_PI_Item_Product_ID(data.piTU_Item_Product_IFCO_40KgTomatoes.getM_HU_PI_Item_Product_ID());
+		InterfaceWrapperHelper.save(aggregatedHU);
 	}
 
 	private IHUPackingMaterialCollectorSource createSource(final int productId, final int recordId, @Nullable final ProjectId projectId)
