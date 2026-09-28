@@ -23,6 +23,7 @@
 package de.metas.ui.web.quickinput.costrevaluationline;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
@@ -49,6 +50,8 @@ import java.util.Set;
 public class CostRevaluationLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private static final ReferenceId M_PRODUCT_STOCKED_AD_REFERENCE_ID = ReferenceId.ofRepoId(171);
 
 	private final LookupDescriptorProviders lookupDescriptorProviders;
 
@@ -97,6 +100,7 @@ public class CostRevaluationLineQuickInputDescriptorFactory implements IQuickInp
 						.setCtxTableName(null)
 						.setCtxColumnName(ICostRevaluationLineQuickInput.COLUMNNAME_M_Product_ID)
 						.setDisplayType(DisplayType.Search)
+						.setAD_Reference_Value_ID(M_PRODUCT_STOCKED_AD_REFERENCE_ID)
 						.build())
 				.setMandatoryLogic(true)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
