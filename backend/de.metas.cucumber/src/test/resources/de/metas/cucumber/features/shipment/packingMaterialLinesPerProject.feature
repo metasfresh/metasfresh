@@ -105,9 +105,9 @@ Feature: shipment packing material lines split per project
 
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.M_InOutLine_ID.Identifier |
-      | ic_sol_1                          | sol_1                     | null                          |
-      | ic_sol_2                          | sol_2                     | null                          |
-      | ic_sol_3                          | sol_3                     | null                          |
+      | ic_sol_1                          | sol_1                     |                               |
+      | ic_sol_2                          | sol_2                     |                               |
+      | ic_sol_3                          | sol_3                     |                               |
       | ic_pm_P1                          | null                      | pm_line_P1                    |
       | ic_pm_P2                          | null                      | pm_line_P2                    |
       | ic_pm_P3                          | null                      | pm_line_P3                    |
