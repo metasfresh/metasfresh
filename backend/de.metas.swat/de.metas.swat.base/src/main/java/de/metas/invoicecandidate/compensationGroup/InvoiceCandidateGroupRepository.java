@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.compensationGroup;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -18,6 +20,11 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.model.I_C_CompensationGroup_Schema;
+import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -31,10 +38,16 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -65,6 +78,7 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	public InvoiceCandidateGroupRepository(@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory)
@@ -116,13 +130,17 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.pricePrecision(orderBL.getPricePrecision(order))
 				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.additive(retrieveAdditive(groupId.getOrderCompensationGroupId()));
+
+		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId =
+				retrieveProductCategoryIdAndAncestorsByProductId(invoiceCandidates);
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
 			if (!invoiceCandidate.isGroupCompensationLine())
 			{
-				final GroupRegularLine regularLine = createReqularLine(invoiceCandidate);
+				final GroupRegularLine regularLine = createReqularLine(invoiceCandidate, productCategoryIdsByProductId);
 				groupBuilder.regularLine(regularLine);
 			}
 			else
@@ -135,10 +153,61 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		return groupBuilder.build();
 	}
 
-	private GroupRegularLine createReqularLine(final I_C_Invoice_Candidate invoiceCandidate)
+	/** @return the schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
+	private static boolean retrieveAdditive(final int orderCompensationGroupId)
 	{
+		if (orderCompensationGroupId <= 0)
+		{
+			return false;
+		}
+
+		final I_C_Order_CompensationGroup orderCompensationGroupPO = load(orderCompensationGroupId, I_C_Order_CompensationGroup.class);
+		final int compensationGroupSchemaId = orderCompensationGroupPO.getC_CompensationGroup_Schema_ID();
+		if (compensationGroupSchemaId <= 0)
+		{
+			return false;
+		}
+
+		return load(compensationGroupSchemaId, I_C_CompensationGroup_Schema.class).isAdditive();
+	}
+
+	/**
+	 * Batch-resolves each regular (non-compensation) invoice candidate's product category (plus ancestors) in one
+	 * query, instead of one uncached in-trx product lookup per line.
+	 *
+	 * @return product id -> that product's category id plus all ancestor category ids; a product with no resolvable
+	 * category (e.g. deleted) is simply absent, and callers shall fall back to an empty set
+	 */
+	private ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> retrieveProductCategoryIdAndAncestorsByProductId(
+			final List<I_C_Invoice_Candidate> invoiceCandidates)
+	{
+		final ImmutableSet<ProductId> productIds = invoiceCandidates.stream()
+				.filter(invoiceCandidate -> !invoiceCandidate.isGroupCompensationLine())
+				.map(invoiceCandidate -> ProductId.ofRepoId(invoiceCandidate.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		if (productIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<ProductId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
+		for (final ProductAndCategoryId productAndCategoryId : productDAO.retrieveProductAndCategoryIdsByProductIds(productIds))
+		{
+			final ImmutableSet<ProductCategoryId> categoryIdAndAncestors =
+					productDAO.getProductCategoryIdAndAncestors(productAndCategoryId.getProductCategoryId());
+			result.put(productAndCategoryId.getProductId(), categoryIdAndAncestors);
+		}
+		return result.build();
+	}
+
+	private GroupRegularLine createReqularLine(
+			final I_C_Invoice_Candidate invoiceCandidate,
+			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId)
+	{
+		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
 		return GroupRegularLine.builder()
 				.lineNetAmt(invoiceCandidate.getNetAmtToInvoice())
+				.productCategoryIds(productCategoryIdsByProductId.getOrDefault(productId, ImmutableSet.of()))
 				.build();
 	}
 
@@ -172,7 +241,28 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.price(price)
 				.qtyEntered(qtyEntered)
 				.lineNetAmt(lineNetAmt)
+				.baseProductCategoryId(retrieveBaseProductCategoryId(invoiceCandidate))
 				.build();
+	}
+
+	/** @return the invoice candidate's order line's schema line's base product category; {@code null} when there is none */
+	@Nullable
+	private static ProductCategoryId retrieveBaseProductCategoryId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		final I_C_OrderLine orderLine = invoiceCandidate.getC_OrderLine();
+		if (orderLine == null)
+		{
+			return null;
+		}
+
+		final int compensationGroupSchemaLineId = orderLine.getC_CompensationGroup_SchemaLine_ID();
+		if (compensationGroupSchemaLineId <= 0)
+		{
+			return null;
+		}
+
+		final I_C_CompensationGroup_SchemaLine schemaLine = load(compensationGroupSchemaLineId, I_C_CompensationGroup_SchemaLine.class);
+		return ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID());
 	}
 
 	public InvoiceCandidateId extractLineId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
