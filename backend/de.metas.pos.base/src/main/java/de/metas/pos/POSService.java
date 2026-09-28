@@ -1,6 +1,10 @@
 package de.metas.pos;
 
 import de.metas.money.Money;
+import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
+import de.metas.pos.invoice_settlement.POSInvoiceSettleResult;
+import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
+import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.remote.RemotePOSOrder;
 import de.metas.pos.returns.POSReturnRequest;
 import de.metas.pos.returns.POSReturnResult;
@@ -33,6 +37,7 @@ public class POSService
 	@NonNull private final POSOrdersService ordersService;
 	@NonNull private final POSCashWithdrawalService cashWithdrawalService;
 	@NonNull private final POSReturnService returnService;
+	@NonNull private final POSInvoiceSettlementService invoiceSettlementService;
 
 	@NonNull
 	public POSTerminal getPOSTerminalById(final POSTerminalId posTerminalId) {return posTerminalService.getPOSTerminalById(posTerminalId);}
@@ -157,6 +162,18 @@ public class POSService
 	public POSReturnResult createReturn(@NonNull final POSReturnRequest request)
 	{
 		return returnService.createReturn(request);
+	}
+
+	@NonNull
+	public List<POSOpenInvoice> findOpenInvoices(@NonNull final POSTerminalId posTerminalId, @NonNull final String documentNo)
+	{
+		return invoiceSettlementService.findOpenInvoices(posTerminalId, documentNo);
+	}
+
+	@NonNull
+	public POSInvoiceSettleResult settleInvoiceInCash(@NonNull final POSInvoiceSettleRequest request)
+	{
+		return invoiceSettlementService.settleInCash(request);
 	}
 }
 
