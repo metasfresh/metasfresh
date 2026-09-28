@@ -211,6 +211,13 @@ public interface IProductDAO extends ISingletonService
 
 	<T extends I_M_Product_Category> T getProductCategoryById(ProductCategoryId id, Class<T> modelClass);
 
+	/**
+	 * @return the given product category id plus all of its ancestor category ids (cycle-safe: an ancestor loop is broken off,
+	 * yielding just the ids seen up to that point, instead of looping forever).
+	 */
+	@NonNull
+	ImmutableSet<ProductCategoryId> getProductCategoryIdAndAncestors(@NonNull ProductCategoryId productCategoryId);
+
 	Stream<I_M_Product_Category> streamAllProductCategories();
 
 	String getProductCategoryNameById(ProductCategoryId id);

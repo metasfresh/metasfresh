@@ -78,6 +78,7 @@ public class Group
 	private final ConditionsId contractConditionsId;
 
 	/** If {@code true}, every compensation line is computed on its own base's regular-line total; if {@code false} (default), compensation lines of the same base compound with each other */
+	@Getter
 	private final boolean additive;
 
 	private final ImmutableList<GroupRegularLine> regularLines;

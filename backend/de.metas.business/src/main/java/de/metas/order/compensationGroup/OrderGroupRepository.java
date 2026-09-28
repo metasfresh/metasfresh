@@ -15,6 +15,9 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineReasonForWithoutCharge;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
+import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
@@ -89,6 +92,7 @@ public class OrderGroupRepository implements GroupRepository
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
@@ -251,7 +255,8 @@ public class OrderGroupRepository implements GroupRepository
 				.pricePrecision(orderBL.getPricePrecision(order))
 				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.additive(retrieveAdditive(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID()));
 
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 		{
@@ -270,6 +275,17 @@ public class OrderGroupRepository implements GroupRepository
 		advisors.forEach(advisor -> advisor.customizeFromOrder(groupBuilder, order, groupOrderLines));
 
 		return groupBuilder.build();
+	}
+
+	/** @return the schema's {@code IsAdditive} flag; {@code false} when the group has no schema (e.g. a manually assembled group) */
+	private static boolean retrieveAdditive(final int compensationGroupSchemaId)
+	{
+		if (compensationGroupSchemaId <= 0)
+		{
+			return false;
+		}
+
+		return load(compensationGroupSchemaId, I_C_CompensationGroup_Schema.class).isAdditive();
 	}
 
 	private List<I_C_OrderLine> retrieveGroupOrderLines(final GroupId groupId)
@@ -320,12 +336,21 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
-	private static GroupRegularLine toGroupRegularLine(final I_C_OrderLine record)
+	private GroupRegularLine toGroupRegularLine(final I_C_OrderLine record)
 	{
 		return GroupRegularLine.builder()
 				.repoId(OrderLineId.ofRepoId(record.getC_OrderLine_ID()))
 				.lineNetAmt(record.getLineNetAmt())
+				.productCategoryIds(retrieveProductCategoryIdAndAncestors(ProductId.ofRepoId(record.getM_Product_ID())))
 				.build();
+	}
+
+	private ImmutableSet<ProductCategoryId> retrieveProductCategoryIdAndAncestors(@NonNull final ProductId productId)
+	{
+		final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
+		return productCategoryId != null
+				? productDAO.getProductCategoryIdAndAncestors(productCategoryId)
+				: ImmutableSet.of();
 	}
 
 	/**
@@ -346,7 +371,21 @@ public class OrderGroupRepository implements GroupRepository
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
+				.baseProductCategoryId(retrieveBaseProductCategoryId(groupOrderLine.getC_CompensationGroup_SchemaLine_ID()))
 				.build();
+	}
+
+	/** @return the schema line's base product category; {@code null} when the compensation line is not linked to a schema line */
+	@Nullable
+	private static ProductCategoryId retrieveBaseProductCategoryId(final int compensationGroupSchemaLineId)
+	{
+		if (compensationGroupSchemaLineId <= 0)
+		{
+			return null;
+		}
+
+		final I_C_CompensationGroup_SchemaLine schemaLine = load(compensationGroupSchemaLineId, I_C_CompensationGroup_SchemaLine.class);
+		return ProductCategoryId.ofRepoIdOrNull(schemaLine.getM_Product_Category_ID());
 	}
 
 	@Override
