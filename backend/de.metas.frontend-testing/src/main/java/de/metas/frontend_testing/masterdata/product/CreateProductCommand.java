@@ -97,6 +97,7 @@ public class CreateProductCommand
 		createPrices(productId, productUomId);
 		createBPartnerProducts(productId);
 		createBOM(productRecord);
+		deleteDefaultCostsIfRequested(productRecord);
 
 		return JsonCreateProductResponse.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
@@ -478,6 +479,25 @@ public class CreateProductCommand
 		// Fall back to the AD ref-list code ("I", "S", "R", …). ofCode throws when not found,
 		// which is the right behaviour for an invalid type — surface it to the caller.
 		return ProductType.ofCode(trimmed);
+	}
+
+	/**
+	 * The {@code M_Product} costing interceptor auto-creates default {@code M_Cost} rows on product creation.
+	 * When the request asks to skip default costs, delete them again so the product has NO cost record —
+	 * reproducing a migrated / legacy product, the precondition of the cost-revaluation seed-cost path.
+	 * Runs last, after every product save, so nothing re-creates the rows afterwards.
+	 */
+	private void deleteDefaultCostsIfRequested(@NonNull final I_M_Product productRecord)
+	{
+		if (!Boolean.TRUE.equals(request.getSkipDefaultCosts()))
+		{
+			return;
+		}
+
+		final de.metas.costing.ICurrentCostsRepository currentCostsRepository =
+				org.compiere.SpringContextHolder.instance.getBean(de.metas.costing.ICurrentCostsRepository.class);
+		currentCostsRepository.deleteForProduct(productRecord);
+		logger.info("Deleted default M_Cost rows for product {} (skipDefaultCosts=true)", productRecord.getValue());
 	}
 
 	private void renamePreviousEAN13ProductCodes()
