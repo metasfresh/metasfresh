@@ -13,6 +13,7 @@ import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.IProductCostingBL;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
@@ -258,12 +259,23 @@ public class CostRevaluationServiceTest
 			@NonNull final String ownCostPrice,
 			@NonNull final String qty)
 	{
+		seedCurrentCost(productId, costTypeIdForSegment, CostingLevel.Client, OrgId.ANY, ownCostPrice, qty);
+	}
+
+	private void seedCurrentCost(
+			@NonNull final ProductId productId,
+			@NonNull final CostTypeId costTypeIdForSegment,
+			@NonNull final CostingLevel costingLevel,
+			@NonNull final OrgId orgId,
+			@NonNull final String ownCostPrice,
+			@NonNull final String qty)
+	{
 		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
-				.costingLevel(CostingLevel.Client)
+				.costingLevel(costingLevel)
 				.acctSchemaId(acctSchemaId)
 				.costTypeId(costTypeIdForSegment)
 				.clientId(ClientId.METASFRESH)
-				.orgId(OrgId.ANY)
+				.orgId(orgId)
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.costElementId(costElementId)
@@ -285,10 +297,29 @@ public class CostRevaluationServiceTest
 		currentCostsRepo.save(currentCost);
 	}
 
+	/** Sets the product's category-acct {@code CostingLevel} for the header schema, so {@link IProductCostingBL#getCostingLevel} resolves to it. */
+	private void setProductCostingLevel(@NonNull final ProductId productId, @NonNull final CostingLevel costingLevel)
+	{
+		final I_M_Product product = InterfaceWrapperHelper.load(productId.getRepoId(), I_M_Product.class);
+		final I_M_Product_Category_Acct pca = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product_Category_Acct.class)
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, product.getM_Product_Category_ID())
+				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.create()
+				.firstOnlyNotNull(I_M_Product_Category_Acct.class);
+		pca.setCostingLevel(costingLevel.getCode());
+		saveRecord(pca);
+	}
+
 	private CostRevaluationId createHeader()
 	{
+		return createHeader(OrgId.ANY);
+	}
+
+	private CostRevaluationId createHeader(@NonNull final OrgId orgId)
+	{
 		final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
-		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setAD_Org_ID(orgId.getRepoId());
 		record.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		record.setM_CostElement_ID(costElementId.getRepoId());
 		record.setDocStatus(DocStatus.Drafted.getCode());
@@ -468,5 +499,45 @@ public class CostRevaluationServiceTest
 				.isInstanceOf(AdempiereException.class);
 
 		assertThat(getLineRecords(costRevaluationId)).isEmpty();
+	}
+
+	/**
+	 * Organization-level costing coverage: the caller resolves the costing level via
+	 * {@link IProductCostingBL#getCostingLevel} and, because it is {@link CostingLevel#Organization}, filters the
+	 * current-cost lookup by the header document's org — so the org-level {@code M_Cost} row of the header org is
+	 * resolved and the co-existing org-level row of a DIFFERENT org is excluded by the query's org filter.
+	 * <p>
+	 * This exercises the {@code Organization}-costing-level branch of {@code createLineForProduct} that no other test
+	 * covers (all the others are client-level). It is not a red-first test for the org-param refactor itself: that
+	 * refactor is behavior-preserving (the previous {@code isMatching(headerOrg)} Java post-filter and the new
+	 * query-level org filter resolve the identical row on every representable data configuration — a client-level
+	 * ({@link OrgId#ANY}) row cannot co-exist under an org-level product because {@code CurrentCostsLoader} derives the
+	 * segment's costing level from the product config and rejects an ANY-org row at org level). The existing
+	 * seed / ambiguous / duplicate tests are the safety net that pins the preserved behavior through the new Optional API.
+	 */
+	@Test
+	public void createLineForProduct_orgLevelCosting_resolvesByHeaderOrg_excludingOtherOrg()
+	{
+		final OrgId headerOrgId = AdempiereTestHelper.createOrgWithTimeZone("orgLevelHeaderOrg", ZONE_ID);
+		final OrgId otherOrgId = AdempiereTestHelper.createOrgWithTimeZone("orgLevelOtherOrg", ZONE_ID);
+
+		final ProductId productId = createProduct("productOrgLevel");
+		setProductCostingLevel(productId, CostingLevel.Organization);
+
+		// Two org-level current costs for the same product/segment, one per org — only the header org's must be resolved.
+		seedCurrentCost(productId, costTypeId, CostingLevel.Organization, headerOrgId, "12.50", "100");
+		seedCurrentCost(productId, costTypeId, CostingLevel.Organization, otherOrgId, "99.00", "50");
+
+		final CostRevaluationId costRevaluationId = createHeader(headerOrgId);
+
+		final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
+
+		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+		assertThat(lines).hasSize(1);
+		final I_M_CostRevaluationLine line = lines.get(0);
+		assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
+		assertThat(line.getAD_Org_ID()).isEqualTo(headerOrgId.getRepoId()); // the header org's org-level segment
+		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("12.50"); // header org's row, NOT the other org's 99.00
+		assertThat(line.getNewCostPrice()).isEqualByComparingTo("20.00"); // the TYPED value
 	}
 }

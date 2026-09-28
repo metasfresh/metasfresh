@@ -9,9 +9,11 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostsRevaluationRequest;
 import de.metas.costing.CostsRevaluationResult;
+import de.metas.costing.CostingLevel;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostQuery;
 import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.IProductCostingBL;
 import de.metas.costing.impl.CostingService;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -24,7 +26,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 public class CostRevaluationService
@@ -33,6 +37,7 @@ public class CostRevaluationService
 	private final ICurrentCostsRepository currentCostsRepo;
 	private final CostingService costingService;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 
 	public CostRevaluationService(
 			@NonNull final CostRevaluationRepository costRevaluationRepository,
@@ -122,47 +127,67 @@ public class CostRevaluationService
 
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
 
-		ImmutableList<CurrentCost> currentCosts = resolveCurrentCosts(costRevaluation, productId);
+		// The caller owns the costing-level decision: filter the current-cost lookup by the header org only when the
+		// product is costed at organization level; otherwise (client / batch-lot level) don't filter by org.
+		final OrgId orgId = getOrgIdToMatch(costRevaluation, productId);
 
-		if (currentCosts.isEmpty())
+		Optional<CurrentCost> currentCost = resolveCurrentCost(costRevaluation, productId, orgId);
+
+		if (!currentCost.isPresent())
 		{
 			// Seed-cost path: a stocked product may genuinely have no M_Cost row yet (e.g. migrated/legacy product).
 			// Materialize the missing row(s) at quantity 0 by reusing the same creator the product interceptor uses at
 			// product creation (idempotent: only missing rows are created), then re-resolve.
 			currentCostsRepo.createDefaultProductCosts(productDAO.getById(productId));
-			currentCosts = resolveCurrentCosts(costRevaluation, productId);
+			currentCost = resolveCurrentCost(costRevaluation, productId, orgId);
 		}
 
-		if (currentCosts.isEmpty())
-		{
-			throw new AdempiereException("No current cost found for product " + productId);
-		}
+		final CurrentCost currentCostEffective = currentCost.orElseThrow(
+				() -> new AdempiereException("No current cost found for product " + productId));
+
+		final CostAmount newCostAmount = CostAmount.of(newCostPrice, currentCostEffective.getCurrencyId());
+		return costRevaluationRepository.createLineForCurrentCost(costRevaluationId, currentCostEffective, newCostAmount);
+	}
+
+	/**
+	 * The org to match the product's current cost by, decided from the product's costing level (the same source the
+	 * bulk path and {@code CurrentCostsLoader} use, {@link IProductCostingBL#getCostingLevel}): the header document's
+	 * org when the product is costed at {@link CostingLevel#Organization}, {@code null} (no org filter) otherwise.
+	 */
+	@Nullable
+	private OrgId getOrgIdToMatch(@NonNull final CostRevaluation costRevaluation, @NonNull final ProductId productId)
+	{
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, costRevaluation.getAcctSchemaId());
+		return CostingLevel.Organization.equals(costingLevel) ? costRevaluation.getOrgId() : null;
+	}
+
+	/**
+	 * Resolves the product's single current cost for the revaluation's costing context, filtering the query by
+	 * {@code orgId} (nullable — no org filter when {@code null}).
+	 *
+	 * @return the matching {@link CurrentCost}, or {@link Optional#empty()} when the product has none yet.
+	 * @throws AdempiereException if more than one current cost matches (ambiguous multi-segment product).
+	 */
+	private Optional<CurrentCost> resolveCurrentCost(
+			@NonNull final CostRevaluation costRevaluation,
+			@NonNull final ProductId productId,
+			@Nullable final OrgId orgId)
+	{
+		final ImmutableList<CurrentCost> currentCosts = currentCostsRepo.list(
+				CurrentCostQuery.builder()
+						.clientId(costRevaluation.getClientId())
+						.orgId(orgId)
+						.acctSchemaId(costRevaluation.getAcctSchemaId())
+						.costElementId(costRevaluation.getCostElementId())
+						.productId(productId)
+						.build());
+
 		if (currentCosts.size() > 1)
 		{
 			throw new AdempiereException("Ambiguous current cost for product " + productId + ": found " + currentCosts.size() + " matching cost segments");
 		}
 
-		final CurrentCost currentCost = currentCosts.get(0);
-		final CostAmount newCostAmount = CostAmount.of(newCostPrice, currentCost.getCurrencyId());
-		return costRevaluationRepository.createLineForCurrentCost(costRevaluationId, currentCost, newCostAmount);
-	}
-
-	private ImmutableList<CurrentCost> resolveCurrentCosts(
-			@NonNull final CostRevaluation costRevaluation,
-			@NonNull final ProductId productId)
-	{
-		final OrgId orgId = costRevaluation.getOrgId();
-		return currentCostsRepo.stream(
-						CurrentCostQuery.builder()
-								.clientId(costRevaluation.getClientId())
-								// NOTE: don't filter by OrgId here because we don't know the costing level yet
-								.acctSchemaId(costRevaluation.getAcctSchemaId())
-								.costElementId(costRevaluation.getCostElementId())
-								.productId(productId)
-								.build()
-				)
-				.filter(currentCost -> isMatching(currentCost, orgId))
-				.collect(ImmutableList.toImmutableList());
+		return currentCosts.isEmpty() ? Optional.empty() : Optional.of(currentCosts.get(0));
 	}
 
 	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)
