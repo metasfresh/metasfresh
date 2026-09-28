@@ -98,11 +98,11 @@ public class OrderGroupRepository implements GroupRepository
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
-	private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
+	@NonNull private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
 
 	public OrderGroupRepository(
 			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
-			final Optional<List<OrderGroupRepositoryAdvisor>> advisors)
+			@NonNull final Optional<List<OrderGroupRepositoryAdvisor>> advisors)
 	{
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
 		this.advisors = ImmutableList.copyOf(advisors.orElse(ImmutableList.of()));
