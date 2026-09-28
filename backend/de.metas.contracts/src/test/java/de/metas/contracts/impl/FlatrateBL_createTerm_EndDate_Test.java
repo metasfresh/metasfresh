@@ -40,6 +40,7 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
@@ -49,21 +50,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Covers AC17: a contract whose condition's transition has duration 0 keeps the end date
- * that was entered (via {@link CreateFlatrateTermRequest#getEndDate()}); without an entered
- * end date, the save is refused, as today. A duration greater than 0 keeps computing the end
- * date as before (unaffected by this fix).
+ * {@link IFlatrateBL#createTerm(CreateFlatrateTermRequest)} end-date handling: a transition with
+ * TermDuration 0 does not compute an end date automatically, so the term keeps the requested one;
+ * without a requested end date the save is refused. A transition with TermDuration greater than 0
+ * still computes the end date.
  */
 public class FlatrateBL_createTerm_EndDate_Test extends AbstractFlatrateTermTest
 {
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private IFlatrateBL flatrateBL;
 
 	private Timestamp startDate;
 	private ProductAndCategoryId productAndCategoryId;
+	private ProductAndPricingSystem productAndPricingSystem;
 
 	@BeforeEach
 	void setUpBPartnerAndProduct()
 	{
+		flatrateBL = Services.get(IFlatrateBL.class);
+
 		// register the C_Flatrate_Term model interceptor: production's end-date computation
 		// (validatePeriods -> updateNoticeDateAndEndDate) runs from there on save(), and
 		// AbstractFlatrateTermTest does not register it by default (see ContractOrderTest).
@@ -76,7 +80,7 @@ public class FlatrateBL_createTerm_EndDate_Test extends AbstractFlatrateTermTest
 
 		startDate = TimeUtil.getDay(2020, 1, 1);
 
-		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
+		productAndPricingSystem = createProductAndPricingSystem(startDate);
 		createProductAcct(productAndPricingSystem);
 
 		productAndCategoryId = productAndPricingSystem.getProductAndCategoryId();
@@ -84,9 +88,7 @@ public class FlatrateBL_createTerm_EndDate_Test extends AbstractFlatrateTermTest
 
 	private I_C_Flatrate_Conditions createConditionsWithTermDuration(final int termDuration, final String termDurationUnit)
 	{
-		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(
-				createProductAndPricingSystem(startDate),
-				null);
+		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, null);
 
 		final I_C_Flatrate_Transition transition = conditions.getC_Flatrate_Transition();
 		transition.setTermDuration(termDuration);
@@ -108,40 +110,51 @@ public class FlatrateBL_createTerm_EndDate_Test extends AbstractFlatrateTermTest
 				.completeIt(false);
 	}
 
-	@Test
-	public void createTerm_durationZero_withRequestedEndDate_keepsEndDate()
+	/**
+	 * Note on scope: these tests exercise {@code createTerm} only up to the (draft) save, not
+	 * completion. Completing a term needs the additional setup {@link AbstractFlatrateTermTest}
+	 * keeps private to its own {@code createFlatrateTerm} helper (an order + order line, a tax
+	 * category, price and quantity) - Cucumber TS8 exercises the duration-0 path through a full
+	 * save-and-complete flow instead.
+	 */
+	@Nested
+	class CreateTerm
 	{
-		final I_C_Flatrate_Conditions conditions = createConditionsWithTermDuration(0, X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
+		@Test
+		public void durationZero_withRequestedEndDate_keepsEndDate()
+		{
+			final I_C_Flatrate_Conditions conditions = createConditionsWithTermDuration(0, X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
 
-		final Timestamp requestedEndDate = TimeUtil.getDay(2020, 12, 31);
+			final Timestamp requestedEndDate = TimeUtil.getDay(2020, 12, 31);
 
-		final I_C_Flatrate_Term term = flatrateBL.createTerm(requestBuilder(conditions)
-				.endDate(requestedEndDate)
-				.build());
+			final I_C_Flatrate_Term term = flatrateBL.createTerm(requestBuilder(conditions)
+					.endDate(requestedEndDate)
+					.build());
 
-		assertThat(term.getEndDate()).isEqualTo(requestedEndDate);
-		// no StartDate placeholder must remain
-		assertThat(term.getEndDate()).isNotEqualTo(startDate);
-	}
+			assertThat(term.getEndDate()).isEqualTo(requestedEndDate);
+			// fixture notice = 0 days (FlatrateTermDataFactory's default transition)
+			assertThat(term.getNoticeDate()).isEqualTo(requestedEndDate);
+		}
 
-	@Test
-	public void createTerm_durationZero_withoutEndDate_saveRefused()
-	{
-		final I_C_Flatrate_Conditions conditions = createConditionsWithTermDuration(0, X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
+		@Test
+		public void durationZero_withoutEndDate_saveRefused()
+		{
+			final I_C_Flatrate_Conditions conditions = createConditionsWithTermDuration(0, X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
 
-		assertThatThrownBy(() -> flatrateBL.createTerm(requestBuilder(conditions).build()))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("EndDate");
-	}
+			assertThatThrownBy(() -> flatrateBL.createTerm(requestBuilder(conditions).build()))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("FillMandatory:EndDate (Should have been set by the system!)");
+		}
 
-	@Test
-	public void createTerm_durationGreaterThanZero_withoutEndDate_computesEndDate()
-	{
-		final I_C_Flatrate_Conditions conditions = createConditionsWithTermDuration(3, X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
+		@Test
+		public void durationGreaterThanZero_withoutEndDate_computesEndDate()
+		{
+			final I_C_Flatrate_Conditions conditions = createConditionsWithTermDuration(3, X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
 
-		final I_C_Flatrate_Term term = flatrateBL.createTerm(requestBuilder(conditions).build());
+			final I_C_Flatrate_Term term = flatrateBL.createTerm(requestBuilder(conditions).build());
 
-		// startDate (2020-01-01) + 3 months - 1 day
-		assertThat(term.getEndDate()).isEqualTo(TimeUtil.getDay(2020, 3, 31));
+			// startDate (2020-01-01) + 3 months - 1 day
+			assertThat(term.getEndDate()).isEqualTo(TimeUtil.getDay(2020, 3, 31));
+		}
 	}
 }

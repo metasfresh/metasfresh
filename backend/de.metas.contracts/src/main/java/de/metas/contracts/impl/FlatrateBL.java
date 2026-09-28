@@ -1402,9 +1402,7 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			term.setEndDate(endDate);
 		}
-		// else: the transition's TermDuration is 0 ("computed automatically" is off) -> keep the
-		// end date that was entered/imported/requested (AC17); checkEndDateNotNull still refuses
-		// the save if there was none.
+		// TermDuration 0: the end date is not computed; keep the entered one (checkEndDateNotNull refuses a missing one)
 	}
 
 	private Timestamp computeEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
@@ -1510,6 +1508,10 @@ public class FlatrateBL implements IFlatrateBL
 		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_TagE.equals(transition.getTermOfNoticeUnit()))
 		{
 			noticeDate = TimeUtil.addDays(lastDayOfNewTerm, transition.getTermOfNotice() * -1);
+		}
+		else if (X_C_Flatrate_Transition.TERMOFNOTICEUNIT_JahrE.equals(transition.getTermOfNoticeUnit()))
+		{
+			noticeDate = TimeUtil.addYears(lastDayOfNewTerm, transition.getTermOfNotice() * -1);
 		}
 		else
 		{

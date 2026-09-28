@@ -345,11 +345,11 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
-		// duration 0: the entered end date must be kept, not erased
+		// duration 0: the entered end date is kept
 		assertThat(term.getEndDate()).isEqualTo(day(2013, 12, 31));
 		assertThat(term.getNoticeDate()).isEqualTo(day(2013, 11, 30));
 
-		// duration > 0: end date is still computed as before (existing behaviour unaffected)
+		// duration > 0: end date is computed
 		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
 		transition.setTermDuration(5);
 		save(transition);
@@ -357,6 +357,27 @@ public class FlatrateBLTest extends ContractsTestBase
 		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
 
 		assertThat(term.getEndDate()).isEqualTo(day(2013, 8, 2));
+	}
+
+	@Test
+	public void testUpdateNoticeDateAndEndDate_termDurationZero_noticeUnitYear()
+	{
+		prepareForUpdateEndDate();
+
+		transition.setEndsWithCalendarYear(false);
+		transition.setTermDurationUnit(X_C_Flatrate_Transition.TERMDURATIONUNIT_MonatE);
+		transition.setTermDuration(0);
+		transition.setTermOfNoticeUnit(X_C_Flatrate_Transition.TERMOFNOTICEUNIT_JahrE);
+		transition.setTermOfNotice(1);
+		save(transition);
+
+		term.setEndDate(day(2013, 12, 31));
+		save(term);
+
+		Services.get(IFlatrateBL.class).updateNoticeDateAndEndDate(term);
+
+		assertThat(term.getEndDate()).isEqualTo(day(2013, 12, 31));
+		assertThat(term.getNoticeDate()).isEqualTo(day(2012, 12, 31));
 	}
 
 	private void prepareForUpdateEndDate()
