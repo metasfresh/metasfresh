@@ -425,8 +425,8 @@ testCases.forEach(({ language, label }) => {
             // EDIT (visible + end result): actually type a new Name2 in the UI, blur to save, await the PATCH,
             // and confirm it PERSISTED. The recording shows the restricted role editing an existing partner
             // (WRITE is not removed by the create restriction).
+            const newName2 = `Edited ${Date.now()}`;
             await test.step('Edit the business partner Name2 field and save (the restricted role may still edit)', async () => {
-                const newName2 = `Edited ${Date.now()}`;
                 const name2Input = page.locator('.form-field-Name2 input').first();
                 await name2Input.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
                 const patchDone = page.waitForResponse(
