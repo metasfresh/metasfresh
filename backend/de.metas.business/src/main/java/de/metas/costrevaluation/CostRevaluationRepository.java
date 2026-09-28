@@ -41,6 +41,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: M_CostRevaluation, M_CostRevaluationLine, M_CostRevaluation_Detail
+ * Repository Cluster: CostRevaluationRepository
+ */
 @Repository
 public class CostRevaluationRepository
 {

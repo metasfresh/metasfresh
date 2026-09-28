@@ -29,16 +29,21 @@ class M_CostRevaluation
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	void beforeNew(@NonNull final I_M_CostRevaluation record)
 	{
-		// Safety net: DateAcct is mandatory, but we can't rely on its AD_Column/AD_Field default having been
-		// applied by the caller (WebUI, REST, import) before this interceptor fires. Without this, an unset
-		// DateAcct would make the EvaluationStartDate default below silently fall back to NULL (retrospective).
-		if (record.getDateAcct() == null)
+		// UI-path defaulting safety net (docs/coding-rules/architecture.md §3, "Callout vs interceptor"):
+		// guard with isUIAction so ONLY the WebUI path is defaulted. Prevents: a backdated REST/import/OLCand
+		// caller that omits DateAcct being silently posted with today's date (wrong accounting period) — without
+		// the guard it fails loud instead (DateAcct is mandatory, so the null save is rejected). On the WebUI
+		// path this branch is a redundant net anyway: the AD_Column default @#Date@ already populates DateAcct
+		// at document-init, before this beforeNew fires.
+		if (record.getDateAcct() == null && InterfaceWrapperHelper.isUIAction(record))
 		{
 			record.setDateAcct(SystemTime.asDayTimestamp());
 		}
 
-		// Forward-only default: a new manual revaluation restates nothing already posted unless the user
-		// explicitly picks an earlier EvaluationStartDate. Default it to the posting date (DateAcct) when unset.
+		// Forward-only default: needs NO isUIAction guard (data-integrity invariant on all write paths) — it
+		// derives from the caller-supplied DateAcct, never from wall-clock, so defaulting EvaluationStartDate to
+		// the posting date is the correct forward-only behaviour on every path (a revaluation restates nothing
+		// already posted unless the user explicitly picks an earlier EvaluationStartDate).
 		if (record.getEvaluationStartDate() == null)
 		{
 			record.setEvaluationStartDate(record.getDateAcct());
