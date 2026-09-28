@@ -35,6 +35,11 @@ import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
 import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonProduct;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
+import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
+import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
+import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
 import de.metas.pos.returns.POSReturnRequestedLine;
 import de.metas.pos.returns.POSReturnResult;
 import de.metas.pos.returns.POSReturnService;
@@ -76,6 +81,7 @@ public class POSRestController
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final POSCashWithdrawalService posCashWithdrawalService;
 	@NonNull private final POSReturnService posReturnService;
+	@NonNull private final POSInvoiceSettlementService posInvoiceSettlementService;
 
 	private String getADLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
@@ -335,5 +341,73 @@ public class POSRestController
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
 		return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+	}
+
+	@GetMapping("/invoices")
+	public JsonPOSOpenInvoicesList getOpenInvoices(
+			@RequestParam("posTerminalId") @NonNull String posTerminalIdStr,
+			@RequestParam(value = "documentNo", required = false) final String documentNo)
+	{
+		final POSTerminalId posTerminalId = POSTerminalId.ofString(posTerminalIdStr);
+
+		if (documentNo == null || documentNo.trim().isEmpty())
+		{
+			return JsonPOSOpenInvoicesList.of(ImmutableList.of());
+		}
+
+		final List<de.metas.pos.invoice_settlement.POSOpenInvoice> invoices = posInvoiceSettlementService.findOpenInvoices(posTerminalId, documentNo);
+		return JsonPOSOpenInvoicesList.of(invoices);
+	}
+
+	@PostMapping("/invoices/settle")
+	public ResponseEntity<?> settleInvoice(@RequestBody final JsonPOSInvoiceSettleRequest request)
+	{
+		final UserId cashierId = getLoggedUserId();
+
+		// Validate that cashTenderedAmount >= the open amount (will be checked after calling service)
+		// First call the service to get the settlement amount
+		final POSInvoiceSettleRequest serviceRequest = POSInvoiceSettleRequest.builder()
+				.posTerminalId(request.getPosTerminalId())
+				.invoiceId(request.getInvoiceId())
+				.cashierId(cashierId)
+				.build();
+
+		try
+		{
+			final de.metas.pos.invoice_settlement.POSInvoiceSettleResult result = posInvoiceSettlementService.settleInCash(serviceRequest);
+
+			// Validate that cash tendered >= settled amount
+			if (request.getCashTenderedAmount().compareTo(result.getAmount().toBigDecimal()) < 0)
+			{
+				return ResponseEntity.badRequest().body(
+						"Tendered amount must be >= settled amount. Tendered: " +
+						request.getCashTenderedAmount() + ", Required: " + result.getAmount().toBigDecimal()
+				);
+			}
+
+			// Convert the result to JSON and return
+			final JsonContext jsonContext = newJsonContext();
+			final JsonPOSInvoiceSettleResponse response = JsonPOSInvoiceSettleResponse.of(
+					result,
+					request.getDocumentNo(),
+					request.getCashTenderedAmount(),
+					jsonContext
+			);
+
+			return ResponseEntity.ok(response);
+		}
+		catch (final AdempiereException ex)
+		{
+			// Return 400 for business logic errors (e.g. currency mismatch, invoice not open, wrong org)
+			final String exceptionMessage = ex.getMessage();
+			if (exceptionMessage != null &&
+				(exceptionMessage.contains("NoLongerOpen") ||
+				 exceptionMessage.contains("CurrencyMismatch") ||
+				 exceptionMessage.contains("WrongOrg")))
+			{
+				return ResponseEntity.badRequest().body(ex.getLocalizedMessage());
+			}
+			throw ex;
+		}
 	}
 }

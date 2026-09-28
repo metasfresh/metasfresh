@@ -80,7 +80,8 @@ class POSRestControllerTest
 				Mockito.mock(POSService.class),
 				new CurrencyRepository(),
 				Mockito.mock(POSCashWithdrawalService.class),
-				posReturnService);
+				posReturnService,
+				Mockito.mock(de.metas.pos.invoice_settlement.POSInvoiceSettlementService.class));
 	}
 
 	@Test
