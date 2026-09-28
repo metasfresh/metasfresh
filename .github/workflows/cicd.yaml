@@ -1916,7 +1916,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
+          command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest-${{ matrix.shard_label }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
