@@ -1,5 +1,6 @@
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_CompensationGroup_ContractSettings
@@ -118,6 +119,27 @@ public interface I_C_CompensationGroup_ContractSettings
 
 	ModelColumn<I_C_CompensationGroup_ContractSettings, Object> COLUMN_CreatedBy = new ModelColumn<>(I_C_CompensationGroup_ContractSettings.class, "CreatedBy", null);
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_C_CompensationGroup_ContractSettings, Object> COLUMN_Description = new ModelColumn<>(I_C_CompensationGroup_ContractSettings.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Active.

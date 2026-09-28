@@ -99,7 +99,7 @@ public interface I_C_CompensationGroup_ContractSettings_DocType
 	 * Set Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -109,7 +109,7 @@ public interface I_C_CompensationGroup_ContractSettings_DocType
 	 * Get Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
