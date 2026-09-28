@@ -113,6 +113,14 @@ public class PackingMaterialShipmentLines_StepDef
 				return false;
 			}
 
+			final Set<Integer> linkedScheduleIds = qtyPickedRecords.stream()
+					.map(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_ID)
+					.collect(ImmutableSet.toImmutableSet());
+			if (!linkedScheduleIds.containsAll(shipmentScheduleIds))
+			{
+				return false;
+			}
+
 			final Set<Integer> inOutLineIds = qtyPickedRecords.stream()
 					.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 					.collect(ImmutableSet.toImmutableSet());
