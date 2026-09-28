@@ -36,9 +36,10 @@ UPDATE AD_Ref_List_Trl
 SET Name = 'Compensation group contract', IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Ref_List_ID = 544372 AND AD_Language = 'en_US'
 ;
+-- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE stays IsTranslated='N' -- it's the base language, not a reviewed translation
 UPDATE AD_Ref_List_Trl
 SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:03', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Ref_List_ID = 544372 AND AD_Language IN ('de_DE', 'de_CH')
+WHERE AD_Ref_List_ID = 544372 AND AD_Language = 'de_CH'
 ;
 -- ============================================================================
 -- 2) AD_Element for C_CompensationGroup_ContractSettings_ID (shared by the settings
@@ -63,9 +64,10 @@ SET Name = 'Compensation group contract settings', PrintName = 'Compensation gro
     IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:06', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 585492 AND AD_Language = 'en_US'
 ;
+-- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE stays IsTranslated='N' -- it's the base language, not a reviewed translation
 UPDATE AD_Element_Trl
 SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:07', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Element_ID = 585492 AND AD_Language IN ('de_DE', 'de_CH')
+WHERE AD_Element_ID = 585492 AND AD_Language = 'de_CH'
 ;
 -- ============================================================================
 -- 3) AD_Element for C_CompensationGroup_ContractSettings_DocType_ID (child table PK)
@@ -89,9 +91,10 @@ SET Name = 'Compensation group contract settings document type', PrintName = 'Co
     IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:10', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Element_ID = 585493 AND AD_Language = 'en_US'
 ;
+-- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE stays IsTranslated='N' -- it's the base language, not a reviewed translation
 UPDATE AD_Element_Trl
 SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:11', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Element_ID = 585493 AND AD_Language IN ('de_DE', 'de_CH')
+WHERE AD_Element_ID = 585493 AND AD_Language = 'de_CH'
 ;
 -- ============================================================================
 -- 4) New table C_CompensationGroup_ContractSettings
@@ -116,9 +119,10 @@ UPDATE AD_Table_Trl
 SET Name = 'Compensation Group Contract Settings', IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:14', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Table_ID = 542650 AND AD_Language = 'en_US'
 ;
+-- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE stays IsTranslated='N' -- it's the base language, not a reviewed translation
 UPDATE AD_Table_Trl
 SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:15', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Table_ID = 542650 AND AD_Language IN ('de_DE', 'de_CH')
+WHERE AD_Table_ID = 542650 AND AD_Language = 'de_CH'
 ;
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                        Version, EntityType, ColumnName, AD_Table_ID, AD_Element_ID, AD_Reference_ID,
@@ -359,9 +363,10 @@ UPDATE AD_Table_Trl
 SET Name = 'Compensation Group Contract Settings Document Types', IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:38', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_Table_ID = 542651 AND AD_Language = 'en_US'
 ;
+-- de_CH mirrors de_DE (already copied by the skeleton insert above); de_DE stays IsTranslated='N' -- it's the base language, not a reviewed translation
 UPDATE AD_Table_Trl
 SET IsTranslated = 'Y', Updated = TO_TIMESTAMP('2026-09-28 10:00:39', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Table_ID = 542651 AND AD_Language IN ('de_DE', 'de_CH')
+WHERE AD_Table_ID = 542651 AND AD_Language = 'de_CH'
 ;
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                        Version, EntityType, ColumnName, AD_Table_ID, AD_Element_ID, AD_Reference_ID,
