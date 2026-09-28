@@ -74,12 +74,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 @Component
 public class InvoiceCandidateGroupRepository implements GroupRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
+	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	public InvoiceCandidateGroupRepository(@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory)
 	{

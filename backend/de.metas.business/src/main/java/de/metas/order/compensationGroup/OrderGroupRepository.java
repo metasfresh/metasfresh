@@ -90,18 +90,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Component
 public class OrderGroupRepository implements GroupRepository
 {
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
+	@NonNull private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
 
 	public OrderGroupRepository(
-			final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
+			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
 			final Optional<List<OrderGroupRepositoryAdvisor>> advisors)
 	{
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
