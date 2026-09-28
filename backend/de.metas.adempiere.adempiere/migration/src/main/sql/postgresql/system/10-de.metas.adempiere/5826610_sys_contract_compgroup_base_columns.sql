@@ -18,7 +18,7 @@ VALUES (585491 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-09-28 09:00:00'
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, Description, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, 585491, t.Name, t.PrintName, t.Description, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Element t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND l.IsBaseLanguage = 'N'
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
   AND t.AD_Element_ID = 585491
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID);
 
@@ -138,7 +138,8 @@ ALTER TABLE C_Order_CompensationGroup
     FOREIGN KEY (C_Flatrate_Term_ID) REFERENCES public.C_Flatrate_Term DEFERRABLE INITIALLY DEFERRED;
 
 -- ============================================================================
--- 5) AD_Field: IsAdditive on the Schema header tab (541041), flags group (541469), after IsActive
+-- 5) AD_Field: IsAdditive on the Schema header tab (541041), flags group (541469),
+--    last in the group (after IsActive and IsInheritPackingInstruction)
 -- ============================================================================
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                       AD_Tab_ID, AD_Column_ID, Name, Description, EntityType,
@@ -149,12 +150,12 @@ VALUES (785581 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-09-28 09:04:00'
         'Jede Rabattzeile wird auf Basis ihrer eigenen Bemessungsgrundlage berechnet und nicht auf der laufenden Summe inklusive vorheriger Rabattzeilen.',
         'de.metas.order',
         'Y', 'N', 'N', 'N', 'N', 'N', 'N',
-        30, 0);
+        NULL, 0);
 
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, 785581, t.Name, t.Description, t.Help, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Field t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND l.IsBaseLanguage = 'N'
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
   AND t.AD_Field_ID = 785581
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID);
 
@@ -163,7 +164,8 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND l.IsBaseLanguage = 'N'
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785581;
 /* DDL */ SELECT AD_Element_Link_Create_Missing_Field(785581);
 
--- AD_UI_Element for IsAdditive: flags group (541469), right after IsActive (seqno=10/seqnogrid=30)
+-- AD_UI_Element for IsAdditive: flags group (541469), last in the group (after IsActive
+-- seqno=10 and IsInheritPackingInstruction seqno=20)
 INSERT INTO AD_UI_Element (AD_UI_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                            AD_UI_ElementGroup_ID, AD_Field_ID, AD_Tab_ID, SeqNo, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, Name)
 VALUES (654909 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-09-28 09:04:30', 'YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-09-28 09:04:30', 'YYYY-MM-DD HH24:MI:SS'), 100,
@@ -185,7 +187,7 @@ VALUES (785582 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-09-28 09:05:00'
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Name, Description, Help, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, 785582, t.Name, t.Description, t.Help, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
 FROM AD_Language l, AD_Field t
-WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND l.IsBaseLanguage = 'N'
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
   AND t.AD_Field_ID = 785582
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID);
 
