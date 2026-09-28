@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.cache.CacheMgt;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -33,6 +34,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 
+import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
@@ -42,6 +45,13 @@ public class AD_SysConfig_StepDef
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final AD_User_StepDefData userTable;
+
+	/**
+	 * Sysconfigs this scenario overwrote via {@link #temporarily_set_sys_config_boolean_value}, mapped to their value from BEFORE the overwrite
+	 * (possibly {@code null}, meaning the sysconfig had none). Restored by
+	 * {@link #restoreRepointedSysConfigsAfterScenario()}.
+	 */
+	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
 	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable)
 	{
@@ -98,5 +108,62 @@ public class AD_SysConfig_StepDef
 	private void setSysConfigIntValue(@NonNull final String name, final int value)
 	{
 		sysConfigBL.setValue(name, value, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+	}
+
+	/**
+	 * Sets a sys config to a scenario-local boolean value, capturing its PRIOR value (via
+	 * {@link #priorValueBySysConfigName}, {@code putIfAbsent} so a second write in the same scenario never
+	 * overwrites the already-captured original) so {@link #restoreRepointedSysConfigsAfterScenario()} restores
+	 * it, never leaving a changed value in shared/global {@code AD_SysConfig}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+	 * </pre>
+	 */
+	@And("temporarily set sys config boolean value {word} for sys config {string}")
+	public void temporarily_set_sys_config_boolean_value(@NonNull final String valueStr, @NonNull final String sysConfigName)
+	{
+		priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+
+		final boolean booleanValue = Boolean.parseBoolean(valueStr);
+		sysConfigBL.setValue(sysConfigName, booleanValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	/**
+	 * Guaranteed-execution cleanup for {@link #temporarily_set_sys_config_boolean_value} -- an {@code @After} hook rather than a trailing Gherkin
+	 * step, since Cucumber skips remaining steps once one fails, i.e. on exactly the runs that need the
+	 * restore. A no-op for every scenario that never called the step.
+	 * <p>
+	 * If the sysconfig had no prior value (a fresh key, {@code null}), there is nothing to restore it TO --
+	 * {@link ISysConfigBL} exposes no delete, so this scenario's own written value is left in place. That
+	 * matches every other sysconfig write in this class (none of which restore either) and does not create a
+	 * new failure mode: the next run still overwrites it with ITS OWN value before reading it.
+	 */
+	@After
+	public void restoreRepointedSysConfigsAfterScenario()
+	{
+		if (priorValueBySysConfigName.isEmpty())
+		{
+			return;
+		}
+
+		for (final Map.Entry<String, String> entry : priorValueBySysConfigName.entrySet())
+		{
+			final String sysConfigName = entry.getKey();
+			@Nullable final String priorValue = entry.getValue();
+			if (priorValue == null)
+			{
+				continue;
+			}
+
+			sysConfigBL.setValue(sysConfigName, priorValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
+		}
+
+		priorValueBySysConfigName.clear();
+		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
 	}
 }
