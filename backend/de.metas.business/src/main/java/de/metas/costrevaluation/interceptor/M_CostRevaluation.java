@@ -25,6 +25,17 @@ class M_CostRevaluation
 		this.costRevaluationService = costRevaluationService;
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	void beforeNew(@NonNull final I_M_CostRevaluation record)
+	{
+		// Forward-only default: a new manual revaluation restates nothing already posted unless the user
+		// explicitly picks an earlier EvaluationStartDate. Default it to the posting date (DateAcct) when unset.
+		if (record.getEvaluationStartDate() == null && record.getDateAcct() != null)
+		{
+			record.setEvaluationStartDate(record.getDateAcct());
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE })
 	void beforeChange(@NonNull final I_M_CostRevaluation record, @NonNull final ModelChangeType type)
 	{

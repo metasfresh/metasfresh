@@ -85,7 +85,8 @@ public class M_CostRevaluation_StepDef
 	 *   <b>Identifier</b> — (required) alias for the created header<br>
 	 *   <b>C_AcctSchema_ID</b> — (required, identifier-ref) accounting schema<br>
 	 *   <b>M_CostElement_ID</b> — (required) costing-method name/code resolving to a single material cost element (e.g. AveragePO)<br>
-	 *   <b>EvaluationStartDate</b> — (required) date from which cost details are replayed<br>
+	 *   <b>EvaluationStartDate</b> — (optional) date from which cost details are replayed; when the column is omitted, the header's
+	 *   {@code beforeNew} interceptor defaults it to {@code DateAcct} (forward-only: a today-dated revaluation restates nothing already posted)<br>
 	 *   <b>DateAcct</b> — (required) posting date<br>
 	 * @cucumber.depends StepDefData: C_AcctSchema_StepDefData, M_CostElement_StepDefData, M_CostRevaluation_StepDefData
 	 * @cucumber.example
@@ -116,8 +117,9 @@ public class M_CostRevaluation_StepDef
 		header.setC_DocType_ID(docTypeId.getRepoId());
 		header.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		header.setM_CostElement_ID(costElementId.getRepoId());
-		header.setEvaluationStartDate(row.getAsLocalDateTimestamp(I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate));
 		header.setDateAcct(row.getAsLocalDateTimestamp(I_M_CostRevaluation.COLUMNNAME_DateAcct));
+		row.getAsOptionalLocalDateTimestamp(I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate)
+				.ifPresent(header::setEvaluationStartDate);
 		header.setDocumentNo(StepDefDataIdentifier.nextUnnamed("costRevaluation").getAsString());
 		header.setDocStatus(IDocument.STATUS_Drafted);
 		header.setDocAction(IDocument.ACTION_Complete);
@@ -223,6 +225,7 @@ public class M_CostRevaluation_StepDef
 	 *   <b>Identifier</b> — (required, identifier-ref) the header to validate<br>
 	 *   <b>DocStatus</b> — (optional) expected DocStatus code (e.g. CO)<br>
 	 *   <b>Processed</b> — (optional) expected Processed flag<br>
+	 *   <b>EvaluationStartDate</b> — (optional) expected date (e.g. to confirm the forward-only default was applied)<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And validate M_CostRevaluation:
@@ -241,6 +244,8 @@ public class M_CostRevaluation_StepDef
 					.ifPresent(expected -> assertThat(header.getDocStatus()).as("DocStatus").isEqualTo(expected));
 			row.getAsOptionalString(I_M_CostRevaluation.COLUMNNAME_Processed)
 					.ifPresent(expected -> assertThat(header.isProcessed()).as("Processed").isEqualTo(StringUtils.toBoolean(expected)));
+			row.getAsOptionalLocalDate(I_M_CostRevaluation.COLUMNNAME_EvaluationStartDate)
+					.ifPresent(expected -> assertThat(header.getEvaluationStartDate().toLocalDateTime().toLocalDate()).as("EvaluationStartDate").isEqualTo(expected));
 		});
 	}
 
