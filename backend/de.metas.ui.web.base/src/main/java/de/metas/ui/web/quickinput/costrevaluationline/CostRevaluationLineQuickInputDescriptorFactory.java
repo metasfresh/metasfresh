@@ -40,6 +40,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.util.DisplayType;
@@ -49,6 +50,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
+@RequiredArgsConstructor
 public class CostRevaluationLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -56,12 +58,7 @@ public class CostRevaluationLineQuickInputDescriptorFactory implements IQuickInp
 	private static final ReferenceId M_PRODUCT_STOCKED_AD_REFERENCE_ID = ReferenceId.ofRepoId(171);
 	private static final AdMessageKey MSG_ZERO_STOCK_COST_PROVISIONAL = AdMessageKey.of("M_CostRevaluationLine_ZeroStockCostProvisional");
 
-	private final LookupDescriptorProviders lookupDescriptorProviders;
-
-	public CostRevaluationLineQuickInputDescriptorFactory(@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
-	{
-		this.lookupDescriptorProviders = lookupDescriptorProviders;
-	}
+	@NonNull private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()

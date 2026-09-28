@@ -194,11 +194,14 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | AveragePO        | 15.0000 CHF      | 100 PCE    | 1500 CHF     |
-    # ── Retrospective proof: the already-posted 2024-03-05 valuation is REWRITTEN to the new price (15.0000/1500.00),
-    #    unlike TC4's forward-only case where that same date stayed at 10.0000/1000.00. ──
+    # ── The earlier EvaluationStartDate survives the forward-only default and restates the CURRENT cost
+    #    (15.0000 / CumulatedAmt 1500, asserted by the "validate current costs" step above). Already-posted
+    #    accounting is NOT backdated: the correction posts forward-dated at DateAcct 2024-03-06, and the
+    #    inventory valuation report is Fact_Acct as-of-date (DateAcct <= p_DateAcct), so the already-posted
+    #    2024-03-05 valuation stays UNCHANGED at 10.0000/1000.00 (the same row TC4 asserts) — correct accounting. ──
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
-      | 2024-03-05 | product      | warehouse      | 100 | 15.0000        | 1500.00          |
+      | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
       | 2024-03-07 | product      | warehouse      | 100 | 15.0000        | 1500.00          |
 
     # ── Net delta 100 PCE * (15 - 10) = 500 CHF booked P_Asset DR / P_CostAdjustment CR — same net posting as the forward-only case ──
