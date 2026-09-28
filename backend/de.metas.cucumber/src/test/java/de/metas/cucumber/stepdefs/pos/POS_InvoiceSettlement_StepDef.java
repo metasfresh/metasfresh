@@ -26,6 +26,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -82,6 +83,46 @@ public class POS_InvoiceSettlement_StepDef
 			@NonNull final DataTable dataTable)
 	{
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
+		assertFindOpenInvoicesReturns(posTerminalId, documentNo, dataTable);
+	}
+
+	/**
+	 * Same as {@link #findOpenInvoicesReturns} but searches by the ACTUAL (sequence-assigned) document number of a
+	 * previously-created invoice, resolved from its identifier — so a scenario need not hard-code a document number.
+	 * Preferred whenever a scenario leaves its invoice OPEN: a hard-coded literal collides with the same invoice left
+	 * behind by an earlier run on a non-reset DB (the search then returns more than one), whereas each run's
+	 * sequence-assigned document number is unique. Use the literal form above only when the scenario deliberately
+	 * relies on several invoices SHARING one document number (e.g. proving the ineligible ones are filtered out).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns identical to {@link #findOpenInvoicesReturns}
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, C_Invoice_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then find open invoices at POS terminal till by the document number of invoice2 returns:
+	 *   | C_Invoice_ID | C_BPartner_ID | GrandTotal | OpenAmt |
+	 *   | invoice2     | customer      | 119.00     | 119.00  |
+	 * </pre>
+	 */
+	@And("^find open invoices at POS terminal (\\S+) by the document number of (\\S+) returns:$")
+	public void findOpenInvoicesByInvoiceReturns(
+			@NonNull final String terminalIdentifier,
+			@NonNull final String invoiceIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
+		final I_C_Invoice invoice = invoiceTable.get(StepDefDataIdentifier.ofString(invoiceIdentifier));
+		// refresh so the sequence-assigned DocumentNo (set during completion, possibly on a different PO instance)
+		// is read from the DB rather than a stale cached value
+		InterfaceWrapperHelper.refresh(invoice);
+		assertFindOpenInvoicesReturns(posTerminalId, invoice.getDocumentNo(), dataTable);
+	}
+
+	private void assertFindOpenInvoicesReturns(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final String documentNo,
+			@NonNull final DataTable dataTable)
+	{
 		final List<POSOpenInvoice> actual = posService.findOpenInvoices(posTerminalId, documentNo);
 
 		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).toList();

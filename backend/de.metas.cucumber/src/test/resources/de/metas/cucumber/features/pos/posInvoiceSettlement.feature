@@ -124,15 +124,17 @@ Feature: POS Invoice Settlement
   @allure.label.feature:F18030_POS_Checkout
   @Id:S28210_TC25
   Scenario: A cash-tendered amount below the open amount is rejected, leaving no payment behind
+    # No hard-coded DocumentNo: completion assigns a unique sequence number, so the open invoice this scenario
+    # leaves behind (the tender is rejected) never collides with an earlier run's leftover on a non-reset DB.
     Given metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID   | DocumentNo   | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
-      | invoice2   | invoiceCustomer | INV-POS-TC25 | 2026-09-24   | Spot                     | true    | EUR           |
+      | Identifier | C_BPartner_ID   | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
+      | invoice2   | invoiceCustomer | 2026-09-24   | Spot                     | true    | EUR           |
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | invoiceL2  | invoice2     | product      | 1 PCE       |
     And the invoice identified by invoice2 is completed
 
-    Then find open invoices at POS terminal till by document number 'INV-POS-TC25' returns:
+    Then find open invoices at POS terminal till by the document number of invoice2 returns:
       | C_Invoice_ID | C_BPartner_ID   | GrandTotal | OpenAmt |
       | invoice2     | invoiceCustomer | 119.00     | 119.00  |
 
