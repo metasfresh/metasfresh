@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.bpartner;
 
 import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.order.InvoiceRule;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -53,14 +54,14 @@ public class JsonCreateBPartnerRequest
 	@Nullable String vatTaxId;
 
 	/**
-	 * Sets {@code C_BPartner.InvoiceRule} (e.g. {@code "I"} for Immediate). {@code null} (the default) leaves the
-	 * column unset, so the effective rule ({@code BPartnerEffectiveBL}) falls through to the BP-group's own
-	 * InvoiceRule and, since the "Standard" BP group carries none either, to the system default — After Delivery.
-	 * A flow that invoices this bpartner via the ordinary invoice-candidate pipeline WITHOUT ever creating a
-	 * shipment (e.g. settling an already-issued invoice at the till) needs {@code "I"} here, since After Delivery
-	 * leaves {@code C_Invoice_Candidate.QtyToInvoice=0} until something is delivered.
+	 * Sets {@code C_BPartner.InvoiceRule} (e.g. {@link InvoiceRule#Immediate}, JSON code {@code "I"}). {@code null}
+	 * (the default) leaves the column unset, so the effective rule ({@code BPartnerEffectiveBL}) falls through to
+	 * the BP-group's own InvoiceRule and, since the "Standard" BP group carries none either, to the system default
+	 * — After Delivery. A flow that invoices this bpartner via the ordinary invoice-candidate pipeline WITHOUT ever
+	 * creating a shipment (e.g. settling an already-issued invoice at the till) needs {@link InvoiceRule#Immediate}
+	 * here, since After Delivery leaves {@code C_Invoice_Candidate.QtyToInvoice=0} until something is delivered.
 	 */
-	@Nullable String invoiceRule;
+	@Nullable InvoiceRule invoiceRule;
 
 	/**
 	 * Contacts (AD_User records) to create for this business partner.

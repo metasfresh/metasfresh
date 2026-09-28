@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata;
 
+import de.metas.banking.api.BankRepository;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.ddorder.DDOrderService;
@@ -60,4 +61,5 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final POSTerminalRepository posTerminalRepository;
 	@NonNull public final PriceListVersionRepository priceListVersionRepository;
 	@NonNull public final ChargeRepository chargeRepository;
+	@NonNull public final BankRepository bankRepository;
 }

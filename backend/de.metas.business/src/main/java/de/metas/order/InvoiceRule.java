@@ -22,9 +22,10 @@
 
 package de.metas.order;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.X_C_Order;
@@ -32,7 +33,6 @@ import org.compiere.model.X_C_Order;
 import javax.annotation.Nullable;
 
 @RequiredArgsConstructor
-@Getter
 public enum InvoiceRule implements ReferenceListAwareEnum
 {
 	AfterDelivery(X_C_Order.INVOICERULE_AfterDelivery),
@@ -48,9 +48,15 @@ public enum InvoiceRule implements ReferenceListAwareEnum
 
 	@NonNull private final String code;
 
+	@Override
+	@JsonValue
+	@NonNull
+	public String getCode() {return code;}
+
 	@Nullable
 	public static InvoiceRule ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
+	@JsonCreator
 	@NonNull
 	public static InvoiceRule ofCode(@NonNull final String code) {return index.ofCode(code);}
 

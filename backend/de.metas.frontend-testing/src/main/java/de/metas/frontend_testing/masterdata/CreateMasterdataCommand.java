@@ -381,6 +381,7 @@ public class CreateMasterdataCommand
 				.mobileApplicationInfoRepository(services.mobileApplicationInfoRepository)
 				.posTerminalRepository(services.posTerminalRepository)
 				.chargeRepository(services.chargeRepository)
+				.bankRepository(services.bankRepository)
 				.context(context)
 				.previousSysconfigsCollector(previousSysconfigs)
 				.request(request)

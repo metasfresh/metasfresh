@@ -41,7 +41,11 @@ const InvoiceSettlementModal = () => {
 
   const closeModal = () => dispatch(closeModalAction({ ifModal: MODAL_InvoiceSettlement }));
   const onCancel = () => {
-    if (isSubmitting) return;
+    if (isSubmitting || stage === STAGE_SUCCESS) return;
+    if (stage === STAGE_PAYMENT) {
+      setStage(STAGE_RESULTS); // mirror CashPaymentDetailsModal's own visible Cancel button: step back, don't close
+      return;
+    }
     closeModal();
   };
   useEscapeKey(onCancel);
@@ -104,11 +108,9 @@ const InvoiceSettlementModal = () => {
         onCancel={() => setStage(STAGE_RESULTS)}
       />
     );
-  }
-
-  //
-  // Step 4: success message, closes the whole modal.
-  if (stage === STAGE_SUCCESS && result) {
+  } else if (stage === STAGE_SUCCESS && result) {
+    //
+    // Step 4: success message, closes the whole modal.
     return (
       <div className="modal is-active pos-invoice-settlement-modal" data-testid="pos-invoice-settlement-modal">
         <div className="modal-background"></div>
@@ -132,11 +134,9 @@ const InvoiceSettlementModal = () => {
         </div>
       </div>
     );
-  }
-
-  //
-  // Step 2: the search result list.
-  if (stage === STAGE_RESULTS) {
+  } else if (stage === STAGE_RESULTS) {
+    //
+    // Step 2: the search result list.
     return (
       <div className="modal is-active pos-invoice-settlement-modal" data-testid="pos-invoice-settlement-modal">
         <div className="modal-background"></div>
@@ -188,45 +188,45 @@ const InvoiceSettlementModal = () => {
         </div>
       </div>
     );
-  }
-
-  //
-  // Step 1 (default): the document-number keypad.
-  return (
-    <div className="modal is-active pos-invoice-settlement-modal" data-testid="pos-invoice-settlement-modal">
-      <div className="modal-background"></div>
-      <div className="modal-card">
-        <header className="modal-card-head">
-          <p className="modal-card-title">{_('title')}</p>
-          <button className="delete" aria-label="close" disabled={isSubmitting} onClick={onCancel}></button>
-        </header>
-        <section className="modal-card-body">
-          <div className="caption">{_('documentNo')}</div>
-          <div className="document-no-value" data-testid="pos-invoice-settlement-documentNo">
-            {documentNo}
-          </div>
-          <div className="numpad-container">
-            <NumericKeyboard onKey={onNumKeyPressed} />
-          </div>
-        </section>
-        <footer className="modal-card-foot">
-          <div className="buttons">
-            <button
-              className="button is-large"
-              data-testid="pos-invoice-settlement-search-button"
-              disabled={!documentNo || isSubmitting}
-              onClick={onSearch}
-            >
-              {_('actions.search')}
-            </button>
-            <button className="button is-large" disabled={isSubmitting} onClick={onCancel}>
-              {_('actions.cancel')}
-            </button>
-          </div>
-        </footer>
+  } else {
+    //
+    // Step 1 (default): the document-number keypad.
+    return (
+      <div className="modal is-active pos-invoice-settlement-modal" data-testid="pos-invoice-settlement-modal">
+        <div className="modal-background"></div>
+        <div className="modal-card">
+          <header className="modal-card-head">
+            <p className="modal-card-title">{_('title')}</p>
+            <button className="delete" aria-label="close" disabled={isSubmitting} onClick={onCancel}></button>
+          </header>
+          <section className="modal-card-body">
+            <div className="caption">{_('documentNo')}</div>
+            <div className="document-no-value" data-testid="pos-invoice-settlement-documentNo">
+              {documentNo}
+            </div>
+            <div className="numpad-container">
+              <NumericKeyboard onKey={onNumKeyPressed} />
+            </div>
+          </section>
+          <footer className="modal-card-foot">
+            <div className="buttons">
+              <button
+                className="button is-large"
+                data-testid="pos-invoice-settlement-search-button"
+                disabled={!documentNo || isSubmitting}
+                onClick={onSearch}
+              >
+                {_('actions.search')}
+              </button>
+              <button className="button is-large" disabled={isSubmitting} onClick={onCancel}>
+                {_('actions.cancel')}
+              </button>
+            </div>
+          </footer>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 };
 
 export default InvoiceSettlementModal;

@@ -55,15 +55,22 @@ public class InvoiceCreateCommand
 	 * ENQUEUE's writes (the {@code C_Queue_WorkPackage} row) once they're committed. Wrapping steps 1-3 in one
 	 * ambient transaction (as this used to) holds that row uncommitted for as long as step 3 polls — the
 	 * background processor can never see it, so the poll always times out, deterministically, every time.
-	 * {@link #enqueueForInvoicing} therefore runs in its own fresh, immediately-committing transaction, and
-	 * {@link #pollForInvoice} runs outside any wrapper, same as {@link #pollForInvoiceCandidates}'s callers
-	 * elsewhere in this module poll outside a write transaction.
+	 * {@link #enqueueForInvoicing} therefore runs in its own fresh, immediately-committing transaction wrapping
+	 * ONLY the write (the poll for candidates, a plain read, runs outside it, same as {@link #pollForInvoice}
+	 * runs outside any wrapper).
 	 */
 	public JsonInvoiceCreateResponse execute()
 	{
 		final OrderId orderId = resolveOrderId();
 
-		trxManager.runInNewTrx(() -> enqueueForInvoicing(orderId));
+		// 1. Poll for invoice candidates (plain read - no isolation needed, so no trx held open across the sleeps)
+		final List<I_C_Invoice_Candidate> invoiceCandidates = pollForInvoiceCandidates(orderId);
+		if (invoiceCandidates.isEmpty())
+		{
+			throw new AdempiereException("No invoice candidates found for order " + orderId);
+		}
+
+		trxManager.runInNewTrx(() -> enqueueForInvoicing(invoiceCandidates));
 
 		// 3. Poll for the generated invoice
 		final I_C_Invoice invoice = pollForInvoice(orderId);
@@ -80,15 +87,13 @@ public class InvoiceCreateCommand
 				.build();
 	}
 
-	private void enqueueForInvoicing(final OrderId orderId)
+	/**
+	 * The actual write (step 2): enqueue the already-polled candidates for invoicing. Runs inside
+	 * {@link #execute()}'s fresh {@code runInNewTrx} so it commits promptly, without holding a connection
+	 * open across {@link #pollForInvoiceCandidates}'s sleeps (which now run before this is called).
+	 */
+	private void enqueueForInvoicing(final List<I_C_Invoice_Candidate> invoiceCandidates)
 	{
-		// 1. Poll for invoice candidates
-		final List<I_C_Invoice_Candidate> invoiceCandidates = pollForInvoiceCandidates(orderId);
-		if (invoiceCandidates.isEmpty())
-		{
-			throw new AdempiereException("No invoice candidates found for order " + orderId);
-		}
-
 		// 2. Enqueue candidates for invoicing (with default invoicing params)
 		final ImmutableSet<InvoiceCandidateId> candidateIds = invoiceCandidates.stream()
 				.map(ic -> InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()))

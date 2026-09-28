@@ -274,9 +274,10 @@ class AssertPOSExpectationsCommand
 			{
 				assertThat(invoice.isPaid()).as("IsPaid of invoice C_Invoice_ID=" + invoiceId).isEqualTo(expected.getIsPaid());
 			}
+			List<I_C_Payment> allocatedPayments = null;
 			if (expected.getHasAllocatedPayment() != null)
 			{
-				final List<I_C_Payment> allocatedPayments = services.getAllocatedPayments(invoice);
+				allocatedPayments = services.getAllocatedPayments(invoice);
 				assertThat(!allocatedPayments.isEmpty())
 						.as("invoice C_Invoice_ID=" + invoiceId + " has an allocated payment")
 						.isEqualTo(expected.getHasAllocatedPayment());
@@ -284,7 +285,9 @@ class AssertPOSExpectationsCommand
 
 			if (expected.getAllocatedPayments() != null)
 			{
-				assertAllocatedPayments(invoiceId, expected.getAllocatedPayments());
+				// reuse the already-loaded list when the hasAllocatedPayment check above already loaded it
+				final List<I_C_Payment> actualPayments = allocatedPayments != null ? allocatedPayments : services.getAllocatedPayments(invoice);
+				assertAllocatedPayments(invoiceId, actualPayments, expected.getAllocatedPayments());
 			}
 		});
 	}
@@ -296,11 +299,9 @@ class AssertPOSExpectationsCommand
 	 */
 	private void assertAllocatedPayments(
 			@NonNull final InvoiceId invoiceId,
+			@NonNull final List<I_C_Payment> actualPayments,
 			@NonNull final List<JsonPOSExpectation.JsonPOSAllocatedPaymentExpectation> expectedPayments)
 	{
-		final I_C_Invoice invoice = services.getInvoiceById(invoiceId);
-		final List<I_C_Payment> actualPayments = services.getAllocatedPayments(invoice);
-
 		softlyPutContext("allocatedPaymentExpectations", expectedPayments);
 		softlyPutContext("actualAllocatedPayments", actualPayments);
 

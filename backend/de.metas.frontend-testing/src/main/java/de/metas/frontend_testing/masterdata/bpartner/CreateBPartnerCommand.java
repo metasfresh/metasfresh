@@ -19,6 +19,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
+import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.pricing.PricingSystemId;
@@ -141,7 +142,7 @@ public class CreateBPartnerCommand
 		}
 		if (request.getInvoiceRule() != null)
 		{
-			bpartner.setInvoiceRule(request.getInvoiceRule());
+			bpartner.setInvoiceRule(InvoiceRule.toCodeOrNull(request.getInvoiceRule()));
 		}
 
 		// Set pricing system based on vendor/customer flags

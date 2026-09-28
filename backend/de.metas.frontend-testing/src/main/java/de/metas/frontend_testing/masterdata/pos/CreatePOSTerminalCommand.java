@@ -1,7 +1,11 @@
 package de.metas.frontend_testing.masterdata.pos;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.banking.Bank;
 import de.metas.banking.BankAccountId;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.BankId;
+import de.metas.banking.api.BankRepository;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -61,7 +65,6 @@ import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Bank;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -103,6 +106,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final POSTerminalRepository posTerminalRepository;
 	@NonNull private final PriceListVersionRepository priceListVersionRepository;
 	@NonNull private final ChargeRepository chargeRepository;
+	@NonNull private final BankRepository bankRepository;
 
 	@NonNull private final MasterdataContext context;
 	/**
@@ -247,12 +251,12 @@ public class CreatePOSTerminalCommand
 		// TenderType=Cash on any payment booked against it; without a linked C_Bank flagged IsCashBank,
 		// TenderType silently defaults to DirectDeposit regardless of what the caller requests (same gap,
 		// same fix, as C_BP_BankAccount_StepDef's cucumber sibling).
-		final I_C_Bank cashBank = InterfaceWrapperHelper.newInstance(I_C_Bank.class);
-		cashBank.setName("Cash");
-		cashBank.setRoutingNo("000000"); // mandatory column; a cash "bank" has no real routing number
-		cashBank.setIsCashBank(true);
-		InterfaceWrapperHelper.saveRecord(cashBank);
-		bankAccount.setC_Bank_ID(cashBank.getC_Bank_ID());
+		final Bank cashBank = bankRepository.createBank(BankCreateRequest.builder()
+				.bankName("Cash")
+				.routingNo("000000") // mandatory column; a cash "bank" has no real routing number
+				.cashBank(true)
+				.build());
+		bankAccount.setC_Bank_ID(BankId.toRepoId(cashBank.getBankId()));
 
 		bpBankAccountDAO.save(bankAccount);
 		return BankAccountId.ofRepoId(bankAccount.getC_BP_BankAccount_ID());
