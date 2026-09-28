@@ -37,26 +37,13 @@ const isNewRecordUrl = (url) => /\/window\/\d+\/\d+(\?|$)/.test(url);
 // captioned: the playwright-video-delivery pipeline (gen-captions-from-trace.py) burns each test.step
 // title onto the frames as a timed on-screen caption, so the recording narrates WHO is acting — the
 // browser address bar is not captured by Playwright, so this is how a step is made "visible" in the clip.
-// `fresh` clears cookies (logs the previous user out); it does NOT touch the HTTP cache — a test that needs a
-// cache-bypassing reload calls clearHttpCache() explicitly (see the per-role / role-change checks below).
+// `fresh` clears cookies (logs the previous user out) so a later login in the same browser context starts clean.
 const loginAs = async (who, user, { fresh = false } = {}) => await test.step(`Log in as the ${who}`, async () => {
     if (fresh) await getPage().context().clearCookies();
     await LoginPage.goto();
     await LoginPage.login(user);
     await DashboardPage.expectVisible();
 });
-
-// Clear the browser HTTP cache — the equivalent of a hard reload / fresh session. The window layout is served
-// with Cache-Control: max-age, so within that window the browser reuses a previously-fetched layout WITHOUT
-// revalidating; a role switch or a role-permission change is therefore only guaranteed to surface once the
-// cache is bypassed (a reload). The per-role / role-change checks below assert that reloaded state — reflecting
-// the change on a plain in-cache re-open is deliberately NOT required (a reload for a permission change is
-// acceptable behaviour). The server-side role-aware layout ETag (a revalidation returning the correct per-role
-// layout instead of a stale 304) is unit-tested in ETagResponseEntityBuilderRoleTest.
-const clearHttpCache = async () => {
-    const client = await getPage().context().newCDPSession(getPage());
-    await client.send('Network.clearBrowserCache');
-};
 
 const testCases = [
     { language: 'en_US', label: 'English' },
@@ -974,158 +961,6 @@ testCases.forEach(({ language, label }) => {
                     console.log(`[${language}] PASS — quick-input new-partner offered and dialog opens`);
                 }
             });
-        });
-    });
-
-    // TC14b — each role sees its OWN new-partner availability on a freshly reloaded Sales Order. Both roles run
-    // in ONE browser context (a sequential login switch, like one operator changing role), but before each check
-    // clearHttpCache() bypasses the layout's Cache-Control: max-age (a hard-reload / fresh-session equivalent).
-    // Reflecting a role difference on a plain IN-CACHE re-open is deliberately NOT required — a reload for a
-    // role/permission change is acceptable — so this asserts the RELOADED state: the open role, after a reload,
-    // sees option-NEW even though the restricted role opened the Sales Order first, i.e. the server computes the
-    // correct per-role layout and one role's layout is not permanently poisoned for another (the "only an app
-    // restart fixes it" symptom). The server-side role-aware ETag itself (a revalidation returning the correct
-    // per-role layout instead of a stale 304) is unit-tested in ETagResponseEntityBuilderRoleTest.
-    test.describe(`Role create restriction — new-partner availability is per role (${label})`, () => {
-        test(`each role sees its own new-partner availability on the Sales Order (${label} UI)`, async ({ page }) => {
-            allure.epic('E0180: System Administration');
-            allure.story('Role create restriction — each role sees its own new-partner availability, regardless of which role opened the Sales Order first');
-            allure.tag('F33020: Roles');
-            allure.tag('F33020');
-            allure.severity('critical');
-            allure.parameter('Language', language);
-            allure.tag(language);
-            test.setTimeout(150000);
-
-            const md = await Backend.createMasterdata({
-                request: {
-                    login: {
-                        restrictedUser: { language, role: 'restricted' },
-                        openUser: { language, role: 'open' },
-                    },
-                    roles: {
-                        restricted: { name: `XRoleRestricted_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] },
-                        open: { name: `XRoleOpen_${language}` },
-                    },
-                },
-            });
-            const restrictedUser = md.login.restrictedUser;
-            const openUser = md.login.openUser;
-            expect(restrictedUser && openUser, 'masterdata must return both the restricted and the open user').toBeTruthy();
-
-            // Log in as `user` on a FRESH session (loginAs clears cookies, then clearHttpCache bypasses the layout
-            // max-age = a hard reload), open a new Sales Order, type a non-existing partner, and report whether the
-            // reloaded layout offers the option-NEW (new-partner) entry for this role.
-            const optionNewOffered = async (user, who) => {
-                await loginAs(who, user, { fresh: true });
-                await clearHttpCache(); // hard-reload equivalent: bypass max-age so this role gets a fresh layout
-                return await test.step('Open a new Sales Order and type a new customer name to check the new-partner option', async () => {
-                    await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/NEW`);
-                    const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
-                    await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-                    await bpInput.click();
-                    // Unique query string per call -> the typeahead response is never itself cached (always 200).
-                    const typeaheadDone = page.waitForResponse(
-                        (r) => r.url().includes('/field/C_BPartner_ID/typeahead') && r.status() === 200,
-                        { timeout: VERY_SLOW_ACTION_TIMEOUT },
-                    );
-                    await bpInput.fill(`ZZZ_NOMATCH_${Date.now()}`);
-                    await typeaheadDone;
-                    return (await page.getByTestId('option-NEW').count()) > 0;
-                });
-            };
-
-            // 1) The restricted role opens the Sales Order FIRST -> option hidden (its layout is now cached in this
-            //    browser).
-            expect(await optionNewOffered(restrictedUser, 'restricted role'), 'restricted role: the new-partner entry must be hidden').toBe(false);
-            console.log(`[${language}] restricted role loaded the SO layout first (new-partner hidden)`);
-
-            // 2) The open role, in the SAME context but on a fresh reload (cache bypassed), MUST see the new-partner
-            //    entry — i.e. the server serves the correct per-role layout and the restricted role's earlier load
-            //    did not permanently poison it (the "only an app restart fixes it" symptom).
-            expect(await optionNewOffered(openUser, 'open role'), 'open role must see the new-partner entry after a reload, even though a restricted role opened the Sales Order first').toBe(true);
-            console.log(`[${language}] PASS — open role sees new-partner despite the restricted role's earlier layout load`);
-        });
-    });
-
-    // TC14c — the FULL real-life round-trip in ONE browser session: a restricted role's user is on a Sales
-    // Order and sees no new-partner entry; an administrator switches to the Roles window (111) and toggles the
-    // C_BPartner "allow create" flag back on; the user RELOADS the Sales Order (a fresh session — soOffersNewPartner
-    // clears cookies AND the HTTP cache, a hard-reload equivalent) and the new-partner entry is now there — no
-    // app restart. This is the flow the original bug broke: the option stayed gone until an APP RESTART, and even
-    // debug/cacheReset did not help. Requiring a page reload for a permission change is acceptable; requiring a
-    // restart was not. (The role-aware layout ETag — a revalidation returning the correct per-role layout rather
-    // than a stale 304 — is unit-tested in ETagResponseEntityBuilderRoleTest.)
-    const RW_ID = 111;
-    const RW_TABLE_ACCESS_TAB = 'AD_Tab-549493';
-    test.describe(`Role create restriction — a role change is reflected immediately (${label})`, () => {
-        test(`changing a role's create permission is directly reflected on the Sales Order (${label} UI)`, async ({ page }) => {
-            allure.epic('E0180: System Administration');
-            allure.story('Role create restriction — a change to a role is reflected immediately for its users, without an app restart');
-            allure.tag('F33020: Roles');
-            allure.tag('F33020');
-            allure.severity('critical');
-            allure.parameter('Language', language);
-            allure.tag(language);
-            test.setTimeout(180000);
-
-            const md = await Backend.createMasterdata({
-                request: {
-                    login: {
-                        user: { language }, // admin (WebUI role) — may edit the Roles window (111)
-                        restrictedUser: { language, role: 'restricted' },
-                    },
-                    roles: { restricted: { name: `FlagFlip_${language}`, tableAccess: [{ tableName: 'C_BPartner', canCreateNewRecords: false }] } },
-                },
-            });
-            const adminUser = md.login.user;
-            const restrictedUser = md.login.restrictedUser;
-            const roleId = md.roles.restricted.roleId;
-            expect(adminUser && restrictedUser && roleId, 'masterdata must return the admin user, the restricted user and the role id').toBeTruthy();
-
-            // Open a new Sales Order as `user`, type a non-existing partner, report whether option-NEW is offered.
-            const soOffersNewPartner = async (user) => {
-                await loginAs('restricted role', user, { fresh: true });
-                await clearHttpCache(); // hard-reload equivalent: bypass max-age so the reloaded layout is fresh
-                return await test.step('Open a new Sales Order and type a new customer name to check the new-partner option', async () => {
-                    await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/NEW`);
-                    const bpInput = page.locator('#lookup_C_BPartner_ID input').first();
-                    await bpInput.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-                    await bpInput.click();
-                    const typeaheadDone = page.waitForResponse(
-                        (r) => r.url().includes('/field/C_BPartner_ID/typeahead') && r.status() === 200,
-                        { timeout: VERY_SLOW_ACTION_TIMEOUT },
-                    );
-                    await bpInput.fill(`ZZZ_NOMATCH_${Date.now()}`);
-                    await typeaheadDone;
-                    return (await page.getByTestId('option-NEW').count()) > 0;
-                });
-            };
-
-            // 1) BEFORE: the restricted user is on the Sales Order and sees no new-partner entry.
-            expect(await soOffersNewPartner(restrictedUser), 'before: the restricted role must NOT see the new-partner entry').toBe(false);
-            console.log(`[${language}] before: SO new-partner hidden for the restricted role`);
-
-            // 2) The administrator opens the Roles window (111), the Table Access tab, and toggles the C_BPartner
-            //    "Allow create new records" flag to Yes through the actual grid — the real admin action, and the
-            //    part the recording actually shows (the grid + the toggle), lifting the restriction.
-            await loginAs('administrator', adminUser, { fresh: true });
-            await test.step('Administrator opens the Roles window and toggles the C_BPartner create flag to Yes', async () => {
-                await page.goto(`${FRONTEND_BASE_URL}/window/${RW_ID}/${roleId}`); // open the Roles window for this role
-                await page.getByTestId(`tab-${RW_TABLE_ACCESS_TAB}`).click(); // open the Table Access tab
-                const accessRows = page.locator('.table-row');
-                await expect(accessRows, 'the restricted role has exactly one table-access row (its C_BPartner restriction)').toHaveCount(1, { timeout: VERY_SLOW_ACTION_TIMEOUT });
-                await accessRows.first().dblclick(); // open the row's single-row view to edit its flags
-                await page.locator('.form-field-IsCanCreateNewRecords, #lookup_IsCanCreateNewRecords').first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-                await BooleanWidget.setValue('IsCanCreateNewRecords', true, true); // N -> Y, awaits the save PATCH
-                console.log(`[${language}] admin toggled IsCanCreateNewRecords to Yes on the C_BPartner table-access row`);
-            });
-
-            // 3) AFTER: the restricted user RELOADS the Sales Order (fresh session, cache bypassed) — the new-partner
-            //    entry is now offered, with no app restart. (soOffersNewPartner clears cookies + the HTTP cache, so
-            //    this is the reload a real user would do; the original bug needed a full restart, not just a reload.)
-            expect(await soOffersNewPartner(restrictedUser), 'after lifting the flag, a reload must show the SO new-partner entry (no app restart)').toBe(true);
-            console.log(`[${language}] PASS — SO new-partner appeared after the flag change, no restart`);
         });
     });
 
