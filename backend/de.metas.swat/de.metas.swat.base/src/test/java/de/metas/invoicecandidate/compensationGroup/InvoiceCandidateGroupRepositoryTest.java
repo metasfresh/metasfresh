@@ -183,4 +183,126 @@ class InvoiceCandidateGroupRepositoryTest
 		assertThat(discountLine.getLineNetAmt()).isEqualByComparingTo("-30.00");
 		assertThat(discountLine.getPrice()).isEqualByComparingTo("-30.00");
 	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Regression: createPartialGroupFromCompensationLine (the manual-percentage-edit path,
+	// C_Invoice_Candidate.onGroupCompensationPercentageChanged) must recompute a BASED discount
+	// invoice candidate against its stored base amount, not zero. Before the fix, the synthetic
+	// aggregated regular line had an empty productCategoryIds while the compensation line now
+	// carries a non-null baseProductCategoryId, so Group#getRegularLinesNetAmt(base) filtered it
+	// out entirely.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void createPartialGroupFromCompensationLine_basedLine_recomputesAgainstStoredBase()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		saveRecord(category);
+		final ProductCategoryId categoryId = ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
+
+		final I_M_Product discountProduct = newInstance(I_M_Product.class);
+		discountProduct.setC_UOM_ID(uomId.getRepoId());
+		saveRecord(discountProduct);
+
+		final I_C_CompensationGroup_Schema schema = newInstance(I_C_CompensationGroup_Schema.class);
+		saveRecord(schema);
+
+		final I_C_CompensationGroup_SchemaLine schemaLine = newInstance(I_C_CompensationGroup_SchemaLine.class);
+		schemaLine.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		schemaLine.setM_Product_Category_ID(categoryId.getRepoId());
+		schemaLine.setM_Product_ID(discountProduct.getM_Product_ID());
+		saveRecord(schemaLine);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		groupHeader.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		// the "commercial" order line behind the discount IC, linked to the schema line
+		final I_C_OrderLine compensationOrderLine = newInstance(I_C_OrderLine.class);
+		compensationOrderLine.setC_Order_ID(order.getC_Order_ID());
+		compensationOrderLine.setM_Product_ID(discountProduct.getM_Product_ID());
+		compensationOrderLine.setC_UOM_ID(uomId.getRepoId());
+		compensationOrderLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationOrderLine.setIsGroupCompensationLine(true);
+		compensationOrderLine.setC_CompensationGroup_SchemaLine_ID(schemaLine.getC_CompensationGroup_SchemaLine_ID());
+		saveRecord(compensationOrderLine);
+
+		// discount IC carrying a previously-computed base of 1000
+		final I_C_Invoice_Candidate discountIc = newInstance(I_C_Invoice_Candidate.class);
+		discountIc.setC_Order_ID(order.getC_Order_ID());
+		discountIc.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		discountIc.setC_OrderLine_ID(compensationOrderLine.getC_OrderLine_ID());
+		discountIc.setM_Product_ID(discountProduct.getM_Product_ID());
+		discountIc.setIsGroupCompensationLine(true);
+		discountIc.setC_UOM_ID(uomId.getRepoId());
+		discountIc.setPrice_UOM_ID(uomId.getRepoId());
+		discountIc.setQtyToInvoice(BigDecimal.ONE);
+		discountIc.setPriceEntered(new BigDecimal("-100"));
+		discountIc.setLineNetAmt(new BigDecimal("-100"));
+		discountIc.setGroupCompensationType(X_C_Invoice_Candidate.GROUPCOMPENSATIONTYPE_Discount);
+		discountIc.setGroupCompensationAmtType(X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_Percent);
+		discountIc.setGroupCompensationPercentage(BigDecimal.TEN);
+		discountIc.setGroupCompensationBaseAmt(new BigDecimal("1000"));
+		saveRecord(discountIc);
+
+		// exercise the manual-edit path directly
+		final Group group = repo.createPartialGroupFromCompensationLine(discountIc);
+		group.updateAllCompensationLines();
+
+		final GroupCompensationLine recomputedLine = group.getCompensationLines().get(0);
+		assertThat(recomputedLine.getBaseProductCategoryId()).isEqualTo(categoryId);
+		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("1000");
+		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-100.00");
+		assertThat(recomputedLine.getLineNetAmt()).isEqualByComparingTo("-100.00");
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// The no-base (manual/no-order-line-link) case must keep working exactly as before (AC16):
+	// createPartialGroupFromCompensationLine recomputes against the stored net amount unfiltered.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void createPartialGroupFromCompensationLine_noBase_recomputesAgainstStoredNetAmt()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_M_Product discountProduct = newInstance(I_M_Product.class);
+		discountProduct.setC_UOM_ID(uomId.getRepoId());
+		saveRecord(discountProduct);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+
+		// discount IC, not linked to any order line -> no schema-line link -> base stays null
+		final I_C_Invoice_Candidate discountIc = newInstance(I_C_Invoice_Candidate.class);
+		discountIc.setC_Order_ID(order.getC_Order_ID());
+		discountIc.setC_Order_CompensationGroup_ID(groupHeader.getC_Order_CompensationGroup_ID());
+		discountIc.setM_Product_ID(discountProduct.getM_Product_ID());
+		discountIc.setIsGroupCompensationLine(true);
+		discountIc.setC_UOM_ID(uomId.getRepoId());
+		discountIc.setPrice_UOM_ID(uomId.getRepoId());
+		discountIc.setQtyToInvoice(BigDecimal.ONE);
+		discountIc.setPriceEntered(new BigDecimal("-50"));
+		discountIc.setLineNetAmt(new BigDecimal("-50"));
+		discountIc.setGroupCompensationType(X_C_Invoice_Candidate.GROUPCOMPENSATIONTYPE_Discount);
+		discountIc.setGroupCompensationAmtType(X_C_Invoice_Candidate.GROUPCOMPENSATIONAMTTYPE_Percent);
+		discountIc.setGroupCompensationPercentage(BigDecimal.TEN);
+		discountIc.setGroupCompensationBaseAmt(new BigDecimal("500"));
+		saveRecord(discountIc);
+
+		final Group group = repo.createPartialGroupFromCompensationLine(discountIc);
+		group.updateAllCompensationLines();
+
+		final GroupCompensationLine recomputedLine = group.getCompensationLines().get(0);
+		assertThat(recomputedLine.getBaseProductCategoryId()).isNull();
+		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("500");
+		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-50.00");
+	}
 }

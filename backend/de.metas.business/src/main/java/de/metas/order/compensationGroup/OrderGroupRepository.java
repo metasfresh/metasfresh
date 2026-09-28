@@ -1,5 +1,6 @@
 package de.metas.order.compensationGroup;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -340,7 +341,7 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
-	/** package-private for direct testing of the product-category-not-found fallback branch */
+	@VisibleForTesting
 	static GroupRegularLine toGroupRegularLine(
 			final I_C_OrderLine record,
 			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId)
@@ -771,8 +772,10 @@ public class OrderGroupRepository implements GroupRepository
 		OrderGroupCompensationUtils.assertCompensationLine(compensationLineRecord);
 
 		final GroupCompensationLine compensationLine = toGroupCompensationLine(compensationLineRecord);
+		final ProductCategoryId baseProductCategoryId = compensationLine.getBaseProductCategoryId();
 		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
 				.lineNetAmt(compensationLine.getBaseAmt())
+				.productCategoryIds(baseProductCategoryId != null ? ImmutableSet.of(baseProductCategoryId) : ImmutableSet.of())
 				.build();
 
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(compensationLineRecord.getC_Order_ID()));

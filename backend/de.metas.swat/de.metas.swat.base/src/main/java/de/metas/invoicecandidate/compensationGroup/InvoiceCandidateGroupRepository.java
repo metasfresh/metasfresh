@@ -381,8 +381,10 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		InvoiceCandidateCompensationGroupUtils.assertCompensationLine(invoiceCandidate);
 
 		final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate);
+		final ProductCategoryId baseProductCategoryId = compensationLine.getBaseProductCategoryId();
 		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
 				.lineNetAmt(compensationLine.getBaseAmt())
+				.productCategoryIds(baseProductCategoryId != null ? ImmutableSet.of(baseProductCategoryId) : ImmutableSet.of())
 				.build();
 
 		final I_C_Order order = invoiceCandidate.getC_Order();
@@ -395,6 +397,8 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.groupId(extractGroupId(invoiceCandidate))
 				.pricePrecision(orderBL.getPricePrecision(order))
 				.amountPrecision(orderBL.getAmountPrecision(order))
+				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.regularLine(aggregatedRegularLine)
 				.compensationLine(compensationLine)
 				.build();
