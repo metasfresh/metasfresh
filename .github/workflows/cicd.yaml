@@ -2082,12 +2082,65 @@ jobs:
 
 
   # =============================================================================
+  # Merge Mobile Playwright Allure Results from Sharded Runners
+  # =============================================================================
+  mobile_allure_report:
+    name: mobile allure report
+    runs-on: ${{ vars.RUNNER_LIGHT }}
+    needs: [ init, mobile_test ]
+    if: always() && needs.init.result == 'success'
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download all shard Allure results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: allure-results-mobile-*
+          path: allure-results-mobile-merged
+          merge-multiple: true
+
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -d "allure-results-mobile-merged" ] && [ "$(ls -A allure-results-mobile-merged 2>/dev/null)" ]; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+            echo "Found $(find allure-results-mobile-merged -name '*.json' -type f | wc -l) JSON result files"
+          else
+            echo "has_results=false" >> $GITHUB_OUTPUT
+            echo "No Allure results found - skipping report generation"
+          fi
+
+      - name: Generate Allure Report for Mobile
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/generate-allure-report
+        with:
+          results-dir: allure-results-mobile-merged
+          output-dir: e2e/mobile-webui/allure-report
+          artifact-name: allure-report-mobile-webui
+          history-artifact-name: allure-history-mobile-webui
+          report-title: 'Playwright (Mobile WebUI)'
+      - name: Upload Mobile Allure report to server
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: e2e/mobile-webui/allure-report
+          report-type: allure/mobile-webui
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
+
+
+  # =============================================================================
   # Publish Allure HTML Reports to test-reports.metasfresh.com
   # =============================================================================
   publish-test-reports:
     name: publish test reports
     runs-on: ${{ vars.RUNNER_LIGHT }}
-    needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report, junit, test-frontend ]
+    needs: [ init, cucumber-allure-report, mobile_allure_report, frontend_allure_report, junit, test-frontend ]
     if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
       actions: write       # trigger reports-cleanup workflow when disk space is low
