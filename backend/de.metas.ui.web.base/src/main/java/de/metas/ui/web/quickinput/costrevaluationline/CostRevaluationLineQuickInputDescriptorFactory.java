@@ -24,6 +24,7 @@ package de.metas.ui.web.quickinput.costrevaluationline;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ReferenceId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
@@ -52,6 +53,7 @@ public class CostRevaluationLineQuickInputDescriptorFactory implements IQuickInp
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private static final ReferenceId M_PRODUCT_STOCKED_AD_REFERENCE_ID = ReferenceId.ofRepoId(171);
+	private static final AdMessageKey MSG_ZERO_STOCK_COST_PROVISIONAL = AdMessageKey.of("M_CostRevaluationLine_ZeroStockCostProvisional");
 
 	private final LookupDescriptorProviders lookupDescriptorProviders;
 
@@ -111,6 +113,8 @@ public class CostRevaluationLineQuickInputDescriptorFactory implements IQuickInp
 	{
 		return DocumentFieldDescriptor.builder(ICostRevaluationLineQuickInput.COLUMNNAME_NewCostPrice)
 				.setCaption(msgBL.translatable(ICostRevaluationLineQuickInput.COLUMNNAME_NewCostPrice))
+				// Provisional-price hint (AVCO): a zero-stock cost entry is provisional until the first goods receipt.
+				.setDescription(msgBL.getTranslatableMsgText(MSG_ZERO_STOCK_COST_PROVISIONAL))
 				.setWidgetType(DocumentFieldWidgetType.CostPrice)
 				.setMandatoryLogic(true)
 				.addCharacteristic(DocumentFieldDescriptor.Characteristic.PublicField);

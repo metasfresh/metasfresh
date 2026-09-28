@@ -51,6 +51,7 @@ import org.compiere.model.I_M_CostRevaluation;
 import org.compiere.model.I_M_CostRevaluationLine;
 import org.compiere.util.Env;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -201,6 +202,39 @@ public class M_CostRevaluation_StepDef
 			otherLine.setIsActive(false);
 			InterfaceWrapperHelper.save(otherLine);
 		}
+	}
+
+	/**
+	 * Adds one {@code M_CostRevaluationLine} via the single-product quick-input path
+	 * ({@link CostRevaluationService#createLineForProduct}) — the same call the WebUI quick-input processor makes.
+	 * For a stocked product with no {@code M_Cost} row this seeds the row at quantity 0.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_CostRevaluation_ID</b> — (required, identifier-ref) the header to add the line to<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product to revalue<br>
+	 *   <b>NewCostPrice</b> — (required) the target cost price the operator types<br>
+	 * @cucumber.depends StepDefData: M_CostRevaluation_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And quick-input cost revaluation line:
+	 *   | M_CostRevaluation_ID | M_Product_ID  | NewCostPrice |
+	 *   | revaluation          | productNoCost | 12           |
+	 * </pre>
+	 */
+	@And("quick-input cost revaluation line:")
+	public void quickInputCostRevaluationLine(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_CostRevaluation header = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_CostRevaluation_ID).lookupNotNullIn(costRevaluationTable);
+			final ProductId productId = row.getAsIdentifier(I_M_CostRevaluationLine.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+			final BigDecimal newCostPrice = row.getAsBigDecimal(I_M_CostRevaluationLine.COLUMNNAME_NewCostPrice);
+
+			costRevaluationService.createLineForProduct(
+					CostRevaluationId.ofRepoId(header.getM_CostRevaluation_ID()),
+					productId,
+					newCostPrice);
+		});
 	}
 
 	/**

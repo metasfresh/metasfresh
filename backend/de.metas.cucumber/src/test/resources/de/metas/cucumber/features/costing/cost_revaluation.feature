@@ -245,3 +245,34 @@ Feature: Cost Revaluation / Kosten Neubewertung
 
     # ── No GL impact: Qty 0 means the delta is 0 CHF, so no Fact_Acct rows are posted ──
     And no Fact_Acct records are found for documents revaluationZero
+
+  @Id:S30984_TC10
+  Scenario: Seed-cost - quick-input on a stocked product with no M_Cost row seeds the cost at qty 0 with no GL impact
+    # ── A stocked product with NO M_Cost row (as after a migration that never set up costing for it) ──
+    And metasfresh contains M_Products:
+      | Identifier    | X12DE355 |
+      | productNoCost | PCE      |
+    And remove current costs
+      | M_Product_ID  |
+      | productNoCost |
+
+    # ── Quick-input the product with an initial price; the seed path creates the M_Cost row at qty 0 ──
+    When metasfresh contains M_CostRevaluation:
+      | Identifier        | C_AcctSchema_ID | M_CostElement_ID | DateAcct   |
+      | revaluationNoCost | acctSchema      | AveragePO        | 2024-03-06 |
+    And quick-input cost revaluation line:
+      | M_CostRevaluation_ID | M_Product_ID  | NewCostPrice |
+      | revaluationNoCost    | productNoCost | 12           |
+    And the cost revaluation identified by revaluationNoCost is completed
+    And Wait until documents revaluationNoCost are posted
+
+    # ── After: the M_Cost row was created at qty 0 with the entered price; document completed ──
+    And validate M_CostRevaluation:
+      | Identifier        | DocStatus | Processed |
+      | revaluationNoCost | CO        | true      |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID  | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | productNoCost | AveragePO        | 12.0000 CHF      | 0 PCE      | 0 CHF        |
+
+    # ── No GL impact: qty 0 means the delta is 0 CHF, so no Fact_Acct rows are posted ──
+    And no Fact_Acct records are found for documents revaluationNoCost

@@ -99,10 +99,14 @@ public class CostRevaluationService
 	 * deriving its cost segment from the product's live {@link CurrentCost} (same derivation as the bulk path) and setting
 	 * {@code NewCostPrice} to the given {@code newCostPrice} instead of defaulting it to the live cost.
 	 * <p>
+	 * When the product has no {@link CurrentCost} row yet for the revaluation's costing context, the row is seeded at
+	 * quantity 0 (reusing the product interceptor's {@link ICurrentCostsRepository#createDefaultProductCosts}) and the
+	 * line proceeds through the normal path; completing it books a zero delta, so no accounting is written.
+	 * <p>
 	 * Additive only: never touches any other line of the revaluation.
 	 *
-	 * @throws AdempiereException if a line already exists for {@code productId} (duplicate guard), if the product has no
-	 * current cost for the revaluation's costing context, or if it has more than one (ambiguous multi-segment product).
+	 * @throws AdempiereException if a line already exists for {@code productId} (duplicate guard), if the product still has
+	 * no current cost after seeding (unsupported costing setup), or if it has more than one (ambiguous multi-segment product).
 	 * @return the id of the newly created line.
 	 */
 	@NonNull
@@ -117,19 +121,17 @@ public class CostRevaluationService
 		}
 
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
-		final OrgId orgId = costRevaluation.getOrgId();
 
-		final ImmutableList<CurrentCost> currentCosts = currentCostsRepo.stream(
-						CurrentCostQuery.builder()
-								.clientId(costRevaluation.getClientId())
-								// NOTE: don't filter by OrgId here because we don't know the costing level yet
-								.acctSchemaId(costRevaluation.getAcctSchemaId())
-								.costElementId(costRevaluation.getCostElementId())
-								.productId(productId)
-								.build()
-				)
-				.filter(currentCost -> isMatching(currentCost, orgId))
-				.collect(ImmutableList.toImmutableList());
+		ImmutableList<CurrentCost> currentCosts = resolveCurrentCosts(costRevaluation, productId);
+
+		if (currentCosts.isEmpty())
+		{
+			// Seed-cost path: a stocked product may genuinely have no M_Cost row yet (e.g. migrated/legacy product).
+			// Materialize the missing row(s) at quantity 0 by reusing the same creator the product interceptor uses at
+			// product creation (idempotent: only missing rows are created), then re-resolve.
+			currentCostsRepo.createDefaultProductCosts(productDAO.getById(productId));
+			currentCosts = resolveCurrentCosts(costRevaluation, productId);
+		}
 
 		if (currentCosts.isEmpty())
 		{
@@ -143,6 +145,24 @@ public class CostRevaluationService
 		final CurrentCost currentCost = currentCosts.get(0);
 		final CostAmount newCostAmount = CostAmount.of(newCostPrice, currentCost.getCurrencyId());
 		return costRevaluationRepository.createLineForCurrentCost(costRevaluationId, currentCost, newCostAmount);
+	}
+
+	private ImmutableList<CurrentCost> resolveCurrentCosts(
+			@NonNull final CostRevaluation costRevaluation,
+			@NonNull final ProductId productId)
+	{
+		final OrgId orgId = costRevaluation.getOrgId();
+		return currentCostsRepo.stream(
+						CurrentCostQuery.builder()
+								.clientId(costRevaluation.getClientId())
+								// NOTE: don't filter by OrgId here because we don't know the costing level yet
+								.acctSchemaId(costRevaluation.getAcctSchemaId())
+								.costElementId(costRevaluation.getCostElementId())
+								.productId(productId)
+								.build()
+				)
+				.filter(currentCost -> isMatching(currentCost, orgId))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)

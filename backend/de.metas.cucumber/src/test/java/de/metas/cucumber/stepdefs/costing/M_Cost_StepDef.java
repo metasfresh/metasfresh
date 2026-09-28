@@ -20,6 +20,7 @@ import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -47,6 +48,7 @@ public class M_Cost_StepDef
 	@NonNull private final CurrentCostsRepository currentCostsRepository = SpringContextHolder.instance.getBean(CurrentCostsRepository.class);
 	@NonNull private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 	@NonNull private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
@@ -112,6 +114,31 @@ public class M_Cost_StepDef
 	public void updateCurrentCosts(DataTable table)
 	{
 		DataTableRows.of(table).forEach(this::updateCurrentCost);
+	}
+
+	/**
+	 * Removes all {@code M_Cost} rows for the given product(s), establishing the "product has no current cost record"
+	 * precondition of the seed-cost path (a migrated/legacy product created without a cost record). Reuses the same
+	 * repository deletion the {@code M_Product} interceptor performs on product deletion.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product whose current-cost records to remove<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And remove current costs
+	 *   | M_Product_ID  |
+	 *   | productNoCost |
+	 * </pre>
+	 */
+	@And("^remove current costs$")
+	public void removeCurrentCosts(DataTable table)
+	{
+		DataTableRows.of(table).forEach(row -> {
+			final ProductId productId = row.getAsIdentifier(I_M_Cost.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
+			currentCostsRepository.deleteForProduct(productDAO.getById(productId));
+		});
 	}
 
 	private void updateCurrentCost(@NonNull final DataTableRow row)

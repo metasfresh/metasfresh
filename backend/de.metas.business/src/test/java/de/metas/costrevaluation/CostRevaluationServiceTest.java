@@ -32,9 +32,11 @@ import de.metas.product.ProductType;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
@@ -184,6 +186,13 @@ public class CostRevaluationServiceTest
 		acctSchemaDefault.setUnrealizedLoss_Acct(1);
 		saveRecord(acctSchemaDefault);
 
+		// AD_ClientInfo makes this the client's primary acct schema, so the seed-cost path can resolve the client's
+		// accounting schemas via createDefaultProductCosts (mirrors production where AD_ClientInfo always exists).
+		final I_AD_ClientInfo clientInfo = newInstance(I_AD_ClientInfo.class);
+		clientInfo.setC_AcctSchema1_ID(acctSchemaRecord.getC_AcctSchema_ID());
+		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+		saveRecord(clientInfo);
+
 		return AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
 	}
 
@@ -318,17 +327,27 @@ public class CostRevaluationServiceTest
 		assertThat(singleLine.getNewCostPrice()).isEqualByComparingTo("20.00"); // the TYPED value
 	}
 
-	/** AC3 — a product with no current cost for the revaluation's costing context is refused. */
+	/**
+	 * AC15 — a stocked product with no {@code M_Cost} row is seeded at quantity 0 (reusing the product interceptor's
+	 * {@code createDefaultProductCosts}), then a line is created at that seeded segment with {@code CurrentQty=0},
+	 * {@code CurrentCostPrice=0} and {@code NewCostPrice} = the typed value.
+	 */
 	@Test
-	public void createLineForProduct_throws_whenNoCurrentCostFound()
+	public void createLineForProduct_seedsCostAtZeroQty_whenNoCurrentCostRow()
 	{
 		final ProductId productId = createProduct("productWithoutCost");
 		final CostRevaluationId costRevaluationId = createHeader();
 
-		assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("10.00")))
-				.isInstanceOf(AdempiereException.class);
+		final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("10.00"));
 
-		assertThat(getLineRecords(costRevaluationId)).isEmpty();
+		final List<I_M_CostRevaluationLine> lines = getLineRecords(costRevaluationId);
+		assertThat(lines).hasSize(1);
+		final I_M_CostRevaluationLine line = lines.get(0);
+		assertThat(createdLineId.getRepoId()).isEqualTo(line.getM_CostRevaluationLine_ID());
+		assertThat(line.getM_Product_ID()).isEqualTo(productId.getRepoId());
+		assertThat(line.getCurrentQty()).isEqualByComparingTo("0"); // seeded at quantity 0
+		assertThat(line.getCurrentCostPrice()).isEqualByComparingTo("0"); // seeded row has no prior cost
+		assertThat(line.getNewCostPrice()).isEqualByComparingTo("10.00"); // the TYPED value
 	}
 
 	/** AC4/AC5 — a second call for the same product is blocked, and the first line is left untouched (additive only). */
