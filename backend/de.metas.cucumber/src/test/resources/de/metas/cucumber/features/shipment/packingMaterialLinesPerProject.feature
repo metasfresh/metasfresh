@@ -352,3 +352,77 @@ Feature: shipment packing material lines split per project
     And the packing material lines of shipment shipment_8 are exactly:
       | Identifier | M_Product_ID | C_Project_ID | MovementQty |
       | pm_line_8  | p_pm         | null         | 9           |
+
+  # ####################################################################################################################################
+  @from:cucumber
+  @allure.label.epic:E0240_Project_Management
+  @allure.label.feature:F68020
+  Scenario: packing lines split also after reset and completion
+    Given temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
+    And metasfresh contains M_Products:
+      | Identifier |
+      | p_goods    |
+      | p_pm       |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_1                  | p_goods      | 10.0     | PCE      |
+      | plv_1                  | p_pm         | 1.0      | PCE      |
+    And metasfresh contains M_HU_PI:
+      | Identifier |
+      | huPI_TU    |
+    And metasfresh contains M_HU_PI_Version:
+      | Identifier | M_HU_PI_ID | HU_UnitType |
+      | huVersion  | huPI_TU    | TU          |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID | M_Product_ID |
+      | pm_1                    | p_pm         |
+    And metasfresh contains M_HU_PI_Item:
+      | Identifier | M_HU_PI_Version_ID | Qty | ItemType | M_HU_PackingMaterial_ID |
+      | huPIItem   | huVersion          | 10  | PM       | pm_1                    |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | Identifier    | M_HU_PI_Item_ID | Qty | M_Product_ID | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsInvoiceable | OPT.M_Packing_Material_Product_ID |
+      | huItemProduct | huPIItem        | 10  | p_goods      | 2021-01-01 | false                  | true              | p_pm                              |
+
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
+      | so_9       | true    | customer_1    | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | C_Project_ID |
+      | sol_11     | so_9       | p_goods      | 20         | P1           |
+      | sol_12     | so_9       | p_goods      | 30         | P2           |
+      | sol_13     | so_9       | p_goods      | 40         | P3           |
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.M_HU_PI_Item_Product_ID |
+      | sol_11                    | huItemProduct               |
+      | sol_12                    | huItemProduct               |
+      | sol_13                    | huItemProduct               |
+    And the order identified by so_9 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_11      | sol_11         | N             |
+      | ss_12      | sol_12         | N             |
+      | ss_13      | sol_13         | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.C_Project_ID.Identifier |
+      | ss_11                 | P1                          |
+      | ss_12                 | P2                          |
+      | ss_13                 | P3                          |
+
+    When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=false and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_11                 |
+      | ss_12                 |
+      | ss_13                 |
+
+    Then the shipment schedules ss_11,ss_12,ss_13 are shipped in exactly one M_InOut identified by shipment_9
+
+    And reset M_InOut packing lines for shipment shipment_9
+
+    And the shipment identified by shipment_9 is completed
+
+    And the packing material lines of shipment shipment_9 are exactly:
+      | Identifier | M_Product_ID | C_Project_ID | MovementQty |
+      | pm_line_P1 | p_pm         | P1           | 2           |
+      | pm_line_P2 | p_pm         | P2           | 3           |
+      | pm_line_P3 | p_pm         | P3           | 4           |
