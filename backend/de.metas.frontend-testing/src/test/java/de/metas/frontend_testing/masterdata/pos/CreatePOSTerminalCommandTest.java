@@ -473,6 +473,64 @@ public class CreatePOSTerminalCommandTest
 	}
 
 	@Test
+	public void execute_withWalkInProducts_shouldPriceOnADedicatedWalkInPricingSystemDifferentFromTheTill()
+	{
+		// given: an order-less POS return prices its invoice candidate from the walk-in BPartner's OWN
+		// pricing system first, then overrides it with the till price (POSReturnService) - so the
+		// auto-created walk-in BPartner needs its own resolvable price for a return test to actually prove
+		// the till override wins (see JsonPOSTerminalRequest#getWalkInProducts).
+		createUom("KGM", 3);
+		final ProductId productId = createProduct("P_WALKIN", X12DE355.ofCode("KGM"));
+
+		final JsonPOSTerminalRequest.ProductPrice tillPriceSpec = JsonPOSTerminalRequest.ProductPrice.builder()
+				.price(new BigDecimal("15.50"))
+				.uom(X12DE355.ofCode("KGM"))
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.CatchWeight)
+				.taxRatePercent(new BigDecimal("7"))
+				.build();
+		final JsonPOSTerminalRequest.ProductPrice walkInPriceSpec = JsonPOSTerminalRequest.ProductPrice.builder()
+				.price(new BigDecimal("20.00"))
+				.uom(X12DE355.ofCode("KGM"))
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.CatchWeight)
+				.taxRatePercent(new BigDecimal("7"))
+				.build();
+
+		final JsonPOSTerminalRequest request = JsonPOSTerminalRequest.builder()
+				.priceListCurrency(CurrencyCode.EUR)
+				.isTaxIncluded(true)
+				.products(ImmutableMap.of("P_WALKIN", tillPriceSpec))
+				.walkInProducts(ImmutableMap.of("P_WALKIN", walkInPriceSpec))
+				.build();
+
+		// when
+		final JsonPOSTerminalResponse response = commandBuilder()
+				.request(request)
+				.identifier(Identifier.ofString("T_WALKINPRICE"))
+				.build()
+				.execute();
+
+		// then
+		final I_C_POS posRecord = InterfaceWrapperHelper.load(response.getId(), I_C_POS.class);
+		final I_M_PriceList tillPriceList = InterfaceWrapperHelper.load(posRecord.getM_PriceList_ID(), I_M_PriceList.class);
+		final I_C_BPartner walkInBPartner = InterfaceWrapperHelper.load(response.getWalkInBPartnerId(), I_C_BPartner.class);
+
+		assertThat(walkInBPartner.getM_PricingSystem_ID()).isGreaterThan(0);
+		assertThat(walkInBPartner.getM_PricingSystem_ID()).isNotEqualTo(tillPriceList.getM_PricingSystem_ID());
+
+		final int walkInPriceListId = queryBL.createQueryBuilder(I_M_PriceList.class)
+				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, walkInBPartner.getM_PricingSystem_ID())
+				.create()
+				.firstOnlyNotNull(I_M_PriceList.class)
+				.getM_PriceList_ID();
+
+		final I_M_ProductPrice tillProductPrice = getProductPrice(posRecord.getM_PriceList_ID(), productId);
+		final I_M_ProductPrice walkInProductPrice = getProductPrice(walkInPriceListId, productId);
+
+		assertThat(tillProductPrice.getPriceStd()).isEqualByComparingTo("15.50");
+		assertThat(walkInProductPrice.getPriceStd()).isEqualByComparingTo("20.00");
+	}
+
+	@Test
 	public void execute_withNonCashPaymentMethod_shouldThrow()
 	{
 		// given

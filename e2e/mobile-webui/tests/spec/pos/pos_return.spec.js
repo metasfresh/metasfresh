@@ -38,10 +38,12 @@ const createMasterdata = () => {
                 T1: {
                     priceListCurrency: 'EUR',
                     isTaxIncluded: true,
-                    // The POS price (and its own 7 % tax rate) lives on the terminal's own price list, not on
-                    // the product - the walk-in partner's own pricing/tax is deliberately different, and the
-                    // return is always priced+taxed from the till, never the client.
+                    // The POS price lives on the terminal's own price list, not on the product - an order-less
+                    // return prices its invoice candidate from the walk-in partner's OWN pricing system first
+                    // (20,00/kg here, same 7 % tax category), then overrides it with the till price (15,50/kg) -
+                    // so this proves the till price actually wins, not merely that it's the only price around.
                     products: { P1: { price: 15.50, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight', taxRatePercent: 7 } },
+                    walkInProducts: { P1: { price: 20.00, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight', taxRatePercent: 7 } },
                 },
             },
         },

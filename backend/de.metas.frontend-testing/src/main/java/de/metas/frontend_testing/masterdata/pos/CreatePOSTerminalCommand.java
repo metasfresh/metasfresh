@@ -31,6 +31,7 @@ import de.metas.pos.POSTerminalRepository;
 import de.metas.pos.withdrawal.POSCashWithdrawalService;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.CreateProductPriceRequest;
 import de.metas.pricing.productprice.ProductPriceRepository;
@@ -58,6 +59,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -328,7 +330,42 @@ public class CreatePOSTerminalCommand
 				.identifier(identifier.getAsString() + "_walkIn")
 				.build()
 				.execute();
-		return response.getId();
+		final BPartnerId walkInBPartnerId = response.getId();
+
+		if (!request.getWalkInProducts().isEmpty())
+		{
+			assignWalkInPricing(walkInBPartnerId);
+		}
+
+		return walkInBPartnerId;
+	}
+
+	/**
+	 * {@link CreateBPartnerCommand} gives the auto-created walk-in BPartner its own pricing system, but an
+	 * empty one (no product prices) — see {@link JsonPOSTerminalRequest#getWalkInProducts()} for why an
+	 * order-less return needs the returned product actually priced there. Create a dedicated pricing system +
+	 * price list + product prices (mirroring the terminal's own {@link #createProductPrices}) and point the
+	 * BPartner at it instead of its empty default one.
+	 */
+	private void assignWalkInPricing(@NonNull final BPartnerId walkInBPartnerId)
+	{
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(request.getPriceListCurrency());
+
+		final PricingSetupHelper.PricingSetupResult walkInPricingSetup = PricingSetupHelper.createPricingSystemAndPriceList(
+				priceListVersionRepository,
+				PricingSetupHelper.PricingSetupRequest.builder()
+						.orgId(orgId)
+						.value(identifier.toUniqueString() + "_walkIn")
+						.currencyId(currencyId)
+						.countryId(MasterdataContext.COUNTRY_ID)
+						.isTaxIncluded(request.isTaxIncluded())
+						.isSoPriceList(true)
+						.build());
+		createProductPrices(walkInPricingSetup.getPriceListVersionId(), request.getWalkInProducts());
+
+		final I_C_BPartner walkInBPartner = InterfaceWrapperHelper.load(walkInBPartnerId, I_C_BPartner.class);
+		walkInBPartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(walkInPricingSetup.getPricingSystemId()));
+		InterfaceWrapperHelper.saveRecord(walkInBPartner);
 	}
 
 	private WarehouseId createShipFromWarehouse()
