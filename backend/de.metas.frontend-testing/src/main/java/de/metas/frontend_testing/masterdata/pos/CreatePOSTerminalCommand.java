@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPBankAccountDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.ChargeId;
 import de.metas.costing.ChargeTypeId;
@@ -90,6 +91,7 @@ public class CreatePOSTerminalCommand
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -363,9 +365,11 @@ public class CreatePOSTerminalCommand
 						.build());
 		createProductPrices(walkInPricingSetup.getPriceListVersionId(), request.getWalkInProducts());
 
-		final I_C_BPartner walkInBPartner = InterfaceWrapperHelper.load(walkInBPartnerId, I_C_BPartner.class);
+		// load+save via IBPartnerDAO (not InterfaceWrapperHelper directly): a *Command must not call the
+		// persistence primitives itself — the DAO layer owns them (ArchUnit: service-injection.md §4)
+		final I_C_BPartner walkInBPartner = bpartnerDAO.getById(walkInBPartnerId);
 		walkInBPartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(walkInPricingSetup.getPricingSystemId()));
-		InterfaceWrapperHelper.saveRecord(walkInBPartner);
+		bpartnerDAO.save(walkInBPartner);
 	}
 
 	private WarehouseId createShipFromWarehouse()
