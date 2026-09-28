@@ -1398,7 +1398,13 @@ public class FlatrateBL implements IFlatrateBL
 	private void updateEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
 	{
 		final Timestamp endDate = computeEndDate(transition, term);
-		term.setEndDate(endDate);
+		if (endDate != null)
+		{
+			term.setEndDate(endDate);
+		}
+		// else: the transition's TermDuration is 0 ("computed automatically" is off) -> keep the
+		// end date that was entered/imported/requested (AC17); checkEndDateNotNull still refuses
+		// the save if there was none.
 	}
 
 	private Timestamp computeEndDate(final I_C_Flatrate_Transition transition, final I_C_Flatrate_Term term)
@@ -1696,7 +1702,7 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
 
 		newTerm.setStartDate(startDate);
-		newTerm.setEndDate(startDate); // will be updated later
+		newTerm.setEndDate(endDate); // null when not requested; a duration>0 transition computes it in validatePeriods before the save
 
 		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoId(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
 				billPartnerLocation.getC_BPartner_Location_ID(),
