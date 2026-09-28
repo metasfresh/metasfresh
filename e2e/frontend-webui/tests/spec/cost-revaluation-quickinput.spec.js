@@ -27,12 +27,12 @@ import { getFieldData, getRecordData } from '../utils/WebAPIValidation';
 const COST_REVAL_WINDOW_ID = '541568';
 const LINE_TAB_ID = 'AD_Tab-546465';
 
-/** en_US date input format MM/DD/YYYY for "today". */
-function todayMMDDYYYY() {
+/** Today's date as an ISO yyyy-MM-dd string (language-independent; matches the WebAPI date value). */
+function todayISO() {
   const d = new Date();
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
-  return `${mm}/${dd}/${d.getFullYear()}`;
+  return `${d.getFullYear()}-${mm}-${dd}`;
 }
 
 /**
@@ -54,24 +54,44 @@ async function createMasterdata(language) {
   });
 }
 
-/** Login → open a NEW Kosten Neubewertung header → commit it by setting the mandatory Evaluation Start Date. */
+/** Login → open a NEW Kosten Neubewertung header. AC6: the mandatory Evaluation Start Date
+ *  AUTO-DEFAULTS to the posting date (today), so the header is saveable WITHOUT the user typing it. */
 async function loginAndCreateHeader(page, masterdata) {
   await LoginPage.goto();
   await LoginPage.login(masterdata.login.user);
   await DashboardPage.expectVisible();
 
-  return await test.step('Create Kosten Neubewertung header (set Evaluation Start Date)', async () => {
+  return await test.step('Create Kosten Neubewertung header (EvaluationStartDate auto-defaults to the posting date)', async () => {
     await page.goto(`http://localhost:3000/window/${COST_REVAL_WINDOW_ID}/new`);
-    // The header auto-defaults Accounting Schema, Cost Element and Accounting Date; the mandatory
-    // Evaluation Start Date renders empty on a new record, so set it to today to commit the header
-    // (until committed, the line tab reports allowCreateNew=false / "ParentDocumentNew").
+    // AC6: the header auto-defaults Accounting Schema, Cost Element, Accounting Date AND — the fix under
+    // test — the mandatory Evaluation Start Date, which must arrive PRE-FILLED with today's posting date
+    // so the WebUI mandatory-field check passes and the header commits with NO manual date entry.
+    // (Before the AD_Column default, EvaluationStartDate rendered empty because its forward-only default
+    // only fired in the model interceptor's beforeNew — AFTER the WebUI mandatory check — so the line tab
+    // reported allowCreateNew=false / "ParentDocumentNew" until the user typed the date by hand.)
     const dateInput = page.locator('.form-field-EvaluationStartDate input').first();
     await dateInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await dateInput.click();
-    await dateInput.fill(todayMMDDYYYY());
-    await page.keyboard.press('Enter');
-    await page.waitForTimeout(2500);
-    return page.url().split('/').pop();
+    // The field must auto-fill (no click, no fill) — this is the AC6 assertion at the UI layer.
+    await expect(dateInput).not.toHaveValue('', { timeout: SLOW_ACTION_TIMEOUT });
+
+    // The freshly-created document acquires its numeric record id in the URL (auto-saved: every
+    // mandatory header field, incl. the now-defaulted EvaluationStartDate, is satisfied).
+    await page.waitForFunction(
+      () => {
+        const last = window.location.pathname.split('/').pop();
+        return last && last !== 'new' && /^\d+$/.test(last);
+      },
+      undefined,
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+    const recordId = page.url().split('/').pop();
+
+    // AC6 at the data layer (language-independent): the auto-filled value IS today's posting date.
+    const evalStart = await getFieldData(COST_REVAL_WINDOW_ID, recordId, 'EvaluationStartDate');
+    console.log('[header] auto-filled EvaluationStartDate=' + JSON.stringify(evalStart.value) + ' expected ' + todayISO());
+    expect(String(evalStart.value)).toContain(todayISO());
+
+    return recordId;
   });
 }
 
