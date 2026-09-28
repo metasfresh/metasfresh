@@ -188,7 +188,7 @@ async function completeDocument(page) {
 }
 
 function allureTags(story) {
-  allure.epic('E0100: Costing');
+  allure.epic('E0226: Costing');
   allure.tag('F1500: Costing');
   allure.tag('F1500');
   allure.story(story);
@@ -198,7 +198,7 @@ function allureTags(story) {
 // ============================================================================
 
 // eslint-disable-next-line no-unused-vars
-test('Quick-input manual cost adjustment for a product with a current cost [AC1/AC2] (English)', async ({ page }) => {
+test('Quick-input manual cost adjustment for a product with a current cost (English)', async ({ page }) => {
   test.setTimeout(180000);
   allureTags('Quick-input: per-product cost adjustment (Run + Complete)');
   allure.description(`
@@ -282,7 +282,7 @@ and it does NOT offer a non-stocked (Service) product.
 });
 
 // eslint-disable-next-line no-unused-vars
-test('Seed-cost path: stocked product with no cost record, with provisional hint [AC15/AC16/AC17/AC18] (English)', async ({ page }) => {
+test('Seed-cost path: stocked product with no cost record, with provisional hint (English)', async ({ page }) => {
   test.setTimeout(180000);
   allureTags('Quick-input: seed a cost for a stocked product with no cost record');
   allure.description(`

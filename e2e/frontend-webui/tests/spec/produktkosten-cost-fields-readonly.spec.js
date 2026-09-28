@@ -22,9 +22,9 @@ const PRODUKTKOSTEN_WINDOW_ID = '344';
 const M_COST_TAB_ID = 'AD_Tab-701';
 
 // eslint-disable-next-line no-unused-vars
-test('Produktkosten window 344 CurrentCostPrice + FutureCostPrice are read-only [AC10] (English)', async ({ page }) => {
+test('Produktkosten window 344 CurrentCostPrice + FutureCostPrice are read-only (English)', async ({ page }) => {
   test.setTimeout(120000);
-  allure.epic('E0100: Costing');
+  allure.epic('E0226: Costing');
   allure.tag('F1500: Costing');
   allure.tag('F1500');
   allure.story('Produktkosten cost fields locked read-only');

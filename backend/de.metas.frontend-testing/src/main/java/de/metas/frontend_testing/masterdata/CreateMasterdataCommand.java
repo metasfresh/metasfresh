@@ -294,6 +294,7 @@ public class CreateMasterdataCommand
 	{
 		return CreateProductCommand.builder()
 				.productRepository(services.productRepository)
+				.currentCostsRepository(services.currentCostsRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

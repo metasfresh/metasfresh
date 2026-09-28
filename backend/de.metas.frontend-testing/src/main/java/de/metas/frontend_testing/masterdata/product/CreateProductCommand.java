@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.ICurrentCostsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -79,6 +80,7 @@ public class CreateProductCommand
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final ProductRepository productRepository; // for C_BPartner_Product
+	@NonNull private final ICurrentCostsRepository currentCostsRepository; // for skipDefaultCosts
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateProductRequest request;
@@ -494,8 +496,6 @@ public class CreateProductCommand
 			return;
 		}
 
-		final de.metas.costing.ICurrentCostsRepository currentCostsRepository =
-				org.compiere.SpringContextHolder.instance.getBean(de.metas.costing.ICurrentCostsRepository.class);
 		currentCostsRepository.deleteForProduct(productRecord);
 		logger.info("Deleted default M_Cost rows for product {} (skipDefaultCosts=true)", productRecord.getValue());
 	}
