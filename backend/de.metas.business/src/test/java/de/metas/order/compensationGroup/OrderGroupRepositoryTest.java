@@ -273,7 +273,7 @@ public class OrderGroupRepositoryTest
 		assertThat(group.isAdditive()).isTrue();
 
 		final GroupCompensationLine loadedCompensationLine = group.getCompensationLines().get(0);
-		assertThat(loadedCompensationLine.getBaseProductCategoryId()).isEqualTo(parentCategoryId);
+		assertThat(loadedCompensationLine.getAppliesToProductCategoryId()).isEqualTo(parentCategoryId);
 
 		final GroupRegularLine loadedRegularLine = group.getRegularLines().stream()
 				.filter(rl -> regularLineId.equals(rl.getRepoId()))
@@ -356,7 +356,7 @@ public class OrderGroupRepositoryTest
 		final Group group = repo.retrieveGroup(groupId);
 
 		assertThat(group.getCompensationLines()).hasSize(1);
-		assertThat(group.getCompensationLines().get(0).getBaseProductCategoryId()).isNull();
+		assertThat(group.getCompensationLines().get(0).getAppliesToProductCategoryId()).isNull();
 	}
 
 	// ────────────────────────────────────────────────────────────────────────────────────────────
@@ -364,7 +364,7 @@ public class OrderGroupRepositoryTest
 	// C_OrderLine.onGroupCompensationLineChanged -> updateCompensationLineNoSave) must recompute a
 	// BASED compensation line against its stored base amount, not zero. Before the fix, the synthetic
 	// aggregated regular line had an empty productCategoryIds while the compensation line now carries
-	// a non-null baseProductCategoryId, so Group#getRegularLinesNetAmt(base) filtered it out entirely.
+	// a non-null appliesToProductCategoryId, so Group#getRegularLinesNetAmt(appliesToProductCategoryId) filtered it out entirely.
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
 	void createPartialGroupFromCompensationLine_basedLine_recomputesAgainstStoredBase()
@@ -412,7 +412,7 @@ public class OrderGroupRepositoryTest
 		group.updateAllCompensationLines();
 
 		final GroupCompensationLine recomputedLine = group.getCompensationLines().get(0);
-		assertThat(recomputedLine.getBaseProductCategoryId()).isEqualTo(categoryId);
+		assertThat(recomputedLine.getAppliesToProductCategoryId()).isEqualTo(categoryId);
 		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("1000");
 		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-100.00");
 		assertThat(recomputedLine.getLineNetAmt()).isEqualByComparingTo("-100.00");
@@ -452,7 +452,7 @@ public class OrderGroupRepositoryTest
 		group.updateAllCompensationLines();
 
 		final GroupCompensationLine recomputedLine = group.getCompensationLines().get(0);
-		assertThat(recomputedLine.getBaseProductCategoryId()).isNull();
+		assertThat(recomputedLine.getAppliesToProductCategoryId()).isNull();
 		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("500");
 		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-50.00");
 	}

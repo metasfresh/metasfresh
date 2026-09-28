@@ -241,13 +241,13 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 				.price(price)
 				.qtyEntered(qtyEntered)
 				.lineNetAmt(lineNetAmt)
-				.baseProductCategoryId(retrieveBaseProductCategoryId(invoiceCandidate))
+				.appliesToProductCategoryId(retrieveAppliesToProductCategoryId(invoiceCandidate))
 				.build();
 	}
 
-	/** @return the invoice candidate's order line's schema line's base product category; {@code null} when there is none */
+	/** @return the invoice candidate's order line's schema line's applies-to product category; {@code null} when there is none */
 	@Nullable
-	private static ProductCategoryId retrieveBaseProductCategoryId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	private static ProductCategoryId retrieveAppliesToProductCategoryId(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		final I_C_OrderLine orderLine = invoiceCandidate.getC_OrderLine();
 		if (orderLine == null)
@@ -381,10 +381,10 @@ public class InvoiceCandidateGroupRepository implements GroupRepository
 		InvoiceCandidateCompensationGroupUtils.assertCompensationLine(invoiceCandidate);
 
 		final GroupCompensationLine compensationLine = createCompensationLine(invoiceCandidate);
-		final ProductCategoryId baseProductCategoryId = compensationLine.getBaseProductCategoryId();
+		final ProductCategoryId appliesToProductCategoryId = compensationLine.getAppliesToProductCategoryId();
 		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
 				.lineNetAmt(compensationLine.getBaseAmt())
-				.productCategoryIds(baseProductCategoryId != null ? ImmutableSet.of(baseProductCategoryId) : ImmutableSet.of())
+				.productCategoryIds(appliesToProductCategoryId != null ? ImmutableSet.of(appliesToProductCategoryId) : ImmutableSet.of())
 				.build();
 
 		final I_C_Order order = invoiceCandidate.getC_Order();

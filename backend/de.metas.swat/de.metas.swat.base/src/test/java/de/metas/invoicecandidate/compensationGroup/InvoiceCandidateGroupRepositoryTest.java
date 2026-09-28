@@ -178,7 +178,7 @@ class InvoiceCandidateGroupRepositoryTest
 		// verify: the discount is 3% of the goods (base) line only (1000), not of the whole group (1200)
 		assertThat(group.getCompensationLines()).hasSize(1);
 		final GroupCompensationLine discountLine = group.getCompensationLines().get(0);
-		assertThat(discountLine.getBaseProductCategoryId()).isEqualTo(goodsCategoryId);
+		assertThat(discountLine.getAppliesToProductCategoryId()).isEqualTo(goodsCategoryId);
 		assertThat(discountLine.getBaseAmt()).isEqualByComparingTo("1000");
 		assertThat(discountLine.getLineNetAmt()).isEqualByComparingTo("-30.00");
 		assertThat(discountLine.getPrice()).isEqualByComparingTo("-30.00");
@@ -189,8 +189,8 @@ class InvoiceCandidateGroupRepositoryTest
 	// C_Invoice_Candidate.onGroupCompensationPercentageChanged) must recompute a BASED discount
 	// invoice candidate against its stored base amount, not zero. Before the fix, the synthetic
 	// aggregated regular line had an empty productCategoryIds while the compensation line now
-	// carries a non-null baseProductCategoryId, so Group#getRegularLinesNetAmt(base) filtered it
-	// out entirely.
+	// carries a non-null appliesToProductCategoryId, so Group#getRegularLinesNetAmt(appliesToProductCategoryId)
+	// filtered it out entirely.
 	// ────────────────────────────────────────────────────────────────────────────────────────────
 	@Test
 	void createPartialGroupFromCompensationLine_basedLine_recomputesAgainstStoredBase()
@@ -255,7 +255,7 @@ class InvoiceCandidateGroupRepositoryTest
 		group.updateAllCompensationLines();
 
 		final GroupCompensationLine recomputedLine = group.getCompensationLines().get(0);
-		assertThat(recomputedLine.getBaseProductCategoryId()).isEqualTo(categoryId);
+		assertThat(recomputedLine.getAppliesToProductCategoryId()).isEqualTo(categoryId);
 		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("1000");
 		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-100.00");
 		assertThat(recomputedLine.getLineNetAmt()).isEqualByComparingTo("-100.00");
@@ -301,7 +301,7 @@ class InvoiceCandidateGroupRepositoryTest
 		group.updateAllCompensationLines();
 
 		final GroupCompensationLine recomputedLine = group.getCompensationLines().get(0);
-		assertThat(recomputedLine.getBaseProductCategoryId()).isNull();
+		assertThat(recomputedLine.getAppliesToProductCategoryId()).isNull();
 		assertThat(recomputedLine.getBaseAmt()).isEqualByComparingTo("500");
 		assertThat(recomputedLine.getPrice()).isEqualByComparingTo("-50.00");
 	}

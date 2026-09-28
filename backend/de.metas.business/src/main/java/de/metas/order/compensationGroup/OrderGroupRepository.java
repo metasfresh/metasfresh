@@ -401,13 +401,13 @@ public class OrderGroupRepository implements GroupRepository
 				.baseAmt(groupOrderLine.getGroupCompensationBaseAmt())
 				.price(groupOrderLine.getPriceEntered())
 				.lineNetAmt(groupOrderLine.getLineNetAmt())
-				.baseProductCategoryId(retrieveBaseProductCategoryId(groupOrderLine.getC_CompensationGroup_SchemaLine_ID()))
+				.appliesToProductCategoryId(retrieveAppliesToProductCategoryId(groupOrderLine.getC_CompensationGroup_SchemaLine_ID()))
 				.build();
 	}
 
-	/** @return the schema line's base product category; {@code null} when the compensation line is not linked to a schema line */
+	/** @return the schema line's applies-to product category; {@code null} when the compensation line is not linked to a schema line */
 	@Nullable
-	private static ProductCategoryId retrieveBaseProductCategoryId(final int compensationGroupSchemaLineId)
+	private static ProductCategoryId retrieveAppliesToProductCategoryId(final int compensationGroupSchemaLineId)
 	{
 		if (compensationGroupSchemaLineId <= 0)
 		{
@@ -772,10 +772,10 @@ public class OrderGroupRepository implements GroupRepository
 		OrderGroupCompensationUtils.assertCompensationLine(compensationLineRecord);
 
 		final GroupCompensationLine compensationLine = toGroupCompensationLine(compensationLineRecord);
-		final ProductCategoryId baseProductCategoryId = compensationLine.getBaseProductCategoryId();
+		final ProductCategoryId appliesToProductCategoryId = compensationLine.getAppliesToProductCategoryId();
 		final GroupRegularLine aggregatedRegularLine = GroupRegularLine.builder()
 				.lineNetAmt(compensationLine.getBaseAmt())
-				.productCategoryIds(baseProductCategoryId != null ? ImmutableSet.of(baseProductCategoryId) : ImmutableSet.of())
+				.productCategoryIds(appliesToProductCategoryId != null ? ImmutableSet.of(appliesToProductCategoryId) : ImmutableSet.of())
 				.build();
 
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(compensationLineRecord.getC_Order_ID()));

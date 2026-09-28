@@ -49,7 +49,7 @@ public class GroupTemplateCompensationLine
 	@NonNull GroupMatcher groupMatcher;
 
 	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
-	@Nullable ProductCategoryId baseProductCategoryId;
+	@Nullable ProductCategoryId appliesToProductCategoryId;
 
 	@Builder
 	private GroupTemplateCompensationLine(
@@ -58,14 +58,14 @@ public class GroupTemplateCompensationLine
 			@Nullable final GroupCompensationType compensationType,
 			@Nullable final Percent percentage,
 			@Nullable final GroupMatcher groupMatcher,
-			@Nullable final ProductCategoryId baseProductCategoryId)
+			@Nullable final ProductCategoryId appliesToProductCategoryId)
 	{
 		this.id = id;
 		this.productId = productId;
 		this.compensationType = compensationType;
 		this.percentage = percentage;
 		this.groupMatcher = groupMatcher != null ? groupMatcher : GroupMatchers.ALWAYS;
-		this.baseProductCategoryId = baseProductCategoryId;
+		this.appliesToProductCategoryId = appliesToProductCategoryId;
 	}
 
 	public boolean isMatching(@NonNull final Group group)

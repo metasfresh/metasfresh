@@ -186,13 +186,13 @@ public class GroupTests
 				.build();
 	}
 
-	private GroupCompensationLineCreateRequest newPercentageDiscountRequest(final double discountPerc, @Nullable final ProductCategoryId base)
+	private GroupCompensationLineCreateRequest newPercentageDiscountRequest(final double discountPerc, @Nullable final ProductCategoryId appliesToProductCategoryId)
 	{
 		return GroupCompensationLineCreateRequest.builder()
 				.type(GroupCompensationType.Discount)
 				.amtType(GroupCompensationAmtType.Percent)
 				.percentage(Percent.of(BigDecimal.valueOf(discountPerc)))
-				.baseProductCategoryId(base)
+				.appliesToProductCategoryId(appliesToProductCategoryId)
 				// does not matter but needs to be filled
 				.productId(productId)
 				.uomId(uomId)
@@ -202,14 +202,14 @@ public class GroupTests
 	private GroupCompensationLineCreateRequest newFixedAmountRequest(
 			@NonNull final BigDecimal price,
 			@NonNull final BigDecimal qtyEntered,
-			@Nullable final ProductCategoryId base)
+			@Nullable final ProductCategoryId appliesToProductCategoryId)
 	{
 		return GroupCompensationLineCreateRequest.builder()
 				.type(GroupCompensationType.Discount)
 				.amtType(GroupCompensationAmtType.PriceAndQty)
 				.price(price)
 				.qtyEntered(qtyEntered)
-				.baseProductCategoryId(base)
+				.appliesToProductCategoryId(appliesToProductCategoryId)
 				// does not matter but needs to be filled
 				.productId(productId)
 				.uomId(uomId)

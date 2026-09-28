@@ -86,7 +86,7 @@ public final class GroupCompensationLine
 	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
 	@Getter
 	@Nullable
-	private final ProductCategoryId baseProductCategoryId;
+	private final ProductCategoryId appliesToProductCategoryId;
 
 	@Builder
 	public GroupCompensationLine(
@@ -102,11 +102,11 @@ public final class GroupCompensationLine
 			final BigDecimal price,
 			final BigDecimal lineNetAmt,
 			final GroupTemplateLineId groupTemplateLineId,
-			@Nullable final ProductCategoryId baseProductCategoryId)
+			@Nullable final ProductCategoryId appliesToProductCategoryId)
 	{
 		this.repoId = repoId;
 		this.groupTemplateLineId = groupTemplateLineId;
-		this.baseProductCategoryId = baseProductCategoryId;
+		this.appliesToProductCategoryId = appliesToProductCategoryId;
 
 		this.seqNo = seqNo;
 

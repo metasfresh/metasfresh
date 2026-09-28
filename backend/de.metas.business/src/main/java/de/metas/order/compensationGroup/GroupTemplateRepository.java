@@ -156,7 +156,7 @@ public class GroupTemplateRepository
 				.groupMatcher(createGroupMatcher(compensationLineRecord, allCompensationLineRecords))
 				.productId(ProductId.ofRepoId(compensationLineRecord.getM_Product_ID()))
 				.percentage(extractPercentage(compensationLineRecord))
-				.baseProductCategoryId(ProductCategoryId.ofRepoIdOrNull(compensationLineRecord.getM_Product_Category_ID()))
+				.appliesToProductCategoryId(ProductCategoryId.ofRepoIdOrNull(compensationLineRecord.getM_Product_Category_ID()))
 				.build();
 	}
 

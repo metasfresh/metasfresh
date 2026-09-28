@@ -52,5 +52,5 @@ public class GroupCompensationLineCreateRequest
 
 	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
 	@Nullable
-	ProductCategoryId baseProductCategoryId;
+	ProductCategoryId appliesToProductCategoryId;
 }
