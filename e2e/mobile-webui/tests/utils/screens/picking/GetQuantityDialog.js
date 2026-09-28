@@ -31,6 +31,11 @@ export const GetQuantityDialog = {
         await expect(page.getByTestId(testId)).toContainText(expectedValue);
     }),
 
+    // The caption shown in front of the qty input (the <th> of the row holding #qty-input).
+    expectQtyCaption: async (expected) => await test.step(`${NAME} - Expect qty caption '${expected}'`, async () => {
+        await expect(containerElement().locator('tr:has(#qty-input) > th')).toHaveText(expected);
+    }),
+
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
         await page.locator('#qty-input').fill(`${qty}`);
     }),
@@ -164,17 +169,27 @@ export const GetQuantityDialog = {
         await page.getByTestId('serialNo-scan-done-button').tap();
     }),
 
-    // Scans a serial that is already present; asserts the chip count does NOT change (silent dedup).
-    scanDuplicateSerialNo: async (serialNo) => await test.step(`${NAME} - Scan duplicate SerialNo '${serialNo}'`, async () => {
+    // Scans a serial that is already present; asserts the chip count does NOT change (dedup), and —
+    // when expectedError is given — asserts the duplicate-scan error toast.
+    scanDuplicateSerialNo: async (serialNo, { expectedError } = {}) => await test.step(`${NAME} - Scan duplicate SerialNo '${serialNo}'`, async () => {
         const reScan = await page.getByTestId('serialNo-scan-again-button').count() > 0
             && await page.getByTestId('serialNo-scan-again-button').isVisible();
         await page.getByTestId(reScan ? 'serialNo-scan-again-button' : 'serialNo-scan-button').tap();
         await expect(page.getByTestId('serialNo-scan-done-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         const before = await page.getByTestId('serialNo-chip').count();
-        await BarcodeScannerComponent.type({ scannedCode: serialNo });
-        // give the hook time to flush, then assert the count is unchanged (dedup)
-        await page.waitForTimeout(BARCODE_HOOK_FLUSH_MS);
-        await expect(page.getByTestId('serialNo-chip')).toHaveCount(before);
+
+        await expectErrorToastIf(
+            !!expectedError,
+            `${expectedError}`,
+            async () => {
+                await BarcodeScannerComponent.type({ scannedCode: serialNo });
+                // give the hook time to flush, then assert the count is unchanged (dedup)
+                await page.waitForTimeout(BARCODE_HOOK_FLUSH_MS);
+                await expect(page.getByTestId('serialNo-chip')).toHaveCount(before);
+            },
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
+
         await page.getByTestId('serialNo-scan-done-button').tap();
     }),
 
