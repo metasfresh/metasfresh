@@ -117,11 +117,12 @@ public class CostRevaluationRepository
 	 * {@code NewCostPrice} to the current cost's own price (the bulk {@link #createLinesForCurrentCosts} path).
 	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #existsLineForProduct(CostRevaluationId, ProductId)} first.
 	 */
-	public void createLineForCurrentCost(
+	@NonNull
+	public CostRevaluationLineId createLineForCurrentCost(
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final CurrentCost currentCost)
 	{
-		createLineForCurrentCost(costRevaluationId, currentCost, currentCost.getCostPrice().getOwnCostPrice());
+		return createLineForCurrentCost(costRevaluationId, currentCost, currentCost.getCostPrice().getOwnCostPrice());
 	}
 
 	/**
@@ -130,7 +131,8 @@ public class CostRevaluationRepository
 	 * entry path: the operator types the new price).
 	 * Does not check for an already existing line; callers that need a duplicate guard should use {@link #existsLineForProduct(CostRevaluationId, ProductId)} first.
 	 */
-	public void createLineForCurrentCost(
+	@NonNull
+	public CostRevaluationLineId createLineForCurrentCost(
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final CurrentCost currentCost,
 			@NonNull final CostAmount newCostPrice)
@@ -146,6 +148,8 @@ public class CostRevaluationRepository
 		record.setNewCostPrice(newCostPrice.toBigDecimal());
 
 		InterfaceWrapperHelper.save(record);
+
+		return extractCostRevaluationLineId(record);
 	}
 
 	public boolean existsLineForProduct(@NonNull final CostRevaluationId costRevaluationId, @NonNull final ProductId productId)

@@ -298,10 +298,13 @@ public class CostRevaluationServiceTest
 		assertThat(getLineRecords(costRevaluationId)).isEmpty();
 
 		// Single-product path — must derive the identical segment, but with the TYPED NewCostPrice.
-		costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
+		final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
 		final List<I_M_CostRevaluationLine> singleLines = getLineRecords(costRevaluationId);
 		assertThat(singleLines).hasSize(1);
 		final I_M_CostRevaluationLine singleLine = singleLines.get(0);
+
+		assertThat(createdLineId.getRepoId()).isEqualTo(singleLine.getM_CostRevaluationLine_ID());
+		assertThat(createdLineId.getCostRevaluationId()).isEqualTo(costRevaluationId);
 
 		assertThat(singleLine.getCostingLevel()).isEqualTo(bulkLine.getCostingLevel());
 		assertThat(singleLine.getC_AcctSchema_ID()).isEqualTo(bulkLine.getC_AcctSchema_ID());
@@ -336,8 +339,9 @@ public class CostRevaluationServiceTest
 		seedCurrentCost(productId, "12.50", "100");
 		final CostRevaluationId costRevaluationId = createHeader();
 
-		costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
+		final CostRevaluationLineId firstLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("20.00"));
 		final I_M_CostRevaluationLine firstLine = getLineRecords(costRevaluationId).get(0);
+		assertThat(firstLineId.getRepoId()).isEqualTo(firstLine.getM_CostRevaluationLine_ID());
 
 		assertThatThrownBy(() -> costRevaluationService.createLineForProduct(costRevaluationId, productId, new BigDecimal("99.00")))
 				.isInstanceOf(AdempiereException.class);

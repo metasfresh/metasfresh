@@ -24,14 +24,12 @@ package de.metas.ui.web.quickinput.costrevaluationline;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.costrevaluation.CostRevaluationId;
-import de.metas.costrevaluation.CostRevaluationLine;
-import de.metas.costrevaluation.CostRevaluationRepository;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_CostRevaluation;
 
@@ -41,7 +39,6 @@ import java.util.Set;
 public class CostRevaluationLineQuickInputProcessor implements IQuickInputProcessor
 {
 	private final CostRevaluationService costRevaluationService = SpringContextHolder.instance.getBean(CostRevaluationService.class);
-	private final CostRevaluationRepository costRevaluationRepository = SpringContextHolder.instance.getBean(CostRevaluationRepository.class);
 
 	@Override
 	public Set<DocumentId> process(final QuickInput quickInput)
@@ -54,15 +51,9 @@ public class CostRevaluationLineQuickInputProcessor implements IQuickInputProces
 		final I_M_CostRevaluation costRevaluationRecord = quickInput.getRootDocumentAs(I_M_CostRevaluation.class);
 		final CostRevaluationId costRevaluationId = CostRevaluationId.ofRepoId(costRevaluationRecord.getM_CostRevaluation_ID());
 
-		costRevaluationService.createLineForProduct(costRevaluationId, productId, newCostPrice);
+		final CostRevaluationLineId createdLineId = costRevaluationService.createLineForProduct(costRevaluationId, productId, newCostPrice);
 
-		final CostRevaluationLine createdLine = costRevaluationRepository.getLinesByCostRevaluationId(costRevaluationId)
-				.stream()
-				.filter(line -> productId.equals(line.getCostSegmentAndElement().getProductId()))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("Cost revaluation line was not created for product " + productId));
-
-		final DocumentId documentId = DocumentId.of(createdLine.getId().getRepoId());
+		final DocumentId documentId = DocumentId.of(createdLineId.getRepoId());
 		return ImmutableSet.of(documentId);
 	}
 }

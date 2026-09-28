@@ -103,8 +103,10 @@ public class CostRevaluationService
 	 *
 	 * @throws AdempiereException if a line already exists for {@code productId} (duplicate guard), if the product has no
 	 * current cost for the revaluation's costing context, or if it has more than one (ambiguous multi-segment product).
+	 * @return the id of the newly created line.
 	 */
-	public void createLineForProduct(
+	@NonNull
+	public CostRevaluationLineId createLineForProduct(
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final ProductId productId,
 			@NonNull final BigDecimal newCostPrice)
@@ -140,7 +142,7 @@ public class CostRevaluationService
 
 		final CurrentCost currentCost = currentCosts.get(0);
 		final CostAmount newCostAmount = CostAmount.of(newCostPrice, currentCost.getCurrencyId());
-		costRevaluationRepository.createLineForCurrentCost(costRevaluationId, currentCost, newCostAmount);
+		return costRevaluationRepository.createLineForCurrentCost(costRevaluationId, currentCost, newCostAmount);
 	}
 
 	public void deleteDetailsByLineId(@NonNull final CostRevaluationLineId lineId)
