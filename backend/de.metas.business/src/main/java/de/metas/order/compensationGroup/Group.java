@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
@@ -22,9 +23,12 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.ONE;
@@ -73,6 +77,9 @@ public class Group
 	@Getter
 	private final ConditionsId contractConditionsId;
 
+	/** If {@code true}, every compensation line is computed on its own base's regular-line total; if {@code false} (default), compensation lines of the same base compound with each other */
+	private final boolean additive;
+
 	private final ImmutableList<GroupRegularLine> regularLines;
 	private final ArrayList<GroupCompensationLine> compensationLines;
 
@@ -88,6 +95,7 @@ public class Group
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx,
 			@Nullable final ConditionsId contractConditionsId,
+			final boolean additive,
 			@NonNull @Singular final List<GroupRegularLine> regularLines,
 			@NonNull @Singular final List<GroupCompensationLine> compensationLines)
 	{
@@ -99,6 +107,7 @@ public class Group
 		this.bpartnerId = bpartnerId;
 		this.soTrx = soTrx;
 		this.contractConditionsId = contractConditionsId;
+		this.additive = additive;
 
 		if (regularLines.isEmpty())
 		{
@@ -123,6 +132,22 @@ public class Group
 			regularLinesNetAmt = _regularLinesNetAmt = regularLines.stream().map(GroupRegularLine::getLineNetAmt).reduce(BigDecimal.ZERO, BigDecimal::add);
 		}
 		return regularLinesNetAmt;
+	}
+
+	/**
+	 * @param base {@code null} = the whole group's regular lines; else only the regular lines whose {@link GroupRegularLine#getProductCategoryIds()} contains it
+	 */
+	BigDecimal getRegularLinesNetAmt(@Nullable final ProductCategoryId base)
+	{
+		if (base == null)
+		{
+			return getRegularLinesNetAmt();
+		}
+
+		return regularLines.stream()
+				.filter(regularLine -> regularLine.getProductCategoryIds().contains(base))
+				.map(GroupRegularLine::getLineNetAmt)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	BigDecimal getTotalNetAmt()
@@ -158,12 +183,28 @@ public class Group
 	{
 		moveAllManualCompensationLinesToEnd();
 
-		BigDecimal previousNetAmt = getRegularLinesNetAmt();
+		// non-additive (compounding) mode: one running total PER BASE, so a discount line compounds only with
+		// previous discount lines of the same base; a null/empty base compounds against the whole group, as before.
+		final Map<Optional<ProductCategoryId>, BigDecimal> runningNetAmtsByBase = new HashMap<>();
 		for (final GroupCompensationLine compensationLine : compensationLines)
 		{
-			updateCompensationLine(compensationLine, previousNetAmt);
+			final ProductCategoryId base = compensationLine.getBaseProductCategoryId();
+			final BigDecimal baseAmt;
+			if (additive)
+			{
+				baseAmt = getRegularLinesNetAmt(base);
+			}
+			else
+			{
+				baseAmt = runningNetAmtsByBase.computeIfAbsent(Optional.ofNullable(base), key -> getRegularLinesNetAmt(base));
+			}
 
-			previousNetAmt = previousNetAmt.add(compensationLine.getLineNetAmt());
+			updateCompensationLine(compensationLine, baseAmt);
+
+			if (!additive)
+			{
+				runningNetAmtsByBase.put(Optional.ofNullable(base), baseAmt.add(compensationLine.getLineNetAmt()));
+			}
 		}
 	}
 
@@ -202,11 +243,31 @@ public class Group
 				.qtyEntered(qtyEntered)
 				.lineNetAmt(lineNetAmt)
 				.groupTemplateLineId(request.getGroupTemplateLineId())
+				.baseProductCategoryId(request.getBaseProductCategoryId())
 				.build();
 
-		updateCompensationLine(compensationLine, getTotalNetAmt());
+		updateCompensationLine(compensationLine, computeInitialBaseAmt(compensationLine.getBaseProductCategoryId()));
 
 		compensationLines.add(compensationLine);
+	}
+
+	/** Single-line variant of {@link #updateAllCompensationLines()}'s per-base running total, for one new line */
+	private BigDecimal computeInitialBaseAmt(@Nullable final ProductCategoryId base)
+	{
+		BigDecimal baseAmt = getRegularLinesNetAmt(base);
+
+		if (!additive)
+		{
+			for (final GroupCompensationLine existingLine : compensationLines)
+			{
+				if (Objects.equals(existingLine.getBaseProductCategoryId(), base))
+				{
+					baseAmt = baseAmt.add(existingLine.getLineNetAmt());
+				}
+			}
+		}
+
+		return baseAmt;
 	}
 
 	void removeAllGeneratedLines()

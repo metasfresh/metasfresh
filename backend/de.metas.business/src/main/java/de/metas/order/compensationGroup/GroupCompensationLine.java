@@ -6,6 +6,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.util.lang.RepoIdAware;
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -18,6 +19,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -80,6 +83,11 @@ public final class GroupCompensationLine
 	@Getter
 	private final GroupTemplateLineId groupTemplateLineId;
 
+	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
+	@Getter
+	@Nullable
+	private final ProductCategoryId baseProductCategoryId;
+
 	@Builder
 	public GroupCompensationLine(
 			final RepoIdAware repoId,
@@ -93,10 +101,12 @@ public final class GroupCompensationLine
 			final BigDecimal qtyEntered,
 			final BigDecimal price,
 			final BigDecimal lineNetAmt,
-			final GroupTemplateLineId groupTemplateLineId)
+			final GroupTemplateLineId groupTemplateLineId,
+			@Nullable final ProductCategoryId baseProductCategoryId)
 	{
 		this.repoId = repoId;
 		this.groupTemplateLineId = groupTemplateLineId;
+		this.baseProductCategoryId = baseProductCategoryId;
 
 		this.seqNo = seqNo;
 

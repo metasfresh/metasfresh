@@ -2,6 +2,7 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
@@ -46,4 +47,7 @@ public class GroupCompensationLineCreateRequest
 	BigDecimal price;
 
 	GroupTemplateLineId groupTemplateLineId;
+
+	/** Product category the discount is computed on; {@code null} = computed on the whole group's regular lines */
+	ProductCategoryId baseProductCategoryId;
 }
