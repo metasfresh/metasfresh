@@ -5,10 +5,11 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import {
+  FRONTEND_BASE_URL,
   SLOW_ACTION_TIMEOUT,
   VERY_SLOW_ACTION_TIMEOUT,
 } from '../utils/common';
-import { getFieldData, getRecordData } from '../utils/WebAPIValidation';
+import { getFieldData, getRecordData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
  * Cost Revaluation (Kosten Neubewertung, M_CostRevaluation) per-product quick-input E2E suite.
@@ -62,7 +63,7 @@ async function loginAndCreateHeader(page, masterdata) {
   await DashboardPage.expectVisible();
 
   return await test.step('Create Kosten Neubewertung header (EvaluationStartDate auto-defaults to the posting date)', async () => {
-    await page.goto(`http://localhost:3000/window/${COST_REVAL_WINDOW_ID}/new`);
+    await page.goto(`${FRONTEND_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/new`);
     // AC6: the header auto-defaults Accounting Schema, Cost Element, Accounting Date AND — the fix under
     // test — the mandatory Evaluation Start Date, which must arrive PRE-FILLED with today's posting date
     // so the WebUI mandatory-field check passes and the header commits with NO manual date entry.
@@ -226,7 +227,7 @@ segment; document completes).
 
   // AC2: exactly one line exists with NewCostPrice = typed value (assert via WebAPI, language-independent)
   const lineRows = await page.request.get(
-    `http://localhost:8080/rest/api/window/${COST_REVAL_WINDOW_ID}/${recordId}/${LINE_TAB_ID}`
+    `${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${LINE_TAB_ID}`
   );
   const lineBody = await lineRows.json();
   const rows = lineBody.result || [];
@@ -315,7 +316,7 @@ provisional until the first goods receipt). Proves AC15/AC16 (seed + complete), 
   await test.step('Verify provisional-price hint on New cost price field', async () => {
     const qiLayout = await (
       await page.request.get(
-        `http://localhost:8080/rest/api/window/${COST_REVAL_WINDOW_ID}/${recordId}/${LINE_TAB_ID}/quickInput/layout`
+        `${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${LINE_TAB_ID}/quickInput/layout`
       )
     ).json();
     const npcElement = (qiLayout.elements || []).find(
@@ -348,7 +349,7 @@ provisional until the first goods receipt). Proves AC15/AC16 (seed + complete), 
     await page.waitForTimeout(1000);
     const lineRows = await (
       await page.request.get(
-        `http://localhost:8080/rest/api/window/${COST_REVAL_WINDOW_ID}/${recordId}/${LINE_TAB_ID}`
+        `${WEBAPI_BASE_URL}/window/${COST_REVAL_WINDOW_ID}/${recordId}/${LINE_TAB_ID}`
       )
     ).json();
     rows = lineRows.result || [];

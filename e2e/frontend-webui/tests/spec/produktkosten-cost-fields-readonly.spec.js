@@ -4,7 +4,8 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
  * Produktkosten (legacy M_Cost) window 344 — cost fields are READ-ONLY [AC10/AC11].
@@ -52,7 +53,7 @@ price directly (bypassing the audited Kosten Neubewertung path). Asserted on the
 
   // The M_Cost rows of the product carry the read-only flag the WebUI renders from.
   const rowsResp = await page.request.get(
-    `http://localhost:8080/rest/api/window/${PRODUKTKOSTEN_WINDOW_ID}/${productId}/${M_COST_TAB_ID}`
+    `${WEBAPI_BASE_URL}/window/${PRODUKTKOSTEN_WINDOW_ID}/${productId}/${M_COST_TAB_ID}`
   );
   expect(rowsResp.status()).toBe(200);
   const rowsBody = await rowsResp.json();
@@ -70,7 +71,7 @@ price directly (bypassing the audited Kosten Neubewertung path). Asserted on the
   }
 
   // UI evidence: open the Produktkosten window and screenshot the cost grid.
-  await page.goto(`http://localhost:3000/window/${PRODUKTKOSTEN_WINDOW_ID}/${productId}`);
+  await page.goto(`${FRONTEND_BASE_URL}/window/${PRODUKTKOSTEN_WINDOW_ID}/${productId}`);
   await page.waitForTimeout(4000);
   await page
     .locator('.table-flex-wrapper table tbody tr')
