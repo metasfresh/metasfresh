@@ -36,6 +36,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -122,9 +123,16 @@ public class CostRevaluationLineQuickInputDescriptorFactory implements IQuickInp
 
 	private QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return QuickInputLayoutDescriptor.onlyFields(entityDescriptor, new String[][] {
-				{ ICostRevaluationLineQuickInput.COLUMNNAME_M_Product_ID },
-				{ ICostRevaluationLineQuickInput.COLUMNNAME_NewCostPrice }
-		});
+		final DocumentFieldDescriptor productField = entityDescriptor.getField(ICostRevaluationLineQuickInput.COLUMNNAME_M_Product_ID);
+		final DocumentFieldDescriptor newCostPriceField = entityDescriptor.getField(ICostRevaluationLineQuickInput.COLUMNNAME_NewCostPrice);
+
+		// Note: unlike QuickInputLayoutDescriptor.onlyFields(...), we build the elements explicitly here so the
+		// New cost price element carries its field description (the provisional-price hint). The generic
+		// element builder omits the description, so the hint would otherwise never reach the layout / UI.
+		return QuickInputLayoutDescriptor.builder()
+				.element(DocumentLayoutElementDescriptor.builder(productField))
+				.element(DocumentLayoutElementDescriptor.builder(newCostPriceField)
+						.setDescription(newCostPriceField.getDescription()))
+				.build();
 	}
 }
