@@ -46,6 +46,7 @@ import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSourc
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
@@ -74,6 +75,8 @@ public class HUShipmentPackingMaterialLinesBuilder
 	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final transient IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private static final String SYSCONFIG_SplitShipmentPackingMaterialLinesByProject = "de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject";
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private boolean configurable = true;
 	private I_M_InOut _shipment;
@@ -100,6 +103,8 @@ public class HUShipmentPackingMaterialLinesBuilder
 		assertConfigurable();
 
 		_shipment = shipment;
+		packingMaterialsCollector.setConsiderProject(
+				sysConfigBL.getBooleanValue(SYSCONFIG_SplitShipmentPackingMaterialLinesByProject, false, shipment.getAD_Client_ID(), shipment.getAD_Org_ID()));
 	}
 
 	public I_M_InOut getM_InOut()
