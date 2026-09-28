@@ -37,6 +37,12 @@ public class FactAcctLineMatcher
 	@Nullable private final Money amtSourceDr;
 	@Nullable private final Money amtSourceCr;
 	@Nullable private final Quantity qty;
+	/**
+	 * When {@code true}, assert {@code Fact_Acct.Qty} is zero UOM-agnostically (the UOM-equality check is skipped) —
+	 * for amount-only postings (e.g. a cost revaluation) whose fact lines carry no {@code C_UOM_ID}.
+	 * Set by a bare {@code 0} or {@code -} in the {@code Qty} column.
+	 */
+	private final boolean expectZeroQty;
 	@NonNull @Getter private final TableRecordReference documentRef;
 	@Nullable private final Optional<TaxId> taxId;
 	@Nullable private final Optional<String> vatCode;
@@ -154,7 +160,13 @@ public class FactAcctLineMatcher
 						.isEqualByComparingTo(BigDecimal.ZERO);
 			}
 		}
-		if (qty != null)
+		if (expectZeroQty)
+		{
+			softly.assertThat(record.getQty())
+					.as(description.newWithMessage("Qty (expected zero, UOM-agnostic)"))
+					.isEqualByComparingTo(BigDecimal.ZERO);
+		}
+		else if (qty != null)
 		{
 			softly.assertThat(record.getQty())
 					.as(description.newWithMessage("Qty"))
