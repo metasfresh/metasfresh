@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.collect.ImmutableMap;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
@@ -278,6 +280,83 @@ public class OrderGroupRepositoryTest
 				.findFirst()
 				.orElseThrow(() -> new AssertionError("regular line not found in group"));
 		assertThat(loadedRegularLine.getProductCategoryIds()).contains(childCategoryId, parentCategoryId);
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 6 — fallback branch: a regular line whose product has no entry in the batch-resolved
+	// product-category map (e.g. the product record no longer exists) gets an empty
+	// productCategoryIds, instead of failing. Direct unit test of the pure mapping method — a
+	// genuinely-missing product cannot be round-tripped through retrieveGroup() in this in-memory
+	// test store: unlike a real `SELECT ... WHERE id IN (...)`, IProductDAO's bulk lookup
+	// (POJOWrapper.loadByIds -> POJOLookupMap) throws for any id it can't find rather than
+	// silently omitting it, so the DB-level scenario can't be constructed here; the code path this
+	// exercises is exactly what OrderGroupRepository#toGroupRegularLine falls back on.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void toGroupRegularLine_productNotInCategoryMap_hasEmptyProductCategoryIds()
+	{
+		final I_C_OrderLine regularLine = newInstance(I_C_OrderLine.class);
+		regularLine.setC_Order_ID(order.getC_Order_ID());
+		regularLine.setM_Product_ID(productId.getRepoId());
+		regularLine.setLineNetAmt(new BigDecimal("50"));
+		saveRecord(regularLine);
+
+		final GroupRegularLine loadedRegularLine = OrderGroupRepository.toGroupRegularLine(regularLine, ImmutableMap.of());
+
+		assertThat(loadedRegularLine.getProductCategoryIds()).isEmpty();
+	}
+
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	// Test 7 — fallback branch: a manual compensation line (not linked to any schema line) has a
+	// null base, same as a group with no schema at all.
+	// ────────────────────────────────────────────────────────────────────────────────────────────
+	@Test
+	void retrieveGroup_manualCompensationLineWithoutSchemaLine_hasNullBase()
+	{
+		order.setC_BPartner_ID(1);
+		saveRecord(order);
+
+		final I_C_Order_CompensationGroup groupHeader = newInstance(I_C_Order_CompensationGroup.class);
+		groupHeader.setC_Order_ID(order.getC_Order_ID());
+		saveRecord(groupHeader);
+		final int orderCompensationGroupId = groupHeader.getC_Order_CompensationGroup_ID();
+
+		// dedicated category + product for the regular line (the shared `productId` from beforeEach has
+		// no category set, since other tests in this file don't need one)
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		saveRecord(category);
+		final I_M_Product regularLineProduct = newInstance(I_M_Product.class);
+		regularLineProduct.setC_UOM_ID(uomId.getRepoId());
+		regularLineProduct.setM_Product_Category_ID(category.getM_Product_Category_ID());
+		saveRecord(regularLineProduct);
+
+		final I_C_OrderLine regularLine = newInstance(I_C_OrderLine.class);
+		regularLine.setC_Order_ID(order.getC_Order_ID());
+		regularLine.setM_Product_ID(regularLineProduct.getM_Product_ID());
+		regularLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		regularLine.setLineNetAmt(new BigDecimal("100"));
+		saveRecord(regularLine);
+
+		// manual compensation line: IsGroupCompensationLine=true, but no C_CompensationGroup_SchemaLine_ID
+		final I_C_OrderLine compensationLine = newInstance(I_C_OrderLine.class);
+		compensationLine.setC_Order_ID(order.getC_Order_ID());
+		compensationLine.setM_Product_ID(productId.getRepoId());
+		compensationLine.setC_UOM_ID(uomId.getRepoId());
+		compensationLine.setC_Order_CompensationGroup_ID(orderCompensationGroupId);
+		compensationLine.setIsGroupCompensationLine(true);
+		compensationLine.setGroupCompensationType(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount);
+		compensationLine.setGroupCompensationAmtType(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent);
+		compensationLine.setGroupCompensationPercentage(BigDecimal.TEN);
+		compensationLine.setQtyEntered(BigDecimal.ONE);
+		compensationLine.setPriceEntered(BigDecimal.ZERO);
+		compensationLine.setLineNetAmt(BigDecimal.ZERO);
+		saveRecord(compensationLine);
+
+		final GroupId groupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(order.getC_Order_ID()), orderCompensationGroupId);
+		final Group group = repo.retrieveGroup(groupId);
+
+		assertThat(group.getCompensationLines()).hasSize(1);
+		assertThat(group.getCompensationLines().get(0).getBaseProductCategoryId()).isNull();
 	}
 
 	// ── helpers ─────────────────────────────────────────────────────────────────────────────────

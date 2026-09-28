@@ -2,6 +2,7 @@ package de.metas.order.compensationGroup;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.bpartner.BPartnerId;
@@ -17,6 +18,7 @@ import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -92,7 +94,7 @@ public class OrderGroupRepository implements GroupRepository
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
 	private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
@@ -258,11 +260,13 @@ public class OrderGroupRepository implements GroupRepository
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.additive(retrieveAdditive(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID()));
 
+		final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId = retrieveProductCategoryIdAndAncestorsByProductId(groupOrderLines);
+
 		for (final I_C_OrderLine groupOrderLine : groupOrderLines)
 		{
 			if (!groupOrderLine.isGroupCompensationLine())
 			{
-				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine);
+				final GroupRegularLine regularLine = toGroupRegularLine(groupOrderLine, productCategoryIdsByProductId);
 				groupBuilder.regularLine(regularLine);
 			}
 			else
@@ -336,21 +340,46 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
-	private GroupRegularLine toGroupRegularLine(final I_C_OrderLine record)
+	/** package-private for direct testing of the product-category-not-found fallback branch */
+	static GroupRegularLine toGroupRegularLine(
+			final I_C_OrderLine record,
+			final Map<ProductId, ImmutableSet<ProductCategoryId>> productCategoryIdsByProductId)
 	{
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		return GroupRegularLine.builder()
 				.repoId(OrderLineId.ofRepoId(record.getC_OrderLine_ID()))
 				.lineNetAmt(record.getLineNetAmt())
-				.productCategoryIds(retrieveProductCategoryIdAndAncestors(ProductId.ofRepoId(record.getM_Product_ID())))
+				.productCategoryIds(productCategoryIdsByProductId.getOrDefault(productId, ImmutableSet.of()))
 				.build();
 	}
 
-	private ImmutableSet<ProductCategoryId> retrieveProductCategoryIdAndAncestors(@NonNull final ProductId productId)
+	/**
+	 * Batch-resolves each regular (non-compensation) line's product category (plus ancestors) in one query,
+	 * instead of one uncached in-trx product lookup per line (this method runs on the hot order-completion path).
+	 *
+	 * @return product id -> that product's category id plus all ancestor category ids; a product with no resolvable
+	 * category (e.g. deleted) is simply absent, and callers shall fall back to an empty set
+	 */
+	private ImmutableMap<ProductId, ImmutableSet<ProductCategoryId>> retrieveProductCategoryIdAndAncestorsByProductId(
+			final List<I_C_OrderLine> groupOrderLines)
 	{
-		final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
-		return productCategoryId != null
-				? productDAO.getProductCategoryIdAndAncestors(productCategoryId)
-				: ImmutableSet.of();
+		final ImmutableSet<ProductId> productIds = groupOrderLines.stream()
+				.filter(orderLine -> !orderLine.isGroupCompensationLine())
+				.map(orderLine -> ProductId.ofRepoId(orderLine.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		if (productIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<ProductId, ImmutableSet<ProductCategoryId>> result = ImmutableMap.builder();
+		for (final ProductAndCategoryId productAndCategoryId : productDAO.retrieveProductAndCategoryIdsByProductIds(productIds))
+		{
+			final ImmutableSet<ProductCategoryId> categoryIdAndAncestors =
+					productDAO.getProductCategoryIdAndAncestors(productAndCategoryId.getProductCategoryId());
+			result.put(productAndCategoryId.getProductId(), categoryIdAndAncestors);
+		}
+		return result.build();
 	}
 
 	/**
