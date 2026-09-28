@@ -234,7 +234,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 785589
 /* DDL */ select AD_Element_Link_Create_Missing_Field(785589)
 ;
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, Created, CreatedBy, DisplayLength, EntityType, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, Updated, UpdatedBy)
-VALUES (0, 593650, 785590 /*From ID Server*/, 0, 549507, TO_TIMESTAMP('2026-09-28 11:00:38', 'YYYY-MM-DD HH24:MI:SS'), 100, 10, 'D', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'Mandant', TO_TIMESTAMP('2026-09-28 11:00:38', 'YYYY-MM-DD HH24:MI:SS'), 100)
+VALUES (0, 593650, 785590 /*From ID Server*/, 0, 549507, TO_TIMESTAMP('2026-09-28 11:00:38', 'YYYY-MM-DD HH24:MI:SS'), 100, 10, 'D', 'Y', 'Y', 'N', 'N', 'N', 'N', 'Y', 'N', 'Mandant', TO_TIMESTAMP('2026-09-28 11:00:38', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy)
 SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy
