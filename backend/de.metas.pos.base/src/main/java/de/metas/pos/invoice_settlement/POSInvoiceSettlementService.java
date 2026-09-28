@@ -49,8 +49,12 @@ public class POSInvoiceSettlementService
 {
 	private static final AdMessageKey MSG_CurrencyMismatch = AdMessageKey.of("de.metas.pos.InvoiceSettlement.CurrencyMismatch");
 	private static final AdMessageKey MSG_NoLongerOpen = AdMessageKey.of("de.metas.pos.InvoiceSettlement.NoLongerOpen");
+	private static final AdMessageKey MSG_WrongOrg = AdMessageKey.of("de.metas.pos.InvoiceSettlement.WrongOrg");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	// both IInvoiceDAO and IInvoiceBL are needed: IInvoiceDAO.getByDocumentNo()/getByIdInTrx() have no BL equivalent,
+	// while invoiceBL.isCreditMemo() is BL-only — same reasoning for the IAllocationDAO/IAllocationBL pair below
+	// (IAllocationDAO.retrieveOpenAmtInInvoiceCurrency() has no BL equivalent; IAllocationBL.autoAllocateSpecificPayment() is BL-only)
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
@@ -112,12 +116,19 @@ public class POSInvoiceSettlementService
 
 	/**
 	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.NoLongerOpen}) if the invoice is no longer
-	 * open (e.g. already settled by a concurrent request) by the time this transaction re-reads it
+	 * open (e.g. already settled by a concurrent request) by the time this transaction re-reads it. This is a
+	 * best-effort optimistic re-check (a plain re-read, no row lock) — it narrows, but does not eliminate, the race
+	 * between two concurrent settlement requests for the same invoice; it is not a hard concurrency guarantee.
 	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.CurrencyMismatch}) if the invoice's currency
 	 * differs from the terminal's — checked BEFORE the payment is created: a foreign-currency invoice would put a
 	 * wrongly-denominated amount into the till's own-currency cash journal, and {@link Money#assertCurrencyId} inside
 	 * {@link POSCashJournal#addCashInOut} would throw only after the payment had already been completed in this same
 	 * transaction, leaving a completed payment with no matching journal line.
+	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.WrongOrg}) if the invoice does not belong to
+	 * the terminal's org — {@code request.getInvoiceId()} is client-supplied and, unlike {@link #findOpenInvoices},
+	 * this method has no other org gate; without this check a client-supplied invoiceId from another org would be
+	 * settled using THIS terminal's cashbook/cashier, bypassing the org scoping that {@link #findOpenInvoices} alone
+	 * would otherwise enforce.
 	 */
 	@NonNull
 	public POSInvoiceSettleResult settleInCash(@NonNull final POSInvoiceSettleRequest request)
@@ -133,6 +144,18 @@ public class POSInvoiceSettlementService
 		// re-read inside this transaction: the amount looked up by the caller earlier (e.g. via findOpenInvoices,
 		// in its own transaction) may be stale by the time the cashier confirms the settlement
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(request.getInvoiceId());
+
+		// request.getInvoiceId() is client-supplied and, unlike findOpenInvoices (which scopes to terminal.getOrgId()),
+		// this method has no other org gate: without this check, a client-supplied invoiceId from another org would be
+		// settled using THIS terminal's cashbook/cashier, bypassing the org scoping findOpenInvoices otherwise enforces.
+		final OrgId invoiceOrgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+		if (!invoiceOrgId.equals(terminal.getOrgId()))
+		{
+			throw new AdempiereException(MSG_WrongOrg)
+					.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
+					.setParameter("invoiceOrgId", invoiceOrgId)
+					.setParameter("terminalOrgId", terminal.getOrgId());
+		}
 
 		final Money open = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
 		if (open.signum() <= 0)

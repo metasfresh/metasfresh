@@ -49,7 +49,7 @@ Feature: POS Invoice Settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_TC1
+  @Id:S28210_TC23
   Scenario: An open sales invoice is found by document number and settled in cash at the till
     Given metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID   | DocumentNo  | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
@@ -84,7 +84,7 @@ Feature: POS Invoice Settlement
   @from:cucumber
   @allure.label.epic:E0500_Point_of_Sale_POS
   @allure.label.feature:F18030_POS_Checkout
-  @Id:POS_TC1_notOffered
+  @Id:S28210_TC24
   Scenario: A paid invoice, a credit memo and a drafted invoice sharing the searched document number are not offered
     Given metasfresh contains C_Invoice:
       | Identifier  | C_BPartner_ID   | DocumentNo     | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |

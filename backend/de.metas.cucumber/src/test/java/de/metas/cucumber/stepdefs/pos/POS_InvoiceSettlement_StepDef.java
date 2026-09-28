@@ -1,6 +1,5 @@
 package de.metas.cucumber.stepdefs.pos;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -29,7 +28,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -77,7 +75,7 @@ public class POS_InvoiceSettlement_StepDef
 		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
 		final List<POSOpenInvoice> actual = posService.findOpenInvoices(posTerminalId, documentNo);
 
-		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).stream().collect(ImmutableList.toImmutableList());
+		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).toList();
 		assertThat(actual)
 				.as("open invoices found for document number '%s'", documentNo)
 				.hasSize(expectedRows.size());
@@ -181,10 +179,7 @@ public class POS_InvoiceSettlement_StepDef
 				.invoiceId(invoiceId)
 				.build());
 
-		final Optional<StepDefDataIdentifier> paymentIdentifier = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Payment_ID);
-		if (paymentIdentifier.isPresent())
-		{
-			paymentTable.putOrReplace(paymentIdentifier.get(), paymentBL.getById(result.getPaymentId()));
-		}
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Payment_ID)
+				.ifPresent(id -> paymentTable.putOrReplace(id, paymentBL.getById(result.getPaymentId())));
 	}
 }
