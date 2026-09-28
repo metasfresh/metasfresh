@@ -2,7 +2,7 @@
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
 @ghActions:run_on_executor7
-@Id:S30984
+@Id:CostRevaluation
 Feature: Cost Revaluation / Kosten Neubewertung
 ## F1500: Costing
 
@@ -31,7 +31,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | inventory      | inventoryLine      | 2024-03-05   | warehouse      | product      | 0       | 100      | PCE          | 10        | hu      |
       | inventory2     | inventory2Line     | 2024-03-05   | warehouse      | product2     | 0       | 50       | PCE          | 20        | hu2     |
 
-  @Id:S30984_TC1
+  @Id:CostRevaluation_TC1
   Scenario: Increase - completing a cost revaluation raises the current cost price and books the positive delta
     # ── Before: inventory value 1000 CHF, current cost 10 CHF / 100 PCE ──
     Then expect inventory valuation report
@@ -73,7 +73,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | P_Asset_Acct          | 500 CHF       |
       | P_CostAdjustment_Acct | -500 CHF      |
 
-  @Id:S30984_TC2
+  @Id:CostRevaluation_TC2
   Scenario: Decrease - completing a cost revaluation lowers the current cost price and books the negative delta to the cost-adjustment account
     # ── Before: inventory value 1000 CHF, current cost 10 CHF / 100 PCE ──
     Then expect inventory valuation report
@@ -115,7 +115,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | P_CostAdjustment_Acct | 200 CHF       |
       | P_Asset_Acct          | -200 CHF      |
 
-  @Id:S30984_TC4
+  @Id:CostRevaluation_TC4
   Scenario: Forward-only default - a today-dated revaluation with no EvaluationStartDate restates nothing already posted
     # ── Before: inventory value 1000 CHF, current cost 10 CHF / 100 PCE ──
     Then expect inventory valuation report
@@ -164,7 +164,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | P_Asset_Acct          | 800 CHF       |
       | P_CostAdjustment_Acct | -800 CHF      |
 
-  @Id:S30984_TC5
+  @Id:CostRevaluation_TC5
   Scenario: Retrospective - an earlier EvaluationStartDate still restates the posted cost detail (engine behavior intact)
     # ── Before: inventory value 1000 CHF, current cost 10 CHF / 100 PCE ──
     Then expect inventory valuation report
@@ -211,7 +211,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | P_Asset_Acct          | 500 CHF       |
       | P_CostAdjustment_Acct | -500 CHF      |
 
-  @Id:S30984_TC9
+  @Id:CostRevaluation_TC9
   Scenario: Zero-stock init - revaluing a product with CurrentQty=0 sets the current cost with no GL impact
     # ── Seed a zero-stock product: an M_Cost row exists (CurrentQty=0), but nothing was ever posted for it ──
     And metasfresh contains M_Products:
@@ -246,7 +246,7 @@ Feature: Cost Revaluation / Kosten Neubewertung
     # ── No GL impact: Qty 0 means the delta is 0 CHF, so no Fact_Acct rows are posted ──
     And no Fact_Acct records are found for documents revaluationZero
 
-  @Id:S30984_TC10
+  @Id:CostRevaluation_TC10
   Scenario: Seed-cost - quick-input on a stocked product with no M_Cost row seeds the cost at qty 0 with no GL impact
     # ── A stocked product with NO M_Cost row (as after a migration that never set up costing for it) ──
     And metasfresh contains M_Products:
