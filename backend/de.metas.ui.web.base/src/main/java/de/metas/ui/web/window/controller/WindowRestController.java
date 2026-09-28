@@ -88,6 +88,8 @@ import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
 import io.swagger.v3.oas.annotations.Operation;
@@ -132,6 +134,7 @@ public class WindowRestController
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	@NonNull private final UserSession userSession;
 	@NonNull private final DocumentCollection documentCollection;
 	@NonNull private final DocumentZoomIntoService documentZoomIntoService;
@@ -153,13 +156,28 @@ public class WindowRestController
 	{
 		return JSONDocumentLayoutOptions.prepareFrom(userSession)
 				.newRecordDescriptorsProvider(newRecordDescriptorsProvider)
-				.advancedSearchDescriptorsProvider(advancedSearchDescriptorsProvider);
+				.advancedSearchDescriptorsProvider(advancedSearchDescriptorsProvider)
+				.roleETagFingerprint(layoutRoleETagFingerprint());
 	}
 
 	private JSONDocumentOptionsBuilder newJSONDocumentOptions()
 	{
 		return JSONDocumentOptions.builder()
 				.userSession(userSession);
+	}
+
+	/**
+	 * ETag fingerprint for the role-dependent parts of a window layout (the lookup "new record" option is
+	 * gated per role in {@link de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField}). The
+	 * base layout ETag is role-independent, so it is folded in here: the role id makes it distinct per role
+	 * (no cross-role 304 reuse), and the permissions cache version - bumped whenever a role-dependent table
+	 * such as {@code AD_Table_Access} changes - makes a permission change take effect without an app restart.
+	 */
+	private String layoutRoleETagFingerprint()
+	{
+		final RoleId roleId = userSession.getUserRolePermissions().getRoleId();
+		final long permissionsVersion = userRolePermissionsDAO.getCacheVersion();
+		return roleId.getRepoId() + "-" + permissionsVersion;
 	}
 
 	@GetMapping("/{windowId}/layout")
@@ -176,6 +194,7 @@ public class WindowRestController
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
 				.includeLanguageInETag()
+				.includeRoleInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(DocumentDescriptor::getLayout)
 				//
@@ -200,6 +219,7 @@ public class WindowRestController
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
 				.includeLanguageInETag()
+				.includeRoleInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(desc -> desc.getLayout().getDetail(detailId))
 				//
