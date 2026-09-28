@@ -241,9 +241,9 @@ Feature: dropship packing material lines split per project
     # Let the dropship auto-PO creation settle before the shipment is generated.
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID |
-      | ss_A       | sol_A          |
-      | ss_B       | sol_B          |
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_A       | sol_A          | N             |
+      | ss_B       | sol_B          | N             |
 
     And temporarily set sys config boolean value true for sys config 'de.metas.handlingunits.inout.SplitShipmentPackingMaterialLinesByProject'
     When 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
@@ -257,6 +257,31 @@ Feature: dropship packing material lines split per project
       | Identifier | M_Product_ID | C_Project_ID | MovementQty |
       | pm_line_P1 | p_pm         | P1           | 2           |
       | pm_line_P2 | <pm_B>       | P2           | 3           |
+
+    # The packing shipment lines each carry their own Positions Nr., and the packing invoice
+    # inherits it (AC-5).
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.M_InOutLine_ID.Identifier |
+      | ic_pm_P1                          | null                      | pm_line_P1                    |
+      | ic_pm_P2                          | null                      | pm_line_P2                    |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID | OPT.M_Product_ID | C_Project_ID |
+      | ic_pm_P1               | p_pm             | P1           |
+      | ic_pm_P2               | <pm_B>           | P2           |
+
+    And process invoice candidates together and wait 30s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID |
+      | ic_pm_P1               |
+      | ic_pm_P2               |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID   | C_Invoice_Candidate_ID |
+      | invoice_direct | ic_pm_P1               |
+      | invoice_direct | ic_pm_P2               |
+
+    And validate created invoice lines
+      | C_InvoiceLine_ID | C_Invoice_ID   | M_Product_ID | QtyInvoiced | M_InOutLine_ID | OPT.C_Project_ID.Identifier |
+      | il_pm_P1         | invoice_direct | p_pm         | 2           | pm_line_P1     | P1                          |
+      | il_pm_P2         | invoice_direct | <pm_B>       | 3           | pm_line_P2     | P2                          |
 
     Examples:
       | case | vendor_B    | pip_B    | pm_B  |
