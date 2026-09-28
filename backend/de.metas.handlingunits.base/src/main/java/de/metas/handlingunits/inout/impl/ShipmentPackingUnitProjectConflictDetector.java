@@ -1,22 +1,5 @@
 package de.metas.handlingunits.inout.impl;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.inout.InOutLineId;
-import de.metas.logging.LogManager;
-import de.metas.project.ProjectId;
-import lombok.NonNull;
-import lombok.Value;
-import org.compiere.model.I_M_InOut;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -38,6 +21,23 @@ import java.util.Objects;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.inout.InOutLineId;
+import de.metas.logging.LogManager;
+import de.metas.project.ProjectId;
+import lombok.NonNull;
+import lombok.Value;
+import org.compiere.model.I_M_InOut;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Safety-net detector for a packing unit (TU/LU HU, or the default-pallet packing instruction) that ends up
