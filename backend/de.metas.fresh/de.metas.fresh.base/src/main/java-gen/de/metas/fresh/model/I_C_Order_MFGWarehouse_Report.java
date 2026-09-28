@@ -95,7 +95,7 @@ public interface I_C_Order_MFGWarehouse_Report
 	 * Document type or rules
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_DocType_ID (int C_DocType_ID);
@@ -105,7 +105,7 @@ public interface I_C_Order_MFGWarehouse_Report
 	 * Document type or rules
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_DocType_ID();
@@ -184,6 +184,27 @@ public interface I_C_Order_MFGWarehouse_Report
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocStatus (@Nullable java.lang.String DocStatus);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDocStatus();
+
+	ModelColumn<I_C_Order_MFGWarehouse_Report, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Order_MFGWarehouse_Report.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
 	 * Set Document Type.
