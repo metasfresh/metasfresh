@@ -689,14 +689,14 @@ public class DataTableRow
 		return toTimestamp(getAsLocalDate(columnName));
 	}
 
-	public Optional<Timestamp> getAsOptionalLocalDateTimestamp(@NonNull final String columnName)
-	{
-		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
-	}
-
 	private static Timestamp toTimestamp(final LocalDate localDate)
 	{
 		return Timestamp.valueOf(localDate.atStartOfDay());
+	}
+
+	public Optional<Timestamp> getAsOptionalLocalDateTimestamp(@NonNull final String columnName)
+	{
+		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
 	}
 
 	public Optional<Instant> getAsOptionalLocalDateInstant(@NonNull final String columnName)

@@ -1,5 +1,6 @@
 package de.metas.costrevaluation.interceptor;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.costrevaluation.CostRevaluationId;
 import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.i18n.AdMessageKey;
@@ -28,9 +29,17 @@ class M_CostRevaluation
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	void beforeNew(@NonNull final I_M_CostRevaluation record)
 	{
+		// Safety net: DateAcct is mandatory, but we can't rely on its AD_Column/AD_Field default having been
+		// applied by the caller (WebUI, REST, import) before this interceptor fires. Without this, an unset
+		// DateAcct would make the EvaluationStartDate default below silently fall back to NULL (retrospective).
+		if (record.getDateAcct() == null)
+		{
+			record.setDateAcct(SystemTime.asDayTimestamp());
+		}
+
 		// Forward-only default: a new manual revaluation restates nothing already posted unless the user
 		// explicitly picks an earlier EvaluationStartDate. Default it to the posting date (DateAcct) when unset.
-		if (record.getEvaluationStartDate() == null && record.getDateAcct() != null)
+		if (record.getEvaluationStartDate() == null)
 		{
 			record.setEvaluationStartDate(record.getDateAcct());
 		}

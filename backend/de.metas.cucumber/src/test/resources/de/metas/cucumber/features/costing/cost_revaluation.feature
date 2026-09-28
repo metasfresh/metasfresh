@@ -147,8 +147,11 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | AveragePO        | 18.0000 CHF      | 100 PCE    | 1800 CHF     |
+    # ── Forward-only proof: the already-posted 2024-03-05 valuation stays UNCHANGED (10.0000/1000.00) — only the
+    #    forward date reflects the new price. A broken unset-guard that restated 2024-03-05 would fail this row. ──
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
+      | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
       | 2024-03-11 | product      | warehouse      | 100 | 18.0000        | 1800.00          |
 
     # ── Positive delta 100 PCE * (18 - 10) = 800 CHF booked P_Asset DR / P_CostAdjustment CR (amount-only, Qty 0) ──
@@ -182,16 +185,20 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And the cost revaluation identified by revaluation is completed
     And Wait until documents revaluation are posted
 
+    # ── EvaluationStartDate must NOT be clobbered by the forward-only default — the user's own earlier date survives ──
     And validate M_CostRevaluation:
-      | Identifier  | DocStatus | Processed |
-      | revaluation | CO        | true      |
+      | Identifier  | DocStatus | Processed | EvaluationStartDate |
+      | revaluation | CO        | true      | 2024-03-01          |
 
     # ── After: current cost 15 CHF; CumulatedAmt RECALCULATED to 1500 CHF (100 PCE replayed at the new price) — proves the retrospective replay happened ──
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | AveragePO        | 15.0000 CHF      | 100 PCE    | 1500 CHF     |
+    # ── Retrospective proof: the already-posted 2024-03-05 valuation is REWRITTEN to the new price (15.0000/1500.00),
+    #    unlike TC4's forward-only case where that same date stayed at 10.0000/1000.00. ──
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
+      | 2024-03-05 | product      | warehouse      | 100 | 15.0000        | 1500.00          |
       | 2024-03-07 | product      | warehouse      | 100 | 15.0000        | 1500.00          |
 
     # ── Net delta 100 PCE * (15 - 10) = 500 CHF booked P_Asset DR / P_CostAdjustment CR — same net posting as the forward-only case ──
