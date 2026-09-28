@@ -22,9 +22,12 @@ Feature: Cost Revaluation / Kosten Neubewertung
     And load C_AcctSchema:
       | C_AcctSchema_ID | Name                  |
       | acctSchema      | metas fresh UN/34 CHF |
+    # Costing method = MAI (Moving Average Invoice, code 'M'). All scenarios below use the MovingAverageInvoice
+    # material cost element accordingly. Under MAI the on-hand cost is still seeded from the physical inventory's
+    # CostPrice at qty 0->N (first cost event), so every current-cost / valuation / delta figure matches MovingAverageInvoice.
     And update C_AcctSchema:
       | C_AcctSchema_ID | CostingMethod |
-      | acctSchema      | A             |
+      | acctSchema      | M             |
     # ── Starting stock: product = 100 PCE @ 10 CHF; product2 = 50 PCE @ 20 CHF (the "noise" product) ──
     And metasfresh contains single line completed inventories
       | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
@@ -38,13 +41,13 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | product      | AveragePO        | 10.0000 CHF      | 100 PCE    |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    |
 
     # ── Revaluate the product's current cost from 10 to 15 CHF ──
     When metasfresh contains M_CostRevaluation:
-      | Identifier  | C_AcctSchema_ID | M_CostElement_ID | EvaluationStartDate | DateAcct   |
-      | revaluation | acctSchema      | AveragePO        | 2024-03-06          | 2024-03-06 |
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
     And cost revaluation lines are created for revaluation
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
@@ -57,8 +60,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Identifier  | DocStatus | Processed |
       | revaluation | CO        | true      |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | product      | AveragePO        | 15.0000 CHF      | 100 PCE    |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 100 PCE    |
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-07 | product      | warehouse      | 100 | 15.0000        | 1500.00          |
@@ -80,13 +83,13 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | product      | AveragePO        | 10.0000 CHF      | 100 PCE    |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    |
 
     # ── Revaluate the product's current cost from 10 down to 8 CHF ──
     When metasfresh contains M_CostRevaluation:
-      | Identifier  | C_AcctSchema_ID | M_CostElement_ID | EvaluationStartDate | DateAcct   |
-      | revaluation | acctSchema      | AveragePO        | 2024-03-06          | 2024-03-06 |
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-06          | 2024-03-06 |
     And cost revaluation lines are created for revaluation
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
@@ -99,8 +102,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Identifier  | DocStatus | Processed |
       | revaluation | CO        | true      |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | product      | AveragePO        | 8.0000 CHF       | 100 PCE    |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | MovingAverageInvoice | 8.0000 CHF       | 100 PCE    |
     And expect inventory valuation report
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-07 | product      | warehouse      | 100 | 8.0000         | 800.00           |
@@ -122,15 +125,15 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | AveragePO        | 10.0000 CHF      | 100 PCE    | 1000 CHF     |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    | 1000 CHF     |
 
     # ── Revaluate the product's current cost from 10 to 18 CHF, WITHOUT specifying EvaluationStartDate.
     #    DateAcct is chosen clearly AFTER the posted inventory (2024-03-05) so the forward-only default
     #    is unambiguous — no same-day cost detail could be pulled in by an inclusive date-range boundary. ──
     When metasfresh contains M_CostRevaluation:
-      | Identifier  | C_AcctSchema_ID | M_CostElement_ID | DateAcct   |
-      | revaluation | acctSchema      | AveragePO        | 2024-03-10 |
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | DateAcct   |
+      | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-10 |
     And cost revaluation lines are created for revaluation
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
@@ -145,8 +148,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
 
     # ── After: current cost 18 CHF for the 100 PCE on hand (CumulatedAmt reflects the new price going forward) ──
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | AveragePO        | 18.0000 CHF      | 100 PCE    | 1800 CHF     |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 18.0000 CHF      | 100 PCE    | 1800 CHF     |
     # ── Forward-only proof: the already-posted 2024-03-05 valuation stays UNCHANGED (10.0000/1000.00) — only the
     #    forward date reflects the new price. A broken unset-guard that restated 2024-03-05 would fail this row. ──
     And expect inventory valuation report
@@ -171,13 +174,13 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Date       | M_Product_ID | M_Warehouse_ID | Qty | Acct_CostPrice | Acct_ExpectedAmt |
       | 2024-03-05 | product      | warehouse      | 100 | 10.0000        | 1000.00          |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | AveragePO        | 10.0000 CHF      | 100 PCE    | 1000 CHF     |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 10.0000 CHF      | 100 PCE    | 1000 CHF     |
 
     # ── Revaluate from an EvaluationStartDate BEFORE the posted inventory (2024-03-05), so it gets replayed ──
     When metasfresh contains M_CostRevaluation:
-      | Identifier  | C_AcctSchema_ID | M_CostElement_ID | EvaluationStartDate | DateAcct   |
-      | revaluation | acctSchema      | AveragePO        | 2024-03-01          | 2024-03-06 |
+      | Identifier  | C_AcctSchema_ID | M_CostElement_ID     | EvaluationStartDate | DateAcct   |
+      | revaluation | acctSchema      | MovingAverageInvoice | 2024-03-01          | 2024-03-06 |
     And cost revaluation lines are created for revaluation
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID | NewCostPrice |
@@ -192,8 +195,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
 
     # ── After: current cost 15 CHF; CumulatedAmt RECALCULATED to 1500 CHF (100 PCE replayed at the new price) — proves the retrospective replay happened ──
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | product      | AveragePO        | 15.0000 CHF      | 100 PCE    | 1500 CHF     |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 15.0000 CHF      | 100 PCE    | 1500 CHF     |
     # ── The earlier EvaluationStartDate survives the forward-only default and restates the CURRENT cost
     #    (15.0000 / CumulatedAmt 1500, asserted by the "validate current costs" step above). Already-posted
     #    accounting is NOT backdated: the correction posts forward-dated at DateAcct 2024-03-06, and the
@@ -224,13 +227,13 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | M_Product_ID     |
       | productZeroStock |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID     | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | productZeroStock | AveragePO        | 0 CHF            | 0 PCE      | 0 CHF        |
+      | C_AcctSchema_ID | M_Product_ID     | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | productZeroStock | MovingAverageInvoice | 0 CHF            | 0 PCE      | 0 CHF        |
 
     # ── Revaluate to an initial price ──
     When metasfresh contains M_CostRevaluation:
-      | Identifier      | C_AcctSchema_ID | M_CostElement_ID | DateAcct   |
-      | revaluationZero | acctSchema      | AveragePO        | 2024-03-06 |
+      | Identifier      | C_AcctSchema_ID | M_CostElement_ID     | DateAcct   |
+      | revaluationZero | acctSchema      | MovingAverageInvoice | 2024-03-06 |
     And cost revaluation lines are created for revaluationZero
     And update M_CostRevaluationLine:
       | M_CostRevaluation_ID | M_Product_ID     | NewCostPrice |
@@ -243,8 +246,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Identifier      | DocStatus | Processed |
       | revaluationZero | CO        | true      |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID     | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | productZeroStock | AveragePO        | 12.0000 CHF      | 0 PCE      | 0 CHF        |
+      | C_AcctSchema_ID | M_Product_ID     | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | productZeroStock | MovingAverageInvoice | 12.0000 CHF      | 0 PCE      | 0 CHF        |
 
     # ── No GL impact: Qty 0 means the delta is 0 CHF, so no Fact_Acct rows are posted ──
     And no Fact_Acct records are found for documents revaluationZero
@@ -261,8 +264,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
 
     # ── Quick-input the product with an initial price; the seed path creates the M_Cost row at qty 0 ──
     When metasfresh contains M_CostRevaluation:
-      | Identifier        | C_AcctSchema_ID | M_CostElement_ID | DateAcct   |
-      | revaluationNoCost | acctSchema      | AveragePO        | 2024-03-06 |
+      | Identifier        | C_AcctSchema_ID | M_CostElement_ID     | DateAcct   |
+      | revaluationNoCost | acctSchema      | MovingAverageInvoice | 2024-03-06 |
     And quick-input cost revaluation line:
       | M_CostRevaluation_ID | M_Product_ID  | NewCostPrice |
       | revaluationNoCost    | productNoCost | 12           |
@@ -274,8 +277,8 @@ Feature: Cost Revaluation / Kosten Neubewertung
       | Identifier        | DocStatus | Processed |
       | revaluationNoCost | CO        | true      |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID  | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | productNoCost | AveragePO        | 12.0000 CHF      | 0 PCE      | 0 CHF        |
+      | C_AcctSchema_ID | M_Product_ID  | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | productNoCost | MovingAverageInvoice | 12.0000 CHF      | 0 PCE      | 0 CHF        |
 
     # ── No GL impact: qty 0 means the delta is 0 CHF, so no Fact_Acct rows are posted ──
     And no Fact_Acct records are found for documents revaluationNoCost
