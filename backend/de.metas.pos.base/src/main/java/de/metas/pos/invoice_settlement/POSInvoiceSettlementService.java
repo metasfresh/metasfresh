@@ -33,6 +33,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
@@ -50,6 +51,7 @@ public class POSInvoiceSettlementService
 	private static final AdMessageKey MSG_CurrencyMismatch = AdMessageKey.of("de.metas.pos.InvoiceSettlement.CurrencyMismatch");
 	private static final AdMessageKey MSG_NoLongerOpen = AdMessageKey.of("de.metas.pos.InvoiceSettlement.NoLongerOpen");
 	private static final AdMessageKey MSG_WrongOrg = AdMessageKey.of("de.metas.pos.InvoiceSettlement.WrongOrg");
+	private static final AdMessageKey MSG_TenderedTooLow = AdMessageKey.of("de.metas.pos.InvoiceSettlement.TenderedTooLow");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	// both IInvoiceDAO and IInvoiceBL are needed: IInvoiceDAO.getByDocumentNo()/getByIdInTrx() have no BL equivalent,
@@ -129,6 +131,11 @@ public class POSInvoiceSettlementService
 	 * this method has no other org gate; without this check a client-supplied invoiceId from another org would be
 	 * settled using THIS terminal's cashbook/cashier, bypassing the org scoping that {@link #findOpenInvoices} alone
 	 * would otherwise enforce.
+	 * @throws AdempiereException ({@code de.metas.pos.InvoiceSettlement.TenderedTooLow}) if
+	 * {@link POSInvoiceSettleRequest#getCashTenderedAmount()} is given (non-{@code null}) and is less than the open
+	 * amount — checked BEFORE {@code paymentBL.newInboundReceiptBuilder()...createAndProcess()} runs, so a rejected
+	 * tender never leaves an orphaned committed payment (nor a cash-journal line) behind. A {@code null} tendered
+	 * amount skips this check entirely and settles the exact open amount (e.g. the cucumber happy-path).
 	 */
 	@NonNull
 	public POSInvoiceSettleResult settleInCash(@NonNull final POSInvoiceSettleRequest request)
@@ -172,6 +179,19 @@ public class POSInvoiceSettlementService
 					.setParameter("terminalCurrencyId", terminal.getCurrencyId());
 		}
 
+		final BigDecimal cashTenderedAmount = request.getCashTenderedAmount();
+		if (cashTenderedAmount != null)
+		{
+			final Money tendered = Money.of(cashTenderedAmount, invoiceCurrencyId);
+			if (tendered.isLessThan(open))
+			{
+				throw new AdempiereException(MSG_TenderedTooLow)
+						.setParameter("C_Invoice_ID", invoice.getC_Invoice_ID())
+						.setParameter("open", open)
+						.setParameter("cashTenderedAmount", tendered);
+			}
+		}
+
 		final OrgId orgId = terminal.getOrgId();
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		final Instant dateTrx = SystemTime.asInstant();
@@ -196,6 +216,7 @@ public class POSInvoiceSettlementService
 		return POSInvoiceSettleResult.builder()
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.amount(open)
+				.documentNo(invoice.getDocumentNo())
 				.journal(journal)
 				.build();
 	}

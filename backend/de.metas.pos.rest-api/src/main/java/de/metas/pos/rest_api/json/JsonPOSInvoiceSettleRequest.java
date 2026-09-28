@@ -12,7 +12,8 @@ import java.math.BigDecimal;
 /**
  * {@code POST /api/v2/pos/invoices/settle}: settle an open sales invoice in cash at the till.
  * The cashier is taken from the logged-in session, never from the request body
- * (mirrors every other POS REST endpoint).
+ * (mirrors every other POS REST endpoint). {@code documentNo} is not part of this request: it is
+ * server-derived from the settled invoice ({@link JsonPOSInvoiceSettleResponse}), never client-supplied.
  */
 @Value
 @Builder
@@ -21,6 +22,5 @@ public class JsonPOSInvoiceSettleRequest
 {
 	@NonNull POSTerminalId posTerminalId;
 	@NonNull InvoiceId invoiceId;
-	@NonNull String documentNo;
 	@NonNull BigDecimal cashTenderedAmount;
 }

@@ -117,3 +117,31 @@ Feature: POS Invoice Settlement
       | draftedInvoiceL1 | draftedInvoice | product      | 1 PCE       |
 
     Then find open invoices at POS terminal till by document number 'INV-NOTOFFERED' returns no invoices
+
+  # ##########################################################################
+  @from:cucumber
+  @allure.label.epic:E0500_Point_of_Sale_POS
+  @allure.label.feature:F18030_POS_Checkout
+  @Id:S28210_TC25
+  Scenario: A cash-tendered amount below the open amount is rejected, leaving no payment behind
+    Given metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID   | DocumentNo   | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency_ID |
+      | invoice2   | invoiceCustomer | INV-POS-TC25 | 2026-09-24   | Spot                     | true    | EUR           |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
+      | invoiceL2  | invoice2     | product      | 1 PCE       |
+    And the invoice identified by invoice2 is completed
+
+    Then find open invoices at POS terminal till by document number 'INV-POS-TC25' returns:
+      | C_Invoice_ID | C_BPartner_ID   | GrandTotal | OpenAmt |
+      | invoice2     | invoiceCustomer | 119.00     | 119.00  |
+
+    When settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceSettlement.TenderedTooLow':
+      | C_Invoice_ID | CashTenderedAmount |
+      | invoice2     | 50.00              |
+
+    Then validate created invoices
+      | C_Invoice_ID | DocStatus | IsPaid |
+      | invoice2     | CO        | false  |
+    And the cash journal of POS terminal till contains lines:
+      | Type | Amount |

@@ -30,7 +30,6 @@ public class JsonPOSInvoiceSettleResponse
 
 	public static JsonPOSInvoiceSettleResponse of(
 			@NonNull final POSInvoiceSettleResult result,
-			@NonNull final String invoiceDocumentNo,
 			@NonNull final BigDecimal cashTenderedAmount,
 			@NonNull final JsonContext jsonContext)
 	{
@@ -38,7 +37,7 @@ public class JsonPOSInvoiceSettleResponse
 		final BigDecimal change = cashTenderedAmount.subtract(settledAmount.toBigDecimal());
 
 		return JsonPOSInvoiceSettleResponse.builder()
-				.documentNo(invoiceDocumentNo)
+				.documentNo(result.getDocumentNo())
 				.amount(settledAmount.toBigDecimal())
 				.change(change)
 				.journal(JsonCashJournalSummary.of(result.getJournal(), jsonContext))

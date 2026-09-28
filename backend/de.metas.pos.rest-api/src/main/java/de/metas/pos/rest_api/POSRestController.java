@@ -18,12 +18,19 @@ import de.metas.pos.POSTerminal;
 import de.metas.pos.POSTerminalCloseJournalRequest;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.POSTerminalOpenJournalRequest;
+import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
+import de.metas.pos.invoice_settlement.POSInvoiceSettleResult;
+import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
+import de.metas.pos.invoice_settlement.POSOpenInvoice;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalCategory;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
 import de.metas.pos.rest_api.json.JsonChangeOrderStatusRequest;
 import de.metas.pos.rest_api.json.JsonContext;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
+import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
 import de.metas.pos.rest_api.json.JsonPOSPaymentCheckoutRequest;
@@ -35,11 +42,6 @@ import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
 import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
 import de.metas.pos.rest_api.json.JsonProduct;
 import de.metas.pos.rest_api.json.JsonProductsSearchResult;
-import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
-import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
-import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
-import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
-import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
 import de.metas.pos.returns.POSReturnRequestedLine;
 import de.metas.pos.returns.POSReturnResult;
 import de.metas.pos.returns.POSReturnService;
@@ -355,59 +357,32 @@ public class POSRestController
 			return JsonPOSOpenInvoicesList.of(ImmutableList.of());
 		}
 
-		final List<de.metas.pos.invoice_settlement.POSOpenInvoice> invoices = posInvoiceSettlementService.findOpenInvoices(posTerminalId, documentNo);
+		final List<POSOpenInvoice> invoices = posInvoiceSettlementService.findOpenInvoices(posTerminalId, documentNo);
 		return JsonPOSOpenInvoicesList.of(invoices);
 	}
 
+	/**
+	 * The tendered-amount guard (tendered &gt;= open amount) runs INSIDE {@code posInvoiceSettlementService.settleInCash}
+	 * (before the payment is created), not here: this method just passes the tendered amount through and returns the
+	 * typed response, letting any {@code AdempiereException} (currency mismatch, invoice no longer open, wrong org,
+	 * tendered too low, …) propagate unwrapped to the global {@code @ControllerAdvice} — same convention as
+	 * {@link #checkoutPayment} / {@link #refundPayment}.
+	 */
 	@PostMapping("/invoices/settle")
-	public ResponseEntity<?> settleInvoice(@RequestBody final JsonPOSInvoiceSettleRequest request)
+	public JsonPOSInvoiceSettleResponse settleInvoice(@RequestBody final JsonPOSInvoiceSettleRequest request)
 	{
 		final UserId cashierId = getLoggedUserId();
 
-		// Validate that cashTenderedAmount >= the open amount (will be checked after calling service)
-		// First call the service to get the settlement amount
 		final POSInvoiceSettleRequest serviceRequest = POSInvoiceSettleRequest.builder()
 				.posTerminalId(request.getPosTerminalId())
 				.invoiceId(request.getInvoiceId())
 				.cashierId(cashierId)
+				.cashTenderedAmount(request.getCashTenderedAmount())
 				.build();
 
-		try
-		{
-			final de.metas.pos.invoice_settlement.POSInvoiceSettleResult result = posInvoiceSettlementService.settleInCash(serviceRequest);
+		final POSInvoiceSettleResult result = posInvoiceSettlementService.settleInCash(serviceRequest);
 
-			// Validate that cash tendered >= settled amount
-			if (request.getCashTenderedAmount().compareTo(result.getAmount().toBigDecimal()) < 0)
-			{
-				return ResponseEntity.badRequest().body(
-						"Tendered amount must be >= settled amount. Tendered: " +
-						request.getCashTenderedAmount() + ", Required: " + result.getAmount().toBigDecimal()
-				);
-			}
-
-			// Convert the result to JSON and return
-			final JsonContext jsonContext = newJsonContext();
-			final JsonPOSInvoiceSettleResponse response = JsonPOSInvoiceSettleResponse.of(
-					result,
-					request.getDocumentNo(),
-					request.getCashTenderedAmount(),
-					jsonContext
-			);
-
-			return ResponseEntity.ok(response);
-		}
-		catch (final AdempiereException ex)
-		{
-			// Return 400 for business logic errors (e.g. currency mismatch, invoice not open, wrong org)
-			final String exceptionMessage = ex.getMessage();
-			if (exceptionMessage != null &&
-				(exceptionMessage.contains("NoLongerOpen") ||
-				 exceptionMessage.contains("CurrencyMismatch") ||
-				 exceptionMessage.contains("WrongOrg")))
-			{
-				return ResponseEntity.badRequest().body(ex.getLocalizedMessage());
-			}
-			throw ex;
-		}
+		final JsonContext jsonContext = newJsonContext();
+		return JsonPOSInvoiceSettleResponse.of(result, request.getCashTenderedAmount(), jsonContext);
 	}
 }

@@ -7,11 +7,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.costing.ChargeId;
+import de.metas.invoice.InvoiceId;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentDetail;
 import de.metas.pos.rest_api.json.JsonCashJournalSummary.JsonPaymentMethodSummary;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalRequest;
 import de.metas.pos.rest_api.json.JsonCashWithdrawalResponse;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest;
+import de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse;
+import de.metas.pos.rest_api.json.JsonPOSOpenInvoice;
+import de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList;
 import de.metas.pos.rest_api.json.JsonPOSOrder;
 import de.metas.pos.rest_api.json.JsonPOSOrderLine;
 import de.metas.pos.rest_api.json.JsonPOSOrdersList;
@@ -34,6 +39,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -371,21 +377,21 @@ class JsonSerializeDeserializeTest
 	void test_JsonPOSOpenInvoicesList() throws JsonProcessingException
 	{
 		testSerializeDeserialize(
-				de.metas.pos.rest_api.json.JsonPOSOpenInvoicesList.builder()
+				JsonPOSOpenInvoicesList.builder()
 						.list(ImmutableList.of(
-								de.metas.pos.rest_api.json.JsonPOSOpenInvoice.builder()
-										.invoiceId(de.metas.invoice.InvoiceId.ofRepoId(1))
+								JsonPOSOpenInvoice.builder()
+										.invoiceId(InvoiceId.ofRepoId(1))
 										.documentNo("INV-001")
 										.bpartnerName("Customer Name")
-										.dateInvoiced(java.time.LocalDate.of(2026, 9, 24))
+										.dateInvoiced(LocalDate.of(2026, 9, 24))
 										.grandTotal(new BigDecimal("100.00"))
 										.openAmt(new BigDecimal("75.50"))
 										.build(),
-								de.metas.pos.rest_api.json.JsonPOSOpenInvoice.builder()
-										.invoiceId(de.metas.invoice.InvoiceId.ofRepoId(2))
+								JsonPOSOpenInvoice.builder()
+										.invoiceId(InvoiceId.ofRepoId(2))
 										.documentNo("INV-002")
 										.bpartnerName("Another Customer")
-										.dateInvoiced(java.time.LocalDate.of(2026, 9, 23))
+										.dateInvoiced(LocalDate.of(2026, 9, 23))
 										.grandTotal(new BigDecimal("250.00"))
 										.openAmt(new BigDecimal("250.00"))
 										.build()
@@ -398,10 +404,9 @@ class JsonSerializeDeserializeTest
 	void test_JsonPOSInvoiceSettleRequest() throws JsonProcessingException
 	{
 		testSerializeDeserialize(
-				de.metas.pos.rest_api.json.JsonPOSInvoiceSettleRequest.builder()
+				JsonPOSInvoiceSettleRequest.builder()
 						.posTerminalId(POSTerminalId.ofRepoId(1))
-						.invoiceId(de.metas.invoice.InvoiceId.ofRepoId(2))
-						.documentNo("INV-001")
+						.invoiceId(InvoiceId.ofRepoId(2))
 						.cashTenderedAmount(new BigDecimal("100.00"))
 						.build()
 		);
@@ -411,7 +416,7 @@ class JsonSerializeDeserializeTest
 	void test_JsonPOSInvoiceSettleResponse() throws JsonProcessingException
 	{
 		testSerializeDeserialize(
-				de.metas.pos.rest_api.json.JsonPOSInvoiceSettleResponse.builder()
+				JsonPOSInvoiceSettleResponse.builder()
 						.documentNo("INV-001")
 						.amount(new BigDecimal("75.50"))
 						.change(new BigDecimal("24.50"))

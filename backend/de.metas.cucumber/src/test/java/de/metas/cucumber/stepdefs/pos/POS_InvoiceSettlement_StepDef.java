@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.pos;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -8,8 +9,11 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
 import de.metas.pos.invoice_settlement.POSInvoiceSettleRequest;
@@ -27,9 +31,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Step definitions for settling an existing open sales invoice in cash at the till: searching for it by document
@@ -39,7 +46,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class POS_InvoiceSettlement_StepDef
 {
 	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final POSService posService = SpringContextHolder.instance.getBean(POSService.class);
 
 	@NonNull private final C_POS_StepDefData posTable;
@@ -181,5 +190,72 @@ public class POS_InvoiceSettlement_StepDef
 
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Payment_ID)
 				.ifPresent(id -> paymentTable.putOrReplace(id, paymentBL.getById(result.getPaymentId())));
+	}
+
+	/**
+	 * Attempts to settle each given open invoice in cash with the given tendered amount and asserts the call is
+	 * REJECTED with the given AD_Message — proving the orphaned-payment invariant: a rejected tender must not leave
+	 * a committed {@code C_Payment} behind (checked by comparing the bpartner's payment count before/after the
+	 * rejected call).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) the open invoice to attempt to settle<br>
+	 *   <b>CashTenderedAmount</b> — (required) the (insufficient) cash amount tendered<br>
+	 * @cucumber.depends StepDefData: C_POS_StepDefData, C_Invoice_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When settling the following invoices in cash at POS terminal till by cashier metasfresh fails with AD_Message 'de.metas.pos.InvoiceSettlement.TenderedTooLow':
+	 *   | C_Invoice_ID | CashTenderedAmount |
+	 *   | invoice1     | 50.00              |
+	 * </pre>
+	 */
+	@And("^settling the following invoices in cash at POS terminal (\\S+) by cashier (\\S+) fails with AD_Message '(.*)':$")
+	public void settleInvoicesInCashFails(
+			@NonNull final String terminalIdentifier,
+			@NonNull final String userLogin,
+			@NonNull final String expectedAdMessage,
+			@NonNull final DataTable dataTable)
+	{
+		final POSTerminalId posTerminalId = posTable.getId(StepDefDataIdentifier.ofString(terminalIdentifier));
+		final UserId cashierId = StepDefUtil.getUserIdByLogin(userLogin);
+
+		// AdempiereException#getErrorCode() resolves to AD_Message.ErrorCode when the message has one, falling
+		// back to the AdMessageKey itself otherwise (the exact resolution AdempiereException's own constructor
+		// does) — resolve the expectation the same way rather than assuming it is always the bare key
+		final AdMessageKey expectedKey = AdMessageKey.of(expectedAdMessage);
+		final String expectedErrorCode = Optional.ofNullable(msgBL.getErrorCode(expectedKey))
+				.orElseGet(expectedKey::toAD_Message);
+
+		DataTableRows.of(dataTable).forEach(row -> assertSettleInvoiceInCashRejected(posTerminalId, cashierId, expectedErrorCode, row));
+	}
+
+	private void assertSettleInvoiceInCashRejected(
+			@NonNull final POSTerminalId posTerminalId,
+			@NonNull final UserId cashierId,
+			@NonNull final String expectedErrorCode,
+			@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID);
+		final InvoiceId invoiceId = invoiceIdentifier.lookupNotNullIdIn(invoiceTable);
+		final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
+		final BigDecimal cashTenderedAmount = row.getAsBigDecimal("CashTenderedAmount");
+
+		final long paymentCountBefore = paymentDAO.streamPaymentIdsByBPartnerId(bpartnerId).count();
+
+		assertThatThrownBy(() -> posService.settleInvoiceInCash(POSInvoiceSettleRequest.builder()
+				.posTerminalId(posTerminalId)
+				.cashierId(cashierId)
+				.invoiceId(invoiceId)
+				.cashTenderedAmount(cashTenderedAmount)
+				.build()))
+				.as("settlement with an insufficient cash-tendered amount must be rejected")
+				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.getErrorCode()).as("AD_Message").isEqualTo(expectedErrorCode));
+
+		final long paymentCountAfter = paymentDAO.streamPaymentIdsByBPartnerId(bpartnerId).count();
+		assertThat(paymentCountAfter)
+				.as("no C_Payment must be created for a rejected settlement (orphaned-payment invariant)")
+				.isEqualTo(paymentCountBefore);
 	}
 }

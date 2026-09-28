@@ -13,6 +13,7 @@ import de.metas.pos.POSCashJournal;
 import de.metas.pos.POSCashJournalId;
 import de.metas.pos.POSService;
 import de.metas.pos.POSTerminalId;
+import de.metas.pos.invoice_settlement.POSInvoiceSettlementService;
 import de.metas.pos.rest_api.json.JsonPOSReturnLine;
 import de.metas.pos.rest_api.json.JsonPOSReturnRequest;
 import de.metas.pos.rest_api.json.JsonPOSReturnResponse;
@@ -81,7 +82,7 @@ class POSRestControllerTest
 				new CurrencyRepository(),
 				Mockito.mock(POSCashWithdrawalService.class),
 				posReturnService,
-				Mockito.mock(de.metas.pos.invoice_settlement.POSInvoiceSettlementService.class));
+				Mockito.mock(POSInvoiceSettlementService.class));
 	}
 
 	@Test

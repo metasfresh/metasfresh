@@ -17,5 +17,6 @@ public class POSInvoiceSettleResult
 {
 	@NonNull PaymentId paymentId;
 	@NonNull Money amount;
+	@NonNull String documentNo;
 	@NonNull POSCashJournal journal;
 }
