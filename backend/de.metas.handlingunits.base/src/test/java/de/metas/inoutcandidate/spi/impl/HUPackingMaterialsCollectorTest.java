@@ -114,7 +114,7 @@ public class HUPackingMaterialsCollectorTest
 	}
 
 	/**
-	 * Task https://github.com/metasfresh/metasfresh/issues/gh404 (Packing lines per project)
+	 * Packing lines per project
 	 * <p>
 	 * (a) flag ON, two sources with different projects (P1, P2) &rarr; the parent ends up with 2 candidates,
 	 * each carrying its own single project. Goes parent &rarr; {@link HUPackingMaterialsCollector#splitNew()} &rarr;
