@@ -43,14 +43,23 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -240,6 +249,139 @@ public class PackingMaterialShipmentLines_StepDef
 				.map(line -> "M_Product_ID=" + line.getM_Product_ID()
 						+ ", C_Project_ID=" + (line.getC_Project_ID() > 0 ? line.getC_Project_ID() : "none")
 						+ ", MovementQty=" + line.getMovementQty())
+				.collect(Collectors.joining("\n"));
+	}
+
+	/**
+	 * Asserts the packing-material section of the shipment report — the {@code de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU(M_InOut_ID, AD_Language)}
+	 * DB function, which the shipment's Jasper report calls to render its packing-material lines — groups the shipment's per-{@code C_Project_ID}-split
+	 * packing-material {@code M_InOutLine}s back down to one summed row per product (the function groups by product name/UOM/description, not by project),
+	 * regardless of how many project-scoped lines {@code HUShipmentPackingMaterialLinesBuilder} split the shipment into.
+	 * <p>
+	 * Queries the DB function directly via JDBC (no Java model class exists for its result type). On a mismatch this step fails, printing every
+	 * actual row the function returned. <b>If the DB function does not exist (e.g. dropped/renamed), the underlying {@link SQLException} propagates
+	 * and this step FAILS — it never skips or passes silently.</b>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) expected packing-material product<br>
+	 *   <b>MovementQty</b> — (required) expected quantity, summed across every row the function returns for this product<br>
+	 *   <b>RowCount</b> — (required) expected number of raw rows the function returns for this product (normally 1 — proving the per-project HU split is re-aggregated by the report)<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_Product_StepDefData
+	 * @cucumber.example <pre>
+	 * And the shipment report packing section of shipment_1 in language de_DE has exactly:
+	 *   | M_Product_ID | MovementQty | RowCount |
+	 *   | p_pm         | 9           | 1        |
+	 * </pre>
+	 */
+	@And("^the shipment report packing section of (.*) in language (.*) has exactly:$")
+	public void the_shipment_report_packing_section_has_exactly(
+			@NonNull final String shipmentIdentifierString,
+			@NonNull final String adLanguage,
+			@NonNull final DataTable dataTable) throws SQLException
+	{
+		final I_M_InOut shipment = inoutTable.get(StepDefDataIdentifier.ofString(shipmentIdentifierString));
+
+		final List<Map<String, Object>> allRows = queryShipmentReportPackingSection(shipment.getM_InOut_ID(), adLanguage);
+		final List<Map<String, Object>> remainingRows = new ArrayList<>(allRows);
+
+		DataTableRows.of(dataTable).forEach(row -> matchAndConsumeReportRows(shipmentIdentifierString, row, remainingRows, allRows));
+
+		if (!remainingRows.isEmpty())
+		{
+			fail("Shipment report packing section of " + shipmentIdentifierString + " has " + remainingRows.size()
+					+ " unexpected extra row(s). Actual rows:\n" + formatReportRows(allRows));
+		}
+	}
+
+	private void matchAndConsumeReportRows(
+			@NonNull final String shipmentIdentifierString,
+			@NonNull final DataTableRow row,
+			@NonNull final List<Map<String, Object>> remainingRows,
+			@NonNull final List<Map<String, Object>> allRows)
+	{
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier("M_Product_ID");
+		final I_M_Product product = productTable.get(productIdentifier);
+		final String expectedProductName = product.getName();
+		final BigDecimal expectedQty = row.getAsBigDecimal("MovementQty");
+		final int expectedRowCount = row.getAsInt("RowCount");
+
+		final List<Map<String, Object>> matchedRows = new ArrayList<>();
+		final Iterator<Map<String, Object>> remainingRowsIterator = remainingRows.iterator();
+		while (remainingRowsIterator.hasNext())
+		{
+			final Map<String, Object> candidate = remainingRowsIterator.next();
+			if (expectedProductName.equals(candidate.get("name")))
+			{
+				matchedRows.add(candidate);
+				remainingRowsIterator.remove();
+			}
+		}
+
+		if (matchedRows.size() != expectedRowCount)
+		{
+			fail("Expected " + expectedRowCount + " row(s) in the packing section of shipment " + shipmentIdentifierString
+					+ " for product " + productIdentifier.getAsString() + " (name=" + expectedProductName + "), but found " + matchedRows.size()
+					+ ". Actual rows:\n" + formatReportRows(allRows));
+		}
+
+		final BigDecimal actualQty = matchedRows.stream()
+				.map(matchedRow -> (BigDecimal)matchedRow.get("movementqty"))
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		if (actualQty.compareTo(expectedQty) != 0)
+		{
+			fail("Expected summed MovementQty=" + expectedQty + " in the packing section of shipment " + shipmentIdentifierString
+					+ " for product " + productIdentifier.getAsString() + " (name=" + expectedProductName + "), but found " + actualQty
+					+ ". Actual rows:\n" + formatReportRows(allRows));
+		}
+	}
+
+	/**
+	 * Raw JDBC call — no Java model class exists for {@code de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU}'s result type.
+	 * A missing/renamed DB function surfaces as a {@link SQLException} thrown from {@code executeQuery()}, which this method does NOT catch,
+	 * so the calling step fails instead of silently returning no rows.
+	 * <p>
+	 * Filters {@code IsPrintWhenPackingMaterial='Y'} to mirror the real report's own query
+	 * ({@code report_details_hu.jrxml}'s {@code queryString}), so this step asserts exactly what the printed report shows.
+	 */
+	private List<Map<String, Object>> queryShipmentReportPackingSection(final int inOutId, @NonNull final String adLanguage) throws SQLException
+	{
+		final List<Map<String, Object>> rows = new ArrayList<>();
+		final String sql = "SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU(?, ?) WHERE IsPrintWhenPackingMaterial='Y'";
+
+		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
+		{
+			pstmt.setInt(1, inOutId);
+			pstmt.setString(2, adLanguage);
+
+			try (final ResultSet rs = pstmt.executeQuery())
+			{
+				while (rs.next())
+				{
+					final Map<String, Object> row = new LinkedHashMap<>();
+					row.put("movementqty", rs.getBigDecimal("movementqty"));
+					row.put("name", rs.getString("name"));
+					row.put("uomsymbol", rs.getString("uomsymbol"));
+					row.put("description", rs.getString("description"));
+					row.put("isprintwhenpackingmaterial", rs.getString("isprintwhenpackingmaterial"));
+					rows.add(row);
+				}
+			}
+		}
+
+		return rows;
+	}
+
+	private static String formatReportRows(@NonNull final List<Map<String, Object>> rows)
+	{
+		if (rows.isEmpty())
+		{
+			return "(none)";
+		}
+
+		return rows.stream()
+				.map(String::valueOf)
 				.collect(Collectors.joining("\n"));
 	}
 }

@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.cache.CacheMgt;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
@@ -33,6 +34,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_M_Product_Category;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -45,17 +47,20 @@ public class AD_SysConfig_StepDef
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final AD_User_StepDefData userTable;
+	private final M_Product_Category_StepDefData productCategoryTable;
 
 	/**
-	 * Sysconfigs this scenario overwrote via {@link #temporarily_set_sys_config_boolean_value}, mapped to their value from BEFORE the overwrite
+	 * Sysconfigs this scenario overwrote via {@link #temporarily_set_sys_config_boolean_value} or
+	 * {@link #temporarily_set_sysConfig_to_product_category}, mapped to their value from BEFORE the overwrite
 	 * (possibly {@code null}, meaning the sysconfig had none). Restored by
 	 * {@link #restoreRepointedSysConfigsAfterScenario()}.
 	 */
 	private final Map<String, String> priorValueBySysConfigName = new LinkedHashMap<>();
 
-	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable)
+	public AD_SysConfig_StepDef(@NonNull final AD_User_StepDefData userTable, @NonNull final M_Product_Category_StepDefData productCategoryTable)
 	{
 		this.userTable = userTable;
+		this.productCategoryTable = productCategoryTable;
 	}
 
 	@And("^set sys config (String|boolean|int) value (.*) for sys config (.*)$")
@@ -131,6 +136,42 @@ public class AD_SysConfig_StepDef
 		sysConfigBL.setValue(sysConfigName, booleanValue, ClientId.SYSTEM, StepDefConstants.ORG_ID_SYSTEM);
 
 		CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+	}
+
+	/**
+	 * Temporarily points an AD_SysConfig at an {@code M_Product_Category}'s repo id — e.g. a client's own
+	 * "packing material category" sysconfig — for the scenario's duration; the scenario CREATES its own category
+	 * (via {@code metasfresh contains M_Product_Categories:}) rather than depending on a pre-seeded one, so the
+	 * scenario is self-contained (never a customer-specific master-data literal — see
+	 * {@code backend/de.metas.cucumber/CLAUDE.md} rule 16). The sysconfig's PRIOR value is captured and restored by
+	 * {@link #restoreRepointedSysConfigsAfterScenario()} — same mechanism as
+	 * {@link #temporarily_set_sys_config_boolean_value} — so this never leaves a changed SYSTEM sysconfig for a
+	 * sibling feature sharing the executor's DB.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Name</b> — (required) the AD_SysConfig name to point<br>
+	 *   <b>M_Product_Category_ID</b> — (required, identifier-ref) the product category whose repo id becomes the sysconfig's value<br>
+	 * @cucumber.depends StepDefData: M_Product_Category_StepDefData
+	 * @cucumber.example <pre>
+	 * Given temporarily set AD_SysConfig to M_Product_Category_ID:
+	 *   | Name                             | M_Product_Category_ID |
+	 *   | PackingMaterialProductCategoryID | pm_category           |
+	 * </pre>
+	 */
+	@And("temporarily set AD_SysConfig to M_Product_Category_ID:")
+	public void temporarily_set_sysConfig_to_product_category(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String sysConfigName = row.getAsString(I_AD_SysConfig.COLUMNNAME_Name);
+			final I_M_Product_Category productCategory = row.getAsIdentifier(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+					.lookupNotNullIn(productCategoryTable);
+
+			priorValueBySysConfigName.putIfAbsent(sysConfigName, sysConfigBL.getValue(sysConfigName, (String)null));
+			setSysConfigIntValue(sysConfigName, productCategory.getM_Product_Category_ID());
+
+			CacheMgt.get().reset(I_AD_SysConfig.Table_Name);
+		});
 	}
 
 	/**
