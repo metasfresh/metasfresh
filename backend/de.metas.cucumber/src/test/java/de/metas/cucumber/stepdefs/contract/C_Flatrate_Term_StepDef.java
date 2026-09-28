@@ -26,6 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.IContractChangeBL;
+import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -33,6 +35,8 @@ import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -60,10 +64,12 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +84,7 @@ import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Processed;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class C_Flatrate_Term_StepDef
 {
@@ -94,6 +101,7 @@ public class C_Flatrate_Term_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 
 	public C_Flatrate_Term_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -218,23 +226,39 @@ public class C_Flatrate_Term_StepDef
 		}
 	}
 
+	/**
+	 * Finds a previously created {@link I_C_Flatrate_Term} by conditions/bill-partner/product and asserts its
+	 * fields, then registers it under an identifier for later reference.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Flatrate_Term_ID</b> — (required) alias to register the found record under<br>
+	 *   <b>C_Flatrate_Conditions_ID</b> — (required, identifier-ref) conditions the term must reference<br>
+	 *   <b>Bill_BPartner_ID</b> — (required, identifier-ref) bill-to partner the term must reference<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) product the term must reference<br>
+	 *   <b>OPT.C_OrderLine_Term_ID</b> — (optional, identifier-ref) expected linked order line<br>
+	 *   <b>OPT.C_Order_Term_ID</b> — (optional, identifier-ref) expected linked order<br>
+	 *   <b>OPT.C_UOM_ID.X12DE355</b> — (optional) expected UOM, by X12DE355 code<br>
+	 *   <b>OPT.PriceActual</b> — (optional) expected price<br>
+	 *   <b>OPT.PlannedQtyPerUnit</b> — (optional) expected planned qty per unit<br>
+	 *   <b>OPT.EndDate</b> — (optional) expected end date<br>
+	 *   <b>OPT.NoticeDate</b> — (optional) expected notice date<br>
+	 * @cucumber.depends StepDefData: C_Flatrate_Conditions_StepDefData, C_BPartner_StepDefData, M_Product_StepDefData,
+	 *   C_OrderLine_StepDefData, C_Order_StepDefData, C_Flatrate_Term_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate created C_Flatrate_Term:
+	 *   | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.EndDate |
+	 *   | contract_1                    | conditions_1                        | bpartner_1                  | product_1                | 2022-05-30  |
+	 * </pre>
+	 */
 	@And("validate created C_Flatrate_Term:")
 	public void validate_created_C_Flatrate_Term(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String flatrateConditionsIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Flatrate_Conditions contractConditions = conditionsTable.get(flatrateConditionsIdentifier);
-			assertThat(contractConditions).isNotNull();
-
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
-			assertThat(bPartner).isNotNull();
-
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Flatrate_Conditions contractConditions = row.getAsIdentifier(COLUMNNAME_C_Flatrate_Conditions_ID).lookupNotNullIn(conditionsTable);
+			final I_C_BPartner bPartner = row.getAsIdentifier(COLUMNNAME_Bill_BPartner_ID).lookupNotNullIn(bpartnerTable);
+			final I_M_Product product = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 
 			final I_C_Flatrate_Term contract = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 					.addOnlyActiveRecordsFilter()
@@ -244,44 +268,40 @@ public class C_Flatrate_Term_StepDef
 					.create()
 					.firstOnlyNotNull(I_C_Flatrate_Term.class);
 
-			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderLineIdentifier))
-			{
-				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				assertThat(orderLine).isNotNull();
-				assertThat(contract.getC_OrderLine_Term_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
-			}
+			row.getAsOptionalIdentifier(I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(identifier -> {
+						final I_C_OrderLine orderLine = identifier.lookupNotNullIn(orderLineTable);
+						assertThat(contract.getC_OrderLine_Term_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+					});
 
-			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderIdentifier))
-			{
-				final I_C_Order order = orderTable.get(orderIdentifier);
-				assertThat(order).isNotNull();
-				assertThat(contract.getC_Order_Term_ID()).isEqualTo(order.getC_Order_ID());
-			}
+			row.getAsOptionalIdentifier(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID)
+					.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+					.ifPresent(identifier -> {
+						final I_C_Order order = identifier.lookupNotNullIn(orderTable);
+						assertThat(contract.getC_Order_Term_ID()).isEqualTo(order.getC_Order_ID());
+					});
 
-			final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-			if (Check.isNotBlank(x12de355Code))
-			{
-				final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-				assertThat(contract.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
-			}
+			row.getAsOptionalUOMCode(I_C_Flatrate_Term.COLUMNNAME_C_UOM_ID)
+					.ifPresent(uomCode -> {
+						final UomId uomId = uomDAO.getUomIdByX12DE355(uomCode);
+						assertThat(contract.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+					});
 
-			final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_PriceActual);
-			if (priceActual != null)
-			{
-				assertThat(contract.getPriceActual()).isEqualTo(priceActual);
-			}
+			row.getAsOptionalBigDecimal(I_C_Flatrate_Term.COLUMNNAME_PriceActual)
+					.ifPresent(priceActual -> assertThat(contract.getPriceActual()).isEqualTo(priceActual));
 
-			final BigDecimal plannedQtyPerUnit = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_PlannedQtyPerUnit);
-			if (plannedQtyPerUnit != null)
-			{
-				assertThat(contract.getPlannedQtyPerUnit()).isEqualTo(plannedQtyPerUnit);
-			}
+			row.getAsOptionalBigDecimal(I_C_Flatrate_Term.COLUMNNAME_PlannedQtyPerUnit)
+					.ifPresent(plannedQtyPerUnit -> assertThat(contract.getPlannedQtyPerUnit()).isEqualTo(plannedQtyPerUnit));
 
-			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
-			contractTable.put(flatrateTermIdentifier, contract);
-		}
+			row.getAsOptionalLocalDate(I_C_Flatrate_Term.COLUMNNAME_EndDate)
+					.ifPresent(endDate -> assertThat(TimeUtil.asLocalDate(contract.getEndDate())).as("EndDate").isEqualTo(endDate));
+
+			row.getAsOptionalLocalDate(I_C_Flatrate_Term.COLUMNNAME_NoticeDate)
+					.ifPresent(noticeDate -> assertThat(TimeUtil.asLocalDate(contract.getNoticeDate())).as("NoticeDate").isEqualTo(noticeDate));
+
+			contractTable.put(row.getAsIdentifier(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID), contract);
+		});
 	}
 
 	@And("^the C_Flatrate_Term identified by (.*) is completed$")
@@ -290,6 +310,52 @@ public class C_Flatrate_Term_StepDef
 		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
 		assertThat(flatrateTermRecord).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
 		documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	/**
+	 * Cancels the given {@link I_C_Flatrate_Term} at the given change date, via {@link IContractChangeBL#cancelContract}
+	 * (the same business logic the "Vertrag Kündigen" / contract-change UI action invokes).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And the C_Flatrate_Term identified by contract_1 is cancelled with change date 2022-06-15
+	 * </pre>
+	 */
+	@And("^the C_Flatrate_Term identified by (.*) is cancelled with change date (.*)$")
+	public void the_C_Flatrate_Term_is_cancelled(@NonNull final String identifier, @NonNull final String changeDateStr)
+	{
+		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
+		assertThat(flatrateTermRecord).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
+
+		final Timestamp changeDate = TimeUtil.asTimestamp(LocalDate.parse(changeDateStr));
+
+		final ContractChangeParameters contractChangeParameters = ContractChangeParameters.builder()
+				.changeDate(changeDate)
+				.build();
+
+		contractChangeBL.cancelContract(flatrateTermRecord, contractChangeParameters);
+	}
+
+	/**
+	 * Attempts to complete the given {@link I_C_Flatrate_Term} and asserts the completion is refused with an
+	 * error message containing the given fragment (e.g. a duration-0 term saved without an entered EndDate).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * And completing the C_Flatrate_Term identified by contract_1 is rejected with message containing "EndDate"
+	 * </pre>
+	 */
+	@And("completing the C_Flatrate_Term identified by {string} is rejected with message containing {string}")
+	public void completing_C_Flatrate_Term_is_rejected(@NonNull final String identifier, @NonNull final String expectedMessageFragment)
+	{
+		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
+		assertThat(flatrateTermRecord).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
+
+		assertThatThrownBy(() -> documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed))
+				.as("Completing C_Flatrate_Term with identifier %s", identifier)
+				.hasMessageContaining(expectedMessageFragment);
 	}
 
 	@And("^the C_Flatrate_Term identified by (.*) has (.*) C_Flatrate_DataEntries.$")

@@ -41,6 +41,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_AttributeSet_ID;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_ID;
+import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_Parent_ID;
 
 @RequiredArgsConstructor
 public class M_Product_Category_StepDef
@@ -117,6 +118,57 @@ public class M_Product_Category_StepDef
 					InterfaceWrapperHelper.saveRecord(productCategoryRecord);
 
 					row.getAsOptionalIdentifier().ifPresent(identifier -> productCategoryTable.putOrReplace(identifier, productCategoryRecord));
+				});
+	}
+
+	/**
+	 * Creates a single {@link I_M_Product_Category} record with an explicit {@code Name}/{@code Value} — unlike
+	 * {@code metasfresh contains M_Product_Categories:}, which auto-generates them — so a scenario building a
+	 * category hierarchy (e.g. for {@code C_CompensationGroup_SchemaLine.M_Product_Category_ID} matching) can
+	 * reference categories by a readable name.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>Name</b> — (required) category name<br>
+	 *   <b>Value</b> — (required) category value (upsert key)<br>
+	 *   <b>OPT.M_Product_Category_Parent_ID</b> — (optional, identifier-ref) parent category, for a hierarchy<br>
+	 * @cucumber.depends StepDefData: M_Product_Category_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_Product_Category:
+	 *   | Identifier         | Name       | Value      |
+	 *   | productCategoryTop | Beverages  | BEVERAGES  |
+	 * </pre>
+	 */
+	@Given("metasfresh contains M_Product_Category:")
+	public void create_M_Product_Category(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Product_Category_ID)
+				.forEach(row -> {
+					final String value = row.getAsString(I_M_Product_Category.COLUMNNAME_Value);
+
+					// upsert by Value: a Background step re-runs once per Scenario in the same feature,
+					// so a fixed Value must not blow up on the second Scenario's re-creation attempt.
+					final I_M_Product_Category record = CoalesceUtil.coalesceSuppliersNotNull(
+							() -> queryBL.createQueryBuilder(I_M_Product_Category.class)
+									.addEqualsFilter(I_M_Product_Category.COLUMNNAME_Value, value)
+									.create()
+									.firstOnly(I_M_Product_Category.class),
+							() -> InterfaceWrapperHelper.newInstance(I_M_Product_Category.class));
+
+					record.setIsActive(true);
+					record.setName(row.getAsString(I_M_Product_Category.COLUMNNAME_Name));
+					record.setValue(value);
+
+					row.getAsOptionalIdentifier(COLUMNNAME_M_Product_Category_Parent_ID)
+							.map(identifier -> identifier.lookupNotNullIn(productCategoryTable))
+							.ifPresent(parent -> record.setM_Product_Category_Parent_ID(parent.getM_Product_Category_ID()));
+
+					saveRecord(record);
+
+					row.getAsOptionalIdentifier().ifPresent(identifier -> productCategoryTable.putOrReplace(identifier, record));
 				});
 	}
 }
