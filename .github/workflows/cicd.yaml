@@ -1943,7 +1943,7 @@ jobs:
       # `!cancelled()` - i.e. success or failure, but NOT a cancellation. On those paths the
       # stack is torn down as early as it was before this was a separate step, so the runner
       # does not hold ~7 idle containers through report generation, the image push and the
-      # artifact uploads (and x3 for the parallel frontend shards).
+      # artifact uploads (and x3, once per parallel mobile shard, like the frontend shards).
       - name: stop stack
         if: ${{ !cancelled() }}
         working-directory: docker-builds/e2e-tests/
