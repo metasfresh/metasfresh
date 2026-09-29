@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
 import de.metas.organization.OrgId;
@@ -49,7 +50,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -106,19 +107,19 @@ public class C_Order_DropshipPO
 
 		// batch-resolve every line's group header in ONE query, rather than a relation-traversal
 		// load per line inside the loop (service-injection.md's persistence-in-DAO-only rule)
-		final Set<Integer> compensationGroupIds = lines.stream()
+		final Set<GroupId> compensationGroupIds = lines.stream()
 				.filter(de.metas.interfaces.I_C_OrderLine::isGroupCompensationLine)
-				.map(de.metas.interfaces.I_C_OrderLine::getC_Order_CompensationGroup_ID)
-				.filter(groupId -> groupId > 0)
+				.map(OrderGroupRepository::extractGroupIdOrNull)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		final Map<Integer, Integer> flatrateTermIdByGroupId = compensationGroupIds.isEmpty()
-				? Collections.emptyMap()
-				: orderGroupRepository.retrieveFlatrateTermIdsByGroupId(compensationGroupIds);
+		final Set<GroupId> contractCreatedGroupIds = compensationGroupIds.isEmpty()
+				? Collections.emptySet()
+				: orderGroupRepository.retrieveContractCreatedGroupIds(compensationGroupIds);
 
 		final List<Integer> offendingLineNumbers = new ArrayList<>();
 		for (final de.metas.interfaces.I_C_OrderLine line : lines)
 		{
-			if (isContractCompensationLine(line, flatrateTermIdByGroupId))
+			if (isContractCompensationLine(line, contractCreatedGroupIds))
 			{
 				// a contract-created discount line needs no vendor of its own and must not be copied
 				// to the PO; the PO's own completion builds its own group from whatever contract
@@ -181,23 +182,22 @@ public class C_Order_DropshipPO
 	// -------
 
 	/**
-	 * @param flatrateTermIdByGroupId every compensation line's group id, pre-resolved to its header's
-	 *                                {@code C_Flatrate_Term_ID} (0 for a manually-created group)
-	 * @return {@code true} if {@code line} is a compensation (discount) line whose group header carries a
-	 * {@code C_Flatrate_Term_ID} — i.e. it was created by a contract (see {@code C_Order_ContractCompensationGroup}
-	 * in {@code de.metas.contracts}, not referenced here to keep this module free of a contracts dependency).
-	 * Such a line needs no vendor of its own.
+	 * @param contractCreatedGroupIds every compensation line's group id that is contract-created (pre-resolved
+	 *                                via {@link OrderGroupRepository#retrieveContractCreatedGroupIds})
+	 * @return {@code true} if {@code line} is a compensation (discount) line whose group was created by a
+	 * contract (see {@code C_Order_ContractCompensationGroup} in {@code de.metas.contracts}, not referenced
+	 * here to keep this module free of a contracts dependency). Such a line needs no vendor of its own.
 	 */
 	private boolean isContractCompensationLine(
 			@NonNull final de.metas.interfaces.I_C_OrderLine line,
-			@NonNull final Map<Integer, Integer> flatrateTermIdByGroupId)
+			@NonNull final Set<GroupId> contractCreatedGroupIds)
 	{
 		if (!line.isGroupCompensationLine())
 		{
 			return false;
 		}
-		final Integer flatrateTermId = flatrateTermIdByGroupId.get(line.getC_Order_CompensationGroup_ID());
-		return flatrateTermId != null && flatrateTermId > 0;
+		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(line);
+		return groupId != null && contractCreatedGroupIds.contains(groupId);
 	}
 
 	private boolean isDropshipWarehouseOrder(@NonNull final I_C_Order order)

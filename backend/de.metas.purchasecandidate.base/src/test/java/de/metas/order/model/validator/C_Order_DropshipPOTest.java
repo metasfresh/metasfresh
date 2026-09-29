@@ -22,11 +22,12 @@
 
 package de.metas.order.model.validator;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.createFrom.po_from_so.DropshipPOFromSOService;
 import de.metas.organization.OrgId;
@@ -146,14 +147,16 @@ class C_Order_DropshipPOTest
 
 	/**
 	 * Builds a mock compensation (discount) OrderLine — {@code IsGroupCompensationLine=true},
-	 * belonging to the given group, no vendor, a real product. Whether it needs a vendor depends
-	 * on the group's {@code C_Flatrate_Term_ID}, stubbed separately on {@code orderGroupRepository}.
+	 * belonging to the given group of the given order, no vendor, a real product. Whether it needs a
+	 * vendor depends on whether its {@link GroupId} is contract-created, stubbed separately on
+	 * {@code orderGroupRepository}.
 	 */
-	private I_C_OrderLine buildCompensationLine(final int lineNo, final int groupId, final int productId)
+	private I_C_OrderLine buildCompensationLine(final int lineNo, final int orderId, final int groupId, final int productId)
 	{
 		final I_C_OrderLine ol = mock(I_C_OrderLine.class);
 		when(ol.getLine()).thenReturn(lineNo);
 		when(ol.isGroupCompensationLine()).thenReturn(true);
+		when(ol.getC_Order_ID()).thenReturn(orderId);
 		when(ol.getC_Order_CompensationGroup_ID()).thenReturn(groupId);
 		when(ol.getC_BPartner_Vendor_ID()).thenReturn(0); // no explicit vendor
 		when(ol.getM_Product_ID()).thenReturn(productId);
@@ -401,12 +404,13 @@ class C_Order_DropshipPOTest
 		final I_M_Warehouse warehouse = buildWarehouse(true);
 		when(warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId))).thenReturn(warehouse);
 
-		final I_C_OrderLine compensationLine = buildCompensationLine(10, groupId, productId);
+		final I_C_OrderLine compensationLine = buildCompensationLine(10, orderId, groupId, productId);
 		when(orderBL.getLinesByOrderIds(eq(Collections.singleton(OrderId.ofRepoId(orderId)))))
 				.thenReturn(Collections.singletonList(compensationLine));
 
-		when(orderGroupRepository.retrieveFlatrateTermIdsByGroupId(Collections.singleton(groupId)))
-				.thenReturn(ImmutableMap.of(groupId, 555)); // contract-created group
+		final GroupId expectedGroupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(orderId), groupId);
+		when(orderGroupRepository.retrieveContractCreatedGroupIds(Collections.singleton(expectedGroupId)))
+				.thenReturn(ImmutableSet.of(expectedGroupId)); // contract-created group
 
 		// When: validation runs — must not throw
 		interceptor.validateVendorsBeforeComplete(order);
@@ -434,12 +438,13 @@ class C_Order_DropshipPOTest
 		final I_M_Warehouse warehouse = buildWarehouse(true);
 		when(warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId))).thenReturn(warehouse);
 
-		final I_C_OrderLine compensationLine = buildCompensationLine(20, groupId, productId);
+		final I_C_OrderLine compensationLine = buildCompensationLine(20, orderId, groupId, productId);
 		when(orderBL.getLinesByOrderIds(eq(Collections.singleton(OrderId.ofRepoId(orderId)))))
 				.thenReturn(Collections.singletonList(compensationLine));
 
-		when(orderGroupRepository.retrieveFlatrateTermIdsByGroupId(Collections.singleton(groupId)))
-				.thenReturn(ImmutableMap.of(groupId, 0)); // manually-created group: no contract
+		final GroupId expectedGroupId = OrderGroupRepository.createGroupId(OrderId.ofRepoId(orderId), groupId);
+		when(orderGroupRepository.retrieveContractCreatedGroupIds(Collections.singleton(expectedGroupId)))
+				.thenReturn(ImmutableSet.of()); // manually-created group: no contract
 
 		when(vendorProductInfoService.getDefaultVendorProductInfo(
 				ProductId.ofRepoId(productId),

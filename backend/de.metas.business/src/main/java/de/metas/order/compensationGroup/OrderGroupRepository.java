@@ -36,6 +36,7 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.MutableInt;
@@ -845,26 +846,35 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	/**
-	 * Batched read of the plain {@code C_Flatrate_Term_ID} column stamped on each of the given
-	 * {@code C_Order_CompensationGroup} headers (0 for a group that isn't contract-created).
+	 * Batched check of which of the given {@link GroupId}s were created by a contract, i.e. their
+	 * {@code C_Order_CompensationGroup} header carries a {@code C_Flatrate_Term_ID}.
 	 * <p>
 	 * A single query for however many distinct group ids a caller needs to check (e.g. every
 	 * compensation line of one order) — never one load per line.
+	 *
+	 * @return the subset of {@code groupIds} that are contract-created
 	 */
-	public ImmutableMap<Integer, Integer> retrieveFlatrateTermIdsByGroupId(@NonNull final Set<Integer> orderCompensationGroupIds)
+	public ImmutableSet<GroupId> retrieveContractCreatedGroupIds(@NonNull final Set<GroupId> groupIds)
 	{
-		if (orderCompensationGroupIds.isEmpty())
+		if (groupIds.isEmpty())
 		{
-			return ImmutableMap.of();
+			return ImmutableSet.of();
 		}
 
-		return queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
-				.addInArrayFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, orderCompensationGroupIds)
-				.create()
-				.stream(I_C_Order_CompensationGroup.class)
-				.collect(ImmutableMap.toImmutableMap(
-						I_C_Order_CompensationGroup::getC_Order_CompensationGroup_ID,
-						I_C_Order_CompensationGroup::getC_Flatrate_Term_ID));
+		final ImmutableSet<Integer> orderCompensationGroupIds = groupIds.stream()
+				.map(GroupId::getOrderCompensationGroupId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<Integer> contractCreatedRepoIds = ImmutableSet.copyOf(
+				queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
+						.addInArrayFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, orderCompensationGroupIds)
+						.addCompareFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Flatrate_Term_ID, Operator.GREATER, 0)
+						.create()
+						.listIds());
+
+		return groupIds.stream()
+				.filter(groupId -> contractCreatedRepoIds.contains(groupId.getOrderCompensationGroupId()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public void setGroupProductBOMId(@NonNull final GroupId groupId, @NonNull final ProductBOMId bomId)

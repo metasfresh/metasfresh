@@ -13,11 +13,31 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
     And metasfresh has date and time 2026-07-01T09:00:00+02:00[Europe/Berlin]
     And documents are accounted immediately
 
-    And metasfresh contains M_Product_Category:
-      | Identifier       | Name   | Value           |
-      | goodsCategory    | Ware   | WareS32353D14   |
-      | pfandCategory    | Pfand  | PfandS32353D14  |
-      | discountCategory | Rabatt | RabattS32353D14 |
+    # unique per run (auto-generated Value/Name, never a fixed literal): a category row must never be
+    # reused from an earlier run on a long-lived local stack -- the accounts overridden below are
+    # copied onto a product ONLY at the moment the product is created (MProduct.insert_Accounting),
+    # so a stale, already-overridden category from a previous run would let this pass without the
+    # override below ever having run on THIS category.
+    And metasfresh contains M_Product_Categories:
+      | Identifier       |
+      | goodsCategory    |
+      | pfandCategory    |
+      | discountCategory |
+
+    # stand-ins for the customer's real chart-of-accounts 4750 (sales rebate) / 5750 (purchase rebate)
+    # accounts -- the discount product's own accounts, distinct from the goods products' default ones.
+    # 5751, not 5750: the seed chart of accounts already has an unrelated "5750 Quellensteuer"
+    # (withholding tax) account, so 5750 would silently reuse it instead of getting its own stand-in.
+    And metasfresh contains C_ElementValues:
+      | Identifier          | Value |
+      | discountRevenueAcct | 4750  |
+      | discountExpenseAcct | 5751  |
+    # applied BEFORE discountProduct is created below: a product's M_Product_Acct row is copied from
+    # its category's M_Product_Category_Acct only once, at product-creation time -- overriding the
+    # category afterwards has no effect on an already-created product.
+    And metasfresh contains M_Product_Category_Acct overrides:
+      | M_Product_Category_ID | OPT.P_Revenue_Acct  | OPT.P_Expense_Acct  |
+      | discountCategory      | discountRevenueAcct | discountExpenseAcct |
 
     And metasfresh contains M_Products:
       | Identifier      | OPT.M_Product_Category_ID.Identifier | IsSold | IsPurchased |
@@ -46,21 +66,6 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
       | sales7_N     | discountTax | Y       | N          |
       | purchase7_T  | discountTax | N       | T          |
       | purchase7_N  | discountTax | N       | N          |
-
-    # stand-ins for the customer's real chart-of-accounts 4750 (sales rebate) / 5750 (purchase rebate)
-    # accounts -- the discount product's own accounts, distinct from the goods products' default ones.
-    # 5751, not 5750: the seed chart of accounts already has an unrelated "5750 Quellensteuer"
-    # (withholding tax) account, so 5750 would silently reuse it instead of getting its own stand-in.
-    And metasfresh contains C_ElementValues:
-      | Identifier          | Value |
-      | discountRevenueAcct | 4750  |
-      | discountExpenseAcct | 5751  |
-    And metasfresh contains M_Product_Category_Acct overrides:
-      | M_Product_Category_ID | OPT.P_Revenue_Acct  | OPT.P_Expense_Acct  |
-      | discountCategory      | discountRevenueAcct | discountExpenseAcct |
-    # the accounting DAOs cache category accounts for the JVM's lifetime; the override above must be
-    # visible to the very first product/invoice posting that resolves discountCategory's accounts
-    And the metasfresh cache is reset
 
     And metasfresh contains M_PricingSystems
       | Identifier |
@@ -99,8 +104,8 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
       | Identifier   | TermDuration | TermDurationUnit | OPT.TermOfNotice | OPT.TermOfNoticeUnit | OPT.ExtensionType | OPT.EnsurePeriodsForYears |
       | zeroDurTrans | 0            | day              | 0                | day                  | EO                | 2026,2027                 |
 
-    # store / head-office split (same as Task 9's TS1): the order's own partner is the store, but its
-    # bill location belongs to the head office -- the contract is matched on the EFFECTIVE bill partner
+    # store / head-office split: the order's own partner is the store, but its bill location belongs
+    # to the head office -- the contract is matched on the EFFECTIVE bill partner
     And metasfresh contains C_BPartners:
       | Identifier   | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | headOfficeBP | Y              | contractPS                    |
@@ -144,7 +149,7 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
       | dropshipWarehouse | Y                   |
 
   # ##############################################################################################
-  # Real-world drop-ship case (Task 9's TS1 sample lines, plus a purchase-side contract with the
+  # Real-world drop-ship case (5 goods/Pfand lines, plus a purchase-side contract with the
   # vendor): SO completes -> dropship PO is auto-created and auto-completed; the SO's own contract
   # discount ("Bonus Ware") does NOT need a vendor and is NOT copied to the PO; the PO's own contract
   # ("Bonus Lieferant", matched on its own bill partner = the vendor) computes an equal discount on
@@ -174,7 +179,7 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
     And the order identified by orderTS1D is completed
 
     # SO side: the contract group ("Bonus Ware") is built on the goods-only base -- Pfand excluded.
-    # 3% of 921.60 + 672.00 + 561.60 = 64.656, rounded to -64.66 (same sample lines as Task 9's TS1)
+    # 3% of 921.60 + 672.00 + 561.60 = 64.656, rounded to -64.66
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
       | ol_soDiscount             | orderTS1D             | discountProduct         | 1          | true                        | 3                               | -64.66 | soTerm                            |
@@ -252,15 +257,6 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
     # ##########################################################################################
     # Invoice the PO's contract group ("Bonus Lieferant") via the PO's own invoice candidates
     # ##########################################################################################
-    # re-apply the category account override: something between the Background and here (the SO's
-    # own invoicing/posting round-trip) re-derives discountCategory's accounting row and loses the
-    # P_Expense_Acct override made in the Background -- P_Revenue_Acct (already used above) is
-    # unaffected, so this only needs to happen again for the purchase side
-    And metasfresh contains M_Product_Category_Acct overrides:
-      | M_Product_Category_ID | OPT.P_Expense_Acct  |
-      | discountCategory      | discountExpenseAcct |
-    And the metasfresh cache is reset
-
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_OrderLine_ID | C_Invoice_Candidate_ID |
       | ol_poElstar1   | ic_poElstar1           |
@@ -270,41 +266,35 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
       | ol_poPfand2    | ic_poPfand2            |
       | ol_poDiscount  | ic_poDiscount          |
 
+    # the past DateToInvoice_Override clears the date gate directly: the auto-created PO's DateOrdered
+    # is stamped from the real wall clock (MOrder's defaulting constructor bypasses the Background's
+    # simulated 2026-07-01 clock), so its InvoiceRule=Immediate candidates would otherwise compute a
+    # DateToInvoice the schedule sees as "in the future" relative to the simulated today
     And update invoice candidates
-      | C_Invoice_Candidate_ID | OPT.InvoiceRule_Override |
-      | ic_poElstar1           | I                        |
-      | ic_poElstar2           | I                        |
-      | ic_poGala              | I                        |
-      | ic_poPfand1            | I                        |
-      | ic_poPfand2            | I                        |
-      | ic_poDiscount          | I                        |
+      | C_Invoice_Candidate_ID | OPT.InvoiceRule_Override | OPT.DateToInvoice_Override |
+      | ic_poElstar1           | I                        | 2026-07-01                 |
+      | ic_poElstar2           | I                        | 2026-07-01                 |
+      | ic_poGala              | I                        | 2026-07-01                 |
+      | ic_poPfand1            | I                        | 2026-07-01                 |
+      | ic_poPfand2            | I                        | 2026-07-01                 |
+      | ic_poDiscount          | I                        | 2026-07-01                 |
 
-    # IgnoreInvoiceSchedule=Y is required here, proven by removing it and reproducing the skip:
-    # MOrder's defaulting constructor (backend/de.metas.business/.../MOrder.java:190,
-    # "setDateOrdered(new Timestamp(System.currentTimeMillis()))") stamps a brand-new C_Order's
-    # DateOrdered from the raw JVM wall clock, bypassing the mockable SystemTime the Background's
-    # "metasfresh has date and time 2026-07-01..." step freezes. DropshipPOFromSOService never
-    # overrides DateOrdered on the auto-created PO, so its InvoiceRule=Immediate invoice
-    # candidates get DateToInvoice = the REAL run date, while InvoiceCandBL#getToday() reads the
-    # frozen 2026-07-01 -- DateToInvoice.isAfter(getToday()) then skips every one of them. Removing
-    # this flag reproduces exactly that: "Überspringe Rechnungskandidat ..., da sein effektives
-    # Abrechenbar-ab-Datum <real run date> vor dem heutigen Datum Jul 1, 2026 liegt".
     And process invoice candidates together and wait 60s for C_Invoice_Candidate to be processed
-      | C_Invoice_Candidate_ID.Identifier | OPT.IgnoreInvoiceSchedule |
-      | ic_poElstar1                      | Y                         |
-      | ic_poElstar2                      | Y                         |
-      | ic_poGala                         | Y                         |
-      | ic_poPfand1                       | Y                         |
-      | ic_poPfand2                       | Y                         |
-      | ic_poDiscount                     | Y                         |
+      | C_Invoice_Candidate_ID.Identifier |
+      | ic_poElstar1                      |
+      | ic_poElstar2                      |
+      | ic_poGala                         |
+      | ic_poPfand1                       |
+      | ic_poPfand2                       |
+      | ic_poDiscount                     |
 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invPO                   | ic_poDiscount                     |
 
-    # the discount line posts with its OWN tax (discountTax) and its OWN account (the 5750 stand-in);
-    # the natural negative sign is kept on the debit side (a negative purchase line, not a flipped
-    # credit)
+    # the discount line posts with its OWN tax (discountTax) and its OWN account (discountExpenseAcct,
+    # the 5750 stand-in); the natural negative sign is kept on the debit side (a negative purchase
+    # line, not a flipped credit)
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Account_ID          | C_BPartner_ID | Record_ID | M_Product_ID    | C_Tax_ID    | C_VAT_Code_ID |
       | P_Expense_Acct        | -64.66 EUR  |             | discountExpenseAcct | vendorBP      | invPO     | discountProduct | discountTax | purchase7_N   |
@@ -314,10 +304,11 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
   # Regression for the exclusion filter's registration (MainValidator.registerFactories()): it must
   # stay SQL-translatable so it does NOT cache a stale "which groups have a contract" snapshot across
   # orders in the same JVM -- IC_Order_CreatePOFromSOsDAO holds this filter for the JVM's lifetime.
-  # This second, independent drop-ship SO creates its own contract group only AFTER the scenario
-  # above already used the filter once (in the PO created there). If the filter cached that earlier
-  # snapshot instead of re-querying, THIS order's own discount line would wrongly slip through onto
-  # its own PO.
+  # Self-contained: TWO independent drop-ship SOs within this one scenario -- order1/po1 "warms"
+  # the filter first, then order2's own, brand-new contract group is created strictly AFTER that
+  # filter use. If the filter cached order1's snapshot instead of re-querying, order2's own
+  # discount line would wrongly slip through onto its own PO. No dependency on any other
+  # scenario's run order.
   # ##############################################################################################
 
   @from:cucumber
@@ -327,28 +318,54 @@ Feature: Contract-triggered compensation group on a drop-ship sales order AND it
   Scenario: A second drop-ship SO's own contract group is still excluded after an earlier drop-ship PO already used the filter
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
-      | orderTS2D  | true    | storeBP                  | storeBP                               | 2026-07-01  | 2026-06-30T22:00:00Z | headOfficeBP                    | dropshipWarehouse         |
+      | order1     | true    | storeBP                  | storeBP                               | 2026-07-01  | 2026-06-30T22:00:00Z | headOfficeBP                    | dropshipWarehouse         |
 
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_BPartner_Vendor_ID.Identifier |
-      | ol2_elstar1 | orderTS2D             | elstar1                 | 1          | vendorBP                        |
+      | ol1_elstar1 | order1                | elstar1                 | 1          | vendorBP                        |
 
-    And the order identified by orderTS2D is completed
+    And the order identified by order1 is completed
 
-    # this scenario's own, brand-new "Bonus Ware" group (3% of 921.60 = -27.65) -- created strictly
-    # after the scenario above already completed a drop-ship PO
+    # order1's own "Bonus Ware" group (3% of 921.60 = -27.65) -- completing its PO below is what
+    # "warms" the filter registration for the first time in this JVM
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
-      | ol2_soDiscount            | orderTS2D             | discountProduct         | 1          | true                        | 3                               | -27.65 | soTerm                            |
-    And the order identified by orderTS2D has 2 order lines
+      | ol1_soDiscount            | order1                | discountProduct         | 1          | true                        | 3                               | -27.65 | soTerm                            |
+    And the order identified by order1 has 2 order lines
 
     Then the order is created:
       | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
-      | poTS2D         | orderTS2D                | false   | POO         | CO            | true           |
+      | po1            | order1                   | false   | POO         | CO            | true           |
     And validate the created orders
       | C_Order_ID | C_BPartner_ID |
-      | poTS2D     | vendorBP      |
+      | po1        | vendorBP      |
+    And the order identified by po1 has 2 order lines
 
-    # exactly 2 lines (goods + this order's own discount) -- NOT 3: proves the filter re-evaluated
-    # fresh for THIS order's own, brand-new contract group rather than reusing a stale snapshot
-    And the order identified by poTS2D has 2 order lines
+    # a second, independent drop-ship SO, created and completed strictly AFTER po1 above already
+    # used the filter once
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | DateOrdered | PreparationDate      | OPT.Bill_Location_ID.Identifier | M_Warehouse_ID.Identifier |
+      | order2     | true    | storeBP                  | storeBP                               | 2026-07-01  | 2026-06-30T22:00:00Z | headOfficeBP                    | dropshipWarehouse         |
+
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | C_BPartner_Vendor_ID.Identifier |
+      | ol2_elstar2 | order2                | elstar2                 | 1          | vendorBP                        |
+
+    And the order identified by order2 is completed
+
+    # order2's own, brand-new "Bonus Ware" group (3% of 672.00 = -20.16)
+    Then validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | price  | OPT.C_Flatrate_Term_ID.Identifier |
+      | ol2_soDiscount            | order2                | discountProduct         | 1          | true                        | 3                               | -20.16 | soTerm                            |
+    And the order identified by order2 has 2 order lines
+
+    Then the order is created:
+      | OPT.Identifier | Link_Order_ID.Identifier | IsSOTrx | DocBaseType | OPT.DocStatus | OPT.IsDropShip |
+      | po2            | order2                   | false   | POO         | CO            | true           |
+    And validate the created orders
+      | C_Order_ID | C_BPartner_ID |
+      | po2        | vendorBP      |
+
+    # exactly 2 lines (goods + order2's own discount) -- NOT 3: proves the filter re-evaluated
+    # fresh for order2's own, brand-new contract group rather than reusing po1's cached snapshot
+    And the order identified by po2 has 2 order lines

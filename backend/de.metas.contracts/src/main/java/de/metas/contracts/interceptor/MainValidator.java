@@ -167,18 +167,10 @@ public class MainValidator extends AbstractModuleInterceptor
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(FlatrateTermInvoiceCandidateListener.instance);
 
-		// a sales order's contract-created compensation (discount) lines must not be copied onto its
-		// purchase order -- neither the auto-created drop-ship PO (DropshipPOFromSOService) nor a
-		// manually run C_Order_CreatePOFromSOs process; the PO builds its own group from its own
-		// matching contract. IC_Order_CreatePOFromSOsDAO holds this filter for the JVM's lifetime, so
-		// it is registered as the repository's negated SQL filter directly (never wrapped in a plain
-		// IQueryFilter): a non-SQL wrapper forces CompositeQueryFilter to fall back to in-memory
-		// evaluation, and InSubQueryFilter then caches its "groups with a contract" snapshot forever
-		// after the very first call -- any contract created afterwards would silently stop being
-		// excluded (proven via the cucumber regression @Id:S32353_TC35 in
-		// compensationGroupContract_dropship.feature -- a JUnit test cannot exercise this SQL-vs-
-		// in-memory distinction because the test persistence layer always evaluates filters in
-		// memory, see POJOQuery).
+		// a sales order's contract-created compensation lines must not be copied onto its purchase
+		// order (neither the auto-created drop-ship PO nor a manually run C_Order_CreatePOFromSOs) --
+		// keep this filter SQL-translatable; a plain IQueryFilter wrapper forces in-memory evaluation
+		// and InSubQueryFilter then caches its snapshot forever (see ContractCompensationGroupRepository).
 		Services.get(IC_Order_CreatePOFromSOsDAO.class)
 				.addAdditionalOrderLinesFilter(contractCompensationGroupRepository.createContractCompensationLineMatcher().negate());
 	}
