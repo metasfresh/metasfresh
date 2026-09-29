@@ -16,6 +16,9 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -377,5 +380,63 @@ public class CreateProductCommandTest
 
 		final I_M_Product product = InterfaceWrapperHelper.load(response.getId(), I_M_Product.class);
 		assertThat(product).isNotNull();
+	}
+
+	@Test
+	public void execute_withSkipDefaultCosts_shouldDeleteTheProductCosts()
+	{
+		final RecordingCurrentCostsRepository costsRepository = new RecordingCurrentCostsRepository();
+
+		final JsonCreateProductResponse response = CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(costsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_NO_COSTS")
+						.isSkipDefaultCosts(true)
+						.build())
+				.identifier(Identifier.ofString("noCostsProduct"))
+				.build()
+				.execute();
+
+		assertThat(costsRepository.deletedForProductIds).containsExactly(response.getId().getRepoId());
+	}
+
+	@Test
+	public void execute_withoutSkipDefaultCosts_shouldKeepTheProductCosts()
+	{
+		final RecordingCurrentCostsRepository costsRepository = new RecordingCurrentCostsRepository();
+
+		CreateProductCommand.builder()
+				.productRepository(productRepository)
+				.currentCostsRepository(costsRepository)
+				.context(context)
+				.request(JsonCreateProductRequest.builder()
+						.value("PROD_WITH_COSTS")
+						.build())
+				.identifier(Identifier.ofString("withCostsProduct"))
+				.build()
+				.execute();
+
+		assertThat(costsRepository.deletedForProductIds).isEmpty();
+	}
+
+	/**
+	 * Records for which products the command asked to delete the cost rows (the deletion itself is the repository's concern).
+	 */
+	private static class RecordingCurrentCostsRepository extends CurrentCostsRepository
+	{
+		private final List<Integer> deletedForProductIds = new ArrayList<>();
+
+		RecordingCurrentCostsRepository()
+		{
+			super(new CostElementRepository(ADReferenceService.newMocked()));
+		}
+
+		@Override
+		public void deleteForProduct(final I_M_Product product)
+		{
+			deletedForProductIds.add(product.getM_Product_ID());
+		}
 	}
 }
