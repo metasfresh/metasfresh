@@ -32,6 +32,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 public interface IHUAssignmentBL extends ISingletonService
@@ -122,4 +123,9 @@ public interface IHUAssignmentBL extends ISingletonService
 	ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull TableRecordReferenceSet recordRefs);
 
 	int retrieveTUCountForModel(Object model);
+
+	/**
+	 * @return all active {@code M_HU_Assignment} rows (regardless of {@code IsTransferPackingMaterials}) referencing any of the given records, which must all belong to the same table.
+	 */
+	List<I_M_HU_Assignment> retrieveActiveHUAssignments(@NonNull TableRecordReferenceSet recordRefs);
 }

@@ -70,7 +70,6 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.order.process.C_Order_CreatePOFromSOs;
@@ -179,7 +178,6 @@ public class C_Order_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -599,7 +597,7 @@ public class C_Order_StepDef
 				.map(bpartnerTable::getId)
 				.orElse(null);
 
-		final List<I_C_Order> purchaseOrders = orderDAO.getByLinkOrderId(linkedOrderId)
+		final List<I_C_Order> purchaseOrders = orderBL.getByLinkOrderId(linkedOrderId)
 				.stream()
 				.filter(order -> bpartnerId == null || BPartnerId.equals(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()), bpartnerId))
 				.collect(ImmutableList.toImmutableList());

@@ -415,6 +415,12 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	@Override
+	public List<I_M_HU_Assignment> retrieveActiveHUAssignments(@NonNull final TableRecordReferenceSet recordRefs)
+	{
+		return huAssignmentDAO.retrieveActiveHUAssignments(recordRefs);
+	}
+
+	@Override
 	public int retrieveTUCountForModel(final Object model)
 	{
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveDistinctAssignedTUsForModel(model);

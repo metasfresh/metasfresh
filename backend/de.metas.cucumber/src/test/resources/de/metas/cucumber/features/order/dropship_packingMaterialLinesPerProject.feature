@@ -9,7 +9,6 @@ Feature: dropship packing material lines split per project
   # goods_1 is packed in crates only; goods_2 either in crates or in boxes.
   Background:
     Given infrastructure and metasfresh are running
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2024-06-17T08:00:00+02:00[Europe/Berlin]
     And set project type Sales/Purchase Order to inactive
     And metasfresh contains M_PricingSystems

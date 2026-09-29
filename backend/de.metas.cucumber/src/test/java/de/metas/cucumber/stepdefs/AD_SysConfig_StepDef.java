@@ -112,7 +112,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * Sets a sys config to a boolean value for the current scenario only.
+	 * Sets a sys config to a boolean value for the current scenario; its prior value is restored after the scenario (a sys config that had no row before keeps the new value).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns (none — parameters are in the step text, not a DataTable)
@@ -134,7 +134,7 @@ public class AD_SysConfig_StepDef
 	}
 
 	/**
-	 * Sets a sys config to the repo id of a scenario-created {@code M_Product_Category}, for the current scenario only.
+	 * Sets a sys config to the repo id of a scenario-created {@code M_Product_Category}; its prior value is restored after the scenario (a sys config that had no row before keeps the new value).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns

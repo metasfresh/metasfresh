@@ -51,6 +51,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
+import de.metas.material.MovementType;
 import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -126,8 +127,11 @@ public class HUShipmentPackingMaterialLinesBuilder
 		assertConfigurable();
 
 		_shipment = shipment;
+		// Only customer shipments are split; returns keep the project-agnostic grouping
+		final boolean isCustomerShipment = MovementType.ofCode(shipment.getMovementType()).isOutboundTransaction() && shipment.isSOTrx();
 		packingMaterialsCollector.setConsiderProject(
-				sysConfigBL.getBooleanValue(SYSCONFIG_SplitShipmentPackingMaterialLinesByProject, false, shipment.getAD_Client_ID(), shipment.getAD_Org_ID()));
+				isCustomerShipment
+						&& sysConfigBL.getBooleanValue(SYSCONFIG_SplitShipmentPackingMaterialLinesByProject, false, shipment.getAD_Client_ID(), shipment.getAD_Org_ID()));
 	}
 
 	public I_M_InOut getM_InOut()
@@ -195,12 +199,19 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final IHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(inoutLineHU);
 			collectHUs(inOutLineSource);
 		}
+	}
 
-		if (packingMaterialsCollector.isConsiderProject())
+	private void logPackingUnitProjectConflicts()
+	{
+		if (!packingMaterialsCollector.isConsiderProject())
 		{
-			final List<ShipmentPackingUnitProjectConflictDetector.Usage> usages = buildPackingUnitProjectUsages(inoutLines);
-			ShipmentPackingUnitProjectConflictDetector.logWarnings(inout, ShipmentPackingUnitProjectConflictDetector.detect(usages));
+			return;
 		}
+
+		final I_M_InOut inout = getM_InOut();
+		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
+		final List<ShipmentPackingUnitProjectConflictDetector.Usage> usages = buildPackingUnitProjectUsages(inoutLines);
+		ShipmentPackingUnitProjectConflictDetector.logWarnings(inout, ShipmentPackingUnitProjectConflictDetector.detect(usages));
 	}
 
 	private List<ShipmentPackingUnitProjectConflictDetector.Usage> buildPackingUnitProjectUsages(@NonNull final List<I_M_InOutLine> inoutLines)
@@ -211,7 +222,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		// IsTransferPackingMaterials='Y' on only its first assignment, so a filtered lookup would never see the other lines.
 		final ImmutableMap<InOutLineId, I_M_InOutLine> inoutLinesById = Maps.uniqueIndex(inoutLines, inoutLine -> InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID()));
 		final ImmutableListMultimap<InOutLineId, I_M_HU_Assignment> assignmentsByInOutLineId = Multimaps.index(
-				huAssignmentDAO.retrieveActiveHUAssignments(TableRecordReferenceSet.of(I_M_InOutLine.Table_Name, inoutLinesById.keySet())),
+				huAssignmentBL.retrieveActiveHUAssignments(TableRecordReferenceSet.of(I_M_InOutLine.Table_Name, inoutLinesById.keySet())),
 				assignment -> InOutLineId.ofRepoId(assignment.getRecord_ID()));
 
 		// Default LU: one usage per manual-packing line; booked = the first manual line, which is where the pallet was added.
@@ -295,6 +306,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		}
 
 		collectPackingMaterialsAndUpdateShipmentLines();
+		logPackingUnitProjectConflicts();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inout);
 
