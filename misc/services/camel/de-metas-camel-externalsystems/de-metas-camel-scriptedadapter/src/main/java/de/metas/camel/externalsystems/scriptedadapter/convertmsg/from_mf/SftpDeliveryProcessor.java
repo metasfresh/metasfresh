@@ -39,6 +39,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
 
 /**
@@ -96,7 +98,7 @@ public class SftpDeliveryProcessor implements Processor
 			throw new RuntimeCamelException("SFTP auth type is not configured in endpoint parameters!");
 		}
 
-		final Map<String, String> filenameVariables = buildFilenameVariables(msgFromMfContext);
+		final Map<String, String> filenameVariables = buildFilenameVariables(msgFromMfContext, exchange.getProperty(ScriptedAdapterConvertMsgFromMFRouteBuilder.EXCHANGE_PROPERTY_FAN_OUT_INDEX, Integer.class));
 		final String resolvedFilename = SftpFilenameResolver.resolve(filenamePattern, filenameVariables);
 
 		final String body = msgFromMfContext.getScriptReturnValue();
@@ -127,7 +129,7 @@ public class SftpDeliveryProcessor implements Processor
 	}
 
 	@NonNull
-	private static Map<String, String> buildFilenameVariables(@NonNull final MsgFromMfContext context)
+	private static Map<String, String> buildFilenameVariables(@NonNull final MsgFromMfContext context, @Nullable final Integer fanOutIndex)
 	{
 		final var variables = new java.util.HashMap<String, String>();
 		if (!Check.isBlank(context.getOutboundDocumentNo()))
@@ -136,6 +138,10 @@ public class SftpDeliveryProcessor implements Processor
 		}
 		variables.put("table", context.getOutboundRecordTableName());
 		variables.put("recordid", context.getOutboundRecordId());
+		if (fanOutIndex != null)
+		{
+			variables.put("index", String.valueOf(fanOutIndex));
+		}
 		return variables;
 	}
 
