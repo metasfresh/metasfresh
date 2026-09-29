@@ -844,6 +844,29 @@ public class OrderGroupRepository implements GroupRepository
 				.build();
 	}
 
+	/**
+	 * Batched read of the plain {@code C_Flatrate_Term_ID} column stamped on each of the given
+	 * {@code C_Order_CompensationGroup} headers (0 for a group that isn't contract-created).
+	 * <p>
+	 * A single query for however many distinct group ids a caller needs to check (e.g. every
+	 * compensation line of one order) — never one load per line.
+	 */
+	public ImmutableMap<Integer, Integer> retrieveFlatrateTermIdsByGroupId(@NonNull final Set<Integer> orderCompensationGroupIds)
+	{
+		if (orderCompensationGroupIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addInArrayFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, orderCompensationGroupIds)
+				.create()
+				.stream(I_C_Order_CompensationGroup.class)
+				.collect(ImmutableMap.toImmutableMap(
+						I_C_Order_CompensationGroup::getC_Order_CompensationGroup_ID,
+						I_C_Order_CompensationGroup::getC_Flatrate_Term_ID));
+	}
+
 	public void setGroupProductBOMId(@NonNull final GroupId groupId, @NonNull final ProductBOMId bomId)
 	{
 		final I_C_Order_CompensationGroup groupRecord = retrieveGroupRecord(groupId);

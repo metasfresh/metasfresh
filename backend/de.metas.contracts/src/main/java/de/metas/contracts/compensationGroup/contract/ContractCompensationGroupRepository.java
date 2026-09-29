@@ -120,10 +120,13 @@ public class ContractCompensationGroupRepository
 
 	/**
 	 * @return a filter matching {@code C_OrderLine}s that ARE contract-created compensation (discount) lines —
-	 * {@code IsGroupCompensationLine=Y} whose group carries a {@code C_Flatrate_Term_ID}. {@link
-	 * ContractCompensationGroupOrderLineFilter} negates this to keep such lines from being copied onto a
-	 * purchase order (by {@code C_Order_CreatePOFromSOs} or the auto-created dropship PO) — the PO's own
-	 * completion builds its own group from whatever contract matches the PO's own bill partner (the vendor).
+	 * {@code IsGroupCompensationLine=Y} whose group carries a {@code C_Flatrate_Term_ID}. Callers needing the
+	 * opposite (e.g. {@code MainValidator}, to keep such a line from being copied onto a purchase order) call
+	 * {@link IQueryFilter#negate()} on the result directly — the composite filter built here is pure SQL
+	 * ({@code EqualsFilter} + {@code InSubQueryFilter}, both {@code ISqlQueryFilter}), and {@code negate()}
+	 * (via {@code NotQueryFilter}) stays SQL-translatable too, so it must never be wrapped in a plain
+	 * {@code IQueryFilter} adapter — that would force in-memory evaluation and let {@code InSubQueryFilter}
+	 * cache a stale result for as long as the caller holds the wrapper (see the registration site's comment).
 	 */
 	public IQueryFilter<I_C_OrderLine> createContractCompensationLineMatcher()
 	{
