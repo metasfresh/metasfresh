@@ -90,7 +90,7 @@ import java.util.Properties;
 	public I_C_Flatrate_Term importRecord(final I_I_Flatrate_Term importRecord)
 	{
 		final I_C_Flatrate_Conditions conditions = importRecord.getC_Flatrate_Conditions();
-		final boolean isCompensationGroup = TypeConditions.COMPENSATION_GROUP.getCode().equals(conditions.getType_Conditions());
+		final boolean isCompensationGroup = TypeConditions.ofCode(conditions.getType_Conditions()) == TypeConditions.COMPENSATION_GROUP;
 
 		final ProductId productId = isCompensationGroup ? null : ProductId.ofRepoId(importRecord.getM_Product_ID());
 		final ProductAndCategoryId productAndCategoryId = productId == null
@@ -104,9 +104,12 @@ import java.util.Properties;
 			.conditions(conditions)
 			.startDate(importRecord.getStartDate())
 			.productAndCategoryId(productAndCategoryId)
-			// CompensationGroup: the requested end date must reach createTerm before the first save (duration-0
-			// transitions keep it rather than erasing it); other types keep computing it via setEndDate below.
-			.endDate(isCompensationGroup ? importRecord.getEndDate() : null)
+			// the requested end date must reach createTerm before the first save, for every type: a duration-0
+			// transition never computes one, so without it the first save fails outright (checkEndDateNotNull).
+			// A duration>0 transition recomputes its own end date regardless of what is requested here; setEndDate
+			// below still re-applies the row's value afterwards, for a past-dated row whose explicit end date is
+			// shorter than the transition's normal duration.
+			.endDate(importRecord.getEndDate())
 			.completeIt(false)
 			.build();
 

@@ -1653,7 +1653,7 @@ public class FlatrateBL implements IFlatrateBL
 			notCreatedReason.append(" is neither customer nor vendor;");
 			dontCreateTerm = true;
 		}
-		final boolean isCompensationGroup = TypeConditions.COMPENSATION_GROUP.getCode().equals(conditions.getType_Conditions());
+		final boolean isCompensationGroup = TypeConditions.ofCode(conditions.getType_Conditions()) == TypeConditions.COMPENSATION_GROUP;
 		if (productAndCategoryId == null)
 		{
 			// CompensationGroup terms rely on the dated overlap check (assertNoOverlappingCompensationGroupTerm)

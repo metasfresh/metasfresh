@@ -129,8 +129,8 @@ Feature: Contract data import for compensation-group contracts
       | Identifier | CreatedTermDocStatus |
       | rowFirst   | CO                   |
     And validate I_Flatrate_Term:
-      | Identifier | I_ErrorMsg                                 |
-      | rowOverlap | überschneidet sich mit dem aktiven Vertrag |
+      | Identifier | AD_Message                                |
+      | rowOverlap | ContractCompensationGroup_OverlappingTerm |
 
   # ##############################################################################################
   # Same as above, but both rows lie fully in the past: they are set completed without going
@@ -166,5 +166,5 @@ Feature: Contract data import for compensation-group contracts
       | Identifier   | CreatedTermDocStatus |
       | rowPastFirst | CO                   |
     And validate I_Flatrate_Term:
-      | Identifier    | I_ErrorMsg                                 |
-      | rowPastSecond | überschneidet sich mit dem aktiven Vertrag |
+      | Identifier    | AD_Message                                |
+      | rowPastSecond | ContractCompensationGroup_OverlappingTerm |
